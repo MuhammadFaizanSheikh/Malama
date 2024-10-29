@@ -1,0 +1,484 @@
+﻿/* General styles */
+body {
+   
+  
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120vh;
+    background-color: #f5f5f5;
+}
+
+.container2 {
+ 
+ 
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 60px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+.container {
+    overflow-y: auto;
+    max-width: 1000px;
+    height: 100%;
+    margin: 40px auto;
+    padding: 60px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+.container2 {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 60px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+    .container h1 {
+        margin-bottom: 40px;
+        font-size: 36px;
+        color: #333333;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .container p {
+        margin-bottom: 30px;
+        font-size: 20px;
+        color: #555555;
+        line-height: 1.8;
+    }
+
+    .container button.buttonUpload {
+        padding: 16px 32px;
+        background-color: #f1592a;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .container button.GenerateCsv {
+        padding: 16px 32px;
+        background-color: #f1592a;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .container button.GenerateDelete {
+        padding: 16px 32px;
+        background-color: #f1592a;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .container button.DownloadZipFile {
+        padding: 16px 32px;
+        background-color: #f1592a;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .container button:hover {
+        background-color: #425556;
+    }
+
+/* Style for file input */
+input[type="file"] {
+    display: block;
+    margin: 15px auto;
+}
+
+/* Style for buttons */
+/*button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;*/ /* Added margin to buttons */
+/*}*/
+
+buttonDelete {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Added margin to buttons */
+}
+
+buttonUpload {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Added margin to buttons */
+}
+
+buttonGenerateCsv {
+    padding: 10px 20px;
+    background-color: #f1592a;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Added margin to buttons */
+}
+    button:hover {
+        background-color: #0056b3;
+    }
+
+/* Style for the paragraph displaying the model */
+p {
+    margin-top: 15px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Loader styles */
+.loader {
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 9999; /* Ensure it appears above other elements */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a shadow effect */
+}
+
+/* Animation keyframes */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.message {
+    display: none;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+
+.file-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+    .custom-file-upload:hover {
+        background-color: #0056b3;
+    }
+
+input[type="file"] {
+    display: none;
+}
+
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+/* CSS for the styled table */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+
+    .styled-table th,
+    .styled-table td {
+        padding: 12px 15px;
+        text-align: left;
+    }
+
+    /* Header styles */
+    .styled-table thead th {
+        background-color: #6862ac;
+        color: white;
+        border-bottom: 2px solid #2980b9;
+    }
+    .styled-table #tfoot {
+        background-color: #6862ac;
+        color: white;
+        border-bottom: 2px solid #2980b9;
+    }
+    /* Alternate row colors */
+    .styled-table tbody tr:nth-of-type(even) {
+        background-color: #f2f2f2;
+    }
+
+    /* Hover effect */
+    .styled-table tbody tr:hover {
+        background-color: #e1e1e1;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Download button style */
+    .styled-table tbody .download-button {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+        .styled-table tbody .download-button:hover {
+            background-color: #27ae60;
+        }
+
+
+
+
+/* Style the modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+button {
+    padding: 8px 12px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #d32f2f;
+    }
+
+.convert-heading {
+    text-align: center; /* Center align the text */
+    margin-top: 40px; /* Adjust the top margin */
+    margin-bottom: 50px; /* Adjust the bottom margin */
+    font-family: 'Arial', sans-serif; /* Choose your preferred font-family */
+    font-size: 2.5em; /* Adjust the font size */
+    background: linear-gradient(to right, purple, green, blue, orange); /* Apply a gradient */
+    -webkit-background-clip: text; /* Clip the gradient to the text */
+    -webkit-text-fill-color: transparent; /* Make the text transparent to show the gradient */
+    border: 2px solid #663399; /* Add a border with a shade of purple */
+    padding: 10px 20px; /* Add padding to the text */
+    display: inline-block; /* Make the border size adjust to the content */
+}
+
+
+/* CSS for table footer */
+#tfoot {
+    background-color: #f2f2f2; /* Background color for the footer */
+    font-weight: bold; /* Make the text bold */
+}
+
+    #tfoot td {
+        padding: 10px; /* Add padding to the cells */
+    }
+
+        /* Style for the 'Total:' text */
+        #tfoot td[colspan="4"] {
+            text-align: right; /* Align the 'Total:' text to the right */
+        }
+
+
+
+
+        /* Over Flow*/
+
+ 
+
+    /* Apply overflow when the number of rows exceeds 3 */
+    .table-based {
+        max-height: 100px; /* Set your desired max height */
+        width: 100%; /* Set your desired max height */
+        overflow-y: auto;
+        display: block;
+    }
+
+
+/* CSS for the styled table */
+.styled-table2 {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+
+    .styled-table2 th,
+    .styled-table2 td {
+        padding: 12px 15px;
+        text-align: left;
+    }
+
+    /* Header styles */
+    .styled-table22 thead th {
+        background-color: #6862ac;
+        color: white;
+        border-bottom: 2px solid #2980b9;
+    }
+
+    .styled-table2 #tfoot {
+        background-color: #6862ac;
+        color: white;
+        border-bottom: 2px solid #2980b9;
+    }
+    /* Alternate row colors */
+    .styled-table2 tbody tr:nth-of-type(even) {
+        background-color: #f2f2f2;
+    }
+
+    /* Hover effect */
+    .styled-table2 tbody tr:hover {
+        background-color: #e1e1e1;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Download button style */
+    .styled-table2 tbody .download-button {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+        .styled-table2 tbody .download-button:hover {
+            background-color: #27ae60;
+        }
+
+
+
+.error-message {
+    color: red; /* Set text color to red */
+ 
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 20px auto; /* Center the element horizontally */
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add shadow to text */
+}
+
+.error-messageText {
+    color: red; /* Set text color to red */
+    
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Add shadow to text */
+}

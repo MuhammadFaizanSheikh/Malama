@@ -1,0 +1,1518 @@
+﻿@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+@* <link href="~/css/home.css" rel="stylesheet" /> *@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.2.2/css/fixedColumns.dataTables.min.css">
+<script src="https://cdn.datatables.net/fixedcolumns/4.2.2/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+<div class="container-fluid" style="max-width: 100%; padding-top: 0; margin-top: 0;">
+    <!-- Calendar Section -->
+    <div class="row my-3">
+        <div class="col-md-12 text-center">
+            <h1 style="color: rgba(80,90,201,1);">Malama</h1>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-4">
+            <label for="calendarInput" style="color: black;">Event Start Date:</label>
+            <input type="date" class="form-control" id="calendarInput" />
+        </div>
+        <div class="col-md-4">
+            <label for="lastCalendarInput" style="color: black;">Event End Date:</label>
+            <input type="date" class="form-control" id="lastCalendarInput" />
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2">
+            <label for="eventId" class="form-label" style="color: black;">Event ID</label>
+            <input type="text" class="form-control event-input" id="eventId" name="eventId" placeholder="Enter Event ID" required>
+        </div>
+    </div>
+
+    <!-- Dropdowns Section -->
+    <div class="row my-3">
+        <div class="col-md-2">
+            <label for="dropdownVision" style="color: black;">Previous Dental Exam Window:</label>
+            <select class="form-control" id="dropdownLastDentalExam">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dropdownVision" style="color: black;">Vision:</label>
+            <select class="form-control" id="dropdownVision">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dropdownDental" style="color: black;">Dental:</label>
+            <select class="form-control" id="dropdownDental">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dropdownPHA" style="color: black;">PHA:</label>
+            <select class="form-control" id="dropdownPHA">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dropdownHIV" style="color: black;">HIV:</label>
+            <select class="form-control" id="dropdownHIV">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dropdownHearing" style="color: black;">Hearing:</label>
+            <select class="form-control" id="dropdownHearing">
+                <option value="0" selected>0</option>
+                <option value="90">90</option>
+                <option value="180">180</option>
+                <option value="270">270</option>
+                <option value="365">365</option>
+            </select>
+        </div>
+    </div>
+
+    <form id="fileUploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="files" multiple accept=".xls,.xlsx" style="display: none;">
+        <div class="d-flex justify-content-center my-3">
+            <button type="button" class="btn btn-primary" id="uploadButton">Upload and Preview</button>
+        </div>
+        <div class="d-flex justify-content-center my-3">
+            <button type="button" class="btn btn-primary" onclick="clearPreview()" id="clearPreview">Clear Preview</button>
+        </div>
+    </form>
+
+    <div id="loader" class="d-none loader-container">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <div id="parentContainer">
+        <div id="taskforceInfoContainer" style="font-weight: bold; margin-bottom: 20px;">
+        </div>
+        <div id="fileValidationErrorContainer" style="font-weight: bold; margin-top: 10px;">
+        </div>
+    </div>
+
+    <table id="previewTable" class="display nowrap table table-bordered" style="width: 100%;">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="d-flex justify-content-center my-3 button-container">
+        <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
+        <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
+        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
+    </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Row</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalBodyContent">
+                    <!-- Dynamic content will be injected here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary text-white" data-dismiss="modal">Close</button>
+                    <button type="button" id="saveChangesButton" class="btn btn-primary text-white" onclick="saveChangesButton()">Save Changes</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for displaying validation errors -->
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Validation Errors</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Report</th>
+                                <th>Row No</th>
+                                <th>Column</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="errorTableBody">
+                            <!-- Error rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function clearPreview() {
+            if ($.fn.DataTable.isDataTable('#previewTable')) {
+                $('#previewTable').DataTable().clear().destroy(); // Clear data and destroy the instance
+            }
+
+            const tableHead = document.querySelector('#previewTable thead');
+            const tableBody = document.querySelector('#previewTable tbody');
+
+            tableHead.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            document.getElementById('taskforceInfoContainer').innerHTML = '';
+            document.getElementById('fileValidationErrorContainer').innerHTML = '';
+            document.getElementById('generateExcelButton').classList.add('d-none');
+            document.getElementById('submitDataButton').classList.add('d-none');
+            document.getElementById('addRowButton').classList.add('d-none');
+            smIdCounter = 0;
+            uploadCounter = 0;
+        }
+
+
+        document.getElementById('generateExcelButton').addEventListener('click', function () {
+            const table = document.getElementById('previewTable');
+            if (table) {
+                const ws = XLSX.utils.table_to_sheet(table);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'PreviewData');
+                XLSX.writeFile(wb, 'PreviewData.xlsx');
+            } else {
+                console.error('Table element not found.');
+            }
+        });
+
+        document.getElementById('uploadButton').addEventListener('click', function () {
+            const calendarInput = document.getElementById('calendarInput').value;
+            const lastCalendarInput = document.getElementById('lastCalendarInput').value;
+            const eventId = document.getElementById('eventId').value;
+
+            if (!eventId) {
+                alert('Please enter an Event ID.');
+                return;
+            }
+
+            if (!calendarInput) {
+                alert('Please select an Event Start Date.');
+                return;
+            }
+
+            if (!lastCalendarInput) {
+                alert('Please select an Event Last Date.');
+                return;
+            }
+
+            const startDate = new Date(calendarInput);
+            const lastDate = new Date(lastCalendarInput);
+
+            if (lastDate <= startDate) {
+                alert('Event Last Date must be greater than Event Start Date.');
+                return;
+            }
+
+            document.getElementById('fileInput').click();
+        });
+
+        let isPreviewDoneSuccessfully = false;
+
+        document.getElementById('fileInput').addEventListener('change', function () {
+            const form = document.getElementById('fileUploadForm');
+            const formData = new FormData(form);
+            formData.append('eventDate', document.getElementById('calendarInput').value);
+            formData.append('lastEventDate', document.getElementById('lastCalendarInput').value);
+            formData.append('eventId', document.getElementById('eventId').value);
+            formData.append('lastDentalExam', document.getElementById('dropdownLastDentalExam').value);
+            formData.append('vision', document.getElementById('dropdownVision').value);
+            formData.append('dental', document.getElementById('dropdownDental').value);
+            formData.append('pha', document.getElementById('dropdownPHA').value);
+            formData.append('hiv', document.getElementById('dropdownHIV').value);
+            formData.append('hearing', document.getElementById('dropdownHearing').value);
+
+            document.getElementById('loader').classList.remove('d-none');
+            debugger;
+            fetch('@Url.Action("UploadAndPreview", "Home")', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || "An unknown error occurred.");
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const validationErrors = data[0]; 
+                    const mergedData = data[1];
+
+                    if (mergedData) {
+                        displayPreview(mergedData);
+                    }
+
+                    if (validationErrors && validationErrors.length > 0) {
+                        if (isPreviewDoneSuccessfully) {
+                            displayUploadFileValidationErrors(validationErrors, taskForceValueForErrorLog);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error uploading files:', error);
+                    alert(error.message || 'An error occurred while uploading files.');
+                })
+                .finally(() => {
+                    document.getElementById('loader').classList.add('d-none');
+                    document.getElementById('fileInput').value = '';
+                });
+        });
+
+        function displayUploadFileValidationErrors(errors, taskForceValue) {
+            const errorContainer = document.getElementById('fileValidationErrorContainer');
+
+            const section = document.createElement('div');
+            section.style.marginBottom = '20px'; // Add space between each upload's errors
+
+            const taskForceHeader = document.createElement('div');
+
+            // Create a span for "Error Log:"
+            const errorLogText = document.createElement('span');
+            errorLogText.textContent = "Error Log: ";
+            errorLogText.style.fontWeight = 'bold';
+            errorLogText.style.color = 'red'; // Set "Error Log:" text color to red
+
+            // Create a span for the task force value
+            const taskForceValueText = document.createElement('span');
+            taskForceValueText.textContent = taskForceValue; // Add the task force value
+            taskForceValueText.style.fontWeight = 'bold'; // Optional: style for task force value
+
+            // Append both spans to the header
+            taskForceHeader.appendChild(errorLogText);
+            taskForceHeader.appendChild(taskForceValueText);
+            section.appendChild(taskForceHeader);
+
+            const table = document.createElement('table');
+            table.style.width = 'auto'; // Set width to auto for left alignment
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <th style="text-align:left; padding-right: 200px;">Report</th>
+                <th style="text-align:left; padding-right: 40px;">Row No</th>
+                <th style="text-align:left; padding-right: 40px;">Column</th>
+                <th style="text-align:left;">Error</th>
+            `;
+            table.appendChild(headerRow);
+
+            const hr = document.createElement('hr');
+            hr.style.border = '1px solid gray'; // Style the line
+            hr.style.margin = '5px 0'; // Add some margin to the line
+            hr.style.width = '200%'; // Make the line full width
+            table.appendChild(hr);
+
+            errors.forEach(error => {
+                const errorRow = document.createElement('tr');
+                errorRow.innerHTML = `
+                    <td>${error.FileName}</td>
+                    <td>${error.Row}</td>
+                    <td>${error.Column}</td>
+                    <td>${error.Error}</td>
+                `;
+                table.appendChild(errorRow);
+            });
+
+            section.appendChild(table);
+            errorContainer.appendChild(section);
+
+            errorContainer.classList.remove('d-none'); // Show error container
+        }
+
+
+
+
+        let smIdCounter = 0;
+        let uploadCounter = 0;
+        let taskForceValueForErrorLog = '';
+        
+        const colors = [ // Define a color palette
+            '#E3F2FD', // Light orange
+            '#FFF9C4', // Light green
+            '#E8F5E9', // Light blue
+            '#FCE4EC', // Light pink
+            '#F3E5F5', // Light yellow
+            '#FFEBEE ', // Light yellow
+        ];
+
+        function displayPreview(data) {
+            debugger;
+            isPreviewDoneSuccessfully = false;
+            uploadCounter++; // Increment the upload counter for each upload session
+
+            let previewTable = document.querySelector('#previewTable');
+            previewTable.style.border = '2px solid rgba(80,90,201,1)';
+            previewTable.style.borderCollapse = 'collapse'; // Ensure borders are collapsed
+
+            let firstTaskforceValue = data[0].TaskForce;
+            taskForceValueForErrorLog = firstTaskforceValue;
+            let existingTaskforces = new Set();
+            let taskforceColumnIndex = $('#previewTable thead th').filter(function () {
+                return $(this).text() === "TaskForce";
+            }).index() + 1; // +1 because nth-child is 1-based
+
+            $('#previewTable tbody tr').each(function () {
+                let taskforceValue = $(this).find(`td:nth-child(${taskforceColumnIndex})`).text();
+                existingTaskforces.add(taskforceValue);
+            });
+
+            if (existingTaskforces.has(firstTaskforceValue)) {
+                alert(`TaskForce "${firstTaskforceValue}" already exists in the table. No data will be inserted.`);
+                return;
+            }
+
+            let missingFullNameRows = [];
+
+            // Handling DOD ID duplicates
+            let dodIdCounts = {};
+            let filteredData = data.filter((row, index) => {
+                let dodId = row['DOD ID'];
+                if (!dodIdCounts[dodId]) {
+                    dodIdCounts[dodId] = 1;
+                    return true;
+                } else {
+                    dodIdCounts[dodId]++;
+                    return false; // Skip the duplicate row
+                }
+            });
+
+            // Update totalRows to reflect unique entries only
+            let totalRows = filteredData.length; // Now counting only the unique rows
+            let taskforceInfoContainer = document.getElementById('taskforceInfoContainer');
+            let tableHtml = `
+                                <table style="border-collapse: collapse; width: auto; float: left; margin-right: 20px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="border-bottom: 1px solid #505ac9; padding: 5px; text-align: left;">Taskforce Name(s)</th>
+                                            <th style="border-bottom: 1px solid #505ac9; padding: 5px; text-align: right;">SM Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="taskforceBody"></tbody>
+                                </table>
+                            `;
+
+            if (!document.getElementById('taskforceBody')) {
+                taskforceInfoContainer.innerHTML = tableHtml;
+            }
+
+            let taskforceBody = document.getElementById('taskforceBody');
+            let newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                                <td style="padding: 5px; text-align: left;">${firstTaskforceValue}</td>
+                                <td style="padding: 5px; text-align: right;">${totalRows}</td>
+                            `;
+            taskforceBody.appendChild(newRow);
+
+            let formattedData = filteredData.map((row, index) => {
+                let rowData = Object.values(row);
+                smIdCounter++;
+                let smIdData = [smIdCounter];
+                let fullRowData = smIdData.concat(rowData);
+                let actionButtons = `
+                            <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                            <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
+                        `;
+                fullRowData.push(actionButtons);
+
+                let fullNameIndex = Object.keys(row).indexOf("FULL NAME");
+                if (row["FULL NAME"] === "" || row["FULL NAME"] === null) {
+                    let globalRowIndex = $('#previewTable tbody tr').length + index + 1;
+                    missingFullNameRows.push(globalRowIndex);
+                    fullRowData[fullNameIndex + 1] = '';
+                }
+
+                return fullRowData;
+            });
+
+            let tableHead = document.querySelector('#previewTable thead');
+            let fullNameColumnIndex = -1;
+
+            if (tableHead.innerHTML === '') {
+                let headers = Object.keys(filteredData[0]);
+                fullNameColumnIndex = headers.indexOf("FULL NAME") + 1;
+                headers.unshift('SM ID');
+                headers.push('Actions');
+                let headerRowHtml = headers.map(header => `<th>${header}</th>`).join('');
+                tableHead.innerHTML = `<tr>${headerRowHtml}</tr>`;
+            }
+
+            if ($.fn.DataTable.isDataTable('#previewTable')) {
+                $('#previewTable').DataTable().rows.add(formattedData).draw(false);
+            } else {
+                $('#previewTable').DataTable({
+                    data: formattedData,
+                    columns: [{ title: 'SM ID' }].concat(
+                        Object.keys(filteredData[0]).map(header => ({ title: header }))
+                    ).concat({ title: 'Actions' }),
+                    scrollY: 400,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    paging: false,
+                    autoWidth: false,
+                    fixedColumns: {
+                        leftColumns: 6
+                    },
+                    ordering: false,
+                    order: [],
+                    createdRow: function (row, data, dataIndex) {
+                        let backgroundColor = colors[(uploadCounter - 1) % colors.length];
+                        $(row).find('td').css('background-color', backgroundColor);
+                        if (missingFullNameRows.includes(dataIndex + 1)) {
+                            $(row).css('border', '2px solid red');
+                        }
+                    }
+                });
+            }
+
+            //Show alerts for missing FULL NAME
+            if (missingFullNameRows.length > 0) {
+                let alertMessage = missingFullNameRows.map(rowNum => `FULL NAME is missing in ${rowNum}th row.`).join('\n');
+                alert(alertMessage);
+            }
+
+            // Object.keys(dodIdCounts).forEach(dodId => {
+            //     if (dodIdCounts[dodId] > 1) {
+            //         alert(`DOD ID "${dodId}" appears ${dodIdCounts[dodId]} times.`);
+            //     }
+            // });
+
+            highlightMissingFullNameRows(missingFullNameRows);
+            document.getElementById('generateExcelButton').classList.remove('d-none');
+            document.getElementById('submitDataButton').classList.remove('d-none');
+            document.getElementById('addRowButton').classList.remove('d-none');
+            isPreviewDoneSuccessfully = true;
+        }
+
+
+
+        function highlightMissingFullNameRows(missingRows) {
+            $('#previewTable tbody tr').each(function (index) {
+                let rowIndex = index + 1; // Convert to 1-based index
+                if (missingRows.includes(rowIndex)) {
+                    $(this).css('border', '2px solid red'); // Highlight the border of the row
+                }
+            });
+        }
+
+
+
+
+
+
+
+
+        const keys = [
+            "SM ID", "FULL NAME", "NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
+            "AGR", "UIC", "MRC", "DOB", "OVER 40", "Dental Due", "Dental Exam", "Dental Needed",
+            "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA", "PULHES", "Vision Date",
+            "VISION", "NEAR VISION", "VRC", "Vision 2PG", "Vision 1MI", "Hearing Date", "HEARING",
+            "HRC", "Hearing Profile", "QUEST", "Lab Needed", "ABO", "ABO Needed", "DNA", "Sickle Date",
+            "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
+            "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
+            "IMM", "Hep B", "Hep A", "FLU", "Tet/TDP", "MMR", "Varicella", "TaskForce", "Notes", "Over 44",
+            "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN"
+        ];
+
+        const tableToKeysIndexMap = [
+            keys.indexOf("FULL NAME"),      // FULL NAME
+            keys.indexOf("AGE"),            // AGE
+            keys.indexOf("UIC"),            // UIC
+            keys.indexOf("LAST 4"),         // LAST 4
+            keys.indexOf("SEX"),            // SEX
+            keys.indexOf("MRC"),            // MRC
+            keys.indexOf("DOD ID"),         // DOD ID
+            keys.indexOf("MOS"),            // MOS
+            keys.indexOf("DOB"),            // DOB
+            keys.indexOf("RANK"),           // RANK
+            keys.indexOf("AGR"),            // AGR
+            keys.indexOf("OVER 40"),        // OVER 40
+
+            // Taskforce Information
+            keys.indexOf("TaskForce"),      // TaskForce
+            keys.indexOf("EventID"),        // EventID
+            keys.indexOf("Over 44"),        // Over 44
+            keys.indexOf("EventDate"),      // EventDate
+            keys.indexOf("Event End Date"), // Event End Date
+            keys.indexOf("Vision_Win"),     // Vision_Win
+            keys.indexOf("PHA_Win"),        // PHA_Win
+            keys.indexOf("Hearing_WIN"),    // Hearing_WIN
+            keys.indexOf("Dental_Win"),     // Dental_Win
+            keys.indexOf("HIV_Win"),        // HIV_Win
+            keys.indexOf("Notes"),          // Notes
+
+            // Dental Information
+            keys.indexOf("Dental Due"),     // Dental Due
+            keys.indexOf("PANO Needed"),    // PANO Needed
+            keys.indexOf("Dental Needed"),  // Dental Needed
+            keys.indexOf("Dental Exam"),    // Dental Exam
+            keys.indexOf("BWX Needed"),     // BWX Needed
+            keys.indexOf("DRC"),            // DRC
+
+            // PHA Information
+            keys.indexOf("PHA Date"),       // PHA Date
+            keys.indexOf("PHA"),            // PHA
+            keys.indexOf("PULHES"),         // PULHES
+            keys.indexOf("PHA Due"),        // PHA Due
+
+            // Vision Information
+            keys.indexOf("Vision Date"),    // Vision Date
+            keys.indexOf("NEAR VISION"),    // NEAR VISION
+            keys.indexOf("Vision 2PG"),     // Vision 2PG
+            keys.indexOf("VISION"),         // VISION
+            keys.indexOf("VRC"),            // VRC
+            keys.indexOf("Vision 1MI"),     // Vision 1MI
+
+            // Hearing Information
+            keys.indexOf("Hearing Date"),   // Hearing Date
+            keys.indexOf("HEARING"),        // HEARING
+            keys.indexOf("HRC"),            // HRC
+            keys.indexOf("Hearing Profile"),// Hearing Profile
+
+            // Lab Information
+            keys.indexOf("Sickle Date"),    // Sickle Date
+            keys.indexOf("HIV NEXT TEST DATE"), // HIV NEXT TEST DATE
+            keys.indexOf("ABO"),            // ABO
+            keys.indexOf("SICKLE"),         // SICKLE
+            keys.indexOf("HIV"),            // HIV
+            keys.indexOf("ABO Needed"),     // ABO Needed
+            keys.indexOf("QUEST"),          // QUEST
+            keys.indexOf("Lab Needed"),     // Lab Needed
+            keys.indexOf("DNA"),            // DNA
+            keys.indexOf("G6PD"),           // G6PD
+            keys.indexOf("G6PD Date"),      // G6PD Date
+            keys.indexOf("G6PD Status"),    // G6PD Status
+            keys.indexOf("Lipid Needed"),   // Lipid Needed
+            keys.indexOf("Cholesterol / HDL Cholesterol"), // Cholesterol / HDL Cholesterol
+            keys.indexOf("EKG"),            // EKG
+            keys.indexOf("LIPID PANEL"),    // LIPID PANEL
+            keys.indexOf("Framingham"),     // Framingham
+            keys.indexOf("EKG NEEDED"),     // EKG NEEDED
+            keys.indexOf("hcg"),            // hcg
+            // Immunization information
+            keys.indexOf("IMM"),            // IMM
+            keys.indexOf("Hep B"),          // Hep B
+            keys.indexOf("FLU"),            // FLU
+            keys.indexOf("MMR"),            // MMR
+            keys.indexOf("Hep A"),          // Hep A
+            keys.indexOf("Tet/TDP"),        // Tet/TDP
+            keys.indexOf("Varicella")       // Varicella
+        ];
+
+
+
+
+
+        const categories = {
+            "Personal Information": [
+                "FULL NAME", "AGE", "UIC", "LAST 4", "SEX", "MRC", "DOD ID", "MOS", , "DOB", "RANK", "AGR", "OVER 40"
+            ],
+            "Taskforce Information": [
+                "TaskForce", "EventID", "Over 44", "EventDate", "Event End Date", "Vision_Win", "PHA_Win",
+                "Hearing_WIN", "Dental_Win", "HIV_Win" ,"Notes"
+            ],
+            "Dental Information": [
+                "Dental Due", "PANO Needed", "Dental Needed", "Dental Exam", "BWX Needed", "DRC"
+            ],
+            "PHA Information": [
+                "PHA Date", "PHA", "PULHES", "PHA Due"
+            ],
+            "Vision Information": [
+                "Vision Date", "NEAR VISION", "Vision 2PG", "VISION", "VRC", "Vision 1MI"
+            ],
+            "Hearing Information": [
+                "Hearing Date", "HEARING", "HRC", "Hearing Profile"
+            ],
+            "Lab Information": [
+                "Sickle Date", "HIV NEXT TEST DATE", "ABO", "SICKLE", "HIV", "ABO Needed", "QUEST", "Lab Needed", "DNA", "G6PD", "G6PD Date", "G6PD Status", "Lipid Needed", "Cholesterol / HDL Cholesterol"
+                , "EKG", "LIPID PANEL", "Framingham", "EKG NEEDED", "hcg"
+            ],
+            "Immunization Information": [
+                "IMM", "Hep B", "FLU", "MMR", "Hep A", "Tet/TDP", "Varicella"
+            ]
+        };
+
+
+
+        let currentRow;
+        let isAddingNewRow = false;
+
+        function editRow(button) {
+            debugger;
+            currentRow = $(button).closest('tr');  // Get the row clicked for editing
+            const rowData = {};
+
+            // Correct mapping: use tableToKeysIndexMap to map the table column index to the keys array
+            tableToKeysIndexMap.forEach((tableColIndex, keysIndex) => {
+                const key = keys[tableColIndex];  // Get the correct key from the keys array
+                rowData[key] = currentRow.find('td').eq(tableColIndex).text().trim() || '';  // Get the value from the correct table column
+            });
+
+            populateModal(rowData);  // Pass the mapped data to populateModal
+            $('#editModal').modal('show');  // Show the modal
+        }
+
+        const calendarIndexes = [13];
+        const dropdownIndexes = [8, 10, 12, 20, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 54, 55, 56, 57, 58, 59, 60];
+        // const readOnlyIndexes = [7, 14, 15, 16, 17, 18, 19, 22, 21, 43, 23, 25, 26, 31, 32, 35, 36, 40, 45, 48, 49, 51, 52, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,18,17,16,19,20,21,23,24,22,25,27,29,26,28,30,31,32,33,34,40,45,37,41,46,38,35,36,39,42,43,44,47,49,51,48,50,52,55,57,59,56,58,60,54];
+        const multilineTextbox = [62];
+
+        // Define specific dropdown options for certain fields
+        const dropdownOptionsMapping = {
+            "SEX": [
+                { value: "M", label: "M" },
+                { value: "F", label: "F" }
+            ],
+            "MRC": [
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3", label: "3" },
+                { value: "4", label: "4" }
+            ],
+            "AGR": [
+                { value: "N", label: "N" },
+                { value: "Y", label: "Y" }
+            ],
+            "DRC": [
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3", label: "3" },
+                { value: "4", label: "4" }
+            ],
+            "VRC": [
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3O", label: "3O" },
+                { value: "3V", label: "3V" }
+            ],
+            "Vision 2PG": [
+                { value: "N", label: "N" },
+                { value: "Y", label: "Y" },
+                { value: "NA", label: "NA" }
+            ],
+            "Vision 1MI": [
+                { value: "N", label: "N" },
+                { value: "Y", label: "Y" },
+                { value: "NA", label: "NA" }
+            ],
+            "Hearing Profile": [
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3", label: "3" },
+                { value: "4", label: "4" }
+            ],
+            "ABO": [
+                { value: "", label: "" },
+                { value: "A+", label: "A+" },
+                { value: "A-", label: "A-" },
+                { value: "B+", label: "B+" },
+                { value: "B-", label: "B-" },
+                { value: "AB+", label: "AB+" },
+                { value: "AB-", label: "AB-" },
+                { value: "O+", label: "O+" },
+                { value: "O-", label: "O-" }
+            ],
+            "hcg": [
+                { value: "", label: "" },
+                { value: "Needed", label: "Needed" },
+                { value: "N/A", label: "N/A" }
+            ]
+        };
+
+        const modalContent = $('#modalBodyContent');
+
+        function populateModal(data) {
+            modalContent.empty(); // Clear previous content
+
+            const fieldsPerRow = 5; // Set to 5 fields per row now
+
+            for (const [categoryName, categoryKeys] of Object.entries(categories)) {
+                modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+
+                let rowHtml = '<div class="row">';
+                let inputCount = 0;
+
+                categoryKeys.forEach((key, index) => {
+                    const value = data[key] || '';
+                    let inputHtml = '';
+                    let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
+                    let textColor = 'style="color: black;"'; // Set text color to black
+
+                    if (multilineTextbox.includes(keys.indexOf(key))) {
+                        inputHtml = `
+                            <div class="form-group col-lg-12">
+                                <label>${key}</label>
+                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
+                            </div>
+                        `;
+                    }
+                    else if (calendarIndexes.includes(keys.indexOf(key))) {
+                        let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                        inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                    </div>
+                                `;
+                    }
+                    // Dropdown field
+                    else if (dropdownIndexes.includes(keys.indexOf(key))) {
+                        const dropdownOptions = dropdownOptionsMapping[key] || [
+                            { value: "NEEDED", label: "NEEDED" },
+                            { value: "N/A", label: "N/A" }
+                        ];
+
+                        // Build dropdown options dynamically
+                        let optionsHtml = dropdownOptions.map(option =>
+                            `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                        ).join('');
+
+                        let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
+
+                        inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+
+                                            ${optionsHtml}
+                                        </select>
+                                    </div>
+                                `;
+                    }
+                    // Default text field
+                    else {
+                        inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
+                                    </div>
+                                `;
+                    }
+
+                    rowHtml += inputHtml;
+                    inputCount++;
+
+                    // If we have 5 fields, close the row and start a new one
+                    if (inputCount % fieldsPerRow === 0) {
+                        rowHtml += '</div><div class="row">';
+                    }
+                });
+
+                if (inputCount % fieldsPerRow !== 0) {
+                    const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+                    for (let i = 0; i < emptyDivsNeeded; i++) {
+                        rowHtml += '<div class="form-group col-lg-2"></div>';
+                    }
+                }
+
+                rowHtml += '</div>';
+                modalContent.append(rowHtml);
+
+                // Attach input validation listeners to all text fields
+                modalContent.find('input[type="text"]').on('input', function () {
+                    const value = $(this).val();
+                    validateInput(this, value);
+                });
+            }
+
+            // After modal is populated, bind the event listener to the DOB field
+            const dobField = modalContent.find('input[name="DOB"]');
+            if (dobField.length > 0) {
+                dobField.on('change', function () {
+                    const dobValue = $(this).val();
+                    if (dobValue) {
+                        const age = calculateAge(dobValue); // Calculate age based on DOB
+                        updateFieldsBasedOnAge(age); // Update other fields based on the age
+                    }
+                });
+            }
+
+            //****************************************************This can be needed in future*************************************************/
+            // const aboField = modalContent.find('select[name="ABO"]');
+            // const aboNeededField = modalContent.find('select[name="ABO Needed"]');
+
+            // debugger;
+            // if (aboField.length > 0 && aboNeededField.length > 0) {
+            //     aboField.on('change', function () {
+            //         debugger;
+            //         const aboValue = $(this).val();
+            //         if (aboValue === "") { // If "ABO" is blank
+            //             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
+            //         } else {
+            //             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
+            //         }
+            //     });
+            // }
+
+            // const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
+            // const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+
+            // fieldsToCheckQuest.forEach(field => {
+            //     const inputField = modalContent.find(`select[name="${field}"]`);
+            //     if (inputField.length > 0) {
+            //         inputField.on('change', checkQuestField);
+            //     }
+            // });
+
+            // fieldsToCheckLab.forEach(field => {
+            //     const inputField = modalContent.find(`select[name="${field}"]`);
+            //     if (inputField.length > 0) {
+            //         inputField.on('change', checkLabNeededField);
+            //     }
+            // });
+        }
+
+        //****************************************************This can be needed in future*************************************************/
+        // function checkQuestField() 
+        // {
+        //     debugger;
+        //     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
+        //     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
+        //     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
+        //     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
+
+        //     const questField = modalContent.find('input[name="QUEST"]');
+            
+        //     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED") {
+        //         questField.val("NEEDED");
+        //     }
+
+        //     if (aboNeededValue !== "NEEDED" && g6pdValue !== "NEEDED" && sickleValue !== "NEEDED" && lipidNeededValue !== "NEEDED") {
+        //         questField.val("N/A");
+        //     }
+        // }
+
+        //****************************************************This can be needed in future*************************************************/
+        // function checkLabNeededField() {
+        //     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
+        //     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
+        //     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
+        //     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
+        //     const hivValue = modalContent.find('select[name="HIV"]').val();
+        //     const dnaValue = modalContent.find('select[name="DNA"]').val();
+
+        //     const labNeededField = modalContent.find('input[name="Lab Needed"]');
+
+        //     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED" || hivValue === "NEEDED" || dnaValue === "NEEDED") {
+        //         labNeededField.val("NEEDED");
+        //     } else {
+        //         labNeededField.val("N/A");
+        //     }
+        // }
+
+        function calculateAge(dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            // Adjust age if the birth month hasn't occurred yet this year
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            return age;
+        }
+
+        function updateFieldsBasedOnAge(age) {
+
+            const ageField = document.querySelector('input[name="AGE"]');
+            if (ageField) {
+                ageField.value = age; // Set the value of the AGE field to the calculated age
+            }
+
+            // Update "OVER 40" field
+            const over40Field = document.querySelector('input[name="OVER 40"]');
+            if (over40Field) {
+                over40Field.value = age > 40 ? "YES" : "NO";
+            }
+
+            // Update "OVER 44" field
+            const over44Field = document.querySelector('input[name="Over 44"]');
+            if (over44Field) {
+                over44Field.value = age > 44 ? "YES" : "NO";
+            }
+
+            // Update fields based on age > 39.5
+            const lipidNeededField = document.querySelector('input[name="Lipid Needed"]');
+            const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
+            const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
+            const ekgField = document.querySelector('input[name="EKG"]');
+            const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
+
+            const valueForAge = age > 39.5 ? "NEEDED" : "N/A";
+
+            if (lipidNeededField) {
+                lipidNeededField.value = valueForAge;
+            }
+            if (lipidPanelField) {
+                lipidPanelField.value = valueForAge;
+            }
+            if (cholesterolField) {
+                cholesterolField.value = valueForAge;
+            }
+            if (ekgField) {
+                ekgField.value = valueForAge;
+            }
+            if (ekgNeededField) {
+                ekgNeededField.value = valueForAge;
+            }
+        }
+
+
+        const validationRules = {
+            "FULL NAME": { type: "alphanumeric", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FULL NAME
+            "LAST 4": { type: "numeric", maxLength: 4 },
+            "DOD ID": { type: "numeric", maxLength: 10 },
+            //"RANK": { type: "alphanumeric", uppercase: true, maxLength: 3 },
+            //"MOS": { type: "alphanumeric", uppercase: true },
+            //"UIC": { type: "alphanumeric", uppercase: true },
+            //"PULHES": { type: "numeric", maxLength: 5 },
+            //"HRC": { type: "alphanumeric", uppercase: true },
+            //"EventID": { type: "alphanumeric", uppercase: true },
+            //"G6PD Status": { type: "alphanumeric", uppercase: true }
+        };
+
+        function validateInput(field, value) {
+            const inputName = $(field).attr('name');
+            const rules = validationRules[inputName];
+
+            if (rules) {
+                if (rules.uppercase) {
+                    value = value.toUpperCase();
+                    $(field).val(value);
+                }
+
+                if (inputName === "FULL NAME" && rules.allowSpecialCharacters) {
+                    $(field).val(value);
+                }
+
+                if (rules.type === "alphanumeric" && inputName !== "FULL NAME") {
+                    if (!/^[A-Z0-9]*$/.test(value)) {
+                        $(field).val(value.replace(/[^A-Z0-9]/g, '')); // Remove non-alphanumeric characters
+                    }
+
+                    // Restrict to max length for alphanumeric fields
+                    if (rules.maxLength && value.length > rules.maxLength) {
+                        $(field).val(value.slice(0, rules.maxLength)); // Trim to max length
+                        return false;
+                    } else {
+                        $(field).removeClass('is-invalid');
+                    }
+                }
+
+                // Check for numeric fields (e.g., LAST 4, DOD ID, AGE, PULHES)
+                if (rules.type === "numeric") {
+                    // Allow only digits and restrict further input if max length is reached
+                    if (!/^\d*$/.test(value)) { // Allow only digits
+                        $(field).val(value.replace(/\D/g, '')); // Remove any non-digit characters
+                    }
+
+                    // Restrict input to max length for numeric fields
+                    if (rules.maxLength && value.length > rules.maxLength) {
+                        $(field).val(value.slice(0, rules.maxLength)); // Trim to max length
+                        return false;
+                    } else {
+                        $(field).removeClass('is-invalid');
+                    }
+                }
+            }
+
+            return true;
+        }
+
+
+
+
+
+
+        function saveChangesButton() {
+            debugger;
+            const modalInputs = $('#editModal').find('input, select, textarea');
+            const updatedData = {};
+
+            // const requiredFields = ['FULL NAME', 'UIC', 'LAST 4', 'DOD ID', 'MOS', 'RANK'];
+            const requiredFields = ['FULL NAME', 'LAST 4', 'DOD ID', 'DOB'];
+            let hasError = false;
+
+            // Clear any previous highlights
+            modalInputs.removeClass('highlight-error');
+
+            modalInputs.each(function () {
+                const key = $(this).attr('name');
+                const value = $(this).val() || '';
+
+                if (isDateField(key) && value) {
+                    updatedData[key] = formatDateToMMDDYYYY(value);
+                } else {
+                    updatedData[key] = value;
+                }
+
+                // Highlight required fields if they are empty
+                if (requiredFields.includes(key) && value.trim() === '') {
+                    $(this).removeClass('valid-class').addClass('highlight-error');
+                    hasError = true;
+                }
+            });
+
+            // If any required field is missing, do not proceed further
+            if (hasError) {
+                return;
+            }
+
+            let newRowData = new Array(73).fill('');
+            const last4Value = updatedData['LAST 4'];
+            const fullSSNIndex = keys.indexOf('FULL SSN'); // Find index of FULL SSN column
+
+            tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
+                if (keysIndex !== -1 && updatedData[keys[keysIndex]]) {
+                    newRowData[tableColIndex] = updatedData[keys[keysIndex]];
+                }
+            });
+
+            if (isAddingNewRow) {
+                smIdCounter++;
+                newRowData[0] = smIdCounter;
+            } else {
+                newRowData[0] = currentRow.find('td').eq(0).text();
+
+                if (fullSSNIndex !== -1 && last4Value) {
+                    // Get current FULL SSN
+                    const currentFullSSN = currentRow.find('td').eq(fullSSNIndex).text();
+
+                    // Replace the last 4 digits of FULL SSN with the new LAST 4 value
+                    const updatedFullSSN = currentFullSSN.slice(0, -4) + last4Value;
+                    newRowData[fullSSNIndex] = updatedFullSSN; // Update the FULL SSN in newRowData
+                }
+            }
+
+            let actionButtons = `
+                        <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                        <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
+                    `;
+            newRowData[72] = actionButtons;
+
+            if (isAddingNewRow) {
+                $('#previewTable').DataTable().row.add(newRowData).draw(false);
+            } else {
+                keys.forEach((key, index) => {
+                    if (updatedData[key]) {
+                        currentRow.find('td').eq(index).text(updatedData[key]);
+                    }
+                });
+
+                if (fullSSNIndex !== -1) {
+                    currentRow.find('td').eq(fullSSNIndex).text(newRowData[fullSSNIndex]);
+                }
+            }
+
+            isAddingNewRow = false;
+            AdjustWidth();
+            $('#editModal').modal('hide');
+        }
+
+
+        function isDateField(fieldName) {
+            const dateFields = ['DOB']; // Replace with actual date field names
+            return dateFields.includes(fieldName);
+        }
+
+
+
+        // function generateNewRowHtml(rowData) {
+        //     let newRowHtml = '<tr>'; // Start a new row
+
+        //     keys.forEach((key, index) => {
+        //         const value = rowData[key] || ''; // Get the value for each key
+        //         newRowHtml += `<td>${value}</td>`; // Add a new cell to the row with the value
+        //     });
+
+        //     newRowHtml += `
+        //         <td>
+        //             <button type="button" class="btn btn-primary" onclick="editRow(this)">Edit</button>
+        //         </td>
+        //     `; // Add an edit button at the end of the row
+
+        //     newRowHtml += '</tr>'; // Close the row
+
+        //     return newRowHtml;
+        // }
+
+
+
+
+        function formatDateToYYYYMMDD(dateString) {
+            const [month, day, year] = dateString.split('/');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+
+        function formatDateToMMDDYYYY(dateString) {
+            const [year, month, day] = dateString.split('-'); // Split the yyyy/mm/dd format
+            return `${month}/${day}/${year}`; // Return as mm/dd/yyyy
+        }
+
+        function isValidDate(dateString) {
+            debugger;
+            const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+            if (!dateRegex.test(dateString)) {
+                return false; // Invalid format
+            }
+
+            const [month, day, year] = dateString.split('/').map(Number); // Convert to numbers
+
+            const dateObj = new Date(year, month - 1, day); // Note: month is zero-based in JS Date
+
+            return dateObj &&
+                dateObj.getFullYear() === year &&
+                dateObj.getMonth() + 1 === month &&
+                dateObj.getDate() === day;
+        }
+
+
+        function AdjustWidth() {
+            setTimeout(function () {
+                $('#previewTable').DataTable().columns.adjust().draw();
+            }, 10);
+        }
+
+        document.getElementById('addRowButton').addEventListener('click', function () {
+            addRow();
+        });
+
+        function addRow() {
+            isAddingNewRow = true;
+            const emptyData = {};
+            populateModal(emptyData);
+            $('#editModal').modal('show');
+        }
+
+
+
+
+        function submitData() {
+            debugger;
+            $('#loader').removeClass('d-none');
+            // Get all data from the DataTable
+            let tableRows = [];
+            $('#previewTable tbody tr').each(function () {
+                let row = {
+                    SmId: parseInt($(this).find('td:eq(0)').text()),
+                    FullName: $(this).find('td:eq(1)').text(),
+                    Name: $(this).find('td:eq(2)').text(),
+                    FullSsn: $(this).find('td:eq(3)').text(),
+                    Last4: $(this).find('td:eq(4)').text(),
+                    DodId: $(this).find('td:eq(5)').text(),
+                    Rank: $(this).find('td:eq(6)').text(),
+                    Age: parseInt($(this).find('td:eq(7)').text()),
+                    Sex: $(this).find('td:eq(8)').text(),
+                    Mos: $(this).find('td:eq(9)').text(),
+                    Agr: $(this).find('td:eq(10)').text(),
+                    Uic: $(this).find('td:eq(11)').text(),
+                    Mrc: $(this).find('td:eq(12)').text(),
+                    Dob: $(this).find('td:eq(13)').text(),
+                    Over40: $(this).find('td:eq(14)').text(),
+                    DentalDue: $(this).find('td:eq(15)').text(),
+                    DentalExam: $(this).find('td:eq(16)').text(),
+                    DentalNeeded: $(this).find('td:eq(17)').text(),
+                    PanoNeeded: $(this).find('td:eq(18)').text(),
+                    BwxNeeded: $(this).find('td:eq(19)').text(),
+                    Drc: $(this).find('td:eq(20)').text(),
+                    PhaDate: $(this).find('td:eq(21)').text(),
+                    PhaDue: $(this).find('td:eq(22)').text(),
+                    Pha: $(this).find('td:eq(23)').text(),
+                    Pulhes: $(this).find('td:eq(24)').text(),
+                    VisionDate: $(this).find('td:eq(25)').text(),
+                    Vision: $(this).find('td:eq(26)').text(),
+                    NearVision: $(this).find('td:eq(27)').text(),
+                    Vrc: $(this).find('td:eq(28)').text(),
+                    Vision2pg: $(this).find('td:eq(29)').text(),
+                    Vision1mi: $(this).find('td:eq(30)').text(),
+                    HearingDate: $(this).find('td:eq(31)').text(),
+                    Hearing: $(this).find('td:eq(32)').text(),
+                    Hrc: $(this).find('td:eq(33)').text(),
+                    HearingProfile: $(this).find('td:eq(34)').text(),
+                    Quest: $(this).find('td:eq(35)').text(),
+                    LabNeeded: $(this).find('td:eq(36)').text(),
+                    Abo: $(this).find('td:eq(37)').text(),
+                    AboNeeded: $(this).find('td:eq(38)').text(),
+                    Dna: $(this).find('td:eq(39)').text(),
+                    SickleDate: $(this).find('td:eq(40)').text(),
+                    Sickle: $(this).find('td:eq(41)').text(),
+                    G6pd: $(this).find('td:eq(42)').text(),
+                    G6pdDate: $(this).find('td:eq(43)').text(),
+                    G6pdStatus: $(this).find('td:eq(44)').text(),
+                    HivNextTestDate: $(this).find('td:eq(45)').text(),
+                    Hiv: $(this).find('td:eq(46)').text(),
+                    LipidNeeded: $(this).find('td:eq(47)').text(),
+                    LipidPanel: $(this).find('td:eq(48)').text(),
+                    CholesterolHdlCholesterol: $(this).find('td:eq(49)').text(),
+                    Framingham: $(this).find('td:eq(50)').text(),
+                    Ekg: $(this).find('td:eq(51)').text(),
+                    EkgNeeded: $(this).find('td:eq(52)').text(),
+                    Hcg: $(this).find('td:eq(53)').text(),
+                    Imm: $(this).find('td:eq(54)').text(),
+                    HepB: $(this).find('td:eq(55)').text(),
+                    HepA: $(this).find('td:eq(56)').text(),
+                    Flu: $(this).find('td:eq(57)').text(),
+                    TetTdp: $(this).find('td:eq(58)').text(),
+                    Mmr: $(this).find('td:eq(59)').text(),
+                    Varicella: $(this).find('td:eq(60)').text(),
+                    TaskForce: $(this).find('td:eq(61)').text(),
+                    Notes: $(this).find('td:eq(62)').text(),
+                    Over44: $(this).find('td:eq(63)').text(),
+                    EventDate: $(this).find('td:eq(64)').text(),
+                    EventEndDate: $(this).find('td:eq(65)').text(),
+                    EventId: $(this).find('td:eq(66)').text(),
+                    VisionWin: parseInt($(this).find('td:eq(67)').text()),    // Convert to integer
+                    DentalWin: parseInt($(this).find('td:eq(68)').text()),    // Convert to integer
+                    PhaWin: parseInt($(this).find('td:eq(69)').text()),        // Convert to integer
+                    HivWin: parseInt($(this).find('td:eq(70)').text()),        // Convert to integer
+                    HearingWin: parseInt($(this).find('td:eq(71)').text()),
+                    isDeleted: false
+                };
+
+                tableRows.push(row);
+            });
+
+            const eventId = document.getElementById('eventId').value;
+
+            // First, check if data exists for the given eventId
+            $.ajax({
+                url: '@Url.Action("CheckForExistingDataAgainstEventId", "Home")',
+                type: 'POST',
+                data: JSON.stringify(eventId),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        // If no data exists, proceed to insert
+                        debugger;
+                        submitDataToDatabase(tableRows, eventId);
+                    } else {
+                        // Ask user if they want to overwrite
+                        if (confirm('Data already exists for this Event ID. Do you want to proceed and overwrite it?')) {
+                            // User wants to proceed, call the insert function
+                            submitDataToDatabase(tableRows, eventId);
+                        } else {
+                            alert("No changes were made.");
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + error);
+                },
+                complete: function () {
+                    $('#loader').addClass('d-none');
+                }
+            });
+        }
+
+        function submitDataToDatabase(tableRows, eventId) {
+            const dataToSend = JSON.stringify({
+                Entities: tableRows,
+                EventId: eventId
+            });
+            console.log(dataToSend);
+            $.ajax({
+                url: '@Url.Action("SubmitDataInDatabase", "Home")',
+                type: 'POST',
+                data: dataToSend,
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    alert(response.message);
+                    clearPreview();
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + error);
+                },
+                complete: function () {
+                    $('#loader').addClass('d-none');
+                }
+            });
+        }
+
+        function getMergedData() {
+            let tableBody = document.querySelector('#previewTable tbody');
+            let rows = tableBody.querySelectorAll('tr');
+            let data = [];
+            rows.forEach(row => {
+                let cells = row.querySelectorAll('td');
+                let rowData = {};
+                cells.forEach((cell, index) => {
+                    rowData[`Column${index + 1}`] = cell.textContent;
+                });
+                data.push(rowData);
+            });
+            return data;
+        }
+    </script>
+</div>
+<style>
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 1000;
+    }
+
+    body {
+        background-color: rgba(80,90,201,0.1);
+    }
+
+    .form-control, .btn {
+        background-color: rgba(80,90,201,1); /* Theme color */
+        border-color: rgba(80,90,201,1);
+        color: white;
+    }
+
+    select.form-control, .event-input {
+        background-color: #fff;
+        border-color: #ced4da;
+        color: black;
+    }
+
+    .custom-select {
+        padding: 0.5em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        appearance: none; /* Remove default arrow */
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><polygon points="0,4 8,12 16,4" style="fill:%23666;" /></svg>') no-repeat right 0.5em center; /* Custom arrow */
+        background-size: 1em;
+        width: 150px;
+    }
+
+    .custom-datetime {
+        padding: 0.5em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+
+    .custom-modal {
+        max-width: 800px;
+    }
+
+    .form-group {
+        max-width: 400px;
+        margin: 10px auto;
+    }
+
+    .modal-dialog {
+        max-width: 90%;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .highlight-error {
+        border: 2px solid red;
+        background-color: #ffe6e6; /* Light red background */
+    }
+
+    #parentContainer {
+        display: flex;
+        flex-direction: column; /* Stacks children vertically */
+    }
+
+    #taskforceInfoContainer,
+    #fileValidationErrorContainer {
+        width: 100%; /* Makes sure both containers take the full width */
+        clear: both; /* Clears any floated elements */
+    }
+
+    #editModal .form-control {
+        background-color: rgba(173, 182, 231, 1); /* Light blue */
+        border-color: rgba(80,90,201,1);
+        color: black;
+    }
+
+    #editModal select.form-control {
+        background-color: rgba(173, 182, 231, 1); /* Light blue for dropdowns as well */
+        border-color: rgba(80,90,201,1);
+        color: black;
+    }
+
+    /* Button within modal */
+    #editModal .btn {
+        background-color: rgba(80,90,201,1); /* Light blue for modal buttons */
+        border-color: rgba(80,90,201,1);
+        color: black;
+    }
+
+    #editModal .highlight-error {
+        border: 2px solid red !important;
+        background-color: #ffe6e6 !important; /* Light red background */
+    }
+</style>
+

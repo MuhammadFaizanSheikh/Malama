@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        /* Custom styling for sidebar */
+        body {
+            font-family: Arial, sans-serif; /* Or any other font you prefer */
+        }
+
+        h1, h2, h3 {
+            font-family: inherit; /* Or any specific font you prefer */
+            font-weight: normal; /* Ensure consistency across pages */
+        }
+        #sidebar {
+            width: 250px; /* Fixed width for the sidebar */
+            position: fixed; /* Keep the sidebar fixed */
+            top: 0;
+            left: 0;
+            height: 100vh; /* Full height of the viewport */
+            background-color: #1c1f26; /* Dark background */
+            padding-top: 20px;
+            color: #fff;
+            z-index: 1000;
+        }
+
+            #sidebar .sidebar-header {
+                background-color: rgba(80, 90, 201, 1); /* Header color */
+                padding: 15px; /* Keep padding */
+                font-size: 20px; /* Larger header font size */
+                font-weight: bold;
+                text-align: center;
+                margin: 0; /* Remove margin to eliminate space above */
+            }
+
+            #sidebar ul {
+                list-style-type: none; /* Remove bullets from the menu items */
+                padding-left: 0; /* Remove default padding */
+            }
+
+            #sidebar .nav-item {
+                margin-bottom: 10px; /* Add space between menu items */
+            }
+
+            #sidebar .nav-link {
+                color: #cfd8dc !important; /* Light gray color */
+                font-size: 18px !important; /* Font size */
+                padding: 15px 20px !important; /* Padding */
+                border-radius: 5px; /* Rounded corners */
+                display: block; /* Fill the space */
+                text-decoration: none; /* Remove underline */
+                font-family: inherit !important; /* Inherit font family to ensure consistency */
+                font-weight: normal !important; /* Ensure normal font weight for all links */
+                transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+            }
+
+                #sidebar .nav-link:hover {
+                    background-color: rgba(80, 90, 201, 1) !important; /* Background color for hover */
+                    color: #fff !important; /* Font color on hover */
+                }
+
+                #sidebar .nav-link.active {
+                    background-color: rgba(80, 90, 201, 1) !important; /* Active background */
+                    color: #fff !important; /* Active font color */
+                }
+
+                /* Ensure the active link styles are consistent */
+                #sidebar .nav-link:hover,
+                #sidebar .nav-link.active {
+                    font-family: inherit !important; /* Ensure font family remains the same */
+                    font-size: 18px !important; /* Keep the same font size */
+                    font-weight: normal !important; /* Keep font weight normal */
+                }
+
+        main {
+            margin-left: 250px; /* Offset the main content by sidebar width */
+            padding: 20px;
+            background-color: #f4f5f7;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            Menu
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="/Dashboard/Index">
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                    File Uploader
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2"></h1>
+        </div>
+        <div class="content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

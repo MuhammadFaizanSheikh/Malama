@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/bin/Debug/net6.0
+/obj
+/bin/Release/net6.0
+/Properties/PublishProfiles
+/.config
+*.user
+/bin/Debug/net8.0/ExcelFilesCompiler.dll
+/bin/Debug/net8.0/ExcelFilesCompiler.exe
+/bin/Debug/net8.0/ExcelFilesCompiler.pdb
+*.dll
+/bin/Debug/net8.0/ExcelFilesCompiler.deps.json
+/bin/Debug/net8.0/ExcelFilesCompiler.staticwebassets.runtime.json
