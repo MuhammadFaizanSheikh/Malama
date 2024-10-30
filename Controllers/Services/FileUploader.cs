@@ -59,15 +59,19 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId)
         {
-            // Check if data exists
+            bool isRecordUpdate = false;
+
             var dataAgainstEventId = fileUploaderRepository.FindByEventId(eventId);
 
             if (dataAgainstEventId != null && dataAgainstEventId.Any())
             {
+                isRecordUpdate = true;
+
                 foreach (var item in dataAgainstEventId)
                 {
                     item.isDeleted = true;
-                    //typeof(T).GetProperty("isDeleted")?.SetValue(item, true);
+                    item.UpdatedBy = 1;
+                    item.UpdatedOn = DateTime.Now;
                 }
 
                 fileUploaderRepository.UpdateRange(dataAgainstEventId);
@@ -149,7 +153,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 PhaWin = dto.PhaWin,
                 HivWin = dto.HivWin,
                 HearingWin = dto.HearingWin,
-                isDeleted = false
+                isDeleted = false,
+                AddedBy = 1,
+                AddedOn = DateTime.Now
             }).ToList();
 
             fileUploaderRepository.AddRange(Records);

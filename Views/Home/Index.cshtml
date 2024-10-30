@@ -190,7 +190,11 @@
     </div>
 
     <script>
+        
+        document.getElementById('clearPreview').addEventListener('click', clearPreview);
+
         function clearPreview() {
+            debugger;
             if ($.fn.DataTable.isDataTable('#previewTable')) {
                 $('#previewTable').DataTable().clear().destroy(); // Clear data and destroy the instance
             }
@@ -209,7 +213,6 @@
             smIdCounter = 0;
             uploadCounter = 0;
         }
-
 
         document.getElementById('generateExcelButton').addEventListener('click', function () {
             const table = document.getElementById('previewTable');
@@ -306,6 +309,8 @@
                     document.getElementById('fileInput').value = '';
                 });
         });
+
+        
 
         function displayUploadFileValidationErrors(errors, taskForceValue) {
             const errorContainer = document.getElementById('fileValidationErrorContainer');
@@ -1142,7 +1147,7 @@
                 $('#previewTable').DataTable().row.add(newRowData).draw(false);
             } else {
                 keys.forEach((key, index) => {
-                    if (updatedData[key]) {
+                    if (updatedData[key] !== undefined && updatedData[key] !== null) {
                         currentRow.find('td').eq(index).text(updatedData[key]);
                     }
                 });

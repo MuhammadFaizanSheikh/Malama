@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ExcelFilesCompiler.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExcelToCsv.Models
 {
-    public class FileDataDto
+    public class FileDataDto : GenericProperties
     {
         [Key]
         public long? Id { get; set; }

@@ -132,7 +132,9 @@ namespace ExcelFilesCompiler.Repositories.Services
         {
             try
             {
-                return _context.Set<T>().Where(e => EF.Property<string>(e, "EventId") == eventId).ToList();
+                return _context.Set<T>()
+                .Where(e => EF.Property<string>(e, "EventId") == eventId && EF.Property<bool>(e, "isDeleted") == false).ToList();
+
             }
             catch (Exception ex)
             {
