@@ -15,3 +15,7 @@
 *.dll
 /bin/Debug/net8.0/ExcelFilesCompiler.deps.json
 /bin/Debug/net8.0/ExcelFilesCompiler.staticwebassets.runtime.json
+/bin/Debug/net8.0/appsettings.Development.json
+/bin/Debug/net8.0/appsettings.Development.json
+/bin/Debug/net8.0/appsettings.json
+/bin/Debug/net8.0/ExcelFilesCompiler.runtimeconfig.json
