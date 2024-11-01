@@ -4,6 +4,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelToCsv.Models;
 using MathNet.Numerics.LinearAlgebra;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NPOI.SS.Formula.Functions;
@@ -23,9 +24,11 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IFileUploader fileUploader;
-        public HomeController(ILogger<HomeController> logger, IFileUploader _iFileUploader)
+        private readonly UserManager<IdentityUser> _userManager;
+        public HomeController(ILogger<HomeController> logger, IFileUploader _iFileUploader, UserManager<IdentityUser> userManager)
         {
             _logger = logger;
+            _userManager = userManager;
             this.fileUploader = _iFileUploader;
         }
 
@@ -99,7 +102,8 @@ namespace ExcelFilesCompiler.Controllers
             {
                 if (request != null && !string.IsNullOrEmpty(request.EventId) &&  request.Entities != null && request.Entities.Count > 0)
                 {
-                    var result = fileUploader.AddRecordsBulk(request.Entities, request.EventId);
+                    var user = _userManager.GetUserAsync(User).Result;
+                    var result = fileUploader.AddRecordsBulk(request.Entities, request.EventId, user.UserName);
                     
                     if (!result.Success)
                     {

@@ -2,9 +2,9 @@
 {
     public class GenericProperties
     {
-        public int AddedBy { get; set; }
+        public string? AddedBy { get; set; }
         public DateTime AddedOn { get; set; }
-        public int? UpdatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
         public DateTime? UpdatedOn { get; set; }
     }
 }

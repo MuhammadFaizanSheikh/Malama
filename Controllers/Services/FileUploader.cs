@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.Formula.Functions;
@@ -57,7 +58,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             };
         }
 
-        public ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId)
+        public ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId, string loggedinUserName)
         {
             bool isRecordUpdate = false;
 
@@ -70,14 +71,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 foreach (var item in dataAgainstEventId)
                 {
                     item.isDeleted = true;
-                    item.UpdatedBy = 1;
+                    item.UpdatedBy = loggedinUserName;
                     item.UpdatedOn = DateTime.Now;
                 }
 
                 fileUploaderRepository.UpdateRange(dataAgainstEventId);
                 fileUploaderRepository.Save();
             }
-
 
             var Records = data.Select(dto => new FileDataDto
             {
@@ -154,7 +154,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 HivWin = dto.HivWin,
                 HearingWin = dto.HearingWin,
                 isDeleted = false,
-                AddedBy = 1,
+                AddedBy = loggedinUserName,
                 AddedOn = DateTime.Now
             }).ToList();
 

@@ -96,10 +96,23 @@
                     Dashboard
                 </a>
             </li>
+            @if (User.IsInRole("Admin"))
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="AccountRegistration" asp-action="Register">Register User</a>
+                </li>
+            }
             <li class="nav-item">
                 <a class="nav-link" asp-controller="Home" asp-action="Index">
                     File Uploader
                 </a>
+            </li>
+            <li class="nav-item">
+                <form asp-action="Logout" asp-controller="Account" method="post" style="display:inline;">
+                    <button type="submit" class="nav-link" style="border: none; background: none; padding: 0;">
+                        <i></i> Logout
+                    </button>
+                </form>
             </li>
         </ul>
     </nav>
@@ -116,5 +129,7 @@
 
     <!-- Bootstrap JS (optional) -->
     <script src="~/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-yT/7My43t7gsv+FT6cD5SduB1C5GlM1DZhFT/43zBdvxZ2x1G3De0q4kb6b0bySVovh+9HpIrQDxjP9BxM1N4g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </body>
 </html>

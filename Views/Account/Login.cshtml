@@ -1,4 +1,4 @@
-﻿@model ExcelFilesCompiler.Models.LoginViewModel
+﻿@* @model ExcelFilesCompiler.Models.LoginViewModel
 @{
     ViewData["Title"] = "Login";
     Layout = null; // Remove layout if you want a standalone login page
@@ -74,4 +74,93 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 </body>
+</html> *@
+
+@model ExcelFilesCompiler.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null; // Remove layout if you want a standalone login page
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Your Application Name</title>
+
+    <!-- Bootstrap CSS (CDN) -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Custom styles for theme color -->
+    <style>
+        body {
+            background-color: rgba(80, 90, 201, 0.1); /* Light theme background */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0; /* Remove default margin */
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%; /* Responsive width */
+            max-width: 400px; /* Limit maximum width */
+        }
+
+        .btn-theme {
+            background-color: rgba(80, 90, 201, 1);
+            border-color: rgba(80, 90, 201, 1);
+            color: white;
+        }
+
+        .btn-theme:hover {
+            background-color: rgba(80, 90, 201, 0.8);
+            border-color: rgba(80, 90, 201, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2 class="text-center mb-4" style="color: rgba(80, 90, 201, 1);">Login</h2>
+
+        <form method="post" asp-action="Login">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="form-group">
+                <label asp-for="Email" class="font-weight-bold">Email</label>
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="font-weight-bold">Password</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
+            </div>
+            <button type="submit" class="btn btn-theme btn-block">Login</button>
+        </form>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+                <div class="alert alert-danger mt-3">
+                @ViewBag.ErrorMessage
+                </div>
+        }
+    </div>
+
+    <!-- Bootstrap JS and dependencies (CDN) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
 </html>
+

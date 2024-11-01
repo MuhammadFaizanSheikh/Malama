@@ -1,16 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-
 namespace ExcelFilesCompiler.Models
 {
-    //public class LoginViewModel
-    //{
-    //    public string Username { get; set; }
-    //    public string Password { get; set; }
-    //}
-
-
-    public class LoginViewModel
+    public class RegisterViewModel
     {
         [Required]
         [EmailAddress]
@@ -20,8 +12,8 @@ namespace ExcelFilesCompiler.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Display(Name = "Remember Me")]
-        public bool RememberMe { get; set; }
+        [Required]
+        public string Role { get; set; } // Admin or User
     }
 
 }

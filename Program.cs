@@ -1,64 +1,83 @@
-    using ExcelFilesCompiler;
-    using ExcelFilesCompiler.Controllers.Services;
-    using ExcelFilesCompiler.Interfaces;
-    using ExcelFilesCompiler.Repositories.Interfaces;
-    using ExcelFilesCompiler.Repositories.Services;
-    using Microsoft.EntityFrameworkCore;
-    using System.Configuration;
+using ExcelFilesCompiler;
+using ExcelFilesCompiler.Controllers.Services;
+using ExcelFilesCompiler.Interfaces;
+using ExcelFilesCompiler.Models;
+using ExcelFilesCompiler.Repositories.Interfaces;
+using ExcelFilesCompiler.Repositories.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
-    var builder = WebApplication.CreateBuilder(args);
-    builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
-    builder.Services.AddControllersWithViews(); // Or AddMvc(), depending on your project
-    builder.Services.AddDistributedMemoryCache();
-    builder.Services.AddScoped(typeof(IFileUploaderRepository<>), typeof(FileUploaderRepository<>));
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped(typeof(IFileUploaderRepository<>), typeof(FileUploaderRepository<>));
 builder.Services.AddScoped<IFileUploader, FileUploader>();
-    builder.Services.AddSession(options =>
-    {
-        options.IdleTimeout = TimeSpan.FromMinutes(30); // Timeout period
-        options.Cookie.HttpOnly = true; // Prevent JavaScript access
-        options.Cookie.IsEssential = true; // Ensure cookie is always stored
-    });
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
-    builder.Services.AddCors(options =>
+// CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
     {
-        options.AddPolicy("AllowAllOrigins", builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
-    builder.Services.AddControllers();
+});
 
+// Entity Framework and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
+//builder.Services.Configure<AdminCredentials>(builder.Configuration.GetSection("AdminCredentials"));
 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
+// Authentication
+builder.Services.AddAuthentication()
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
-        app.UseCors("AllowAllOrigins");
-        app.UseRouting();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-        });
 
+// Migrate the database and seed data
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+    await SeedData.Initialize(services, builder);
 }
 
-app.UseExceptionHandler("/Home/Error");
-        app.UseHsts();
-        app.UseDeveloperExceptionPage();
-        app.UseHttpsRedirection();
-        app.UseStaticFiles();
-        app.UseRouting();
-        app.UseSession();
-        app.UseAuthorization();
-    //app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-        app.MapControllerRoute(
+// Configure middleware
+app.UseCors("AllowAllOrigins");
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseSession();
+app.UseAuthentication(); // Must be before UseAuthorization
+app.UseAuthorization();
+
+// Configure endpoints
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapControllerRoute(
         name: "default",
         pattern: "{controller=Account}/{action=Login}/{id?}");
-    app.Run();
+});
+
+app.Run();
