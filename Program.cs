@@ -5,6 +5,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 
@@ -15,6 +16,7 @@ builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped(typeof(IFileUploaderRepository<>), typeof(FileUploaderRepository<>));
 builder.Services.AddScoped<IFileUploader, FileUploader>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -41,6 +43,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+    options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+});
 
 // Authentication
 builder.Services.AddAuthentication()

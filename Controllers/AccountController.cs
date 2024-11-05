@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Controllers
@@ -45,11 +46,13 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -61,33 +64,61 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(model);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
 
-            // Attempt to sign in the user
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-            if (result.Succeeded)
-            {
+                //var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                return RedirectToAction("Index", "Dashboard");
+
+                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+                {
+                    if (user.TwoFactorEnabled)
+                    {
+                        var token = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+
+                        await _emailSender.SendEmailAsync(user.Email, "Your 2FA Code", $"Your verification code is: {token}");
+
+                        // Store userId in TempData to use in the verification step
+                        TempData["UserIdFor2FA"] = user.Id;
+                        return RedirectToAction("Verify2FA");
+                    }
+
+                    // Standard sign-in without 2FA
+                    await _signInManager.SignInAsync(user, isPersistent: model.RememberMe);
+                    return RedirectToAction("Index", "Dashboard");
+                }
+
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
-            else if (result.IsLockedOut)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
-            }
-            else if (result.IsNotAllowed)
-            {
-                ModelState.AddModelError(string.Empty, "You are not allowed to login at this time.");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid username or password.");
+                ModelState.AddModelError(string.Empty, "Something went wrong.");
             }
 
             return View(model);
+            //if (result.Succeeded)
+            //{
+            //    var user = await _userManager.FindByEmailAsync(model.Email);
+            //    return RedirectToAction("Index", "Dashboard");
+            //}
+            //else if (result.IsLockedOut)
+            //{
+            //    ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
+            //}
+            //else if (result.IsNotAllowed)
+            //{
+            //    ModelState.AddModelError(string.Empty, "You are not allowed to login at this time.");
+            //}
+            //else
+            //{
+            //    ModelState.AddModelError(string.Empty, "Invalid username or password.");
+            //}
+
+            //return View(model);
         }
 
         [HttpPost]

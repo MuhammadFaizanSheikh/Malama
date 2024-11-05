@@ -31,7 +31,8 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    IsActive = true // Set user as active
+                    IsActive = true,
+                    TwoFactorEnabled = true
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

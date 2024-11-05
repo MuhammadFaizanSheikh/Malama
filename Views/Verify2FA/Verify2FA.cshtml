@@ -1,0 +1,10 @@
+﻿@model ExcelFilesCompiler.Models.Verify2FAViewModel
+
+<h2>Two-Factor Authentication</h2>
+<form asp-action="Verify2FA" method="post">
+    <div>
+        <label>Enter the verification code sent to your email</label>
+        <input asp-for="Code" />
+    </div>
+    <button type="submit">Verify</button>
+</form>
