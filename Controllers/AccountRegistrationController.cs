@@ -2,15 +2,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExcelFilesCompiler.Controllers
 {
     [Authorize(Roles = "Admin")] // Only admins can access this controller
     public class AccountRegistrationController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AccountRegistrationController(UserManager<IdentityUser> userManager)
+        public AccountRegistrationController(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
         }
@@ -26,7 +27,13 @@ namespace ExcelFilesCompiler.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    IsActive = true // Set user as active
+                };
+
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
@@ -44,5 +51,52 @@ namespace ExcelFilesCompiler.Controllers
             }
             return View(model);
         }
+
+        [HttpGet]
+        public IActionResult GetUsers()
+        {
+            var users = _userManager.Users
+        .Where(u => u.IsActive) // Assuming you have an IsActive property
+        .Select(u => new { id = u.Id, email = u.Email })
+        .ToList();
+
+            var userss = _userManager.Users
+        .Where(u => u.IsActive) // Assuming you have an IsActive property
+        .ToList();
+
+            foreach (var user in userss)
+            {
+                var roles = _userManager.GetRolesAsync(user).Result;
+
+                //userList.Add(new UserWithRolesViewModel
+                //{
+                //    UserId = user.Id,
+                //    UserName = user.UserName,
+                //    Email = user.Email,
+                //    Roles = roles
+                //});
+            }
+
+            return Json(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeactivateUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsActive = false;
+                await _userManager.UpdateAsync(user);
+                ViewBag.SuccessMessage = "User has been deactivated successfully";
+                ModelState.Clear(); // Clear form data after successful registration
+                return View();
+                //return Json(new { message = "User deactivated successfully." });
+            }
+            
+            ModelState.AddModelError(string.Empty, "User not found!");
+            return View();
+        }
+
     }
 }

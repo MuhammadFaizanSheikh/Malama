@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace ExcelFilesCompiler.Models
 {
-    public class RegisterViewModel
+    public class RegisterViewModel : IdentityUser
     {
         [Required]
         [EmailAddress]
@@ -14,6 +15,10 @@ namespace ExcelFilesCompiler.Models
 
         [Required]
         public string Role { get; set; } // Admin or User
+        public bool IsActive { get; set; }
     }
-
+    public class ApplicationUser : IdentityUser
+    {
+        public bool IsActive { get; set; } = true; // Default to active
+    }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ExcelFilesCompiler.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ExcelFilesCompiler
 {
@@ -7,7 +8,7 @@ namespace ExcelFilesCompiler
         public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             // Ensure roles exist
             string[] roles = { "Admin", "User" };
@@ -24,7 +25,7 @@ namespace ExcelFilesCompiler
 
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
-                var adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+                var adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail };
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
 
                 if (result.Succeeded)

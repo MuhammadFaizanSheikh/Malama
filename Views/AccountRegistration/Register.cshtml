@@ -15,12 +15,10 @@
     <!-- Bootstrap CSS (CDN) -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
-    <!-- Custom styles for theme color -->
     <style>
         body {
-            background-color: rgba(80, 90, 201, 0.1); /* Light theme background */
+            background-color: rgba(80, 90, 201, 0.1);
             height: 100vh;
-            /* display: flex; */
             align-items: center;
             justify-content: center;
             margin: 0;
@@ -34,8 +32,8 @@
 
         .form-container {
             width: 100%;
-            max-width: 600px; /* Set max width for form */
-            margin: 0 auto; /* Center the form */
+            max-width: 600px;
+            margin: 0 auto;
             padding: 0 15px;
         }
 
@@ -44,16 +42,16 @@
         }
 
         .form-control {
-            width: 100%; /* Full width controls */
-            padding: 10px; /* Add padding for a larger appearance */
+            width: 100%;
+            padding: 10px;
         }
 
         .btn-theme {
             background-color: rgba(80, 90, 201, 1);
             border-color: rgba(80, 90, 201, 1);
             color: white;
-            width: 100%; /* Full width button */
-            padding: 10px; /* Add padding to button */
+            width: 100%;
+            padding: 10px;
         }
 
             .btn-theme:hover {
@@ -61,10 +59,8 @@
                 border-color: rgba(80, 90, 201, 0.8);
             }
 
-        .form-control, select.form-control {
-            min-height: 40px; /* Adjust as needed */
-            padding: 10px 12px; /* Increase padding for better readability */
-            box-sizing: border-box;
+        #loadingIndicator {
+            display: none;
         }
     </style>
 </head>
@@ -73,34 +69,51 @@
     <div class="form-container">
         <h2>Register</h2>
 
-          @if (ViewBag.SuccessMessage != null)
-    {
-        <div class="alert alert-success">
-            @ViewBag.SuccessMessage
-        </div>
-    }
+        @if (ViewBag.SuccessMessage != null)
+        {
+            <div class="alert alert-success">
+                @ViewBag.SuccessMessage
+            </div>
+        }
 
-        <form method="post" asp-action="Register">
+        <form method="post" asp-action="Register" id="registrationForm">
             @Html.ValidationSummary(false, "", new { @class = "text-danger" })
-            <div class="form-group">
+
+            <div class="form-group" id="emailGroup">
                 <label asp-for="Email" class="font-weight-bold"></label>
-                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" required />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group" id="passwordGroup">
                 <label asp-for="Password" class="font-weight-bold"></label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group" id="roleGroup">
                 <label asp-for="Role" class="font-weight-bold">Role</label>
-                <select asp-for="Role" class="form-control">
+                <select asp-for="Role" class="form-control" required>
                     <option value="User">User</option>
                     <option value="Admin">Admin</option>
                 </select>
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
-            <button type="submit" class="btn btn-theme">Register</button>
+
+            <button type="submit" class="btn btn-theme" id="registerBtn">Register</button>
+
+            <div class="form-group">
+                <button type="button" id="findUserBtn" class="btn btn-secondary mt-2">
+                    <i class="fas fa-search"></i> Find User
+                </button>
+            </div>
+
+            <select id="userDropdown" class="form-control" style="display:none; margin-bottom: 10px;"></select>
+            <button id="deactivateUserBtn" class="btn btn-danger" style="display:none;">Deactivate User</button>
+
+            <div id="loadingIndicator" class="text-center mt-2">
+                <span>Loading...</span>
+            </div>
         </form>
 
         @if (ViewBag.ErrorMessage != null)
@@ -112,9 +125,62 @@
     </div>
 
     <!-- Bootstrap JS and dependencies (CDN) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#findUserBtn').click(function () {
+                // Hide registration controls including the Register button
+                $('.form-group:has(input), .form-group:has(select):not(#userDropdown), .btn-theme').hide();
+                $('#userDropdown, #deactivateUserBtn').hide(); // Hide the dropdown and deactivate button
+
+                $.ajax({
+                    url: '@Url.Action("GetUsers", "AccountRegistration")',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#userDropdown').empty().append('<option value="">Select a user</option>');
+                        $.each(data, function (index, user) {
+                            $('#userDropdown').append(`<option value="${user.id}">${user.email}</option>`);
+                        });
+                        $('#userDropdown').show();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching users:", error);
+                    }
+                });
+            });
+
+
+            $('#userDropdown').change(function () {
+                $('#deactivateUserBtn').show(); // Show deactivate button when a user is selected
+            });
+
+            $('#deactivateUserBtn').click(function () {
+                var userId = $('#userDropdown').val();
+                if (userId) {
+                    $.ajax({
+                        url: '@Url.Action("DeactivateUser", "AccountRegistration")',
+                        type: 'POST',
+                        data: { userId: userId },
+                        success: function (result) {
+                            alert(result.message);
+                            $('#userDropdown').hide();
+                            $('#deactivateUserBtn').hide();
+                            $('.form-group:has(input), .form-group:has(select):not(#userDropdown)').show(); // Show register controls again
+                        },
+                        error: function (xhr, status, error) {
+                            alert("Error deactivating user: " + error);
+                        }
+                    });
+                } else {
+                    alert("Please select a user to deactivate.");
+                }
+            });
+        });
+
+    </script>
 
 </body>
 </html>
