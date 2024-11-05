@@ -41,7 +41,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task SendEmailAsync(string email, string subject, string message)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("Muhammad", "muhamadfaizansheikh@gmail.com"));
+            emailMessage.From.Add(new MailboxAddress("Muhammad", "fdsffdfd@gmail.com"));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart("html") { Text = message };
@@ -50,7 +50,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true; // Disable SSL validation for testing (not recommended for production)
                 await client.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync("muhamadfaizansheikh@gmail.com", "Iloveyou123456");
+                await client.AuthenticateAsync("muhadfaizsdfdsfsans@gmail.com", "dfsdfsfs");
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
             }
