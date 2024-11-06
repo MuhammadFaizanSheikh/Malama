@@ -60,7 +60,15 @@ builder.Services.AddAuthentication()
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+//EmailSender sendEmail = new EmailSender();
+try
+{
+    sendEmail.SendEmailAsync("muhamadfaizansheikh@gmail.com", "subject", "123456");
+}
+catch (Exception ex)
+{ 
 
+}
 // Migrate the database and seed data
 using (var scope = app.Services.CreateScope())
 {
