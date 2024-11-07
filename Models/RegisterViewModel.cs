@@ -21,4 +21,12 @@ namespace ExcelFilesCompiler.Models
     {
         public bool IsActive { get; set; } = true; // Default to active
     }
+
+    public class UserUpdateDto
+    {
+        public string Id { get; set; }         // User's unique ID
+        public string Email { get; set; }      // User's email address
+        public string Password { get; set; }   // New password (if applicable)
+        public string Role { get; set; }       // Role (e.g., "User", "Admin")
+    }
 }

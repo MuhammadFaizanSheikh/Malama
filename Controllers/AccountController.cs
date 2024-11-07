@@ -80,6 +80,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
                 else if (result.RequiresTwoFactor)
                 {
+                    //return RedirectToAction("Index", "Dashboard");
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     if (user == null)
                     {

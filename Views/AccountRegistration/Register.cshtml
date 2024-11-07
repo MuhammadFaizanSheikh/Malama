@@ -1,7 +1,7 @@
 ﻿@model ExcelFilesCompiler.Models.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Register User";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
@@ -90,19 +90,19 @@
 
             <div class="form-group" id="emailGroup">
                 <label asp-for="Email" class="font-weight-bold"></label>
-                <input asp-for="Email" class="form-control" placeholder="Enter your email" required />
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="form-group" id="passwordGroup">
                 <label asp-for="Password" class="font-weight-bold"></label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" required />
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
             <div class="form-group" id="roleGroup">
                 <label asp-for="Role" class="font-weight-bold">Role</label>
-                <select asp-for="Role" class="form-control" required>
+                <select asp-for="Role" class="form-control">
                     <option value="User">User</option>
                     <option value="Admin">Admin</option>
                 </select>
@@ -118,12 +118,13 @@
             </div>
 
             <select id="userDropdown" class="form-control" style="display:none; margin-bottom: 10px;"></select>
-            <button id="deactivateUserBtn" class="btn btn-danger" style="display:none;">Deactivate User</button>
+            <button type="button" id="deactivateUserBtn" class="btn btn-danger" style="display:none;">Deactivate User</button>
 
             <div id="loadingIndicator" class="text-center mt-2">
                 <span>Loading...</span>
             </div>
         </form>
+
 
         @if (ViewBag.ErrorMessage != null)
         {
@@ -141,10 +142,7 @@
     <script>
         $(document).ready(function () {
             $('#findUserBtn').click(function () {
-                // Hide registration controls including the Register button
-                $('.form-group:has(input), .form-group:has(select):not(#userDropdown), .btn-theme').hide();
-                $('#userDropdown, #deactivateUserBtn').hide(); // Hide the dropdown and deactivate button
-
+                // Show user dropdown and fetch user details
                 $.ajax({
                     url: '@Url.Action("GetUsers", "AccountRegistration")',
                     type: 'GET',
@@ -161,9 +159,27 @@
                 });
             });
 
-
             $('#userDropdown').change(function () {
-                $('#deactivateUserBtn').show(); // Show deactivate button when a user is selected
+                var userId = $(this).val();
+                if (userId) {
+                    $.ajax({
+                        url: '@Url.Action("GetUserDetails", "AccountRegistration")',
+                        type: 'GET',
+                        data: { userId: userId },
+                        success: function (data) {
+                            $('#emailGroup input').val(data.email).prop('readonly', true);
+                            $('#passwordGroup input').val("********").prop('readonly', true); // Masked password
+                            $('#roleGroup select').val(data.role).prop('readonly', true);
+
+                            $('#deactivateUserBtn').show(); // Only show deactivate button
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching user details:", error);
+                        }
+                    });
+                } else {
+                    $('#deactivateUserBtn').hide();
+                }
             });
 
             $('#deactivateUserBtn').click(function () {
@@ -173,23 +189,31 @@
                         url: '@Url.Action("DeactivateUser", "AccountRegistration")',
                         type: 'POST',
                         data: { userId: userId },
-                        success: function (result) {
-                            alert(result.message);
+                        success: function () {
                             $('#userDropdown').hide();
                             $('#deactivateUserBtn').hide();
-                            $('.form-group:has(input), .form-group:has(select):not(#userDropdown)').show(); // Show register controls again
+                            $('#emailGroup input, #passwordGroup input, #roleGroup select').val("").prop('readonly', false);
+
+                            // Show the success message from the server-side ViewBag without reloading
+                            $('.alert-success').show().text("User has been deactivated successfully.");
+
+                            // Optionally, clear the dropdown and reset the form to avoid unintended selections
+                            $('#userDropdown').val("").hide();
+                            $('#emailGroup input').val("").prop('readonly', false);
+                            $('#passwordGroup input').val("").prop('readonly', false);
+                            $('#roleGroup select').val("User").prop('readonly', false);
                         },
                         error: function (xhr, status, error) {
                             alert("Error deactivating user: " + error);
                         }
                     });
-                } else {
-                    alert("Please select a user to deactivate.");
                 }
             });
         });
 
+
     </script>
+
 
 </body>
 </html>

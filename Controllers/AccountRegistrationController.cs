@@ -86,52 +86,79 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-
         [HttpGet]
         public IActionResult GetUsers()
         {
             var users = _userManager.Users
-        .Where(u => u.IsActive) // Assuming you have an IsActive property
+        .Where(u => u.IsActive)
         .Select(u => new { id = u.Id, email = u.Email })
         .ToList();
 
-            var userss = _userManager.Users
-        .Where(u => u.IsActive) // Assuming you have an IsActive property
-        .ToList();
-
-            foreach (var user in userss)
-            {
-                var roles = _userManager.GetRolesAsync(user).Result;
-
-                //userList.Add(new UserWithRolesViewModel
-                //{
-                //    UserId = user.Id,
-                //    UserName = user.UserName,
-                //    Email = user.Email,
-                //    Roles = roles
-                //});
-            }
-
             return Json(users);
+        }
+
+        public async Task<IActionResult> GetUserDetails(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            // Assuming password is hashed, don't send it directly to the client
+            var userDto = new { user.Email, Role = await _userManager.GetRolesAsync(user) };
+            return Json(userDto);
         }
 
         [HttpPost]
         public async Task<IActionResult> DeactivateUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
-            {
-                user.IsActive = false;
-                await _userManager.UpdateAsync(user);
-                ViewBag.SuccessMessage = "User has been deactivated successfully";
-                ModelState.Clear(); // Clear form data after successful registration
-                return View();
-                //return Json(new { message = "User deactivated successfully." });
-            }
-            
-            ModelState.AddModelError(string.Empty, "User not found!");
-            return View();
+            if (user == null) return NotFound();
+
+            user.IsActive = false; // Or whatever your deactivation logic is
+            await _userManager.UpdateAsync(user);
+            ViewBag.SuccessMessage = "User has been deactivated successfully.";
+            ModelState.Clear();
+            return View("Register");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUser(UserUpdateDto updatedUser)
+        {
+            var user = await _userManager.FindByIdAsync(updatedUser.Id);
+            if (user == null) return NotFound();
+
+            user.Email = updatedUser.Email;
+            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, updatedUser.Password); // Hash the password
+            await _userManager.UpdateAsync(user);
+
+            // Update role if necessary
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Contains(updatedUser.Role))
+            {
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+                await _userManager.AddToRoleAsync(user, updatedUser.Role);
+            }
+
+            return Json(new { message = "User updated successfully" });
+        }
+        
+
+        //[HttpPost]
+        //public async Task<IActionResult> DeactivateUser(string userId)
+        //{
+        //    var user = await _userManager.FindByIdAsync(userId);
+        //    if (user != null)
+        //    {
+        //        user.IsActive = false;
+        //        await _userManager.UpdateAsync(user);
+        //        ViewBag.SuccessMessage = "User has been deactivated successfully";
+        //        ModelState.Clear(); // Clear form data after successful registration
+        //        return View();
+        //        //return Json(new { message = "User deactivated successfully." });
+        //    }
+
+        //    ModelState.AddModelError(string.Empty, "User not found!");
+        //    return View();
+        //}
 
     }
 }
