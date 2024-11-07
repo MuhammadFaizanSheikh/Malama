@@ -38,16 +38,17 @@ builder.Services.AddCors(options =>
 // Entity Framework and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
-//builder.Services.Configure<AdminCredentials>(builder.Configuration.GetSection("AdminCredentials"));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+})
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.Configure<IdentityOptions>(options =>
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
-    options.SignIn.RequireConfirmedEmail = true;
-    options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+    options.TokenLifespan = TimeSpan.FromMinutes(5); // Set token lifespan
 });
 
 // Authentication
@@ -60,15 +61,7 @@ builder.Services.AddAuthentication()
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-//EmailSender sendEmail = new EmailSender();
-try
-{
-    sendEmail.SendEmailAsync("muhamadfaizansheikh@gmail.com", "subject", "123456");
-}
-catch (Exception ex)
-{ 
 
-}
 // Migrate the database and seed data
 using (var scope = app.Services.CreateScope())
 {

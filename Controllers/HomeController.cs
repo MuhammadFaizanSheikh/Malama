@@ -24,8 +24,8 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IFileUploader fileUploader;
-        private readonly UserManager<IdentityUser> _userManager;
-        public HomeController(ILogger<HomeController> logger, IFileUploader _iFileUploader, UserManager<IdentityUser> userManager)
+        private readonly UserManager<ApplicationUser> _userManager;
+        public HomeController(ILogger<HomeController> logger, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _userManager = userManager;

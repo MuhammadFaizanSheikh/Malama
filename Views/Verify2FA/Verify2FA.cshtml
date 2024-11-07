@@ -1,10 +1,78 @@
 ﻿@model ExcelFilesCompiler.Models.Verify2FAViewModel
 
-<h2>Two-Factor Authentication</h2>
-<form asp-action="Verify2FA" method="post">
-    <div>
-        <label>Enter the verification code sent to your email</label>
-        <input asp-for="Code" />
+@{
+    var themeColor = "rgba(80, 90, 201, 1)";  // Your custom theme color
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .theme-button {
+            background-color: @themeColor;
+            color: white;
+        }
+
+            .theme-button:hover {
+                background-color: darken(@themeColor, 10%);
+                color: white;
+            }
+
+        .theme-container {
+            background-color: rgba(240, 248, 255, 0.5); /* Light background for the form */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 theme-container">
+                <h2 class="text-center" style="color: @themeColor;">Two-Factor Authentication</h2>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+
+                <form asp-action="Verify2FA" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="Code">Enter the verification code sent to your email</label>
+                        <input asp-for="Code" class="form-control" id="Code" placeholder="Enter code" required />
+                    </div>
+                    <button type="submit" class="btn theme-button btn-block">Verify</button>
+                </form>
+            </div>
+        </div>
     </div>
-    <button type="submit">Verify</button>
-</form>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

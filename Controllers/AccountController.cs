@@ -71,55 +71,52 @@ namespace ExcelFilesCompiler.Controllers
                     return View(model);
                 }
 
-                //var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                // Attempt to sign in the user
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
-                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+                if (result.Succeeded)
                 {
-                    if (user.TwoFactorEnabled)
-                    {
-                        var token = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
-
-                        await _emailSender.SendEmailAsync(user.Email, "Your 2FA Code", $"Your verification code is: {token}");
-
-                        // Store userId in TempData to use in the verification step
-                        TempData["UserIdFor2FA"] = user.Id;
-                        return RedirectToAction("Verify2FA");
-                    }
-
-                    // Standard sign-in without 2FA
-                    await _signInManager.SignInAsync(user, isPersistent: model.RememberMe);
                     return RedirectToAction("Index", "Dashboard");
                 }
+                else if (result.RequiresTwoFactor)
+                {
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    if (user == null)
+                    {
+                        ModelState.AddModelError("", "User not found.");
+                        return View(model);
+                    }
 
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    var token = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        ModelState.AddModelError("", "Failed to generate 2FA token.");
+                        return View(model);
+                    }
+
+                    // Send the 2FA token via email
+                    await _emailSender.SendEmailAsync(user.Email, "Your 2FA Code", $"Your verification code is: {token}");
+
+                    return RedirectToAction("Verify2FA", "Verify2FA");
+                }
+                else if (result.IsLockedOut)
+                {
+                    ModelState.AddModelError("", "Account is locked.");
+                    return View(model);
+                }
+
+                // If the login attempt fails, show an invalid login message
+                ModelState.AddModelError("", "Invalid login attempt.");
+                return View(model);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Something went wrong.");
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again later.");
+
+                return View(model);
             }
-
-            return View(model);
-            //if (result.Succeeded)
-            //{
-            //    var user = await _userManager.FindByEmailAsync(model.Email);
-            //    return RedirectToAction("Index", "Dashboard");
-            //}
-            //else if (result.IsLockedOut)
-            //{
-            //    ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
-            //}
-            //else if (result.IsNotAllowed)
-            //{
-            //    ModelState.AddModelError(string.Empty, "You are not allowed to login at this time.");
-            //}
-            //else
-            //{
-            //    ModelState.AddModelError(string.Empty, "Invalid username or password.");
-            //}
-
-            //return View(model);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Logout()

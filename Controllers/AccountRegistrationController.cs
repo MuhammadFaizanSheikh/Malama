@@ -2,18 +2,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize(Roles = "Admin")] // Only admins can access this controller
+    [Authorize(Roles = "Admin")]
     public class AccountRegistrationController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountRegistrationController(UserManager<ApplicationUser> userManager)
+        public AccountRegistrationController(UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         [HttpGet]
@@ -25,33 +26,66 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var user = new ApplicationUser
+                if (ModelState.IsValid)
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    IsActive = true,
-                    TwoFactorEnabled = true
-                };
+                    var user = new ApplicationUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email,
+                        IsActive = true,
+                        TwoFactorEnabled = true
+                    };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                    var result = await _userManager.CreateAsync(user, model.Password);
 
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(user, model.Role); // Assign the role to the user
-                    ViewBag.SuccessMessage = "User has been created successfully";
-                    ModelState.Clear(); // Clear form data after successful registration
-                    return View();
+                    if (result.Succeeded)
+                    {
+                        if (!string.IsNullOrEmpty(model.Role))
+                        {
+                            var roleExists = await _roleManager.RoleExistsAsync(model.Role);
+                            if (roleExists)
+                            {
+                                await _userManager.AddToRoleAsync(user, model.Role);
+                            }
+                            else
+                            {
+                                ModelState.AddModelError(string.Empty, "Role does not exist.");
+                                return View(model);
+                            }
+                        }
+
+                        // Confirm the user's email by sending an email confirmation token
+                        var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+
+                        if (!confirmationResult.Succeeded)
+                        {
+                            ModelState.AddModelError("", "Email confirmation failed.");
+                            return View(model);
+                        }
+
+                        ViewBag.SuccessMessage = "User has been created successfully.";
+                        ModelState.Clear(); // Clear the form data after successful registration
+                        return View();
+                    }
+
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again later.");
+
+                return View(model);
+            }
         }
+
 
         [HttpGet]
         public IActionResult GetUsers()

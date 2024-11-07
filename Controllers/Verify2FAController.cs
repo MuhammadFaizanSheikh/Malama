@@ -27,23 +27,19 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var userId = TempData["UserIdFor2FA"]?.ToString();
-                if (userId == null)
-                {
-                    return RedirectToAction("Login");
-                }
-
-                var user = await _userManager.FindByIdAsync(userId);
+                // Retrieve the authenticated user for 2FA
+                var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
                 if (user == null)
                 {
-                    return RedirectToAction("Login");
+                    return RedirectToAction("Login", "Account");
                 }
 
+                // Verify the 2FA code
                 var result = await _signInManager.TwoFactorSignInAsync(TokenOptions.DefaultEmailProvider, code, isPersistent: false, rememberClient: false);
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Dashboard");
                 }
                 else
                 {
@@ -53,9 +49,11 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Something went wrong!");
+                ModelState.AddModelError("", "An unexpected error occurred during verification. Please try again later.");
+
                 return View();
             }
         }
+
     }
 }
