@@ -1,82 +1,4 @@
-﻿@* @model ExcelFilesCompiler.Models.LoginViewModel
-@{
-    ViewData["Title"] = "Login";
-    Layout = null; // Remove layout if you want a standalone login page
-}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - EVMS Malama</title>
-
-    <!-- Bootstrap CSS (CDN) -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Custom styles for theme color -->
-    <style>
-        body {
-            background-color: rgba(80, 90, 201, 0.1); /* Light theme background */
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-theme {
-            background-color: rgba(80, 90, 201, 1);
-            border-color: rgba(80, 90, 201, 1);
-            color: white;
-        }
-
-            .btn-theme:hover {
-                background-color: rgba(80, 90, 201, 0.8);
-                border-color: rgba(80, 90, 201, 0.8);
-            }
-    </style>
-</head>
-<body>
-
-    <div class="login-container col-md-4">
-        <h2 class="text-center mb-4" style="color: rgba(80, 90, 201, 1);">Login</h2>
-
-        <form method="post" asp-action="Login">
-            <div class="form-group">
-                <label asp-for="Username" class="font-weight-bold">Username</label>
-                <input asp-for="Username" class="form-control" placeholder="Enter your username" />
-            </div>
-            <div class="form-group">
-                <label asp-for="Password" class="font-weight-bold">Password</label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
-            </div>
-            <button type="submit" class="btn btn-theme btn-block">Login</button>
-        </form>
-
-        @if (ViewBag.ErrorMessage != null)
-        {
-            <div class="alert alert-danger mt-3">
-                @ViewBag.ErrorMessage
-            </div>
-        }
-    </div>
-
-    <!-- Bootstrap JS and dependencies (CDN) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-</body>
-</html> *@
-
-@model ExcelFilesCompiler.Models.LoginViewModel
+﻿@model ExcelFilesCompiler.Models.LoginViewModel
 
 @{
     ViewData["Title"] = "Login";
@@ -142,12 +64,27 @@
                 <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
+            @* <div class="form-group form-check">
                 <input asp-for="RememberMe" class="form-check-input" />
                 <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
-            </div>
+            </div> *@
+            
+
             <button type="submit" class="btn btn-theme btn-block">Login</button>
+
+            <div class="text-center mt-3">
+                <a href="javascript:void(0);" onclick="submitForgotPasswordForm()" style="color: rgba(80, 90, 201, 1);">Forgot Password?</a>
+            </div>
         </form>
+        <form id="forgotPasswordForm" method="post" asp-action="ForgotPassword">
+            <input type="hidden" name="Email" id="forgotPasswordEmail" />
+        </form>
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info mt-3">
+                @ViewBag.Message
+            </div>
+        }
 
         @if (ViewBag.ErrorMessage != null)
         {
@@ -163,4 +100,11 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+<script>
+    function submitForgotPasswordForm() {
+        // Set the hidden form's email to the one entered in the login email field
+        document.getElementById('forgotPasswordEmail').value = document.querySelector('input[name="Email"]').value;
+        document.getElementById('forgotPasswordForm').submit();
+    }
+</script>
 

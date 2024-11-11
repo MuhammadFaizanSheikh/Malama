@@ -7,6 +7,9 @@ using ExcelFilesCompiler.Repositories.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,11 +30,12 @@ builder.Services.AddSession(options =>
 // CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
+    options.AddPolicy("*", builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.SetIsOriginAllowed(origin => true) // Allow all origins dynamically
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials(); // Allow cookies and authentication
     });
 });
 
@@ -49,6 +53,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
     options.TokenLifespan = TimeSpan.FromMinutes(5); // Set token lifespan
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None; // Set to None for cross-origin
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // Authentication
@@ -72,10 +82,11 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure middleware
-app.UseCors("AllowAllOrigins");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("*"); // Apply CORS middleware globally   
 app.UseSession();
 app.UseAuthentication(); // Must be before UseAuthorization
 app.UseAuthorization();
