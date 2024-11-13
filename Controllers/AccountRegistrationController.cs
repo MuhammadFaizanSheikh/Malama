@@ -108,16 +108,37 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeactivateUser(string userId)
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return NotFound();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "User ID is required." });
+            }
 
-            user.IsActive = false; // Or whatever your deactivation logic is
-            await _userManager.UpdateAsync(user);
-            ViewBag.SuccessMessage = "User has been deactivated successfully.";
-            ModelState.Clear();
-            return View("Register");
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    return Json(new { success = true, message = "User has been deleted successfully." });
+                }
+                else
+                {
+                    var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                    return Json(new { success = false, message = "Failed to delete user. " + errors });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An unexpected error occurred while deleting the user." });
+            }
         }
 
         [HttpPost]

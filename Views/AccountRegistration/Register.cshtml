@@ -1,7 +1,7 @@
 ﻿@model ExcelFilesCompiler.Models.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Register User";
+    ViewData["Title"] = "Create User";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
@@ -76,7 +76,7 @@
 <body>
 
     <div class="form-container">
-        <h2>Register</h2>
+        <h2>Create User</h2>
 
         @if (ViewBag.SuccessMessage != null)
         {
@@ -118,7 +118,7 @@
             </div>
 
             <select id="userDropdown" class="form-control" style="display:none; margin-bottom: 10px;"></select>
-            <button type="button" id="deactivateUserBtn" class="btn btn-danger" style="display:none;">Deactivate User</button>
+            <button type="button" id="deleteUserBtn" class="btn btn-danger" style="display:none;">Delete User</button>
 
             <div id="loadingIndicator" class="text-center mt-2">
                 <span>Loading...</span>
@@ -169,42 +169,44 @@
                         success: function (data) {
                             $('#emailGroup input').val(data.email).prop('readonly', true);
                             $('#passwordGroup input').val("********").prop('readonly', true); // Masked password
-                            $('#roleGroup select').val(data.role).prop('readonly', true);
+                            // $('#roleGroup select').val(data.role).prop('readonly', true);
+                            $('#roleGroup select').val(data.role).prop('disabled', true);
 
-                            $('#deactivateUserBtn').show(); // Only show deactivate button
+                            $('#deleteUserBtn').show(); // Only show deactivate button
                         },
                         error: function (xhr, status, error) {
                             console.error("Error fetching user details:", error);
                         }
                     });
                 } else {
-                    $('#deactivateUserBtn').hide();
+                    $('#deleteUserBtn').hide();
                 }
             });
 
-            $('#deactivateUserBtn').click(function () {
+            $('#deleteUserBtn').click(function () {
                 var userId = $('#userDropdown').val();
                 if (userId) {
                     $.ajax({
-                        url: '@Url.Action("DeactivateUser", "AccountRegistration")',
+                        url: '@Url.Action("DeleteUser", "AccountRegistration")',
                         type: 'POST',
                         data: { userId: userId },
                         success: function () {
                             $('#userDropdown').hide();
-                            $('#deactivateUserBtn').hide();
+                            $('#deleteUserBtn').hide();
                             $('#emailGroup input, #passwordGroup input, #roleGroup select').val("").prop('readonly', false);
 
                             // Show the success message from the server-side ViewBag without reloading
-                            $('.alert-success').show().text("User has been deactivated successfully.");
+                            $('.alert-success').show().text("User has been deleted successfully.");
 
                             // Optionally, clear the dropdown and reset the form to avoid unintended selections
                             $('#userDropdown').val("").hide();
                             $('#emailGroup input').val("").prop('readonly', false);
                             $('#passwordGroup input').val("").prop('readonly', false);
-                            $('#roleGroup select').val("User").prop('readonly', false);
+                            $('#roleGroup select').val("User").prop('disabled', false);
                         },
                         error: function (xhr, status, error) {
-                            alert("Error deactivating user: " + error);
+                            
+                            $('.alert-danger').show().text(error);
                         }
                     });
                 }

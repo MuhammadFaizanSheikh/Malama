@@ -192,5 +192,53 @@ namespace ExcelFilesCompiler.Controllers
                 return View("ResetPassword", model);
             }
         }
+
+
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    ViewBag.ErrorMessage = "User not found.";
+                    return View(model);
+                }
+
+                var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (result.Succeeded)
+                {
+                    ViewBag.SuccessMessage = "Your password has been changed successfully.";
+                    return View();
+                }
+                else
+                {
+                    var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                    ViewBag.ErrorMessage = errors;
+                    return View(model);
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "An unexpected error occurred.";
+                return View(model);
+            }
+        }
+
+
+
     }
 }
