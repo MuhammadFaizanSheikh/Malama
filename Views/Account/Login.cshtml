@@ -52,16 +52,16 @@
     <div class="login-container">
         <h2 class="text-center mb-4" style="color: rgba(80, 90, 201, 1);">Login</h2>
 
-        <form method="post" asp-action="Login">
+        <form method="post" asp-action="Login" autocomplete="off">
             <div asp-validation-summary="All" class="text-danger mb-3"></div>
             <div class="form-group">
                 <label asp-for="Email" class="font-weight-bold">Email</label>
-                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="off" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Password" class="font-weight-bold">Password</label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" autocomplete="off" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             @* <div class="form-group form-check">

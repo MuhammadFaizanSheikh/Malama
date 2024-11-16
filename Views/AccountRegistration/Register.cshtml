@@ -85,20 +85,26 @@
             </div>
         }
 
-        <form method="post" asp-action="Register" id="registrationForm">
+        <form method="post" asp-action="Register" id="registrationForm" autocomplete="off">
             @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
             <div class="form-group" id="emailGroup">
                 <label asp-for="Email" class="font-weight-bold"></label>
-                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="off" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="form-group" id="passwordGroup">
                 <label asp-for="Password" class="font-weight-bold"></label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                <div class="input-group">
+                    <input asp-for="Password" type="text" class="form-control" placeholder="Enter your password" autocomplete="off" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
+                    </div>
+                </div>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
+
 
             <div class="form-group" id="roleGroup">
                 <label asp-for="Role" class="font-weight-bold">Role</label>
@@ -186,32 +192,62 @@
             $('#deleteUserBtn').click(function () {
                 var userId = $('#userDropdown').val();
                 if (userId) {
-                    $.ajax({
-                        url: '@Url.Action("DeleteUser", "AccountRegistration")',
-                        type: 'POST',
-                        data: { userId: userId },
-                        success: function () {
-                            $('#userDropdown').hide();
-                            $('#deleteUserBtn').hide();
-                            $('#emailGroup input, #passwordGroup input, #roleGroup select').val("").prop('readonly', false);
+                    if (confirm("Are you sure you want to delete this user?")) {
+                        $.ajax({
+                            url: '@Url.Action("DeleteUser", "AccountRegistration")',
+                            type: 'POST',
+                            data: { userId: userId },
+                            success: function (response) {
+                                if (response.success) {
+                                    // Update success message and show it
+                                    $('.alert-success').text(response.message).show();
 
-                            // Show the success message from the server-side ViewBag without reloading
-                            $('.alert-success').show().text("User has been deleted successfully.");
-
-                            // Optionally, clear the dropdown and reset the form to avoid unintended selections
-                            $('#userDropdown').val("").hide();
-                            $('#emailGroup input').val("").prop('readonly', false);
-                            $('#passwordGroup input').val("").prop('readonly', false);
-                            $('#roleGroup select').val("User").prop('disabled', false);
-                        },
-                        error: function (xhr, status, error) {
-                            
-                            $('.alert-danger').show().text(error);
-                        }
-                    });
+                                    // Clear and reset the form
+                                    $('#userDropdown').val("").hide();
+                                    $('#deleteUserBtn').hide();
+                                    $('#emailGroup input').val("").prop('readonly', false);
+                                    $('#passwordGroup input').val("").prop('readonly', false);
+                                    $('#roleGroup select').val("User").prop('disabled', false);
+                                } else {
+                                    // Update error message and show it
+                                    $('.alert-danger').text(response.message).show();
+                                }
+                            },
+                            error: function () {
+                                $('.alert-danger').text("An unexpected error occurred while processing your request.").show();
+                            }
+                        });
+                    }
                 }
             });
+
+
         });
+
+        document.getElementById("generatePasswordBtn").addEventListener("click", function () {
+    const passwordField = document.querySelector("#passwordGroup input");
+    const generatedPassword = generatePassword(12); // Generate a password of length 12
+    passwordField.value = generatedPassword;
+});
+
+function generatePassword(length) {
+    const lettersAndDigits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
+
+    const specialChar = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+    let password = specialChar;
+
+    for (let i = 1; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * lettersAndDigits.length);
+        password += lettersAndDigits[randomIndex];
+    }
+
+    password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+    return password;
+}
+
+
 
 
     </script>

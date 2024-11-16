@@ -108,7 +108,6 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             if (string.IsNullOrEmpty(userId))

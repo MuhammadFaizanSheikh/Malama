@@ -74,7 +74,10 @@ namespace ExcelToCsv.Models
         public string? EventDate { get; set; }
         public string? EventEndDate { get; set; }
         public string? EventId { get; set; }
-        public string? CheckInout { get; set; } = "No";
+        public string? CheckIn { get; set; }
+        public DateTime? CheckInDateTime { get; set; }
+        public string? CheckOut { get; set; }
+        public DateTime? CheckOutDateTime { get; set; }
         public int? VisionWin { get; set; }
         public int? DentalWin { get; set; }
         public int? PhaWin { get; set; }
