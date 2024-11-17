@@ -230,22 +230,52 @@
     passwordField.value = generatedPassword;
 });
 
-function generatePassword(length) {
-    const lettersAndDigits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
+// function generatePassword(length) {
+//     const lettersAndDigits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//     const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
 
-    const specialChar = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
-    let password = specialChar;
+//     const specialChar = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+//     let password = specialChar;
 
-    for (let i = 1; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * lettersAndDigits.length);
-        password += lettersAndDigits[randomIndex];
-    }
+//     for (let i = 1; i < length; i++) {
+//         const randomIndex = Math.floor(Math.random() * lettersAndDigits.length);
+//         password += lettersAndDigits[randomIndex];
+//     }
 
-    password = password.split('').sort(() => Math.random() - 0.5).join('');
+//     password = password.split('').sort(() => Math.random() - 0.5).join('');
 
-    return password;
-}
+//     return password;
+// }
+
+        function generatePassword(length) {
+            if (length < 3) {
+                throw new Error("Password length must be at least 3 to include all character types.");
+            }
+
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            const digits = "0123456789";
+            const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
+
+            // Step 1: Ensure at least one of each required character type
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const randomDigit = digits[Math.floor(Math.random() * digits.length)];
+            const randomSpecial = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+
+            let password = randomLetter + randomDigit + randomSpecial;
+
+            // Step 2: Fill the rest of the password
+            const allCharacters = letters + digits + specialCharacters;
+            for (let i = 3; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * allCharacters.length);
+                password += allCharacters[randomIndex];
+            }
+
+            // Step 3: Shuffle the password
+            password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+            return password;
+        }
+
 
 
 
