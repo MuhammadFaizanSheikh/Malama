@@ -45,11 +45,26 @@
             background-color: rgba(80, 90, 201, 0.8);
             border-color: rgba(80, 90, 201, 0.8);
         }
+
+        .logo-container {
+            margin-bottom: 40px;
+            margin-left: 30px;
+        }
+
+        .logo {
+            width: 250px;
+            height: auto;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="login-container">
+        <div class="logo-container">
+            <img src="/images/Mālama-Circular.png" alt="Malama Logo" class="logo">
+        </div>
+
         <h2 class="text-center mb-4" style="color: rgba(80, 90, 201, 1);">Login</h2>
 
         <form method="post" asp-action="Login" autocomplete="off">
