@@ -14,26 +14,21 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 
-<div class="container mt-5">
+<div class="container">
     <h1 class="text-center mb-4">@ViewData["Title"]</h1>
-
-    <!-- Section A and Section B Layout -->
+    <!-- Section A -->
+    @* <h3>Section A</h3> *@
     <div class="row">
-        <!-- Section A (Left side) -->
         <div class="col-md-6">
+            <!-- 11 form controls go here -->
             <div class="form-group">
                 <label asp-for="StaffID" class="form-label">Staff ID</label>
-                <input asp-for="StaffID" class="form-control" readonly />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="StartDate" class="form-label">Start Date</label>
-                <input asp-for="StartDate" type="date" class="form-control" required />
+                <input asp-for="StaffID" class="form-control" readonly  tabindex="1"/>
             </div>
 
             <div class="form-group">
                 <label asp-for="StaffStatus" class="form-label">Staff Status</label>
-                <select asp-for="StaffStatus" class="form-control" required>
+                <select asp-for="StaffStatus" class="form-control" required  tabindex="3">
                     <option value="Active">Active</option>
                     <option value="InProgress">In Progress</option>
                     <option value="RecruitCred">Recruit - Cred</option>
@@ -43,84 +38,108 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="StaffLastName" class="form-label">Staff Last Name</label>
-                <input asp-for="StaffLastName" class="form-control" required />
-            </div>
-
-            <div class="form-group">
                 <label asp-for="StaffFirstName" class="form-label">Staff First Name</label>
-                <input asp-for="StaffFirstName" class="form-control" required />
+                <input asp-for="StaffFirstName" class="form-control" required tabindex="5" />
             </div>
 
-            <div class="form-group">
-                <label asp-for="StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
-                <input asp-for="StaffMiddleInitial" class="form-control" />
-            </div>
+           
 
             <div class="form-group">
                 <label asp-for="StaffSSN" class="form-label">Staff SSN</label>
-                <input asp-for="StaffSSN" class="form-control" />
+                <input asp-for="StaffSSN" class="form-control" tabindex="7" />
             </div>
 
-            <div class="form-group">
-                <label asp-for="StaffDOB" class="form-label">Staff DOB</label>
-                <input asp-for="StaffDOB" type="date" class="form-control" required />
-            </div>
+
 
             <div class="form-group">
-                <label class="form-label">Staff Roles</label>
-                <select asp-for="StaffRoles" multiple class="form-control" required>
-                    <option value="ContractManager">Contract Manager</option>
-                    <option value="Physicians">Physicians</option>
-                    <option value="Optometrist">Optometrist</option>
-                    <option value="Audiologist">Audiologist</option>
-                    <option value="PhysicianAssistant">Physician Assistant</option>
-                    <option value="BehaviorHealthCounselor">Behavior Health Counselor</option>
-                    <option value="NursePractitioner">Nurse Practitioner</option>
-                    <option value="RegisteredNurse">Registered Nurse</option>
-                    <option value="MedicalAssistant">Medical Assistant</option>
-                    <option value="HearingTechnician">Hearing Technician</option>
-                    <option value="OptometryTechnician">Optometry Technician</option>
-                    <option value="Admins">Admins</option>
-                    <option value="Dentist">Dentist</option>
-                    <option value="DentalHygenist">Dental Hygienist</option>
-                    <option value="DentalAssistant">Dental Assistant</option>
-                    <option value="DentalXray">Dental Xray</option>
-                    <option value="ImmunizationPersonnel">Immunization Personnel</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Event On Call Staff</label>
-                <div class="form-check">
-                    <input asp-for="EventOnCallStaff" type="radio" value="true" class="form-check-input" />
-                    <label class="form-check-label">Yes</label>
+                <label for="StaffRoles" class="form-label">Select Staff Roles</label>
+                <div id="StaffRoles">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="contractManager" value="Contract Manager" tabindex="9">
+                        <label class="form-check-label" for="contractManager">Contract Manager</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="physicians" value="Physicians">
+                        <label class="form-check-label" for="physicians">Physicians</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="optometrist" value="Optometrist">
+                        <label class="form-check-label" for="optometrist">Optometrist</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="audiologist" value="Audiologist">
+                        <label class="form-check-label" for="audiologist">Audiologist</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="physicianAssistant" value="Physician Assistant">
+                        <label class="form-check-label" for="physicianAssistant">Physician Assistant</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="behaviorHealthCounselor" value="Behavior Health Counselor">
+                        <label class="form-check-label" for="behaviorHealthCounselor">Behavior Health Counselor</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="nursePractitioner" value="Nurse Practitioner">
+                        <label class="form-check-label" for="nursePractitioner">Nurse Practitioner</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="registeredNurse" value="Registered Nurse">
+                        <label class="form-check-label" for="registeredNurse">Registered Nurse</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="medicalAssistant" value="Medical Assistant">
+                        <label class="form-check-label" for="medicalAssistant">Medical Assistant</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="hearingTechnician" value="Hearing Technician">
+                        <label class="form-check-label" for="hearingTechnician">Hearing Technician</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="optometryTechnician" value="Optometry Technician">
+                        <label class="form-check-label" for="optometryTechnician">Optometry Technician</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="admins" value="Admins">
+                        <label class="form-check-label" for="admins">Admins</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentist" value="Dentist">
+                        <label class="form-check-label" for="dentist">Dentist</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalHygienist" value="Dental Hygienist">
+                        <label class="form-check-label" for="dentalHygienist">Dental Hygienist</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalAssistant" value="Dental Assistant">
+                        <label class="form-check-label" for="dentalAssistant">Dental Assistant</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalXray" value="Dental Xray">
+                        <label class="form-check-label" for="dentalXray">Dental Xray</label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" name="StaffRoles" id="immunizationPersonnel" value="Immunization Personnel">
+                        <label class="form-check-label" for="immunizationPersonnel">Immunization Personnel</label>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input asp-for="EventOnCallStaff" type="radio" value="false" class="form-check-input" />
-                    <label class="form-check-label">No</label>
-                </div>
             </div>
 
-            <div class="form-group" id="selectEventDiv" style="display:none;">
-                <label asp-for="SelectedEvent" class="form-label">Select Event</label>
-                <select asp-for="SelectedEvent" class="form-control" required>
-                    <!-- Event options go here -->
-                </select>
-            </div>
 
+
+            
             <h4 class="mt-4">States Licenses</h4>
             <div class="form-row">
                 <div class="col-md-3">
                     <div class="form-group">
                         <label class="form-label">License Number</label>
-                        <input asp-for="LicenseNumber" class="form-control" placeholder="License Number" required />
+                        <input asp-for="LicenseNumber" class="form-control" placeholder="License Number" required tabindex="17" />
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="LicenseStates" class="form-label">License State</label>
-                        <select asp-for="LicenseStates" class="form-control" required>
+                        <select asp-for="LicenseStates" class="form-control" required tabindex="18">
                             <option value="State1">State1</option>
                             <option value="State2">State2</option>
                             <!-- Add more states here -->
@@ -130,7 +149,7 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="LicenseTypes" class="form-label">License Type</label>
-                        <select asp-for="LicenseTypes" class="form-control" required>
+                        <select asp-for="LicenseTypes" class="form-control" required tabindex="19">
                             <option value="Type1">Type1</option>
                             <option value="Type2">Type2</option>
                             <!-- Add more types here -->
@@ -140,97 +159,31 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="LicenseExpiryDate" class="form-label">License Expiry</label>
-                        <input asp-for="LicenseExpiryDate" type="date" class="form-control" required />
+                        <input asp-for="LicenseExpiryDate" type="date" class="form-control" required tabindex="20" />
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label asp-for="NPI" class="form-label">NPI</label>
-                <input asp-for="NPI" class="form-control" />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="DAE" class="form-label">DAE</label>
-                <input asp-for="DAE" class="form-control" required />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
-                <input asp-for="CredentialingProcessDate" type="date" class="form-control" required />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
-                <input asp-for="HistoricalCredentialingDate" type="date" class="form-control" required />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
-                <input asp-for="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Onboarding/Training Complete</label>
-                <div class="form-check">
-                    <input asp-for="OnboardingTrainingComplete" type="radio" value="true" class="form-check-input" />
-                    <label class="form-check-label">Yes</label>
+            <div class="form-group row">
+                <label asp-for="BLSCertDate" class="col-form-label col-md-3">BLS Cert. Date</label>
+                <div class="col-md-4">
+                    <input asp-for="BLSCertDate" type="date" class="form-control" />
                 </div>
-                <div class="form-check">
-                    <input asp-for="OnboardingTrainingComplete" type="radio" value="false" class="form-check-input" />
-                    <label class="form-check-label">No</label>
+                <div class="col-md-5">
+                    <input asp-for="BLSCertNumber" class="form-control" placeholder="Cert Number" />
                 </div>
             </div>
 
-            <div class="form-group" id="outstandingTrainingsDiv" style="display:none;">
-                <label asp-for="OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-                <select asp-for="OutstandingTrainings" class="form-control" required>
-                    <option value="Training1">Training1</option>
-                    <option value="Training2">Training2</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
-                <textarea asp-for="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="BLSCertDate" class="form-label">BLS Cert. Date</label>
-                        <input asp-for="BLSCertDate" type="date" class="form-control" />
-                    </div>
+            <div class="form-group row">
+                <label asp-for="ACLSCertDate" class="col-form-label col-md-3">ACLS Cert. Date</label>
+                <div class="col-md-4">
+                    <input asp-for="ACLSCertDate" type="date" class="form-control" />
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="BLSCertNumber" class="form-label">BLS Cert. Number</label>
-                        <input asp-for="BLSCertNumber" class="form-control" />
-                    </div>
+                <div class="col-md-5">
+                    <input asp-for="ACLSCertNumber" class="form-control" placeholder="Cert Number" />
                 </div>
             </div>
 
-
-            <div class="form-row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="ACLSCertDate" class="form-label">ACLS Cert. Date</label>
-                        <input asp-for="ACLSCertDate" type="date" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="ACLSCertNumber" class="form-label">ACLS Cert. Number</label>
-                        <input asp-for="ACLSCertNumber" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Section B (Right side) -->
-        <div class="col-md-6">
-            <!-- CAC application process status -->
             <div class="form-group">
                 <label asp-for="CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
                 <select asp-for="CACApplicationProcessStatus" class="form-control" required>
@@ -254,12 +207,6 @@
                 </div>
             </div>
 
-            <!-- Staff DoD ID -->
-            <div class="form-group">
-                <label asp-for="StaffDoDID" class="form-label">Staff DoD ID</label>
-                <input asp-for="StaffDoDID" class="form-control" required />
-            </div>
-
             <!-- Employer/Subcontractor -->
             <div class="form-group">
                 <label asp-for="EmployerSubcontractor" class="form-label">Employer/Subcontractor</label>
@@ -269,22 +216,10 @@
                 </select>
             </div>
 
-            <!-- Staff Cell Number -->
-            <div class="form-group">
-                <label asp-for="StaffCellNumber" class="form-label">Staff Cell Number</label>
-                <input asp-for="StaffCellNumber" class="form-control" required />
-            </div>
-
             <!-- Staff Phone 2 -->
             <div class="form-group">
                 <label asp-for="StaffPhone2" class="form-label">Staff Phone 2</label>
                 <input asp-for="StaffPhone2" class="form-control" />
-            </div>
-
-            <!-- Staff Email -->
-            <div class="form-group">
-                <label asp-for="StaffEmail" class="form-label">Staff Email</label>
-                <input asp-for="StaffEmail" type="email" class="form-control" required />
             </div>
 
             <!-- Primary Residence -->
@@ -305,11 +240,127 @@
                 <label asp-for="PrimaryState" class="form-label">Staff State</label>
                 <input asp-for="PrimaryState" class="form-control" required />
             </div>
-            <div class="form-group">
+            <!-- Staff Zip -->
+            <div class="form-group mb-5">
                 <label asp-for="PrimaryZip" class="form-label">Staff Zip</label>
                 <input asp-for="PrimaryZip" class="form-control" required />
             </div>
 
+            <!-- Staff Contract Affiliation -->
+            <div class="form-group">
+                <label asp-for="StaffContractAffiliation" class="form-label">Staff Contract Affiliation</label>
+                <select asp-for="StaffContractAffiliation" class="form-control" required>
+                    <option value="Affiliation1">Affiliation1</option>
+                    <option value="Affiliation2">Affiliation2</option>
+                </select>
+            </div>
+
+
+            <!-- Travel Honor Reward Numbers -->
+            
+        </div>
+
+        <!-- Right Section -->
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="StartDate" class="form-label">Start Date</label>
+                <input asp-for="StartDate" type="date" class="form-control" required tabindex="2"/>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="StaffLastName" class="form-label">Staff Last Name</label>
+                <input asp-for="StaffLastName" class="form-control" required tabindex="4" />
+            </div>
+
+             <div class="form-group">
+                <label asp-for="StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
+                <input asp-for="StaffMiddleInitial" class="form-control" tabindex="6" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="StaffDOB" class="form-label">Staff DOB</label>
+                <input asp-for="StaffDOB" type="date" class="form-control" required tabindex="8" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Event On Call Staff</label>
+                <div class="form-check">
+                    <input asp-for="EventOnCallStaff" type="radio" value="true" class="form-check-input" tabindex="10" />
+                    <label class="form-check-label">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="EventOnCallStaff" type="radio" value="false" class="form-check-input" tabindex="11" />
+                    <label class="form-check-label">No</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NPI" class="form-label">NPI</label>
+                <input asp-for="NPI" class="form-control" tabindex="12" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DAE" class="form-label">DAE</label>
+                <input asp-for="DAE" class="form-control" required tabindex="13" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
+                <input asp-for="CredentialingProcessDate" type="date" class="form-control" required tabindex="14" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
+                <input asp-for="HistoricalCredentialingDate" type="date" class="form-control" required tabindex="15" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
+                <input asp-for="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required tabindex="16" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Onboarding/Training Complete</label>
+                <div class="form-check">
+                    <input asp-for="OnboardingTrainingComplete" type="radio" value="true" class="form-check-input" tabindex="21" />
+                    <label class="form-check-label">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="OnboardingTrainingComplete" type="radio" value="false" class="form-check-input" />
+                    <label class="form-check-label">No</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
+                <textarea asp-for="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
+            </div>
+
+            
+
+            
+
+            <!-- Staff DoD ID -->
+            <div class="form-group large-space-below1">
+                <label asp-for="StaffDoDID" class="form-label">Staff DoD ID</label>
+                <input asp-for="StaffDoDID" class="form-control" required />
+            </div>
+
+           
+            <!-- Staff Cell Number -->
+            <div class="form-group">
+                <label asp-for="StaffCellNumber" class="form-label">Staff Cell Number</label>
+                <input asp-for="StaffCellNumber" class="form-control" required />
+            </div>
+
+            
+
+            <!-- Staff Email -->
+            <div class="form-group">
+                <label asp-for="StaffEmail" class="form-label">Staff Email</label>
+                <input asp-for="StaffEmail" type="email" class="form-control" required />
+            </div>
+
+           
             <!-- Secondary Residence -->
             <h4 class="mt-4">Secondary Residence</h4>
             <div class="form-group">
@@ -328,95 +379,114 @@
                 <label asp-for="SecondaryState" class="form-label">Staff State</label>
                 <input asp-for="SecondaryState" class="form-control" required />
             </div>
-            <div class="form-group">
+            <div class="form-group mb-5">
                 <label asp-for="SecondaryZip" class="form-label">Staff Zip</label>
                 <input asp-for="SecondaryZip" class="form-control" required />
             </div>
-
-            <!-- Staff Contract Affiliation -->
-            <div class="form-group">
-                <label asp-for="StaffContractAffiliation" class="form-label">Staff Contract Affiliation</label>
-                <select asp-for="StaffContractAffiliation" class="form-control" required>
-                    <option value="Affiliation1">Affiliation1</option>
-                    <option value="Affiliation2">Affiliation2</option>
-                </select>
-            </div>
-
+            
             <!-- Staff info entered by (readonly) -->
             <div class="form-group">
                 <label class="form-label">Staff info entered by</label>
                 <input asp-for="StaffInfoEnteredBy" class="form-control" readonly />
             </div>
 
-            <!-- Travel honor reward numbers -->
-            <h4 class="mt-4">Travel Honor Reward Numbers</h4>
-            <div class="form-check form-check-inline">
-                <input asp-for="TravelHonorAir" type="radio" value="Air" class="form-check-input" />
-                <label class="form-check-label">Air</label>
-            </div>
-            <div class="form-row align-items-center">
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="AirlineName" class="form-label">Airline Name</label>
-                        <input asp-for="AirlineName" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="AirlineRewards" class="form-label">Airline Rewards</label>
-                        <input asp-for="AirlineRewards" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="form-check form-check-inline">
-                <input asp-for="TravelHonorCar" type="radio" value="Car" class="form-check-input" />
-                <label class="form-check-label">Car</label>
-            </div>
-            <div class="form-row align-items-center">
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="CarRentalCompany" class="form-label">Rental Company Name</label>
-                        <input asp-for="CarRentalCompany" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="CarRentalRewards" class="form-label">Rental Company Rewards</label>
-                        <input asp-for="CarRentalRewards" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="form-check form-check-inline">
-                <input asp-for="TravelHonorHotel" type="radio" value="Hotel" class="form-check-input" />
-                <label class="form-check-label">Hotel</label>
-            </div>
-            <div class="form-row align-items-center">
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="HotelName" class="form-label">Hotel Name</label>
-                        <input asp-for="HotelName" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <div class="form-group">
-                        <label asp-for="HotelRewards" class="form-label">Hotel Rewards</label>
-                        <input asp-for="HotelRewards" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
+            
         </div>
     </div>
 
-    <!-- Submit Button -->
-    <div class="text-center mt-4">
-        <button type="submit" class="btn btn-primary">Save</button>
+    <h4 class="mt-4">Travel Honor Reward Numbers</h4>
+
+    <div class="row align-items-center">
+        <!-- Radio Button -->
+        <div class="col-auto">
+            <div class="form-check">
+                <input class="form-check-input" asp-for="TravelHonorAir" type="radio" id="airRadio" name="transportMode" value="Air">
+                <label class="form-check-label" for="airRadio">
+                    Air
+                </label>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <label for="airline" class="col-form-label">Airline Name</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="AirlineName"  class="form-control" id="airline" name="airline">
+        </div>
+
+        <div class="col-auto">
+            <label for="reward" class="col-form-label">Rewards</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="AirlineRewards" class="form-control" id="reward" name="reward">
+        </div>
     </div>
+    <div class="row align-items-center">
+        <!-- Radio Button -->
+        <div class="col-auto">
+            <div class="form-check">
+                <input class="form-check-input" asp-for="TravelHonorCar" type="radio" id="carRadio" name="transportMode" value="Car">
+                <label class="form-check-label" for="carRadio">
+                    Car
+                </label>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <label for="car" class="col-form-label">Rental Company Name</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="CarRentalCompany" class="form-control" id="car" name="car">
+        </div>
+
+        <div class="col-auto">
+            <label for="reward" class="col-form-label">Rewards</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="CarRentalRewards" class="form-control" id="reward" name="reward">
+        </div>
+    </div>
+
+    <div class="row align-items-center">
+        <!-- Radio Button -->
+        <div class="col-auto">
+            <div class="form-check">
+                <input class="form-check-input" asp-for="TravelHonorHotel" type="radio" id="hotelRadio" name="transportMode" value="Hotel">
+                <label class="form-check-label" for="hotelRadio">
+                    Hotel
+                </label>
+            </div>
+        </div>
+
+        <div class="col-auto">
+            <label for="hotel" class="col-form-label">Rental Company Name</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="HotelName" class="form-control" id="hotel" name="hotel">
+        </div>
+
+        <div class="col-auto">
+            <label for="reward" class="col-form-label">Rewards</label>
+        </div>
+
+        <div class="col-auto">
+            <input type="text" asp-for="HotelRewards" class="form-control" id="reward" name="reward">
+        </div>
+    </div>
+
+
+
 </div>
+<!-- Submit Button -->
+<div class="text-center mt-4">
+    <button type="submit" class="btn btn-primary">Save</button>
+</div>
+
 
 <style>
     h1 {
@@ -429,5 +499,13 @@
 
     .form-group label {
         color: #000000; /* Darker black color */
+    }
+
+    .large-space-below {
+        margin-bottom: 60px; /* Or change to any amount of space */
+    }
+
+    .large-space-below1 {
+        margin-bottom: 50px; /* Or change to any amount of space */
     }
 </style>
