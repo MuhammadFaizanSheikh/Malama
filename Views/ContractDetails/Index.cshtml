@@ -1,8 +1,8 @@
-﻿@model ExcelFilesCompiler.Models.SubContractorInfoDto
+﻿@model ExcelFilesCompiler.Models.ContractDetailsDto
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
-    ViewData["Title"] = "Sub Contractor Info";
+    ViewData["Title"] = "Contract Details";
 }
 
 <!DOCTYPE html>
@@ -12,8 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contract Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <style>
-        h1 {
+        h2 {
+            color: rgba(80, 90, 201, 1);
+        }
+
+        h3 {
             color: rgba(80, 90, 201, 1);
         }
 
@@ -21,322 +26,266 @@
             background-color: #f8f9fa;
         }
 
-        .form-label {
+        /* .form-label {
             font-weight: bold;
-        }
+        } */
     </style>
 </head>
-<body>
-
-    <div class="container">
-        <h1 class="text-center mb-4">Sub Contractor Info</h1>
-
-        <!-- Row 1 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="ContractId" class="form-label">Contract ID # (DAWSON)</label>
-                <select id="ContractId" name="ContractId" class="form-select" asp-for="ContractId">
-                    <!-- Options will be populated dynamically from Contract Detail table -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="CompanyId" class="form-label">Company ID</label>
-                <input type="text" id="CompanyId" name="CompanyId" class="form-control" asp-for="CompanyId" readonly>
-            </div>
-        </div>
-
-        <!-- Row 2 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="ContractClient" class="form-label">Contract Client</label>
-                <select id="ContractClient" name="ContractClient" class="form-select" asp-for="ContractClient">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="ContractType" class="form-label">Contract Type</label>
-                <select id="ContractType" name="ContractType" class="form-select" asp-for="ContractType">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Row 3 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="SmallBusinessType" class="form-label">Small Business/Set Aside Type - if applicable</label>
-                <select id="SmallBusinessType" name="SmallBusinessType" class="form-select" asp-for="SmallBusinessType">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="ContractAffiliation" class="form-label">Contract Affiliation of Subcontractor</label>
-                <select id="ContractAffiliation" name="ContractAffiliation" class="form-select" asp-for="ContractAffiliation">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Row 4 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
-                <select id="ContractServiceBranch" name="ContractServiceBranch" class="form-select" asp-for="ContractServiceBranch">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="ContractComponent" class="form-label">Contract Component</label>
-                <select id="ContractComponent" name="ContractComponent" class="form-select" asp-for="ContractComponent">
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Row 5 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="SolicitationNumber" class="form-label">Solicitation #</label>
-                <input type="text" id="SolicitationNumber" name="SolicitationNumber" class="form-control" asp-for="SolicitationNumber">
-            </div>
-        </div>
-
-        <h2 class="mt-5">Company Main:</h2>
-
-        <!-- Row 6 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="CompanyName" class="form-label">Name</label>
-                <input type="text" id="CompanyName" name="CompanyName" class="form-control" asp-for="CompanyName" required>
-            </div>
-            <div class="col-md-6">
-                <label for="Address1" class="form-label">Address 1</label>
-                <input type="text" id="Address1" name="Address1" class="form-control" asp-for="Address1" required>
-            </div>
-        </div>
-
-        <!-- Row 7 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="Address2" class="form-label">Address 2</label>
-                <input type="text" id="Address2" name="Address2" class="form-control" asp-for="Address2" required>
-            </div>
-            <div class="col-md-6">
-                <label for="City" class="form-label">City</label>
-                <select id="City" name="City" class="form-select" asp-for="City" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Row 8 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="State" class="form-label">State</label>
-                <select id="State" name="State" class="form-select" asp-for="State" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="Zip" class="form-label">Zip</label>
-                <select id="Zip" name="Zip" class="form-select" asp-for="Zip" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <h2 class="mt-5">Company Main POC:</h2>
-
-        <!-- Row 9 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="LastName" class="form-label">Last Name</label>
-                <input type="text" id="LastName" name="LastName" class="form-control" asp-for="LastName" required>
-            </div>
-            <div class="col-md-6">
-                <label for="FirstName" class="form-label">First Name</label>
-                <input type="text" id="FirstName" name="FirstName" class="form-control" asp-for="FirstName" required>
-            </div>
-        </div>
-
-        <!-- Row 10 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="Phone" class="form-label">Phone</label>
-                <input type="text" id="Phone" name="Phone" class="form-control" asp-for="Phone" required>
-            </div>
-            <div class="col-md-6">
-                <label for="Email" class="form-label">Email</label>
-                <input type="email" id="Email" name="Email" class="form-control" asp-for="Email" required>
-            </div>
-        </div>
-
-        <h2 class="mt-5">Company Finance POC:</h2>
-
-        <!-- Row 11 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="FinanceLastName" class="form-label">Last Name</label>
-                <input type="text" id="FinanceLastName" name="FinanceLastName" class="form-control" asp-for="FinanceLastName" required>
-            </div>
-            <div class="col-md-6">
-                <label for="FinanceFirstName" class="form-label">First Name</label>
-                <input type="text" id="FinanceFirstName" name="FinanceFirstName" class="form-control" asp-for="FinanceFirstName" required>
-            </div>
-        </div>
-
-        <!-- Row 12 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="FinanceAddress1" class="form-label">Address 1</label>
-                <input type="text" id="FinanceAddress1" name="FinanceAddress1" class="form-control" asp-for="FinanceAddress1" required>
-            </div>
-            <div class="col-md-6">
-                <label for="FinanceAddress2" class="form-label">Address 2</label>
-                <input type="text" id="FinanceAddress2" name="FinanceAddress2" class="form-control" asp-for="FinanceAddress2" required>
-            </div>
-        </div>
-
-        <!-- Row 13 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="FinanceCity" class="form-label">City</label>
-                <select id="FinanceCity" name="FinanceCity" class="form-select" asp-for="FinanceCity" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="FinanceState" class="form-label">State</label>
-                <select id="FinanceState" name="FinanceState" class="form-select" asp-for="FinanceState" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Row 14 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="FinanceZip" class="form-label">Zip</label>
-                <select id="FinanceZip" name="FinanceZip" class="form-select" asp-for="FinanceZip" required>
-                    <!-- Options will be added here -->
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="FinancePhone" class="form-label">Phone</label>
-                <input type="text" id="FinancePhone" name="FinancePhone" class="form-control" asp-for="FinancePhone" required>
-            </div>
-        </div>
-
-        <!-- Row 15 -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="FinanceEmail" class="form-label">Email</label>
-                <input type="email" id="FinanceEmail" name="FinanceEmail" class="form-control" asp-for="FinanceEmail" required>
-            </div>
-        </div>
-
-        <h3>Company Event POC</h3>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-            <label for="EventLastName" class="col-md-3 col-form-label">Last Name</label>
-                <input type="text" id="EventLastName" name="EventLastName" class="form-control" asp-for="EventLastName" required />
-            </div>
-            <div class="col-md-6">
-                <label for="EventFirstName" class="col-md-3 col-form-label">First Name</label>
-                <input type="text" id="EventFirstName" name="EventFirstName" class="form-control" asp-for="EventFirstName" required />
-            </div>
-        </div>
 
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-            <label for="EventPhone" class="col-md-3 col-form-label">Phone</label>
-                <input type="text" id="EventPhone" name="EventPhone" class="form-control" asp-for="EventPhone" required />
-            </div>
-            <div class="col-md-6">
-                <label for="EventEmail" class="col-md-3 col-form-label">Email</label>
-                <input type="email" id="EventEmail" name="EventEmail" class="form-control" asp-for="EventEmail" required />
-            </div>
-        </div>
+<h2 class="text-center mt-4">Contract Details</h2>
 
-      
-
-        <h3>Company Training POC</h3>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-            <label for="TrainingLastName" class="col-md-3 col-form-label">Last Name</label>
-                <input type="text" id="TrainingLastName" name="TrainingLastName" class="form-control" asp-for="TrainingLastName" required />
-            </div>
-            <div class="col-md-6">
-                <label for="TrainingFirstName" class="col-md-3 col-form-label">First Name</label>
-                <input type="text" id="TrainingFirstName" name="TrainingFirstName" class="form-control" asp-for="TrainingFirstName" required />
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            
-        </div>
-
-        <div class="row mb-3">
-                <div class="col-md-6">
-            <label for="TrainingPhone" class="col-md-3 col-form-label">Phone</label>
-                <input type="text" id="TrainingPhone" name="TrainingPhone" class="form-control" asp-for="TrainingPhone" required />
-            </div>
-            <div class="col-md-6">
-                <label for="TrainingEmail" class="col-md-3 col-form-label">Email</label>
-                <input type="email" id="TrainingEmail" name="TrainingEmail" class="form-control" asp-for="TrainingEmail" required />
-            </div>
-        </div>
-
-
-        <div class="section mb-5">
-            <h3>Historical Event Information</h3>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                <label for="EventId" class="col-md-3 col-form-label">Event ID</label>
-                    <input type="text" id="EventId" name="EventId" class="form-control" asp-for="EventId" />
+<div class="container mt-4 mb-5">
+        <div class="card-body">
+            <form asp-action="YourActionName" method="post">
+                <!-- Row 1 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractID" class="form-label">Contract ID # (Dawson)</label>
+                        <input asp-for="ContractID" class="form-control" placeholder="Enter Contract ID" />
+                        <span asp-validation-for="ContractID" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractAgency" class="form-label">Contract Agency</label>
+                        <input asp-for="ContractAgency" class="form-control" placeholder="Enter Contract Agency" />
+                        <span asp-validation-for="ContractAgency" class="text-danger"></span>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label for="EventStatus" class="col-md-3 col-form-label">Event Status</label>
-                    <input type="text" id="EventStatus" name="EventStatus" class="form-control" asp-for="EventStatus" />
+
+                <!-- Row 2 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
+                        <select asp-for="ContractServiceBranch" class="form-select">
+                            <option value="">Select Branch</option>
+                            <option>Army</option>
+                            <option>Airforce</option>
+                            <option>Navy</option>
+                            <option>Marines</option>
+                            <option>Coast Guard</option>
+                            <option>Space Force</option>
+                        </select>
+                        <span asp-validation-for="ContractServiceBranch" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractComponent" class="form-label">Contract Component</label>
+                        <select asp-for="ContractComponent" class="form-select">
+                            <option value="">Select Component</option>
+                            <option>Active Duty</option>
+                            <option>National Guard</option>
+                            <option>Reserve</option>
+                        </select>
+                        <span asp-validation-for="ContractComponent" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractClient" class="form-label">Contract Client</label>
+                        <select asp-for="ContractClient" class="form-select">
+                            <option value="">Select Client</option>
+                            <option>Command</option>
+                            <option>State</option>
+                        </select>
+                        <span asp-validation-for="ContractClient" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractType" class="form-label">Contract Type</label>
+                        <select asp-for="ContractType" class="form-select">
+                            <option value="">Select Type</option>
+                            <option>FFP</option>
+                            <option>CPFF</option>
+                            <option>T&M</option>
+                        </select>
+                        <span asp-validation-for="ContractType" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
+                        <select asp-for="DawsonRoleOnContract" class="form-select">
+                            <option value="">Select Role</option>
+                            <option>Prime</option>
+                            <option>Sub</option>
+                        </select>
+                        <span asp-validation-for="DawsonRoleOnContract" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractStatus" class="form-label">Contract Status</label>
+                        <select asp-for="ContractStatus" class="form-select">
+                            <option value="">Select Status</option>
+                            <option>Bidding</option>
+                            <option>Active</option>
+                            <option>Complete</option>
+                        </select>
+                        <span asp-validation-for="ContractStatus" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Row 5 -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractStartDate" class="form-label">Contract Start Date</label>
+                        <input asp-for="ContractStartDate" type="date" class="form-control" />
+                        <span asp-validation-for="ContractStartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContractEndDate" class="form-label">Contract End Date</label>
+                        <input asp-for="ContractEndDate" type="date" class="form-control" />
+                        <span asp-validation-for="ContractEndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">Contract Officer (KO)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="LastName" class="form-label">Last Name</label>
+                    <input asp-for="LastName" class="form-control" placeholder="Enter Last Name" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FirstName" class="form-label">First Name</label>
+                    <input asp-for="FirstName" class="form-control" placeholder="Enter First Name" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
                 </div>
             </div>
 
-            <div class="row mb-3">
-                        <div class="col-md-6">
-                <label for="EventRole" class="col-md-3 col-form-label">Event Role</label>
-                    <input type="text" id="EventRole" name="EventRole" class="form-control" asp-for="EventRole" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KOPhone" class="form-label">KO Phone</label>
+                    <input asp-for="KOPhone" class="form-control" placeholder="Enter KO Phone" />
+                    <span asp-validation-for="KOPhone" class="text-danger"></span>
                 </div>
-                <div class="col-md-6">
-                    <label for="EventCity" class="col-md-3 col-form-label">Event City</label>
-                    <input type="text" id="EventCity" name="EventCity" class="form-control" asp-for="EventCity" />
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                                <div class="col-md-6">
-                <label for="EventState" class="col-md-3 col-form-label">Event State</label>
-                    <input type="text" id="EventState" name="EventState" class="form-control" asp-for="EventState" />
-                </div>
-                <div class="col-md-6">
-                    <label for="EventDate" class="col-md-3 col-form-label">Event Date</label>
-                    <input type="text" id="EventDate" name="EventDate" class="form-control" asp-for="EventDate" />
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KOPhone2" class="form-label">KO Phone 2</label>
+                    <input asp-for="KOPhone2" class="form-control" placeholder="Enter KO Phone 2" />
+                    <span asp-validation-for="KOPhone2" class="text-danger"></span>
                 </div>
             </div>
 
-            
-        </div>
-        <!-- Submit button -->
-        <div class="row mb-3">
-            <div class="col-md-12 text-center">
-                <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KOEmail" class="form-label">KO Email</label>
+                    <input asp-for="KOEmail" class="form-control" placeholder="Enter KO Email" />
+                    <span asp-validation-for="KOEmail" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KONotes" class="form-label">KO Notes</label>
+                    <textarea asp-for="KONotes" class="form-control" rows="4" placeholder="Enter KO Notes"></textarea>
+                    <span asp-validation-for="KONotes" class="text-danger"></span>
+                </div>
             </div>
-        </div>
+
+            <!-- New Contract Officer Representative (COR) Section -->
+            <h3 class="mt-5 mb-3">Contract Officer Representative (COR)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CORLastName" class="form-label">Last Name</label>
+                    <input asp-for="CORLastName" class="form-control" placeholder="Enter Last Name" required />
+                    <span asp-validation-for="CORLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CORFirstName" class="form-label">First Name</label>
+                    <input asp-for="CORFirstName" class="form-control" placeholder="Enter First Name" required />
+                    <span asp-validation-for="CORFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CORKORank" class="form-label">Rank</label>
+                    <input asp-for="CORKORank" class="form-control" placeholder="Enter Rank" required />
+                    <span asp-validation-for="CORKORank" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CORPhone" class="form-label">COR Phone</label>
+                    <input asp-for="CORPhone" class="form-control" placeholder="Enter COR Phone" required />
+                    <span asp-validation-for="CORPhone" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CORPhone2" class="form-label">COR Phone 2</label>
+                    <input asp-for="CORPhone2" class="form-control" placeholder="Enter COR Phone 2" required />
+                    <span asp-validation-for="CORPhone2" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="COREmail" class="form-label">COR Email</label>
+                    <input asp-for="COREmail" class="form-control" placeholder="Enter COR Email" required />
+                    <span asp-validation-for="COREmail" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label asp-for="CORNotes" class="form-label">COR Notes</label>
+                    <textarea asp-for="CORNotes" class="form-control" rows="4" placeholder="Enter COR Notes" required></textarea>
+                    <span asp-validation-for="CORNotes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="mt-5 mb-3">DAWSON Program Manager</h3>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonProgramManagerLastName" class="form-label">Last Name</label>
+        <input asp-for="DawsonProgramManagerLastName" class="form-control" placeholder="Enter Last Name" />
+        <span asp-validation-for="DawsonProgramManagerLastName" class="text-danger"></span>
     </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonProgramManagerFirstName" class="form-label">First Name</label>
+        <input asp-for="DawsonProgramManagerFirstName" class="form-control" placeholder="Enter First Name" />
+        <span asp-validation-for="DawsonProgramManagerFirstName" class="text-danger"></span>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-</body>
-</html>
+
+           <h3 class="mt-5 mb-3">DAWSON Deputy Program Manager (DDPM)</h3>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonDeputyProgramManagerLastName" class="form-label">Last Name</label>
+        <input asp-for="DawsonDeputyProgramManagerLastName" class="form-control" placeholder="Enter Last Name" />
+        <span asp-validation-for="DawsonDeputyProgramManagerLastName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonDeputyProgramManagerFirstName" class="form-label">First Name</label>
+        <input asp-for="DawsonDeputyProgramManagerFirstName" class="form-control" placeholder="Enter First Name" />
+        <span asp-validation-for="DawsonDeputyProgramManagerFirstName" class="text-danger"></span>
+    </div>
+</div>
+
+
+<h3 class="mt-5 mb-3">DAWSON Project Manager (DPM)</h3>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonProjectManagerLastName" class="form-label">Last Name</label>
+        <input asp-for="DawsonProjectManagerLastName" class="form-control" placeholder="Enter Last Name" />
+        <span asp-validation-for="DawsonProjectManagerLastName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="DawsonProjectManagerFirstName" class="form-label">First Name</label>
+        <input asp-for="DawsonProjectManagerFirstName" class="form-control" placeholder="Enter First Name" />
+        <span asp-validation-for="DawsonProjectManagerFirstName" class="text-danger"></span>
+    </div>
+</div>
+
+
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-success btn-lg me-2">
+                    <i class="bi bi-check-circle"></i> Submit
+                </button>
+                <button type="reset" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-arrow-repeat"></i> Reset
+                </button>
+            </div>
+            </form>
+        </div>
+</div>
