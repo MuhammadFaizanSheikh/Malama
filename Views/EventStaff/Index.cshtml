@@ -424,7 +424,7 @@
         <!-- Add Button -->
         <div class="text-center">
             <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
-                <span>Hint : Contract number for national guard contracts for Dawson. Can be multiple if they are associated</span>
+                <span>Hint : Contract number for national guard contracts<br> for Dawson. Can be multiple if they are associated</span>
                 <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
             </button>
         </div>
@@ -649,7 +649,6 @@
         newRow.classList.add('row', 'mb-3', 'staff-affiliation-row');
         newRow.innerHTML = `
             <div class="col-md-6">
-                <label asp-for="StaffContractAffiliation[${rowIndex}]" class="form-label">Staff Contract Affiliation</label>
                 <select asp-for="StaffContractAffiliation[${rowIndex}]" class="form-control" required>
                     <option value="" disabled selected>Select Affiliation</option>
                     <option value="Affiliation1">Affiliation1</option>
