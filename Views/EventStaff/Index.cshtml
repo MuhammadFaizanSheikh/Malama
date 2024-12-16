@@ -402,19 +402,37 @@
         </div>
     </div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffContractAffiliation" class="form-label">Staff Contract Affiliation</label>
-            <select asp-for="StaffContractAffiliation" class="form-control" required>
-                <option value="Affiliation1">Affiliation1</option>
-                <option value="Affiliation2">Affiliation2</option>
-            </select>
+    <div id="staff-affiliation-container">
+        <!-- Initial Row -->
+        <div class="row mb-3">
+            <div class="col-md-6 staff-affiliation-row">
+                <label asp-for="StaffContractAffiliation[0]" class="form-label">Staff Contract Affiliation</label>
+                <select asp-for="StaffContractAffiliation[0]" class="form-control" required>
+                    <option value="" disabled selected>Select Affiliation</option>
+                    <option value="Affiliation1">Affiliation1</option>
+                    <option value="Affiliation2">Affiliation2</option>
+                </select>
+                
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Staff info entered by</label>
+                <input asp-for="StaffInfoEnteredBy[0]" class="form-control" readonly />
+            </div>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Staff info entered by</label>
-            <input asp-for="StaffInfoEnteredBy" class="form-control" readonly />
+
+        <!-- Add Button -->
+        <div class="text-center">
+            <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
+                <span>Hint : Contract number for national guard contracts for Dawson. Can be multiple if they are associated</span>
+                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
+            </button>
         </div>
+
+
     </div>
+
+
 
     <h4 class="mt-4">Travel Honor Reward Numbers</h4>
 
@@ -562,51 +580,85 @@
 
         // Get the current count of license rows
         const licenseRows = document.querySelectorAll('.license-row');
-        const rowIndex = licenseRows.length; // New index for the new row
+
+        // Check if there are less than 5 rows
+        if (licenseRows.length < 5) {
+            const rowIndex = licenseRows.length; // New index for the new row
+
+            // Create a new row using the existing structure
+            const newRow = document.createElement('div');
+            newRow.classList.add('form-row', 'license-row');
+            newRow.innerHTML = `
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
+                        <input asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
+                        <select asp-for="Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="State1">State1</option>
+                            <option value="State2">State2</option>
+                            <!-- Add more states here -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
+                        <select asp-for="Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="Type1">Type1</option>
+                            <option value="Type2">Type2</option>
+                            <!-- Add more types here -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
+                        <input asp-for="Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+                    </div>
+                </div>
+            `;
+
+            // Insert the new row above the Add Row button
+            container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+        }
+    });
+
+
+    document.getElementById('add-affiliation-btn').addEventListener('click', function () {
+        // Get the container where rows will be added
+        const container = document.getElementById('staff-affiliation-container');
+
+        // Get the current count of the existing affiliation rows
+        const affiliationRows = document.querySelectorAll('.staff-affiliation-row');
+        const rowIndex = affiliationRows.length; // New index for the new row
+
+        // Ensure not exceeding 5 rows
+        if (rowIndex >= 5) {
+            return; // Stop adding more rows if the limit is reached
+        }
 
         // Create a new row using the existing structure
         const newRow = document.createElement('div');
-        newRow.classList.add('form-row', 'license-row');
+        newRow.classList.add('row', 'mb-3', 'staff-affiliation-row');
         newRow.innerHTML = `
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
-                    <input asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label asp-for="Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
-                    <select asp-for="Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                        <option value="">Select State</option>
-                        <option value="State1">State1</option>
-                        <option value="State2">State2</option>
-                        <!-- Add more states here -->
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label asp-for="Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
-                    <select asp-for="Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                        <option value="">Select Type</option>
-                        <option value="Type1">Type1</option>
-                        <option value="Type2">Type2</option>
-                        <!-- Add more types here -->
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label asp-for="Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
-                    <input asp-for="Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
-                </div>
-            </div>
-        `;
+            <div class="col-md-6">
+                <label asp-for="StaffContractAffiliation[${rowIndex}]" class="form-label">Staff Contract Affiliation</label>
+                <select asp-for="StaffContractAffiliation[${rowIndex}]" class="form-control" required>
+                    <option value="" disabled selected>Select Affiliation</option>
+                    <option value="Affiliation1">Affiliation1</option>
+                    <option value="Affiliation2">Affiliation2</option>
+                </select>
+            </div>`;
 
         // Insert the new row above the Add Row button
-        container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+        container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
     });
-
 
 </script>

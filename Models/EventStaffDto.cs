@@ -57,7 +57,7 @@ namespace ExcelToCsv.Models
         public string SecondaryState { get; set; }  // Textbox
         public string SecondaryZip { get; set; }  // Textbox
 
-        public string StaffContractAffiliation { get; set; }  // Dropdown
+        public List<string> StaffContractAffiliation { get; set; }
 
         // Staff info entered by (readonly field)
         public string StaffInfoEnteredBy { get; set; }  // Readonly label
