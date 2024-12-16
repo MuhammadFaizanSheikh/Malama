@@ -152,40 +152,55 @@
             </div>
 
             <h4 class="mt-4">States Licenses</h4>
-            <div class="form-row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label class="form-label">License Number</label>
-                        <input asp-for="LicenseNumber" class="form-control" placeholder="License Number" required />
+            <div class="form-container">
+                <!-- First Row (Initial row for licenses) -->
+                <div class="form-row license-row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Licenses[0].LicenseNumber" class="form-label">License Number</label>
+                            <input asp-for="Licenses[0].LicenseNumber" class="form-control" placeholder="License Number" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Licenses[0].LicenseState" class="form-label">License State</label>
+                            <select asp-for="Licenses[0].LicenseState" class="form-control" required>
+                                <option value="">Select State</option>
+                                <option value="State1">State1</option>
+                                <option value="State2">State2</option>
+                                <!-- Add more states here -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Licenses[0].LicenseType" class="form-label">License Type</label>
+                            <select asp-for="Licenses[0].LicenseType" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="Type1">Type1</option>
+                                <option value="Type2">Type2</option>
+                                <!-- Add more types here -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
+                            <input asp-for="Licenses[0].LicenseExpiryDate" type="date" class="form-control" required />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="LicenseStates" class="form-label">License State</label>
-                        <select asp-for="LicenseStates" class="form-control" required >
-                            <option value="State1">State1</option>
-                            <option value="State2">State2</option>
-                            <!-- Add more states here -->
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="LicenseTypes" class="form-label">License Type</label>
-                        <select asp-for="LicenseTypes" class="form-control" required>
-                            <option value="Type1">Type1</option>
-                            <option value="Type2">Type2</option>
-                            <!-- Add more types here -->
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="LicenseExpiryDate" class="form-label">License Expiry</label>
-                        <input asp-for="LicenseExpiryDate" type="date" class="form-control" required/>
-                    </div>
+
+                <!-- Add Row Button -->
+                <div class="text-center mt-3">
+                    <button type="button" class="add-row-button" id="addRowButton">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                        <span class="button-text">Add Another License</span>
+                    </button>
                 </div>
             </div>
+
+
 
             <div class="form-group">
                 <label asp-for="NPI" class="form-label">NPI</label>
@@ -506,4 +521,92 @@
     .large-space-below1 {
         margin-bottom: 50px; /* Or change to any amount of space */
     }
+
+    .add-row-button {
+        background-color: transparent; /* No background */
+        border: none; /* Remove border */
+        padding: 0; /* Remove button padding */
+        cursor: pointer; /* Pointer cursor on hover */
+        display: inline-block;
+    }
+
+    .plus-icon {
+        width: 32px; /* Image width */
+        height: 32px; /* Image height */
+        cursor: pointer; /* Show pointer on hover */
+    }
+
+        .plus-icon:hover {
+            transform: scale(1.1); /* Slight enlarge on hover */
+            transition: 0.2s ease-in-out; /* Smooth animation */
+        }
+
+    .add-row-button img {
+        outline: none;
+    }
+
+    .add-row-button:focus,
+    .add-row-button:active {
+        outline: none;
+        border: none;
+        box-shadow: none;
+    }
+
+
 </style>
+
+<script>
+    document.getElementById('addRowButton').addEventListener('click', function () {
+        // Get the container where rows will be added
+        const container = document.querySelector('.form-container');
+
+        // Get the current count of license rows
+        const licenseRows = document.querySelectorAll('.license-row');
+        const rowIndex = licenseRows.length; // New index for the new row
+
+        // Create a new row using the existing structure
+        const newRow = document.createElement('div');
+        newRow.classList.add('form-row', 'license-row');
+        newRow.innerHTML = `
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
+                    <input asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
+                    <select asp-for="Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                        <option value="">Select State</option>
+                        <option value="State1">State1</option>
+                        <option value="State2">State2</option>
+                        <!-- Add more states here -->
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
+                    <select asp-for="Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        <option value="Type1">Type1</option>
+                        <option value="Type2">Type2</option>
+                        <!-- Add more types here -->
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
+                    <input asp-for="Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+                </div>
+            </div>
+        `;
+
+        // Insert the new row above the Add Row button
+        container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+    });
+
+
+</script>

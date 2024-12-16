@@ -18,10 +18,7 @@ namespace ExcelToCsv.Models
         public List<string> RolesList { get; set; } = new List<string>(); // For checkboxes
         public string EventOnCallStaff { get; set; }
         public string SelectedEvent { get; set; }
-        public string LicenseNumber { get; set; }
-        public string LicenseStates { get; set; }
-        public string LicenseTypes { get; set; }
-        public DateTime LicenseExpiryDate { get; set; }
+        public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
         public string NPI { get; set; }
         public string DAE { get; set; }
         public DateTime CredentialingProcessDate { get; set; }
@@ -79,4 +76,11 @@ namespace ExcelToCsv.Models
         public string HotelRewards { get; set; }  // Textbox for Hotel Rewards
     }
 
+    public class LicenseInfoDTO
+    {
+        public string LicenseNumber { get; set; }
+        public string LicenseState { get; set; }
+        public string LicenseType { get; set; }
+        public DateTime LicenseExpiryDate { get; set; }
+    }
 }
