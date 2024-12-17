@@ -712,6 +712,7 @@
         container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
     });
 
+    const maxFields = 4; // Maximum number of fields to add
 
     //Air honor handling
     // Air honor handling
@@ -719,7 +720,7 @@
     const airlineFields = document.getElementById('airlineFields');
     const addButton = document.getElementById('addFieldsBtn');
     const container = document.getElementById('airline-controls-container');
-    let fieldCount = 0; // Counter for new fields
+    let airFieldCount = 0; // Counter for new fields
 
     // Show airline fields when radio is selected
     radioButton.addEventListener('change', function () {
@@ -730,7 +731,11 @@
     });
 
     addButton.addEventListener('click', function () {
-        fieldCount++; // Increment the count to ensure unique IDs
+        if (airFieldCount >= maxFields) {
+            // If the limit is reached, do not add more fields
+            return;
+        }
+        airFieldCount++; // Increment the count to ensure unique IDs
 
         const newRow = document.createElement('div');
         newRow.classList.add('row', 'mt-3'); // New row with margin
@@ -740,18 +745,18 @@
             <div class="col-md-8" id="airlineFields">
                 <div class="row">
                <div class="col-md-6 d-flex align-items-center">
-                    <label for="airline_${fieldCount}" class="col-form-label" style="width: 940px;margin-left: 115px" >Airline Name</label>
-                <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineName"
+                        <label for="airline_${airFieldCount}" class="col-form-label" style="width: 940px;margin-left: 115px" >Airline Name</label>
+                    <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineName"
                        class="form-control form-control-sm"
-                       id="airline_${fieldCount}"
+                           id="airline_${airFieldCount}"
                                    style="width: 120px; margin-left: 83px" required />
             </div>
 
                 <div class="col-md-6 d-flex align-items-center">
-                    <label for="reward_${fieldCount}" class="col-form-label" style="width: 150px;margin-left: 98px"">Rewards</label>
-                <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineRewards"
+                        <label for="reward_${airFieldCount}" class="col-form-label" style="width: 150px;margin-left: 98px"">Rewards</label>
+                    <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineRewards"
                        class="form-control form-control-sm"
-                       id="reward_${fieldCount}"
+                           id="reward_${airFieldCount}"
                            style="width: 120px;margin-left: 88px" required />
             </div>
                  </div>
@@ -788,6 +793,10 @@
 
     // Add new car rental fields on button click
     carAddButton.addEventListener('click', function () {
+        if (carFieldCount >= maxFields) {
+            // If the limit is reached, do not add more fields
+            return;
+        }
         carFieldCount++; // Increment the count to ensure unique IDs
 
         const newCarRow = document.createElement('div');
@@ -835,6 +844,10 @@
     });
 
     addHotelButton.addEventListener('click', function () {
+        if (hotelFieldCount >= maxFields) {
+            // If the limit is reached, do not add more fields
+            return;
+        }
         hotelFieldCount++; // Increment the count to ensure unique IDs
 
         const newHotelRow = document.createElement('div');
