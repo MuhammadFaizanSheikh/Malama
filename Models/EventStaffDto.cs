@@ -63,9 +63,7 @@ namespace ExcelToCsv.Models
         public string StaffInfoEnteredBy { get; set; }  // Readonly label
 
         // Travel Honor Reward Numbers fields
-        public bool TravelHonorAir { get; set; }  // Radio button for Air
-        public string AirlineName { get; set; }  // Textbox for Airline Name
-        public string AirlineRewards { get; set; }  // Textbox for Airline Rewards
+        public List<Airline> Airlines { get; set; } = new List<Airline>();  // List of Airlines
 
         public bool TravelHonorCar { get; set; }  // Radio button for Car
         public string CarRentalCompany { get; set; }  // Textbox for Rental Company Name
@@ -82,5 +80,12 @@ namespace ExcelToCsv.Models
         public string LicenseState { get; set; }
         public string LicenseType { get; set; }
         public DateTime LicenseExpiryDate { get; set; }
+    }
+
+    public class Airline
+    {
+        public string AirlineName { get; set; }  // Airline name
+        public string AirlineRewards { get; set; }  // Rewards associated with the airline
+        public bool TravelHonorAir { get; set; }  // Represents whether this entry is selected via the radio button
     }
 }
