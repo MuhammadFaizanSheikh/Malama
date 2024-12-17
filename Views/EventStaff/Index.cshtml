@@ -438,7 +438,7 @@
 
     <div id="airline-controls-container">
         <!-- Row for the first set of controls -->
-        <div class="row mb-3">
+        <div class="row mb-3" id="initial-row">
             <div class="col-md-1 d-flex align-items-center">
                 <!-- Single radio button with fixed id and name -->
                 <input class="form-check-input" type="radio" id="airRadio" name="airRadio" value="Air" />
@@ -475,6 +475,7 @@
             </div>
         </div>
     </div>
+
 
 
 
@@ -685,6 +686,7 @@
 
 
     //Air honor handling
+    // Air honor handling
     const radioButton = document.getElementById('airRadio');
     const airlineFields = document.getElementById('airlineFields');
     const addButton = document.getElementById('addFieldsBtn');
@@ -699,33 +701,51 @@
         }
     });
 
-    // Handle "Add another reward" button click
     addButton.addEventListener('click', function () {
         fieldCount++; // Increment the count to ensure unique IDs
 
         const newRow = document.createElement('div');
-        newRow.classList.add('row', 'mt-3');
+        newRow.classList.add('row', 'mt-3'); // New row with margin
 
+        // Add the new row's HTML structure with proper side-by-side layout
         newRow.innerHTML = `
-                <div class="col-md-6 d-flex align-items-center">
-                    <label for="airline_${fieldCount}" class="col-form-label" style="width: 150px;">Airline Name</label>
-                    <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineName"
-                           class="form-control form-control-sm"
-                           id="airline_${fieldCount}"
-                           style="width: 120px;" required />
-                </div>
+            <div class="col-md-8" id="airlineFields">
+                <div class="row">
+               <div class="col-md-6 d-flex align-items-center">
+                <label for="airline_${fieldCount}" class="col-form-label" style="width: 150px;">Airline Name</label>
+                <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineName"
+                       class="form-control form-control-sm"
+                       id="airline_${fieldCount}"
+                       style="width: 150px;" required />
+            </div>
 
                 <div class="col-md-6 d-flex align-items-center">
-                    <label for="reward_${fieldCount}" class="col-form-label" style="width: 150px;">Rewards</label>
-                    <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineRewards"
-                           class="form-control form-control-sm"
-                           id="reward_${fieldCount}"
-                           style="width: 120px;" required />
-                </div>
-            `;
+                <label for="reward_${fieldCount}" class="col-form-label" style="width: 150px;">Rewards</label>
+                <input type="text" name="TravelInfo.Airlines[${fieldCount}].AirlineRewards"
+                       class="form-control form-control-sm"
+                       id="reward_${fieldCount}"
+                       style="width: 150px;" required />
+            </div>
+                 </div>
+                     </div>
+        `;
 
+        // Ensure proper alignment for the new row
+        const columns = newRow.querySelectorAll('.col-md-6');
+        columns.forEach(col => {
+            // col.style.alignItems = 'center';  // Align items vertically in the center
+            // col.style.marginBottom = '10px';  // Ensure no extra margin at the bottom
+            // If needed, use margin-left for precise alignment, but ensure the column still stays side by side
+            // col.style.marginLeft = '100';  // Adjust or remove based on your needs
+        });
+
+        // Append the new row to the container
         container.appendChild(newRow);
     });
+
+
+
+
 
 
 
