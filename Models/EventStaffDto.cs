@@ -17,6 +17,7 @@ namespace ExcelToCsv.Models
         public List<string> StaffRoles { get; set; } = new List<string>();
         public List<string> RolesList { get; set; } = new List<string>(); // For checkboxes
         public string EventOnCallStaff { get; set; }
+        public string EventOnCallStaffEvent { get; set; }
         public string SelectedEvent { get; set; }
         public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
         public string NPI { get; set; }
@@ -63,15 +64,14 @@ namespace ExcelToCsv.Models
         public string StaffInfoEnteredBy { get; set; }  // Readonly label
 
         // Travel Honor Reward Numbers fields
-        public List<Airline> Airlines { get; set; } = new List<Airline>();  // List of Airlines
+        public bool TravelHonorAir { get; set; }  // Radio button for Car
+        public List<TravelAirline> Airlines { get; set; } = new List<TravelAirline>();  // List of Airlines
 
         public bool TravelHonorCar { get; set; }  // Radio button for Car
-        public string CarRentalCompany { get; set; }  // Textbox for Rental Company Name
-        public string CarRentalRewards { get; set; }  // Textbox for Rental Company Rewards
+        public List<TravelCar> TravelCar { get; set; } = new List<TravelCar>();
 
         public bool TravelHonorHotel { get; set; }  // Radio button for Hotel
-        public string HotelName { get; set; }  // Textbox for Hotel Name
-        public string HotelRewards { get; set; }  // Textbox for Hotel Rewards
+        public List<TravelHotel> TravelHotel { get; set; } = new List<TravelHotel>();
     }
 
     public class LicenseInfoDTO
@@ -82,10 +82,21 @@ namespace ExcelToCsv.Models
         public DateTime LicenseExpiryDate { get; set; }
     }
 
-    public class Airline
+    public class TravelAirline
     {
         public string AirlineName { get; set; }  // Airline name
         public string AirlineRewards { get; set; }  // Rewards associated with the airline
-        public bool TravelHonorAir { get; set; }  // Represents whether this entry is selected via the radio button
+    }
+
+    public class TravelCar
+    {
+        public string AirlineName { get; set; }  // Airline name
+        public string AirlineRewards { get; set; }  // Rewards associated with the airline
+    }
+
+    public class TravelHotel
+    {
+        public string AirlineName { get; set; }  // Airline name
+        public string AirlineRewards { get; set; }  // Rewards associated with the airline
     }
 }

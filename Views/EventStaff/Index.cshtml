@@ -12,6 +12,8 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
 
 
 <div class="container">
@@ -56,15 +58,25 @@
     </div>
 
     <div class="row mb-3">
+        <!-- SSN Section -->
         <div class="col-md-6">
             <label asp-for="StaffSSN" class="form-label">Staff SSN</label>
-            <input asp-for="StaffSSN" class="form-control"/>
+            <div class="input-group">
+                <input type="password" asp-for="StaffSSN" class="form-control" id="ssn"
+                       placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
+                <span class="input-group-text" onclick="togglePasswordVisibility('ssn', 'toggleSsnIcon')" style="cursor: pointer;">
+                    <i id="toggleSsnIcon" class="fas fa-eye"></i>
+                </span>
+            </div>
         </div>
+
+        <!-- DOB Section -->
         <div class="col-md-6">
             <label asp-for="StaffDOB" class="form-label">Staff DOB</label>
-            <input asp-for="StaffDOB" type="date" class="form-control" required/>
+            <input asp-for="StaffDOB" type="date" class="form-control" required />
         </div>
     </div>
+
 
     <div class="row mb-3">
         <div class="col-md-6">
@@ -143,14 +155,19 @@
         <div class="col-md-6">
             <label class="form-label">Event On Call Staff</label>
             <div class="form-check">
-                <input asp-for="EventOnCallStaff" type="radio" value="true" class="form-check-input"/>
+                <input asp-for="EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" />
                 <label class="form-check-label">Yes</label>
             </div>
             <div class="form-check">
-                <input asp-for="EventOnCallStaff" type="radio" value="false" class="form-check-input"  />
+                <input asp-for="EventOnCallStaff" type="radio"  id="eventOnCallNo" value="false" class="form-check-input"  />
                 <label class="form-check-label">No</label>
             </div>
-
+            <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
+                <label asp-for="EventOnCallStaffEvent" class="form-label">Select Event</label>
+                <select asp-for="EventOnCallStaffEvent" class="form-control" required>
+                    
+                </select>
+            </div>
             <h4 class="mt-4">States Licenses</h4>
             <div class="form-container">
                 <!-- First Row (Initial row for licenses) -->
@@ -880,8 +897,71 @@
         hotelContainer.appendChild(newHotelRow);
     });
 
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(`toggle${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Icon`);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    allowOnlyNumericInput("ssn");
+
+    function allowOnlyNumericInput(inputId) {
+        document.getElementById(inputId).addEventListener("keypress", function (event) {
+            const charCode = event.which || event.keyCode;
+
+            // Allow only numeric keys (48-57) and control keys (e.g., backspace)
+            if (charCode < 48 || charCode > 57) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const phoneFields = ['ssn'];
+        phoneFields.forEach(function (fieldId) {
+            applySsnMask(document.getElementById(fieldId));
+        });
+    });
+
+    function applySsnMask(inputElement) {
+        inputElement.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+            if (value.length > 3 && value.length <= 5) {
+                value = value.slice(0, 3) + '-' + value.slice(3); // XXX-XX
+            } else if (value.length > 5) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 9); // XXX-XX-XXXX
+            }
+            e.target.value = value;
+        });
+    }
 
 
+    // Get references to the radio buttons and the "Select Event" field container
+    const eventOnCallYes = document.getElementById('eventOnCallYes');
+    const eventOnCallNo = document.getElementById('eventOnCallNo');
+    const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
+    const eventOnCallSelect = document.getElementById('eventOnCallSelect');
 
+    // Add event listeners to radio buttons to detect change in selection
+    eventOnCallYes.addEventListener('change', toggleSelectEventVisibility);
+    eventOnCallNo.addEventListener('change', toggleSelectEventVisibility);
 
+    function toggleSelectEventVisibility() {
+        if (eventOnCallYes.checked) {
+            eventOnCallSelectContainer.style.display = 'block'; // Show the input field
+            eventOnCallSelect.setAttribute('required', 'true'); // Make it required
+        } else {
+            eventOnCallSelectContainer.style.display = 'none'; // Hide the input field
+            eventOnCallSelect.removeAttribute('required'); // Remove required attribute
+        }
+    }
 </script>
