@@ -9,7 +9,7 @@
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
 <!-- Add this at the bottom of the <body> section for Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -221,7 +221,7 @@
 
             <div class="form-group">
                 <label asp-for="NPI" class="form-label">NPI</label>
-                <input asp-for="NPI" class="form-control"/>
+                <input asp-for="NPI" id="npi" class="form-control" maxlength="10" inputmode="numeric" pattern="\d*" />
             </div>
 
             <div class="form-group">
@@ -311,40 +311,44 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Staff CAC</label>
-            <div class="form-check">
-                <input asp-for="StaffCAC" type="radio" value="true" class="form-check-input" />
-                <label class="form-check-label">Yes</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="StaffCAC" type="radio" value="false" class="form-check-input" />
-                <label class="form-check-label">No</label>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffDoDID" class="form-label">Staff DoD ID</label>
-            <input asp-for="StaffDoDID" class="form-control" required />
-        </div>
-        <div class="col-md-6">
             <label asp-for="EmployerSubcontractor" class="form-label">Employer/Subcontractor</label>
             <select asp-for="EmployerSubcontractor" class="form-control" required>
                 <option value="Employer">Employer</option>
                 <option value="Subcontractor">Subcontractor</option>
             </select>
         </div>
+        
     </div>
 
     <div class="row mb-3">
         <div class="col-md-6">
+            <label class="form-label">Staff CAC</label>
+            <div class="form-check">
+                <input asp-for="StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" />
+                <label class="form-check-label" for="staffCACYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" />
+                <label class="form-check-label" for="staffCACNo">No</label>
+            </div>
+        </div>
+
+        <div class="col-md-6" id="staffDoDContainer" style="display: none;">
+            <!-- Hidden by default -->
+            <label asp-for="StaffDoDID" class="form-label">Staff DoD ID</label>
+            <input asp-for="StaffDoDID" class="form-control" maxlength="11" id="staffDoDID" />
+        </div>
+    </div>
+
+
+    <div class="row mb-3">
+        <div class="col-md-6">
             <label asp-for="StaffCellNumber" class="form-label">Staff Cell Number</label>
-            <input asp-for="StaffCellNumber" class="form-control" required />
+            <input asp-for="StaffCellNumber" id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
         </div>
         <div class="col-md-6">
             <label asp-for="StaffPhone2" class="form-label">Staff Phone 2</label>
-            <input asp-for="StaffPhone2" class="form-control" />
+            <input asp-for="StaffPhone2" id="staffPhone2"  class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
         </div>
     </div>
 
@@ -372,19 +376,25 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="PrimaryCity" class="form-label">Staff City</label>
-            <input asp-for="PrimaryCity" class="form-control" required />
+            <select asp-for="PrimaryCity" id="primaryCity" class="form-control city-dropdown" required>
+                <option value="">Select City</option> <!-- Default option -->
+            </select>
         </div>
         <div class="col-md-6">
             <label asp-for="PrimaryState" class="form-label">Staff State</label>
-            <input asp-for="PrimaryState" class="form-control" required />
+            <select asp-for="PrimaryState" id="primaryState"  class="form-control" required>
+                @* <option value="">Select State</option> <!-- Default option --> *@
+            </select>
         </div>
     </div>
 
-    
+
     <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="PrimaryZip" class="form-label">Staff Zip</label>
-            <input asp-for="PrimaryZip" class="form-control" required />
+            <select asp-for="PrimaryZip" id="primaryZipCode" class="form-control" required>
+                <option value="">Select Zip Code</option> <!-- Default option -->
+            </select>
         </div>
     </div>
 
@@ -404,18 +414,24 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SecondaryCity" class="form-label">Staff City</label>
-            <input asp-for="SecondaryCity" class="form-control" required />
+            <select asp-for="SecondaryCity" id="secondaryCity" class="form-control city-dropdown" required>
+                <option value="">Select City</option> <!-- Default option -->
+            </select>
         </div>
         <div class="col-md-6">
             <label asp-for="SecondaryState" class="form-label">Staff State</label>
-            <input asp-for="SecondaryState" class="form-control" required />
+            <select asp-for="SecondaryState" id="secondaryState" class="form-control" required>
+                @* <option value="">Select State</option> <!-- Default option --> *@
+            </select>
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SecondaryZip" class="form-label">Staff Zip</label>
-            <input asp-for="SecondaryZip" class="form-control" required />
+            <select asp-for="SecondaryZip" id="secondaryZipCode" class="form-control" required>
+                <option value="">Select Zip Code</option> <!-- Default option -->
+            </select>
         </div>
     </div>
 
@@ -913,6 +929,9 @@
     }
 
     allowOnlyNumericInput("ssn");
+    allowOnlyNumericInput("npi");
+    allowOnlyNumericInput("staffDoDID");
+    
 
     function allowOnlyNumericInput(inputId) {
         document.getElementById(inputId).addEventListener("keypress", function (event) {
@@ -964,4 +983,100 @@
             eventOnCallSelect.removeAttribute('required'); // Remove required attribute
         }
     }
+
+
+
+    const staffCACYes = document.getElementById('staffCACYes');
+    const staffCACNo = document.getElementById('staffCACNo');
+    const staffDoDContainer = document.getElementById('staffDoDContainer');
+    const staffDoDID = document.getElementById('staffDoDID');
+
+    function toggleStaffDoDID() {
+        if (staffCACYes.checked) {
+            staffDoDContainer.style.display = 'block'; // Show the Staff DoD ID field
+            staffDoDID.setAttribute('required', 'required'); // Make it required
+        } else {
+            staffDoDContainer.style.display = 'none'; // Hide the Staff DoD ID field
+            staffDoDID.removeAttribute('required'); // Remove the required attribute
+        }
+    }
+
+    // Attach event listeners to radio buttons
+    staffCACYes.addEventListener('change', toggleStaffDoDID);
+    staffCACNo.addEventListener('change', toggleStaffDoDID);
+
+    // Initial check on page load
+    toggleStaffDoDID();
+
+
+
+    const phoneFields = ['staffCellNumber', 'staffPhone2'];
+    phoneFields.forEach(function (fieldId) {
+        applyPhoneNumberMask(document.getElementById(fieldId));
+    });
+
+    function applyPhoneNumberMask(inputElement) {
+        inputElement.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+            if (value.length > 3 && value.length <= 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length > 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+            }
+            e.target.value = value;
+        });
+    }
+
+
+    $.getJSON('/data/statesAndCities.json', function (data) {
+        const stateCityMap = {};
+        const stateDropdowns = $('#primaryState, #secondaryState');
+
+        stateDropdowns.empty().append('<option value="">Select State</option>');
+        data.states.forEach(state => {
+            stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
+            stateCityMap[state.Name] = state.Cities; // Map state name to its cities
+        });
+
+        stateDropdowns.on('change', function () {
+            const stateName = $(this).val(); // Now this will be the state name
+
+            const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
+            const cityDropdown = $(cityDropdownId);
+
+            cityDropdown.empty().append('<option value="">Select City</option>');
+
+            if (stateName && stateCityMap[stateName]) {
+                stateCityMap[stateName].forEach(city => {
+                    cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
+                });
+            }
+        });
+
+
+        $('.city-dropdown').on('change', function () {
+            const cityDropdownId = $(this).attr('id'); // Get the ID of the changed city dropdown
+            const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
+            const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
+
+            const stateName = $(stateDropdownId).val(); // Get the selected state for the respective city dropdown
+            const cityName = $(this).val(); // Get the selected city name
+            const zipCodeDropdown = $(zipCodeDropdownId); // Get the corresponding zip code dropdown
+
+            // Clear the zip code dropdown and add a default option
+            zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
+
+            if (stateName && cityName && stateCityMap[stateName]) {
+                const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
+
+                if (selectedCity && selectedCity.Zipcodes) {
+                    selectedCity.Zipcodes.forEach(zip => {
+                        zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                    });
+                }
+            }
+        });
+
+
+    });
 </script>
