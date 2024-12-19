@@ -22,9 +22,9 @@ namespace ExcelFilesCompiler.Controllers.Services
         List<string> dateHeaderNames = new List<string> { "DOB", "Date of Next Exam", "PHA Date", "Next PHA Date", "Date of Vision Screen", "Audiogram Date", "Sickle Cell Date", "G6PD Date", "Next Test Date" };
         private string DateFormat = "MM/dd/yyyy";
 
-        private readonly IFileUploaderRepository<FileDataDto> fileUploaderRepository;
+        private readonly IGenericRepository<FileDataDto> fileUploaderRepository;
 
-        public FileUploader(IFileUploaderRepository<FileDataDto> fileUploaderRepository)
+        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository)
         {
             this.fileUploaderRepository = fileUploaderRepository;
         }

@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Repositories.Services
 {
-    public class FileUploaderRepository<T> : IFileUploaderRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;
         private readonly DbSet<T> _dbSet;
 
-        public FileUploaderRepository(ApplicationDbContext context)
+        public GenericRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
@@ -55,7 +55,8 @@ namespace ExcelFilesCompiler.Repositories.Services
         {
             try
             {
-                await _dbSet.AddAsync(entity);
+                await _dbSet.AddAsync(entity); // Add the entity to the DbSet
+                await _context.SaveChangesAsync(); // Save changes to the database
             }
             catch (Exception ex)
             {

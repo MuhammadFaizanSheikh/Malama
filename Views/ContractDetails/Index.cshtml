@@ -1,9 +1,18 @@
-﻿@model ExcelFilesCompiler.Models.ContractDetailsDto
+﻿@model ExcelFilesCompiler.Models.ContractDetails
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
     ViewData["Title"] = "Contract Details";
 }
+
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,8 +20,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contract Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+   
+
+
     <style>
         h2 {
             color: rgba(80, 90, 201, 1);
@@ -33,21 +43,50 @@
 </head>
 
 
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#4CAF50', // Optional: Customize button color
+                iconColor: '#4CAF50' // Optional: Customize icon color
+            });
+        });
+    </script>
+}
+
 <h2 class="text-center mt-4">Contract Details</h2>
 
 <div class="container mt-4 mb-5">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
         <div class="card-body">
-            <form asp-action="YourActionName" method="post">
+        <form asp-action="CreateContractDetails" method="post">
                 <!-- Row 1 -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractID" class="form-label">Contract ID # (Dawson)</label>
-                        <input asp-for="ContractID" class="form-control" placeholder="Enter Contract ID" />
+                    <input asp-for="ContractID" class="form-control" placeholder="Enter Contract ID" maxLength="13"  required />
                         <span asp-validation-for="ContractID" class="text-danger"></span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractAgency" class="form-label">Contract Agency</label>
-                        <input asp-for="ContractAgency" class="form-control" placeholder="Enter Contract Agency" />
+                    <input asp-for="ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
                         <span asp-validation-for="ContractAgency" class="text-danger"></span>
                     </div>
                 </div>
@@ -56,7 +95,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
-                        <select asp-for="ContractServiceBranch" class="form-select">
+                    <select asp-for="ContractServiceBranch" class="form-select" required>
                             <option value="">Select Branch</option>
                             <option>Army</option>
                             <option>Airforce</option>
@@ -65,11 +104,11 @@
                             <option>Coast Guard</option>
                             <option>Space Force</option>
                         </select>
-                        <span asp-validation-for="ContractServiceBranch" class="text-danger"></span>
+                        @* <span asp-validation-for="ContractServiceBranch" class="text-danger"></span> *@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractComponent" class="form-label">Contract Component</label>
-                        <select asp-for="ContractComponent" class="form-select">
+                    <select asp-for="ContractComponent" class="form-select" required>
                             <option value="">Select Component</option>
                             <option>Active Duty</option>
                             <option>National Guard</option>
@@ -83,7 +122,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractClient" class="form-label">Contract Client</label>
-                        <select asp-for="ContractClient" class="form-select">
+                    <select asp-for="ContractClient" class="form-select" required>
                             <option value="">Select Client</option>
                             <option>Command</option>
                             <option>State</option>
@@ -92,7 +131,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractType" class="form-label">Contract Type</label>
-                        <select asp-for="ContractType" class="form-select">
+                    <select asp-for="ContractType" class="form-select" required>
                             <option value="">Select Type</option>
                             <option>FFP</option>
                             <option>CPFF</option>
@@ -106,7 +145,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
-                        <select asp-for="DawsonRoleOnContract" class="form-select">
+                    <select asp-for="DawsonRoleOnContract" class="form-select" required>
                             <option value="">Select Role</option>
                             <option>Prime</option>
                             <option>Sub</option>
@@ -115,7 +154,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractStatus" class="form-label">Contract Status</label>
-                        <select asp-for="ContractStatus" class="form-select">
+                    <select asp-for="ContractStatus" class="form-select" required>
                             <option value="">Select Status</option>
                             <option>Bidding</option>
                             <option>Active</option>
@@ -129,12 +168,12 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractStartDate" class="form-label">Contract Start Date</label>
-                        <input asp-for="ContractStartDate" type="date" class="form-control" />
+                    <input asp-for="ContractStartDate" type="date" class="form-control" required />
                         <span asp-validation-for="ContractStartDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="ContractEndDate" class="form-label">Contract End Date</label>
-                        <input asp-for="ContractEndDate" type="date" class="form-control" />
+                    <input asp-for="ContractEndDate" type="date" class="form-control" required />
                         <span asp-validation-for="ContractEndDate" class="text-danger"></span>
                     </div>
                 </div>
@@ -143,26 +182,26 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="LastName" class="form-label">Last Name</label>
-                    <input asp-for="LastName" class="form-control" placeholder="Enter Last Name" />
-                    <span asp-validation-for="LastName" class="text-danger"></span>
+                    <label asp-for="KoLastName" class="form-label">Last Name</label>
+                    <input asp-for="KoLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="KoLastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="FirstName" class="form-label">First Name</label>
-                    <input asp-for="FirstName" class="form-control" placeholder="Enter First Name" />
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                    <label asp-for="KoFirstName" class="form-label">First Name</label>
+                    <input asp-for="KoFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="KoFirstName" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="KOPhone" class="form-label">KO Phone</label>
-                    <input asp-for="KOPhone" class="form-control" placeholder="Enter KO Phone" />
+                    <input asp-for="KOPhone" class="form-control" id="KoPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="KOPhone" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="KOPhone2" class="form-label">KO Phone 2</label>
-                    <input asp-for="KOPhone2" class="form-control" placeholder="Enter KO Phone 2" />
+                    <input asp-for="KOPhone2" class="form-control" id="KoPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="KOPhone2" class="text-danger"></span>
                 </div>
             </div>
@@ -170,12 +209,12 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="KOEmail" class="form-label">KO Email</label>
-                    <input asp-for="KOEmail" class="form-control" placeholder="Enter KO Email" />
+                    <input asp-for="KOEmail" class="form-control" type="email" placeholder="Enter KO Email" maxLength="50"  required />
                     <span asp-validation-for="KOEmail" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="KONotes" class="form-label">KO Notes</label>
-                    <textarea asp-for="KONotes" class="form-control" rows="4" placeholder="Enter KO Notes"></textarea>
+                    <textarea asp-for="KONotes" class="form-control" rows="4" placeholder="Enter KO Notes" maxLength="300"  required></textarea>
                     <span asp-validation-for="KONotes" class="text-danger"></span>
                 </div>
             </div>
@@ -186,25 +225,41 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="CORLastName" class="form-label">Last Name</label>
-                    <input asp-for="CORLastName" class="form-control" placeholder="Enter Last Name" required />
+                    <input asp-for="CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="CORLastName" class="text-danger"></span>
                 </div>
+
                 <div class="col-md-6 mb-3">
+                    <!-- Label for CORFirstName -->
                     <label asp-for="CORFirstName" class="form-label">First Name</label>
-                    <input asp-for="CORFirstName" class="form-control" placeholder="Enter First Name" required />
+
+                    <div class="input-group">
+                        <!-- Dropdown for Prefix -->
+                        <select asp-for="CORPrefix" class="form-select"  id="CORPrefix" required>
+                            <option value="">Select</option>
+                            <option value="Mr">Mr</option>
+                            <option value="Mrs">Mrs</option>
+                            <option value="Ms">Ms</option>
+                        </select>
+
+                        <!-- Input for First Name -->
+                        <input asp-for="CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    </div>
+
                     <span asp-validation-for="CORFirstName" class="text-danger"></span>
                 </div>
+
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="CORKORank" class="form-label">Rank</label>
-                    <input asp-for="CORKORank" class="form-control" placeholder="Enter Rank" required />
+                    <input asp-for="CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" required />
                     <span asp-validation-for="CORKORank" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="CORPhone" class="form-label">COR Phone</label>
-                    <input asp-for="CORPhone" class="form-control" placeholder="Enter COR Phone" required />
+                    <input asp-for="CORPhone" class="form-control"  id="CorPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12"  required />
                     <span asp-validation-for="CORPhone" class="text-danger"></span>
                 </div>
             </div>
@@ -212,12 +267,12 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="CORPhone2" class="form-label">COR Phone 2</label>
-                    <input asp-for="CORPhone2" class="form-control" placeholder="Enter COR Phone 2" required />
+                    <input asp-for="CORPhone2" class="form-control"  id="CorPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="CORPhone2" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="COREmail" class="form-label">COR Email</label>
-                    <input asp-for="COREmail" class="form-control" placeholder="Enter COR Email" required />
+                    <input asp-for="COREmail" class="form-control" type="email" placeholder="Enter COR Email" maxLength="50" required />
                     <span asp-validation-for="COREmail" class="text-danger"></span>
                 </div>
             </div>
@@ -225,7 +280,7 @@
             <div class="row">
                 <div class="col-md-12 mb-3">
                     <label asp-for="CORNotes" class="form-label">COR Notes</label>
-                    <textarea asp-for="CORNotes" class="form-control" rows="4" placeholder="Enter COR Notes" required></textarea>
+                    <textarea asp-for="CORNotes" class="form-control" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
                     <span asp-validation-for="CORNotes" class="text-danger"></span>
                 </div>
             </div>
@@ -235,12 +290,12 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonProgramManagerLastName" class="form-label">Last Name</label>
-        <input asp-for="DawsonProgramManagerLastName" class="form-control" placeholder="Enter Last Name" />
+                    <input asp-for="DawsonProgramManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
         <span asp-validation-for="DawsonProgramManagerLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonProgramManagerFirstName" class="form-label">First Name</label>
-        <input asp-for="DawsonProgramManagerFirstName" class="form-control" placeholder="Enter First Name" />
+                    <input asp-for="DawsonProgramManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
         <span asp-validation-for="DawsonProgramManagerFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -251,12 +306,12 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonDeputyProgramManagerLastName" class="form-label">Last Name</label>
-        <input asp-for="DawsonDeputyProgramManagerLastName" class="form-control" placeholder="Enter Last Name" />
+                    <input asp-for="DawsonDeputyProgramManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
         <span asp-validation-for="DawsonDeputyProgramManagerLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonDeputyProgramManagerFirstName" class="form-label">First Name</label>
-        <input asp-for="DawsonDeputyProgramManagerFirstName" class="form-control" placeholder="Enter First Name" />
+                    <input asp-for="DawsonDeputyProgramManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
         <span asp-validation-for="DawsonDeputyProgramManagerFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -267,12 +322,12 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonProjectManagerLastName" class="form-label">Last Name</label>
-        <input asp-for="DawsonProjectManagerLastName" class="form-control" placeholder="Enter Last Name" />
+                    <input asp-for="DawsonProjectManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
         <span asp-validation-for="DawsonProjectManagerLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6 mb-3">
         <label asp-for="DawsonProjectManagerFirstName" class="form-label">First Name</label>
-        <input asp-for="DawsonProjectManagerFirstName" class="form-control" placeholder="Enter First Name" />
+                    <input asp-for="DawsonProjectManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
         <span asp-validation-for="DawsonProjectManagerFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -289,3 +344,22 @@
             </form>
         </div>
 </div>
+<script>
+
+    const phoneFields = ['KoPhone', 'KoPhone2', 'CorPhone', 'CorPhone2'];
+    phoneFields.forEach(function (fieldId) {
+        applyPhoneNumberMask(document.getElementById(fieldId));
+    });
+
+    function applyPhoneNumberMask(inputElement) {
+        inputElement.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+            if (value.length > 3 && value.length <= 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length > 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+            }
+            e.target.value = value;
+        });
+    }
+</script>

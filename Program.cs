@@ -17,9 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddScoped(typeof(IFileUploaderRepository<>), typeof(FileUploaderRepository<>));
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IFileUploader, FileUploader>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);

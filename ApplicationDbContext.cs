@@ -15,6 +15,12 @@ namespace ExcelFilesCompiler
 
         // Define your table as a DbSet
         public DbSet<FileDataDto> FileData { get; set; }
+        public DbSet<ContractDetails> ContractDetails { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 
 }
