@@ -26,7 +26,7 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(long id)
         {
             try
             {

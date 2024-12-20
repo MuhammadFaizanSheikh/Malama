@@ -2,6 +2,9 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -32,6 +35,66 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // If an exception occurs, set Success to false and provide the error message
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred: {ex.Message}";
+            }
+
+            return responseDto;
+        }
+
+        public async Task<(ResponseDto responseDto, List<ContractDetails> Contracts)> GetAllContracts()
+        {
+            var responseDto = new ResponseDto();
+            List<ContractDetails> contracts = new List<ContractDetails>(); // Initialize contracts outside try-catch
+
+            try
+            {
+                contracts = (await repository.GetAllAsync()).ToList();
+                responseDto.Success = true;
+                responseDto.Message = "Contracts fetched successfully!";
+            }
+            catch (Exception ex)
+            {
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred while fetching all contracts: {ex.Message}";
+            }
+
+            return (responseDto, contracts);
+        }
+
+
+        public async Task<(ResponseDto responseDto, ContractDetails contractDetails)> GetContractById(long id)
+        {
+            var responseDto = new ResponseDto();
+            ContractDetails contractDetails = null;
+
+            try
+            {
+                contractDetails = await repository.GetByIdAsync(id);
+                responseDto.Success = true;
+                responseDto.Message = "Contract fetched successfully!";
+            }
+            catch (Exception ex)
+            {
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred while fetching contract: {ex.Message}";
+            }
+
+            return (responseDto, contractDetails);
+        }
+
+        public async Task<ResponseDto> UpdateContract(ContractDetails contract)
+        {
+            var responseDto = new ResponseDto();
+
+            try
+            {
+                await repository.UpdateAsync(contract);
+                responseDto.Success = true;
+                responseDto.Message = "Contract updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
             }
 
             return responseDto;
