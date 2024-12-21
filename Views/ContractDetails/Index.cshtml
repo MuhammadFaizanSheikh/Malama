@@ -104,7 +104,9 @@
         </div>
     }
 
-    <button class="btn btn-primary" id="addContractBtn">Add Contract</button>
+    <button class="btn btn-primary" id="addContractBtn" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
+        Add Contract
+    </button>
     <div id="datatableWrapper" class="datatable-wrapper">
     <table id="contractsTable" class="display">
         <thead>
@@ -125,7 +127,7 @@
             {
                 @foreach (var contract in Model.Contracts)
                 {
-                    <tr>
+                        <tr data-id="@contract.Id">
                         <td>@contract.ContractID</td>
                         <td>@contract.ContractAgency</td>
                         <td>@contract.ContractServiceBranch</td>
@@ -135,8 +137,8 @@
                         <td>@contract.DawsonRoleOnContract</td>
                         <td>@contract.ContractStatus</td>
                         <td>
-                            <a href="@Url.Action("Edit", new { id = contract.Id })" class="btn btn-primary">Edit</a>
-                            <a href="@Url.Action("Details", new { id = contract.Id })" class="btn btn-info">View</a>
+                                <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id">Edit</a>
+                                <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
                         </td>
                     </tr>
                 }
@@ -151,18 +153,21 @@
     </table>
     </div>
 
+
+    
+
     <div class="card-body" style="display: none;">
         <form asp-action="CreateContractDetails" method="post">
             <!-- Row 1 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractID" class="form-label">Contract ID # (Dawson)</label>
-                    <input asp-for="SingleContract.ContractID" class="form-control" placeholder="Enter Contract ID" maxLength="13" required />
+                    <label for="ContractID" class="form-label">Contract ID # (Dawson)</label>
+                    <input id="ContractID" asp-for="SingleContract.ContractID" class="form-control" placeholder="Enter Contract ID" maxLength="13" required />
                     <span asp-validation-for="SingleContract.ContractID" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractAgency" class="form-label">Contract Agency</label>
-                    <input asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
+                    <label for="ContractAgency" class="form-label">Contract Agency</label>
+                    <input id="ContractAgency" asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
                     <span asp-validation-for="SingleContract.ContractAgency" class="text-danger"></span>
                 </div>
             </div>
@@ -170,8 +175,8 @@
             <!-- Row 2 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractServiceBranch" class="form-label">Contract Service Branch</label>
-                    <select asp-for="SingleContract.ContractServiceBranch" class="form-select" required>
+                    <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
+                    <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" required>
                         <option value="">Select Branch</option>
                         <option>Army</option>
                         <option>Airforce</option>
@@ -180,11 +185,10 @@
                         <option>Coast Guard</option>
                         <option>Space Force</option>
                     </select>
-                    @* <span asp-validation-for="SingleContract.ContractServiceBranch" class="text-danger"></span> *@
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractComponent" class="form-label">Contract Component</label>
-                    <select asp-for="SingleContract.ContractComponent" class="form-select" required>
+                    <label for="ContractComponent" class="form-label">Contract Component</label>
+                    <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" required>
                         <option value="">Select Component</option>
                         <option>Active Duty</option>
                         <option>National Guard</option>
@@ -197,8 +201,8 @@
             <!-- Row 3 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractClient" class="form-label">Contract Client</label>
-                    <select asp-for="SingleContract.ContractClient" class="form-select" required>
+                    <label for="ContractClient" class="form-label">Contract Client</label>
+                    <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" required>
                         <option value="">Select Client</option>
                         <option>Command</option>
                         <option>State</option>
@@ -206,8 +210,8 @@
                     <span asp-validation-for="SingleContract.ContractClient" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractType" class="form-label">Contract Type</label>
-                    <select asp-for="SingleContract.ContractType" class="form-select" required>
+                    <label for="ContractType" class="form-label">Contract Type</label>
+                    <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" required>
                         <option value="">Select Type</option>
                         <option>FFP</option>
                         <option>CPFF</option>
@@ -220,8 +224,8 @@
             <!-- Row 4 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
-                    <select asp-for="SingleContract.DawsonRoleOnContract" class="form-select" required>
+                    <label for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
+                    <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" required>
                         <option value="">Select Role</option>
                         <option>Prime</option>
                         <option>Sub</option>
@@ -229,8 +233,8 @@
                     <span asp-validation-for="SingleContract.DawsonRoleOnContract" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractStatus" class="form-label">Contract Status</label>
-                    <select asp-for="SingleContract.ContractStatus" class="form-select" required>
+                    <label for="ContractStatus" class="form-label">Contract Status</label>
+                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" required>
                         <option value="">Select Status</option>
                         <option>Bidding</option>
                         <option>Active</option>
@@ -243,13 +247,13 @@
             <!-- Row 5 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractStartDate" class="form-label">Contract Start Date</label>
-                    <input asp-for="SingleContract.ContractStartDate" type="date" class="form-control" required />
+                    <label for="ContractStartDate" class="form-label">Contract Start Date</label>
+                    <input id="ContractStartDate" asp-for="SingleContract.ContractStartDate" type="date" class="form-control" required />
                     <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.ContractEndDate" class="form-label">Contract End Date</label>
-                    <input asp-for="SingleContract.ContractEndDate" type="date" class="form-control" required />
+                    <label for="ContractEndDate" class="form-label">Contract End Date</label>
+                    <input id="ContractEndDate" asp-for="SingleContract.ContractEndDate" type="date" class="form-control" required />
                     <span asp-validation-for="SingleContract.ContractEndDate" class="text-danger"></span>
                 </div>
             </div>
@@ -258,39 +262,39 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KoLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.KoLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <label for="KoLastName" class="form-label">Last Name</label>
+                    <input id="KoLastName" asp-for="SingleContract.KoLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.KoLastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KoFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.KoFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <label for="KoFirstName" class="form-label">First Name</label>
+                    <input id="KoFirstName" asp-for="SingleContract.KoFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.KoFirstName" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KOPhone" class="form-label">KO Phone</label>
-                    <input asp-for="SingleContract.KOPhone" class="form-control" id="KoPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <label for="KOPhone" class="form-label">KO Phone</label>
+                    <input id="KOPhone" asp-for="SingleContract.KOPhone" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="SingleContract.KOPhone" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KOPhone2" class="form-label">KO Phone 2</label>
-                    <input asp-for="SingleContract.KOPhone2" class="form-control" id="KoPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <label for="KOPhone2" class="form-label">KO Phone 2</label>
+                    <input id="KOPhone2" asp-for="SingleContract.KOPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="SingleContract.KOPhone2" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KOEmail" class="form-label">KO Email</label>
-                    <input asp-for="SingleContract.KOEmail" class="form-control" type="email" placeholder="Enter KO Email" maxLength="50" required />
+                    <label for="KOEmail" class="form-label">KO Email</label>
+                    <input id="KOEmail" asp-for="SingleContract.KOEmail" class="form-control" type="email" placeholder="Enter KO Email" maxLength="50" required />
                     <span asp-validation-for="SingleContract.KOEmail" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.KONotes" class="form-label">KO Notes</label>
-                    <textarea asp-for="SingleContract.KONotes" class="form-control" rows="4" placeholder="Enter KO Notes" maxLength="300" required></textarea>
+                    <label for="KONotes" class="form-label">KO Notes</label>
+                    <textarea id="KONotes" asp-for="SingleContract.KONotes" class="form-control" rows="4" placeholder="Enter KO Notes" maxLength="300" required></textarea>
                     <span asp-validation-for="SingleContract.KONotes" class="text-danger"></span>
                 </div>
             </div>
@@ -300,18 +304,18 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <label for="CORLastName" class="form-label">Last Name</label>
+                    <input id="CORLastName" asp-for="SingleContract.CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.CORLastName" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <!-- Label for CORFirstName -->
-                    <label asp-for="SingleContract.CORFirstName" class="form-label">First Name</label>
+                    <label for="CORFirstName" class="form-label">First Name</label>
 
                     <div class="input-group">
                         <!-- Dropdown for Prefix -->
-                        <select asp-for="SingleContract.CORPrefix" class="form-select" id="CORPrefix" required>
+                        <select id="CORPrefix" asp-for="SingleContract.CORPrefix" class="form-select" required>
                             <option value="">Select</option>
                             <option value="Mr">Mr</option>
                             <option value="Mrs">Mrs</option>
@@ -319,18 +323,17 @@
                         </select>
 
                         <!-- Input for First Name -->
-                        <input asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                        <input id="CORFirstName" asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
                     </div>
-
                     <span asp-validation-for="SingleContract.CORFirstName" class="text-danger"></span>
                 </div>
-
             </div>
+
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORKORank" class="form-label">Rank</label>
-                    <input asp-for="SingleContract.CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" required />
+                    <input asp-for="SingleContract.CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" id="CORKORank" required />
                     <span asp-validation-for="SingleContract.CORKORank" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -348,7 +351,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.COREmail" class="form-label">COR Email</label>
-                    <input asp-for="SingleContract.COREmail" class="form-control" type="email" placeholder="Enter COR Email" maxLength="50" required />
+                    <input asp-for="SingleContract.COREmail" class="form-control" type="email" id="COREmail" placeholder="Enter COR Email" maxLength="50" required />
                     <span asp-validation-for="SingleContract.COREmail" class="text-danger"></span>
                 </div>
             </div>
@@ -356,7 +359,7 @@
             <div class="row">
                 <div class="col-md-12 mb-3">
                     <label asp-for="SingleContract.CORNotes" class="form-label">COR Notes</label>
-                    <textarea asp-for="SingleContract.CORNotes" class="form-control" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
+                    <textarea asp-for="SingleContract.CORNotes" class="form-control" id="CORNotes" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
                     <span asp-validation-for="SingleContract.CORNotes" class="text-danger"></span>
                 </div>
             </div>
@@ -366,59 +369,66 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonProgramManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonProgramManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonProgramManagerLastName" class="form-control" id="DawsonProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonProgramManagerLastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-control" id="DawsonProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonProgramManagerFirstName" class="text-danger"></span>
                 </div>
             </div>
-
 
             <h3 class="mt-5 mb-3">DAWSON Deputy Program Manager (DDPM)</h3>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-control" id="DawsonDeputyProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerLastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-control" id="DawsonDeputyProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="text-danger"></span>
                 </div>
             </div>
-
 
             <h3 class="mt-5 mb-3">DAWSON Project Manager (DPM)</h3>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonProjectManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonProjectManagerLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonProjectManagerLastName" class="form-control" id="DawsonProjectManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonProjectManagerLastName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <input asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-control" id="DawsonProjectManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.DawsonProjectManagerFirstName" class="text-danger"></span>
                 </div>
             </div>
 
 
+
             <div class="d-flex justify-content-end mt-4">
-                <button type="submit" class="btn btn-success btn-lg me-2">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3">
                     <i class="bi bi-check-circle"></i> Submit
                 </button>
-                <button type="reset" class="btn btn-secondary btn-lg">
+                <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
                     <i class="bi bi-arrow-repeat"></i> Reset
                 </button>
+                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;">
+                    <i class="bi bi-pencil"></i> Update
+                </button>
+                <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                    Back to Contracts
+                </button>
             </div>
+
         </form>
     </div>
+
 </div>
 <script>
 
@@ -427,11 +437,22 @@
         $('.card-body').hide();
         $('#contractsTable').show();
 
-        // Add Contract button click event
         $('#addContractBtn').click(function () {
-            // Show the form and hide the table
+            // Show the form and hide the datatable
             $('.card-body').show();
             $('#datatableWrapper').hide();
+            // Hide Update button and show Submit/Reset buttons
+            $('#submitBtn').show();
+            $('#resetBtn').show();
+            $('#updateBtn').hide();
+            $('#addContractBtn').hide();
+        });
+
+        
+
+        $('#backToTableBtn').click(function () {
+            $('.card-body').hide();
+            $('#datatableWrapper').show();
         });
 
         $('#contractsTable').DataTable({
@@ -445,6 +466,77 @@
             "language": {
                 "search": "Search Contracts:"  // Customizing the search box label
             }
+        });
+
+        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+            debugger;
+            var contractId = $(this).data('id');  // Get contract ID from data-id attribute
+
+            // AJAX call to fetch contract details by ID
+            $.ajax({
+                url: '/ContractDetails/GetContractById/' + contractId,  // Make sure the URL is correct
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        debugger;
+                        var contract = response.contractDetails;
+                        $('#ContractID').val(contract.contractID);
+                        $('#ContractAgency').val(contract.contractAgency);
+                        $('#ContractServiceBranch').val(contract.contractServiceBranch);
+                        $('#ContractComponent').val(contract.contractComponent);
+                        $('#ContractClient').val(contract.contractClient);
+                        $('#ContractType').val(contract.contractType);
+                        $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
+                        $('#ContractStatus').val(contract.contractStatus);
+
+                        let formattedStartDate = new Date(contract.contractStartDate).toISOString().split('T')[0];
+                        $('#ContractStartDate').val(formattedStartDate);
+
+                        let formattedEndDate = new Date(contract.contractEndDate).toISOString().split('T')[0];
+                        $('#ContractEndDate').val(formattedEndDate);
+
+                        //KO
+                        $('#KoLastName').val(contract.koLastName);
+                        $('#KoFirstName').val(contract.koFirstName);
+                        $('#KOPhone').val(contract.koPhone);
+                        $('#KOPhone2').val(contract.koPhone2);
+                        $('#KOEmail').val(contract.koEmail);
+                        $('#KONotes').val(contract.koNotes);
+                        $('#CORLastName').val(contract.corLastName);
+                        $('#CORPrefix').val(contract.corPrefix);
+                        $('#CORFirstName').val(contract.corFirstName);
+
+                        $('#CORKORank').val(contract.corkoRank);
+                        $('#CorPhone').val(contract.corPhone);
+                        $('#CorPhone2').val(contract.corPhone2);
+                        $('#COREmail').val(contract.corEmail);
+                        $('#CORNotes').val(contract.corEmail);
+
+                        $('#DawsonProgramManagerLastName').val(contract.dawsonProgramManagerLastName);
+                        $('#DawsonProgramManagerFirstName').val(contract.dawsonProgramManagerFirstName);
+
+                        $('#DawsonDeputyProgramManagerLastName').val(contract.dawsonDeputyProgramManagerLastName);
+                        $('#DawsonDeputyProgramManagerFirstName').val(contract.dawsonDeputyProgramManagerFirstName);
+
+                        $('#DawsonProjectManagerLastName').val(contract.dawsonProjectManagerLastName);
+                        $('#DawsonProjectManagerFirstName').val(contract.dawsonProjectManagerFirstName);
+
+
+
+                        // Show the form and hide the table
+                        $('#datatableWrapper').hide();
+                        $('.card-body').show();
+                        $('#submitBtn').hide();
+                        $('#resetBtn').hide();
+                        $('#updateBtn').show();
+                    } else {
+                        alert(response.message);  // Show error message
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract data.');
+                }
+            });
         });
     });
     

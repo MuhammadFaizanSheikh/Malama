@@ -123,26 +123,20 @@ namespace ExcelFilesCompiler.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> GetContractById(long contractId)
+        [HttpGet]
+        public async Task<IActionResult> GetContractById(long id)
         {
             try
             {
-                var (res, contractDetails) = await _contractService.GetContractById(contractId);
-
+                var (res, contractDetails) = await _contractService.GetContractById(id);
                 if (!res.Success)
                 {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Error";
-                    TempData["ResponseMessage"] = "An unexpected error occurred.";
-                    return RedirectToAction("Index", contractDetails);
+                    return Json(new { success = false, message = "Contract not found." });
                 }
-                else
-                {
-                    return Json(new { success = true, data = contractDetails });
-                }
+
+                return Json(new { success = true, contractDetails });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "An error occurred while retrieving the contract." });
             }
