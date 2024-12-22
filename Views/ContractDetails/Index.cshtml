@@ -67,7 +67,29 @@
                     background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
                 }
 
+            #contractsTable td, #contractsTable th {
+                text-align: center; /* Aligns the text in the middle of the cell */
+            }
 
+                #contractsTable td button, #contractsTable td a {
+                    display: inline-block; /* Makes the buttons appear side by side */
+                    margin-right: 5px; /* Optional: Adds space between the buttons */
+                }
+
+                #contractsTable td .button-container {
+                    display: flex;
+                    justify-content: center; /* Aligns buttons horizontally in the center */
+                }
+
+                    #contractsTable td .button-container a {
+                        margin-right: 5px; /* Optional: Adds space between the buttons */
+                    }
+
+            #contractsTable thead th {
+                background-color: rgba(120, 130, 221, 1); /* Header background color */
+                color: white; /* Header text color */
+                text-align: center; /* Optional: Center-align header text */
+            }
     </style>
 </head>
 
@@ -80,17 +102,21 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
             Swal.fire({
                 icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
                 title: '@TempData["ResponseTitle"]',
                 text: '@TempData["ResponseMessage"]',
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#4CAF50', // Optional: Customize button color
-                iconColor: '#4CAF50' // Optional: Customize icon color
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
             });
         });
     </script>
 }
+
 
 <h2 class="text-center mt-4">Contract Details</h2>
 
@@ -108,9 +134,12 @@
         </div>
     }
 
-    <button class="btn btn-primary" id="addContractBtn" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
-        Add Contract
-    </button>
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <button class="btn btn-primary" id="addContractBtn"
+                style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
+            Add New Contract
+        </button>
+    </div>
     <div id="datatableWrapper" class="datatable-wrapper">
     <table id="contractsTable" class="display">
         <thead>
@@ -123,7 +152,9 @@
                 <th>Contract Type</th>
                 <th>Contract Dawson Role</th>
                 <th>Contract Status</th>
-                <th>Actions</th>
+                    <th>Contract Start Date</th>
+                    <th>Contract End Date</th>
+                    <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -140,10 +171,15 @@
                         <td>@contract.ContractType</td>
                         <td>@contract.DawsonRoleOnContract</td>
                         <td>@contract.ContractStatus</td>
-                        <td>
-                                <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id">Edit</a>
-                                <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
-                        </td>
+                            <td>@contract.ContractStartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.ContractEndDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="button-container">
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
+                                </div>
+                            </td>
+
                     </tr>
                 }
             }
@@ -313,56 +349,53 @@
                     <input id="CORLastName" asp-for="SingleContract.CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
                     <span asp-validation-for="SingleContract.CORLastName" class="text-danger"></span>
                 </div>
-
-                <div class="col-md-6 mb-3">
-                    <!-- Label for CORFirstName -->
-                    <label for="CORFirstName" class="form-label">First Name</label>
-
-                    <div class="input-group">
-                        <!-- Dropdown for Prefix -->
-                        <select id="CORPrefix" asp-for="SingleContract.CORPrefix" class="form-select" required>
-                            <option value="">Select</option>
-                            <option value="Mr">Mr</option>
-                            <option value="Mrs">Mrs</option>
-                            <option value="Ms">Ms</option>
-                        </select>
-
-                        <!-- Input for First Name -->
-                        <input id="CORFirstName" asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
-                    </div>
-                    <span asp-validation-for="SingleContract.CORFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORKORank" class="form-label">Rank</label>
                     <input asp-for="SingleContract.CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" id="CORKORank" required />
                     <span asp-validation-for="SingleContract.CORKORank" class="text-danger"></span>
                 </div>
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORPrefix" class="form-label">Prefix</label>
+                    <select id="CORPrefix" asp-for="SingleContract.CORPrefix" class="form-select" required>
+                        <option value="">Select</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Ms">Ms</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="CORFirstName" class="form-label">First Name</label>
+                    <input id="CORFirstName" asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.CORFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORPhone" class="form-label">COR Phone</label>
                     <input asp-for="SingleContract.CORPhone" class="form-control" id="CorPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="SingleContract.CORPhone" class="text-danger"></span>
                 </div>
-            </div>
-
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORPhone2" class="form-label">COR Phone 2</label>
                     <input asp-for="SingleContract.CORPhone2" class="form-control" id="CorPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     <span asp-validation-for="SingleContract.CORPhone2" class="text-danger"></span>
                 </div>
+            </div>
+
+            <div class="row">
+               
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.COREmail" class="form-label">COR Email</label>
                     <input asp-for="SingleContract.COREmail" class="form-control" type="email" id="COREmail" placeholder="Enter COR Email" maxLength="50" required />
                     <span asp-validation-for="SingleContract.COREmail" class="text-danger"></span>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12 mb-3">
+                <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORNotes" class="form-label">COR Notes</label>
                     <textarea asp-for="SingleContract.CORNotes" class="form-control" id="CORNotes" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
                     <span asp-validation-for="SingleContract.CORNotes" class="text-danger"></span>
@@ -451,6 +484,45 @@
             $('#resetBtn').show();
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
+
+            $('#hiddenId').val('');
+            $('#ContractID').val('');
+            $('#ContractAgency').val('');
+            $('#ContractServiceBranch').val('');
+            $('#ContractComponent').val('');
+            $('#ContractClient').val('');
+            $('#ContractType').val('');
+            $('#DawsonRoleOnContract').val('');
+            $('#ContractStatus').val('');
+
+            $('#ContractStartDate').val('');
+            $('#ContractEndDate').val('');
+
+            // KO
+            $('#KoLastName').val('');
+            $('#KoFirstName').val('');
+            $('#KOPhone').val('');
+            $('#KOPhone2').val('');
+            $('#KOEmail').val('');
+            $('#KONotes').val('');
+            $('#CORLastName').val('');
+            $('#CORPrefix').val('');
+            $('#CORFirstName').val('');
+
+            $('#CORKORank').val('');
+            $('#CorPhone').val('');
+            $('#CorPhone2').val('');
+            $('#COREmail').val('');
+            $('#CORNotes').val('');
+
+            $('#DawsonProgramManagerLastName').val('');
+            $('#DawsonProgramManagerFirstName').val('');
+
+            $('#DawsonDeputyProgramManagerLastName').val('');
+            $('#DawsonDeputyProgramManagerFirstName').val('');
+
+            $('#DawsonProjectManagerLastName').val('');
+            $('#DawsonProjectManagerFirstName').val('');
         });
 
         
@@ -458,13 +530,15 @@
         $('#backToTableBtn').click(function () {
             $('.card-body').hide();
             $('#datatableWrapper').show();
+            $('#addContractBtn').show();
+            
         });
 
         $('#contractsTable').DataTable({
             "paging": true,  // Enables pagination
             "lengthChange": true,  // Option to change number of records per page
             "searching": true,  // Enables search box
-            "ordering": true,  // Enables column sorting
+            "ordering": false,  // Enables column sorting
             "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
             "autoWidth": true,  // Adjusts table width automatically
             "responsive": true,  // Makes the table responsive on small screens
@@ -474,9 +548,11 @@
             "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
         });
 
+
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             debugger;
             var contractId = $(this).data('id');  // Get contract ID from data-id attribute
+            var isViewButton = $(this).hasClass('view-btn');
 
             // AJAX call to fetch contract details by ID
             $.ajax({
@@ -497,11 +573,14 @@
                         $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
                         $('#ContractStatus').val(contract.contractStatus);
 
-                        let formattedStartDate = new Date(contract.contractStartDate).toISOString().split('T')[0];
+                        let contractStartDate = new Date(contract.contractStartDate);
+                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD
                         $('#ContractStartDate').val(formattedStartDate);
 
-                        let formattedEndDate = new Date(contract.contractEndDate).toISOString().split('T')[0];
+                        let contractEndDate = new Date(contract.contractEndDate);
+                        let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
                         $('#ContractEndDate').val(formattedEndDate);
+
 
                         //KO
                         $('#KoLastName').val(contract.koLastName);
@@ -536,7 +615,13 @@
                         $('.card-body').show();
                         $('#submitBtn').hide();
                         $('#resetBtn').hide();
-                        $('#updateBtn').show();
+                        $('#addContractBtn').hide();
+                        
+                        if (isViewButton) {
+                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                        } else {
+                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                        }
                     } else {
                         alert(response.message);  // Show error message
                     }
@@ -546,22 +631,25 @@
                 }
             });
         });
+
+
+        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
+        phoneFields.forEach(function (fieldId) {
+            applyPhoneNumberMask(document.getElementById(fieldId));
+        });
+
+        function applyPhoneNumberMask(inputElement) {
+            inputElement.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+                if (value.length > 3 && value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length > 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+                e.target.value = value;
+            });
+        }
     });
     
-    const phoneFields = ['KoPhone', 'KoPhone2', 'CorPhone', 'CorPhone2'];
-    phoneFields.forEach(function (fieldId) {
-        applyPhoneNumberMask(document.getElementById(fieldId));
-    });
-
-    function applyPhoneNumberMask(inputElement) {
-        inputElement.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
-            if (value.length > 3 && value.length <= 6) {
-                value = value.slice(0, 3) + '-' + value.slice(3);
-            } else if (value.length > 6) {
-                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
-            }
-            e.target.value = value;
-        });
-    }
+    
 </script>

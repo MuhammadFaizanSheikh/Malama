@@ -90,6 +90,11 @@ namespace ExcelFilesCompiler.Controllers
             {
                 ResponseDto res = new ResponseDto();
 
+                if (contractDto.SingleContract.Id == 0) // Adding a new record
+                {
+                    ModelState.Remove("SingleContract.Id");
+                }
+
                 if (!ModelState.IsValid)
                 {
                     // Log the validation errors for debugging
@@ -106,13 +111,23 @@ namespace ExcelFilesCompiler.Controllers
 
                 var user = _userManager.GetUserAsync(User).Result;
 
-                if (action == "Add")
+                if (user != null)
                 {
-                    res = await _contractService.AddContractAsync(contractDto.SingleContract, user.UserName);
+                    if (action == "Add")
+                    {
+                        res = await _contractService.AddContractAsync(contractDto.SingleContract, user.UserName);
+                    }
+                    else if (action == "Update")
+                    {
+                        res = await _contractService.UpdateContract(contractDto.SingleContract, user.UserName);
+                    }
                 }
-                else if (action == "Update")
+                else
                 {
-                    res = await _contractService.UpdateContract(contractDto.SingleContract, user.UserName);
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] ="Error";
+                    TempData["ResponseMessage"] = "Please login and try again";
+                    return RedirectToAction("Index");
                 }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
