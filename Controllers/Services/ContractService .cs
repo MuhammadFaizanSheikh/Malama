@@ -40,45 +40,37 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<(ResponseDto responseDto, List<ContractDetails> Contracts)> GetAllContracts()
+        public async Task<List<ContractDetails>> GetAllContracts()
         {
             var responseDto = new ResponseDto();
             List<ContractDetails> contracts = new List<ContractDetails>(); // Initialize contracts outside try-catch
 
             try
             {
-                contracts = (await repository.GetAllAsync()).ToList();
-                responseDto.Success = true;
-                responseDto.Message = "Contracts fetched successfully!";
+                contracts = (await repository.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
             }
             catch (Exception ex)
             {
-                responseDto.Success = false;
-                responseDto.Message = $"An error occurred while fetching all contracts: {ex.Message}";
+                throw;
             }
 
-            return (responseDto, contracts);
+            return contracts;
         }
 
 
-        public async Task<(ResponseDto responseDto, ContractDetails contractDetails)> GetContractById(long id)
+        public async Task<ContractDetails> GetContractById(long id)
         {
-            var responseDto = new ResponseDto();
             ContractDetails contractDetails = null;
 
             try
             {
                 contractDetails = await repository.GetByIdAsync(id);
-                responseDto.Success = true;
-                responseDto.Message = "Contract fetched successfully!";
             }
             catch (Exception ex)
             {
-                responseDto.Success = false;
-                responseDto.Message = $"An error occurred while fetching contract: {ex.Message}";
             }
 
-            return (responseDto, contractDetails);
+            return contractDetails;
         }
 
         public async Task<ResponseDto> UpdateContract(ContractDetails contract)

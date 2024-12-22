@@ -71,6 +71,10 @@
     </style>
 </head>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -158,6 +162,7 @@
 
     <div class="card-body" style="display: none;">
         <form asp-action="CreateContractDetails" method="post">
+            <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
             <!-- Row 1 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -412,13 +417,13 @@
 
 
             <div class="d-flex justify-content-end mt-4">
-                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
                     <i class="bi bi-check-circle"></i> Submit
                 </button>
                 <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
                     <i class="bi bi-arrow-repeat"></i> Reset
                 </button>
-                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;">
+                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
                     <i class="bi bi-pencil"></i> Update
                 </button>
                 <button id="backToTableBtn" type="button" class="btn btn-secondary">
@@ -465,7 +470,8 @@
             "responsive": true,  // Makes the table responsive on small screens
             "language": {
                 "search": "Search Contracts:"  // Customizing the search box label
-            }
+            },
+            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
         });
 
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
@@ -480,6 +486,8 @@
                     if (response.success) {
                         debugger;
                         var contract = response.contractDetails;
+                        
+                        $('#hiddenId').val(contract.id);
                         $('#ContractID').val(contract.contractID);
                         $('#ContractAgency').val(contract.contractAgency);
                         $('#ContractServiceBranch').val(contract.contractServiceBranch);

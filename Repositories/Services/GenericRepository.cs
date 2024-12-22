@@ -68,7 +68,22 @@ namespace ExcelFilesCompiler.Repositories.Services
         {
             try
             {
-                _dbSet.Update(entity);
+                var keyProperty = typeof(T).GetProperty("Id"); // Access the primary key dynamically
+                if (keyProperty == null)
+                {
+                    throw new Exception("Entity does not have a property named 'Id'.");
+                }
+
+                var keyValue = keyProperty.GetValue(entity); // Get the value of the Id
+                var existingEntity = await _dbSet.FindAsync(keyValue);
+
+                if (existingEntity == null)
+                {
+                    throw new Exception("Entity does not exist in the database.");
+                }
+
+                _context.Entry(existingEntity).CurrentValues.SetValues(entity); // Update values
+                await _context.SaveChangesAsync(); // Save changes to database
             }
             catch (Exception ex)
             {

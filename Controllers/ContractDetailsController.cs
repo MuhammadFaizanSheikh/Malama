@@ -22,18 +22,11 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                // Correct the tuple destructuring to match the return values
-                var (res, contracts) = await _contractService.GetAllContracts();
-
-                // You can also use `res` to check for success message or error
-                responseDto.Success = res.Success;
-                responseDto.Message = res.Message;
-                contractsList = contracts;
+                contractsList = await _contractService.GetAllContracts();
             }
             catch (Exception ex)
             {
-                responseDto.Success = false;
-                responseDto.Message = $"An error occurred while fetching contracts: {ex.Message}";
+                TempData["ErrorMessage"] = "We encountered an issue while loading contracts. Please try again later.";
             }
 
             var viewModel = new ContractViewModel
@@ -88,10 +81,12 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateContractDetails(ContractViewModel contractDto)
+        public async Task<IActionResult> CreateContractDetails(ContractViewModel contractDto, string action)
         {
             try
             {
+                ResponseDto res = new ResponseDto();
+
                 if (!ModelState.IsValid)
                 {
                     // Log the validation errors for debugging
@@ -106,7 +101,14 @@ namespace ExcelFilesCompiler.Controllers
                     return View("Index", contractDto);
                 }
 
-                var res = await _contractService.AddContractAsync(contractDto.SingleContract);
+                if (action == "Add")
+                {
+                    res = await _contractService.AddContractAsync(contractDto.SingleContract);
+                }
+                else if (action == "Update")
+                {
+                    res = await _contractService.UpdateContract(contractDto.SingleContract);
+                }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
@@ -128,8 +130,8 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var (res, contractDetails) = await _contractService.GetContractById(id);
-                if (!res.Success)
+                var contractDetails = await _contractService.GetContractById(id);
+                if (contractDetails == null)
                 {
                     return Json(new { success = false, message = "Contract not found." });
                 }
@@ -142,24 +144,24 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] ContractDetails contractDto)
-        {
-            try
-            {
-                var res = await _contractService.UpdateContract(contractDto);
-                TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
-                TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
-                TempData["ResponseMessage"] = res.Message;
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                TempData["ResponseStatus"] = "error";
-                TempData["ResponseTitle"] = "Error";
-                TempData["ResponseMessage"] = "An unexpected error occurred.";
-                return RedirectToAction("Index", contractDto);
-            }
-        }
+        //[HttpPut]
+        //public async Task<IActionResult> Update([FromBody] ContractDetails contractDto)
+        //{
+        //    try
+        //    {
+        //        var res = await _contractService.UpdateContract(contractDto);
+        //        TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
+        //        TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
+        //        TempData["ResponseMessage"] = res.Message;
+        //        return RedirectToAction("Index");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["ResponseStatus"] = "error";
+        //        TempData["ResponseTitle"] = "Error";
+        //        TempData["ResponseMessage"] = "An unexpected error occurred.";
+        //        return RedirectToAction("Index", contractDto);
+        //    }
+        //}
     }
 }
