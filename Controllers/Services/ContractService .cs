@@ -17,13 +17,15 @@ namespace ExcelFilesCompiler.Controllers.Services
             this.repository = repository;
         }
 
-        public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail)
+        public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
             try
             {
                 // Attempt to add the contract detail to the repository
+                contractDetail.AddedBy = loggedinUserName;
+                contractDetail.AddedOn = DateTime.Now;
                 await repository.AddAsync(contractDetail);
 
                 // If successful, set Success to true and provide a success message
@@ -73,12 +75,14 @@ namespace ExcelFilesCompiler.Controllers.Services
             return contractDetails;
         }
 
-        public async Task<ResponseDto> UpdateContract(ContractDetails contract)
+        public async Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
             try
             {
+                contract.UpdatedBy = loggedinUserName;
+                contract.UpdatedOn = DateTime.Now;
                 await repository.UpdateAsync(contract);
                 responseDto.Success = true;
                 responseDto.Message = "Contract updated successfully!";

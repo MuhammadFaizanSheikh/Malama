@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.Contracts;
@@ -9,10 +10,12 @@ namespace ExcelFilesCompiler.Controllers
     public class ContractDetailsController : Controller
     {
         private readonly IContractService _contractService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ContractDetailsController(IContractService contractService)
+        public ContractDetailsController(IContractService contractService, UserManager<ApplicationUser> userManager)
         {
             _contractService = contractService;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -101,13 +104,15 @@ namespace ExcelFilesCompiler.Controllers
                     return View("Index", contractDto);
                 }
 
+                var user = _userManager.GetUserAsync(User).Result;
+
                 if (action == "Add")
                 {
-                    res = await _contractService.AddContractAsync(contractDto.SingleContract);
+                    res = await _contractService.AddContractAsync(contractDto.SingleContract, user.UserName);
                 }
                 else if (action == "Update")
                 {
-                    res = await _contractService.UpdateContract(contractDto.SingleContract);
+                    res = await _contractService.UpdateContract(contractDto.SingleContract, user.UserName);
                 }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
