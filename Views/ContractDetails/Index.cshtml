@@ -90,6 +90,12 @@
                 color: white; /* Header text color */
                 text-align: center; /* Optional: Center-align header text */
             }
+
+        .read-only-style {
+            background-color: #f8f9fa; /* Light gray background */
+            pointer-events: none; /* Disable click and focus */
+            border-color: #ced4da; /* Light border color */
+        }
     </style>
 </head>
 
@@ -318,11 +324,13 @@
                 <div class="col-md-6 mb-3">
                     <label for="KOPhone" class="form-label">KO Phone</label>
                     <input id="KOPhone" asp-for="SingleContract.KOPhone" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="KOPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
                     <span asp-validation-for="SingleContract.KOPhone" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="KOPhone2" class="form-label">KO Phone 2</label>
                     <input id="KOPhone2" asp-for="SingleContract.KOPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="KOPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
                     <span asp-validation-for="SingleContract.KOPhone2" class="text-danger"></span>
                 </div>
             </div>
@@ -379,11 +387,13 @@
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORPhone" class="form-label">COR Phone</label>
                     <input asp-for="SingleContract.CORPhone" class="form-control" id="CorPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="CorPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
                     <span asp-validation-for="SingleContract.CORPhone" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleContract.CORPhone2" class="form-label">COR Phone 2</label>
                     <input asp-for="SingleContract.CORPhone2" class="form-control" id="CorPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="CorPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
                     <span asp-validation-for="SingleContract.CORPhone2" class="text-danger"></span>
                 </div>
             </div>
@@ -476,6 +486,34 @@
         $('#contractsTable').show();
 
         $('#addContractBtn').click(function () {
+
+            const controlIds = [
+                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+            ];
+
+            controlIds.forEach(function (id) {
+                const control = $('#' + id);
+
+                if (control.is('select')) {
+                    // Enable dropdowns
+                    control.prop('disabled', false);
+                } else {
+                    // Remove readonly from input fields
+                    control.prop('readonly', false);
+                }
+
+                // Optional: Remove styling for disabled or read-only fields
+                control.removeClass('read-only-style');
+            });
+
             // Show the form and hide the datatable
             $('.card-body').show();
             $('#datatableWrapper').hide();
@@ -618,6 +656,25 @@
                         $('#addContractBtn').hide();
                         
                         if (isViewButton) {
+                            const controlIds = [
+                                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+                            ];
+
+                            // Make controls read-only
+                            controlIds.forEach(function (id) {
+                                const control = $('#' + id);
+                                control.prop('readonly', true); // Make input read-only
+                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
+                            });
+
                             $('#updateBtn').hide();  // Hide the Update button when View button is clicked
                         } else {
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
@@ -650,6 +707,44 @@
             });
         }
     });
-    
+
+    document.getElementById("submitBtn").addEventListener("click", function (event) {
+        if (!validatePhoneFields()) {
+            event.preventDefault(); // Stop form submission if validation fails
+        }
+    });
+
+    document.getElementById("updateBtn").addEventListener("click", function (event) {
+        if (!validatePhoneFields()) {
+            event.preventDefault(); // Stop form submission if validation fails
+        }
+    });
+
+    function validatePhoneFields() {
+        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
+        let isValid = true;
+
+        phoneFields.forEach(function (fieldId) {
+            const phoneInput = document.getElementById(fieldId);
+            const errorMessage = document.getElementById(fieldId + 'Error');
+
+            // Reset previous validation state
+            phoneInput.classList.remove('is-invalid');
+            errorMessage.style.display = 'none';
+
+            const phoneValue = phoneInput.value.trim();
+            const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+
+            // Validate only if the field has a value
+            if (phoneValue && !phonePattern.test(phoneValue)) {
+                phoneInput.classList.add('is-invalid');
+                errorMessage.textContent = 'Please enter a valid phone number.';
+                errorMessage.style.display = 'block';
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
     
 </script>
