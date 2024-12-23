@@ -1,4 +1,5 @@
 ﻿using NPOI.SS.Formula.Functions;
+using System.Linq.Expressions;
 
 namespace ExcelFilesCompiler.Repositories.Interfaces
 {
@@ -14,5 +15,6 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         void UpdateRange(IEnumerable<T> entities);
         T? FindFirstOrDefaultByEventId(string eventId);
         IEnumerable<T> FindByEventId(string eventId);
+        
     }
 }

@@ -163,25 +163,5 @@ namespace ExcelFilesCompiler.Controllers
                 return Json(new { success = false, message = "An error occurred while retrieving the contract." });
             }
         }
-
-        //[HttpPut]
-        //public async Task<IActionResult> Update([FromBody] ContractDetails contractDto)
-        //{
-        //    try
-        //    {
-        //        var res = await _contractService.UpdateContract(contractDto);
-        //        TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
-        //        TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
-        //        TempData["ResponseMessage"] = res.Message;
-        //        return RedirectToAction("Index");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        TempData["ResponseStatus"] = "error";
-        //        TempData["ResponseTitle"] = "Error";
-        //        TempData["ResponseMessage"] = "An unexpected error occurred.";
-        //        return RedirectToAction("Index", contractDto);
-        //    }
-        //}
     }
 }

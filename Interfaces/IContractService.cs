@@ -8,6 +8,5 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<ContractDetails>> GetAllContracts();
         Task<ContractDetails> GetContractById(long id);
         Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);
-        //Task<List<ContractDetails>> GetAllContractsAsync();
     }
 }

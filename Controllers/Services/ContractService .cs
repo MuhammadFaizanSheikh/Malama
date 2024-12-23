@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Diagnostics.Contracts;
 
@@ -95,10 +96,5 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return responseDto;
         }
-
-        //public async Task<List<ContractDetails>> GetAllContractsAsync()
-        //{
-        //    return await repository.GetAllAsync();
-        //}
     }
 }
