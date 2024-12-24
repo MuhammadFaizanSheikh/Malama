@@ -223,7 +223,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
-                    <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" required>
+                    <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" maxLength="20" required>
                         <option value="">Select Branch</option>
                         <option>Army</option>
                         <option>Airforce</option>
@@ -235,7 +235,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="ContractComponent" class="form-label">Contract Component</label>
-                    <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" required>
+                    <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" maxLength="20" required>
                         <option value="">Select Component</option>
                         <option>Active Duty</option>
                         <option>National Guard</option>
@@ -249,7 +249,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractClient" class="form-label">Contract Client</label>
-                    <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" required>
+                    <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" maxLength="20" required>
                         <option value="">Select Client</option>
                         <option>Command</option>
                         <option>State</option>
@@ -258,7 +258,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="ContractType" class="form-label">Contract Type</label>
-                    <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" required>
+                    <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" maxLength="20" required>
                         <option value="">Select Type</option>
                         <option>FFP</option>
                         <option>CPFF</option>
@@ -272,7 +272,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
-                    <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" required>
+                    <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" maxLength="20" required>
                         <option value="">Select Role</option>
                         <option>Prime</option>
                         <option>Sub</option>
@@ -281,7 +281,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="ContractStatus" class="form-label">Contract Status</label>
-                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" required>
+                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" maxLength="20"  required>
                         <option value="">Select Status</option>
                         <option>Bidding</option>
                         <option>Active</option>

@@ -158,5 +158,18 @@ namespace ExcelFilesCompiler.Repositories.Services
                 throw new Exception($"An error occurred while finding records with EventId {eventId}.", ex);
             }
         }
+
+        public async Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate)
+        {
+            try
+            {
+                return await _dbSet.Where(predicate).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while querying the database.", ex);
+            }
+        }
+
     }
 }

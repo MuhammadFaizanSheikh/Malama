@@ -36,12 +36,12 @@ namespace ExcelFilesCompiler.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractType cannot be only white spaces.")]
         public string ContractType { get; set; }
 
-        [StringLength(20, ErrorMessage = "SmallBusinessType cannot exceed 20 characters.")]
+        [StringLength(300, ErrorMessage = "SmallBusinessType cannot exceed 300 characters.")]
         [Required(ErrorMessage = "SmallBusinessType is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SmallBusinessType cannot be only white spaces.")]
         public string SmallBusinessType { get; set; }
 
-        [StringLength(20, ErrorMessage = "ContractAffiliation cannot exceed 20 characters.")]
+        [StringLength(50, ErrorMessage = "ContractAffiliation cannot exceed 50 characters.")]
         [Required(ErrorMessage = "ContractAffiliation is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractAffiliation cannot be only white spaces.")]
         public string ContractAffiliation { get; set; }
@@ -64,52 +64,50 @@ namespace ExcelFilesCompiler.Models
         [StringLength(50, ErrorMessage = "CompanyName cannot exceed 50 characters.")]
         [Required(ErrorMessage = "CompanyName is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "CompanyName cannot be only white spaces.")]
-        public string CompanyName { get; set; }
+        public string CompanyMainName { get; set; }
 
         [StringLength(200, ErrorMessage = "Address1 cannot exceed 200 characters.")]
         [Required(ErrorMessage = "Address1 is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Address1 cannot be only white spaces.")]
-        public string Address1 { get; set; }
+        public string CompanyMainAddress1 { get; set; }
 
         [StringLength(200, ErrorMessage = "Address2 cannot exceed 200 characters.")]
-        [Required(ErrorMessage = "Address2 is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Address2 cannot be only white spaces.")]
-        public string Address2 { get; set; }
+        public string? CompanyMainAddress2 { get; set; }
 
         [StringLength(50, ErrorMessage = "City cannot exceed 50 characters.")]
         [Required(ErrorMessage = "City is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "City cannot be only white spaces.")]
-        public string City { get; set; }
+        public string CompanyMainCity { get; set; }
 
         [StringLength(50, ErrorMessage = "State cannot exceed 50 characters.")]
         [Required(ErrorMessage = "State is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "State cannot be only white spaces.")]
-        public string State { get; set; }
+        public string CompanyMainState { get; set; }
 
         [StringLength(50, ErrorMessage = "Zip cannot exceed 50 characters.")]
         [Required(ErrorMessage = "Zip is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Zip cannot be only white spaces.")]
-        public string Zip { get; set; }
+        public string CompanyMainZip { get; set; }
 
         [StringLength(50, ErrorMessage = "LastName cannot exceed 50 characters.")]
         [Required(ErrorMessage = "LastName is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "LastName cannot be only white spaces.")]
-        public string LastName { get; set; }
+        public string CompanyMainLastName { get; set; }
 
         [StringLength(50, ErrorMessage = "FirstName cannot exceed 50 characters.")]
         [Required(ErrorMessage = "FirstName is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "FirstName cannot be only white spaces.")]
-        public string FirstName { get; set; }
+        public string CompanyMainFirstName { get; set; }
 
         [StringLength(12, ErrorMessage = "Phone cannot exceed 12 characters.")]
         [Required(ErrorMessage = "Phone is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Phone cannot be only white spaces.")]
-        public string Phone { get; set; }
+        public string CompanyMainPhone { get; set; }
 
         [StringLength(50, ErrorMessage = "Email cannot exceed 50 characters.")]
         [Required(ErrorMessage = "Email is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Email cannot be only white spaces.")]
-        public string Email { get; set; }
+        public string CompanyMainEmail { get; set; }
 
         [StringLength(50, ErrorMessage = "FinanceLastName cannot exceed 50 characters.")]
         [Required(ErrorMessage = "FinanceLastName is required.")]
@@ -127,9 +125,7 @@ namespace ExcelFilesCompiler.Models
         public string FinanceAddress1 { get; set; }
 
         [StringLength(200, ErrorMessage = "FinanceAddress2 cannot exceed 200 characters.")]
-        [Required(ErrorMessage = "FinanceAddress2 is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "FinanceAddress2 cannot be only white spaces.")]
-        public string FinanceAddress2 { get; set; }
+        public string? FinanceAddress2 { get; set; }
 
         [StringLength(50, ErrorMessage = "FinanceCity cannot exceed 50 characters.")]
         [Required(ErrorMessage = "FinanceCity is required.")]
@@ -196,32 +192,32 @@ namespace ExcelFilesCompiler.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "TrainingEmail cannot be only white spaces.")]
         public string TrainingEmail { get; set; }
 
-        [StringLength(50, ErrorMessage = "EventId cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventId is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventId cannot be only white spaces.")]
-        public string EventId { get; set; }
+        //[StringLength(50, ErrorMessage = "EventId cannot exceed 50 characters.")]
+        //[Required(ErrorMessage = "EventId is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventId cannot be only white spaces.")]
+        //public string EventId { get; set; }
 
-        [StringLength(50, ErrorMessage = "EventStatus cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventStatus is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventStatus cannot be only white spaces.")]
-        public string EventStatus { get; set; }
+        //[StringLength(50, ErrorMessage = "EventStatus cannot exceed 50 characters.")]
+        //[Required(ErrorMessage = "EventStatus is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventStatus cannot be only white spaces.")]
+        //public string EventStatus { get; set; }
 
-        [StringLength(50, ErrorMessage = "EventRole cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventRole is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventRole cannot be only white spaces.")]
-        public string EventRole { get; set; }
+        //[StringLength(50, ErrorMessage = "EventRole cannot exceed 50 characters.")]
+        //[Required(ErrorMessage = "EventRole is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventRole cannot be only white spaces.")]
+        //public string EventRole { get; set; }
 
-        [StringLength(50, ErrorMessage = "EventCity cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventCity is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventCity cannot be only white spaces.")]
-        public string EventCity { get; set; }
+        //[StringLength(50, ErrorMessage = "EventCity cannot exceed 50 characters.")]
+        //[Required(ErrorMessage = "EventCity is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventCity cannot be only white spaces.")]
+        //public string EventCity { get; set; }
 
-        [StringLength(50, ErrorMessage = "EventState cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventState is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventState cannot be only white spaces.")]
-        public string EventState { get; set; }
+        //[StringLength(50, ErrorMessage = "EventState cannot exceed 50 characters.")]
+        //[Required(ErrorMessage = "EventState is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventState cannot be only white spaces.")]
+        //public string EventState { get; set; }
 
-        [Required(ErrorMessage = "EventDate is required.")]
-        public string EventDate { get; set; }
+        //[Required(ErrorMessage = "EventDate is required.")]
+        //public string EventDate { get; set; }
     }
 }

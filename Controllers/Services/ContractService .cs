@@ -71,6 +71,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
+                throw;
             }
 
             return contractDetails;
@@ -96,5 +97,23 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return responseDto;
         }
+
+        public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(contractId))
+                {
+                    return await repository.FindForSearchingAsync(c => true);
+                }
+
+                return await repository.FindForSearchingAsync(c => c.ContractID.Contains(contractId));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
+
     }
 }

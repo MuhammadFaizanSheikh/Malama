@@ -163,5 +163,27 @@ namespace ExcelFilesCompiler.Controllers
                 return Json(new { success = false, message = "An error occurred while retrieving the contract." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContractsForSearching(string contractId)
+        {
+            try
+            {
+                var contracts = await _contractService.GetContractForSearchingByContractId(contractId);
+
+                var result = contracts.Select(c => new
+                {
+                    id = c.Id,
+                    text = c.ContractID
+                });
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching contracts." });
+            }
+        }
+
     }
 }

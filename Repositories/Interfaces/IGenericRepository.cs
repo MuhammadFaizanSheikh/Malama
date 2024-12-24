@@ -15,6 +15,8 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         void UpdateRange(IEnumerable<T> entities);
         T? FindFirstOrDefaultByEventId(string eventId);
         IEnumerable<T> FindByEventId(string eventId);
-        
+        Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate);
+
+
     }
 }

@@ -12,14 +12,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contract Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Include Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    <!-- Include jQuery (required for Select2) -->
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Select2 Bootstrap 5 Theme CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Include Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+
 
     <style>
         h2 {
@@ -128,7 +134,7 @@
                             <td>@contract.ContractServiceBranch</td>
                             <td>@contract.ContractComponent</td>
                             <td>@contract.SolicitationNumber</td>
-                            <td>@contract.CompanyName</td>
+                            <td>@contract.CompanyMainName</td>
                             <td>
                                 <div class="button-container">
                                     <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
@@ -155,14 +161,14 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractId">Contract ID # (DAWSON)</label>
-        <select id="ContractId" name="ContractId" class="form-select" asp-for="SingleSubContractor.ContractId" required>
-            <!-- Options will be populated dynamically from Contract Detail table -->
-        </select>
+                <select id="ContractId" name="ContractId" class="form-select" asp-for="SingleSubContractor.ContractId" required>
+                    <!-- Options will be populated dynamically from the database -->
+                </select>
         <span asp-validation-for="SingleSubContractor.ContractId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="CompanyId">Company ID</label>
-        <input type="text" id="CompanyId" name="CompanyId" class="form-control" asp-for="SingleSubContractor.CompanyId" readonly>
+                <input type="text" id="CompanyId" name="CompanyId" class="form-control read-only-style" asp-for="SingleSubContractor.CompanyId" maxLength="20" placeholder="Enter Contract Id" readonly>
         <span asp-validation-for="SingleSubContractor.CompanyId" class="text-danger"></span>
     </div>
 </div>
@@ -171,16 +177,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractClient">Contract Client</label>
-        <select id="ContractClient" name="ContractClient" class="form-select" asp-for="SingleSubContractor.ContractClient" required>
-            <!-- Options will be added here -->
-        </select>
+                <input type="text" id="ContractClient" name="ContractClient" class="form-control read-only-style" asp-for="SingleSubContractor.ContractClient" readonly maxLength="20" placeholder="Enter Contract Client" required>
         <span asp-validation-for="SingleSubContractor.ContractClient" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="ContractType">Contract Type</label>
-        <select id="ContractType" name="ContractType" class="form-select" asp-for="SingleSubContractor.ContractType" required>
-            <!-- Options will be added here -->
-        </select>
+                <input type="text" id="ContractType" name="ContractType" class="form-control read-only-style" asp-for="SingleSubContractor.ContractType" maxLength="20" placeholder="Enter Contract Type" readonly>
         <span asp-validation-for="SingleSubContractor.ContractType" class="text-danger"></span>
     </div>
 </div>
@@ -189,16 +191,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="SmallBusinessType">Small Business/Set Aside Type - if applicable</label>
-        <select id="SmallBusinessType" name="SmallBusinessType" class="form-select" asp-for="SingleSubContractor.SmallBusinessType" required>
-            <!-- Options will be added here -->
-        </select>
+                <textarea id="SmallBusinessType" asp-for="SingleSubContractor.SmallBusinessType" class="form-control" rows="4" placeholder="Enter Business Type" placeholder="Enter Business Type" maxLength="300" required></textarea>
         <span asp-validation-for="SingleSubContractor.SmallBusinessType" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="ContractAffiliation">Contract Affiliation of Subcontractor</label>
-        <select id="ContractAffiliation" name="ContractAffiliation" class="form-select" asp-for="SingleSubContractor.ContractAffiliation" required>
-            <!-- Options will be added here -->
-        </select>
+                <input type="text" id="ContractAffiliation" name="ContractAffiliation" class="form-control" asp-for="SingleSubContractor.ContractAffiliation" placeholder="Enter Contract Affiliation" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.ContractAffiliation" class="text-danger"></span>
     </div>
 </div>
@@ -207,16 +205,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractServiceBranch">Contract Service Branch</label>
-        <select id="ContractServiceBranch" name="ContractServiceBranch" class="form-select" asp-for="SingleSubContractor.ContractServiceBranch" required>
-            <!-- Options will be added here -->
-        </select>
+                <input type="text" id="ContractServiceBranch" name="ContractServiceBranch" class="form-control read-only-style" asp-for="SingleSubContractor.ContractServiceBranch" placeholder="Enter Contract Service Branch" readonly maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.ContractServiceBranch" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="ContractComponent">Contract Component</label>
-        <select id="ContractComponent" name="ContractComponent" class="form-select" asp-for="SingleSubContractor.ContractComponent" required>
-            <!-- Options will be added here -->
-        </select>
+                <input type="text" id="ContractComponent" name="ContractComponent" class="form-control read-only-style" asp-for="SingleSubContractor.ContractComponent" readonly placeholder="Enter Contract Component" maxLength="20" required>
         <span asp-validation-for="SingleSubContractor.ContractComponent" class="text-danger"></span>
     </div>
 </div>
@@ -225,7 +219,7 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="SolicitationNumber">Solicitation #</label>
-        <input type="text" id="SolicitationNumber" name="SolicitationNumber" class="form-control" asp-for="SingleSubContractor.SolicitationNumber" required>
+                <input type="text" id="SolicitationNumber" name="SolicitationNumber" class="form-control" asp-for="SingleSubContractor.SolicitationNumber" maxLength="50" placeholder="Enter Solicitation Number" required>
         <span asp-validation-for="SingleSubContractor.SolicitationNumber" class="text-danger"></span>
     </div>
 </div>
@@ -237,13 +231,13 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="CompanyName">Name</label>
-        <input type="text" id="CompanyName" name="CompanyName" class="form-control" asp-for="SingleSubContractor.CompanyName" required>
-        <span asp-validation-for="SingleSubContractor.CompanyName" class="text-danger"></span>
+                <input type="text" id="CompanyMainName" name="CompanyMainName" class="form-control" asp-for="SingleSubContractor.CompanyMainName" placeholder="Enter Company Main Name" maxLength="50" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="Address1">Address 1</label>
-        <input type="text" id="Address1" name="Address1" class="form-control" asp-for="SingleSubContractor.Address1" required>
-        <span asp-validation-for="SingleSubContractor.Address1" class="text-danger"></span>
+                <input type="text" id="CompanyMainAddress1" name="CompanyMainAddress1" class="form-control" asp-for="SingleSubContractor.CompanyMainAddress1" placeholder="Enter Company Main Address" maxLength="200" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainAddress1" class="text-danger"></span>
     </div>
 </div>
 
@@ -251,33 +245,34 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="Address2">Address 2</label>
-        <input type="text" id="Address2" name="Address2" class="form-control" asp-for="SingleSubContractor.Address2" required>
-        <span asp-validation-for="SingleSubContractor.Address2" class="text-danger"></span>
+                <input type="text" id="CompanyMainAddress2" name="CompanyMainAddress2" class="form-control" asp-for="SingleSubContractor.CompanyMainAddress2" placeholder="Enter Company Main Address2" maxLength="200">
+                <span asp-validation-for="SingleSubContractor.CompanyMainAddress2" class="text-danger"></span>
     </div>
-    <div class="col-md-6">
-        <label for="City">City</label>
-        <select id="City" name="City" class="form-select" asp-for="SingleSubContractor.City" required>
-            <!-- Options will be added here -->
-        </select>
-        <span asp-validation-for="SingleSubContractor.City" class="text-danger"></span>
-    </div>
+            <div class="col-md-6">
+                <label for="State">State</label>
+                <select id="CompanyMainState" name="CompanyMainState" class="form-select" asp-for="SingleSubContractor.CompanyMainState"  required>
+                    <!-- Options will be added here -->
+                </select>
+                <span asp-validation-for="SingleSubContractor.CompanyMainState" class="text-danger"></span>
+            </div>
 </div>
 
 <!-- Row 8 -->
 <div class="row mb-3">
-    <div class="col-md-6">
-        <label for="State">State</label>
-        <select id="State" name="State" class="form-select" asp-for="SingleSubContractor.State" required>
-            <!-- Options will be added here -->
-        </select>
-        <span asp-validation-for="SingleSubContractor.State" class="text-danger"></span>
-    </div>
+            <div class="col-md-6">
+                <label for="City">City</label>
+                <select id="CompanyMainCity" name="CompanyMainCity" class="form-select city-dropdown" asp-for="SingleSubContractor.CompanyMainCity" required>
+                    <!-- Options will be added here -->
+                </select>
+                <span asp-validation-for="SingleSubContractor.CompanyMainCity" class="text-danger"></span>
+            </div>
+   
     <div class="col-md-6">
         <label for="Zip">Zip</label>
-        <select id="Zip" name="Zip" class="form-select" asp-for="SingleSubContractor.Zip" required>
+                <select id="CompanyMainZip" name="CompanyMainZip" class="form-select" asp-for="SingleSubContractor.CompanyMainZip" required>
             <!-- Options will be added here -->
         </select>
-        <span asp-validation-for="SingleSubContractor.Zip" class="text-danger"></span>
+                <span asp-validation-for="SingleSubContractor.CompanyMainZip" class="text-danger"></span>
     </div>
 </div>
 
@@ -288,13 +283,13 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="LastName">Last Name</label>
-        <input type="text" id="LastName" name="LastName" class="form-control" asp-for="SingleSubContractor.LastName" required>
-        <span asp-validation-for="SingleSubContractor.LastName" class="text-danger"></span>
+                <input type="text" id="CompanyMainLastName" name="CompanyMainLastName" class="form-control" asp-for="SingleSubContractor.CompanyMainLastName" placeholder="Enter Company Main Last Name" maxLength="50" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FirstName">First Name</label>
-        <input type="text" id="FirstName" name="FirstName" class="form-control" asp-for="SingleSubContractor.FirstName" required>
-        <span asp-validation-for="SingleSubContractor.FirstName" class="text-danger"></span>
+                <input type="text" id="CompanyMainFirstName" name="CompanyMainFirstName" class="form-control" asp-for="SingleSubContractor.CompanyMainFirstName" placeholder="Enter Company Main First Name" maxLength="50" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainFirstName" class="text-danger"></span>
     </div>
 </div>
 
@@ -302,13 +297,14 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="Phone">Phone</label>
-        <input type="text" id="Phone" name="Phone" class="form-control" asp-for="SingleSubContractor.Phone" required>
-        <span asp-validation-for="SingleSubContractor.Phone" class="text-danger"></span>
+                <input type="text" id="CompanyMainPhone" name="CompanyMainPhone" class="form-control" asp-for="SingleSubContractor.CompanyMainPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
+                <span id="CompanyMainPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
+                <span asp-validation-for="SingleSubContractor.CompanyMainPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="Email">Email</label>
-        <input type="email" id="Email" name="Email" class="form-control" asp-for="SingleSubContractor.Email" required>
-        <span asp-validation-for="SingleSubContractor.Email" class="text-danger"></span>
+                <input type="email" id="CompanyMainEmail" name="CompanyMainEmail" class="form-control" asp-for="SingleSubContractor.CompanyMainEmail" placeholder="Enter Company Main Email" maxLength="50" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainEmail" class="text-danger"></span>
     </div>
 </div>
 
@@ -318,12 +314,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceLastName">Last Name</label>
-        <input type="text" id="FinanceLastName" name="FinanceLastName" class="form-control" asp-for="SingleSubContractor.FinanceLastName" required>
+                <input type="text" id="FinanceLastName" name="FinanceLastName" class="form-control" asp-for="SingleSubContractor.FinanceLastName" placeholder="Enter Company Finance Last Name" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FinanceFirstName">First Name</label>
-        <input type="text" id="FinanceFirstName" name="FinanceFirstName" class="form-control" asp-for="SingleSubContractor.FinanceFirstName" required>
+                <input type="text" id="FinanceFirstName" name="FinanceFirstName" class="form-control" asp-for="SingleSubContractor.FinanceFirstName" placeholder="Enter Company Finance First Name" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -332,32 +328,33 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceAddress1">Address 1</label>
-        <input type="text" id="FinanceAddress1" name="FinanceAddress1" class="form-control" asp-for="SingleSubContractor.FinanceAddress1" required>
+                <input type="text" id="FinanceAddress1" name="FinanceAddress1" class="form-control" asp-for="SingleSubContractor.FinanceAddress1" placeholder="Enter Company Finance Address1" maxLength="200" required>
         <span asp-validation-for="SingleSubContractor.FinanceAddress1" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FinanceAddress2">Address 2</label>
-        <input type="text" id="FinanceAddress2" name="FinanceAddress2" class="form-control" asp-for="SingleSubContractor.FinanceAddress2" required>
+                <input type="text" id="FinanceAddress2" name="FinanceAddress2" class="form-control" asp-for="SingleSubContractor.FinanceAddress2" placeholder="Enter Company Finance Address2" maxLength="200">
         <span asp-validation-for="SingleSubContractor.FinanceAddress2" class="text-danger"></span>
     </div>
 </div>
 
 <!-- Row 13 -->
 <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="FinanceState">State</label>
+                <select id="FinanceState" name="FinanceState" class="form-select" asp-for="SingleSubContractor.FinanceState" required>
+                    <!-- Options will be added here -->
+                </select>
+                <span asp-validation-for="SingleSubContractor.FinanceState" class="text-danger"></span>
+            </div>
     <div class="col-md-6">
         <label for="FinanceCity">City</label>
-        <select id="FinanceCity" name="FinanceCity" class="form-select" asp-for="SingleSubContractor.FinanceCity" required>
+                <select id="FinanceCity" name="FinanceCity" class="form-select city-dropdown" asp-for="SingleSubContractor.FinanceCity" required>
             <!-- Options will be added here -->
         </select>
         <span asp-validation-for="SingleSubContractor.FinanceCity" class="text-danger"></span>
     </div>
-    <div class="col-md-6">
-        <label for="FinanceState">State</label>
-        <select id="FinanceState" name="FinanceState" class="form-select" asp-for="SingleSubContractor.FinanceState" required>
-            <!-- Options will be added here -->
-        </select>
-        <span asp-validation-for="SingleSubContractor.FinanceState" class="text-danger"></span>
-    </div>
+    
 </div>
 
 <!-- Row 14 -->
@@ -371,7 +368,8 @@
     </div>
     <div class="col-md-6">
         <label for="FinancePhone">Phone</label>
-        <input type="text" id="FinancePhone" name="FinancePhone" class="form-control" asp-for="SingleSubContractor.FinancePhone" required>
+                <input type="text" id="FinancePhone" name="FinancePhone" class="form-control" asp-for="SingleSubContractor.FinancePhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
+                <span id="FinancePhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.FinancePhone" class="text-danger"></span>
     </div>
 </div>
@@ -380,7 +378,7 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceEmail">Email</label>
-        <input type="email" id="FinanceEmail" name="FinanceEmail" class="form-control" asp-for="SingleSubContractor.FinanceEmail" required>
+                <input type="email" id="FinanceEmail" name="FinanceEmail" class="form-control" asp-for="SingleSubContractor.FinanceEmail" placeholder="Enter Company Finance Email" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceEmail" class="text-danger"></span>
     </div>
 </div>
@@ -391,12 +389,12 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="EventLastName" class="col-md-3 col-form-label">Last Name</label>
-        <input type="text" id="EventLastName" name="EventLastName" class="form-control" asp-for="SingleSubContractor.EventLastName" required />
+                <input type="text" id="EventLastName" name="EventLastName" class="form-control" asp-for="SingleSubContractor.EventLastName" placeholder="Enter Company Event Last Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="EventFirstName" class="col-md-3 col-form-label">First Name</label>
-        <input type="text" id="EventFirstName" name="EventFirstName" class="form-control" asp-for="SingleSubContractor.EventFirstName" required />
+                <input type="text" id="EventFirstName" name="EventFirstName" class="form-control" asp-for="SingleSubContractor.EventFirstName" placeholder="Enter Company Event First Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -404,12 +402,13 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="EventPhone" class="col-md-3 col-form-label">Phone</label>
-        <input type="text" id="EventPhone" name="EventPhone" class="form-control" asp-for="SingleSubContractor.EventPhone" required />
+                <input type="text" id="EventPhone" name="EventPhone" class="form-control" asp-for="SingleSubContractor.EventPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                <span id="EventPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.EventPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="EventEmail" class="col-md-3 col-form-label">Email</label>
-        <input type="email" id="EventEmail" name="EventEmail" class="form-control" asp-for="SingleSubContractor.EventEmail" required />
+                <input type="email" id="EventEmail" name="EventEmail" class="form-control" asp-for="SingleSubContractor.EventEmail" placeholder="Enter Company Event Email" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventEmail" class="text-danger"></span>
     </div>
 </div>
@@ -421,12 +420,12 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="TrainingLastName" class="col-md-3 col-form-label">Last Name</label>
-        <input type="text" id="TrainingLastName" name="TrainingLastName" class="form-control" asp-for="SingleSubContractor.TrainingLastName" required />
+                <input type="text" id="TrainingLastName" name="TrainingLastName" class="form-control" asp-for="SingleSubContractor.TrainingLastName" placeholder="Enter Company Training Last Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="TrainingFirstName" class="col-md-3 col-form-label">First Name</label>
-        <input type="text" id="TrainingFirstName" name="TrainingFirstName" class="form-control" asp-for="SingleSubContractor.TrainingFirstName" required />
+                <input type="text" id="TrainingFirstName" name="TrainingFirstName" class="form-control" asp-for="SingleSubContractor.TrainingFirstName" placeholder="Enter Company Training First Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -438,19 +437,20 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="TrainingPhone" class="col-md-3 col-form-label">Phone</label>
-        <input type="text" id="TrainingPhone" name="TrainingPhone" class="form-control" asp-for="SingleSubContractor.TrainingPhone" required />
+                <input type="text" id="TrainingPhone" name="TrainingPhone" class="form-control" asp-for="SingleSubContractor.TrainingPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                <span id="TrainingPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.TrainingPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="TrainingEmail" class="col-md-3 col-form-label">Email</label>
-        <input type="email" id="TrainingEmail" name="TrainingEmail" class="form-control" asp-for="SingleSubContractor.TrainingEmail" required />
+                <input type="email" id="TrainingEmail" name="TrainingEmail" class="form-control" asp-for="SingleSubContractor.TrainingEmail" placeholder="Enter Company Training Last Email" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingEmail" class="text-danger"></span>
     </div>
 </div>
 
 
 
-        <div class="section mb-5">
+       @*  <div class="section mb-5">
             <h3>Historical Event Information</h3>
 
             <div class="row mb-3">
@@ -494,9 +494,9 @@
 
 
             
-        </div>
+        </div> *@
         <div class="d-flex justify-content-end mt-4">
-            <button type="submit" class="btn btn-success btn-lg me-2">
+            <button id="submitBtn" type="submit" class="btn btn-success btn-lg me-2">
                 <i class="bi bi-check-circle"></i> Submit
             </button>
             <button type="reset" class="btn btn-secondary btn-lg">
@@ -510,6 +510,90 @@
 </html>
 <script>
     $(document).ready(function () {
+        $('#ContractId').select2({
+            ajax: {
+                url: '/ContractDetails/GetContractsForSearching', // Your endpoint for fetching contracts
+                dataType: 'json',
+                delay: 250,  // Optional: delay to limit requests to avoid too many hits
+                data: function (params) {
+                    return {
+                        contractId: params.term || ''  // Send the search term to the server
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function (contract) {
+                            return {
+                                id: contract.id,     // Contract ID
+                                text: contract.text  // Displayed text (ContractID or other)
+                            };
+                        })
+                    };
+                },
+                cache: true // Optional: caches the response to improve performance
+            },
+            placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
+            minimumInputLength: 1  // Set a minimum number of characters to start searching (e.g., 1)
+        });
+
+        // $('#ContractId').select2({
+        //     data: [
+        //         { id: '1', text: 'Contract001' },
+        //         { id: '2', text: 'Contract002' }
+        //     ]
+        // });
+
+
+
+        const phoneFields = ['CompanyMainPhone', 'FinancePhone', 'EventPhone', 'TrainingPhone'];
+        phoneFields.forEach(function (fieldId) {
+            applyPhoneNumberMask(document.getElementById(fieldId));
+        });
+
+        function applyPhoneNumberMask(inputElement) {
+            inputElement.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+                if (value.length > 3 && value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length > 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+                e.target.value = value;
+            });
+        }
+
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+            if (!validatePhoneFields()) {
+                event.preventDefault(); // Stop form submission if validation fails
+            }
+        });
+
+        function validatePhoneFields() {
+            const phoneFields = ['CompanyMainPhone', 'FinancePhone', 'EventPhone', 'TrainingPhone'];
+            let isValid = true;
+
+            phoneFields.forEach(function (fieldId) {
+                const phoneInput = document.getElementById(fieldId);
+                const errorMessage = document.getElementById(fieldId + 'Error');
+
+                // Reset previous validation state
+                phoneInput.classList.remove('is-invalid');
+                errorMessage.style.display = 'none';
+
+                const phoneValue = phoneInput.value.trim();
+                const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+
+                // Validate only if the field has a value
+                if (phoneValue && !phonePattern.test(phoneValue)) {
+                    phoneInput.classList.add('is-invalid');
+                    errorMessage.textContent = 'Please enter a valid phone number.';
+                    errorMessage.style.display = 'block';
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
 
         $('#contractsTable').DataTable({
             "paging": true,  // Enables pagination
@@ -524,56 +608,59 @@
             },
             "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
         });
-
-
-        $('#ContractId').select2({
-            placeholder: 'Select a contract', // Optional placeholder
-            allowClear: true                 // Allows clearing the selection
-        });
-
-        function debounce(func, delay) {
-            let timer;
-            return function () {
-                const context = this;
-                const args = arguments;
-                clearTimeout(timer);
-                timer = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
-
-        // Function to fetch and populate contracts based on search term
-        function fetchContracts(searchTerm, page) {
-            $.ajax({
-                url: '/ContractDetails/GetContracts',
-                method: 'GET',
-                data: {
-                    searchTerm: searchTerm,
-                    page: page
-                },
-                success: function (response) {
-                    // Populate the dropdown with the fetched contracts
-                    const dropdown = $('#ContractId');
-                    dropdown.empty(); // Clear current options
-
-                    // Append new options
-                    response.items.forEach(function (contract) {
-                        dropdown.append(new Option(contract.text, contract.id));
-                    });
-
-                    // Optional: Update pagination if needed
-                    // (you can handle pagination controls here if needed)
-                },
-                error: function () {
-                    console.error("An error occurred while fetching contracts.");
-                }
-            });
-        }
-
-        // Attach the debounced function to the search input (for this example, it's assumed that you're using input inside the dropdown)
-        $('#ContractId').on('input', debounce(function () {
-            const searchTerm = $(this).val();  // Get the current input value
-            fetchContracts(searchTerm, 1);      // Call the fetchContracts function with the search term and page 1
-        }, 500)); // Adjust the delay to suit your needs (500ms delay in this case)
     });
 
+
+    
+
+    $.getJSON('/data/statesAndCities.json', function (data) {
+        const stateCityMap = {};
+        const stateDropdowns = $('#CompanyMainState, #FinanceState');
+
+        stateDropdowns.empty().append('<option value="">Select State</option>');
+        data.states.forEach(state => {
+            stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
+            stateCityMap[state.Name] = state.Cities; // Map state name to its cities
+        });
+
+        stateDropdowns.on('change', function () {
+            const stateName = $(this).val(); // Now this will be the state name
+
+            const cityDropdownId = $(this).attr('id') === 'CompanyMainState' ? '#CompanyMainCity' : '#FinanceCity';
+            const cityDropdown = $(cityDropdownId);
+
+            cityDropdown.empty().append('<option value="">Select City</option>');
+
+            if (stateName && stateCityMap[stateName]) {
+                stateCityMap[stateName].forEach(city => {
+                    cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
+                });
+            }
+        });
+
+
+        $('.city-dropdown').on('change', function () {
+            const cityDropdownId = $(this).attr('id'); // Get the ID of the changed city dropdown
+            const stateDropdownId = cityDropdownId === 'CompanyMainCity' ? '#CompanyMainState' : '#FinanceState';
+            const zipCodeDropdownId = cityDropdownId === 'CompanyMainCity' ? '#CompanyMainZip' : '#FinanceZip';
+            const stateName = $(stateDropdownId).val(); // Get the selected state for the respective city dropdown
+            const cityName = $(this).val(); // Get the selected city name
+            const zipCodeDropdown = $(zipCodeDropdownId); // Get the corresponding zip code dropdown
+
+            // Clear the zip code dropdown and add a default option
+            zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
+
+            if (stateName && cityName && stateCityMap[stateName]) {
+                const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
+
+                if (selectedCity && selectedCity.Zipcodes) {
+                    selectedCity.Zipcodes.forEach(zip => {
+                        zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                    });
+                }
+            }
+        });
+
+
+    });
 </script>
