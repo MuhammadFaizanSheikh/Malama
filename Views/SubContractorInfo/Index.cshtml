@@ -118,6 +118,51 @@
             pointer-events: none; /* Disable click and focus */
             border-color: #ced4da; /* Light border color */
         }
+
+        /* Base styles for the dropdown */
+.select2 {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+/* 
+/* Focused state */
+.select2:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Dropdown arrow customization */
+
+
+/* Adjust the dropdown width */
+.select2 {
+    width: 100% !important;  /* Ensures full-width dropdown */
+}
+
+
+
+/* Hover state for options */
+.select2 option:hover {
+    background-color: #e6f7ff;
+}
+
+/* Focus state for options */
+.select2 option:focus {
+    background-color: #cce5ff;
+}
+
+/* Disabled state */
+.select2 option:disabled {
+    color: #aaa;
+    background-color: #f5f5f5;
+} */
+
     </style>
 </head>
 
@@ -214,17 +259,17 @@
                 else
                 {
                     <tr>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
-                        <td colspan="9" class="text-center">No contracts available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
                     </tr>
                 }
             </tbody>
@@ -685,21 +730,21 @@
             
         });
 
-        $('#contractsTable').DataTable().clear().destroy(); // Destroy the current instance
- $('#contractsTable').DataTable();
-//         $('#contractsTable').DataTable({
-//             "paging": true,  // Enables pagination
-//             "lengthChange": true,  // Option to change number of records per page
-//             "searching": true,  // Enables search box
-//             "ordering": false,  // Enables column sorting
-//             "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
-//             "autoWidth": true,  // Adjusts table width automatically
-//             "responsive": true,  // Makes the table responsive on small screens
-//             "language": {
-//                 "search": "Search Contracts:"  // Customizing the search box label
-//             },
-//             "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
-//         });
+ //        $('#contractsTable').DataTable().clear().destroy(); // Destroy the current instance
+ // $('#contractsTable').DataTable();
+        $('#contractsTable').DataTable({
+            "paging": true,  // Enables pagination
+            "lengthChange": true,  // Option to change number of records per page
+            "searching": true,  // Enables search box
+            "ordering": false,  // Enables column sorting
+            "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
+            "autoWidth": true,  // Adjusts table width automatically
+            "responsive": true,  // Makes the table responsive on small screens
+            "language": {
+                "search": "Search Contracts:"  // Customizing the search box label
+            },
+            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
+        });
 
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             debugger;
