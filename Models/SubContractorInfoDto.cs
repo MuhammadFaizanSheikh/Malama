@@ -62,6 +62,7 @@ namespace ExcelFilesCompiler.Models
         public string SolicitationNumber { get; set; }
 
         [StringLength(50, ErrorMessage = "CompanyName cannot exceed 50 characters.")]
+        [MinLength(3, ErrorMessage = "CompanyName must be at least 3 characters.")]
         [Required(ErrorMessage = "CompanyName is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "CompanyName cannot be only white spaces.")]
         public string CompanyMainName { get; set; }
