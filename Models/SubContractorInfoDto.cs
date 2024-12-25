@@ -10,7 +10,7 @@ namespace ExcelFilesCompiler.Models
     }
 
     [Table("SubContractor")]
-    public class SubContractorInfoDto
+    public class SubContractorInfoDto : GenericProperties
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

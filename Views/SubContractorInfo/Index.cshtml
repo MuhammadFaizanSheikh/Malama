@@ -25,6 +25,15 @@
     <!-- Select2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 
+    <!-- SweetAlert2 -->
+@* <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+
+    <!-- DataTables CSS for Bootstrap 5 -->
+@* <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script> *@
+
 
 
     <style>
@@ -95,7 +104,48 @@
         }
     </style>
 </head>
+
 <body>
+
+    @if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+<h2 class="text-center mb-4">Sub Contractor Info</h2>
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    {
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
     <div style="display: flex; justify-content: center; align-items: center;">
         <button class="btn btn-primary" id="addContractBtn"
                 style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
@@ -154,8 +204,10 @@
             </tbody>
         </table>
     </div>
-    <div class="container">
-        <h2 class="text-center mb-4">Sub Contractor Info</h2>
+    <div class="card-body" style="display: none;">
+        <form asp-action="CreateSubContracttor" method="post">
+            <input type="hidden" asp-for="SingleSubContractor.Id" id="hiddenId" />
+        
 
         <!-- Row 1 -->
         <div class="row mb-3">
@@ -168,7 +220,7 @@
     </div>
     <div class="col-md-6">
         <label for="CompanyId">Company ID</label>
-                <input type="text" id="CompanyId" name="CompanyId" class="form-control read-only-style" asp-for="SingleSubContractor.CompanyId" maxLength="20" placeholder="Enter Company Id" readonly>
+                <input type="text" id="CompanyId" name="CompanyId" class="form-control read-only-style" asp-for="SingleSubContractor.CompanyId" maxLength="20" placeholder="Enter Company Id" readonly required>
         <span asp-validation-for="SingleSubContractor.CompanyId" class="text-danger"></span>
     </div>
 </div>
@@ -182,7 +234,7 @@
     </div>
     <div class="col-md-6">
         <label for="ContractType">Contract Type</label>
-                <input type="text" id="ContractType" name="ContractType" class="form-control read-only-style" asp-for="SingleSubContractor.ContractType" maxLength="20" placeholder="Enter Contract Type" readonly>
+                <input type="text" id="ContractType" name="ContractType" class="form-control read-only-style" asp-for="SingleSubContractor.ContractType" maxLength="20" placeholder="Enter Contract Type" readonly required>
         <span asp-validation-for="SingleSubContractor.ContractType" class="text-danger"></span>
     </div>
 </div>
@@ -431,9 +483,7 @@
     </div>
 </div>
 
-<div class="row mb-3">
-    <!-- Empty Row (Can be used for additional fields if needed) -->
-</div>
+
 
 <div class="row mb-3">
     <div class="col-md-6">
@@ -497,13 +547,21 @@
             
         </div> *@
         <div class="d-flex justify-content-end mt-4">
-            <button id="submitBtn" type="submit" class="btn btn-success btn-lg me-2">
-                <i class="bi bi-check-circle"></i> Submit
-            </button>
-            <button type="reset" class="btn btn-secondary btn-lg">
-                <i class="bi bi-arrow-repeat"></i> Reset
-            </button>
-        </div>
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+                    <i class="bi bi-check-circle"></i> Submit
+                </button>
+                <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
+                    <i class="bi bi-arrow-repeat"></i> Reset
+                </button>
+                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                    <i class="bi bi-pencil"></i> Update
+                </button>
+                <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                    Back to Contracts
+                </button>
+            </div>
+             </form>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
@@ -511,12 +569,235 @@
 </html>
 <script>
     $(document).ready(function () {
+        $('.card-body').hide();
+        $('#contractsTable').show();
+
+        $('#addContractBtn').click(function () {
+
+            // const controlIds = [
+            //     'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+            //     'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+            //     'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+            //     'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+            //     'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+            //     'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+            //     'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+            //     'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+            //     'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+            // ];
+
+            // controlIds.forEach(function (id) {
+            //     const control = $('#' + id);
+
+            //     if (control.is('select')) {
+            //         control.prop('disabled', false);
+            //     } else {
+            //         control.prop('readonly', false);
+            //     }
+
+            //     control.removeClass('read-only-style');
+            // });
+
+            $('.card-body').show();
+            $('#datatableWrapper').hide();
+            $('#submitBtn').show();
+            $('#resetBtn').show();
+            $('#updateBtn').hide();
+            $('#addContractBtn').hide();
+
+            // $('#hiddenId').val('');
+            // $('#ContractID').val('');
+            // $('#ContractAgency').val('');
+            // $('#ContractServiceBranch').val('');
+            // $('#ContractComponent').val('');
+            // $('#ContractClient').val('');
+            // $('#ContractType').val('');
+            // $('#DawsonRoleOnContract').val('');
+            // $('#ContractStatus').val('');
+
+            // $('#ContractStartDate').val('');
+            // $('#ContractEndDate').val('');
+
+            // // KO
+            // $('#KoLastName').val('');
+            // $('#KoFirstName').val('');
+            // $('#KOPhone').val('');
+            // $('#KOPhone2').val('');
+            // $('#KOEmail').val('');
+            // $('#KONotes').val('');
+            // $('#CORLastName').val('');
+            // $('#CORPrefix').val('');
+            // $('#CORFirstName').val('');
+
+            // $('#CORKORank').val('');
+            // $('#CorPhone').val('');
+            // $('#CorPhone2').val('');
+            // $('#COREmail').val('');
+            // $('#CORNotes').val('');
+
+            // $('#DawsonProgramManagerLastName').val('');
+            // $('#DawsonProgramManagerFirstName').val('');
+
+            // $('#DawsonDeputyProgramManagerLastName').val('');
+            // $('#DawsonDeputyProgramManagerFirstName').val('');
+
+            // $('#DawsonProjectManagerLastName').val('');
+            // $('#DawsonProjectManagerFirstName').val('');
+        });
+
+        
+
+        $('#backToTableBtn').click(function () {
+            $('.card-body').hide();
+            $('#datatableWrapper').show();
+            $('#addContractBtn').show();
+            
+        });
+
+        // $('#contractsTable').DataTable({
+        //     "paging": true,  // Enables pagination
+        //     "lengthChange": true,  // Option to change number of records per page
+        //     "searching": true,  // Enables search box
+        //     "ordering": false,  // Enables column sorting
+        //     "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
+        //     "autoWidth": true,  // Adjusts table width automatically
+        //     "responsive": true,  // Makes the table responsive on small screens
+        //     "language": {
+        //         "search": "Search Contracts:"  // Customizing the search box label
+        //     },
+        //     "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
+        // });
+
+        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+            debugger;
+            var contractId = $(this).data('id');  // Get contract ID from data-id attribute
+            var isViewButton = $(this).hasClass('view-btn');
+
+            // AJAX call to fetch contract details by ID
+            $.ajax({
+                url: '/SubContractorInfo/GetSubContractorById/' + contractId,  // Make sure the URL is correct
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        debugger;
+                        var contract = response.contractDetails;
+                        
+                        $('#hiddenId').val(contract.id);
+                        $('#ContractID').val(contract.contractID);
+                        $('#ContractAgency').val(contract.contractAgency);
+                        $('#ContractServiceBranch').val(contract.contractServiceBranch);
+                        $('#ContractComponent').val(contract.contractComponent);
+                        $('#ContractClient').val(contract.contractClient);
+                        $('#ContractType').val(contract.contractType);
+                        $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
+                        $('#ContractStatus').val(contract.contractStatus);
+
+                        let contractStartDate = new Date(contract.contractStartDate);
+                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD
+                        $('#ContractStartDate').val(formattedStartDate);
+
+                        let contractEndDate = new Date(contract.contractEndDate);
+                        let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
+                        $('#ContractEndDate').val(formattedEndDate);
+
+
+                        //KO
+                        $('#KoLastName').val(contract.koLastName);
+                        $('#KoFirstName').val(contract.koFirstName);
+                        $('#KOPhone').val(contract.koPhone);
+                        $('#KOPhone2').val(contract.koPhone2);
+                        $('#KOEmail').val(contract.koEmail);
+                        $('#KONotes').val(contract.koNotes);
+                        $('#CORLastName').val(contract.corLastName);
+                        $('#CORPrefix').val(contract.corPrefix);
+                        $('#CORFirstName').val(contract.corFirstName);
+
+                        $('#CORKORank').val(contract.corkoRank);
+                        $('#CorPhone').val(contract.corPhone);
+                        $('#CorPhone2').val(contract.corPhone2);
+                        $('#COREmail').val(contract.corEmail);
+                        $('#CORNotes').val(contract.corEmail);
+
+                        $('#DawsonProgramManagerLastName').val(contract.dawsonProgramManagerLastName);
+                        $('#DawsonProgramManagerFirstName').val(contract.dawsonProgramManagerFirstName);
+
+                        $('#DawsonDeputyProgramManagerLastName').val(contract.dawsonDeputyProgramManagerLastName);
+                        $('#DawsonDeputyProgramManagerFirstName').val(contract.dawsonDeputyProgramManagerFirstName);
+
+                        $('#DawsonProjectManagerLastName').val(contract.dawsonProjectManagerLastName);
+                        $('#DawsonProjectManagerFirstName').val(contract.dawsonProjectManagerFirstName);
+
+
+
+                        // Show the form and hide the table
+                        $('#datatableWrapper').hide();
+                        $('.card-body').show();
+                        $('#submitBtn').hide();
+                        $('#resetBtn').hide();
+                        $('#addContractBtn').hide();
+                        
+                        if (isViewButton) {
+                            const controlIds = [
+                                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+                            ];
+
+                            // Make controls read-only
+                            controlIds.forEach(function (id) {
+                                const control = $('#' + id);
+                                control.prop('readonly', true); // Make input read-only
+                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
+                            });
+
+                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                        } else {
+                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                        }
+                    } else {
+                        alert(response.message);  // Show error message
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract data.');
+                }
+            });
+        });
+
+
+
 
         $('#CompanyMainName').on('blur', function () {
-            if (validateCompanyMainName()) {
-                SetCompanyId($(this).val()); // Pass the value of the input field
+    if (validateCompanyMainName()) {
+        var companyName = $(this).val(); // Get the value from CompanyMainName field
+
+        // Call the API to get the next CompanyCode
+        $.ajax({
+            url: '/SubContractorInfo/GetNextCompanyCode', // Controller action URL
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    var companyCode = response.nextCompanyCode;
+                    var companyNamePrefix = companyName.substring(0, 3).toUpperCase(); // Get first 3 characters from CompanyMainName
+                    var fullCompanyId = companyNamePrefix + companyCode; // Combine the prefix and the numeric part
+                    $('#CompanyId').val(fullCompanyId); // Set the value in the CompanyId field
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert('Error occurred while fetching the Company Code');
             }
         });
+    }
+});
+
 
         function validateCompanyMainName() {
             var inputVal = $('#CompanyMainName').val();
@@ -659,20 +940,6 @@
 
             return isValid;
         }
-
-        $('#contractsTable').DataTable({
-            "paging": true,  // Enables pagination
-            "lengthChange": true,  // Option to change number of records per page
-            "searching": true,  // Enables search box
-            "ordering": false,  // Enables column sorting
-            "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
-            "autoWidth": true,  // Adjusts table width automatically
-            "responsive": true,  // Makes the table responsive on small screens
-            "language": {
-                "search": "Search Contracts:"  // Customizing the search box label
-            },
-            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
-        });
     });
 
 
