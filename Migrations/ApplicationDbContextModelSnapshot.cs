@@ -334,29 +334,8 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ContractClient")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ContractComponent")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("ContractId")
-                        .HasMaxLength(13)
-                        .HasColumnType("int");
-
-                    b.Property<string>("ContractServiceBranch")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ContractType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<long>("ContractId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("EventEmail")
                         .IsRequired()
@@ -459,6 +438,8 @@ namespace ExcelFilesCompiler.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
 
                     b.ToTable("SubContractor");
                 });
@@ -850,6 +831,17 @@ namespace ExcelFilesCompiler.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractorInfoDto", b =>
+                {
+                    b.HasOne("ExcelFilesCompiler.Models.ContractDetails", "ContractDetails")
+                        .WithMany()
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContractDetails");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

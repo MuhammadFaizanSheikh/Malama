@@ -1,12 +1,33 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExcelFilesCompiler.Models
 {
+    public class CombinedSubContractorAndContractDto
+    {
+        public SubContractorInfoDto SubContractor { get; set; }
+        public ContractDetails ContractDetails { get; set; }
+    }
+
     public class SubContractorViewModel
     {
-        public List<SubContractorInfoDto>? SubContractor { get; set; }
+        //public List<SubContractorInfoDto>? SubContractor { get; set; }
+        public List<SubContractorAndContractViewModel>? SubContractor { get; set; }
         public SubContractorInfoDto SingleSubContractor { get; set; }
+    }
+
+    public class SubContractorAndContractViewModel
+    {
+        public long Id { get; set; }
+        public string ContractId { get; set; }
+        public string CompanyId { get; set; }
+        public string ContractClient { get; set; }
+        public string ContractType { get; set; }
+        public string SmallBusinessType { get; set; }
+        public string ContractAffiliation { get; set; }
+        public string ContractServiceBranch { get; set; }
+        public string ContractComponent { get; set; }
+        public string SolicitationNumber { get; set; }
     }
 
     [Table("SubContractor")]
@@ -16,25 +37,27 @@ namespace ExcelFilesCompiler.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        [StringLength(13, ErrorMessage = "Contract ID cannot exceed 13 characters.")]
         [Required(ErrorMessage = "Contract ID is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Contract ID cannot be only white spaces.")]
-        public int ContractId { get; set; }
+        [Range(1, 9999999999999, ErrorMessage = "Contract ID must be a valid numeric value.")]
+        public long ContractId { get; set; }
+
+        [ForeignKey("ContractId")]
+        public ContractDetails? ContractDetails { get; set; }
 
         [StringLength(20, ErrorMessage = "CompanyId cannot exceed 20 characters.")]
         [Required(ErrorMessage = "CompanyId is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "CompanyId cannot be only white spaces.")]
         public string CompanyId { get; set; }
 
-        [StringLength(20, ErrorMessage = "ContractClient cannot exceed 20 characters.")]
-        [Required(ErrorMessage = "ContractClient is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractClient cannot be only white spaces.")]
-        public string ContractClient { get; set; }
+        //[StringLength(20, ErrorMessage = "ContractClient cannot exceed 20 characters.")]
+        //[Required(ErrorMessage = "ContractClient is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractClient cannot be only white spaces.")]
+        //public string ContractClient { get; set; }
 
-        [StringLength(20, ErrorMessage = "ContractType cannot exceed 20 characters.")]
-        [Required(ErrorMessage = "ContractType is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractType cannot be only white spaces.")]
-        public string ContractType { get; set; }
+        //[StringLength(20, ErrorMessage = "ContractType cannot exceed 20 characters.")]
+        //[Required(ErrorMessage = "ContractType is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractType cannot be only white spaces.")]
+        //public string ContractType { get; set; }
 
         [StringLength(300, ErrorMessage = "SmallBusinessType cannot exceed 300 characters.")]
         [Required(ErrorMessage = "SmallBusinessType is required.")]
@@ -46,15 +69,15 @@ namespace ExcelFilesCompiler.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractAffiliation cannot be only white spaces.")]
         public string ContractAffiliation { get; set; }
 
-        [StringLength(20, ErrorMessage = "ContractServiceBranch cannot exceed 20 characters.")]
-        [Required(ErrorMessage = "ContractServiceBranch is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractServiceBranch cannot be only white spaces.")]
-        public string ContractServiceBranch { get; set; }
+        //[StringLength(20, ErrorMessage = "ContractServiceBranch cannot exceed 20 characters.")]
+        //[Required(ErrorMessage = "ContractServiceBranch is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractServiceBranch cannot be only white spaces.")]
+        //public string ContractServiceBranch { get; set; }
 
-        [StringLength(20, ErrorMessage = "ContractComponent cannot exceed 20 characters.")]
-        [Required(ErrorMessage = "ContractComponent is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractComponent cannot be only white spaces.")]
-        public string ContractComponent { get; set; }
+        //[StringLength(20, ErrorMessage = "ContractComponent cannot exceed 20 characters.")]
+        //[Required(ErrorMessage = "ContractComponent is required.")]
+        //[RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "ContractComponent cannot be only white spaces.")]
+        //public string ContractComponent { get; set; }
 
         [StringLength(20, ErrorMessage = "SolicitationNumber cannot exceed 20 characters.")]
         [Required(ErrorMessage = "SolicitationNumber is required.")]

@@ -497,32 +497,32 @@
 
         $('#addContractBtn').click(function () {
 
-            const controlIds = [
-                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
-                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
-                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
-                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-            ];
+            // const controlIds = [
+            //     'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+            //     'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+            //     'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+            //     'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+            //     'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+            //     'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+            //     'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+            //     'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+            //     'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+            // ];
 
-            controlIds.forEach(function (id) {
-                const control = $('#' + id);
+            // controlIds.forEach(function (id) {
+            //     const control = $('#' + id);
 
-                if (control.is('select')) {
-                    // Enable dropdowns
-                    control.prop('disabled', false);
-                } else {
-                    // Remove readonly from input fields
-                    control.prop('readonly', false);
-                }
+            //     if (control.is('select')) {
+            //         // Enable dropdowns
+            //         control.prop('disabled', false);
+            //     } else {
+            //         // Remove readonly from input fields
+            //         control.prop('readonly', false);
+            //     }
 
-                // Optional: Remove styling for disabled or read-only fields
-                control.removeClass('read-only-style');
-            });
+            //     // Optional: Remove styling for disabled or read-only fields
+            //     control.removeClass('read-only-style');
+            // });
 
             // Show the form and hide the datatable
             $('.card-body').show();
@@ -687,6 +687,25 @@
 
                             $('#updateBtn').hide();  // Hide the Update button when View button is clicked
                         } else {
+                            const controlIds = [
+                                 'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                                 'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                 'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                                 'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                                 'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                                 'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                                 'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+                             ];
+
+                             // Make controls editable
+                             controlIds.forEach(function (id) {
+                                 const control = $('#' + id);
+                                 control.prop('readonly', false); // Remove readonly property
+                                 control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                             });
+
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                         }
                     } else {

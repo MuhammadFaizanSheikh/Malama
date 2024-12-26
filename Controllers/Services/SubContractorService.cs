@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
+using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,27 +13,47 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class SubContractorService : ISubContractorService
     {
         private readonly IGenericRepository<SubContractorInfoDto> repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public SubContractorService(IGenericRepository<SubContractorInfoDto> repository)
+        public SubContractorService(IGenericRepository<SubContractorInfoDto> repository, IUnitOfWork unitOfWork)
         {
             this.repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<SubContractorInfoDto>> GetAllSubContractors()
+        public async Task<List<SubContractorAndContractViewModel>> GetAllSubContractors()
         {
             var responseDto = new ResponseDto();
-            List<SubContractorInfoDto> contracts = new List<SubContractorInfoDto>(); // Initialize contracts outside try-catch
+            //List<SubContractorInfoDto> contracts = new List<SubContractorInfoDto>(); // Initialize contracts outside try-catch
 
             try
             {
-                contracts = (await repository.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+                var subcontractors = await _unitOfWork.SubContractors.GetAllAsync();
+                var contracts = await _unitOfWork.ContractDetails.GetAllAsync();
+
+                var result = from sub in subcontractors
+                            join contract in contracts on sub.ContractId equals contract.Id
+                            select new SubContractorAndContractViewModel
+                            {
+                                Id = sub.Id,
+                                CompanyId = sub.CompanyId,
+                                ContractId = contract.ContractID,
+                                ContractClient = contract.ContractClient,
+                                ContractType = contract.ContractType,
+                                SmallBusinessType = sub.SmallBusinessType,
+                                ContractAffiliation = sub.ContractAffiliation,
+                                ContractServiceBranch = contract.ContractServiceBranch,
+                                ContractComponent = contract.ContractComponent,
+                                SolicitationNumber = sub.SolicitationNumber,
+                            };
+
+                return result.ToList();
+                //contracts = (await repository.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
             }
             catch (Exception ex)
             {
-                throw;
+                throw new Exception("An error occurred while retrieving subcontractors.", ex);
             }
-
-            return contracts;
         }
 
         public async Task<string> GetLastCompanyCode()
@@ -68,20 +89,35 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<SubContractorInfoDto> GetSubContractorById(long id)
+        public async Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id)
         {
-            SubContractorInfoDto subContractor = null;
 
             try
             {
-                subContractor = await repository.GetByIdAsync(id);
+                var subContractor = await repository.GetByIdAsync(id);
+
+                if (subContractor == null)
+                {
+                    return null; // Return null if not found
+                }
+
+                // Fetch the related contract details using the ContractId
+                var contractDetails = await _unitOfWork.ContractDetails.GetByIdAsync(subContractor.ContractId);
+
+                // If you want to combine the data into a single DTO, you can create a new DTO for that purpose
+                // For example, you can create a new DTO that includes both SubContractor and ContractDetails data
+                var combinedDto = new CombinedSubContractorAndContractDto
+                {
+                    SubContractor = subContractor,
+                    ContractDetails = contractDetails
+                };
+
+                return combinedDto; // Return the combined DTO
             }
             catch (Exception ex)
             {
                 throw;
             }
-
-            return subContractor;
         }
 
         public async Task<ResponseDto> AddContractAsync(SubContractorInfoDto contractDetail, string loggedinUserName)

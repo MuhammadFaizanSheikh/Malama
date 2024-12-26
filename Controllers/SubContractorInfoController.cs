@@ -21,8 +21,7 @@ namespace ExcelFilesCompiler.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var responseDto = new ResponseDto();
-            List<SubContractorInfoDto> subContractorList = new List<SubContractorInfoDto>();
+            List<SubContractorAndContractViewModel> subContractorList = new List<SubContractorAndContractViewModel>();
 
             try
             {
@@ -30,7 +29,8 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "We encountered an issue while loading sub contractors. Please try again later.";
+                TempData["ErrorMessage"] = "We encountered an issue while loading subcontractors. Please try again later.";
+                // Optionally log the exception
             }
 
             var viewModel = new SubContractorViewModel
@@ -38,10 +38,9 @@ namespace ExcelFilesCompiler.Controllers
                 SubContractor = subContractorList,
                 SingleSubContractor = null
             };
+
             // Pass contracts data to the view
             return View(viewModel);
-
-            //return View();
         }
 
         [HttpPost]
@@ -128,13 +127,13 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var subContractor = await _subContractorService.GetSubContractorById(id);
-                if (subContractor == null)
+                var combinedData = await _subContractorService.GetSubContractorById(id);
+                if (combinedData == null)
                 {
                     return Json(new { success = false, message = "SubContractor not found." });
                 }
 
-                return Json(new { success = true, subContractor });
+                return Json(new { success = true, combinedData });
             }
             catch (Exception)
             {

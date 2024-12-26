@@ -169,42 +169,42 @@
 <body>
 
     @if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
 
-@if (TempData["ResponseMessage"] != null)
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
 
-            Swal.fire({
-                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
-                title: '@TempData["ResponseTitle"]',
-                text: '@TempData["ResponseMessage"]',
-                confirmButtonText: 'OK',
-                confirmButtonColor: buttonColor, // Conditional button color
-                iconColor: iconColor // Conditional icon color
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor, // Conditional button color
+                    iconColor: iconColor // Conditional icon color
+                });
             });
-        });
-    </script>
-}
+        </script>
+    }
 
 <h2 class="text-center mb-4">Sub Contractor Info</h2>
 
-@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
     {
-        <div class="alert alert-danger">
-            <strong>Validation failed!</strong>
-            <ul>
+            <div class="alert alert-danger">
+                <strong>Validation failed!</strong>
+                <ul>
                 @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                 {
-                    <li>@modelError.ErrorMessage</li>
+                            <li>@modelError.ErrorMessage</li>
                 }
-            </ul>
-        </div>
+                </ul>
+            </div>
     }
 
     <div style="display: flex; justify-content: center; align-items: center;">
@@ -213,20 +213,20 @@
             Add New Sub Contractor
         </button>
     </div>
-    <div id="datatableWrapper" class="datatable-wrapper">
+     <div id="datatableWrapper" class="datatable-wrapper">
         <table id="contractsTable" class="display">
             <thead>
                 <tr>
-                    <th>Contract ID</th>
-                    <th>Contract Agency</th>
-                    <th>Contract Service Branch</th>
-                    <th>Contract Component</th>
+                    <th>ContractID</th>
+                    <th>CompanyId</th>
                     <th>Contract Client</th>
                     <th>Contract Type</th>
-                    <th>Contract Dawson Role</th>
-                    <th>Contract Status</th>
-                    <th>Contract Start Date</th>
-                    <th>Contract End Date</th>
+                    <th>Small Business Type</th>
+                    <th>Contract Type</th>
+                    <th>Contract Affiliation</th>
+                    <th>Contract Service Branch</th>
+                    <th>Contract Component</th>
+                    <th>Solicitation Number</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -241,11 +241,11 @@
                             <td>@contract.ContractClient</td>
                             <td>@contract.ContractType</td>
                             <td>@contract.SmallBusinessType</td>
+                            <td>@contract.ContractType</td>
                             <td>@contract.ContractAffiliation</td>
                             <td>@contract.ContractServiceBranch</td>
                             <td>@contract.ContractComponent</td>
                             <td>@contract.SolicitationNumber</td>
-                            <td>@contract.CompanyMainName</td>
                             <td>
                                 <div class="button-container">
                                     <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
@@ -269,7 +269,6 @@
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
                     </tr>
                 }
             </tbody>
@@ -278,20 +277,20 @@
     <div class="card-body" style="display: none;">
         <form asp-action="CreateSubContracttor" method="post">
             <input type="hidden" asp-for="SingleSubContractor.Id" id="hiddenId" />
-        
+
 
         <!-- Row 1 -->
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractId">Contract ID # (DAWSON)</label>
-               <select id="ContractId" name="ContractId" class="form-select select2" asp-for="SingleSubContractor.ContractId" required>
+               <select id="ContractId" class="form-select select2" asp-for="SingleSubContractor.ContractId" required>
     <!-- Options will be populated dynamically from the database -->
 </select>
         <span asp-validation-for="SingleSubContractor.ContractId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="CompanyId">Company ID</label>
-                <input type="text" id="CompanyId" name="CompanyId" class="form-control read-only-style" asp-for="SingleSubContractor.CompanyId" maxLength="20" placeholder="Enter Company Id" readonly required>
+                <input type="text" id="CompanyId"  class="form-control read-only-style" asp-for="SingleSubContractor.CompanyId" maxLength="20" placeholder="Enter Company Id" readonly required>
         <span asp-validation-for="SingleSubContractor.CompanyId" class="text-danger"></span>
     </div>
 </div>
@@ -300,13 +299,13 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractClient">Contract Client</label>
-                <input type="text" id="ContractClient" name="ContractClient" class="form-control read-only-style" asp-for="SingleSubContractor.ContractClient" readonly maxLength="20" placeholder="Enter Contract Client" required>
-        <span asp-validation-for="SingleSubContractor.ContractClient" class="text-danger"></span>
+                <input type="text" id="ContractClient"  class="form-control read-only-style"  readonly maxLength="20" placeholder="Enter Contract Client" required>
+                    @*  <span asp-validation-for="SingleSubContractor.ContractClient" class="text-danger"></span> *@
     </div>
     <div class="col-md-6">
         <label for="ContractType">Contract Type</label>
-                <input type="text" id="ContractType" name="ContractType" class="form-control read-only-style" asp-for="SingleSubContractor.ContractType" maxLength="20" placeholder="Enter Contract Type" readonly required>
-        <span asp-validation-for="SingleSubContractor.ContractType" class="text-danger"></span>
+                <input type="text" id="ContractType"  class="form-control read-only-style"  maxLength="20" placeholder="Enter Contract Type" readonly required>
+                    @* <span asp-validation-for="SingleSubContractor.ContractType" class="text-danger"></span> *@
     </div>
 </div>
 
@@ -319,7 +318,7 @@
     </div>
     <div class="col-md-6">
         <label for="ContractAffiliation">Contract Affiliation of Subcontractor</label>
-                <input type="text" id="ContractAffiliation" name="ContractAffiliation" class="form-control" asp-for="SingleSubContractor.ContractAffiliation" placeholder="Enter Contract Affiliation" maxLength="50" required>
+                <input type="text" id="ContractAffiliation" class="form-control" asp-for="SingleSubContractor.ContractAffiliation" placeholder="Enter Contract Affiliation" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.ContractAffiliation" class="text-danger"></span>
     </div>
 </div>
@@ -328,13 +327,13 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractServiceBranch">Contract Service Branch</label>
-                <input type="text" id="ContractServiceBranch" name="ContractServiceBranch" class="form-control read-only-style" asp-for="SingleSubContractor.ContractServiceBranch" placeholder="Enter Contract Service Branch" readonly maxLength="50" required>
-        <span asp-validation-for="SingleSubContractor.ContractServiceBranch" class="text-danger"></span>
+                <input type="text" id="ContractServiceBranch"  class="form-control read-only-style" placeholder="Enter Contract Service Branch" readonly maxLength="50" required>
+                    @* <span asp-validation-for="SingleSubContractor.ContractServiceBranch" class="text-danger"></span> *@
     </div>
     <div class="col-md-6">
         <label for="ContractComponent">Contract Component</label>
-                <input type="text" id="ContractComponent" name="ContractComponent" class="form-control read-only-style" asp-for="SingleSubContractor.ContractComponent" readonly placeholder="Enter Contract Component" maxLength="20" required>
-        <span asp-validation-for="SingleSubContractor.ContractComponent" class="text-danger"></span>
+                <input type="text" id="ContractComponent"  class="form-control read-only-style" readonly placeholder="Enter Contract Component" maxLength="20" required>
+                    @* <span asp-validation-for="SingleSubContractor.ContractComponent" class="text-danger"></span> *@
     </div>
 </div>
 
@@ -342,7 +341,7 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="SolicitationNumber">Solicitation #</label>
-                <input type="text" id="SolicitationNumber" name="SolicitationNumber" class="form-control" asp-for="SingleSubContractor.SolicitationNumber" maxLength="50" placeholder="Enter Solicitation Number" required>
+                <input type="text" id="SolicitationNumber" class="form-control" asp-for="SingleSubContractor.SolicitationNumber" maxLength="50" placeholder="Enter Solicitation Number" required>
         <span asp-validation-for="SingleSubContractor.SolicitationNumber" class="text-danger"></span>
     </div>
 </div>
@@ -354,13 +353,13 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="CompanyName">Name</label>
-                <input type="text" id="CompanyMainName" name="CompanyMainName" class="form-control" asp-for="SingleSubContractor.CompanyMainName" placeholder="Enter Company Main Name" maxLength="50" required>
+                <input type="text" id="CompanyMainName"  class="form-control" asp-for="SingleSubContractor.CompanyMainName" placeholder="Enter Company Main Name" maxLength="50" required>
                 <span id="CompanyMainPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
                 <span asp-validation-for="SingleSubContractor.CompanyMainName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="Address1">Address 1</label>
-                <input type="text" id="CompanyMainAddress1" name="CompanyMainAddress1" class="form-control" asp-for="SingleSubContractor.CompanyMainAddress1" placeholder="Enter Company Main Address" maxLength="200" required>
+                <input type="text" id="CompanyMainAddress1"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress1" placeholder="Enter Company Main Address" maxLength="200" required>
                 <span asp-validation-for="SingleSubContractor.CompanyMainAddress1" class="text-danger"></span>
     </div>
 </div>
@@ -369,12 +368,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="Address2">Address 2</label>
-                <input type="text" id="CompanyMainAddress2" name="CompanyMainAddress2" class="form-control" asp-for="SingleSubContractor.CompanyMainAddress2" placeholder="Enter Company Main Address2" maxLength="200">
+                <input type="text" id="CompanyMainAddress2"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress2" placeholder="Enter Company Main Address2" maxLength="200">
                 <span asp-validation-for="SingleSubContractor.CompanyMainAddress2" class="text-danger"></span>
     </div>
             <div class="col-md-6">
                 <label for="State">State</label>
-                <select id="CompanyMainState" name="CompanyMainState" class="form-select" asp-for="SingleSubContractor.CompanyMainState"  required>
+                <select id="CompanyMainState" class="form-select" asp-for="SingleSubContractor.CompanyMainState"  required>
                     <!-- Options will be added here -->
                 </select>
                 <span asp-validation-for="SingleSubContractor.CompanyMainState" class="text-danger"></span>
@@ -385,15 +384,15 @@
 <div class="row mb-3">
             <div class="col-md-6">
                 <label for="City">City</label>
-                <select id="CompanyMainCity" name="CompanyMainCity" class="form-select city-dropdown" asp-for="SingleSubContractor.CompanyMainCity" required>
+                <select id="CompanyMainCity"  class="form-select city-dropdown" asp-for="SingleSubContractor.CompanyMainCity" required>
                     <!-- Options will be added here -->
                 </select>
                 <span asp-validation-for="SingleSubContractor.CompanyMainCity" class="text-danger"></span>
             </div>
-   
+
     <div class="col-md-6">
         <label for="Zip">Zip</label>
-                <select id="CompanyMainZip" name="CompanyMainZip" class="form-select" asp-for="SingleSubContractor.CompanyMainZip" required>
+                <select id="CompanyMainZip"  class="form-select" asp-for="SingleSubContractor.CompanyMainZip" required>
             <!-- Options will be added here -->
         </select>
                 <span asp-validation-for="SingleSubContractor.CompanyMainZip" class="text-danger"></span>
@@ -407,12 +406,12 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="LastName">Last Name</label>
-                <input type="text" id="CompanyMainLastName" name="CompanyMainLastName" class="form-control" asp-for="SingleSubContractor.CompanyMainLastName" placeholder="Enter Company Main Last Name" maxLength="50" required>
+                <input type="text" id="CompanyMainLastName"  class="form-control" asp-for="SingleSubContractor.CompanyMainLastName" placeholder="Enter Company Main Last Name" maxLength="50" required>
                 <span asp-validation-for="SingleSubContractor.CompanyMainLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FirstName">First Name</label>
-                <input type="text" id="CompanyMainFirstName" name="CompanyMainFirstName" class="form-control" asp-for="SingleSubContractor.CompanyMainFirstName" placeholder="Enter Company Main First Name" maxLength="50" required>
+                <input type="text" id="CompanyMainFirstName"  class="form-control" asp-for="SingleSubContractor.CompanyMainFirstName" placeholder="Enter Company Main First Name" maxLength="50" required>
                 <span asp-validation-for="SingleSubContractor.CompanyMainFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -421,13 +420,13 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="Phone">Phone</label>
-                <input type="text" id="CompanyMainPhone" name="CompanyMainPhone" class="form-control" asp-for="SingleSubContractor.CompanyMainPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
+                <input type="text" id="CompanyMainPhone" class="form-control" asp-for="SingleSubContractor.CompanyMainPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
                 <span id="CompanyMainPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
                 <span asp-validation-for="SingleSubContractor.CompanyMainPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="Email">Email</label>
-                <input type="email" id="CompanyMainEmail" name="CompanyMainEmail" class="form-control" asp-for="SingleSubContractor.CompanyMainEmail" placeholder="Enter Company Main Email" maxLength="50" required>
+                <input type="email" id="CompanyMainEmail" class="form-control" asp-for="SingleSubContractor.CompanyMainEmail" placeholder="Enter Company Main Email" maxLength="50" required>
                 <span asp-validation-for="SingleSubContractor.CompanyMainEmail" class="text-danger"></span>
     </div>
 </div>
@@ -438,12 +437,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceLastName">Last Name</label>
-                <input type="text" id="FinanceLastName" name="FinanceLastName" class="form-control" asp-for="SingleSubContractor.FinanceLastName" placeholder="Enter Company Finance Last Name" maxLength="50" required>
+                <input type="text" id="FinanceLastName"  class="form-control" asp-for="SingleSubContractor.FinanceLastName" placeholder="Enter Company Finance Last Name" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FinanceFirstName">First Name</label>
-                <input type="text" id="FinanceFirstName" name="FinanceFirstName" class="form-control" asp-for="SingleSubContractor.FinanceFirstName" placeholder="Enter Company Finance First Name" maxLength="50" required>
+                <input type="text" id="FinanceFirstName"  class="form-control" asp-for="SingleSubContractor.FinanceFirstName" placeholder="Enter Company Finance First Name" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -452,12 +451,12 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceAddress1">Address 1</label>
-                <input type="text" id="FinanceAddress1" name="FinanceAddress1" class="form-control" asp-for="SingleSubContractor.FinanceAddress1" placeholder="Enter Company Finance Address1" maxLength="200" required>
+                <input type="text" id="FinanceAddress1"  class="form-control" asp-for="SingleSubContractor.FinanceAddress1" placeholder="Enter Company Finance Address1" maxLength="200" required>
         <span asp-validation-for="SingleSubContractor.FinanceAddress1" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FinanceAddress2">Address 2</label>
-                <input type="text" id="FinanceAddress2" name="FinanceAddress2" class="form-control" asp-for="SingleSubContractor.FinanceAddress2" placeholder="Enter Company Finance Address2" maxLength="200">
+                <input type="text" id="FinanceAddress2"  class="form-control" asp-for="SingleSubContractor.FinanceAddress2" placeholder="Enter Company Finance Address2" maxLength="200">
         <span asp-validation-for="SingleSubContractor.FinanceAddress2" class="text-danger"></span>
     </div>
 </div>
@@ -466,33 +465,33 @@
 <div class="row mb-3">
             <div class="col-md-6">
                 <label for="FinanceState">State</label>
-                <select id="FinanceState" name="FinanceState" class="form-select" asp-for="SingleSubContractor.FinanceState" required>
+                <select id="FinanceState"  class="form-select" asp-for="SingleSubContractor.FinanceState" required>
                     <!-- Options will be added here -->
                 </select>
                 <span asp-validation-for="SingleSubContractor.FinanceState" class="text-danger"></span>
             </div>
     <div class="col-md-6">
         <label for="FinanceCity">City</label>
-                <select id="FinanceCity" name="FinanceCity" class="form-select city-dropdown" asp-for="SingleSubContractor.FinanceCity" required>
+                <select id="FinanceCity" class="form-select city-dropdown" asp-for="SingleSubContractor.FinanceCity" required>
             <!-- Options will be added here -->
         </select>
         <span asp-validation-for="SingleSubContractor.FinanceCity" class="text-danger"></span>
     </div>
-    
+
 </div>
 
 <!-- Row 14 -->
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceZip">Zip</label>
-        <select id="FinanceZip" name="FinanceZip" class="form-select" asp-for="SingleSubContractor.FinanceZip" required>
+        <select id="FinanceZip"  class="form-select" asp-for="SingleSubContractor.FinanceZip" required>
             <!-- Options will be added here -->
         </select>
         <span asp-validation-for="SingleSubContractor.FinanceZip" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="FinancePhone">Phone</label>
-                <input type="text" id="FinancePhone" name="FinancePhone" class="form-control" asp-for="SingleSubContractor.FinancePhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
+                <input type="text" id="FinancePhone"  class="form-control" asp-for="SingleSubContractor.FinancePhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required>
                 <span id="FinancePhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.FinancePhone" class="text-danger"></span>
     </div>
@@ -502,7 +501,7 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="FinanceEmail">Email</label>
-                <input type="email" id="FinanceEmail" name="FinanceEmail" class="form-control" asp-for="SingleSubContractor.FinanceEmail" placeholder="Enter Company Finance Email" maxLength="50" required>
+                <input type="email" id="FinanceEmail"  class="form-control" asp-for="SingleSubContractor.FinanceEmail" placeholder="Enter Company Finance Email" maxLength="50" required>
         <span asp-validation-for="SingleSubContractor.FinanceEmail" class="text-danger"></span>
     </div>
 </div>
@@ -513,12 +512,12 @@
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="EventLastName" class="col-md-3 col-form-label">Last Name</label>
-                <input type="text" id="EventLastName" name="EventLastName" class="form-control" asp-for="SingleSubContractor.EventLastName" placeholder="Enter Company Event Last Name" maxLength="50" required />
+                <input type="text" id="EventLastName" class="form-control" asp-for="SingleSubContractor.EventLastName" placeholder="Enter Company Event Last Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="EventFirstName" class="col-md-3 col-form-label">First Name</label>
-                <input type="text" id="EventFirstName" name="EventFirstName" class="form-control" asp-for="SingleSubContractor.EventFirstName" placeholder="Enter Company Event First Name" maxLength="50" required />
+                <input type="text" id="EventFirstName"  class="form-control" asp-for="SingleSubContractor.EventFirstName" placeholder="Enter Company Event First Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -526,30 +525,30 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="EventPhone" class="col-md-3 col-form-label">Phone</label>
-                <input type="text" id="EventPhone" name="EventPhone" class="form-control" asp-for="SingleSubContractor.EventPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                <input type="text" id="EventPhone" class="form-control" asp-for="SingleSubContractor.EventPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                 <span id="EventPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.EventPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="EventEmail" class="col-md-3 col-form-label">Email</label>
-                <input type="email" id="EventEmail" name="EventEmail" class="form-control" asp-for="SingleSubContractor.EventEmail" placeholder="Enter Company Event Email" maxLength="50" required />
+                <input type="email" id="EventEmail"  class="form-control" asp-for="SingleSubContractor.EventEmail" placeholder="Enter Company Event Email" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.EventEmail" class="text-danger"></span>
     </div>
 </div>
 
-      
+
 
         <h3>Company Training POC</h3>
 
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="TrainingLastName" class="col-md-3 col-form-label">Last Name</label>
-                <input type="text" id="TrainingLastName" name="TrainingLastName" class="form-control" asp-for="SingleSubContractor.TrainingLastName" placeholder="Enter Company Training Last Name" maxLength="50" required />
+                <input type="text" id="TrainingLastName"  class="form-control" asp-for="SingleSubContractor.TrainingLastName" placeholder="Enter Company Training Last Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingLastName" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="TrainingFirstName" class="col-md-3 col-form-label">First Name</label>
-                <input type="text" id="TrainingFirstName" name="TrainingFirstName" class="form-control" asp-for="SingleSubContractor.TrainingFirstName" placeholder="Enter Company Training First Name" maxLength="50" required />
+                <input type="text" id="TrainingFirstName"  class="form-control" asp-for="SingleSubContractor.TrainingFirstName" placeholder="Enter Company Training First Name" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingFirstName" class="text-danger"></span>
     </div>
 </div>
@@ -559,20 +558,20 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <label for="TrainingPhone" class="col-md-3 col-form-label">Phone</label>
-                <input type="text" id="TrainingPhone" name="TrainingPhone" class="form-control" asp-for="SingleSubContractor.TrainingPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                <input type="text" id="TrainingPhone" class="form-control" asp-for="SingleSubContractor.TrainingPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                 <span id="TrainingPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
         <span asp-validation-for="SingleSubContractor.TrainingPhone" class="text-danger"></span>
     </div>
     <div class="col-md-6">
         <label for="TrainingEmail" class="col-md-3 col-form-label">Email</label>
-                <input type="email" id="TrainingEmail" name="TrainingEmail" class="form-control" asp-for="SingleSubContractor.TrainingEmail" placeholder="Enter Company Training Last Email" maxLength="50" required />
+                <input type="email" id="TrainingEmail"  class="form-control" asp-for="SingleSubContractor.TrainingEmail" placeholder="Enter Company Training Last Email" maxLength="50" required />
         <span asp-validation-for="SingleSubContractor.TrainingEmail" class="text-danger"></span>
     </div>
 </div>
 
 
 
-       @*  <div class="section mb-5">
+            @*  <div class="section mb-5">
             <h3>Historical Event Information</h3>
 
             <div class="row mb-3">
@@ -615,7 +614,7 @@
 </div>
 
 
-            
+
         </div> *@
         <div class="d-flex justify-content-end mt-4">
                 <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
@@ -635,7 +634,7 @@
     </div>
     </div>
 
-    
+
 </body>
 </html>
 <script>
@@ -650,29 +649,30 @@
 
         $('#addContractBtn').click(function () {
 
-            // const controlIds = [
-            //     'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
-            //     'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-            //     'ContractStatus', 'ContractStartDate', 'ContractEndDate',
-            //     'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
-            //     'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-            //     'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-            //     'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-            //     'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-            //     'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-            // ];
+             const controlIds = [
+    'hiddenId','ContractId','CompanyId', 'SmallBusinessType',
+    'ContractAffiliation',     'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+    'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+    'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+    'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+    'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+    'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+    'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+    'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+    'TrainingEmail'
+];
 
-            // controlIds.forEach(function (id) {
-            //     const control = $('#' + id);
+            controlIds.forEach(function (id) {
+                const control = $('#' + id);
 
-            //     if (control.is('select')) {
-            //         control.prop('disabled', false);
-            //     } else {
-            //         control.prop('readonly', false);
-            //     }
+                if (control.is('select')) {
+                    control.prop('disabled', false);
+                } else {
+                    control.prop('readonly', false);
+                }
 
-            //     control.removeClass('read-only-style');
-            // });
+                control.removeClass('read-only-style');
+            });
 
             $('.card-body').show();
             $('#datatableWrapper').hide();
@@ -681,53 +681,53 @@
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
 
-            // $('#hiddenId').val('');
-            // $('#ContractID').val('');
-            // $('#ContractAgency').val('');
-            // $('#ContractServiceBranch').val('');
-            // $('#ContractComponent').val('');
-            // $('#ContractClient').val('');
-            // $('#ContractType').val('');
-            // $('#DawsonRoleOnContract').val('');
-            // $('#ContractStatus').val('');
+            $('#hiddenId').val('');
+            $('#ContractId').val('');
+$('#CompanyId').val('');
+$('#ContractClient').val('');
+$('#ContractType').val('');
+$('#SmallBusinessType').val('');
+$('#ContractAffiliation').val('');
+$('#ContractServiceBranch').val('');
+$('#ContractComponent').val('');
+$('#SolicitationNumber').val('');
+$('#CompanyMainName').val('');
+$('#CompanyMainAddress1').val('');
+$('#CompanyMainAddress2').val('');
+$('#CompanyMainState').val('').trigger('change');
+$('#CompanyMainCity').val('').trigger('change');
+$('#CompanyMainZip').val('');
+$('#CompanyMainLastName').val('');
+$('#CompanyMainFirstName').val('');
+$('#CompanyMainPhone').val('');
+$('#CompanyMainEmail').val('');
+$('#FinanceLastName').val('');
+$('#FinanceFirstName').val('');
+$('#FinanceAddress1').val('');
+$('#FinanceAddress2').val('');
+$('#FinanceState').val('').trigger('change');
+$('#FinanceCity').val('').trigger('change');
+$('#FinanceZip').val('');
+$('#FinancePhone').val('');
+$('#FinanceEmail').val('');
+$('#EventLastName').val('');
+$('#EventFirstName').val('');
+$('#EventPhone').val('');
+$('#EventEmail').val('');
+$('#TrainingLastName').val('');
+$('#TrainingFirstName').val('');
+$('#TrainingPhone').val('');
+$('#TrainingEmail').val('');
 
-            // $('#ContractStartDate').val('');
-            // $('#ContractEndDate').val('');
-
-            // // KO
-            // $('#KoLastName').val('');
-            // $('#KoFirstName').val('');
-            // $('#KOPhone').val('');
-            // $('#KOPhone2').val('');
-            // $('#KOEmail').val('');
-            // $('#KONotes').val('');
-            // $('#CORLastName').val('');
-            // $('#CORPrefix').val('');
-            // $('#CORFirstName').val('');
-
-            // $('#CORKORank').val('');
-            // $('#CorPhone').val('');
-            // $('#CorPhone2').val('');
-            // $('#COREmail').val('');
-            // $('#CORNotes').val('');
-
-            // $('#DawsonProgramManagerLastName').val('');
-            // $('#DawsonProgramManagerFirstName').val('');
-
-            // $('#DawsonDeputyProgramManagerLastName').val('');
-            // $('#DawsonDeputyProgramManagerFirstName').val('');
-
-            // $('#DawsonProjectManagerLastName').val('');
-            // $('#DawsonProjectManagerFirstName').val('');
         });
 
-        
+
 
         $('#backToTableBtn').click(function () {
             $('.card-body').hide();
             $('#datatableWrapper').show();
             $('#addContractBtn').show();
-            
+
         });
 
  //        $('#contractsTable').DataTable().clear().destroy(); // Destroy the current instance
@@ -758,52 +758,56 @@
                 success: function (response) {
                     if (response.success) {
                         debugger;
-                        var contract = response.contractDetails;
-                        
-                        $('#hiddenId').val(contract.id);
-                        $('#ContractID').val(contract.contractID);
-                        $('#ContractAgency').val(contract.contractAgency);
-                        $('#ContractServiceBranch').val(contract.contractServiceBranch);
-                        $('#ContractComponent').val(contract.contractComponent);
-                        $('#ContractClient').val(contract.contractClient);
-                        $('#ContractType').val(contract.contractType);
-                        $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
-                        $('#ContractStatus').val(contract.contractStatus);
+                        var contract = response.combinedData;
+                        $('#hiddenId').val(contract.subContractor.id);
+                var selectedData = {
+    id: contract.subContractor.id, // The value of the option
+    text: contract.contractDetails.contractID // The text to display
+};
 
-                        let contractStartDate = new Date(contract.contractStartDate);
-                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD
-                        $('#ContractStartDate').val(formattedStartDate);
-
-                        let contractEndDate = new Date(contract.contractEndDate);
-                        let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
-                        $('#ContractEndDate').val(formattedEndDate);
-
-
-                        //KO
-                        $('#KoLastName').val(contract.koLastName);
-                        $('#KoFirstName').val(contract.koFirstName);
-                        $('#KOPhone').val(contract.koPhone);
-                        $('#KOPhone2').val(contract.koPhone2);
-                        $('#KOEmail').val(contract.koEmail);
-                        $('#KONotes').val(contract.koNotes);
-                        $('#CORLastName').val(contract.corLastName);
-                        $('#CORPrefix').val(contract.corPrefix);
-                        $('#CORFirstName').val(contract.corFirstName);
-
-                        $('#CORKORank').val(contract.corkoRank);
-                        $('#CorPhone').val(contract.corPhone);
-                        $('#CorPhone2').val(contract.corPhone2);
-                        $('#COREmail').val(contract.corEmail);
-                        $('#CORNotes').val(contract.corEmail);
-
-                        $('#DawsonProgramManagerLastName').val(contract.dawsonProgramManagerLastName);
-                        $('#DawsonProgramManagerFirstName').val(contract.dawsonProgramManagerFirstName);
-
-                        $('#DawsonDeputyProgramManagerLastName').val(contract.dawsonDeputyProgramManagerLastName);
-                        $('#DawsonDeputyProgramManagerFirstName').val(contract.dawsonDeputyProgramManagerFirstName);
-
-                        $('#DawsonProjectManagerLastName').val(contract.dawsonProjectManagerLastName);
-                        $('#DawsonProjectManagerFirstName').val(contract.dawsonProjectManagerFirstName);
+// Add the option dynamically if it doesn't exist
+if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
+    var newOption = new Option(selectedData.text, selectedData.id, true, true);
+    $('#ContractId').append(newOption);
+} else {
+    // If the option exists, just set it as selected
+    $('#ContractId').val(selectedData.id);
+}
+        $('#CompanyId').val(contract.subContractor.companyId);
+        $('#ContractClient').val(contract.contractDetails.contractClient);
+        $('#ContractType').val(contract.contractDetails.contractType);
+        $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
+        $('#ContractAffiliation').val(contract.subContractor.contractAffiliation);
+        $('#ContractServiceBranch').val(contract.contractDetails.contractServiceBranch);
+        $('#ContractComponent').val(contract.contractDetails.contractComponent);
+        $('#SolicitationNumber').val(contract.subContractor.solicitationNumber);
+        $('#CompanyMainName').val(contract.subContractor.companyMainName);
+        $('#CompanyMainAddress1').val(contract.subContractor.companyMainAddress1);
+        $('#CompanyMainAddress2').val(contract.subContractor.companyMainAddress2);
+        $('#CompanyMainState').val(contract.subContractor.companyMainState).trigger('change');
+        $('#CompanyMainCity').val(contract.subContractor.companyMainCity).trigger('change');
+        $('#CompanyMainZip').val(contract.subContractor.companyMainZip);
+        $('#CompanyMainLastName').val(contract.subContractor.companyMainLastName);
+        $('#CompanyMainFirstName').val(contract.subContractor.companyMainFirstName);
+        $('#CompanyMainPhone').val(contract.subContractor.companyMainPhone);
+        $('#CompanyMainEmail').val(contract.subContractor.companyMainEmail);
+        $('#FinanceLastName').val(contract.subContractor.financeLastName);
+        $('#FinanceFirstName').val(contract.subContractor.financeFirstName);
+        $('#FinanceAddress1').val(contract.subContractor.financeAddress1);
+        $('#FinanceAddress2').val(contract.subContractor.financeAddress2);
+        $('#FinanceState').val(contract.subContractor.financeState).trigger('change');;
+        $('#FinanceCity').val(contract.subContractor.financeCity).trigger('change');;
+        $('#FinanceZip').val(contract.subContractor.financeZip);
+        $('#FinancePhone').val(contract.subContractor.financePhone);
+        $('#FinanceEmail').val(contract.subContractor.financeEmail);
+        $('#EventLastName').val(contract.subContractor.eventLastName);
+        $('#EventFirstName').val(contract.subContractor.eventFirstName);
+        $('#EventPhone').val(contract.subContractor.eventPhone);
+        $('#EventEmail').val(contract.subContractor.eventEmail);
+        $('#TrainingLastName').val(contract.subContractor.trainingLastName);
+        $('#TrainingFirstName').val(contract.subContractor.trainingFirstName);
+        $('#TrainingPhone').val(contract.subContractor.trainingPhone);
+        $('#TrainingEmail').val(contract.subContractor.trainingEmail);
 
 
 
@@ -813,19 +817,22 @@
                         $('#submitBtn').hide();
                         $('#resetBtn').hide();
                         $('#addContractBtn').hide();
-                        
+
                         if (isViewButton) {
                             const controlIds = [
-                                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
-                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
-                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
-                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-                            ];
+                              'hiddenId','ContractId','CompanyId', 'ContractClient', 'ContractType', 'SmallBusinessType',
+                              'ContractAffiliation', 'ContractServiceBranch', 'ContractComponent',
+                              'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+                              'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+                              'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+                              'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+                              'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+                              'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+                              'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+                              'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+                              'TrainingEmail'
+                                ];
+
 
                             // Make controls read-only
                             controlIds.forEach(function (id) {
@@ -836,6 +843,27 @@
 
                             $('#updateBtn').hide();  // Hide the Update button when View button is clicked
                         } else {
+                            const controlIds = [
+                          'hiddenId', 'ContractId',   'SmallBusinessType',
+                          'ContractAffiliation', 'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+                          'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+                          'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+                          'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+                          'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+                          'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+                          'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+                          'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+                          'TrainingEmail'
+                      ];
+
+                      // Make controls editable
+                      controlIds.forEach(function (id) {
+                          const control = $('#' + id);
+                          control.prop('readonly', false); // Remove readonly property
+                          control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                      });
+
+
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                         }
                     } else {
@@ -904,7 +932,7 @@
             $("#CompanyId").val(companyId); // Set the value in CompanyId field
         }
 
-       
+
 
         $('#ContractId').select2({
             ajax: {
@@ -913,6 +941,7 @@
                 delay: 250,  // Optional: delay to limit requests to avoid too many hits
                 data: function (params) {
                     return {
+
                         contractId: params.term || ''  // Send the search term to the server
                     };
                 },
@@ -920,6 +949,7 @@
                     return {
                         results: data.map(function (contract) {
                             return {
+
                                 id: contract.id,     // Contract ID
                                 text: contract.text  // Displayed text (ContractID or other)
                             };
@@ -1023,7 +1053,7 @@
     });
 
 
-    
+
 
     $.getJSON('/data/statesAndCities.json', function (data) {
         const stateCityMap = {};
