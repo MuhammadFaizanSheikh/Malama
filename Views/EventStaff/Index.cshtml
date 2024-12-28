@@ -446,18 +446,19 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Event On Call Staff</label>
-            <div class="form-check">
-                <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" required />
-                <label class="form-check-label" for="eventOnCallYes">Yes</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallNo" value="false" class="form-check-input" required />
-                <label class="form-check-label" for="eventOnCallNo">No</label>
-            </div>
-            <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
-                <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
-                <select asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-control" required></select>
-            </div>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" required />
+                        <label class="form-check-label" for="eventOnCallYes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallNo" value="false" class="form-check-input" required />
+                        <label class="form-check-label" for="eventOnCallNo">No</label>
+                    </div>
+
+                    <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
+                        <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
+                        <input asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-control" required />
+                    </div>
             <h4 class="mt-4">States Licenses</h4>
             <div class="form-container">
                 <div class="form-row license-row">
@@ -516,27 +517,27 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
-            <input asp-for="SingleEventStaff.CredentialingProcessDate" type="date" class="form-control" required />
+                    <input asp-for="SingleEventStaff.CredentialingProcessDate" id="CredentialingProcessDate" type="date" class="form-control" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
-            <input asp-for="SingleEventStaff.HistoricalCredentialingDate" type="date" class="form-control" />
+                    <input asp-for="SingleEventStaff.HistoricalCredentialingDate" id="HistoricalCredentialingDate" type="date" class="form-control" />
         </div>
     </div>
 
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
-            <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
+                    <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" id="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
         </div>
         <div class="col-md-6">
             <label class="form-label">Onboarding/Training Complete</label>
             <div class="form-check">
-                <input asp-for="SingleEventStaff.OnboardingTrainingComplete" type="radio" value="true" class="form-check-input" />
+                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteYes" type="radio" value="true" class="form-check-input" />
                 <label class="form-check-label">Yes</label>
             </div>
             <div class="form-check">
-                <input asp-for="SingleEventStaff.OnboardingTrainingComplete" type="radio" value="false" class="form-check-input" />
+                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteNo" type="radio" value="false" class="form-check-input" />
                 <label class="form-check-label">No</label>
             </div>
         </div>
@@ -545,10 +546,12 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-            <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
+                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" id="OutstandingTrainings" class="form-control" rows="3"></textarea>
+           @*  <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
                 <option value="Type1">Type1</option>
                 <option value="Type2">Type2</option>
-            </select>
+            </select> *@
+
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
@@ -877,6 +880,125 @@
 </body>
 </html>
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const phoneFields = ['StaffSSN'];
+        phoneFields.forEach(function (fieldId) {
+            applySsnMask(document.getElementById(fieldId));
+        });
+    });
+
+    function applySsnMask(inputElement) {
+        inputElement.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+            if (value.length > 3 && value.length <= 5) {
+                value = value.slice(0, 3) + '-' + value.slice(3); // XXX-XX
+            } else if (value.length > 5) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 9); // XXX-XX-XXXX
+            }
+            e.target.value = value;
+        });
+    }
+
+
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(`toggle${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Icon`);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    allowOnlyNumericInput("StaffSSN");
+    allowOnlyNumericInput("npi");
+    allowOnlyNumericInput("staffDoDID");
+    
+
+    function allowOnlyNumericInput(inputId) {
+        document.getElementById(inputId).addEventListener("keypress", function (event) {
+            const charCode = event.which || event.keyCode;
+
+            // Allow only numeric keys (48-57) and control keys (e.g., backspace)
+            if (charCode < 48 || charCode > 57) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    
+
+   
+
+
+
+
+
+    const staffCACYes = document.getElementById('staffCACYes');
+    const staffCACNo = document.getElementById('staffCACNo');
+    const staffDoDContainer = document.getElementById('staffDoDContainer');
+    const staffDoDID = document.getElementById('staffDoDID');
+
+    function toggleStaffDoDID() {
+        if (staffCACYes.checked) {
+            staffDoDContainer.style.display = 'block'; // Show the Staff DoD ID field
+            staffDoDID.setAttribute('required', 'required'); // Make it required
+        } else {
+            staffDoDContainer.style.display = 'none'; // Hide the Staff DoD ID field
+            staffDoDID.removeAttribute('required'); // Remove the required attribute
+        }
+    }
+
+    // Attach event listeners to radio buttons
+    staffCACYes.addEventListener('change', toggleStaffDoDID);
+    staffCACNo.addEventListener('change', toggleStaffDoDID);
+
+    // Initial check on page load
+    toggleStaffDoDID();
+
+
+    const yesRadio = document.getElementById('eventOnCallYes');
+    const noRadio = document.getElementById('eventOnCallNo');
+    const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
+
+    // Function to toggle visibility
+    function toggleEventOnCallContainer() {
+        if (noRadio.checked) {
+            eventOnCallSelectContainer.style.display = 'block';
+        } else {
+            eventOnCallSelectContainer.style.display = 'none';
+        }
+    }
+
+    // Add event listeners
+    yesRadio.addEventListener('change', toggleEventOnCallContainer);
+    noRadio.addEventListener('change', toggleEventOnCallContainer);
+
+    // Initialize visibility on page load
+    toggleEventOnCallContainer();
+    
+
+    const phoneFields = ['staffCellNumber', 'staffPhone2'];
+    phoneFields.forEach(function (fieldId) {
+        applyPhoneNumberMask(document.getElementById(fieldId));
+    });
+
+    function applyPhoneNumberMask(inputElement) {
+        inputElement.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
+            if (value.length > 3 && value.length <= 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length > 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+            }
+            e.target.value = value;
+        });
+    }
 
      $('.card-body').hide();
         $('#contractsTable').show();
@@ -1434,119 +1556,16 @@
         hotelContainer.appendChild(newHotelRow);
     });
 
-    function togglePasswordVisibility(inputId) {
-        const input = document.getElementById(inputId);
-        const icon = document.getElementById(`toggle${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Icon`);
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    }
-
-    allowOnlyNumericInput("StaffSSN");
-    allowOnlyNumericInput("npi");
-    allowOnlyNumericInput("staffDoDID");
     
 
-    function allowOnlyNumericInput(inputId) {
-        document.getElementById(inputId).addEventListener("keypress", function (event) {
-            const charCode = event.which || event.keyCode;
-
-            // Allow only numeric keys (48-57) and control keys (e.g., backspace)
-            if (charCode < 48 || charCode > 57) {
-                event.preventDefault();
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const phoneFields = ['StaffSSN'];
-        phoneFields.forEach(function (fieldId) {
-            applySsnMask(document.getElementById(fieldId));
-        });
-    });
-
-    function applySsnMask(inputElement) {
-        inputElement.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
-            if (value.length > 3 && value.length <= 5) {
-                value = value.slice(0, 3) + '-' + value.slice(3); // XXX-XX
-            } else if (value.length > 5) {
-                value = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 9); // XXX-XX-XXXX
-            }
-            e.target.value = value;
-        });
-    }
+    
 
 
-    // Get references to the radio buttons and the "Select Event" field container
-    const eventOnCallYes = document.getElementById('eventOnCallYes');
-    const eventOnCallNo = document.getElementById('eventOnCallNo');
-    const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
-    const eventOnCallSelect = document.getElementById('eventOnCallSelect');
-
-    // Add event listeners to radio buttons to detect change in selection
-    eventOnCallYes.addEventListener('change', toggleSelectEventVisibility);
-    eventOnCallNo.addEventListener('change', toggleSelectEventVisibility);
-
-    function toggleSelectEventVisibility() {
-        if (eventOnCallYes.checked) {
-            eventOnCallSelectContainer.style.display = 'block'; // Show the input field
-            eventOnCallSelect.setAttribute('required', 'true'); // Make it required
-        } else {
-            eventOnCallSelectContainer.style.display = 'none'; // Hide the input field
-            eventOnCallSelect.removeAttribute('required'); // Remove required attribute
-        }
-    }
+    
 
 
 
-    const staffCACYes = document.getElementById('staffCACYes');
-    const staffCACNo = document.getElementById('staffCACNo');
-    const staffDoDContainer = document.getElementById('staffDoDContainer');
-    const staffDoDID = document.getElementById('staffDoDID');
-
-    function toggleStaffDoDID() {
-        if (staffCACYes.checked) {
-            staffDoDContainer.style.display = 'block'; // Show the Staff DoD ID field
-            staffDoDID.setAttribute('required', 'required'); // Make it required
-        } else {
-            staffDoDContainer.style.display = 'none'; // Hide the Staff DoD ID field
-            staffDoDID.removeAttribute('required'); // Remove the required attribute
-        }
-    }
-
-    // Attach event listeners to radio buttons
-    staffCACYes.addEventListener('change', toggleStaffDoDID);
-    staffCACNo.addEventListener('change', toggleStaffDoDID);
-
-    // Initial check on page load
-    toggleStaffDoDID();
-
-
-
-    const phoneFields = ['staffCellNumber', 'staffPhone2'];
-    phoneFields.forEach(function (fieldId) {
-        applyPhoneNumberMask(document.getElementById(fieldId));
-    });
-
-    function applyPhoneNumberMask(inputElement) {
-        inputElement.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
-            if (value.length > 3 && value.length <= 6) {
-                value = value.slice(0, 3) + '-' + value.slice(3);
-            } else if (value.length > 6) {
-                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
-            }
-            e.target.value = value;
-        });
-    }
+    
 
 
     $.getJSON('/data/statesAndCities.json', function (data) {
