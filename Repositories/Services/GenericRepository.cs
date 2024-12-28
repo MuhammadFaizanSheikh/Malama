@@ -1,4 +1,5 @@
-﻿using ExcelFilesCompiler.Repositories.Interfaces;
+﻿using ExcelFilesCompiler.Models;
+using ExcelFilesCompiler.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -170,6 +171,5 @@ namespace ExcelFilesCompiler.Repositories.Services
                 throw new Exception("Error while querying the database.", ex);
             }
         }
-
     }
 }

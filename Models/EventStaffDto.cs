@@ -16,97 +16,233 @@ namespace ExcelToCsv.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
-        public int StaffID { get; set; }
+
+        [StringLength(6, ErrorMessage = "StaffID cannot exceed 6 characters.")]
+        [Required(ErrorMessage = "StaffID is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffID cannot be only white spaces.")]
+        public string StaffID { get; set; }
         public DateTime StartDate { get; set; }
+
+        [StringLength(20, ErrorMessage = "StaffStatus cannot exceed 20 characters.")]
+        [Required(ErrorMessage = "StaffStatus is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffStatus cannot be only white spaces.")]
         public string StaffStatus { get; set; }
+
+        [StringLength(50, ErrorMessage = "StaffLastName cannot exceed 50 characters.")]
+        [Required(ErrorMessage = "StaffLastName is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffLastName cannot be only white spaces.")]
         public string StaffLastName { get; set; }
+
+        [StringLength(50, ErrorMessage = "StaffFirstName cannot exceed 50 characters.")]
+        [Required(ErrorMessage = "StaffFirstName is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffFirstName cannot be only white spaces.")]
         public string StaffFirstName { get; set; }
-        public string StaffMiddleInitial { get; set; }
+
+        [StringLength(50, ErrorMessage = "StaffMiddleInitial cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffMiddleInitial cannot be only white spaces.")]
+        public string? StaffMiddleInitial { get; set; }
+
+        [StringLength(11, ErrorMessage = "StaffSSN cannot exceed 11 characters.")]
+        [Required(ErrorMessage = "StaffSSN is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffSSN cannot be only white spaces.")]
         public string StaffSSN { get; set; }
         public DateTime StaffDOB { get; set; }
-        public List<string> StaffRoles { get; set; } = new List<string>();
-        public List<string> RolesList { get; set; } = new List<string>(); // For checkboxes
+
+        [StringLength(11, ErrorMessage = "StaffSSN cannot exceed 11 characters.")]
+        [Required(ErrorMessage = "StaffSSN is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffSSN cannot be only white spaces.")]
+
+        public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
+
+        [Required(ErrorMessage = "EventOnCallStaff is required.")]
+        [RegularExpression("^(Yes|No)$", ErrorMessage = "EventOnCallStaff : Invalid selection. Choose 'Yes' or 'No'.")]
         public string EventOnCallStaff { get; set; }
+
+        [StringLength(50, ErrorMessage = "EventOnCallStaffEvent cannot exceed 50 characters.")]
+        [Required(ErrorMessage = "EventOnCallStaffEvent is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventOnCallStaffEvent cannot be only white spaces.")]
         public string EventOnCallStaffEvent { get; set; }
-        public string SelectedEvent { get; set; }
         public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
-        public string NPI { get; set; }
+
+        [StringLength(10, ErrorMessage = "NPI must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "NPI must be a numeric value with exactly 10 digits.")]
+        public string? NPI { get; set; }
+
+        [StringLength(8, ErrorMessage = "DAE cannot exceed 8 characters.")]
+        [Required(ErrorMessage = "DAE is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "DAE cannot be only white spaces.")]
         public string DAE { get; set; }
         public DateTime CredentialingProcessDate { get; set; }
-        public DateTime HistoricalCredentialingDate { get; set; }
-        public DateTime? HistoricalCredentialingDateOptional { get; set; }
+        public DateTime? HistoricalCredentialingDate { get; set; }
         public DateTime DAWSONInternalCredentialingCompleteDate { get; set; }
+
+        [Required(ErrorMessage = "OnboardingTrainingComplete is required.")]
+        [RegularExpression("^(Yes|No)$", ErrorMessage = "OnboardingTrainingComplete : Invalid selection. Choose 'Yes' or 'No'.")]
         public string OnboardingTrainingComplete { get; set; }
+
+        [StringLength(100, ErrorMessage = "OutstandingTrainings cannot exceed 100 characters.")]
+        [Required(ErrorMessage = "OutstandingTrainings is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "OutstandingTrainings cannot be only white spaces.")]
         public string OutstandingTrainings { get; set; }
-        public string BackgroundCheckConcerns { get; set; }
+
+        [StringLength(100, ErrorMessage = "BackgroundCheckConcerns cannot exceed 100 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "BackgroundCheckConcerns cannot be only white spaces.")]
+        public string? BackgroundCheckConcerns { get; set; }
         public DateTime? BLSCertDate { get; set; }
-        public string BLSCertNumber { get; set; }
+        public string? BLSCertNumber { get; set; }
         public DateTime? ACLSCertDate { get; set; }
-        public string ACLSCertNumber { get; set; }
+        public string? ACLSCertNumber { get; set; }
 
-        //************************************************SectionB**********************************************
+        [Required(ErrorMessage = "CACApplicationProcessStatus is required.")]
+        public string CACApplicationProcessStatus { get; set; }
 
-        public string CACApplicationProcessStatus { get; set; }  // Dropdown options: In Progress, Pending, Complete, Not Started
-        public bool StaffCAC { get; set; }  // Radio buttons: Yes (true), No (false)
-        public string StaffDoDID { get; set; }  // Textbox
-        public string EmployerSubcontractor { get; set; }  // Dropdown: Employer, Subcontractor
-        public string StaffCellNumber { get; set; }  // Textbox
-        public string StaffPhone2 { get; set; }  // Textbox (optional)
-        public string StaffEmail { get; set; }  // Textbox
+        [Required(ErrorMessage = "StaffCAC is required.")]
+        [RegularExpression("^(Yes|No)$", ErrorMessage = "StaffCAC : Invalid selection. Choose 'Yes' or 'No'.")]
+        public string StaffCAC { get; set; }
+
+        [Required(ErrorMessage = "StaffDoDID is required.")]
+        [StringLength(10, ErrorMessage = "StaffDoDID cannot exceed 10 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffDoDID cannot be only white spaces.")]
+        public string StaffDoDID { get; set; }
+
+        [Required(ErrorMessage = "SubContractorId is required.")]
+        public long SubContractorId { get; set; }
+
+        [Required(ErrorMessage = "StaffCellNumber is required.")]
+        [StringLength(12, ErrorMessage = "StaffCellNumber cannot exceed 12 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffCellNumber cannot be only white spaces.")]
+        public string StaffCellNumber { get; set; }
+        public string? StaffPhone2 { get; set; }
+
+        [Required(ErrorMessage = "StaffEmail is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid StaffEmail address.")]
+        public string StaffEmail { get; set; }
 
         // Primary Residence fields
-        public string PrimaryAddress1 { get; set; }  // Textbox
-        public string PrimaryAddress2 { get; set; }  // Textbox
-        public string PrimaryCity { get; set; }  // Textbox
-        public string PrimaryState { get; set; }  // Textbox
-        public string PrimaryZip { get; set; }  // Textbox
+        [Required(ErrorMessage = "PrimaryAddress1 is required.")]
+        [StringLength(200, ErrorMessage = "PrimaryAddress1 cannot exceed 200 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffCPrimaryAddress1ellNumber cannot be only white spaces.")]
+        public string PrimaryAddress1 { get; set; }
+        public string? PrimaryAddress2 { get; set; }
+
+        [Required(ErrorMessage = "PrimaryCity is required.")]
+        [StringLength(50, ErrorMessage = "PrimaryCity cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "PrimaryCity cannot be only white spaces.")]
+        public string PrimaryCity { get; set; }
+
+        [Required(ErrorMessage = "PrimaryState is required.")]
+        [StringLength(50, ErrorMessage = "PrimaryState cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "PrimaryState cannot be only white spaces.")]
+        public string PrimaryState { get; set; }
+
+        [Required(ErrorMessage = "PrimaryZip is required.")]
+        [StringLength(50, ErrorMessage = "PrimaryZip cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "PrimaryZip cannot be only white spaces.")]
+        public string PrimaryZip { get; set; }
 
         // Secondary Residence fields
-        public string SecondaryAddress1 { get; set; }  // Textbox
-        public string SecondaryAddress2 { get; set; }  // Textbox
-        public string SecondaryCity { get; set; }  // Textbox
-        public string SecondaryState { get; set; }  // Textbox
-        public string SecondaryZip { get; set; }  // Textbox
 
-        public List<string> StaffContractAffiliation { get; set; }
+        [Required(ErrorMessage = "SecondaryAddress1 is required.")]
+        [StringLength(200, ErrorMessage = "SecondaryAddress1 cannot exceed 200 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryAddress1 cannot be only white spaces.")]
+        public string SecondaryAddress1 { get; set; } 
+        public string? SecondaryAddress2 { get; set; }
 
-        // Staff info entered by (readonly field)
-        public string StaffInfoEnteredBy { get; set; }  // Readonly label
+        [Required(ErrorMessage = "SecondaryCity is required.")]
+        [StringLength(50, ErrorMessage = "SecondaryCity cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryCity cannot be only white spaces.")]
+        public string SecondaryCity { get; set; }
 
-        // Travel Honor Reward Numbers fields
-        public bool TravelHonorAir { get; set; }  // Radio button for Car
-        public List<TravelAirline> Airlines { get; set; } = new List<TravelAirline>();  // List of Airlines
+        [Required(ErrorMessage = "SecondaryState is required.")]
+        [StringLength(50, ErrorMessage = "SecondaryState cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryState cannot be only white spaces.")]
+        public string SecondaryState { get; set; }
 
-        public bool TravelHonorCar { get; set; }  // Radio button for Car
-        public List<TravelCar> TravelCar { get; set; } = new List<TravelCar>();
+        [Required(ErrorMessage = "SecondaryZip is required.")]
+        [StringLength(50, ErrorMessage = "SecondaryZip cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryZip cannot be only white spaces.")]
+        public string SecondaryZip { get; set; }
 
-        public bool TravelHonorHotel { get; set; }  // Radio button for Hotel
-        public List<TravelHotel> TravelHotel { get; set; } = new List<TravelHotel>();
+        [Required(ErrorMessage = "StaffContractAffiliation is required.")]
+        public string StaffContractAffiliation { get; set; }
+
+        [Required(ErrorMessage = "StaffInfoEnteredBy is required.")]
+        [StringLength(50, ErrorMessage = "StaffInfoEnteredBy cannot exceed 50 characters.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffInfoEnteredBy cannot be only white spaces.")]
+        public string StaffInfoEnteredBy { get; set; }
+
+        //public bool TravelHonorAir { get; set; }
+        public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
     }
 
+    [Table("StaffRoles")]
+    public class StaffRoleDto
+    {
+        [Key]
+        public long Id { get; set; }
+
+        [Required]
+        public long EventStaffId { get; set; }
+
+        [Required]
+        public string RoleName { get; set; }
+
+        [ForeignKey("EventStaffId")]
+        public EventStaffDto EventStaff { get; set; }
+
+    }
+
+    [Table("StaffLicense")]
     public class LicenseInfoDTO
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; } // Primary key, auto-incremented
+
+        public long EventStaffId { get; set; }
+
+
+        [Required]
+        [StringLength(50)]
         public string LicenseNumber { get; set; }
+
+        [Required]
+        [StringLength(50)]
         public string LicenseState { get; set; }
+
+        [Required]
+        [StringLength(50)]
         public string LicenseType { get; set; }
+
+        [Required]
         public DateTime LicenseExpiryDate { get; set; }
+
+        // Foreign key to EventStaffDto
+
+        [ForeignKey("EventStaffId")]
+        public EventStaffDto EventStaffDto { get; set; } // Navigation property
     }
 
-    public class TravelAirline
-    {
-        public string AirlineName { get; set; }  // Airline name
-        public string AirlineRewards { get; set; }  // Rewards associated with the airline
-    }
 
-    public class TravelCar
+    [Table("TravelHonor")]
+    public class TravelHonor
     {
-        public string AirlineName { get; set; }  // Airline name
-        public string AirlineRewards { get; set; }  // Rewards associated with the airline
-    }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
 
-    public class TravelHotel
-    {
-        public string AirlineName { get; set; }  // Airline name
-        public string AirlineRewards { get; set; }  // Rewards associated with the airline
+        [Required]
+        public long EventStaffId { get; set; }
+
+        [Required]
+        public string Type { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        [Required]
+        public string Rewards { get; set; }
+        [ForeignKey("EventStaffId")]
+        public EventStaffDto EventStaff { get; set; }
     }
 }

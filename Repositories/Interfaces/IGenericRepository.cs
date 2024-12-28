@@ -1,4 +1,5 @@
-﻿using NPOI.SS.Formula.Functions;
+﻿using ExcelFilesCompiler.Models;
+using NPOI.SS.Formula.Functions;
 using System.Linq.Expressions;
 
 namespace ExcelFilesCompiler.Repositories.Interfaces
@@ -16,7 +17,6 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         T? FindFirstOrDefaultByEventId(string eventId);
         IEnumerable<T> FindByEventId(string eventId);
         Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate);
-
 
     }
 }

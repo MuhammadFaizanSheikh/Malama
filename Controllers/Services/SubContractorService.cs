@@ -6,6 +6,8 @@ using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Crypto;
+using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers.Services
@@ -165,5 +167,65 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return responseDto;
         }
+
+        public async Task<IEnumerable<SubContractorInfoDto>> GetSubContractorByCompanyNameForSearching(string companyName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(companyName))
+                {
+                    return await repository.FindForSearchingAsync(c => true);
+                }
+
+                return await repository.FindForSearchingAsync(c => c.CompanyMainName.Contains(companyName));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
+
+        public async Task<List<ContractDetails>> GetContractIdsBySubContractorCompanyName(string companyName)
+        {
+            try
+            {
+                var subcontractors = await _unitOfWork.SubContractors.FindForSearchingAsync(sc => sc.CompanyMainName == companyName);
+                if (subcontractors == null || !subcontractors.Any())
+                {
+                    throw new Exception("No subcontractors found for the given company.");
+                }
+
+                var contractIds = subcontractors.Select(s => s.ContractId).Distinct().ToList();
+                if (contractIds == null || !contractIds.Any())
+                {
+                    throw new Exception("No contract IDs found for the given company.");
+                }
+
+                List<ContractDetails> contractDetails = new List<ContractDetails>();
+
+                foreach (var id in contractIds)
+                {
+                    var contractDet = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.Id == id);
+                    if (contractDet != null && contractDet.Any()) // Ensure the result is not null or empty
+                    {
+                        contractDetails.AddRange(contractDet); // Add all matching items
+                    }
+                }
+
+
+                // Step 4: Check if contract details are found
+                if (contractDetails == null || !contractDetails.Any())
+                {
+                    throw new Exception("No contract details found for the given contract IDs.");
+                }
+
+                return contractDetails.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
+
     }
 }

@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -138,6 +139,54 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception)
             {
                 return Json(new { success = false, message = "An error occurred while retrieving the SubContractor." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSubContractorByCompanyNameForSearching(string companyName)
+        {
+            try
+            {
+                var contracts = await _subContractorService.GetSubContractorByCompanyNameForSearching(companyName);
+
+                // Distinct by CompanyMainName
+                var result = contracts
+                    .GroupBy(c => c.CompanyMainName)
+                    .Select(g => g.First())
+                    .Select(c => new
+                    {
+                        id = c.Id,
+                        text = c.CompanyMainName
+                    })
+                    .ToList();
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching contracts." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContractIdsBySubContractorCompanyName(string companyName)
+        {
+            try
+            {
+                var contractDetails = await _subContractorService.GetContractIdsBySubContractorCompanyName(companyName);
+
+                var results = contractDetails.Select(cd => new
+                {
+                    id = cd.Id,            
+                    text = cd.ContractID   
+                }).ToList();
+
+                return Ok(new { success = true, data = results });
+            }
+            catch (Exception ex)
+            {
+                // Return an error response if something goes wrong
+                return StatusCode(500, new { message = "An error occurred while fetching contract details by CompanyName." });
             }
         }
     }

@@ -271,6 +271,7 @@
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
                     </tr>
                 }
             </tbody>
@@ -763,55 +764,53 @@ $('#TrainingEmail').val('');
                         var contract = response.combinedData;
                         $('#hiddenId').val(contract.subContractor.id);
                 var selectedData = {
-    id: contract.subContractor.id, // The value of the option
-    text: contract.contractDetails.contractID // The text to display
-};
+                id: contract.subContractor.id, // The value of the option
+                text: contract.contractDetails.contractID // The text to display
+                };
 
-// Add the option dynamically if it doesn't exist
-if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
-    var newOption = new Option(selectedData.text, selectedData.id, true, true);
-    $('#ContractId').append(newOption);
-} else {
-    // If the option exists, just set it as selected
-    $('#ContractId').val(selectedData.id);
-}
-        $('#CompanyId').val(contract.subContractor.companyId);
-        $('#ContractClient').val(contract.contractDetails.contractClient);
-        $('#ContractType').val(contract.contractDetails.contractType);
-        $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
-        $('#ContractAffiliation').val(contract.subContractor.contractAffiliation);
-        $('#ContractServiceBranch').val(contract.contractDetails.contractServiceBranch);
-        $('#ContractComponent').val(contract.contractDetails.contractComponent);
-        $('#SolicitationNumber').val(contract.subContractor.solicitationNumber);
-        $('#CompanyMainName').val(contract.subContractor.companyMainName);
-        $('#CompanyMainAddress1').val(contract.subContractor.companyMainAddress1);
-        $('#CompanyMainAddress2').val(contract.subContractor.companyMainAddress2);
-        $('#CompanyMainState').val(contract.subContractor.companyMainState).trigger('change');
-        $('#CompanyMainCity').val(contract.subContractor.companyMainCity).trigger('change');
-        $('#CompanyMainZip').val(contract.subContractor.companyMainZip);
-        $('#CompanyMainLastName').val(contract.subContractor.companyMainLastName);
-        $('#CompanyMainFirstName').val(contract.subContractor.companyMainFirstName);
-        $('#CompanyMainPhone').val(contract.subContractor.companyMainPhone);
-        $('#CompanyMainEmail').val(contract.subContractor.companyMainEmail);
-        $('#FinanceLastName').val(contract.subContractor.financeLastName);
-        $('#FinanceFirstName').val(contract.subContractor.financeFirstName);
-        $('#FinanceAddress1').val(contract.subContractor.financeAddress1);
-        $('#FinanceAddress2').val(contract.subContractor.financeAddress2);
-        $('#FinanceState').val(contract.subContractor.financeState).trigger('change');;
-        $('#FinanceCity').val(contract.subContractor.financeCity).trigger('change');;
-        $('#FinanceZip').val(contract.subContractor.financeZip);
-        $('#FinancePhone').val(contract.subContractor.financePhone);
-        $('#FinanceEmail').val(contract.subContractor.financeEmail);
-        $('#EventLastName').val(contract.subContractor.eventLastName);
-        $('#EventFirstName').val(contract.subContractor.eventFirstName);
-        $('#EventPhone').val(contract.subContractor.eventPhone);
-        $('#EventEmail').val(contract.subContractor.eventEmail);
-        $('#TrainingLastName').val(contract.subContractor.trainingLastName);
-        $('#TrainingFirstName').val(contract.subContractor.trainingFirstName);
-        $('#TrainingPhone').val(contract.subContractor.trainingPhone);
-        $('#TrainingEmail').val(contract.subContractor.trainingEmail);
-
-
+                // Add the option dynamically if it doesn't exist
+                if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
+                    var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                    $('#ContractId').append(newOption);
+                } else {
+                    // If the option exists, just set it as selected
+                    $('#ContractId').val(selectedData.id);
+                }
+                        $('#CompanyId').val(contract.subContractor.companyId);
+                        $('#ContractClient').val(contract.contractDetails.contractClient);
+                        $('#ContractType').val(contract.contractDetails.contractType);
+                        $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
+                        $('#ContractAffiliation').val(contract.subContractor.contractAffiliation);
+                        $('#ContractServiceBranch').val(contract.contractDetails.contractServiceBranch);
+                        $('#ContractComponent').val(contract.contractDetails.contractComponent);
+                        $('#SolicitationNumber').val(contract.subContractor.solicitationNumber);
+                        $('#CompanyMainName').val(contract.subContractor.companyMainName);
+                        $('#CompanyMainAddress1').val(contract.subContractor.companyMainAddress1);
+                        $('#CompanyMainAddress2').val(contract.subContractor.companyMainAddress2);
+                        $('#CompanyMainState').val(contract.subContractor.companyMainState).trigger('change');
+                        $('#CompanyMainCity').val(contract.subContractor.companyMainCity).trigger('change');
+                        $('#CompanyMainZip').val(contract.subContractor.companyMainZip);
+                        $('#CompanyMainLastName').val(contract.subContractor.companyMainLastName);
+                        $('#CompanyMainFirstName').val(contract.subContractor.companyMainFirstName);
+                        $('#CompanyMainPhone').val(contract.subContractor.companyMainPhone);
+                        $('#CompanyMainEmail').val(contract.subContractor.companyMainEmail);
+                        $('#FinanceLastName').val(contract.subContractor.financeLastName);
+                        $('#FinanceFirstName').val(contract.subContractor.financeFirstName);
+                        $('#FinanceAddress1').val(contract.subContractor.financeAddress1);
+                        $('#FinanceAddress2').val(contract.subContractor.financeAddress2);
+                        $('#FinanceState').val(contract.subContractor.financeState).trigger('change');;
+                        $('#FinanceCity').val(contract.subContractor.financeCity).trigger('change');;
+                        $('#FinanceZip').val(contract.subContractor.financeZip);
+                        $('#FinancePhone').val(contract.subContractor.financePhone);
+                        $('#FinanceEmail').val(contract.subContractor.financeEmail);
+                        $('#EventLastName').val(contract.subContractor.eventLastName);
+                        $('#EventFirstName').val(contract.subContractor.eventFirstName);
+                        $('#EventPhone').val(contract.subContractor.eventPhone);
+                        $('#EventEmail').val(contract.subContractor.eventEmail);
+                        $('#TrainingLastName').val(contract.subContractor.trainingLastName);
+                        $('#TrainingFirstName').val(contract.subContractor.trainingFirstName);
+                        $('#TrainingPhone').val(contract.subContractor.trainingPhone);
+                        $('#TrainingEmail').val(contract.subContractor.trainingEmail);
 
                         // Show the form and hide the table
                         $('#datatableWrapper').hide();

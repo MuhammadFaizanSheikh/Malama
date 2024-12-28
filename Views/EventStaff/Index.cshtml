@@ -15,10 +15,11 @@
     <!-- Bootstrap 5 CSS -->
     <!-- Bootstrap 5 CSS from CDN -->
     <!-- Bootstrap 5 CSS from CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    @* <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Select2 CSS from CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css">
 
     <!-- Select2 Bootstrap 5 Theme CSS from CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
@@ -38,6 +39,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Select2 JS from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 
     <!-- DataTables JS from CDN -->
@@ -46,7 +48,33 @@
 
     <!-- SweetAlert2 from CDN -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+
+    <!-- jQuery (required for Select2 and Bootstrap Multiselect) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Multiselect CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css">
+
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Select2 Bootstrap 5 Theme (optional, if you're using Select2 with Bootstrap) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Bundle (includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bootstrap Multiselect JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+    <!-- Any other necessary JS libraries (like SweetAlert2, DataTables, etc.) -->
 
 
 <style>
@@ -201,6 +229,12 @@
                 color: #aaa;
                 background-color: #f5f5f5;
             }
+
+        #StaffContractAffiliation {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
 
         */
 </style>
@@ -460,48 +494,49 @@
                         <input asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-control" required />
                     </div>
             <h4 class="mt-4">States Licenses</h4>
-            <div class="form-container">
-                <div class="form-row license-row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="SingleEventStaff.Licenses[0].LicenseNumber" class="form-label">License Number</label>
-                            <input asp-for="SingleEventStaff.Licenses[0].LicenseNumber" id="licenseNumber0" class="form-control" placeholder="License Number" required />
+                    <div class="form-container" style="max-width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
+                        <div class="form-row license-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                                <div class="form-group">
+                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseNumber" class="form-label">License Number</label>
+                                    <input asp-for="SingleEventStaff.Licenses[0].LicenseNumber" id="licenseNumber0" class="form-control" placeholder="License Number" required />
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                                <div class="form-group">
+                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseState" class="form-label">License State</label>
+                                    <select asp-for="SingleEventStaff.Licenses[0].LicenseState" id="licenseState0" class="form-control" required>
+                                        <option value="">Select State</option>
+                                        <option value="State1">State1</option>
+                                        <option value="State2">State2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                                <div class="form-group">
+                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseType" class="form-label">License Type</label>
+                                    <select asp-for="SingleEventStaff.Licenses[0].LicenseType" id="licenseType0" class="form-control" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Type1">Type1</option>
+                                        <option value="Type2">Type2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="flex: 1; margin-right: 0;">
+                                <div class="form-group">
+                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
+                                    <input asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" id="licenseExpiry0" type="date" class="form-control" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="add-row-button" id="addRowButton">
+                                <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                                <span class="button-text">Add Another License</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="SingleEventStaff.Licenses[0].LicenseState" class="form-label">License State</label>
-                            <select asp-for="SingleEventStaff.Licenses[0].LicenseState" id="licenseState0" class="form-control" required>
-                                <option value="">Select State</option>
-                                <option value="State1">State1</option>
-                                <option value="State2">State2</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="SingleEventStaff.Licenses[0].LicenseType" class="form-label">License Type</label>
-                            <select asp-for="SingleEventStaff.Licenses[0].LicenseType" id="licenseType0" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <option value="Type1">Type1</option>
-                                <option value="Type2">Type2</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
-                            <input asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" id="licenseExpiry0" type="date" class="form-control" required />
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-3">
-                    <button type="button" class="add-row-button" id="addRowButton">
-                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                        <span class="button-text">Add Another License</span>
-                    </button>
-                </div>
-            </div>
+
             <div class="form-group">
                 <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
                 <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" maxlength="10" inputmode="numeric" pattern="\d*" />
@@ -594,11 +629,14 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label asp-for="SingleEventStaff.EmployerSubcontractor" class="form-label">Employer/Subcontractor</label>
-            <select asp-for="SingleEventStaff.EmployerSubcontractor" class="form-control" required>
+                    <label asp-for="SingleEventStaff.SubContractorId" class="form-label">Employer/Subcontractor</label>
+           @*  <select asp-for="SingleEventStaff.EmployerSubcontractor" class="form-control" required>
                 <option value="Employer">Employer</option>
                 <option value="Subcontractor">Subcontractor</option>
-            </select>
+            </select> *@
+                    <select id="ContractId" class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
+                        <!-- Options will be populated dynamically from the database -->
+                    </select>
         </div>
     </div>
 
@@ -722,11 +760,16 @@
         <div class="row mb-3">
             <div class="col-md-6 staff-affiliation-row">
                 <label asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-label">Staff Contract Affiliation</label>
-                <select asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-control" required>
+                @* <select asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-control" required>
                     <option value="" disabled selected>Select Affiliation</option>
                     <option value="Affiliation1">Affiliation1</option>
                     <option value="Affiliation2">Affiliation2</option>
-                </select>
+                </select> *@
+                        <select id="StaffContractAffiliation" multiple="multiple" class="form-control">
+                            <option value="1">Contract 1</option>
+                            <option value="2">Contract 2</option>
+                            <option value="3">Contract 3</option>
+                        </select>
             </div>
 
             <div class="col-md-6">
@@ -832,7 +875,7 @@
                 <div class="row align-items-center">
         <!-- Radio Button -->
         <div class="col-md-1 d-flex align-items-center">
-            <input class="form-check-input" asp-for="SingleEventStaff.TravelHonorHotel" type="radio" id="hotelRadio" value="Hotel">
+            <input class="form-check-input" type="radio" id="hotelRadio" value="Hotel">
             <label class="form-check-label ms-2" for="hotelRadio">
                 Hotel
             </label>
@@ -880,6 +923,20 @@
 </body>
 </html>
 <script>
+    $(document).ready(function () {
+        // Initialize Bootstrap Multiselect
+        $('#StaffContractAffiliation').multiselect({
+            includeSelectAllOption: true,
+            enableFiltering: true,
+            nonSelectedText: 'None selected'
+        });
+    });
+
+    $('#ContractId').select2({
+        theme: 'bootstrap-5',  // Ensure it's using the Bootstrap 5 theme
+        width: '100%'          // Ensure the dropdown takes full width of the select box
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const phoneFields = ['StaffSSN'];
         phoneFields.forEach(function (fieldId) {
@@ -898,6 +955,78 @@
             e.target.value = value;
         });
     }
+
+  
+
+    
+
+    $('#ContractId').select2({
+        ajax: {
+            url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching', // Your endpoint for fetching contracts
+            dataType: 'json',
+            delay: 250,  // Optional: delay to limit requests to avoid too many hits
+            data: function (params) {
+                return {
+                    companyName: params.term || ''  // Send the search term to the server
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.map(function (SubContractor) {
+                        return {
+                            id: SubContractor.id,     // Contract ID
+                            text: SubContractor.text  // Displayed text (CompanyMainName)
+                        };
+                    })
+                };
+            },
+            cache: true // Optional: caches the response to improve performance
+        },
+        placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
+        minimumInputLength: 1,  // Set a minimum number of characters to start searching (e.g., 1)
+        allowClear: true  // Optional: allows clearing the selection
+    });
+
+
+    $('#ContractId').change(function () {
+        var selectedId = $(this).val(); // Get the selected ID
+        var selectedText = $(this).find("option:selected").text(); // Get the selected option text
+
+        if (selectedId) {
+            $.ajax({
+                url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+                type: 'GET',
+                data: { companyName: selectedText }, // Send selected text as a parameter
+                success: function (response) {
+                    if (response.success) {
+                        alert('Contract details fetched successfully!');
+                        bindMultiSelectDropdown(response.data); // Pass the data to the binding function
+                    } else {
+                        alert(response.message); // Show the error message
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract details.');
+                }
+            });
+        }
+    });
+
+    // Function to bind data to the multi-select dropdown
+    function bindMultiSelectDropdown(data) {
+        debugger;
+        var dropdown = $('#StaffContractAffiliation');
+        dropdown.empty(); // Clear existing options
+
+        // Append new options from the response data
+        $.each(data, function (index, item) {
+            dropdown.append($('<option></option>').attr('value', item.id).text(item.text));
+        });
+
+        // Reinitialize the multi-select plugin if needed
+        dropdown.multiselect('rebuild');
+    }
+
 
 
     function togglePasswordVisibility(inputId) {

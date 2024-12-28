@@ -9,5 +9,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id);
         Task<ResponseDto> AddContractAsync(SubContractorInfoDto contractDetail, string loggedinUserName);
         Task<ResponseDto> UpdateContract(SubContractorInfoDto contract, string loggedinUserName);
+        Task<IEnumerable<SubContractorInfoDto>> GetSubContractorByCompanyNameForSearching(string companyName);
+        Task<List<ContractDetails>> GetContractIdsBySubContractorCompanyName(string companyName);
     }
 }
