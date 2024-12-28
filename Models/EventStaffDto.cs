@@ -1,11 +1,21 @@
 ﻿using ExcelFilesCompiler.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExcelToCsv.Models
 {
+    public class EventStaffViewModel
+    {
+        public List<EventStaffDto>? EventStaff { get; set; }
+        public EventStaffDto SingleEventStaff { get; set; }
+    }
+
+    [Table("EventStaff")]
     public class EventStaffDto
     {
-        //************************************************SectionB**********************************************
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; } // Primary key, auto-incremented
         public int StaffID { get; set; }
         public DateTime StartDate { get; set; }
         public string StaffStatus { get; set; }

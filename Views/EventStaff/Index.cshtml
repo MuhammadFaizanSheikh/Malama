@@ -1,603 +1,52 @@
-﻿@model EventStaffDto
+﻿@model EventStaffViewModel
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
     ViewData["Title"] = "Event Staff";
 }
 
-<!-- Add this in the <head> section for Bootstrap CSS -->
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
 
-<!-- Add this at the bottom of the <body> section for Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-
-
-
-<div class="container">
-    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffID" class="form-label">Staff ID</label>
-            <input asp-for="StaffID" class="form-control" readonly />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="StartDate" class="form-label">Start Date</label>
-            <input asp-for="StartDate" type="date" class="form-control" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffStatus" class="form-label">Staff Status</label>
-            <select asp-for="StaffStatus" class="form-control" required>
-                <option value="Active">Active</option>
-                <option value="InProgress">In Progress</option>
-                <option value="RecruitCred">Recruit - Cred</option>
-                <option value="RecruitInit">Recruit - Init.</option>
-                <option value="Inactive">Inactive</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="StaffLastName" class="form-label">Staff Last Name</label>
-            <input asp-for="StaffLastName" class="form-control" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffFirstName" class="form-label">Staff First Name</label>
-            <input asp-for="StaffFirstName" class="form-control" required/>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
-            <input asp-for="StaffMiddleInitial" class="form-control" />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <!-- SSN Section -->
-        <div class="col-md-6">
-            <label asp-for="StaffSSN" class="form-label">Staff SSN</label>
-            <div class="input-group">
-                <input type="password" asp-for="StaffSSN" class="form-control" id="ssn"
-                       placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
-                <span class="input-group-text" onclick="togglePasswordVisibility('ssn', 'toggleSsnIcon')" style="cursor: pointer;">
-                    <i id="toggleSsnIcon" class="fas fa-eye"></i>
-                </span>
-            </div>
-        </div>
-
-        <!-- DOB Section -->
-        <div class="col-md-6">
-            <label asp-for="StaffDOB" class="form-label">Staff DOB</label>
-            <input asp-for="StaffDOB" type="date" class="form-control" required />
-        </div>
-    </div>
-
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="StaffRoles" class="form-label">Select Staff Roles</label>
-            <div id="StaffRoles">
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="contractManager" value="Contract Manager">
-                    <label class="form-check-label" for="contractManager">Contract Manager</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="physicians" value="Physicians">
-                    <label class="form-check-label" for="physicians">Physicians</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="optometrist" value="Optometrist">
-                    <label class="form-check-label" for="optometrist">Optometrist</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="audiologist" value="Audiologist">
-                    <label class="form-check-label" for="audiologist">Audiologist</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="physicianAssistant" value="Physician Assistant">
-                    <label class="form-check-label" for="physicianAssistant">Physician Assistant</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="behaviorHealthCounselor" value="Behavior Health Counselor">
-                    <label class="form-check-label" for="behaviorHealthCounselor">Behavior Health Counselor</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="nursePractitioner" value="Nurse Practitioner">
-                    <label class="form-check-label" for="nursePractitioner">Nurse Practitioner</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="registeredNurse" value="Registered Nurse">
-                    <label class="form-check-label" for="registeredNurse">Registered Nurse</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="medicalAssistant" value="Medical Assistant">
-                    <label class="form-check-label" for="medicalAssistant">Medical Assistant</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="hearingTechnician" value="Hearing Technician">
-                    <label class="form-check-label" for="hearingTechnician">Hearing Technician</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="optometryTechnician" value="Optometry Technician">
-                    <label class="form-check-label" for="optometryTechnician">Optometry Technician</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="admins" value="Admins">
-                    <label class="form-check-label" for="admins">Admins</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentist" value="Dentist">
-                    <label class="form-check-label" for="dentist">Dentist</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalHygienist" value="Dental Hygienist">
-                    <label class="form-check-label" for="dentalHygienist">Dental Hygienist</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalAssistant" value="Dental Assistant">
-                    <label class="form-check-label" for="dentalAssistant">Dental Assistant</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="dentalXray" value="Dental Xray">
-                    <label class="form-check-label" for="dentalXray">Dental Xray</label>
-                </div>
-                <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" name="StaffRoles" id="immunizationPersonnel" value="Immunization Personnel">
-                    <label class="form-check-label" for="immunizationPersonnel">Immunization Personnel</label>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Event On Call Staff</label>
-            <div class="form-check">
-                <input asp-for="EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" />
-                <label class="form-check-label">Yes</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="EventOnCallStaff" type="radio"  id="eventOnCallNo" value="false" class="form-check-input"  />
-                <label class="form-check-label">No</label>
-            </div>
-            <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
-                <label asp-for="EventOnCallStaffEvent" class="form-label">Select Event</label>
-                <select asp-for="EventOnCallStaffEvent" class="form-control" required>
-                    
-                </select>
-            </div>
-            <h4 class="mt-4">States Licenses</h4>
-            <div class="form-container">
-                <!-- First Row (Initial row for licenses) -->
-                <div class="form-row license-row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="Licenses[0].LicenseNumber" class="form-label">License Number</label>
-                            <input asp-for="Licenses[0].LicenseNumber" class="form-control" placeholder="License Number" required />
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="Licenses[0].LicenseState" class="form-label">License State</label>
-                            <select asp-for="Licenses[0].LicenseState" class="form-control" required>
-                                <option value="">Select State</option>
-                                <option value="State1">State1</option>
-                                <option value="State2">State2</option>
-                                <!-- Add more states here -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="Licenses[0].LicenseType" class="form-label">License Type</label>
-                            <select asp-for="Licenses[0].LicenseType" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <option value="Type1">Type1</option>
-                                <option value="Type2">Type2</option>
-                                <!-- Add more types here -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label asp-for="Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
-                            <input asp-for="Licenses[0].LicenseExpiryDate" type="date" class="form-control" required />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add Row Button -->
-                <div class="text-center mt-3">
-                    <button type="button" class="add-row-button" id="addRowButton">
-                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                        <span class="button-text">Add Another License</span>
-                    </button>
-                </div>
-            </div>
-
-
-
-            <div class="form-group">
-                <label asp-for="NPI" class="form-label">NPI</label>
-                <input asp-for="NPI" id="npi" class="form-control" maxlength="10" inputmode="numeric" pattern="\d*" />
-            </div>
-
-            <div class="form-group">
-                <label asp-for="DAE" class="form-label">DAE</label>
-                <input asp-for="DAE" class="form-control" required/>
-            </div>
-
-            
-
-            
-            </div>
-            
-        </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
-            <input asp-for="CredentialingProcessDate" type="date" class="form-control" required  />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
-            <input asp-for="HistoricalCredentialingDate" type="date" class="form-control" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
-            <input asp-for="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Onboarding/Training Complete</label>
-            <div class="form-check">
-                <input asp-for="OnboardingTrainingComplete" type="radio" value="true" class="form-check-input"/>
-                <label class="form-check-label">Yes</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="OnboardingTrainingComplete" type="radio" value="false" class="form-check-input" />
-                <label class="form-check-label">No</label>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-            <select asp-for="OutstandingTrainings" class="form-control" required>
-                <option value="Type1">Type1</option>
-                <option value="Type2">Type2</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
-            <textarea asp-for="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="d-flex align-items-center mb-2">
-                <label asp-for="BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
-                <div class="d-flex flex-grow-1">
-                    <input asp-for="BLSCertDate" type="date" class="form-control" />
-                    <input asp-for="BLSCertNumber" class="form-control" placeholder="Cert Number" />
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="d-flex align-items-center mb-2">
-                <label asp-for="ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
-                <div class="d-flex flex-grow-1">
-                    <input asp-for="ACLSCertDate" type="date" class="form-control me-2" />
-                    <input asp-for="ACLSCertNumber" class="form-control" placeholder="Cert Number" />
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
-            <select asp-for="CACApplicationProcessStatus" class="form-control" required>
-                <option value="InProgress">In Progress</option>
-                <option value="Pending">Pending</option>
-                <option value="Complete">Complete</option>
-                <option value="NotStarted">Not Started</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="EmployerSubcontractor" class="form-label">Employer/Subcontractor</label>
-            <select asp-for="EmployerSubcontractor" class="form-control" required>
-                <option value="Employer">Employer</option>
-                <option value="Subcontractor">Subcontractor</option>
-            </select>
-        </div>
-        
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Staff CAC</label>
-            <div class="form-check">
-                <input asp-for="StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" />
-                <label class="form-check-label" for="staffCACYes">Yes</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" />
-                <label class="form-check-label" for="staffCACNo">No</label>
-            </div>
-        </div>
-
-        <div class="col-md-6" id="staffDoDContainer" style="display: none;">
-            <!-- Hidden by default -->
-            <label asp-for="StaffDoDID" class="form-label">Staff DoD ID</label>
-            <input asp-for="StaffDoDID" class="form-control" maxlength="11" id="staffDoDID" />
-        </div>
-    </div>
-
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffCellNumber" class="form-label">Staff Cell Number</label>
-            <input asp-for="StaffCellNumber" id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="StaffPhone2" class="form-label">Staff Phone 2</label>
-            <input asp-for="StaffPhone2" id="staffPhone2"  class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="StaffEmail" class="form-label">Staff Email</label>
-            <input asp-for="StaffEmail" type="email" class="form-control" required />
-        </div>
-    </div>
-
-    <h4 class="mt-4">Primary Residence</h4>
-
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="PrimaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="PrimaryAddress1" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="PrimaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="PrimaryAddress2" class="form-control" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="PrimaryCity" class="form-label">Staff City</label>
-            <select asp-for="PrimaryCity" id="primaryCity" class="form-control city-dropdown" required>
-                <option value="">Select City</option> <!-- Default option -->
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="PrimaryState" class="form-label">Staff State</label>
-            <select asp-for="PrimaryState" id="primaryState"  class="form-control" required>
-                @* <option value="">Select State</option> <!-- Default option --> *@
-            </select>
-        </div>
-    </div>
-
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="PrimaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="PrimaryZip" id="primaryZipCode" class="form-control" required>
-                <option value="">Select Zip Code</option> <!-- Default option -->
-            </select>
-        </div>
-    </div>
-
-    <h4 class="mt-4">Secondary Residence</h4>
-
-     <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SecondaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="SecondaryAddress1" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SecondaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="SecondaryAddress2" class="form-control" required />
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SecondaryCity" class="form-label">Staff City</label>
-            <select asp-for="SecondaryCity" id="secondaryCity" class="form-control city-dropdown" required>
-                <option value="">Select City</option> <!-- Default option -->
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SecondaryState" class="form-label">Staff State</label>
-            <select asp-for="SecondaryState" id="secondaryState" class="form-control" required>
-                @* <option value="">Select State</option> <!-- Default option --> *@
-            </select>
-        </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SecondaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="SecondaryZip" id="secondaryZipCode" class="form-control" required>
-                <option value="">Select Zip Code</option> <!-- Default option -->
-            </select>
-        </div>
-    </div>
-
-    <div id="staff-affiliation-container">
-        <!-- Initial Row -->
-        <div class="row mb-3">
-            <div class="col-md-6 staff-affiliation-row">
-                <label asp-for="StaffContractAffiliation[0]" class="form-label">Staff Contract Affiliation</label>
-                <select asp-for="StaffContractAffiliation[0]" class="form-control" required>
-                    <option value="" disabled selected>Select Affiliation</option>
-                    <option value="Affiliation1">Affiliation1</option>
-                    <option value="Affiliation2">Affiliation2</option>
-                </select>
-                
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Staff info entered by</label>
-                <input asp-for="StaffInfoEnteredBy[0]" class="form-control" readonly />
-            </div>
-        </div>
-
-        <!-- Add Button -->
-        <div class="text-center">
-            <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
-                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
-                <span>Add Another Contract Affiliation</span>
-            </button>
-        </div>
-
-
-    </div>
-
-
-
-    <h4 class="mt-4">Travel Honor Reward Numbers</h4>
-
-    <div id="airline-controls-container">
-        <!-- Row for the first set of controls -->
-        <div class="row mb-3" id="initial-row">
-            <div class="col-md-1 d-flex align-items-center">
-                <!-- Single radio button with fixed id and name -->
-                <input class="form-check-input" type="radio" id="airRadio" name="airRadio" value="Air" />
-                <label class="form-check-label ms-2" for="airRadio">Air</label>
-            </div>
-
-            <!-- Hidden fields for Airline Name and Rewards -->
-            <div class="col-md-8" id="airlineFields" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="airline" class="col-form-label" style="width: 150px;">Airline Name</label>
-                        <input type="text" name="TravelInfo.AirlineName"
-                               class="form-control form-control-sm"
-                               id="airline"
-                               style="width: 120px;" required />
-                    </div>
-
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="reward" class="col-form-label" style="width: 150px;">Rewards</label>
-                        <input type="text" name="TravelInfo.Rewards"
-                               class="form-control form-control-sm"
-                               id="reward"
-                               style="width: 120px;" required />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Button to add new fields -->
-            <div class="text-center">
-                <button type="button" id="addFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
-                    <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
-                    <span>Add another reward</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    
-
-
-    <div id="car-controls-container">
-        <!-- Row for the first set of controls -->
-        <div class="row mb-3" id="initial-car-row">
-            <div class="col-md-1 d-flex align-items-center">
-                <!-- Single radio button for car -->
-                <input class="form-check-input" type="radio" id="carRadio" name="carRadio" value="Car" />
-                <label class="form-check-label ms-2" for="carRadio">Car</label>
-            </div>
-
-            <!-- Hidden fields for Car Rental Company and Rewards -->
-            <div class="col-md-8" id="carFields" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="car" class="col-form-label" style="width: 150px;">Rental Company Name</label>
-                        <input type="text" name="TravelInfo.CarRentalCompany"
-                               class="form-control form-control-sm"
-                               id="car"
-                               style="width: 120px;" required />
-                    </div>
-
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="reward" class="col-form-label" style="width: 150px;">Rewards</label>
-                        <input type="text" name="TravelInfo.CarRentalRewards"
-                               class="form-control form-control-sm"
-                               id="reward"
-                               style="width: 120px;" required />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Button to add new fields -->
-            <div class="text-center">
-                <button type="button" id="addCarFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
-                    <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
-                    <span>Add another rental</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="row align-items-center">
-        <!-- Radio Button -->
-        <div class="col-md-1 d-flex align-items-center">
-            <input class="form-check-input" asp-for="TravelHonorHotel" type="radio" id="hotelRadio" name="hotelRadio" value="Hotel">
-            <label class="form-check-label ms-2" for="hotelRadio">
-                Hotel
-            </label>
-        </div>
-
-        <div class="col-md-8" id="hotelFields" style="display: none;">
-            <div class="row">
-                <div class="col-md-6 d-flex align-items-center">
-                    <label for="hotel" class="col-form-label" style="width: 150px;">Hotel Name</label>
-                    <input type="text" name="TravelInfo.HotelName" class="form-control form-control-sm" id="hotel" style="width: 120px;" required />
-                </div>
-
-                <div class="col-md-6 d-flex align-items-center">
-                    <label for="hotelReward" class="col-form-label" style="width: 150px;">Rewards</label>
-                    <input type="text" name="TravelInfo.HotelRewards" class="form-control form-control-sm" id="hotelReward" style="width: 120px;" required />
-                </div>
-            </div>
-        </div>
-
-        <!-- Button to add new hotel fields -->
-        <div class="text-center">
-            <button type="button" id="addHotelFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
-                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
-                <span>Add another reward</span>
-            </button>
-        </div>
-    </div>
-
-</div>
-<!-- Submit Button -->
-<div class="d-flex justify-content-end mt-4">
-    <button type="submit" class="btn btn-success btn-lg me-2">
-        <i class="bi bi-check-circle"></i> Submit
-    </button>
-    <button type="reset" class="btn btn-secondary btn-lg">
-        <i class="bi bi-arrow-repeat"></i> Reset
-    </button>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Form</title>
+    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 CSS from CDN -->
+    <!-- Bootstrap 5 CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Select2 CSS from CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Select2 Bootstrap 5 Theme CSS from CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome CSS from CDN (no integrity attribute to avoid errors) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS for Bootstrap 5 from CDN -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+
+    <!-- jQuery from CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Bootstrap 5 Bundle (includes Popper.js) from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Select2 JS from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+    <!-- DataTables JS from CDN -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- SweetAlert2 from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 <style>
@@ -655,10 +104,1082 @@
         box-shadow: none;
     }
 
+    #contractsTable {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
 
+        #contractsTable th, #contractsTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #contractsTable th {
+            background-color: #f4f4f4;
+        }
+
+        #contractsTable tbody tr {
+            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+        }
+
+            #contractsTable tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            }
+
+        #contractsTable td, #contractsTable th {
+            text-align: center; /* Aligns the text in the middle of the cell */
+        }
+
+            #contractsTable td button, #contractsTable td a {
+                display: inline-block; /* Makes the buttons appear side by side */
+                margin-right: 5px; /* Optional: Adds space between the buttons */
+            }
+
+            #contractsTable td .button-container {
+                display: flex;
+                justify-content: center; /* Aligns buttons horizontally in the center */
+            }
+
+                #contractsTable td .button-container a {
+                    margin-right: 5px; /* Optional: Adds space between the buttons */
+                }
+
+        #contractsTable thead th {
+            background-color: rgba(120, 130, 221, 1); /* Header background color */
+            color: white; /* Header text color */
+            text-align: center; /* Optional: Center-align header text */
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+
+        /* Base styles for the dropdown */
+        .select2 {
+            width: 100%;
+            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+            /*
+        /* Focused state */
+            .select2:focus {
+                border-color: #0056b3;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+
+        /* Dropdown arrow customization */
+
+
+        /* Adjust the dropdown width */
+        .select2 {
+            width: 100% !important; /* Ensures full-width dropdown */
+        }
+
+
+
+            /* Hover state for options */
+            .select2 option:hover {
+                background-color: #e6f7ff;
+            }
+
+            /* Focus state for options */
+            .select2 option:focus {
+                background-color: #cce5ff;
+            }
+
+            /* Disabled state */
+            .select2 option:disabled {
+                color: #aaa;
+                background-color: #f5f5f5;
+            }
+
+        */
 </style>
+</head>
 
+<body>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor, // Conditional button color
+                    iconColor: iconColor // Conditional icon color
+                });
+            });
+        </script>
+    }
+
+    <h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    {
+            <div class="alert alert-danger">
+                <strong>Validation failed!</strong>
+                <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                            <li>@modelError.ErrorMessage</li>
+                }
+                </ul>
+            </div>
+    }
+
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <button class="btn btn-primary" id="addContractBtn"
+                style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
+            Add New Event Staff
+        </button>
+    </div>
+     <div id="datatableWrapper" class="datatable-wrapper">
+        <table id="contractsTable" class="display">
+            <thead>
+                <tr>
+                    <th>Staff Id</th>
+                    <th>Start Date</th>
+                    <th>Staff Status</th>
+                    <th>Staff Last Name</th>
+                    <th>Staff First Name</th>
+                    <th>Staff Middle Initial</th>
+                    <th>Staff DOB</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.EventStaff != null && Model.EventStaff.Any())
+                {
+                    @foreach (var contract in Model.EventStaff)
+                    {
+                        <tr data-id="@contract.Id">
+                            <td>@contract.StaffID</td>
+                            <td>@contract.StartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.StaffStatus</td>
+                            <td>@contract.StaffLastName</td>
+                            <td>@contract.StaffFirstName</td>
+                            <td>@contract.StaffMiddleInitial</td>
+                            <td>@contract.StaffDOB.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="button-container">
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                        <td  class="text-center">No data available</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-body" style="display: none;">
+        <form asp-action="CreateSubContracttor" method="post">
+            <input type="hidden" asp-for="SingleEventStaff.Id" id="hiddenId" />
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
+            <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" readonly required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
+            <input asp-for="SingleEventStaff.StartDate" id="StartDate" type="date" class="form-control" required />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffStatus" class="form-label">Staff Status</label>
+            <select asp-for="SingleEventStaff.StaffStatus" id="StaffStatus" class="form-control" required>
+                <option value="Active">Active</option>
+                <option value="InProgress">In Progress</option>
+                <option value="RecruitCred">Recruit - Cred</option>
+                <option value="RecruitInit">Recruit - Init.</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffLastName" class="form-label">Staff Last Name</label>
+            <input asp-for="SingleEventStaff.StaffLastName" id="StaffLastName" class="form-control" required />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffFirstName" class="form-label">Staff First Name</label>
+            <input asp-for="SingleEventStaff.StaffFirstName" id="StaffFirstName" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
+            <input asp-for="SingleEventStaff.StaffMiddleInitial" id="StaffMiddleInitial" class="form-control" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <!-- SSN Section -->
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffSSN" class="form-label">Staff SSN</label>
+            <div class="input-group">
+                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" class="form-control"
+                       placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
+                <span class="input-group-text" onclick="togglePasswordVisibility('StaffSSN', 'toggleSsnIcon')" style="cursor: pointer;">
+                    <i id="toggleSsnIcon" class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <!-- DOB Section -->
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffDOB" class="form-label">Staff DOB</label>
+            <input asp-for="SingleEventStaff.StaffDOB" id="StaffDOB" type="date" class="form-control" required />
+        </div>
+    </div>
+
+
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="StaffRoles" class="form-label">Select Staff Roles</label>
+            <div id="StaffRoles">
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="contractManager" value="Contract Manager">
+                    <label class="form-check-label" for="contractManager">Contract Manager</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="physicians" value="Physicians">
+                    <label class="form-check-label" for="physicians">Physicians</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="optometrist" value="Optometrist">
+                    <label class="form-check-label" for="optometrist">Optometrist</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="audiologist" value="Audiologist">
+                    <label class="form-check-label" for="audiologist">Audiologist</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="physicianAssistant" value="Physician Assistant">
+                    <label class="form-check-label" for="physicianAssistant">Physician Assistant</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="behaviorHealthCounselor" value="Behavior Health Counselor">
+                    <label class="form-check-label" for="behaviorHealthCounselor">Behavior Health Counselor</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="nursePractitioner" value="Nurse Practitioner">
+                    <label class="form-check-label" for="nursePractitioner">Nurse Practitioner</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="registeredNurse" value="Registered Nurse">
+                    <label class="form-check-label" for="registeredNurse">Registered Nurse</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="medicalAssistant" value="Medical Assistant">
+                    <label class="form-check-label" for="medicalAssistant">Medical Assistant</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="hearingTechnician" value="Hearing Technician">
+                    <label class="form-check-label" for="hearingTechnician">Hearing Technician</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="optometryTechnician" value="Optometry Technician">
+                    <label class="form-check-label" for="optometryTechnician">Optometry Technician</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="admins" value="Admins">
+                    <label class="form-check-label" for="admins">Admins</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="dentist" value="Dentist">
+                    <label class="form-check-label" for="dentist">Dentist</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="dentalHygienist" value="Dental Hygienist">
+                    <label class="form-check-label" for="dentalHygienist">Dental Hygienist</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="dentalAssistant" value="Dental Assistant">
+                    <label class="form-check-label" for="dentalAssistant">Dental Assistant</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="dentalXray" value="Dental Xray">
+                    <label class="form-check-label" for="dentalXray">Dental Xray</label>
+                </div>
+                <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="immunizationPersonnel" value="Immunization Personnel">
+                    <label class="form-check-label" for="immunizationPersonnel">Immunization Personnel</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Event On Call Staff</label>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" required />
+                <label class="form-check-label" for="eventOnCallYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallNo" value="false" class="form-check-input" required />
+                <label class="form-check-label" for="eventOnCallNo">No</label>
+            </div>
+            <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
+                <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
+                <select asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-control" required></select>
+            </div>
+            <h4 class="mt-4">States Licenses</h4>
+            <div class="form-container">
+                <div class="form-row license-row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SingleEventStaff.Licenses[0].LicenseNumber" class="form-label">License Number</label>
+                            <input asp-for="SingleEventStaff.Licenses[0].LicenseNumber" id="licenseNumber0" class="form-control" placeholder="License Number" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SingleEventStaff.Licenses[0].LicenseState" class="form-label">License State</label>
+                            <select asp-for="SingleEventStaff.Licenses[0].LicenseState" id="licenseState0" class="form-control" required>
+                                <option value="">Select State</option>
+                                <option value="State1">State1</option>
+                                <option value="State2">State2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SingleEventStaff.Licenses[0].LicenseType" class="form-label">License Type</label>
+                            <select asp-for="SingleEventStaff.Licenses[0].LicenseType" id="licenseType0" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="Type1">Type1</option>
+                                <option value="Type2">Type2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
+                            <input asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" id="licenseExpiry0" type="date" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button type="button" class="add-row-button" id="addRowButton">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                        <span class="button-text">Add Another License</span>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
+                <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" maxlength="10" inputmode="numeric" pattern="\d*" />
+            </div>
+            <div class="form-group">
+                <label asp-for="SingleEventStaff.DAE" class="form-label">DAE</label>
+                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" required />
+            </div>
+        </div>
+    </div>
+
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
+            <input asp-for="SingleEventStaff.CredentialingProcessDate" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
+            <input asp-for="SingleEventStaff.HistoricalCredentialingDate" type="date" class="form-control" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
+            <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Onboarding/Training Complete</label>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.OnboardingTrainingComplete" type="radio" value="true" class="form-check-input" />
+                <label class="form-check-label">Yes</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.OnboardingTrainingComplete" type="radio" value="false" class="form-check-input" />
+                <label class="form-check-label">No</label>
+            </div>
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.OutstandingTrainings" class="form-label">Outstanding Trainings</label>
+            <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
+                <option value="Type1">Type1</option>
+                <option value="Type2">Type2</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
+            <textarea asp-for="SingleEventStaff.BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center mb-2">
+                <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
+                <div class="d-flex flex-grow-1">
+                    <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
+                    <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" class="form-control" placeholder="Cert Number" />
+                </div>
+                        <span id="BLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex align-items-center mb-2">
+                <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
+                <div class="d-flex flex-grow-1">
+                    <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
+                    <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" class="form-control" placeholder="Cert Number" />
+                </div>
+                        <span id="ACLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
+            </div>
+        </div>
+    </div>
+
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
+            <select asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-control" required>
+                <option value="InProgress">In Progress</option>
+                <option value="Pending">Pending</option>
+                <option value="Complete">Complete</option>
+                <option value="NotStarted">Not Started</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.EmployerSubcontractor" class="form-label">Employer/Subcontractor</label>
+            <select asp-for="SingleEventStaff.EmployerSubcontractor" class="form-control" required>
+                <option value="Employer">Employer</option>
+                <option value="Subcontractor">Subcontractor</option>
+            </select>
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Staff CAC</label>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" />
+                <label class="form-check-label" for="staffCACYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" />
+                <label class="form-check-label" for="staffCACNo">No</label>
+            </div>
+        </div>
+        <div class="col-md-6" id="staffDoDContainer" style="display: none;">
+            <!-- Hidden by default -->
+            <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
+            <input asp-for="SingleEventStaff.StaffDoDID" class="form-control" maxlength="11" id="staffDoDID" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
+            <input asp-for="SingleEventStaff.StaffCellNumber" id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffPhone2" class="form-label">Staff Phone 2</label>
+            <input asp-for="SingleEventStaff.StaffPhone2" id="staffPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.StaffEmail" class="form-label">Staff Email</label>
+            <input asp-for="SingleEventStaff.StaffEmail" type="email" class="form-control" required />
+        </div>
+    </div>
+
+
+                <h4 class="mt-4">Primary Residence</h4>
+
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.PrimaryAddress1" class="form-label">Staff Address 1</label>
+            <input asp-for="SingleEventStaff.PrimaryAddress1" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.PrimaryAddress2" class="form-label">Staff Address 2</label>
+            <input asp-for="SingleEventStaff.PrimaryAddress2" class="form-control" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.PrimaryCity" class="form-label">Staff City</label>
+            <select asp-for="SingleEventStaff.PrimaryCity" id="primaryCity" class="form-control city-dropdown" required>
+                <option value="">Select City</option> <!-- Default option -->
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.PrimaryState" class="form-label">Staff State</label>
+            <select asp-for="SingleEventStaff.PrimaryState" id="primaryState" class="form-control" required>
+                <!-- States will be dynamically populated -->
+                <!-- Uncomment below if needed: <option value="">Select State</option> -->
+            </select>
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.PrimaryZip" class="form-label">Staff Zip</label>
+            <select asp-for="SingleEventStaff.PrimaryZip" id="primaryZipCode" class="form-control" required>
+                <option value="">Select Zip Code</option> <!-- Default option -->
+            </select>
+        </div>
+    </div>
+
+
+                <h4 class="mt-4">Secondary Residence</h4>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.SecondaryAddress1" class="form-label">Staff Address 1</label>
+            <input asp-for="SingleEventStaff.SecondaryAddress1" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.SecondaryAddress2" class="form-label">Staff Address 2</label>
+            <input asp-for="SingleEventStaff.SecondaryAddress2" class="form-control" />
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.SecondaryCity" class="form-label">Staff City</label>
+            <select asp-for="SingleEventStaff.SecondaryCity" id="secondaryCity" class="form-control city-dropdown" required>
+                <option value="">Select City</option> <!-- Default option -->
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.SecondaryState" class="form-label">Staff State</label>
+            <select asp-for="SingleEventStaff.SecondaryState" id="secondaryState" class="form-control" required>
+                <!-- Uncomment below if needed: <option value="">Select State</option> -->
+            </select>
+        </div>
+    </div>
+
+                <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="SingleEventStaff.SecondaryZip" class="form-label">Staff Zip</label>
+            <select asp-for="SingleEventStaff.SecondaryZip" id="secondaryZipCode" class="form-control" required>
+                <option value="">Select Zip Code</option> <!-- Default option -->
+            </select>
+        </div>
+    </div>
+
+                <div id="staff-affiliation-container">
+        <!-- Initial Row -->
+        <div class="row mb-3">
+            <div class="col-md-6 staff-affiliation-row">
+                <label asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-label">Staff Contract Affiliation</label>
+                <select asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-control" required>
+                    <option value="" disabled selected>Select Affiliation</option>
+                    <option value="Affiliation1">Affiliation1</option>
+                    <option value="Affiliation2">Affiliation2</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="SingleEventStaff.StaffInfoEnteredBy[0]" class="form-label">Staff Info Entered By</label>
+                <input asp-for="SingleEventStaff.StaffInfoEnteredBy[0]" class="form-control" readonly />
+            </div>
+        </div>
+
+        <!-- Add Button -->
+        <div class="text-center">
+            <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
+                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-right: 8px;">
+                <span>Add Another Contract Affiliation</span>
+            </button>
+        </div>
+    </div>
+
+
+
+
+                <h4 class="mt-4">Travel Honor Reward Numbers</h4>
+
+                <div id="airline-controls-container">
+        <!-- Row for the first set of controls -->
+        <div class="row mb-3" id="initial-airline-row">
+            <div class="col-md-1 d-flex align-items-center">
+                <!-- Single radio button with fixed id and name -->
+                <input class="form-check-input" type="radio" id="airRadio" name="travelRadio" value="Air" />
+                <label class="form-check-label ms-2" for="airRadio">Air</label>
+            </div>
+
+            <!-- Hidden fields for Airline Name and Rewards -->
+            <div id="airlineFields" class="col-md-8" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6 d-flex align-items-center">
+                        <label for="airlineName" class="col-form-label" style="width: 150px;">Airline Name</label>
+                        <input type="text" name="TravelInfo.AirlineName"
+                               class="form-control form-control-sm"
+                               id="airlineName"
+                               style="width: 120px;" required />
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center">
+                        <label for="airlineReward" class="col-form-label" style="width: 150px;">Rewards</label>
+                        <input type="text" name="TravelInfo.AirlineRewards"
+                               class="form-control form-control-sm"
+                               id="airlineReward"
+                               style="width: 120px;" required />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button to add additional fields -->
+            <div class="text-center">
+                <button type="button" id="addAirlineFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
+                    <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
+                    <span>Add another reward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+                <div id="car-controls-container">
+        <!-- Row for the first set of controls -->
+        <div class="row mb-3" id="initial-car-row">
+            <div class="col-md-1 d-flex align-items-center">
+                <!-- Single radio button for car -->
+                <input class="form-check-input" type="radio" id="carRadio" name="travelRadio" value="Car" />
+                <label class="form-check-label ms-2" for="carRadio">Car</label>
+            </div>
+
+            <!-- Hidden fields for Car Rental Company and Rewards -->
+            <div id="carFields" class="col-md-8" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6 d-flex align-items-center">
+                        <label for="carRentalCompany" class="col-form-label" style="width: 150px;">Rental Company Name</label>
+                        <input type="text" name="TravelInfo.CarRentalCompany"
+                               class="form-control form-control-sm"
+                               id="carRentalCompany"
+                               style="width: 120px;" required />
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center">
+                        <label for="carRewards" class="col-form-label" style="width: 150px;">Rewards</label>
+                        <input type="text" name="TravelInfo.CarRentalRewards"
+                               class="form-control form-control-sm"
+                               id="carRewards"
+                               style="width: 120px;" required />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button to add new fields -->
+            <div class="text-center">
+                <button type="button" id="addCarFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
+                    <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
+                    <span>Add another rental</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+                <div class="row align-items-center">
+        <!-- Radio Button -->
+        <div class="col-md-1 d-flex align-items-center">
+            <input class="form-check-input" asp-for="SingleEventStaff.TravelHonorHotel" type="radio" id="hotelRadio" value="Hotel">
+            <label class="form-check-label ms-2" for="hotelRadio">
+                Hotel
+            </label>
+        </div>
+
+        <div class="col-md-8" id="hotelFields" style="display: none;">
+            <div class="row">
+                <div class="col-md-6 d-flex align-items-center">
+                    <label for="hotel" class="col-form-label" style="width: 150px;">Hotel Name</label>
+                    <input type="text"  class="form-control form-control-sm" id="hotel" style="width: 120px;" required />
+                </div>
+
+                <div class="col-md-6 d-flex align-items-center">
+                    <label for="hotelReward" class="col-form-label" style="width: 150px;">Rewards</label>
+                    <input type="text" class="form-control form-control-sm" id="hotelReward" style="width: 120px;" required />
+                </div>
+            </div>
+        </div>
+
+        <!-- Button to add new hotel fields -->
+        <div class="text-center">
+            <button type="button" id="addHotelFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
+                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
+                <span>Add another reward</span>
+            </button>
+        </div>
+    </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+                        <i class="bi bi-check-circle"></i> Submit
+                    </button>
+                    <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
+                        <i class="bi bi-arrow-repeat"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                        <i class="bi bi-pencil"></i> Update
+                    </button>
+                    <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                        Back to Contracts
+                    </button>
+                </div>
+        </form>
+    </div>
+</body>
+</html>
 <script>
+
+     $('.card-body').hide();
+        $('#contractsTable').show();
+
+
+          $('#addContractBtn').click(function () {
+
+            //  const controlIds = [
+            //     'hiddenId','ContractId', 'SmallBusinessType',
+            //     'ContractAffiliation',     'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+            //     'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+            //     'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+            //     'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+            //     'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+            //     'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+            //     'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+            //     'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+            //     'TrainingEmail'
+            //     ];
+
+            // controlIds.forEach(function (id) {
+            //     const control = $('#' + id);
+
+            //     if (control.is('select')) {
+            //         control.prop('disabled', false);
+            //     } else {
+            //         control.prop('readonly', false);
+            //     }
+
+            //     control.removeClass('read-only-style');
+            // });
+
+            $('.card-body').show();
+            $('#datatableWrapper').hide();
+            $('#submitBtn').show();
+            $('#resetBtn').show();
+            $('#updateBtn').hide();
+            $('#addContractBtn').hide();
+
+            $('#hiddenId').val('');
+            $('#ContractId').val('');
+            $('#CompanyId').val('');
+            $('#ContractClient').val('');
+            $('#ContractType').val('');
+            $('#SmallBusinessType').val('');
+            $('#ContractAffiliation').val('');
+            $('#ContractServiceBranch').val('');
+            $('#ContractComponent').val('');
+            $('#SolicitationNumber').val('');
+            $('#CompanyMainName').val('');
+            $('#CompanyMainAddress1').val('');
+            $('#CompanyMainAddress2').val('');
+            $('#CompanyMainState').val('').trigger('change');
+            $('#CompanyMainCity').val('').trigger('change');
+            $('#CompanyMainZip').val('');
+            $('#CompanyMainLastName').val('');
+            $('#CompanyMainFirstName').val('');
+            $('#CompanyMainPhone').val('');
+            $('#CompanyMainEmail').val('');
+            $('#FinanceLastName').val('');
+            $('#FinanceFirstName').val('');
+            $('#FinanceAddress1').val('');
+            $('#FinanceAddress2').val('');
+            $('#FinanceState').val('').trigger('change');
+            $('#FinanceCity').val('').trigger('change');
+            $('#FinanceZip').val('');
+            $('#FinancePhone').val('');
+            $('#FinanceEmail').val('');
+            $('#EventLastName').val('');
+            $('#EventFirstName').val('');
+            $('#EventPhone').val('');
+            $('#EventEmail').val('');
+            $('#TrainingLastName').val('');
+            $('#TrainingFirstName').val('');
+            $('#TrainingPhone').val('');
+            $('#TrainingEmail').val('');
+
+        });
+
+
+
+        $('#backToTableBtn').click(function () {
+            $('.card-body').hide();
+            $('#datatableWrapper').show();
+            $('#addContractBtn').show();
+
+        });
+
+        $('#contractsTable').DataTable({
+            "paging": true,  // Enables pagination
+            "lengthChange": true,  // Option to change number of records per page
+            "searching": true,  // Enables search box
+            "ordering": false,  // Enables column sorting
+            "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
+            "autoWidth": true,  // Adjusts table width automatically
+            "responsive": true,  // Makes the table responsive on small screens
+            "language": {
+                "search": "Search Contracts:"  // Customizing the search box label
+            },
+            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
+        });
+
+        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+            debugger;
+            var contractId = $(this).data('id');  // Get contract ID from data-id attribute
+            var isViewButton = $(this).hasClass('view-btn');
+
+            // AJAX call to fetch contract details by ID
+            $.ajax({
+                url: '/SubContractorInfo/GetSubContractorById/' + contractId,  // Make sure the URL is correct
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        debugger;
+                        var contract = response.combinedData;
+                        $('#hiddenId').val(contract.subContractor.id);
+                    var selectedData = {
+                    id: contract.subContractor.id, // The value of the option
+                    text: contract.contractDetails.contractID // The text to display
+                    };
+
+                    // Add the option dynamically if it doesn't exist
+                    if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
+                        var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#ContractId').append(newOption);
+                    } else {
+                        // If the option exists, just set it as selected
+                        $('#ContractId').val(selectedData.id);
+                    }
+                            $('#CompanyId').val(contract.subContractor.companyId);
+                            $('#ContractClient').val(contract.contractDetails.contractClient);
+                            $('#ContractType').val(contract.contractDetails.contractType);
+                            $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
+                            $('#ContractAffiliation').val(contract.subContractor.contractAffiliation);
+                            $('#ContractServiceBranch').val(contract.contractDetails.contractServiceBranch);
+                            $('#ContractComponent').val(contract.contractDetails.contractComponent);
+                            $('#SolicitationNumber').val(contract.subContractor.solicitationNumber);
+                            $('#CompanyMainName').val(contract.subContractor.companyMainName);
+                            $('#CompanyMainAddress1').val(contract.subContractor.companyMainAddress1);
+                            $('#CompanyMainAddress2').val(contract.subContractor.companyMainAddress2);
+                            $('#CompanyMainState').val(contract.subContractor.companyMainState).trigger('change');
+                            $('#CompanyMainCity').val(contract.subContractor.companyMainCity).trigger('change');
+                            $('#CompanyMainZip').val(contract.subContractor.companyMainZip);
+                            $('#CompanyMainLastName').val(contract.subContractor.companyMainLastName);
+                            $('#CompanyMainFirstName').val(contract.subContractor.companyMainFirstName);
+                            $('#CompanyMainPhone').val(contract.subContractor.companyMainPhone);
+                            $('#CompanyMainEmail').val(contract.subContractor.companyMainEmail);
+                            $('#FinanceLastName').val(contract.subContractor.financeLastName);
+                            $('#FinanceFirstName').val(contract.subContractor.financeFirstName);
+                            $('#FinanceAddress1').val(contract.subContractor.financeAddress1);
+                            $('#FinanceAddress2').val(contract.subContractor.financeAddress2);
+                            $('#FinanceState').val(contract.subContractor.financeState).trigger('change');;
+                            $('#FinanceCity').val(contract.subContractor.financeCity).trigger('change');;
+                            $('#FinanceZip').val(contract.subContractor.financeZip);
+                            $('#FinancePhone').val(contract.subContractor.financePhone);
+                            $('#FinanceEmail').val(contract.subContractor.financeEmail);
+                            $('#EventLastName').val(contract.subContractor.eventLastName);
+                            $('#EventFirstName').val(contract.subContractor.eventFirstName);
+                            $('#EventPhone').val(contract.subContractor.eventPhone);
+                            $('#EventEmail').val(contract.subContractor.eventEmail);
+                            $('#TrainingLastName').val(contract.subContractor.trainingLastName);
+                            $('#TrainingFirstName').val(contract.subContractor.trainingFirstName);
+                            $('#TrainingPhone').val(contract.subContractor.trainingPhone);
+                            $('#TrainingEmail').val(contract.subContractor.trainingEmail);
+
+
+
+                        // Show the form and hide the table
+                        $('#datatableWrapper').hide();
+                        $('.card-body').show();
+                        $('#submitBtn').hide();
+                        $('#resetBtn').hide();
+                        $('#addContractBtn').hide();
+
+                        if (isViewButton) {
+                            const controlIds = [
+                              'hiddenId','ContractId','CompanyId', 'ContractClient', 'ContractType', 'SmallBusinessType',
+                              'ContractAffiliation', 'ContractServiceBranch', 'ContractComponent',
+                              'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+                              'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+                              'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+                              'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+                              'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+                              'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+                              'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+                              'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+                              'TrainingEmail'
+                                ];
+
+
+                            // Make controls read-only
+                            controlIds.forEach(function (id) {
+                                const control = $('#' + id);
+                                control.prop('readonly', true); // Make input read-only
+                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
+                            });
+
+                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                        } else {
+                            const controlIds = [
+                          'hiddenId', 'ContractId',   'SmallBusinessType',
+                          'ContractAffiliation', 'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+                          'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
+                          'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
+                          'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
+                          'FinanceFirstName', 'FinanceAddress1', 'FinanceAddress2',
+                          'FinanceState', 'FinanceCity', 'FinanceZip', 'FinancePhone',
+                          'FinanceEmail', 'EventLastName', 'EventFirstName', 'EventPhone',
+                          'EventEmail', 'TrainingLastName', 'TrainingFirstName', 'TrainingPhone',
+                          'TrainingEmail'
+                      ];
+
+                      // Make controls editable
+                      controlIds.forEach(function (id) {
+                          const control = $('#' + id);
+                          control.prop('readonly', false); // Remove readonly property
+                          control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                      });
+
+
+                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                        }
+                    } else {
+                        alert(response.message);  // Show error message
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract data.');
+                }
+            });
+        });
+
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+            var form = document.querySelector('form'); // Get the form element
+
+            // Check browser's default validation
+            if (!form.reportValidity()) {
+                // If validation fails, browser will focus on the first invalid field
+                return false; // Stop further execution
+            }
+            
+            if (!validateCertificationFields()) {
+                e.preventDefault(); // Prevent form submission if validation fails
+            }
+        });
+
+        function validateCertificationFields() {
+            const blsDate = document.getElementById('BLSCertDate').value;
+            const blsNumber = document.getElementById('BLSCertNumber').value;
+            const aclsDate = document.getElementById('ACLSCertDate').value;
+            const aclsNumber = document.getElementById('ACLSCertNumber').value;
+
+            const isBLSFilled = blsDate && blsNumber;
+            const isACLSFilled = aclsDate && aclsNumber;
+
+            const blsErrorSpan = document.getElementById('BLSCertError');
+            const aclsErrorSpan = document.getElementById('ACLSCertError');
+
+            // Clear previous errors
+            blsErrorSpan.style.display = 'none';
+            aclsErrorSpan.style.display = 'none';
+
+            if (!isBLSFilled && !isACLSFilled) {
+                // Display error messages in respective spans
+                const errorMessage = 'Either BLS or ACLS certification must be completed.';
+                blsErrorSpan.textContent = errorMessage;
+                blsErrorSpan.style.display = 'block';
+
+                aclsErrorSpan.textContent = errorMessage;
+                aclsErrorSpan.style.display = 'block';
+
+                return false; // Validation failed
+            }
+
+            return true; // Validation passed
+        }
+
+    document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
+        // Prevent the form from submitting
+        event.preventDefault();
+
+        // Get all checkboxes
+        const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
+        let isChecked = false;
+
+        // Check if at least one checkbox is checked
+        checkboxes.forEach(function (checkbox) {
+            if (checkbox.checked) {
+                isChecked = true;
+            }
+        });
+
+        // If no checkbox is checked, alert the user
+        if (!isChecked) {
+            alert('Please select at least one role.');
+        } else {
+            // If at least one checkbox is checked, you can submit the form or perform other actions
+            alert('Form submitted successfully!');
+            // Uncomment the line below to actually submit the form
+            // this.submit();
+        }
+    });
+
     document.getElementById('addRowButton').addEventListener('click', function () {
         // Get the container where rows will be added
         const container = document.querySelector('.form-container');
@@ -676,14 +1197,14 @@
             newRow.innerHTML = `
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
-                        <input asp-for="Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
+                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
+                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
-                        <select asp-for="Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
+                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
                             <option value="">Select State</option>
                             <option value="State1">State1</option>
                             <option value="State2">State2</option>
@@ -693,8 +1214,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
-                        <select asp-for="Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
+                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
                             <option value="">Select Type</option>
                             <option value="Type1">Type1</option>
                             <option value="Type2">Type2</option>
@@ -704,8 +1225,8 @@
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
-                        <input asp-for="Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
+                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
                     </div>
                 </div>
             `;
@@ -734,7 +1255,7 @@
         newRow.classList.add('row', 'mb-3', 'staff-affiliation-row');
         newRow.innerHTML = `
             <div class="col-md-6">
-                <select asp-for="StaffContractAffiliation[${rowIndex}]" class="form-control" required>
+                <select asp-for="SingleEventStaff.StaffContractAffiliation[${rowIndex}]" class="form-control" required>
                     <option value="" disabled selected>Select Affiliation</option>
                     <option value="Affiliation1">Affiliation1</option>
                     <option value="Affiliation2">Affiliation2</option>
@@ -751,7 +1272,7 @@
     // Air honor handling
     const radioButton = document.getElementById('airRadio');
     const airlineFields = document.getElementById('airlineFields');
-    const addButton = document.getElementById('addFieldsBtn');
+    const addButton = document.getElementById('addAirlineFieldsBtn');
     const container = document.getElementById('airline-controls-container');
     let airFieldCount = 0; // Counter for new fields
 
@@ -928,7 +1449,7 @@
         }
     }
 
-    allowOnlyNumericInput("ssn");
+    allowOnlyNumericInput("StaffSSN");
     allowOnlyNumericInput("npi");
     allowOnlyNumericInput("staffDoDID");
     
@@ -945,7 +1466,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const phoneFields = ['ssn'];
+        const phoneFields = ['StaffSSN'];
         phoneFields.forEach(function (fieldId) {
             applySsnMask(document.getElementById(fieldId));
         });
