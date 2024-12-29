@@ -634,7 +634,7 @@
                 <option value="Employer">Employer</option>
                 <option value="Subcontractor">Subcontractor</option>
             </select> *@
-                    <select id="ContractId" class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
+                    <select class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
                         <!-- Options will be populated dynamically from the database -->
                     </select>
         </div>
@@ -922,7 +922,7 @@
         });
     });
 
-    $('#ContractId').select2({
+    $('#EmployerSubcontractor').select2({
         theme: 'bootstrap-5',
         width: '100%'
     });
@@ -1000,7 +1000,7 @@
 
     
 
-    $('#ContractId').select2({
+    $('#EmployerSubcontractor').select2({
         ajax: {
             url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching', // Your endpoint for fetching contracts
             dataType: 'json',
@@ -1028,7 +1028,7 @@
     });
 
 
-    $('#ContractId').change(function () {
+    $('#EmployerSubcontractor').change(function () {
         var selectedId = $(this).val(); // Get the selected ID
         var selectedText = $(this).find("option:selected").text(); // Get the selected option text
 
@@ -1192,43 +1192,43 @@
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
 
-            $('#hiddenId').val('');
-            $('#ContractId').val('');
-            $('#CompanyId').val('');
-            $('#ContractClient').val('');
-            $('#ContractType').val('');
-            $('#SmallBusinessType').val('');
-            $('#ContractAffiliation').val('');
-            $('#ContractServiceBranch').val('');
-            $('#ContractComponent').val('');
-            $('#SolicitationNumber').val('');
-            $('#CompanyMainName').val('');
-            $('#CompanyMainAddress1').val('');
-            $('#CompanyMainAddress2').val('');
-            $('#CompanyMainState').val('').trigger('change');
-            $('#CompanyMainCity').val('').trigger('change');
-            $('#CompanyMainZip').val('');
-            $('#CompanyMainLastName').val('');
-            $('#CompanyMainFirstName').val('');
-            $('#CompanyMainPhone').val('');
-            $('#CompanyMainEmail').val('');
-            $('#FinanceLastName').val('');
-            $('#FinanceFirstName').val('');
-            $('#FinanceAddress1').val('');
-            $('#FinanceAddress2').val('');
-            $('#FinanceState').val('').trigger('change');
-            $('#FinanceCity').val('').trigger('change');
-            $('#FinanceZip').val('');
-            $('#FinancePhone').val('');
-            $('#FinanceEmail').val('');
-            $('#EventLastName').val('');
-            $('#EventFirstName').val('');
-            $('#EventPhone').val('');
-            $('#EventEmail').val('');
-            $('#TrainingLastName').val('');
-            $('#TrainingFirstName').val('');
-            $('#TrainingPhone').val('');
-            $('#TrainingEmail').val('');
+        //     $('#hiddenId').val('');
+        // $('#EmployerSubcontractor').val('');
+        //     $('#CompanyId').val('');
+        //     $('#ContractClient').val('');
+        //     $('#ContractType').val('');
+        //     $('#SmallBusinessType').val('');
+        //     $('#ContractAffiliation').val('');
+        //     $('#ContractServiceBranch').val('');
+        //     $('#ContractComponent').val('');
+        //     $('#SolicitationNumber').val('');
+        //     $('#CompanyMainName').val('');
+        //     $('#CompanyMainAddress1').val('');
+        //     $('#CompanyMainAddress2').val('');
+        //     $('#CompanyMainState').val('').trigger('change');
+        //     $('#CompanyMainCity').val('').trigger('change');
+        //     $('#CompanyMainZip').val('');
+        //     $('#CompanyMainLastName').val('');
+        //     $('#CompanyMainFirstName').val('');
+        //     $('#CompanyMainPhone').val('');
+        //     $('#CompanyMainEmail').val('');
+        //     $('#FinanceLastName').val('');
+        //     $('#FinanceFirstName').val('');
+        //     $('#FinanceAddress1').val('');
+        //     $('#FinanceAddress2').val('');
+        //     $('#FinanceState').val('').trigger('change');
+        //     $('#FinanceCity').val('').trigger('change');
+        //     $('#FinanceZip').val('');
+        //     $('#FinancePhone').val('');
+        //     $('#FinanceEmail').val('');
+        //     $('#EventLastName').val('');
+        //     $('#EventFirstName').val('');
+        //     $('#EventPhone').val('');
+        //     $('#EventEmail').val('');
+        //     $('#TrainingLastName').val('');
+        //     $('#TrainingFirstName').val('');
+        //     $('#TrainingPhone').val('');
+        //     $('#TrainingEmail').val('');
 
         });
 

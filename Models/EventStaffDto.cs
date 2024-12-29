@@ -48,7 +48,7 @@ namespace ExcelToCsv.Models
         public string StaffSSN { get; set; }
         public DateTime StaffDOB { get; set; }
 
-        public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
+        //public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
 
         [Required(ErrorMessage = "EventOnCallStaff is required.")]
         [RegularExpression("^(Yes|No)$", ErrorMessage = "EventOnCallStaff : Invalid selection. Choose 'Yes' or 'No'.")]
@@ -179,22 +179,22 @@ namespace ExcelToCsv.Models
         public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
     }
 
-    [Table("StaffRoles")]
-    public class StaffRoleDto
-    {
-        [Key]
-        public long Id { get; set; }
+    //[Table("StaffRoles")]
+    //public class StaffRoleDto
+    //{
+    //    [Key]
+    //    public long Id { get; set; }
 
-        [Required]
-        public long EventStaffId { get; set; }
+    //    [Required]
+    //    public long EventStaffId { get; set; }
 
-        [Required]
-        public string RoleName { get; set; }
+    //    [Required]
+    //    public string RoleName { get; set; }
 
-        [ForeignKey("EventStaffId")]
-        public EventStaffDto EventStaff { get; set; }
+    //    [ForeignKey("EventStaffId")]
+    //    public EventStaffDto EventStaff { get; set; }
 
-    }
+    //}
 
     [Table("StaffLicense")]
     public class LicenseInfoDTO
