@@ -18,6 +18,7 @@ namespace ExcelFilesCompiler
         public DbSet<SubContractorInfoDto> SubContractor { get; set; }
 
         public DbSet<ContractDetails> ContractDetails { get; set; }
+        public DbSet<EventStaffDto> EventStaff { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

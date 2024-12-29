@@ -11,7 +11,7 @@ namespace ExcelToCsv.Models
     }
 
     [Table("EventStaff")]
-    public class EventStaffDto
+    public class EventStaffDto : GenericProperties
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -51,13 +51,13 @@ namespace ExcelToCsv.Models
         //public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
 
         [Required(ErrorMessage = "EventOnCallStaff is required.")]
-        [RegularExpression("^(Yes|No)$", ErrorMessage = "EventOnCallStaff : Invalid selection. Choose 'Yes' or 'No'.")]
+        [RegularExpression("^(true|false)$", ErrorMessage = "EventOnCallStaff : Invalid selection. Choose 'Yes' or 'No'.")]
         public string EventOnCallStaff { get; set; }
 
         [StringLength(50, ErrorMessage = "EventOnCallStaffEvent cannot exceed 50 characters.")]
-        [Required(ErrorMessage = "EventOnCallStaffEvent is required.")]
+        //[Required(ErrorMessage = "EventOnCallStaffEvent is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventOnCallStaffEvent cannot be only white spaces.")]
-        public string EventOnCallStaffEvent { get; set; }
+        public string? EventOnCallStaffEvent { get; set; }
 
         public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
 
@@ -74,7 +74,7 @@ namespace ExcelToCsv.Models
         public DateTime DAWSONInternalCredentialingCompleteDate { get; set; }
 
         [Required(ErrorMessage = "OnboardingTrainingComplete is required.")]
-        [RegularExpression("^(Yes|No)$", ErrorMessage = "OnboardingTrainingComplete : Invalid selection. Choose 'Yes' or 'No'.")]
+        [RegularExpression("^(true|false)$", ErrorMessage = "OnboardingTrainingComplete : Invalid selection. Choose 'Yes' or 'No'.")]
         public string OnboardingTrainingComplete { get; set; }
 
         [StringLength(100, ErrorMessage = "OutstandingTrainings cannot exceed 100 characters.")]
@@ -97,10 +97,9 @@ namespace ExcelToCsv.Models
         public string CACApplicationProcessStatus { get; set; }
 
         [Required(ErrorMessage = "StaffCAC is required.")]
-        [RegularExpression("^(Yes|No)$", ErrorMessage = "StaffCAC : Invalid selection. Choose 'Yes' or 'No'.")]
+        [RegularExpression("^(true|false)$", ErrorMessage = "StaffCAC : Invalid selection. Choose 'Yes' or 'No'.")]
         public string StaffCAC { get; set; }
 
-        [Required(ErrorMessage = "StaffDoDID is required.")]
         [StringLength(10, ErrorMessage = "StaffDoDID cannot exceed 10 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffDoDID cannot be only white spaces.")]
         public string StaffDoDID { get; set; }
@@ -167,8 +166,8 @@ namespace ExcelToCsv.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryZip cannot be only white spaces.")]
         public string SecondaryZip { get; set; }
 
-        [Required(ErrorMessage = "StaffContractAffiliation is required.")]
-        public string StaffContractAffiliation { get; set; }
+        //[Required(ErrorMessage = "StaffContractAffiliation is required.")]
+        public string? StaffContractAffiliation { get; set; }
 
         [Required(ErrorMessage = "StaffInfoEnteredBy is required.")]
         [StringLength(50, ErrorMessage = "StaffInfoEnteredBy cannot exceed 50 characters.")]
@@ -176,7 +175,7 @@ namespace ExcelToCsv.Models
         public string StaffInfoEnteredBy { get; set; }
 
         //public bool TravelHonorAir { get; set; }
-        public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
+        //public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
     }
 
     //[Table("StaffRoles")]
@@ -224,7 +223,7 @@ namespace ExcelToCsv.Models
         // Foreign key to EventStaffDto
 
         [ForeignKey("EventStaffId")]
-        public EventStaffDto EventStaffDto { get; set; } // Navigation property
+        public EventStaffDto? EventStaffDto { get; set; } // Navigation property
     }
 
 

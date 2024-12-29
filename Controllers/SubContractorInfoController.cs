@@ -173,21 +173,34 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
+                // Fetch contract details
                 var contractDetails = await _subContractorService.GetContractIdsBySubContractorCompanyName(companyName);
 
-                var results = contractDetails.Select(cd => new
+                var contractResults = contractDetails.Select(cd => new
                 {
-                    id = cd.Id,            
-                    text = cd.ContractID   
+                    id = cd.Id,
+                    text = cd.ContractID
                 }).ToList();
 
-                return Ok(new { success = true, data = results });
+                // Fetch the StaffID
+                var staffId = await _subContractorService.GetNextStaffId();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        contractDetails = contractResults,
+                        staffId = staffId
+                    }
+                });
             }
             catch (Exception ex)
             {
                 // Return an error response if something goes wrong
-                return StatusCode(500, new { message = "An error occurred while fetching contract details by CompanyName." });
+                return StatusCode(500, new { message = "An error occurred while fetching contract details and StaffID." });
             }
         }
+
     }
 }

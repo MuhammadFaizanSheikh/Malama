@@ -98,6 +98,63 @@ namespace ExcelFilesCompiler.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EventStaff",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StaffID = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StaffStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    StaffLastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StaffFirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StaffMiddleInitial = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    StaffSSN = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    StaffDOB = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EventOnCallStaff = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EventOnCallStaffEvent = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    NPI = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    DAE = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    CredentialingProcessDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    HistoricalCredentialingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DAWSONInternalCredentialingCompleteDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    OnboardingTrainingComplete = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OutstandingTrainings = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    BackgroundCheckConcerns = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    BLSCertDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BLSCertNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    ACLSCertDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ACLSCertNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CACApplicationProcessStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StaffCAC = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StaffDoDID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    SubContractorId = table.Column<long>(type: "bigint", nullable: false),
+                    StaffCellNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
+                    StaffPhone2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StaffEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PrimaryAddress1 = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    PrimaryAddress2 = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    PrimaryCity = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PrimaryState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PrimaryZip = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SecondaryAddress1 = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SecondaryAddress2 = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    SecondaryCity = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SecondaryState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SecondaryZip = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StaffContractAffiliation = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StaffInfoEnteredBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AddedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventStaff", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "FileData",
                 columns: table => new
                 {
@@ -350,6 +407,29 @@ namespace ExcelFilesCompiler.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "StaffLicense",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
+                    LicenseNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LicenseState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LicenseType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffLicense", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StaffLicense_EventStaff_EventStaffId",
+                        column: x => x.EventStaffId,
+                        principalTable: "EventStaff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -390,6 +470,11 @@ namespace ExcelFilesCompiler.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StaffLicense_EventStaffId",
+                table: "StaffLicense",
+                column: "EventStaffId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SubContractor_ContractId",
                 table: "SubContractor",
                 column: "ContractId");
@@ -417,6 +502,9 @@ namespace ExcelFilesCompiler.Migrations
                 name: "FileData");
 
             migrationBuilder.DropTable(
+                name: "StaffLicense");
+
+            migrationBuilder.DropTable(
                 name: "SubContractor");
 
             migrationBuilder.DropTable(
@@ -424,6 +512,9 @@ namespace ExcelFilesCompiler.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "EventStaff");
 
             migrationBuilder.DropTable(
                 name: "ContractDetails");

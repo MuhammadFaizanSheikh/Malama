@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
+using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,111 +10,111 @@ using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
-    //public class EventStaffService : IContractService
-    //{
-    //    private readonly IGenericRepository<EventStaffDto> repository;
+    public class EventStaffService : IEventStaffService
+    {
+        private readonly IUnitOfWork _unitOfWork;
 
-    //    public EventStaffService(IGenericRepository<ContractDetails> repository)
-    //    {
-    //        this.repository = repository;
-    //    }
+        public EventStaffService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
 
-    //    public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
-    //    {
-    //        var responseDto = new ResponseDto();
+        public async Task<ResponseDto> AddContractAsync(EventStaffDto evebtStaff, string loggedinUserName)
+        {
+            var responseDto = new ResponseDto();
 
-    //        try
-    //        {
-    //            // Attempt to add the contract detail to the repository
-    //            contractDetail.AddedBy = loggedinUserName;
-    //            contractDetail.AddedOn = DateTime.Now;
-    //            await repository.AddAsync(contractDetail);
+            try
+            {
+                // Attempt to add the contract detail to the repository
+                evebtStaff.AddedBy = loggedinUserName;
+                evebtStaff.AddedOn = DateTime.Now;
+                await _unitOfWork.EventStaff.AddAsync(evebtStaff);
 
-    //            // If successful, set Success to true and provide a success message
-    //            responseDto.Success = true;
-    //            responseDto.Message = "Contract added successfully!";
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            // If an exception occurs, set Success to false and provide the error message
-    //            responseDto.Success = false;
-    //            responseDto.Message = $"An error occurred: {ex.Message}";
-    //        }
+                // If successful, set Success to true and provide a success message
+                responseDto.Success = true;
+                responseDto.Message = "Event Staff added successfully!";
+            }
+            catch (Exception ex)
+            {
+                // If an exception occurs, set Success to false and provide the error message
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred: {ex.Message}";
+            }
 
-    //        return responseDto;
-    //    }
+            return responseDto;
+        }
 
-    //    public async Task<List<ContractDetails>> GetAllContracts()
-    //    {
-    //        var responseDto = new ResponseDto();
-    //        List<ContractDetails> contracts = new List<ContractDetails>(); // Initialize contracts outside try-catch
+        public async Task<List<EventStaffDto>> GetAllEventStaff()
+        {
+            var responseDto = new ResponseDto();
+            List<EventStaffDto> eventStaff = new List<EventStaffDto>(); // Initialize contracts outside try-catch
 
-    //        try
-    //        {
-    //            contracts = (await repository.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            throw;
-    //        }
+            try
+            {
+                eventStaff = (await _unitOfWork.EventStaff.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
 
-    //        return contracts;
-    //    }
+            return eventStaff;
+        }
 
 
-    //    public async Task<ContractDetails> GetContractById(long id)
-    //    {
-    //        ContractDetails contractDetails = null;
 
-    //        try
-    //        {
-    //            contractDetails = await repository.GetByIdAsync(id);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            throw;
-    //        }
+        public async Task<EventStaffDto> GetEventStaffById(long id)
+        {
+            EventStaffDto eventStaff = null;
 
-    //        return contractDetails;
-    //    }
+            try
+            {
+                eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
 
-    //    public async Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName)
-    //    {
-    //        var responseDto = new ResponseDto();
+            return eventStaff;
+        }
 
-    //        try
-    //        {
-    //            contract.UpdatedBy = loggedinUserName;
-    //            contract.UpdatedOn = DateTime.Now;
-    //            await repository.UpdateAsync(contract);
-    //            responseDto.Success = true;
-    //            responseDto.Message = "Contract updated successfully!";
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            responseDto.Success = false;
-    //            responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
-    //        }
+        public async Task<ResponseDto> UpdateContract(EventStaffDto eventStaff, string loggedinUserName)
+        {
+            var responseDto = new ResponseDto();
 
-    //        return responseDto;
-    //    }
+            try
+            {
+                eventStaff.UpdatedBy = loggedinUserName;
+                eventStaff.UpdatedOn = DateTime.Now;
+                await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
+                responseDto.Success = true;
+                responseDto.Message = "Contract updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
+            }
 
-    //    public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
-    //    {
-    //        try
-    //        {
-    //            if (string.IsNullOrEmpty(contractId))
-    //            {
-    //                return await repository.FindForSearchingAsync(c => true);
-    //            }
+            return responseDto;
+        }
 
-    //            return await repository.FindForSearchingAsync(c => c.ContractID.Contains(contractId));
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            throw new Exception("Error while fetching contract details.", ex);
-    //        }
-    //    }
+        //public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(contractId))
+        //        {
+        //            return await repository.FindForSearchingAsync(c => true);
+        //        }
 
-    //}
+        //        return await repository.FindForSearchingAsync(c => c.ContractID.Contains(contractId));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("Error while fetching contract details.", ex);
+        //    }
+        //}
+    }
 }

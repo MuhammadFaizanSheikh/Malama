@@ -610,7 +610,8 @@
                     if (response.success) {
                         debugger;
                         var contract = response.contractDetails;
-                        
+                        alert('asdasdsad')
+                        debugger;
                         $('#hiddenId').val(contract.id);
                         $('#ContractID').val(contract.contractID);
                         $('#ContractAgency').val(contract.contractAgency);
@@ -621,9 +622,8 @@
                         $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
                         $('#ContractStatus').val(contract.contractStatus);
 
-                        let contractStartDate = new Date(contract.contractStartDate);
-                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD
-                        $('#ContractStartDate').val(formattedStartDate);
+                        
+                        $('#ContractStartDate').val(contract.contractStartDate);
 
                         let contractEndDate = new Date(contract.contractEndDate);
                         let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
@@ -717,7 +717,6 @@
                 }
             });
         });
-
 
         const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
         phoneFields.forEach(function (fieldId) {

@@ -11,5 +11,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> UpdateContract(SubContractorInfoDto contract, string loggedinUserName);
         Task<IEnumerable<SubContractorInfoDto>> GetSubContractorByCompanyNameForSearching(string companyName);
         Task<List<ContractDetails>> GetContractIdsBySubContractorCompanyName(string companyName);
+        Task<string> GetNextStaffId();
     }
 }
