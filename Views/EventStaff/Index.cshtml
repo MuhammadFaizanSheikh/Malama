@@ -346,7 +346,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
-            <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" readonly required />
+            <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" maxLength="6" readonly required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
@@ -357,7 +357,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffStatus" class="form-label">Staff Status</label>
-            <select asp-for="SingleEventStaff.StaffStatus" id="StaffStatus" class="form-control" required>
+            <select asp-for="SingleEventStaff.StaffStatus" id="StaffStatus" maxLength="20" class="form-control" required>
                 <option value="Active">Active</option>
                 <option value="InProgress">In Progress</option>
                 <option value="RecruitCred">Recruit - Cred</option>
@@ -367,18 +367,18 @@
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffLastName" class="form-label">Staff Last Name</label>
-            <input asp-for="SingleEventStaff.StaffLastName" id="StaffLastName" class="form-control" required />
+                    <input asp-for="SingleEventStaff.StaffLastName" id="StaffLastName" maxLength="50"  class="form-control" required />
         </div>
     </div>
 
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffFirstName" class="form-label">Staff First Name</label>
-            <input asp-for="SingleEventStaff.StaffFirstName" id="StaffFirstName" class="form-control" required />
+            <input asp-for="SingleEventStaff.StaffFirstName" id="StaffFirstName" maxLength="50" class="form-control" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
-            <input asp-for="SingleEventStaff.StaffMiddleInitial" id="StaffMiddleInitial" class="form-control" />
+            <input asp-for="SingleEventStaff.StaffMiddleInitial" id="StaffMiddleInitial" maxLength="50" class="form-control" />
         </div>
     </div>
 
@@ -387,7 +387,7 @@
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffSSN" class="form-label">Staff SSN</label>
             <div class="input-group">
-                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" class="form-control"
+                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" maxLength="11" class="form-control"
                        placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
                 <span class="input-group-text" onclick="togglePasswordVisibility('StaffSSN', 'toggleSsnIcon')" style="cursor: pointer;">
                     <i id="toggleSsnIcon" class="fas fa-eye"></i>
@@ -491,7 +491,7 @@
 
                     <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
                         <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
-                        <input asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-control" required />
+                        <input asp-for="SingleEventStaff.EventOnCallStaffEvent" maxLength="50" class="form-control" required />
                     </div>
             <h4 class="mt-4">States Licenses</h4>
                     <div class="form-container" style="max-width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
@@ -543,7 +543,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="SingleEventStaff.DAE" class="form-label">DAE</label>
-                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" required />
+                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" maxLength="8" required />
             </div>
         </div>
     </div>
@@ -581,7 +581,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" id="OutstandingTrainings" class="form-control" rows="3"></textarea>
+                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" class="form-control" rows="3"></textarea>
            @*  <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
                 <option value="Type1">Type1</option>
                 <option value="Type2">Type2</option>
@@ -589,7 +589,7 @@
 
         </div>
         <div class="col-md-6">
-            <label asp-for="SingleEventStaff.BackgroundCheckConcerns" class="form-label">Background Check Concerns</label>
+            <label asp-for="SingleEventStaff.BackgroundCheckConcerns" maxLength="100" class="form-label">Background Check Concerns</label>
             <textarea asp-for="SingleEventStaff.BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
         </div>
     </div>
@@ -600,7 +600,7 @@
                 <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
                 <div class="d-flex flex-grow-1">
                     <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
-                    <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" class="form-control" placeholder="Cert Number" />
+                    <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
                 </div>
                         <span id="BLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
             </div>
@@ -610,7 +610,7 @@
                 <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
                 <div class="d-flex flex-grow-1">
                     <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
-                    <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" class="form-control" placeholder="Cert Number" />
+                    <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" maxLength="100"  class="form-control" placeholder="Cert Number" />
                 </div>
                         <span id="ACLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
             </div>
@@ -655,14 +655,14 @@
         <div class="col-md-6" id="staffDoDContainer" style="display: none;">
             <!-- Hidden by default -->
             <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
-            <input asp-for="SingleEventStaff.StaffDoDID" class="form-control" maxlength="11" id="staffDoDID" />
+            <input asp-for="SingleEventStaff.StaffDoDID" maxLength="10" class="form-control" maxlength="11" id="staffDoDID" />
         </div>
     </div>
 
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
-            <input asp-for="SingleEventStaff.StaffCellNumber" id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+            <input asp-for="SingleEventStaff.StaffCellNumber"  id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffPhone2" class="form-label">Staff Phone 2</label>
@@ -673,7 +673,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffEmail" class="form-label">Staff Email</label>
-            <input asp-for="SingleEventStaff.StaffEmail" type="email" class="form-control" required />
+            <input asp-for="SingleEventStaff.StaffEmail" type="email" maxLength="100" class="form-control" required />
         </div>
     </div>
 
@@ -684,34 +684,33 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.PrimaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="SingleEventStaff.PrimaryAddress1" class="form-control" required />
+            <input asp-for="SingleEventStaff.PrimaryAddress1" maxLength="200" class="form-control" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.PrimaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="SingleEventStaff.PrimaryAddress2" class="form-control" />
+            <input asp-for="SingleEventStaff.PrimaryAddress2" maxLength="200" class="form-control" />
         </div>
     </div>
 
                 <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.PrimaryState" class="form-label">Staff State</label>
+                    <select asp-for="SingleEventStaff.PrimaryState" id="primaryState" maxLength="50" class="form-control" required>
+                        <!-- States will be dynamically populated -->
+                        <!-- Uncomment below if needed: <option value="">Select State</option> -->
+                    </select>
+                </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.PrimaryCity" class="form-label">Staff City</label>
-            <select asp-for="SingleEventStaff.PrimaryCity" id="primaryCity" class="form-control city-dropdown" required>
+            <select asp-for="SingleEventStaff.PrimaryCity" id="primaryCity" maxLength="50" class="form-control city-dropdown" required>
                 <option value="">Select City</option> <!-- Default option -->
             </select>
         </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.PrimaryState" class="form-label">Staff State</label>
-            <select asp-for="SingleEventStaff.PrimaryState" id="primaryState" class="form-control" required>
-                <!-- States will be dynamically populated -->
-                <!-- Uncomment below if needed: <option value="">Select State</option> -->
-            </select>
-        </div>
     </div>
-
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.PrimaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="SingleEventStaff.PrimaryZip" id="primaryZipCode" class="form-control" required>
+            <select asp-for="SingleEventStaff.PrimaryZip" id="primaryZipCode" maxLength="50" class="form-control" required>
                 <option value="">Select Zip Code</option> <!-- Default option -->
             </select>
         </div>
@@ -723,33 +722,32 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.SecondaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="SingleEventStaff.SecondaryAddress1" class="form-control" required />
+            <input asp-for="SingleEventStaff.SecondaryAddress1" maxLength="200" class="form-control" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.SecondaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="SingleEventStaff.SecondaryAddress2" class="form-control" />
+            <input asp-for="SingleEventStaff.SecondaryAddress2" maxLength="200" class="form-control" />
         </div>
     </div>
 
                 <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.SecondaryState" class="form-label">Staff State</label>
+                    <select asp-for="SingleEventStaff.SecondaryState" id="secondaryState" maxLength="50" class="form-control" required>
+                        <!-- Uncomment below if needed: <option value="">Select State</option> -->
+                    </select>
+                </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.SecondaryCity" class="form-label">Staff City</label>
-            <select asp-for="SingleEventStaff.SecondaryCity" id="secondaryCity" class="form-control city-dropdown" required>
+            <select asp-for="SingleEventStaff.SecondaryCity" id="secondaryCity" maxLength="50" class="form-control city-dropdown" required>
                 <option value="">Select City</option> <!-- Default option -->
             </select>
         </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.SecondaryState" class="form-label">Staff State</label>
-            <select asp-for="SingleEventStaff.SecondaryState" id="secondaryState" class="form-control" required>
-                <!-- Uncomment below if needed: <option value="">Select State</option> -->
-            </select>
-        </div>
     </div>
-
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.SecondaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="SingleEventStaff.SecondaryZip" id="secondaryZipCode" class="form-control" required>
+            <select asp-for="SingleEventStaff.SecondaryZip" id="secondaryZipCode" maxLength="50" class="form-control" required>
                 <option value="">Select Zip Code</option> <!-- Default option -->
             </select>
         </div>
@@ -759,7 +757,7 @@
         <!-- Initial Row -->
         <div class="row mb-3">
             <div class="col-md-6 staff-affiliation-row">
-                <label asp-for="SingleEventStaff.StaffContractAffiliation[0]" class="form-label">Staff Contract Affiliation</label>
+                        <label class="form-label">Staff Contract Affiliation</label>
                
                         <select id="StaffContractAffiliation" name="options" multiple class="form-control" style="width: 100%; padding: 10px;">
                             
@@ -767,19 +765,19 @@
             </div>
 
             <div class="col-md-6">
-                <label asp-for="SingleEventStaff.StaffInfoEnteredBy[0]" class="form-label">Staff Info Entered By</label>
-                <input asp-for="SingleEventStaff.StaffInfoEnteredBy[0]" class="form-control" readonly />
+                <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
+                <input asp-for="SingleEventStaff.StaffInfoEnteredBy" maxLength="50" class="form-control" readonly />
             </div>
         </div>
 
-        <!-- Add Button -->
+        @* <!-- Add Button -->
         <div class="text-center">
             <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
                 <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-right: 8px;">
                 <span>Add Another Contract Affiliation</span>
             </button>
         </div>
-    </div>
+    </div> *@
 
 
 
@@ -918,12 +916,6 @@
 </html>
 <script>
     $(document).ready(function () {
-        // Initialize Bootstrap Multiselect
-        // $('#StaffContractAffiliation').multiselect({
-        //     includeSelectAllOption: true,
-        //     enableFiltering: true,
-        //     nonSelectedText: 'None selected'
-        // });
         $('#StaffContractAffiliation').select2({
             placeholder: "Select options",
             allowClear: true
@@ -931,8 +923,8 @@
     });
 
     $('#ContractId').select2({
-        theme: 'bootstrap-5',  // Ensure it's using the Bootstrap 5 theme
-        width: '100%'          // Ensure the dropdown takes full width of the select box
+        theme: 'bootstrap-5',
+        width: '100%'
     });
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -940,6 +932,56 @@
         phoneFields.forEach(function (fieldId) {
             applySsnMask(document.getElementById(fieldId));
         });
+
+        $.getJSON('/data/statesAndCities.json', function (data) {
+        const stateCityMap = {};
+        const stateDropdowns = $('#primaryState, #secondaryState');
+
+        stateDropdowns.empty().append('<option value="">Select State</option>');
+        data.states.forEach(state => {
+            stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
+            stateCityMap[state.Name] = state.Cities; // Map state name to its cities
+        });
+
+        stateDropdowns.on('change', function () {
+            const stateName = $(this).val(); // Now this will be the state name
+
+            const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
+            const cityDropdown = $(cityDropdownId);
+
+            cityDropdown.empty().append('<option value="">Select City</option>');
+
+            if (stateName && stateCityMap[stateName]) {
+                stateCityMap[stateName].forEach(city => {
+                    cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
+                });
+            }
+        });
+
+
+        $('.city-dropdown').on('change', function () {
+            const cityDropdownId = $(this).attr('id'); // Get the ID of the changed city dropdown
+            const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
+            const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
+
+            const stateName = $(stateDropdownId).val(); // Get the selected state for the respective city dropdown
+            const cityName = $(this).val(); // Get the selected city name
+            const zipCodeDropdown = $(zipCodeDropdownId); // Get the corresponding zip code dropdown
+
+            // Clear the zip code dropdown and add a default option
+            zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
+
+            if (stateName && cityName && stateCityMap[stateName]) {
+                const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
+
+                if (selectedCity && selectedCity.Zipcodes) {
+                    selectedCity.Zipcodes.forEach(zip => {
+                        zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                    });
+                }
+            }
+        });
+    });
     });
 
     function applySsnMask(inputElement) {
@@ -997,7 +1039,6 @@
                 data: { companyName: selectedText }, // Send selected text as a parameter
                 success: function (response) {
                     if (response.success) {
-                        alert('Contract details fetched successfully!');
                         bindMultiSelectDropdown(response.data); // Pass the data to the binding function
                     } else {
                         alert(response.message); // Show the error message
@@ -1016,12 +1057,10 @@
         var dropdown = $('#StaffContractAffiliation');
         dropdown.empty(); // Clear existing options
 
-        // Append new options from the response data
         $.each(data, function (index, item) {
             dropdown.append($('<option></option>').attr('value', item.id).text(item.text));
         });
 
-        // Reinitialize the multi-select plugin if needed
         dropdown.multiselect('rebuild');
     }
 
@@ -1058,14 +1097,6 @@
         });
     }
 
-    
-
-   
-
-
-
-
-
     const staffCACYes = document.getElementById('staffCACYes');
     const staffCACNo = document.getElementById('staffCACNo');
     const staffDoDContainer = document.getElementById('staffDoDContainer');
@@ -1073,15 +1104,14 @@
 
     function toggleStaffDoDID() {
         if (staffCACYes.checked) {
-            staffDoDContainer.style.display = 'block'; // Show the Staff DoD ID field
-            staffDoDID.setAttribute('required', 'required'); // Make it required
+            staffDoDContainer.style.display = 'block'; 
+            staffDoDID.setAttribute('required', 'required');
         } else {
-            staffDoDContainer.style.display = 'none'; // Hide the Staff DoD ID field
-            staffDoDID.removeAttribute('required'); // Remove the required attribute
+            staffDoDContainer.style.display = 'none';
+            staffDoDID.removeAttribute('required');
         }
     }
 
-    // Attach event listeners to radio buttons
     staffCACYes.addEventListener('change', toggleStaffDoDID);
     staffCACNo.addEventListener('change', toggleStaffDoDID);
 
@@ -1093,7 +1123,6 @@
     const noRadio = document.getElementById('eventOnCallNo');
     const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
 
-    // Function to toggle visibility
     function toggleEventOnCallContainer() {
         if (noRadio.checked) {
             eventOnCallSelectContainer.style.display = 'block';
@@ -1102,11 +1131,9 @@
         }
     }
 
-    // Add event listeners
     yesRadio.addEventListener('change', toggleEventOnCallContainer);
     noRadio.addEventListener('change', toggleEventOnCallContainer);
 
-    // Initialize visibility on page load
     toggleEventOnCallContainer();
     
 
@@ -1230,12 +1257,11 @@
 
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             debugger;
-            var contractId = $(this).data('id');  // Get contract ID from data-id attribute
+            var contractId = $(this).data('id');
             var isViewButton = $(this).hasClass('view-btn');
 
-            // AJAX call to fetch contract details by ID
             $.ajax({
-                url: '/SubContractorInfo/GetSubContractorById/' + contractId,  // Make sure the URL is correct
+                url: '/SubContractorInfo/GetSubContractorById/' + contractId,
                 type: 'GET',
                 success: function (response) {
                     if (response.success) {
@@ -1361,14 +1387,12 @@
         document.getElementById("submitBtn").addEventListener("click", function (event) {
             var form = document.querySelector('form'); // Get the form element
 
-            // Check browser's default validation
             if (!form.reportValidity()) {
-                // If validation fails, browser will focus on the first invalid field
-                return false; // Stop further execution
+                return false;
             }
             
             if (!validateCertificationFields()) {
-                e.preventDefault(); // Prevent form submission if validation fails
+                e.preventDefault();
             }
         });
 
@@ -1384,12 +1408,10 @@
             const blsErrorSpan = document.getElementById('BLSCertError');
             const aclsErrorSpan = document.getElementById('ACLSCertError');
 
-            // Clear previous errors
             blsErrorSpan.style.display = 'none';
             aclsErrorSpan.style.display = 'none';
 
             if (!isBLSFilled && !isACLSFilled) {
-                // Display error messages in respective spans
                 const errorMessage = 'Either BLS or ACLS certification must be completed.';
                 blsErrorSpan.textContent = errorMessage;
                 blsErrorSpan.style.display = 'block';
@@ -1404,43 +1426,32 @@
         }
 
     document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
-        // Prevent the form from submitting
         event.preventDefault();
 
-        // Get all checkboxes
         const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
         let isChecked = false;
 
-        // Check if at least one checkbox is checked
         checkboxes.forEach(function (checkbox) {
             if (checkbox.checked) {
                 isChecked = true;
             }
         });
 
-        // If no checkbox is checked, alert the user
         if (!isChecked) {
             alert('Please select at least one role.');
         } else {
-            // If at least one checkbox is checked, you can submit the form or perform other actions
             alert('Form submitted successfully!');
-            // Uncomment the line below to actually submit the form
-            // this.submit();
         }
     });
 
     document.getElementById('addRowButton').addEventListener('click', function () {
-        // Get the container where rows will be added
         const container = document.querySelector('.form-container');
 
-        // Get the current count of license rows
         const licenseRows = document.querySelectorAll('.license-row');
 
-        // Check if there are less than 5 rows
         if (licenseRows.length < 5) {
-            const rowIndex = licenseRows.length; // New index for the new row
+            const rowIndex = licenseRows.length;
 
-            // Create a new row using the existing structure
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
             newRow.innerHTML = `
@@ -1480,45 +1491,39 @@
                 </div>
             `;
 
-            // Insert the new row above the Add Row button
             container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
         }
     });
 
 
-    document.getElementById('add-affiliation-btn').addEventListener('click', function () {
-        // Get the container where rows will be added
-        const container = document.getElementById('staff-affiliation-container');
+    // document.getElementById('add-affiliation-btn').addEventListener('click', function () {
+    //     const container = document.getElementById('staff-affiliation-container');
 
-        // Get the current count of the existing affiliation rows
-        const affiliationRows = document.querySelectorAll('.staff-affiliation-row');
-        const rowIndex = affiliationRows.length; // New index for the new row
+    //     const affiliationRows = document.querySelectorAll('.staff-affiliation-row');
+    //     const rowIndex = affiliationRows.length; // New index for the new row
 
-        // Ensure not exceeding 5 rows
-        if (rowIndex >= 5) {
-            return; // Stop adding more rows if the limit is reached
-        }
+    //     if (rowIndex >= 5) {
+    //         return;
+    //     }
 
-        // Create a new row using the existing structure
-        const newRow = document.createElement('div');
-        newRow.classList.add('row', 'mb-3', 'staff-affiliation-row');
-        newRow.innerHTML = `
-            <div class="col-md-6">
-                <select asp-for="SingleEventStaff.StaffContractAffiliation[${rowIndex}]" class="form-control" required>
-                    <option value="" disabled selected>Select Affiliation</option>
-                    <option value="Affiliation1">Affiliation1</option>
-                    <option value="Affiliation2">Affiliation2</option>
-                </select>
-            </div>`;
+    //     // Create a new row using the existing structure
+    //     const newRow = document.createElement('div');
+    //     newRow.classList.add('row', 'mb-3', 'staff-affiliation-row');
+    //     newRow.innerHTML = `
+    //         <div class="col-md-6">
+    //             <select asp-for="SingleEventStaff.StaffContractAffiliation[${rowIndex}]" class="form-control" required>
+    //                 <option value="" disabled selected>Select Affiliation</option>
+    //                 <option value="Affiliation1">Affiliation1</option>
+    //                 <option value="Affiliation2">Affiliation2</option>
+    //             </select>
+    //         </div>`;
 
-        // Insert the new row above the Add Row button
-        container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
-    });
+    //     // Insert the new row above the Add Row button
+    //     container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
+    // });
 
-    const maxFields = 4; // Maximum number of fields to add
+    const maxFields = 4;
 
-    //Air honor handling
-    // Air honor handling
     const radioButton = document.getElementById('airRadio');
     const airlineFields = document.getElementById('airlineFields');
     const addButton = document.getElementById('addAirlineFieldsBtn');
@@ -1566,13 +1571,9 @@
                      </div>
         `;
 
-        // Ensure proper alignment for the new row
         const columns = newRow.querySelectorAll('.col-md-6');
         columns.forEach(col => {
-            // col.style.alignItems = 'center';  // Align items vertically in the center
-            // col.style.marginBottom = '10px';  // Ensure no extra margin at the bottom
-            // If needed, use margin-left for precise alignment, but ensure the column still stays side by side
-            // col.style.marginLeft = '100';  // Adjust or remove based on your needs
+            
         });
 
         // Append the new row to the container
@@ -1684,66 +1685,4 @@
     });
 
     
-
-    
-
-
-    
-
-
-
-    
-
-
-    $.getJSON('/data/statesAndCities.json', function (data) {
-        const stateCityMap = {};
-        const stateDropdowns = $('#primaryState, #secondaryState');
-
-        stateDropdowns.empty().append('<option value="">Select State</option>');
-        data.states.forEach(state => {
-            stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
-            stateCityMap[state.Name] = state.Cities; // Map state name to its cities
-        });
-
-        stateDropdowns.on('change', function () {
-            const stateName = $(this).val(); // Now this will be the state name
-
-            const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
-            const cityDropdown = $(cityDropdownId);
-
-            cityDropdown.empty().append('<option value="">Select City</option>');
-
-            if (stateName && stateCityMap[stateName]) {
-                stateCityMap[stateName].forEach(city => {
-                    cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
-                });
-            }
-        });
-
-
-        $('.city-dropdown').on('change', function () {
-            const cityDropdownId = $(this).attr('id'); // Get the ID of the changed city dropdown
-            const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
-            const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
-
-            const stateName = $(stateDropdownId).val(); // Get the selected state for the respective city dropdown
-            const cityName = $(this).val(); // Get the selected city name
-            const zipCodeDropdown = $(zipCodeDropdownId); // Get the corresponding zip code dropdown
-
-            // Clear the zip code dropdown and add a default option
-            zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
-
-            if (stateName && cityName && stateCityMap[stateName]) {
-                const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
-
-                if (selectedCity && selectedCity.Zipcodes) {
-                    selectedCity.Zipcodes.forEach(zip => {
-                        zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
-                    });
-                }
-            }
-        });
-
-
-    });
 </script>

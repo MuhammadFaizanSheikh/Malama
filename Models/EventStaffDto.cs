@@ -48,10 +48,6 @@ namespace ExcelToCsv.Models
         public string StaffSSN { get; set; }
         public DateTime StaffDOB { get; set; }
 
-        [StringLength(11, ErrorMessage = "StaffSSN cannot exceed 11 characters.")]
-        [Required(ErrorMessage = "StaffSSN is required.")]
-        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffSSN cannot be only white spaces.")]
-
         public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
 
         [Required(ErrorMessage = "EventOnCallStaff is required.")]
@@ -62,6 +58,7 @@ namespace ExcelToCsv.Models
         [Required(ErrorMessage = "EventOnCallStaffEvent is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventOnCallStaffEvent cannot be only white spaces.")]
         public string EventOnCallStaffEvent { get; set; }
+
         public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
 
         [StringLength(10, ErrorMessage = "NPI must be exactly 10 digits.")]
@@ -89,8 +86,11 @@ namespace ExcelToCsv.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "BackgroundCheckConcerns cannot be only white spaces.")]
         public string? BackgroundCheckConcerns { get; set; }
         public DateTime? BLSCertDate { get; set; }
+        [StringLength(100, ErrorMessage = "BLSCertNumber cannot exceed 100 characters.")]
         public string? BLSCertNumber { get; set; }
         public DateTime? ACLSCertDate { get; set; }
+
+        [StringLength(100, ErrorMessage = "ACLSCertNumber cannot exceed 100 characters.")]
         public string? ACLSCertNumber { get; set; }
 
         [Required(ErrorMessage = "CACApplicationProcessStatus is required.")]
@@ -123,6 +123,8 @@ namespace ExcelToCsv.Models
         [StringLength(200, ErrorMessage = "PrimaryAddress1 cannot exceed 200 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffCPrimaryAddress1ellNumber cannot be only white spaces.")]
         public string PrimaryAddress1 { get; set; }
+
+        [StringLength(200, ErrorMessage = "PrimaryAddress2 cannot exceed 200 characters.")]
         public string? PrimaryAddress2 { get; set; }
 
         [Required(ErrorMessage = "PrimaryCity is required.")]
@@ -145,7 +147,9 @@ namespace ExcelToCsv.Models
         [Required(ErrorMessage = "SecondaryAddress1 is required.")]
         [StringLength(200, ErrorMessage = "SecondaryAddress1 cannot exceed 200 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryAddress1 cannot be only white spaces.")]
-        public string SecondaryAddress1 { get; set; } 
+        public string SecondaryAddress1 { get; set; }
+
+        [StringLength(200, ErrorMessage = "SecondaryAddress2 cannot exceed 200 characters.")]
         public string? SecondaryAddress2 { get; set; }
 
         [Required(ErrorMessage = "SecondaryCity is required.")]
