@@ -17,6 +17,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         T? FindFirstOrDefaultByEventId(string eventId);
         IEnumerable<T> FindByEventId(string eventId);
         Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
     }
 }

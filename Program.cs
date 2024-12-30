@@ -97,6 +97,15 @@ app.UseSession();
 app.UseAuthentication(); // Must be before UseAuthorization
 app.UseAuthorization();
 
+//if (env.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage(); // Enable detailed error messages in development
+//}
+//else
+//{
+//    app.UseExceptionHandler("/Home/Error"); // Handle errors in production
+//}
+
 // Configure endpoints
 app.UseEndpoints(endpoints =>
 {

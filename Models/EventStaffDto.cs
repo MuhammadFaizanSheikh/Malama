@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Models;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -202,6 +203,8 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
+        [ForeignKey("EventStaffId")]
+
         public long EventStaffId { get; set; }
 
 
@@ -222,8 +225,8 @@ namespace ExcelToCsv.Models
 
         // Foreign key to EventStaffDto
 
-        [ForeignKey("EventStaffId")]
-        public EventStaffDto? EventStaffDto { get; set; } // Navigation property
+        //[JsonIgnore]
+        //public EventStaffDto? EventStaffDto { get; set; } // Navigation property
     }
 
 

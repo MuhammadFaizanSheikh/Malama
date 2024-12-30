@@ -62,21 +62,36 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
+        //public async Task<EventStaffDto> GetEventStaffById(long id)
+        //{
+        //    EventStaffDto eventStaff = null;
 
+        //    try
+        //    {
+        //        eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+
+        //    return eventStaff;
+        //}
         public async Task<EventStaffDto> GetEventStaffById(long id)
         {
-            EventStaffDto eventStaff = null;
-
             try
             {
-                eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
+                var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
+                    x => x.Id == id,
+                    x => x.Licenses
+                );
+
+                return eventStaff.FirstOrDefault();
             }
             catch (Exception ex)
             {
                 throw;
             }
-
-            return eventStaff;
         }
 
         public async Task<ResponseDto> UpdateContract(EventStaffDto eventStaff, string loggedinUserName)

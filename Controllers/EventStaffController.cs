@@ -141,6 +141,25 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        //[HttpGet]
+        //public async Task<IActionResult> GetEventStaffById(long id)
+        //{
+        //    try
+        //    {
+        //        var eventStaff = await _eventStaffService.GetEventStaffById(id);
+        //        if (eventStaff == null)
+        //        {
+        //            return Json(new { success = false, message = "Contract not found." });
+        //        }
+
+        //        return Json(new { success = true, eventStaff });
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return Json(new { success = false, message = "An error occurred while retrieving the contract." });
+        //    }
+        //}
+
         [HttpGet]
         public async Task<IActionResult> GetEventStaffById(long id)
         {
@@ -152,7 +171,7 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(new { success = false, message = "Contract not found." });
                 }
 
-                return Json(new { success = true, eventStaff });
+                return Json(new { success = true, eventStaff = eventStaff });
             }
             catch (Exception)
             {

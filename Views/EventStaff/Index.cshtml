@@ -1110,10 +1110,14 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             url: '/EventStaff/GetEventStaffById/' + contractId,
                 type: 'GET',
                 success: function (response) {
+                    debugger;
+                console.log(response);
                     if (response.success) {
                         debugger;
+                        alert(response);
                         var contract = response.eventStaff;
-                        var contractJson = JSON.stringify(contract)
+                    var contractJson = JSON.stringify(contract)
+
                         $('#hiddenId').val(contract.id);
                     
                              $('#StaffID').val(contract.staffID);
@@ -1126,8 +1130,17 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#StaffMiddleInitial').val(contract.staffMiddleInitial);
                             $('#StaffSSN').val(contract.staffSSN);
                             $('#StaffDOB').val(new Date(contract.staffDOB).toLocaleDateString('en-CA'));
-                            $('#EventOnCallYes').prop('checked', contract.eventOnCallStaff === 'true');
-                            $('#EventOnCallNo').prop('checked', contract.eventOnCallStaff === 'false');
+
+                    if (contract.eventOnCallStaff === 'false') {
+                        $('#eventOnCallNo').prop('checked', true).trigger('change');
+                        $('#eventOnCallSelectContainer').show();
+                        $('#EventOnCallStaffEvent').attr('required', 'required');
+                    } else {
+                        $('#eventOnCallYes').prop('checked', true).trigger('change');
+                        $('#eventOnCallSelectContainer').hide();
+                        $('#EventOnCallStaffEvent').removeAttr('required');
+                    }
+
                             $('#EventOnCallStaffEvent').val(contract.eventOnCallStaffEvent);
                             $('#licenseNumber0').val(contract.licenseNumber0);
                             $('#licenseState0').val(contract.licenseState0);
@@ -1148,22 +1161,31 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#ACLSCertNumber').val(contract.aclsCertNumber);
                             $('#CACApplicationProcessStatus').val(contract.cacApplicationProcessStatus);
                             $('#EmployerSubcontractor').val(contract.employerSubcontractor);
-                            $('#staffCACYes').prop('checked', contract.staffCAC === 'true');
-                            $('#staffCACNo').prop('checked', contract.staffCAC === 'false');
+
+                            if (contract.staffCAC === 'true') {
+                                $('#staffCACYes').prop('checked', true).trigger('change');
+                                $('#staffDoDContainer').show();
+                                $('#staffDoDID').attr('required', 'required');
+                            } else {
+                                $('#staffCACNo').prop('checked', true).trigger('change');
+                                $('#staffDoDContainer').hide();
+                                $('#staffDoDID').removeAttr('required');
+                            }
+
                             $('#staffDoDID').val(contract.staffDoDID);
                             $('#staffCellNumber').val(contract.staffCellNumber);
                             $('#staffPhone2').val(contract.staffPhone2);
                             $('#StaffEmail').val(contract.staffEmail);
                             $('#PrimaryAddress1').val(contract.primaryAddress1);
                             $('#PrimaryAddress2').val(contract.primaryAddress2);
-                            $('#primaryState').val(contract.primaryState).trigger('change');;
-                            $('#primaryCity').val(contract.primaryCity).trigger('change');;
-                            $('#primaryZipCode').val(contract.primaryZipCode);
+                            $('#primaryState').val(contract.primaryState).trigger('change');
+                            $('#primaryCity').val(contract.primaryCity).trigger('change');
+                            $('#primaryZipCode').val(contract.primaryZip);
                             $('#SecondaryAddress1').val(contract.secondaryAddress1);
                             $('#SecondaryAddress2').val(contract.secondaryAddress2);
-                            $('#secondaryState').val(contract.secondaryState).trigger('change');;
-                            $('#secondaryCity').val(contract.secondaryCity).trigger('change');;
-                            $('#secondaryZipCode').val(contract.secondaryZipCode);
+                            $('#secondaryState').val(contract.secondaryState).trigger('change');
+                            $('#secondaryCity').val(contract.secondaryCity).trigger('change');
+                            $('#secondaryZipCode').val(contract.secondaryZip);
                             $('#StaffContractAffiliation').val(contract.staffContractAffiliation);
                             $('#StaffInfoEnteredBy').val(contract.staffInfoEnteredBy);
 
@@ -1178,7 +1200,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         if (isViewButton) {
                             const controlIds = ['hiddenId','StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                            'EventOnCallYes', 'EventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
+                            'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
                             'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
@@ -1202,7 +1224,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         {
                             const controlIds = ['hiddenId','StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                            'EventOnCallYes', 'EventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
+                            'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
                             'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
@@ -1225,9 +1247,9 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         alert(response.message);  // Show error message
                     }
                 },
-                error: function () {
-                    alert('An error occurred while fetching contract data.');
-                }
+            error: function () {
+                alert('An error occurred while fetching contract data.');
+            }
             });
         });
 
@@ -1317,12 +1339,15 @@ function setStaffIdTextbox(staffId) {
     const yesRadio = document.getElementById('eventOnCallYes');
     const noRadio = document.getElementById('eventOnCallNo');
     const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
+    const eventOnCallStaffEvent = document.getElementById('EventOnCallStaffEvent');
 
     function toggleEventOnCallContainer() {
         if (noRadio.checked) {
             eventOnCallSelectContainer.style.display = 'block';
+            eventOnCallStaffEvent.setAttribute('required', 'required');
         } else {
             eventOnCallSelectContainer.style.display = 'none';
+            eventOnCallStaffEvent.removeAttribute('required');
         }
     }
 
@@ -1357,7 +1382,7 @@ function setStaffIdTextbox(staffId) {
 
             const controlIds = ['hiddenId','StartDate','StaffID',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                            'EventOnCallYes', 'EventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
+                            'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
                             'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
