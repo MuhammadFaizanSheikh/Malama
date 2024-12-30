@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using System.Configuration;
 using ExcelFilesCompiler.UnitOfWork;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -44,6 +45,14 @@ builder.Services.AddCors(options =>
                .AllowCredentials(); // Allow cookies and authentication
     });
 });
+
+//builder.Services.AddControllersWithViews()
+//    .AddRazorRuntimeCompilation()
+//    .AddJsonOptions(options =>
+//    {
+//        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//    });
+
 
 // Entity Framework and Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

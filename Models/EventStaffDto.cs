@@ -222,11 +222,6 @@ namespace ExcelToCsv.Models
 
         [Required]
         public DateTime LicenseExpiryDate { get; set; }
-
-        // Foreign key to EventStaffDto
-
-        //[JsonIgnore]
-        //public EventStaffDto? EventStaffDto { get; set; } // Navigation property
     }
 
 

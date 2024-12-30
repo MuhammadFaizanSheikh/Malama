@@ -967,6 +967,58 @@
         width: '100%'
     });
 
+    document.getElementById('addRowButton').addEventListener('click', function () {
+        const container = document.querySelector('.form-container');
+        const licenseRows = document.querySelectorAll('.license-row');
+
+        if (licenseRows.length < 5) {
+            const rowIndex = licenseRows.length;
+
+            const newRow = document.createElement('div');
+            newRow.classList.add('form-row', 'license-row');
+            newRow.style.display = 'flex';  // Ensure flexbox layout
+            newRow.style.justifyContent = 'space-between'; // Ensures equal spacing between columns
+            newRow.style.alignItems = 'center';  // Ensures columns are aligned vertically
+            newRow.style.width = '100%';  // Ensures the row takes up the full width
+
+            newRow.innerHTML = `
+                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                    <div class="form-group">
+                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" id="licenseNumber${rowIndex}" class="form-control" placeholder="License Number" required />
+                    </div>
+                </div>
+                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                    <div class="form-group">
+                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" id="licenseState${rowIndex}" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="State1">State1</option>
+                            <option value="State2">State2</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                    <div class="form-group">
+                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" id="licenseType${rowIndex}" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="Type1">Type1</option>
+                            <option value="Type2">Type2</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3" style="flex: 1; margin-right: 0;">
+                    <div class="form-group">
+                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" id="licenseExpiry${rowIndex}" type="date" class="form-control" required />
+                    </div>
+                </div>
+            `;
+
+            // Insert the new row before the "Add Another License" button
+            container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+        }
+    });
+
+
+
     document.addEventListener('DOMContentLoaded', function () {
         const phoneFields = ['StaffSSN'];
         phoneFields.forEach(function (fieldId) {
@@ -1110,13 +1162,8 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             url: '/EventStaff/GetEventStaffById/' + contractId,
                 type: 'GET',
                 success: function (response) {
-                    debugger;
-                console.log(response);
                     if (response.success) {
-                        debugger;
-                        alert(response);
                         var contract = response.eventStaff;
-                    var contractJson = JSON.stringify(contract)
 
                         $('#hiddenId').val(contract.id);
                     
@@ -1142,10 +1189,14 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                     }
 
                             $('#EventOnCallStaffEvent').val(contract.eventOnCallStaffEvent);
-                            $('#licenseNumber0').val(contract.licenseNumber0);
-                            $('#licenseState0').val(contract.licenseState0);
-                            $('#licenseType0').val(contract.licenseType0);
-                            $('#licenseExpiry0').val(new Date(contract.licenseExpiry0).toLocaleDateString('en-CA'));
+                        debugger;
+                    contract.licenses.forEach((license, index) => {
+                        // Dynamically set the values for each license control
+                        $('#licenseNumber' + index).val(license.licenseNumber);
+                        $('#licenseState' + index).val(license.licenseState);
+                        $('#licenseType' + index).val(license.licenseType);
+                        $('#licenseExpiry' + index).val(new Date(license.licenseExpiryDate).toLocaleDateString('en-CA'));
+                    });
                             $('#npi').val(contract.npi);
                             $('#dae').val(contract.dae);
                             $('#CredentialingProcessDate').val(new Date(contract.credentialingProcessDate).toLocaleDateString('en-CA'));
@@ -1524,56 +1575,7 @@ function setStaffIdTextbox(staffId) {
         }
     });
 
-    document.getElementById('addRowButton').addEventListener('click', function () {
-        const container = document.querySelector('.form-container');
-
-        const licenseRows = document.querySelectorAll('.license-row');
-
-        if (licenseRows.length < 5) {
-            const rowIndex = licenseRows.length;
-
-            const newRow = document.createElement('div');
-            newRow.classList.add('form-row', 'license-row');
-            newRow.innerHTML = `
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-label">License Number</label>
-                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-label">License State</label>
-                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                            <option value="">Select State</option>
-                            <option value="State1">State1</option>
-                            <option value="State2">State2</option>
-                            <!-- Add more states here -->
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-label">License Type</label>
-                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                            <option value="">Select Type</option>
-                            <option value="Type1">Type1</option>
-                            <option value="Type2">Type2</option>
-                            <!-- Add more types here -->
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" class="form-label">License Expiry</label>
-                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
-                    </div>
-                </div>
-            `;
-
-            container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
-        }
-    });
+    
 
 
     // document.getElementById('add-affiliation-btn').addEventListener('click', function () {

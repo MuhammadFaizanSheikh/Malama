@@ -905,6 +905,9 @@ namespace ExcelFilesCompiler.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("EventStaffDtoId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("EventStaffId")
                         .HasColumnType("bigint");
 
@@ -928,7 +931,7 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventStaffId");
+                    b.HasIndex("EventStaffDtoId");
 
                     b.ToTable("StaffLicense");
                 });
@@ -1079,13 +1082,9 @@ namespace ExcelFilesCompiler.Migrations
 
             modelBuilder.Entity("ExcelToCsv.Models.LicenseInfoDTO", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.EventStaffDto", "EventStaffDto")
+                    b.HasOne("ExcelToCsv.Models.EventStaffDto", null)
                         .WithMany("Licenses")
-                        .HasForeignKey("EventStaffId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EventStaffDto");
+                        .HasForeignKey("EventStaffDtoId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExcelFilesCompiler.Migrations
 {
     /// <inheritdoc />
-    public partial class Test1 : Migration
+    public partial class test1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -417,17 +417,17 @@ namespace ExcelFilesCompiler.Migrations
                     LicenseNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EventStaffDtoId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StaffLicense", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffLicense_EventStaff_EventStaffId",
-                        column: x => x.EventStaffId,
+                        name: "FK_StaffLicense_EventStaff_EventStaffDtoId",
+                        column: x => x.EventStaffDtoId,
                         principalTable: "EventStaff",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -470,9 +470,9 @@ namespace ExcelFilesCompiler.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StaffLicense_EventStaffId",
+                name: "IX_StaffLicense_EventStaffDtoId",
                 table: "StaffLicense",
-                column: "EventStaffId");
+                column: "EventStaffDtoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubContractor_ContractId",
