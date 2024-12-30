@@ -417,17 +417,17 @@ namespace ExcelFilesCompiler.Migrations
                     LicenseNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EventStaffDtoId = table.Column<long>(type: "bigint", nullable: true)
+                    LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StaffLicense", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffLicense_EventStaff_EventStaffDtoId",
-                        column: x => x.EventStaffDtoId,
+                        name: "FK_StaffLicense_EventStaff_EventStaffId",
+                        column: x => x.EventStaffId,
                         principalTable: "EventStaff",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -470,9 +470,9 @@ namespace ExcelFilesCompiler.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StaffLicense_EventStaffDtoId",
+                name: "IX_StaffLicense_EventStaffId",
                 table: "StaffLicense",
-                column: "EventStaffDtoId");
+                column: "EventStaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubContractor_ContractId",

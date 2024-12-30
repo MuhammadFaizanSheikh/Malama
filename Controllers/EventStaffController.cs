@@ -20,7 +20,7 @@ namespace ExcelFilesCompiler.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<EventStaffDto> eventStaffList = new List<EventStaffDto>();
+            List<EventStaff> eventStaffList = new List<EventStaff>();
 
             try
             {
@@ -32,7 +32,7 @@ namespace ExcelFilesCompiler.Controllers
                 // Optionally log the exception
             }
 
-            var eventStaff = new EventStaffDto
+            var eventStaff = new EventStaff
             {
                 //StartDate = DateTime.Now,
                 //StaffLastName = "Doe",

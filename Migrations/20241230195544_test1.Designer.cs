@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241230185923_test1")]
+    [Migration("20241230195544_test1")]
     partial class test1
     {
         /// <inheritdoc />
@@ -447,7 +447,7 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("SubContractor");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.EventStaffDto", b =>
+            modelBuilder.Entity("ExcelToCsv.Models.EventStaff", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -908,9 +908,6 @@ namespace ExcelFilesCompiler.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("EventStaffDtoId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("EventStaffId")
                         .HasColumnType("bigint");
 
@@ -934,7 +931,7 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventStaffDtoId");
+                    b.HasIndex("EventStaffId");
 
                     b.ToTable("StaffLicense");
                 });
@@ -1085,9 +1082,11 @@ namespace ExcelFilesCompiler.Migrations
 
             modelBuilder.Entity("ExcelToCsv.Models.LicenseInfoDTO", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.EventStaffDto", null)
+                    b.HasOne("ExcelToCsv.Models.EventStaff", null)
                         .WithMany("Licenses")
-                        .HasForeignKey("EventStaffDtoId");
+                        .HasForeignKey("EventStaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1141,7 +1140,7 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.EventStaffDto", b =>
+            modelBuilder.Entity("ExcelToCsv.Models.EventStaff", b =>
                 {
                     b.Navigation("Licenses");
                 });

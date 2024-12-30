@@ -8,7 +8,7 @@ namespace ExcelFilesCompiler.UnitOfWork
     {
         IGenericRepository<ContractDetails> ContractDetails { get; }
         IGenericRepository<SubContractorInfoDto> SubContractors { get; }
-        IGenericRepository<EventStaffDto> EventStaff { get; }
+        IGenericRepository<EventStaff> EventStaff { get; }
         Task SaveAsync();
     }
 }

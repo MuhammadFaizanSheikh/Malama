@@ -19,7 +19,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResponseDto> AddContractAsync(EventStaffDto evebtStaff, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(EventStaff evebtStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
@@ -44,10 +44,10 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<List<EventStaffDto>> GetAllEventStaff()
+        public async Task<List<EventStaff>> GetAllEventStaff()
         {
             var responseDto = new ResponseDto();
-            List<EventStaffDto> eventStaff = new List<EventStaffDto>(); // Initialize contracts outside try-catch
+            List<EventStaff> eventStaff = new List<EventStaff>(); // Initialize contracts outside try-catch
 
             try
             {
@@ -77,7 +77,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         //    return eventStaff;
         //}
-        public async Task<EventStaffDto> GetEventStaffById(long id)
+        public async Task<EventStaff> GetEventStaffById(long id)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ResponseDto> UpdateContract(EventStaffDto eventStaff, string loggedinUserName)
+        public async Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 

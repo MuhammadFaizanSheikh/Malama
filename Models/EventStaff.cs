@@ -7,12 +7,12 @@ namespace ExcelToCsv.Models
 {
     public class EventStaffViewModel
     {
-        public List<EventStaffDto>? EventStaff { get; set; }
-        public EventStaffDto SingleEventStaff { get; set; }
+        public List<EventStaff>? EventStaff { get; set; }
+        public EventStaff SingleEventStaff { get; set; }
     }
 
     [Table("EventStaff")]
-    public class EventStaffDto : GenericProperties
+    public class EventStaff : GenericProperties
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -203,7 +203,7 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        [ForeignKey("EventStaffId")]
+        [ForeignKey("EventStaff")]
 
         public long EventStaffId { get; set; }
 
@@ -244,6 +244,6 @@ namespace ExcelToCsv.Models
         [Required]
         public string Rewards { get; set; }
         [ForeignKey("EventStaffId")]
-        public EventStaffDto EventStaff { get; set; }
+        public EventStaff EventStaff { get; set; }
     }
 }

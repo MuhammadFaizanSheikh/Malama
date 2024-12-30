@@ -968,28 +968,34 @@
     });
 
     document.getElementById('addRowButton').addEventListener('click', function () {
+    // Call the function without data to add a new row
+    manageLicenseRows();
+    });
+
+    function manageLicenseRows(licenses = []) {
         const container = document.querySelector('.form-container');
         const licenseRows = document.querySelectorAll('.license-row');
 
-        if (licenseRows.length < 5) {
+        // If we are adding new rows and there are fewer than 5, allow adding new rows
+        if (licenses.length === 0 && licenseRows.length < 5) {
             const rowIndex = licenseRows.length;
 
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
-            newRow.style.display = 'flex';  // Ensure flexbox layout
-            newRow.style.justifyContent = 'space-between'; // Ensures equal spacing between columns
-            newRow.style.alignItems = 'center';  // Ensures columns are aligned vertically
-            newRow.style.width = '100%';  // Ensures the row takes up the full width
+            newRow.style.display = 'flex';
+            newRow.style.justifyContent = 'space-between';
+            newRow.style.alignItems = 'center';
+            newRow.style.width = '100%';
 
             newRow.innerHTML = `
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" id="licenseNumber${rowIndex}" class="form-control" placeholder="License Number" required />
+                        <input id="licenseNumber${rowIndex}" class="form-control" placeholder="License Number" required />
                     </div>
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseState" id="licenseState${rowIndex}" class="form-control" required>
+                        <select id="licenseState${rowIndex}" class="form-control" required>
                             <option value="">Select State</option>
                             <option value="State1">State1</option>
                             <option value="State2">State2</option>
@@ -998,7 +1004,7 @@
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <select asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseType" id="licenseType${rowIndex}" class="form-control" required>
+                        <select id="licenseType${rowIndex}" class="form-control" required>
                             <option value="">Select Type</option>
                             <option value="Type1">Type1</option>
                             <option value="Type2">Type2</option>
@@ -1007,7 +1013,7 @@
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 0;">
                     <div class="form-group">
-                        <input asp-for="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" id="licenseExpiry${rowIndex}" type="date" class="form-control" required />
+                        <input id="licenseExpiry${rowIndex}" type="date" class="form-control" required />
                     </div>
                 </div>
             `;
@@ -1015,7 +1021,55 @@
             // Insert the new row before the "Add Another License" button
             container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
         }
-    });
+        else if (licenses.length > 0) {
+            // If licenses data exists (editing scenario), populate the rows with the data
+            // Clear existing rows
+            licenseRows.forEach(row => row.remove());
+
+            licenses.forEach((license, index) => {
+                const newRow = document.createElement('div');
+                newRow.classList.add('form-row', 'license-row');
+                newRow.style.display = 'flex';
+                newRow.style.justifyContent = 'space-between';
+                newRow.style.alignItems = 'center';
+                newRow.style.width = '100%';
+
+                newRow.innerHTML = `
+                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                        <div class="form-group">
+                            <input id="licenseNumber${index}" class="form-control" value="${license.licenseNumber}" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                        <div class="form-group">
+                            <select id="licenseState${index}" class="form-control" required>
+                                <option value="">Select State</option>
+                                <option value="State1" ${license.licenseState === "State1" ? "selected" : ""}>State1</option>
+                                <option value="State2" ${license.licenseState === "State2" ? "selected" : ""}>State2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
+                        <div class="form-group">
+                            <select id="licenseType${index}" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="Type1" ${license.licenseType === "Type1" ? "selected" : ""}>Type1</option>
+                                <option value="Type2" ${license.licenseType === "Type2" ? "selected" : ""}>Type2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3" style="flex: 1; margin-right: 0;">
+                        <div class="form-group">
+                            <input id="licenseExpiry${index}" type="date" class="form-control" value="${new Date(license.licenseExpiryDate).toLocaleDateString('en-CA')}" required />
+                        </div>
+                    </div>
+                `;
+
+                // Insert the populated row before the "Add Another License" button
+                container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+            });
+        }
+    }
 
 
 
@@ -1190,13 +1244,14 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
 
                             $('#EventOnCallStaffEvent').val(contract.eventOnCallStaffEvent);
                         debugger;
-                    contract.licenses.forEach((license, index) => {
-                        // Dynamically set the values for each license control
-                        $('#licenseNumber' + index).val(license.licenseNumber);
-                        $('#licenseState' + index).val(license.licenseState);
-                        $('#licenseType' + index).val(license.licenseType);
-                        $('#licenseExpiry' + index).val(new Date(license.licenseExpiryDate).toLocaleDateString('en-CA'));
-                    });
+                    manageLicenseRows(contract.licenses);
+                    // contract.licenses.forEach((license, index) => {
+                    //     // Dynamically set the values for each license control
+                    //     $('#licenseNumber' + index).val(license.licenseNumber);
+                    //     $('#licenseState' + index).val(license.licenseState);
+                    //     $('#licenseType' + index).val(license.licenseType);
+                    //     $('#licenseExpiry' + index).val(new Date(license.licenseExpiryDate).toLocaleDateString('en-CA'));
+                    // });
                             $('#npi').val(contract.npi);
                             $('#dae').val(contract.dae);
                             $('#CredentialingProcessDate').val(new Date(contract.credentialingProcessDate).toLocaleDateString('en-CA'));
