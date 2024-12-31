@@ -183,5 +183,15 @@ namespace ExcelFilesCompiler.Repositories.Services
 
             return await query.Where(predicate).ToListAsync();
         }
+
+        public async Task DeleteAgainstFieldAsync(object id, string idPropertyName)
+        {
+            // Fetch the entity using the non-primary key (idPropertyName)
+            var entity = await _dbSet.FirstOrDefaultAsync(e => EF.Property<object>(e, idPropertyName).Equals(id));
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+            }
+        }
     }
 }
