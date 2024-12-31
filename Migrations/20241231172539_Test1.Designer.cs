@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241230195544_test1")]
-    partial class test1
+    [Migration("20241231172539_Test1")]
+    partial class Test1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -165,13 +165,13 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var eventStaff = await _eventStaffService.GetEventStaffById(id);
-                if (eventStaff == null)
+                var combinedData = await _eventStaffService.GetEventStaffById(id);
+                if (combinedData == null)
                 {
                     return Json(new { success = false, message = "Contract not found." });
                 }
 
-                return Json(new { success = true, eventStaff = eventStaff });
+                return Json(new { success = true, combinedData = combinedData });
             }
             catch (Exception)
             {

@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelToCsv.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExcelFilesCompiler.UnitOfWork
 {
@@ -21,6 +22,12 @@ namespace ExcelFilesCompiler.UnitOfWork
             EventStaff = new GenericRepository<EventStaff>(_context);
             StaffLicenses = new GenericRepository<LicenseInfoDTO>(_context);
         }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync();
+        }
+
 
         public async Task SaveAsync()
         {

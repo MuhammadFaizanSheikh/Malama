@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelToCsv.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExcelFilesCompiler.UnitOfWork
 {
@@ -10,6 +11,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<SubContractorInfoDto> SubContractors { get; }
         IGenericRepository<EventStaff> EventStaff { get; }
         IGenericRepository<LicenseInfoDTO> StaffLicenses { get; }
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }
 }

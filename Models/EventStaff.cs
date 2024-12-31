@@ -11,6 +11,13 @@ namespace ExcelToCsv.Models
         public EventStaff SingleEventStaff { get; set; }
     }
 
+    public class CombinedEventStaffSubContractorAndContractDto
+    {
+        public EventStaff EventStaff { get; set; }
+        public SubContractorInfoDto SubContractor { get; set; }
+        public ContractDetails ContractDetails { get; set; }
+    }
+
     [Table("EventStaff")]
     public class EventStaff : GenericProperties
     {
@@ -47,6 +54,8 @@ namespace ExcelToCsv.Models
         [Required(ErrorMessage = "StaffSSN is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffSSN cannot be only white spaces.")]
         public string StaffSSN { get; set; }
+
+        [Required(ErrorMessage = "StaffDOB is required.")]
         public DateTime StaffDOB { get; set; }
 
         //public ICollection<StaffRoleDto> StaffRoles { get; set; } = new List<StaffRoleDto>();
@@ -203,7 +212,7 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        [ForeignKey("EventStaff")]
+        //[ForeignKey("EventStaff")]
 
         public long EventStaffId { get; set; }
 

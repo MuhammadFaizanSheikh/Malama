@@ -387,7 +387,7 @@
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffSSN" class="form-label">Staff SSN</label>
             <div class="input-group">
-                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" maxLength="11" class="form-control"
+                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" minLength="11" class="form-control"
                        placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
                 <span class="input-group-text" onclick="togglePasswordVisibility('StaffSSN', 'toggleSsnIcon')" style="cursor: pointer;">
                     <i id="toggleSsnIcon" class="fas fa-eye"></i>
@@ -539,11 +539,11 @@
 
             <div class="form-group">
                 <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
-                <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" maxlength="10" inputmode="numeric" pattern="\d*" />
+                <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" minlength="10" maxlength="10" inputmode="numeric" pattern="\d*" />
             </div>
             <div class="form-group">
                 <label asp-for="SingleEventStaff.DAE" class="form-label">DAE</label>
-                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" maxLength="8" required />
+                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" minlength="8" maxLength="8" required />
             </div>
         </div>
     </div>
@@ -581,7 +581,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" class="form-control" rows="3"></textarea>
+                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" class="form-control" rows="3" required></textarea>
            @*  <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
                 <option value="Type1">Type1</option>
                 <option value="Type2">Type2</option>
@@ -655,18 +655,18 @@
         <div class="col-md-6" id="staffDoDContainer" style="display: none;">
             <!-- Hidden by default -->
             <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
-            <input asp-for="SingleEventStaff.StaffDoDID" maxLength="10" class="form-control" id="staffDoDID" />
+            <input asp-for="SingleEventStaff.StaffDoDID" minLength="10" maxLength="10" class="form-control" id="staffDoDID" />
         </div>
     </div>
 
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
-            <input asp-for="SingleEventStaff.StaffCellNumber"  id="staffCellNumber" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+            <input asp-for="SingleEventStaff.StaffCellNumber"  id="staffCellNumber" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffPhone2" class="form-label">Staff Phone 2</label>
-            <input asp-for="SingleEventStaff.StaffPhone2" id="staffPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" />
+            <input asp-for="SingleEventStaff.StaffPhone2" id="staffPhone2" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" />
         </div>
     </div>
 
@@ -766,7 +766,7 @@
 
             <div class="col-md-6">
                 <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
-                <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" readonly />
+                <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" required />
             </div>
         </div>
 
@@ -923,7 +923,7 @@
             allowClear: true
         });
 
-    //      $('#StaffID').val('123456');
+         
     //      $('#StartDate').val('1980-01-01');
     // $('#StaffStatus').val('Active');
     // $('#StaffLastName').val('Doe');
@@ -944,13 +944,13 @@
     // $('#HistoricalCredentialingDate').val('1980-01-01');
     // $('#StaffEmail').val('john.doe@example.com');
     // $('#PrimaryAddress1').val('123 Main St');
-    // $('#PrimaryCity').val('New York');
-    // $('#PrimaryState').val('NY');
-    // $('#PrimaryZip').val('10001');
+    // $('#PrimaryState').val('Alabama');
+    // $('#PrimaryCity').val('Alpine');
+    // $('#PrimaryZip').val('35014');
     // $('#SecondaryAddress1').val('456 Elm St');
-    // $('#SecondaryCity').val('Brooklyn');
-    // $('#SecondaryState').val('NY');
-    // $('#SecondaryZip').val('11201');
+    // $('#SecondaryState').val('Kansas');
+    // $('#SecondaryCity').val('Anthony');
+    // $('#SecondaryZip').val('67003');
     // $('#StaffContractAffiliation').val('Contractor');
     // $('#StaffInfoEnteredBy').val('Admin');
 
@@ -961,6 +961,48 @@
     // $('#staffCellNumber').val('123-123-1234');
     // $('#staffPhone2').val('123-123-1234');
     });
+
+    document.getElementById("submitBtn").addEventListener("click", function (event) {
+            var form = document.querySelector('form'); // Get the form element
+
+            if (!form.reportValidity()) {
+                return false;
+            }
+            
+            
+            if (!validateCertificationFields()) {
+                event.preventDefault();
+            }
+        });
+
+        function validateCertificationFields() {
+            const blsDate = document.getElementById('BLSCertDate').value;
+            const blsNumber = document.getElementById('BLSCertNumber').value;
+            const aclsDate = document.getElementById('ACLSCertDate').value;
+            const aclsNumber = document.getElementById('ACLSCertNumber').value;
+
+            const isBLSFilled = blsDate && blsNumber;
+            const isACLSFilled = aclsDate && aclsNumber;
+
+            const blsErrorSpan = document.getElementById('BLSCertError');
+            const aclsErrorSpan = document.getElementById('ACLSCertError');
+
+            blsErrorSpan.style.display = 'none';
+            aclsErrorSpan.style.display = 'none';
+
+            if (!isBLSFilled && !isACLSFilled) {
+                const errorMessage = 'Either BLS or ACLS certification must be completed.';
+                blsErrorSpan.textContent = errorMessage;
+                blsErrorSpan.style.display = 'block';
+
+                aclsErrorSpan.textContent = errorMessage;
+                aclsErrorSpan.style.display = 'block';
+
+                return false; // Validation failed
+            }
+
+            return true; // Validation passed
+        }
 
     $('#EmployerSubcontractor').select2({
         theme: 'bootstrap-5',
@@ -979,8 +1021,6 @@
         // If we are adding new rows and there are fewer than 5, allow adding new rows
         if (licenses.length === 0 && licenseRows.length < 5) {
             const rowIndex = licenseRows.length;
-            alert(rowIndex)
-            debugger;
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
             newRow.style.display = 'flex';
@@ -1183,13 +1223,17 @@
         $.ajax({
             url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
             type: 'GET',
-            data: { companyName: selectedText }, // Send selected text as a parameter
+            data: { companyName: selectedText },
             success: function (response) {
                 if (response.success) {
-                    bindMultiSelectDropdown(response.data.contractDetails); // Pass the contract details to the binding function
-                    setStaffIdTextbox(response.data.staffId); // Update the StaffID textbox
+                    debugger;
+                    bindMultiSelectDropdown(response.data.contractDetails);
+                    debugger;
+                    if (!$('#hiddenId').val()) {
+                        setStaffIdTextbox(response.data.staffId);
+                    }
                 } else {
-                    alert(response.message); // Show the error message
+                    alert(response.message);
                 }
             },
             error: function () {
@@ -1218,22 +1262,36 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                 type: 'GET',
                 success: function (response) {
                     if (response.success) {
-                        var contract = response.eventStaff;
-
-                        $('#hiddenId').val(contract.id);
+                        var combinedData = response.combinedData;
+                        var eventStaff = combinedData.eventStaff;
+                        var subContractor = combinedData.subContractor;
+                        const jsonString = JSON.stringify(response.combinedData);
+                        $('#hiddenId').val(eventStaff.id);
                     
-                             $('#StaffID').val(contract.staffID);
-                               let eventStartDate = new Date(contract.startDate);
+                        var selectedData = {
+                            id: subContractor.id,
+                            text: subContractor.companyMainName
+                        };
+
+                        if ($("#EmployerSubcontractor").find(`option[value='${selectedData.id}']`).length === 0) {
+                            var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                            $('#EmployerSubcontractor').append(newOption);
+                        } else {
+                            $('#EmployerSubcontractor').val(selectedData.id);
+                        }
+
+                             $('#StaffID').val(eventStaff.staffID);
+                               let eventStartDate = new Date(eventStaff.startDate);
                         let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
                             $('#StartDate').val(formattedStartDate);
-                             $('#StaffStatus').val(contract.staffStatus);
-                            $('#StaffLastName').val(contract.staffLastName);
-                            $('#StaffFirstName').val(contract.staffFirstName);
-                            $('#StaffMiddleInitial').val(contract.staffMiddleInitial);
-                            $('#StaffSSN').val(contract.staffSSN);
-                            $('#StaffDOB').val(new Date(contract.staffDOB).toLocaleDateString('en-CA'));
+                             $('#StaffStatus').val(eventStaff.staffStatus);
+                            $('#StaffLastName').val(eventStaff.staffLastName);
+                            $('#StaffFirstName').val(eventStaff.staffFirstName);
+                            $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
+                            $('#StaffSSN').val(eventStaff.staffSSN);
+                            $('#StaffDOB').val(new Date(eventStaff.staffDOB).toLocaleDateString('en-CA'));
 
-                    if (contract.eventOnCallStaff === 'false') {
+                    if (eventStaff.eventOnCallStaff === 'false') {
                         $('#eventOnCallNo').prop('checked', true).trigger('change');
                         $('#eventOnCallSelectContainer').show();
                         $('#EventOnCallStaffEvent').attr('required', 'required');
@@ -1243,33 +1301,26 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         $('#EventOnCallStaffEvent').removeAttr('required');
                     }
 
-                            $('#EventOnCallStaffEvent').val(contract.eventOnCallStaffEvent);
-                        debugger;
-                    manageLicenseRows(contract.licenses);
-                    // contract.licenses.forEach((license, index) => {
-                    //     // Dynamically set the values for each license control
-                    //     $('#licenseNumber' + index).val(license.licenseNumber);
-                    //     $('#licenseState' + index).val(license.licenseState);
-                    //     $('#licenseType' + index).val(license.licenseType);
-                    //     $('#licenseExpiry' + index).val(new Date(license.licenseExpiryDate).toLocaleDateString('en-CA'));
-                    // });
-                            $('#npi').val(contract.npi);
-                            $('#dae').val(contract.dae);
-                            $('#CredentialingProcessDate').val(new Date(contract.credentialingProcessDate).toLocaleDateString('en-CA'));
-                            $('#HistoricalCredentialingDate').val(new Date(contract.historicalCredentialingDate).toLocaleDateString('en-CA'));
-                            $('#DAWSONInternalCredentialingCompleteDate').val(new Date(contract.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
-                            $('#OnboardingTrainingCompleteYes').prop('checked', contract.onboardingTrainingComplete === 'true');
-                            $('#OnboardingTrainingCompleteNo').prop('checked', contract.onboardingTrainingComplete === 'false');
-                            $('#OutstandingTrainings').val(contract.outstandingTrainings);
-                            $('#BackgroundCheckConcerns').val(contract.backgroundCheckConcerns);
-                            $('#BLSCertDate').val(new Date(contract.blsCertDate).toLocaleDateString('en-CA'));
-                            $('#BLSCertNumber').val(contract.blsCertNumber);
-                            $('#ACLSCertDate').val(new Date(contract.aclsCertDate).toLocaleDateString('en-CA'));
-                            $('#ACLSCertNumber').val(contract.aclsCertNumber);
-                            $('#CACApplicationProcessStatus').val(contract.cacApplicationProcessStatus);
-                            $('#EmployerSubcontractor').val(contract.employerSubcontractor);
+                            $('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
+                    manageLicenseRows(eventStaff.licenses);
+                    
+                            $('#npi').val(eventStaff.npi);
+                            $('#dae').val(eventStaff.dae);
+                            $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
+                            $('#HistoricalCredentialingDate').val(new Date(eventStaff.historicalCredentialingDate).toLocaleDateString('en-CA'));
+                            $('#DAWSONInternalCredentialingCompleteDate').val(new Date(eventStaff.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
+                            $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
+                            $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
+                            $('#OutstandingTrainings').val(eventStaff.outstandingTrainings);
+                            $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
+                            $('#BLSCertDate').val(new Date(eventStaff.blsCertDate).toLocaleDateString('en-CA'));
+                            $('#BLSCertNumber').val(eventStaff.blsCertNumber);
+                            $('#ACLSCertDate').val(new Date(eventStaff.aclsCertDate).toLocaleDateString('en-CA'));
+                            $('#ACLSCertNumber').val(eventStaff.aclsCertNumber);
+                            $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
+                            $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
 
-                            if (contract.staffCAC === 'true') {
+                            if (eventStaff.staffCAC === 'true') {
                                 $('#staffCACYes').prop('checked', true).trigger('change');
                                 $('#staffDoDContainer').show();
                                 $('#staffDoDID').attr('required', 'required');
@@ -1279,22 +1330,22 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                                 $('#staffDoDID').removeAttr('required');
                             }
 
-                            $('#staffDoDID').val(contract.staffDoDID);
-                            $('#staffCellNumber').val(contract.staffCellNumber);
-                            $('#staffPhone2').val(contract.staffPhone2);
-                            $('#StaffEmail').val(contract.staffEmail);
-                            $('#PrimaryAddress1').val(contract.primaryAddress1);
-                            $('#PrimaryAddress2').val(contract.primaryAddress2);
-                            $('#primaryState').val(contract.primaryState).trigger('change');
-                            $('#primaryCity').val(contract.primaryCity).trigger('change');
-                            $('#primaryZipCode').val(contract.primaryZip);
-                            $('#SecondaryAddress1').val(contract.secondaryAddress1);
-                            $('#SecondaryAddress2').val(contract.secondaryAddress2);
-                            $('#secondaryState').val(contract.secondaryState).trigger('change');
-                            $('#secondaryCity').val(contract.secondaryCity).trigger('change');
-                            $('#secondaryZipCode').val(contract.secondaryZip);
-                            $('#StaffContractAffiliation').val(contract.staffContractAffiliation);
-                            $('#StaffInfoEnteredBy').val(contract.staffInfoEnteredBy);
+                            $('#staffDoDID').val(eventStaff.staffDoDID);
+                            $('#staffCellNumber').val(eventStaff.staffCellNumber);
+                            $('#staffPhone2').val(eventStaff.staffPhone2);
+                            $('#StaffEmail').val(eventStaff.staffEmail);
+                            $('#PrimaryAddress1').val(eventStaff.primaryAddress1);
+                            $('#PrimaryAddress2').val(eventStaff.primaryAddress2);
+                            $('#primaryState').val(eventStaff.primaryState).trigger('change');
+                            $('#primaryCity').val(eventStaff.primaryCity).trigger('change');
+                            $('#primaryZipCode').val(eventStaff.primaryZip);
+                            $('#SecondaryAddress1').val(eventStaff.secondaryAddress1);
+                            $('#SecondaryAddress2').val(eventStaff.secondaryAddress2);
+                            $('#secondaryState').val(eventStaff.secondaryState).trigger('change');
+                            $('#secondaryCity').val(eventStaff.secondaryCity).trigger('change');
+                            $('#secondaryZipCode').val(eventStaff.secondaryZip);
+                            $('#StaffContractAffiliation').val(eventStaff.staffContractAffiliation);
+                            $('#StaffInfoEnteredBy').val(eventStaff.staffInfoEnteredBy);
 
 
                              // Show the form and hide the table
@@ -1361,7 +1412,6 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
         });
 
         function formatDateField(dateValue) {
-            debugger;
                 if (!dateValue) {
                     return '';
                 }
@@ -1570,47 +1620,7 @@ function setStaffIdTextbox(staffId) {
 
         
 
-        document.getElementById("submitBtn").addEventListener("click", function (event) {
-            var form = document.querySelector('form'); // Get the form element
-
-            if (!form.reportValidity()) {
-                return false;
-            }
-            
-            
-            if (!validateCertificationFields()) {
-                e.preventDefault();
-            }
-        });
-
-        function validateCertificationFields() {
-            const blsDate = document.getElementById('BLSCertDate').value;
-            const blsNumber = document.getElementById('BLSCertNumber').value;
-            const aclsDate = document.getElementById('ACLSCertDate').value;
-            const aclsNumber = document.getElementById('ACLSCertNumber').value;
-
-            const isBLSFilled = blsDate && blsNumber;
-            const isACLSFilled = aclsDate && aclsNumber;
-
-            const blsErrorSpan = document.getElementById('BLSCertError');
-            const aclsErrorSpan = document.getElementById('ACLSCertError');
-
-            blsErrorSpan.style.display = 'none';
-            aclsErrorSpan.style.display = 'none';
-
-            if (!isBLSFilled && !isACLSFilled) {
-                const errorMessage = 'Either BLS or ACLS certification must be completed.';
-                blsErrorSpan.textContent = errorMessage;
-                blsErrorSpan.style.display = 'block';
-
-                aclsErrorSpan.textContent = errorMessage;
-                aclsErrorSpan.style.display = 'block';
-
-                return false; // Validation failed
-            }
-
-            return true; // Validation passed
-        }
+        
 
     document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
         event.preventDefault();

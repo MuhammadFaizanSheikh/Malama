@@ -7,7 +7,7 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<ResponseDto> AddContractAsync(EventStaff evebtStaff, string loggedinUserName);
         Task<List<EventStaff>> GetAllEventStaff();
-        Task<EventStaff> GetEventStaffById(long id);
+        Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id);
         Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName);
     }
 }

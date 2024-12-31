@@ -19,6 +19,7 @@ namespace ExcelFilesCompiler
 
         public DbSet<ContractDetails> ContractDetails { get; set; }
         public DbSet<EventStaff> EventStaff { get; set; }
+        public DbSet<LicenseInfoDTO> EventStaffLicense { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
