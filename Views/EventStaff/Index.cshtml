@@ -979,7 +979,8 @@
         // If we are adding new rows and there are fewer than 5, allow adding new rows
         if (licenses.length === 0 && licenseRows.length < 5) {
             const rowIndex = licenseRows.length;
-
+            alert(rowIndex)
+            debugger;
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
             newRow.style.display = 'flex';
@@ -990,12 +991,12 @@
             newRow.innerHTML = `
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <input id="licenseNumber${rowIndex}" class="form-control" placeholder="License Number" required />
+                                <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
                     </div>
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <select id="licenseState${rowIndex}" class="form-control" required>
+                                <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
                             <option value="">Select State</option>
                             <option value="State1">State1</option>
                             <option value="State2">State2</option>
@@ -1004,7 +1005,7 @@
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                     <div class="form-group">
-                        <select id="licenseType${rowIndex}" class="form-control" required>
+                                <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
                             <option value="">Select Type</option>
                             <option value="Type1">Type1</option>
                             <option value="Type2">Type2</option>
@@ -1013,7 +1014,7 @@
                 </div>
                 <div class="col-md-3" style="flex: 1; margin-right: 0;">
                     <div class="form-group">
-                        <input id="licenseExpiry${rowIndex}" type="date" class="form-control" required />
+                                <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
                     </div>
                 </div>
             `;
@@ -1037,12 +1038,12 @@
                 newRow.innerHTML = `
                     <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                         <div class="form-group">
-                            <input id="licenseNumber${index}" class="form-control" value="${license.licenseNumber}" required />
+                                    <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" class="form-control" value="${license.licenseNumber}" required />
                         </div>
                     </div>
                     <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                         <div class="form-group">
-                            <select id="licenseState${index}" class="form-control" required>
+                                    <select id="licenseState${index}"  name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
                                 <option value="">Select State</option>
                                 <option value="State1" ${license.licenseState === "State1" ? "selected" : ""}>State1</option>
                                 <option value="State2" ${license.licenseState === "State2" ? "selected" : ""}>State2</option>
@@ -1051,7 +1052,7 @@
                     </div>
                     <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                         <div class="form-group">
-                            <select id="licenseType${index}" class="form-control" required>
+                                    <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
                                 <option value="">Select Type</option>
                                 <option value="Type1" ${license.licenseType === "Type1" ? "selected" : ""}>Type1</option>
                                 <option value="Type2" ${license.licenseType === "Type2" ? "selected" : ""}>Type2</option>
@@ -1060,7 +1061,7 @@
                     </div>
                     <div class="col-md-3" style="flex: 1; margin-right: 0;">
                         <div class="form-group">
-                            <input id="licenseExpiry${index}" type="date" class="form-control" value="${new Date(license.licenseExpiryDate).toLocaleDateString('en-CA')}" required />
+                                    <input id="licenseExpiry${index}"  name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" value="${new Date(license.licenseExpiryDate).toLocaleDateString('en-CA')}" required />
                         </div>
                     </div>
                 `;
