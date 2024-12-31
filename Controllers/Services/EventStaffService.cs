@@ -102,9 +102,10 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 eventStaff.UpdatedBy = loggedinUserName;
                 eventStaff.UpdatedOn = DateTime.Now;
+                await _unitOfWork.StaffLicenses.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
                 responseDto.Success = true;
-                responseDto.Message = "Contract updated successfully!";
+                responseDto.Message = "EventStaff updated successfully!";
             }
             catch (Exception ex)
             {
