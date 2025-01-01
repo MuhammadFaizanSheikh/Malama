@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ExcelFilesCompiler.Repositories.Services

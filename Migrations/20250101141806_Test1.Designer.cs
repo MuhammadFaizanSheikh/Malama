@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241231172539_Test1")]
+    [Migration("20250101141806_Test1")]
     partial class Test1
     {
         /// <inheritdoc />
@@ -442,8 +442,6 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContractId");
-
                     b.ToTable("SubContractor");
                 });
 
@@ -574,9 +572,6 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired()
                         .HasMaxLength(12)
                         .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("StaffContractAffiliation")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StaffDOB")
                         .HasColumnType("datetime2");
@@ -936,6 +931,25 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("StaffLicense");
                 });
 
+            modelBuilder.Entity("ExcelToCsv.Models.StaffContractAffiliation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ContractId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EventStaffId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StaffContractAffiliation");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -1067,17 +1081,6 @@ namespace ExcelFilesCompiler.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractorInfoDto", b =>
-                {
-                    b.HasOne("ExcelFilesCompiler.Models.ContractDetails", "ContractDetails")
-                        .WithMany()
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ContractDetails");
                 });
 
             modelBuilder.Entity("ExcelToCsv.Models.LicenseInfoDTO", b =>

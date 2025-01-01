@@ -6,6 +6,7 @@ using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers.Services
@@ -19,24 +20,23 @@ namespace ExcelFilesCompiler.Controllers.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResponseDto> AddContractAsync(EventStaff evebtStaff, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
             try
             {
                 // Attempt to add the contract detail to the repository
-                evebtStaff.AddedBy = loggedinUserName;
-                evebtStaff.AddedOn = DateTime.Now;
-                await _unitOfWork.EventStaff.AddAsync(evebtStaff);
+                eventStaff.AddedBy = loggedinUserName;
+                eventStaff.AddedOn = DateTime.Now;
 
-                // If successful, set Success to true and provide a success message
+                await _unitOfWork.EventStaff.AddAsync(eventStaff);
+
                 responseDto.Success = true;
                 responseDto.Message = "Event Staff added successfully!";
             }
             catch (Exception ex)
             {
-                // If an exception occurs, set Success to false and provide the error message
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred: {ex.Message}";
             }
@@ -83,22 +83,49 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
                     x => x.Id == id,
-                    x => x.Licenses
+                    x => x.Licenses,
+                    x => x.StaffContractAffiliations
                 );
 
                 if (eventStaff != null)
                 {
                     var firstEventStaff = eventStaff.FirstOrDefault();
+
+                    if (firstEventStaff == null)
+                    {
+                        throw new Exception($"EventStaff with ID {id} not found.");
+                    }
+
+
                     var subContractorId = firstEventStaff.SubContractorId;  // Access SubContractorId directly
 
-                    var subContractor = await _unitOfWork.SubContractors.FindByColumnAsync<SubContractorInfoDto>("Id", subContractorId);
-                    var firstSubContractor = subContractor.FirstOrDefault();
+                    if (subContractorId == null)
+                    {
+                        throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                    }
+
+                    var subContractor = await _unitOfWork.SubContractors.GetByIdAsync(subContractorId);
+
+                    if (subContractor == null)
+                    {
+                        throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                    }
+
+                    var contractIds = firstEventStaff.StaffContractAffiliations.Select(a => a.ContractId).ToList();
+
+                    List<StaffContractAffiliationDto> affiliation = new List<StaffContractAffiliationDto>();
+
+                    foreach (var contract in firstEventStaff.StaffContractAffiliations)
+                    { 
+                        var contracts = await _unitOfWork.ContractDetails.GetByIdAsync(contract.ContractId);
+                        affiliation.Add(new StaffContractAffiliationDto() { EventStaffId = firstEventStaff.Id, ContractId = contract.ContractId, ContractName = contracts.ContractID });
+                    }
 
                     var combinedDto = new CombinedEventStaffSubContractorAndContractDto
                     {
-                        SubContractor = firstSubContractor,
-                        ContractDetails = null,
-                        EventStaff = firstEventStaff
+                        SubContractor = subContractor,
+                        EventStaff = firstEventStaff,
+                        StaffContractAffiliation = affiliation
                     };
 
                     return combinedDto;
@@ -143,6 +170,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // Step 4: Add new licenses
                 _unitOfWork.StaffLicenses.AddRange(eventStaff.Licenses);
 
+                await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+
+                foreach (var affiliation in eventStaff.StaffContractAffiliations)
+                {
+                    affiliation.EventStaffId = eventStaff.Id;
+                }
+
+                _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliations);
                 // Step 5: Save changes inside the transaction
                 await _unitOfWork.SaveAsync();
 

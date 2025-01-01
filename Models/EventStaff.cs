@@ -15,7 +15,14 @@ namespace ExcelToCsv.Models
     {
         public EventStaff EventStaff { get; set; }
         public SubContractorInfoDto SubContractor { get; set; }
-        public ContractDetails ContractDetails { get; set; }
+        public List<StaffContractAffiliationDto> StaffContractAffiliation { get; set; }
+    }
+
+    public class StaffContractAffiliationDto
+    {
+        public long EventStaffId { get; set; }
+        public long ContractId { get; set; }
+        public string ContractName { get; set; }
     }
 
     [Table("EventStaff")]
@@ -69,8 +76,6 @@ namespace ExcelToCsv.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "EventOnCallStaffEvent cannot be only white spaces.")]
         public string? EventOnCallStaffEvent { get; set; }
 
-        public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
-
         [StringLength(10, ErrorMessage = "NPI must be exactly 10 digits.")]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "NPI must be a numeric value with exactly 10 digits.")]
         public string? NPI { get; set; }
@@ -111,7 +116,7 @@ namespace ExcelToCsv.Models
 
         [StringLength(10, ErrorMessage = "StaffDoDID cannot exceed 10 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffDoDID cannot be only white spaces.")]
-        public string StaffDoDID { get; set; }
+        public string? StaffDoDID { get; set; }
 
         [Required(ErrorMessage = "SubContractorId is required.")]
         public long SubContractorId { get; set; }
@@ -175,16 +180,34 @@ namespace ExcelToCsv.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "SecondaryZip cannot be only white spaces.")]
         public string SecondaryZip { get; set; }
 
-        //[Required(ErrorMessage = "StaffContractAffiliation is required.")]
-        public string? StaffContractAffiliation { get; set; }
-
         [Required(ErrorMessage = "StaffInfoEnteredBy is required.")]
         [StringLength(50, ErrorMessage = "StaffInfoEnteredBy cannot exceed 50 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffInfoEnteredBy cannot be only white spaces.")]
         public string StaffInfoEnteredBy { get; set; }
 
+        public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
+
+        [Required(ErrorMessage = "StaffContractAffiliation is required.")]
+        [NotMapped]
+        public List<long> StaffContractAffiliation { get; set; } = new List<long>();
+
+        public List<StaffContractAffiliation> StaffContractAffiliations { get; set; } = new List<StaffContractAffiliation>();
         //public bool TravelHonorAir { get; set; }
         //public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
+    }
+
+    [Table("StaffContractAffiliation")]
+    public class StaffContractAffiliation
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; } // Primary key
+
+        [ForeignKey("EventStaff")]
+        public long EventStaffId { get; set; }
+
+        public long ContractId { get; set; }
+
     }
 
     //[Table("StaffRoles")]
@@ -211,7 +234,7 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        //[ForeignKey("EventStaff")]
+        [ForeignKey("EventStaff")]
 
         public long EventStaffId { get; set; }
 
@@ -231,7 +254,6 @@ namespace ExcelToCsv.Models
         [Required]
         public DateTime LicenseExpiryDate { get; set; }
     }
-
 
     [Table("TravelHonor")]
     public class TravelHonor

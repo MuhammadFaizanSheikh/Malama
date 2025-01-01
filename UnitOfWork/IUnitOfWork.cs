@@ -11,6 +11,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<SubContractorInfoDto> SubContractors { get; }
         IGenericRepository<EventStaff> EventStaff { get; }
         IGenericRepository<LicenseInfoDTO> StaffLicenses { get; }
+        IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

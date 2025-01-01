@@ -110,6 +110,20 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
+                    if (eventStaffDto.SingleEventStaff.StaffContractAffiliation != null)
+                    {
+                        eventStaffDto.SingleEventStaff.StaffContractAffiliations = new List<StaffContractAffiliation>();
+
+                        foreach (var contractId in eventStaffDto.SingleEventStaff.StaffContractAffiliation)
+                        {
+                            eventStaffDto.SingleEventStaff.StaffContractAffiliations.Add(new StaffContractAffiliation
+                            {
+                                EventStaffId = eventStaffDto.SingleEventStaff.Id,
+                                ContractId = contractId
+                            });
+                        }
+                    }
+
                     if (action == "Add")
                     {
                         res = await _eventStaffService.AddContractAsync(eventStaffDto.SingleEventStaff, user.UserName);
