@@ -565,29 +565,24 @@
             <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
                     <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" id="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Onboarding/Training Complete</label>
-            <div class="form-check">
-                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteYes" type="radio" value="true" class="form-check-input" required/>
-                <label class="form-check-label">Yes</label>
-            </div>
-            <div class="form-check">
-                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteNo" type="radio" value="false" class="form-check-input" required/>
-                <label class="form-check-label">No</label>
-            </div>
-        </div>
+                <div class="col-md-6">
+                    <label class="form-label">Onboarding/Training Complete</label>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteYes" type="radio" value="true" class="form-check-input" required onclick="toggleAdditionalControl()" />
+                        <label class="form-check-label" for="OnboardingTrainingCompleteYes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.OnboardingTrainingComplete" id="OnboardingTrainingCompleteNo" type="radio" value="false" class="form-check-input" required onclick="toggleAdditionalControl()" />
+                        <label class="form-check-label" for="OnboardingTrainingCompleteNo">No</label>
+                    </div>
+                </div>
     </div>
 
                 <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.OutstandingTrainings" class="form-label">Outstanding Trainings</label>
-                    <textarea asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" class="form-control" rows="3" required></textarea>
-           @*  <select asp-for="SingleEventStaff.OutstandingTrainings" class="form-control" required>
-                <option value="Type1">Type1</option>
-                <option value="Type2">Type2</option>
-            </select> *@
-
-        </div>
+                <div class="col-md-6" id="additionalControl" style="display: none;">
+                    <label class="form-label">Outstanding Trainings</label>
+                    <textarea class="form-control" asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" rows="3"></textarea>
+                </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.BackgroundCheckConcerns" maxLength="100" class="form-label">Background Check Concerns</label>
             <textarea asp-for="SingleEventStaff.BackgroundCheckConcerns" id ="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
@@ -962,6 +957,20 @@
     // $('#staffPhone2').val('123-123-1234');
     });
 
+    function toggleAdditionalControl() {
+        const noRadioButton = document.getElementById("OnboardingTrainingCompleteNo");
+        const additionalControl = document.getElementById("additionalControl");
+        const reasonTextarea = document.getElementById("OutstandingTrainings");
+
+        if (noRadioButton.checked) {
+            additionalControl.style.display = "block";
+            reasonTextarea.setAttribute("required", "required");
+        } else {
+            additionalControl.style.display = "none";
+            reasonTextarea.removeAttribute("required");
+        }
+    }
+
     document.getElementById("submitBtn").addEventListener("click", function (event) {
             var form = document.querySelector('form'); // Get the form element
 
@@ -1291,7 +1300,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#StaffSSN').val(eventStaff.staffSSN);
                             $('#StaffDOB').val(new Date(eventStaff.staffDOB).toLocaleDateString('en-CA'));
 
-                    if (eventStaff.eventOnCallStaff === 'false') {
+                    if (eventStaff.eventOnCallStaff === 'true') {
                         $('#eventOnCallNo').prop('checked', true).trigger('change');
                         $('#eventOnCallSelectContainer').show();
                         $('#EventOnCallStaffEvent').attr('required', 'required');
@@ -1311,7 +1320,16 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#DAWSONInternalCredentialingCompleteDate').val(new Date(eventStaff.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
                             $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
                             $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
-                            $('#OutstandingTrainings').val(eventStaff.outstandingTrainings);
+
+                            if (eventStaff.onboardingTrainingComplete === 'false') {
+                                $('#additionalControl').show();
+                                $('#OutstandingTrainings').val(eventStaff.outstandingTrainings);
+                                $('#EventOnCallStaffEvent').attr('required', 'required');
+                            } else {
+                                $('#additionalControl').hide();
+                                $('#OutstandingTrainings').removeAttr('required');
+                            }
+
                             $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
                             $('#BLSCertDate').val(new Date(eventStaff.blsCertDate).toLocaleDateString('en-CA'));
                             $('#BLSCertNumber').val(eventStaff.blsCertNumber);
@@ -1499,7 +1517,7 @@ function setStaffIdTextbox(staffId) {
     const eventOnCallStaffEvent = document.getElementById('EventOnCallStaffEvent');
 
     function toggleEventOnCallContainer() {
-        if (noRadio.checked) {
+        if (yesRadio.checked) {
             eventOnCallSelectContainer.style.display = 'block';
             eventOnCallStaffEvent.setAttribute('required', 'required');
         } else {

@@ -88,7 +88,6 @@ namespace ExcelToCsv.Models
         public string OnboardingTrainingComplete { get; set; }
 
         [StringLength(100, ErrorMessage = "OutstandingTrainings cannot exceed 100 characters.")]
-        [Required(ErrorMessage = "OutstandingTrainings is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "OutstandingTrainings cannot be only white spaces.")]
         public string OutstandingTrainings { get; set; }
 

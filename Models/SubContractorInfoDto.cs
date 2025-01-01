@@ -41,8 +41,8 @@ namespace ExcelFilesCompiler.Models
         [Range(1, 9999999999999, ErrorMessage = "Contract ID must be a valid numeric value.")]
         public long ContractId { get; set; }
 
-        [ForeignKey("ContractId")]
-        public ContractDetails? ContractDetails { get; set; }
+        //[ForeignKey("ContractId")]
+        //public ContractDetails? ContractDetails { get; set; }
 
         [StringLength(20, ErrorMessage = "CompanyId cannot exceed 20 characters.")]
         [Required(ErrorMessage = "CompanyId is required.")]
