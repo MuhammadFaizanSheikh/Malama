@@ -624,6 +624,12 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<long>("SubContractorId")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("TravelHonorAir")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TravelHonorCar")
+                        .HasColumnType("bit");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -948,6 +954,33 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("StaffContractAffiliation");
                 });
 
+            modelBuilder.Entity("ExcelToCsv.Models.TravelHonor", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EventStaffId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Rewards")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventStaffId");
+
+                    b.ToTable("TravelHonor");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -1099,6 +1132,15 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ExcelToCsv.Models.TravelHonor", b =>
+                {
+                    b.HasOne("ExcelToCsv.Models.EventStaff", null)
+                        .WithMany("TravelHonorList")
+                        .HasForeignKey("EventStaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1155,6 +1197,8 @@ namespace ExcelFilesCompiler.Migrations
                     b.Navigation("Licenses");
 
                     b.Navigation("StaffContractAffiliations");
+
+                    b.Navigation("TravelHonorList");
                 });
 #pragma warning restore 612, 618
         }

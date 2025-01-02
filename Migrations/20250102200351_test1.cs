@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExcelFilesCompiler.Migrations
 {
     /// <inheritdoc />
-    public partial class Test1 : Migration
+    public partial class test1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -127,7 +127,7 @@ namespace ExcelFilesCompiler.Migrations
                     ACLSCertNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     CACApplicationProcessStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StaffCAC = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StaffDoDID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    StaffDoDID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     SubContractorId = table.Column<long>(type: "bigint", nullable: false),
                     StaffCellNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
                     StaffPhone2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -143,6 +143,8 @@ namespace ExcelFilesCompiler.Migrations
                     SecondaryState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SecondaryZip = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     StaffInfoEnteredBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TravelHonorAir = table.Column<bool>(type: "bit", nullable: false),
+                    TravelHonorCar = table.Column<bool>(type: "bit", nullable: false),
                     AddedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AddedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -244,20 +246,6 @@ namespace ExcelFilesCompiler.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FileData", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StaffContractAffiliation",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
-                    ContractId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StaffContractAffiliation", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -415,6 +403,26 @@ namespace ExcelFilesCompiler.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StaffContractAffiliation",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
+                    ContractId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffContractAffiliation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StaffContractAffiliation_EventStaff_EventStaffId",
+                        column: x => x.EventStaffId,
+                        principalTable: "EventStaff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StaffLicense",
                 columns: table => new
                 {
@@ -431,6 +439,28 @@ namespace ExcelFilesCompiler.Migrations
                     table.PrimaryKey("PK_StaffLicense", x => x.Id);
                     table.ForeignKey(
                         name: "FK_StaffLicense_EventStaff_EventStaffId",
+                        column: x => x.EventStaffId,
+                        principalTable: "EventStaff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TravelHonor",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Rewards = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TravelHonor", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TravelHonor_EventStaff_EventStaffId",
                         column: x => x.EventStaffId,
                         principalTable: "EventStaff",
                         principalColumn: "Id",
@@ -477,8 +507,18 @@ namespace ExcelFilesCompiler.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StaffContractAffiliation_EventStaffId",
+                table: "StaffContractAffiliation",
+                column: "EventStaffId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StaffLicense_EventStaffId",
                 table: "StaffLicense",
+                column: "EventStaffId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TravelHonor_EventStaffId",
+                table: "TravelHonor",
                 column: "EventStaffId");
         }
 
@@ -514,6 +554,9 @@ namespace ExcelFilesCompiler.Migrations
 
             migrationBuilder.DropTable(
                 name: "SubContractor");
+
+            migrationBuilder.DropTable(
+                name: "TravelHonor");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -193,7 +193,10 @@ namespace ExcelToCsv.Models
 
         public List<StaffContractAffiliation> StaffContractAffiliations { get; set; } = new List<StaffContractAffiliation>();
         public bool TravelHonorAir { get; set; }
-        //public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
+        public List<TravelHonor> TravelHonorList { get; set; } = new List<TravelHonor>();  // List of Airlines
+
+        public bool TravelHonorCar { get; set; }
+        //public List<TravelHonor> TravelHonorCarList { get; set; } = new List<TravelHonor>();  // List of Airlines
     }
 
     [Table("StaffContractAffiliation")]
@@ -262,17 +265,16 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required]
+        [ForeignKey("EventStaff")]
         public long EventStaffId { get; set; }
 
-        [Required]
-        public string Type { get; set; }
+        //[Required]
+        public string? Type { get; set; }
 
-        [Required]
-        public string Name { get; set; }
+        //[Required]
+        public string? Name { get; set; }
 
-        [Required]
-        public string Rewards { get; set; }
-        [ForeignKey("EventStaffId")]
+        //[Required]
+        public string? Rewards { get; set; }
     }
 }
