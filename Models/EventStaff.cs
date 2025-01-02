@@ -192,7 +192,7 @@ namespace ExcelToCsv.Models
         public List<long> StaffContractAffiliation { get; set; } = new List<long>();
 
         public List<StaffContractAffiliation> StaffContractAffiliations { get; set; } = new List<StaffContractAffiliation>();
-        //public bool TravelHonorAir { get; set; }
+        public bool TravelHonorAir { get; set; }
         //public List<TravelHonor> TravelHonor { get; set; } = new List<TravelHonor>();  // List of Airlines
     }
 
@@ -274,6 +274,5 @@ namespace ExcelToCsv.Models
         [Required]
         public string Rewards { get; set; }
         [ForeignKey("EventStaffId")]
-        public EventStaff EventStaff { get; set; }
     }
 }

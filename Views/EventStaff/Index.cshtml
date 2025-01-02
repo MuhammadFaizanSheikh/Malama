@@ -781,35 +781,35 @@
 
                 <h4 class="mt-4">Travel Honor Reward Numbers</h4>
             <div class="container mt-5">
-        <!-- Row containing Radio Button, Airline Name, and Rewards -->
-        <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
-            <input class="form-check-input me-2" type="radio" id="airRadio" value="Air" />
-            <label class="form-check-label me-3" for="airRadio">Air</label>
+    <!-- Row containing Radio Button, Airline Name, and Rewards -->
+    <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
+        <input class="form-check-input me-2" type="radio" id="airRadio" value="Air" />
+        <label class="form-check-label me-3" for="airRadio">Air</label>
 
-            <!-- Airline Name Label and Textbox -->
-            <div class="d-flex align-items-center">
-                <label for="airlineName0" class="form-label me-2 mb-0">Airline Name</label>
-                <input type="text" class="form-control form-control-sm" id="airlineName0" />
-            </div>
-
-            <!-- Rewards Label and Textbox -->
-            <div class="d-flex align-items-center">
-                <label for="airlineReward0" class="form-label me-2 mb-0">Rewards</label>
-                <input type="text" class="form-control form-control-sm" id="airlineReward0" />
-            </div>
-
-            <!-- Add Another Reward Button -->
-            <div class="d-flex align-items-center ms-4">
-                <button type="button" id="addRewardBtn" class="btn btn-light d-flex align-items-center">
-                    <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                    <span>Add another reward</span>
-                </button>
-            </div>
+        <!-- Airline Name Label and Textbox (Initially Hidden) -->
+        <div class="align-items-center" id="airlineNameField" style="display: none;">
+            <label for="airlineName0" class="form-label me-2 mb-0">Airline Name</label>
+            <input type="text" class="form-control form-control-sm" id="airlineName0" />
         </div>
 
-        <!-- Rewards Container (For Dynamic Rows) -->
-        <div id="rewardsContainer"></div>
+        <!-- Rewards Label and Textbox (Initially Hidden) -->
+        <div class="align-items-center" id="airlineRewardField" style="display: none;">
+            <label for="airlineReward0" class="form-label me-2 mb-0">Rewards</label>
+            <input type="text" class="form-control form-control-sm" id="airlineReward0" />
+        </div>
+
+        <!-- Add Another Reward Button -->
+        <div class="align-items-center ms-4" id="addRewardBtnContainer" style="display: none;">
+            <button type="button" id="addRewardBtn" class="btn btn-light d-flex align-items-center">
+                <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
+                <span>Add another reward</span>
+            </button>
+        </div>
     </div>
+
+    <!-- Rewards Container (For Dynamic Rows) -->
+    <div id="rewardsContainer"></div>
+</div>
 
 
 
@@ -995,7 +995,12 @@
 
 
 
-   
+   document.getElementById('airRadio').addEventListener('click', function() {
+        // Show the Airline Name and Rewards fields
+        document.getElementById('airlineNameField').style.display = 'flex';
+        document.getElementById('airlineRewardField').style.display = 'flex';
+        document.getElementById('addRewardBtnContainer').style.display = 'block';
+    });
 
 
 
