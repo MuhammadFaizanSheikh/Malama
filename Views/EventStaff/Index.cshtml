@@ -748,22 +748,24 @@
         </div>
     </div>
 
-                <div id="staff-affiliation-container">
+            <div id="staff-affiliation-container">
         <!-- Initial Row -->
-        <div class="row mb-3">
-            <div class="col-md-6 staff-affiliation-row">
-                        <label class="form-label">Staff Contract Affiliation</label>
-               
-                        <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" style="width: 100%; padding: 10px;" required>
-                            
-                        </select>
-            </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 staff-affiliation-row">
+                                <label class="form-label">Staff Contract Affiliation</label>
+                       
+                                <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" style="width: 100%; padding: 10px;">
+                                    
+                                </select>
+                                <span id="staffContractError" class="text-danger" style="display:none;">Please select at least one option.</span>
+                    </div>
 
-            <div class="col-md-6">
-                <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
-                <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" required />
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
+                        <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" required />
+                    </div>
+                </div>
             </div>
-        </div>
 
         @* <!-- Add Button -->
         <div class="text-center">
@@ -778,46 +780,79 @@
 
 
                 <h4 class="mt-4">Travel Honor Reward Numbers</h4>
+            <div class="container mt-5">
+                <!-- Row containing Radio Button, Airline Name, and Rewards -->
+                <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
+                    <input class="form-check-input me-2" type="radio" id="airRadio" value="Air" />
+                    <label class="form-check-label me-3" for="airRadio">Air</label>
 
-                <div id="airline-controls-container">
-        <!-- Row for the first set of controls -->
-        <div class="row mb-3" id="initial-airline-row">
-            <div class="col-md-1 d-flex align-items-center">
-                <!-- Single radio button with fixed id and name -->
-                <input class="form-check-input" type="radio" id="airRadio" value="Air" />
-                <label class="form-check-label ms-2" for="airRadio">Air</label>
-            </div>
-
-            <!-- Hidden fields for Airline Name and Rewards -->
-            <div id="airlineFields" class="col-md-8" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="airlineName" class="col-form-label" style="width: 150px;">Airline Name</label>
-                        <input type="text" 
-                               class="form-control form-control-sm"
-                               id="airlineName"
-                               style="width: 120px;" />
+                    <!-- Airline Name Label and Textbox -->
+                    <div class="d-flex align-items-center">
+                        <label for="airlineName0" class="form-label me-2 mb-0">Airline Name</label>
+                        <input type="text" class="form-control form-control-sm" id="airlineName0" />
                     </div>
 
-                    <div class="col-md-6 d-flex align-items-center">
-                        <label for="airlineReward" class="col-form-label" style="width: 150px;">Rewards</label>
-                        <input type="text" 
-                               class="form-control form-control-sm"
-                               id="airlineReward"
-                               style="width: 120px;" />
+                    <!-- Rewards Label and Textbox -->
+                    <div class="d-flex align-items-center">
+                        <label for="airlineReward0" class="form-label me-2 mb-0">Rewards</label>
+                        <input type="text" class="form-control form-control-sm" id="airlineReward0" />
+                    </div>
+
+                    <!-- Add Another Reward Button -->
+                    <div class="d-flex align-items-center ms-4">
+                        <button type="button" id="addRewardBtn" class="btn btn-light d-flex align-items-center">
+                            <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
+                            <span>Add another reward</span>
+                        </button>
                     </div>
                 </div>
+
+                <!-- Rewards Container (For Dynamic Rows) -->
+                <div id="rewardsContainer"></div>
             </div>
 
-            <!-- Button to add additional fields -->
-            <div class="text-center">
-                <button type="button" id="addAirlineFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
-                    <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
-                    <span>Add another reward</span>
-                </button>
-            </div>
-        </div>
-    </div>
+
+
+            @* <div id="airline-controls-container">
+                <!-- Row for the first set of controls -->
+                <div class="row mb-3" id="initial-airline-row">
+                    <div class="col-md-1 d-flex align-items-center">
+                        <!-- Single radio button with fixed id and name -->
+                        <input class="form-check-input" type="radio" id="airRadio" value="Air" />
+                        <label class="form-check-label ms-2" for="airRadio">Air</label>
+                    </div>
+
+                    <!-- Hidden fields for Airline Name and Rewards -->
+                    <div id="airlineFields" class="col-md-8" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 d-flex align-items-center">
+                                <label for="airlineName" class="col-form-label" style="width: 150px;">Airline Name</label>
+                                <input type="text"
+                                       class="form-control form-control-sm"
+                                       id="airlineName"
+                                       style="width: 120px;" />
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-center">
+                                <label for="airlineReward" class="col-form-label" style="width: 150px;">Rewards</label>
+                                <input type="text"
+                                       class="form-control form-control-sm"
+                                       id="airlineReward"
+                                       style="width: 120px;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Button to add additional fields -->
+                    <div class="text-center">
+                        <button type="button" id="addAirlineFieldsBtn" class="btn btn-light align-items-center" style="display: none;">
+                            <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-left: 8px;">
+                            <span>Add another reward</span>
+                        </button>
+                    </div>
+                </div>
+            </div> *@
+
 
                 <div id="car-controls-container">
         <!-- Row for the first set of controls -->
@@ -957,6 +992,211 @@
     $('#staffPhone2').val('123-123-1234');
     });
 
+
+
+
+    let rowCount = 1; // Start counting rows (initial row is already added)
+    const maxRows = 4; // Limit of rows
+
+    document.getElementById('addRewardBtn').addEventListener('click', function () {
+        if (rowCount >= maxRows) {
+            alert('You can only add up to 4 rows.');
+            return;
+        }
+
+        // Create a new row container with the same structure as the initial row
+        const newRow = document.createElement('div');
+        newRow.className = 'd-flex align-items-center mb-3 gap-3';
+
+        // Create Airline Name and Rewards fields dynamically with correct ids
+        newRow.innerHTML = `
+                    <!-- Airline Name Label and Textbox -->
+                    <div class="d-flex align-items-center">
+                        <label for="airlineName${rowCount}" class="form-label me-2 mb-0">Airline Name</label>
+                        <input type="text" class="form-control form-control-sm" id="airlineName${rowCount}" />
+                    </div>
+
+                    <!-- Rewards Label and Textbox -->
+                    <div class="d-flex align-items-center">
+                        <label for="airlineReward${rowCount}" class="form-label me-2 mb-0">Rewards</label>
+                        <input type="text" class="form-control form-control-sm" id="airlineReward${rowCount}" />
+                    </div>
+                `;
+
+        // Append the new row to the rewards container (this ensures it aligns under the first row)
+        document.getElementById('rewardsContainer').appendChild(newRow);
+
+        // Increment the row count
+        rowCount++;
+    });
+
+
+
+
+    const maxFields = 4;
+
+    // const radioButton = document.getElementById('airRadio');
+    // const airlineFields = document.getElementById('airlineFields');
+    // const addButton = document.getElementById('addAirlineFieldsBtn');
+    // const container = document.getElementById('airline-controls-container');
+    // let airFieldCount = 0; // Counter for new fields
+
+    // // Show airline fields when radio is selected
+    // radioButton.addEventListener('change', function () {
+    //     if (radioButton.checked) {
+    //         airlineFields.style.display = 'block'; // Show the airline fields
+    //         addButton.style.display = 'block'; // Show the Add button
+    //     }
+    // });
+
+    // addButton.addEventListener('click', function () {
+    //     if (airFieldCount >= maxFields) {
+    //         // If the limit is reached, do not add more fields
+    //         return;
+    //     }
+    //     airFieldCount++; // Increment the count to ensure unique IDs
+
+    //     const newRow = document.createElement('div');
+    //     newRow.classList.add('row', 'mt-3'); // New row with margin
+
+    //     // Add the new row's HTML structure with proper side-by-side layout
+    //     newRow.innerHTML = `
+    //         <div class="col-md-8" id="airlineFields">
+    //             <div class="row">
+    //            <div class="col-md-6 d-flex align-items-center">
+    //                     <label for="airline_${airFieldCount}" class="col-form-label" style="width: 940px;margin-left: 115px" >Airline Name</label>
+    //                 <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineName"
+    //                    class="form-control form-control-sm"
+    //                        id="airline_${airFieldCount}"
+    //                                style="width: 120px; margin-left: 83px" required />
+    //         </div>
+
+    //             <div class="col-md-6 d-flex align-items-center">
+    //                     <label for="reward_${airFieldCount}" class="col-form-label" style="width: 150px;margin-left: 98px"">Rewards</label>
+    //                 <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineRewards"
+    //                    class="form-control form-control-sm"
+    //                        id="reward_${airFieldCount}"
+    //                        style="width: 120px;margin-left: 88px" required />
+    //         </div>
+    //              </div>
+    //                  </div>
+    //     `;
+
+    //     const columns = newRow.querySelectorAll('.col-md-6');
+    //     columns.forEach(col => {
+            
+    //     });
+
+    //     // Append the new row to the container
+    //     container.appendChild(newRow);
+    // });
+
+    // Car honor handling
+    const carRadioButton = document.getElementById('carRadio');
+    const carFields = document.getElementById('carFields');
+    const carAddButton = document.getElementById('addCarFieldsBtn');
+    const carContainer = document.getElementById('car-controls-container');
+    let carFieldCount = 0; // Counter for new fields
+
+    // Show car rental fields when radio is selected
+    carRadioButton.addEventListener('change', function () {
+        if (carRadioButton.checked) {
+            carFields.style.display = 'block'; // Show the car rental fields
+            carAddButton.style.display = 'block'; // Show the Add button
+        }
+    });
+
+
+    // Add new car rental fields on button click
+    carAddButton.addEventListener('click', function () {
+        if (carFieldCount >= maxFields) {
+            // If the limit is reached, do not add more fields
+            return;
+        }
+        carFieldCount++; // Increment the count to ensure unique IDs
+
+        const newCarRow = document.createElement('div');
+        newCarRow.classList.add('row', 'mt-3'); // New row with margin
+
+        // Add the new row's HTML structure with proper side-by-side layout for car rental company and rewards
+        newCarRow.innerHTML = `
+            <div class="col-md-8" id="carFields">
+                <div class="row">
+                    <div class="col-md-6 d-flex align-items-center">
+                            <label for="car_${carFieldCount}" class="col-form-label" style="width: 200px; margin-left: 95px">Rental Company Name</label>
+                        <input type="text" name="TravelInfo.Cars[${carFieldCount}].CarRentalCompany"
+                               class="form-control form-control-sm"
+                               id="car_${carFieldCount}"
+                                   style="width: 120px; margin-left: 83px" required />
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center">
+                            <label for="reward_${carFieldCount}" class="col-form-label" style="width: 150px; margin-left: 95px">Rewards</label>
+                        <input type="text" name="TravelInfo.Cars[${carFieldCount}].CarRentalRewards"
+                               class="form-control form-control-sm"
+                               id="reward_${carFieldCount}"
+                                   style="width: 120px; margin-left: 87px" required />
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Append the new row to the container
+        carContainer.appendChild(newCarRow);
+    });
+
+    const hotelRadioButton = document.getElementById('hotelRadio');
+    const hotelFields = document.getElementById('hotelFields');
+    const addHotelButton = document.getElementById('addHotelFieldsBtn');
+    const hotelContainer = document.querySelector('.row.align-items-center'); // Update to the correct container
+    let hotelFieldCount = 0; // Counter for new hotel fields
+
+    // Show hotel fields when radio is selected
+    hotelRadioButton.addEventListener('change', function () {
+        if (hotelRadioButton.checked) {
+            hotelFields.style.display = 'block'; // Show the hotel fields
+            addHotelButton.style.display = 'block'; // Show the Add button
+        }
+    });
+
+    addHotelButton.addEventListener('click', function () {
+        if (hotelFieldCount >= maxFields) {
+            // If the limit is reached, do not add more fields
+            return;
+        }
+        hotelFieldCount++; // Increment the count to ensure unique IDs
+
+        const newHotelRow = document.createElement('div');
+        newHotelRow.classList.add('row', 'mt-3'); // New row with margin
+
+        // Add the new row's HTML structure with proper side-by-side layout
+        newHotelRow.innerHTML = `
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-6 d-flex align-items-center">
+                            <label for="hotel_${hotelFieldCount}" class="col-form-label" style="width: 940px;margin-left: 110px">Hotel Name</label>
+                        <input type="text" name="TravelInfo.Hotels[${hotelFieldCount}].HotelName"
+                               class="form-control form-control-sm"
+                               id="hotel_${hotelFieldCount}"
+                                   style="width: 120px;margin-left: 29px" required />
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-center">
+                            <label for="hotelReward_${hotelFieldCount}" class="col-form-label" style="width: 150px;margin-left: 80px">Rewards</label>
+                        <input type="text" name="TravelInfo.Hotels[${hotelFieldCount}].HotelRewards"
+                               class="form-control form-control-sm"
+                               id="hotelReward_${hotelFieldCount}"
+                               style="width: 120px;" required />
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Append the new row to the container
+        hotelContainer.appendChild(newHotelRow);
+    });
+
+
     function toggleAdditionalControl() {
         const noRadioButton = document.getElementById("OnboardingTrainingCompleteNo");
         const additionalControl = document.getElementById("additionalControl");
@@ -971,7 +1211,23 @@
         }
     }
 
+    function validateStaffContractAffiliation() {
+    var isValid = $('#StaffContractAffiliation').val() && $('#StaffContractAffiliation').val().length > 0;
+
+    if (!isValid) {
+        $('#staffContractError').text('Please select at least one option.').show(); // Show error message
+        $('#StaffContractAffiliation').focus();
+        return false;
+    } else {
+        $('#staffContractError').hide(); // Hide error message if valid
+        return true;
+    }
+
+    return isValid; // Return validation result
+}
+
     document.getElementById("submitBtn").addEventListener("click", function (event) {
+
             var form = document.querySelector('form'); // Get the form element
 
             if (!form.reportValidity()) {
@@ -982,7 +1238,29 @@
             if (!validateCertificationFields()) {
                 event.preventDefault();
             }
+
+        if (!validateStaffContractAffiliation()) {
+            event.preventDefault(); // Prevent form submission if validation fails
+        }
         });
+
+    document.getElementById("updateBtn").addEventListener("click", function (event) {
+        debugger;
+        var form = document.querySelector('form'); // Get the form element
+
+        if (!form.reportValidity()) {
+            return false;
+        }
+
+
+        if (!validateCertificationFields()) {
+            event.preventDefault();
+        }
+
+        if (!validateStaffContractAffiliation()) {
+            event.preventDefault(); // Prevent form submission if validation fails
+        }
+    });
 
         function validateCertificationFields() {
             const blsDate = document.getElementById('BLSCertDate').value;
@@ -1310,7 +1588,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         $('#StaffContractAffiliation').select2({
                             placeholder: "Select options",
                             allowClear: true
-                        }).trigger('change');  
+                        }).trigger('change').trigger('input');  
 
 
                              $('#StaffID').val(eventStaff.staffID);
@@ -1713,167 +1991,7 @@ function setStaffIdTextbox(staffId) {
     //     container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
     // });
 
-    const maxFields = 4;
-
-    const radioButton = document.getElementById('airRadio');
-    const airlineFields = document.getElementById('airlineFields');
-    const addButton = document.getElementById('addAirlineFieldsBtn');
-    const container = document.getElementById('airline-controls-container');
-    let airFieldCount = 0; // Counter for new fields
-
-    // Show airline fields when radio is selected
-    radioButton.addEventListener('change', function () {
-        if (radioButton.checked) {
-            airlineFields.style.display = 'block'; // Show the airline fields
-            addButton.style.display = 'block'; // Show the Add button
-        }
-    });
-
-    addButton.addEventListener('click', function () {
-        if (airFieldCount >= maxFields) {
-            // If the limit is reached, do not add more fields
-            return;
-        }
-        airFieldCount++; // Increment the count to ensure unique IDs
-
-        const newRow = document.createElement('div');
-        newRow.classList.add('row', 'mt-3'); // New row with margin
-
-        // Add the new row's HTML structure with proper side-by-side layout
-        newRow.innerHTML = `
-            <div class="col-md-8" id="airlineFields">
-                <div class="row">
-               <div class="col-md-6 d-flex align-items-center">
-                        <label for="airline_${airFieldCount}" class="col-form-label" style="width: 940px;margin-left: 115px" >Airline Name</label>
-                    <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineName"
-                       class="form-control form-control-sm"
-                           id="airline_${airFieldCount}"
-                                   style="width: 120px; margin-left: 83px" required />
-            </div>
-
-                <div class="col-md-6 d-flex align-items-center">
-                        <label for="reward_${airFieldCount}" class="col-form-label" style="width: 150px;margin-left: 98px"">Rewards</label>
-                    <input type="text" name="TravelInfo.Airlines[${airFieldCount}].AirlineRewards"
-                       class="form-control form-control-sm"
-                           id="reward_${airFieldCount}"
-                           style="width: 120px;margin-left: 88px" required />
-            </div>
-                 </div>
-                     </div>
-        `;
-
-        const columns = newRow.querySelectorAll('.col-md-6');
-        columns.forEach(col => {
-            
-        });
-
-        // Append the new row to the container
-        container.appendChild(newRow);
-    });
-
-    // Car honor handling
-    const carRadioButton = document.getElementById('carRadio');
-    const carFields = document.getElementById('carFields');
-    const carAddButton = document.getElementById('addCarFieldsBtn');
-    const carContainer = document.getElementById('car-controls-container');
-    let carFieldCount = 0; // Counter for new fields
-
-    // Show car rental fields when radio is selected
-    carRadioButton.addEventListener('change', function () {
-        if (carRadioButton.checked) {
-            carFields.style.display = 'block'; // Show the car rental fields
-            carAddButton.style.display = 'block'; // Show the Add button
-        }
-    });
-
-    // Add new car rental fields on button click
-    carAddButton.addEventListener('click', function () {
-        if (carFieldCount >= maxFields) {
-            // If the limit is reached, do not add more fields
-            return;
-        }
-        carFieldCount++; // Increment the count to ensure unique IDs
-
-        const newCarRow = document.createElement('div');
-        newCarRow.classList.add('row', 'mt-3'); // New row with margin
-
-        // Add the new row's HTML structure with proper side-by-side layout for car rental company and rewards
-        newCarRow.innerHTML = `
-            <div class="col-md-8" id="carFields">
-                <div class="row">
-                    <div class="col-md-6 d-flex align-items-center">
-                            <label for="car_${carFieldCount}" class="col-form-label" style="width: 200px; margin-left: 95px">Rental Company Name</label>
-                        <input type="text" name="TravelInfo.Cars[${carFieldCount}].CarRentalCompany"
-                               class="form-control form-control-sm"
-                               id="car_${carFieldCount}"
-                                   style="width: 120px; margin-left: 83px" required />
-                    </div>
-
-                    <div class="col-md-6 d-flex align-items-center">
-                            <label for="reward_${carFieldCount}" class="col-form-label" style="width: 150px; margin-left: 95px">Rewards</label>
-                        <input type="text" name="TravelInfo.Cars[${carFieldCount}].CarRentalRewards"
-                               class="form-control form-control-sm"
-                               id="reward_${carFieldCount}"
-                                   style="width: 120px; margin-left: 87px" required />
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Append the new row to the container
-        carContainer.appendChild(newCarRow);
-    });
-
-    const hotelRadioButton = document.getElementById('hotelRadio');
-    const hotelFields = document.getElementById('hotelFields');
-    const addHotelButton = document.getElementById('addHotelFieldsBtn');
-    const hotelContainer = document.querySelector('.row.align-items-center'); // Update to the correct container
-    let hotelFieldCount = 0; // Counter for new hotel fields
-
-    // Show hotel fields when radio is selected
-    hotelRadioButton.addEventListener('change', function () {
-        if (hotelRadioButton.checked) {
-            hotelFields.style.display = 'block'; // Show the hotel fields
-            addHotelButton.style.display = 'block'; // Show the Add button
-        }
-    });
-
-    addHotelButton.addEventListener('click', function () {
-        if (hotelFieldCount >= maxFields) {
-            // If the limit is reached, do not add more fields
-            return;
-        }
-        hotelFieldCount++; // Increment the count to ensure unique IDs
-
-        const newHotelRow = document.createElement('div');
-        newHotelRow.classList.add('row', 'mt-3'); // New row with margin
-
-        // Add the new row's HTML structure with proper side-by-side layout
-        newHotelRow.innerHTML = `
-            <div class="col-md-8">
-                <div class="row">
-                    <div class="col-md-6 d-flex align-items-center">
-                            <label for="hotel_${hotelFieldCount}" class="col-form-label" style="width: 940px;margin-left: 110px">Hotel Name</label>
-                        <input type="text" name="TravelInfo.Hotels[${hotelFieldCount}].HotelName"
-                               class="form-control form-control-sm"
-                               id="hotel_${hotelFieldCount}"
-                                   style="width: 120px;margin-left: 29px" required />
-                    </div>
-
-                    <div class="col-md-6 d-flex align-items-center">
-                            <label for="hotelReward_${hotelFieldCount}" class="col-form-label" style="width: 150px;margin-left: 80px">Rewards</label>
-                        <input type="text" name="TravelInfo.Hotels[${hotelFieldCount}].HotelRewards"
-                               class="form-control form-control-sm"
-                               id="hotelReward_${hotelFieldCount}"
-                               style="width: 120px;" required />
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Append the new row to the container
-        hotelContainer.appendChild(newHotelRow);
-    });
+    
 
     
 </script>
