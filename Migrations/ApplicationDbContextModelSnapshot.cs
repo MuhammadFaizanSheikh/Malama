@@ -624,10 +624,13 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<long>("SubContractorId")
                         .HasColumnType("bigint");
 
-                    b.Property<bool>("TravelHonorAir")
+                    b.Property<bool?>("TravelHonorAir")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("TravelHonorCar")
+                    b.Property<bool?>("TravelHonorCar")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("TravelHonorHotel")
                         .HasColumnType("bit");
 
                     b.Property<string>("UpdatedBy")

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExcelFilesCompiler.Migrations
 {
     /// <inheritdoc />
-    public partial class test1 : Migration
+    public partial class Test1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -143,8 +143,9 @@ namespace ExcelFilesCompiler.Migrations
                     SecondaryState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SecondaryZip = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     StaffInfoEnteredBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    TravelHonorAir = table.Column<bool>(type: "bit", nullable: false),
-                    TravelHonorCar = table.Column<bool>(type: "bit", nullable: false),
+                    TravelHonorAir = table.Column<bool>(type: "bit", nullable: true),
+                    TravelHonorCar = table.Column<bool>(type: "bit", nullable: true),
+                    TravelHonorHotel = table.Column<bool>(type: "bit", nullable: true),
                     AddedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AddedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),

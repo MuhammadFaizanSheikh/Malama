@@ -193,10 +193,12 @@ namespace ExcelToCsv.Models
 
         public List<StaffContractAffiliation> StaffContractAffiliations { get; set; } = new List<StaffContractAffiliation>();
         public bool TravelHonorAir { get; set; }
-        public List<TravelHonor> TravelHonorList { get; set; } = new List<TravelHonor>();  // List of Airlines
 
         public bool TravelHonorCar { get; set; }
+        public bool TravelHonorHotel { get; set; }
         //public List<TravelHonor> TravelHonorCarList { get; set; } = new List<TravelHonor>();  // List of Airlines
+        public List<TravelHonor>? TravelHonorList { get; set; } = new List<TravelHonor>();  // List of Airlines
+
     }
 
     [Table("StaffContractAffiliation")]
