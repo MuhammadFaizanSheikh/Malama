@@ -84,7 +84,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
                     x => x.Id == id,
                     x => x.Licenses,
-                    x => x.StaffContractAffiliations
+                    x => x.StaffContractAffiliations,
+                    x => x.TravelHonorList
                 );
 
                 if (eventStaff != null)
@@ -125,7 +126,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         SubContractor = subContractor,
                         EventStaff = firstEventStaff,
-                        StaffContractAffiliation = affiliation
+                        StaffContractAffiliation = affiliation,
+                        TravelHonor = firstEventStaff.TravelHonorList
                     };
 
                     return combinedDto;
@@ -158,16 +160,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventStaff.UpdatedOn = DateTime.Now;
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
 
-                // Step 2: Remove old licenses
                 await _unitOfWork.StaffLicenses.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
-                // Step 3: Assign EventStaffId to each new license
                 foreach (var license in eventStaff.Licenses)
                 {
                     license.EventStaffId = eventStaff.Id;
                 }
 
-                // Step 4: Add new licenses
                 _unitOfWork.StaffLicenses.AddRange(eventStaff.Licenses);
 
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
@@ -178,10 +177,17 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliations);
-                // Step 5: Save changes inside the transaction
-                await _unitOfWork.SaveAsync();
 
-                // Step 6: Commit the transaction
+                await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+
+                foreach (var travelHonor in eventStaff.TravelHonorList)
+                {
+                    travelHonor.EventStaffId = eventStaff.Id;
+                }
+
+                _unitOfWork.TravelHonor.AddRange(eventStaff.TravelHonorList);
+
+                await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
                 responseDto.Success = true;

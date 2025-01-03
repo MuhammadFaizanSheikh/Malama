@@ -14,6 +14,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<EventStaff> EventStaff { get; private set; }
         public IGenericRepository<LicenseInfoDTO> StaffLicenses { get; private set; }
         public IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; private set; }
+        public IGenericRepository<TravelHonor> TravelHonor { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -23,6 +24,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             EventStaff = new GenericRepository<EventStaff>(_context);
             StaffLicenses = new GenericRepository<LicenseInfoDTO>(_context);
             StaffContractAffiliation = new GenericRepository<StaffContractAffiliation>(_context);
+            TravelHonor = new GenericRepository<TravelHonor>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

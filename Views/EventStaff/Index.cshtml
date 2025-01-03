@@ -862,7 +862,7 @@
     let controlCount = -1; // Shared control count for both Air and Car categories
     const maxControls = 5; // Max controls per category (can be adjusted)
 
-    function createRow(includeButton, category) {
+    function createRow(includeButton, category, item = {}, index = controlCount) {
         const container = document.getElementById(
             category === 'Air' ? 'dynamicControlsContainer' :
                 category === 'Car' ? 'carDynamicControlsContainer' :
@@ -877,7 +877,7 @@
         nameDiv.classList.add('d-flex', 'align-items-center');
         nameDiv.innerHTML = `
             <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
-            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${controlCount}].Name" />
+            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" />
         `;
         rowDiv.appendChild(nameDiv);
 
@@ -885,7 +885,7 @@
         rewardDiv.classList.add('d-flex', 'align-items-center');
         rewardDiv.innerHTML = `
             <label class="form-label me-2 mb-0">Rewards</label>
-            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${controlCount}].Rewards" />
+            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" />
         `;
         rowDiv.appendChild(rewardDiv);
 
@@ -893,7 +893,7 @@
         const typeHiddenDiv = document.createElement('div');
         typeHiddenDiv.classList.add('d-none');
         typeHiddenDiv.innerHTML = `
-            <input type="hidden" name="SingleEventStaff.TravelHonorList[${controlCount}].Type" value="${category}" />
+            <input type="hidden" name="SingleEventStaff.TravelHonorList[${index}].Type" value="${category}" />
         `;
         rowDiv.appendChild(typeHiddenDiv);
 
@@ -930,9 +930,9 @@
                     createRow(false, category); // Create row for Car
                 }
                 else if (category === 'Hotel' && hotelCounter < maxControls) {
-                    hotelCounter++; // Increment carCounter if category is 'Car'
+                    hotelCounter++; // Increment hotelCounter if category is 'Hotel'
                     controlCount++; // Increment total control count
-                    createRow(false, category); // Create row for Car
+                    createRow(false, category); // Create row for Hotel
                 } else {
                     alert(`You can only add up to 5 rewards for ${category}.`);
                 }
@@ -942,6 +942,7 @@
 
         container.appendChild(rowDiv);
     }
+
 
     // Reindex controls across both Air and Car categories
     function reindexControls() {
@@ -953,10 +954,15 @@
         allRows.forEach((row, index) => {
             const nameField = row.querySelector('input[name*="Name"]');
             const rewardField = row.querySelector('input[name*="Rewards"]');
+            const typeField = row.querySelector('input[name*="Type"]'); // Added this line for the Type field
 
             if (nameField && rewardField) {
                 nameField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Name`);
                 rewardField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Rewards`);
+            }
+
+            if (typeField) {
+                typeField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Type`); // Reindex the hidden field
             }
 
             row.setAttribute('id', `row-${index}`);
@@ -965,6 +971,7 @@
         // Update controlCount
         controlCount = allRows.length - 1;
     }
+
 
     // Initialize category checkbox handling
     document.addEventListener('DOMContentLoaded', () => {
@@ -1362,7 +1369,8 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         var eventStaff = combinedData.eventStaff;
                         var staffContractAffiliation = combinedData.staffContractAffiliation;
                         var subContractor = combinedData.subContractor;
-                        const jsonString = JSON.stringify(response.combinedData);
+                        var travelHonor = combinedData.travelHonor;
+                        // const jsonString = JSON.stringify(response.combinedData);
                         $('#hiddenId').val(eventStaff.id);
                     
                         var selectedData = {
@@ -1399,40 +1407,10 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             allowClear: true
                         }).trigger('change').trigger('input');
 
-                    const travelHonorList = data.TravelHonorList;
-
-                    // Clear existing rows
-                    document.getElementById('airRewardsContainer').innerHTML = '';
-                    document.getElementById('carRewardsContainer').innerHTML = '';
-                    document.getElementById('hotelRewardsContainer').innerHTML = '';
-
-                    let travelHonorIndex = 0;
-
-                    // Populate controls based on type
-                    travelHonorList.forEach(item => {
-                        const containerId = item.Type === 'Air' ? 'airRewardsContainer' :
-                            item.Type === 'Car' ? 'carRewardsContainer' : 'hotelRewardsContainer';
-
-                        const newRow = document.createElement('div');
-                        newRow.className = 'd-flex align-items-center mb-3 gap-3';
-
-                        newRow.innerHTML = `
-                        <input type="hidden" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Type" value="${item.Type}" />
-                        <div class="d-flex align-items-center">
-                            <label class="form-label me-2 mb-0">${item.Type === 'Air' ? 'Airline Name' : item.Type === 'Car' ? 'Rental Company Name' : 'Hotel Name'}</label>
-                            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Name" value="${item.Name}" />
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <label class="form-label me-2 mb-0">Rewards</label>
-                            <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Rewards" value="${item.Rewards}" />
-                        </div>
-                    `;
-
-                        // Append the new row to the correct container
-                        document.getElementById(containerId).appendChild(newRow);
-
-                        travelHonorIndex++;
-                    });
+                            $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
+                            $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);
+                            $('#hotelCheckbox').prop('checked', eventStaff.travelHonorHotel);
+                            populateForm(travelHonor);
 
 
                              $('#StaffID').val(eventStaff.staffID);
@@ -1529,7 +1507,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy'
+                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
 
@@ -1540,6 +1518,24 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                                 control.prop('readonly', true); // Make input read-only
                                 control.addClass('read-only-style'); // Optional: Add a class for read-only styling
                             });
+
+                        $('#StaffContractAffiliation').prop('disabled', true);
+                        $('#EmployerSubcontractor').prop('disabled', true);
+                        
+                        const categories = ['#dynamicControlsContainer', '#carDynamicControlsContainer', '#hotelDynamicControlsContainer'];
+
+                        categories.forEach(function (categorySelector) {
+                            // Target all input fields within the category
+                            $(categorySelector).find('input').each(function () {
+                                const control = $(this);
+
+                                // Make input fields read-only
+                                control.prop('readonly', true);
+                            });
+
+                            // Optionally, add read-only styling if needed
+                            $(categorySelector).find('input').addClass('read-only-style');
+                        });
 
                             $('#updateBtn').hide();  // Hide the Update button when View button is clicked
                         } 
@@ -1553,7 +1549,7 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy'
+                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
                       // Make controls editable
@@ -1563,6 +1559,8 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                           control.removeClass('read-only-style'); // Remove read-only styling class if applied
                       });
 
+                        $('#StaffContractAffiliation').prop('disabled', false);
+                        $('#EmployerSubcontractor').prop('disabled', false);
 
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                         }
@@ -1575,6 +1573,31 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             }
             });
         });
+
+    function populateForm(data) {
+        // Clear existing rows for each category before populating new data
+        document.getElementById('dynamicControlsContainer').innerHTML = '';
+        document.getElementById('carDynamicControlsContainer').innerHTML = '';
+        document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
+
+        // Loop through all data records and categorize them
+        data.forEach((item, index) => {
+            if (item.type === 'Air') {
+                createRow(false, 'Air', item, index); // For Air category
+            } else if (item.type === 'Car') {
+                createRow(false, 'Car', item, index); // For Car category
+            } else if (item.type === 'Hotel') {
+                createRow(false, 'Hotel', item, index); // For Hotel category
+            }
+        });
+
+        const totalRows = document.querySelectorAll('#dynamicControlsContainer > div').length +
+            document.querySelectorAll('#carDynamicControlsContainer > div').length +
+            document.querySelectorAll('#hotelDynamicControlsContainer > div').length;
+
+        controlCount = totalRows - 1; // Set controlCount to the last index
+    }
+
 
         function formatDateField(dateValue) {
                 if (!dateValue) {
@@ -1710,21 +1733,29 @@ function setStaffIdTextbox(staffId) {
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy'
+            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
-            controlIds.forEach(function (id) {
-                const control = $('#' + id);
+        controlIds.forEach(function (id) {
+            const control = $('#' + id);
 
-                if (control.is('select')) {
-                    control.prop('disabled', false);
-                } else {
-                    control.prop('readonly', false);
-                }
+            if (control.is('select')) {
+                control.prop('disabled', false);
+            } else if (control.is('input[type="checkbox"]')) {
+                // Reset checkbox states to unchecked
+                control.prop('checked', false); // uncheck the checkbox
+                control.prop('disabled', false); // Ensure the checkbox is enabled if previously disabled
+            } else {
+                control.prop('readonly', false);
+            }
 
-                control.removeClass('read-only-style');
-            });
+            control.removeClass('read-only-style');
+        });
 
+            document.getElementById('dynamicControlsContainer').innerHTML = '';
+            document.getElementById('carDynamicControlsContainer').innerHTML = '';
+            document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
+            controlCount = -1;
             $('.card-body').show();
             $('#datatableWrapper').hide();
             $('#submitBtn').show();
