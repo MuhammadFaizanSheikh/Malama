@@ -767,114 +767,26 @@
                 </div>
             </div>
 
-        @* <!-- Add Button -->
-        <div class="text-center">
-            <button type="button" id="add-affiliation-btn" class="btn btn-light d-flex align-items-center">
-                <img src="/images/PlusIcon.png" alt="Add" class="plus-icon" style="width: 24px; height: 24px; margin-right: 8px;">
-                <span>Add Another Contract Affiliation</span>
-            </button>
-        </div>
-    </div> *@
-
-
-
-
-                <h4 class="mt-4">Travel Honor Reward Numbers</h4>
-                @* <div class="container mt-5">
-                    <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
-                        <input class="form-check-input me-2" type="radio" id="airRadio" value="Air" asp-for="SingleEventStaff.TravelHonorAir"/>
-                        <label class="form-check-label me-3">Air</label>
-
-                    <input type="hidden" asp-for="SingleEventStaff.TravelHonorList[0].Type" value="Air" />
-                        <div class="align-items-center" id="airlineNameField" style="display: none;">
-                            <label  class="form-label me-2 mb-0">Airline Name</label>
-                            <input type="text" class="form-control form-control-sm" id="airlineName0" asp-for="SingleEventStaff.TravelHonorList[0].Name" />
-                        </div>
-
-                        <div class="align-items-center" id="airlineRewardField" style="display: none;">
-                            <label class="form-label me-2 mb-0">Rewards</label>
-                            <input type="text" class="form-control form-control-sm" id="airlineReward0" asp-for="SingleEventStaff.TravelHonorList[0].Rewards" />
-                        </div>
-
-                        <div class="align-items-center ms-4" id="addAirRewardBtnContainer" style="display: none;">
-                            <button type="button" id="addAirRewardBtn" class="btn btn-light d-flex align-items-center">
-                                <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                                <span>Add another reward</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="airRewardsContainer"></div>
-                </div> *@
+            <h4 class="mt-4">Travel Honor Reward Numbers</h4>
             <div class="container mt-5">
                 <!-- Air category checkbox -->
                 <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="airlineCheckbox">
+                    <input type="checkbox" class="form-check-input" id="airlineCheckbox" asp-for="SingleEventStaff.TravelHonorAir">
                     <label class="form-check-label" for="airlineCheckbox">Air</label>
                 </div>
                 <div id="dynamicControlsContainer"></div> <!-- For dynamically added Air controls -->
                 <!-- Car category checkbox -->
                 <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="carCheckbox">
+                    <input type="checkbox" class="form-check-input" id="carCheckbox" asp-for="SingleEventStaff.TravelHonorCar">
                     <label class="form-check-label" for="carCheckbox">Car</label>
                 </div>
                 <div id="carDynamicControlsContainer"></div> <!-- For dynamically added Car controls -->
-            </div>
-
-
-
-
-
-
-           @*  <div class="container mt-5">
-                    <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
-                        <input class="form-check-input me-2" type="radio" id="carRadio" value="Car" asp-for="SingleEventStaff.TravelHonorCar"/>
-                        <label class="form-check-label me-3">Car</label>
-
-                    <input type="hidden" asp-for="SingleEventStaff.TravelHonorList[1].Type" value="Car" />
-                        <div class="align-items-center" id="carNameField" style="display: none;">
-                            <label class="form-label me-2 mb-0">Rental Company Name</label>
-                            <input type="text" class="form-control form-control-sm" id="carName0" asp-for="SingleEventStaff.TravelHonorList[1].Name" />
-                        </div>
-
-                        <div class="align-items-center" id="carRewardField" style="display: none;">
-                            <label class="form-label me-2 mb-0">Rewards</label>
-                            <input type="text" class="form-control form-control-sm" id="carReward0" asp-for="SingleEventStaff.TravelHonorList[1].Rewards" />
-                        </div>
-
-                        <div class="align-items-center ms-4" id="addCarRewardBtnContainer" style="display: none;">
-                            <button type="button" id="addCarRewardBtn" class="btn btn-light d-flex align-items-center">
-                                <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                                <span>Add another reward</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="carRewardsContainer"></div>
-                </div> *@
-
-            <div class="container mt-5">
-                <div class="d-flex align-items-center mb-4 gap-3" id="initial-row">
-                    <input class="form-check-input me-2" type="radio" id="hotelRadio" value="Hotel" asp-for="SingleEventStaff.TravelHonorHotel" />
-                    <label class="form-check-label me-3">Hotel</label>
-
-                    <input type="hidden" asp-for="SingleEventStaff.TravelHonorList[2].Type" value="Hotel" />
-                    <div class="align-items-center" id="hotelNameField" style="display: none;">
-                        <label class="form-label me-2 mb-0">Hotel Name</label>
-                        <input type="text" class="form-control form-control-sm" id="hotelName0" asp-for="SingleEventStaff.TravelHonorList[2].Name" />
-                    </div>
-
-                    <div class="align-items-center" id="hotelRewardField" style="display: none;">
-                        <label class="form-label me-2 mb-0">Rewards</label>
-                        <input type="text" class="form-control form-control-sm" id="hotelReward0" asp-for="SingleEventStaff.TravelHonorList[2].Rewards" />
-                    </div>
-
-                    <div class="align-items-center ms-4" id="addHotelRewardBtnContainer" style="display: none;">
-                        <button type="button" id="addHotelRewardBtn" class="btn btn-light d-flex align-items-center">
-                            <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                            <span>Add another reward</span>
-                        </button>
-                    </div>
+                <!-- Hotel category checkbox -->
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="hotelCheckbox" asp-for="SingleEventStaff.TravelHonorHotel">
+                    <label class="form-check-label" for="hotelCheckbox">Hotel</label>
                 </div>
-                <div id="hotelRewardsContainer"></div>
+                <div id="hotelDynamicControlsContainer"></div> <!-- For dynamically added Car controls -->
             </div>
 
                 <div class="d-flex justify-content-end mt-4">
@@ -946,11 +858,16 @@
 
     let airCounter = 0;
     let carCounter = 0;
+    let hotelCounter = 0;
     let controlCount = -1; // Shared control count for both Air and Car categories
     const maxControls = 5; // Max controls per category (can be adjusted)
 
     function createRow(includeButton, category) {
-        const container = document.getElementById(category === 'Air' ? 'dynamicControlsContainer' : 'carDynamicControlsContainer');
+        const container = document.getElementById(
+            category === 'Air' ? 'dynamicControlsContainer' :
+                category === 'Car' ? 'carDynamicControlsContainer' :
+                    category === 'Hotel' ? 'hotelDynamicControlsContainer' : ''
+        );
 
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('d-flex', 'align-items-center', 'mb-2');
@@ -1011,8 +928,13 @@
                     carCounter++; // Increment carCounter if category is 'Car'
                     controlCount++; // Increment total control count
                     createRow(false, category); // Create row for Car
+                }
+                else if (category === 'Hotel' && hotelCounter < maxControls) {
+                    hotelCounter++; // Increment carCounter if category is 'Car'
+                    controlCount++; // Increment total control count
+                    createRow(false, category); // Create row for Car
                 } else {
-                    alert('You can only add up to 5 rewards for this category.');
+                    alert(`You can only add up to 5 rewards for ${category}.`);
                 }
             });
             rowDiv.appendChild(rewardButtonDiv);
@@ -1025,7 +947,8 @@
     function reindexControls() {
         const airRows = document.querySelectorAll('#dynamicControlsContainer > div');
         const carRows = document.querySelectorAll('#carDynamicControlsContainer > div');
-        const allRows = [...airRows, ...carRows];
+        const hotelRows = document.querySelectorAll('#hotelDynamicControlsContainer > div');
+        const allRows = [...airRows, ...carRows, ...hotelRows];
 
         allRows.forEach((row, index) => {
             const nameField = row.querySelector('input[name*="Name"]');
@@ -1047,6 +970,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const airlineCheckbox = document.getElementById('airlineCheckbox');
         const carCheckbox = document.getElementById('carCheckbox');
+        const hotelCheckbox = document.getElementById('hotelCheckbox');
 
         airlineCheckbox.addEventListener('change', () => {
             const container = document.getElementById('dynamicControlsContainer');
@@ -1069,143 +993,18 @@
                 createRow(true, 'Car'); // Pass 'Car' category
             }
         });
+
+        hotelCheckbox.addEventListener('change', () => {
+            const container = document.getElementById('hotelDynamicControlsContainer');
+            container.innerHTML = ''; // Clear existing fields
+            hotelCounter++;
+            controlCount++;
+
+            if (hotelCheckbox.checked) {
+                createRow(true, 'Hotel'); // Pass 'Car' category
+            }
+        });
     });
-
-
-
-
-
-
-
-   
-   // document.getElementById('airRadio').addEventListener('click', function() {
-   //      // Show the Airline Name and Rewards fields
-   //      document.getElementById('airlineNameField').style.display = 'flex';
-   //      document.getElementById('airlineRewardField').style.display = 'flex';
-   //      document.getElementById('addAirRewardBtnContainer').style.display = 'block';
-   //  });
-
-   //  document.getElementById('carRadio').addEventListener('click', function() {
-   //      // Show the Airline Name and Rewards fields
-   //      document.getElementById('carNameField').style.display = 'flex';
-   //      document.getElementById('carRewardField').style.display = 'flex';
-   //      document.getElementById('addCarRewardBtnContainer').style.display = 'block';
-   //  });
-
-   //  document.getElementById('hotelRadio').addEventListener('click', function () {
-   //      // Show the Airline Name and Rewards fields
-   //      document.getElementById('hotelNameField').style.display = 'flex';
-   //      document.getElementById('hotelRewardField').style.display = 'flex';
-   //      document.getElementById('addHotelRewardBtnContainer').style.display = 'block';
-   //  });
-
-
-
-
-
-
-    const maxRows = 5;
-
-    // document.getElementById('addAirRewardBtn').addEventListener('click', function () {
-    // if (airRowCount >= maxRows) {
-    //     alert('You can only add up to 4 rows.');
-    //     return;
-    // }
-
-    // // Create a new row container with the same structure as the initial row
-    // const newRow = document.createElement('div');
-    // newRow.className = 'd-flex align-items-center mb-3 gap-3';
-
-    // // Create Airline Name and Rewards fields dynamically with correct ids and asp-for attributes
-    // newRow.innerHTML = `
-    //     <!-- Airline Name Label and Textbox -->
-    //     <input type="hidden" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Type" value="Air" />
-    //     <div class="d-flex align-items-center">
-    //         <label class="form-label me-2 mb-0" style="width: 68px;margin-left: 90px">Airline Name</label>
-    //         <input type="text" class="form-control form-control-sm" id="airlineName${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Name" style="width: 200px;margin-left: 0px" />
-    //     </div>
-
-    //     <!-- Rewards Label and Textbox -->
-    //     <div class="d-flex align-items-center">
-    //         <label class="form-label me-2 mb-0">Rewards</label>
-    //         <input type="text" class="form-control form-control-sm" id="airlineReward${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Rewards" />
-    //     </div>
-    // `;
-
-    // // Append the new row to the rewards container (this ensures it aligns under the first row)
-    // document.getElementById('airRewardsContainer').appendChild(newRow);
-
-    // // Increment the row count
-    // travelHonorIndex++;
-    // airRowCount++;
-    // });
-
-//     let rowCarCount = 1;
-
-//     document.getElementById('addCarRewardBtn').addEventListener('click', function () {
-//     if (rowCarCount >= maxRows) {
-//         alert('You can only add up to 4 rows.');
-//         return;
-//     }
-
-//     // Create a new row container with the same structure as the initial row
-//     const newRow = document.createElement('div');
-//     newRow.className = 'd-flex align-items-center mb-3 gap-3';
-
-//     newRow.innerHTML = `
-//         <input type="hidden" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Type" value="Car" />
-//         <div class="d-flex align-items-center">
-//             <label for="carName${travelHonorIndex}" class="form-label me-2 mb-0" style="width: 68px;margin-left: 90px">Rental Company Name</label>
-//             <input type="text" class="form-control form-control-sm" id="carName${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Name" style="width: 200px;margin-left: 0px" />
-//         </div>
-
-//         <!-- Rewards Label and Textbox -->
-//         <div class="d-flex align-items-center">
-//             <label for="carReward${travelHonorIndex}" class="form-label me-2 mb-0">Rewards</label>
-//             <input type="text" class="form-control form-control-sm" id="carReward${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Rewards" />
-//         </div>
-//     `;
-
-//     // Append the new row to the rewards container (this ensures it aligns under the first row)
-//     document.getElementById('carRewardsContainer').appendChild(newRow);
-
-//     // Increment the row count
-//     travelHonorIndex++;
-//     rowCarCount++;
-// });
-
-    let hotelRowCount = 1;
-
-    document.getElementById('addHotelRewardBtn').addEventListener('click', function () {
-        if (hotelRowCount >= maxRows) {
-            alert('You can only add up to 4 rows.');
-            return;
-        }
-
-        const newRow = document.createElement('div');
-        newRow.className = 'd-flex align-items-center mb-3 gap-3';
-
-        newRow.innerHTML = `
-            <input type="hidden" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Type" value="Hotel" />
-            <div class="d-flex align-items-center">
-                <label class="form-label me-2 mb-0" style="width: 68px;margin-left: 90px">Hotel Name</label>
-                <input type="text" class="form-control form-control-sm" id="hotelName${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Name" style="width: 200px;margin-left: 0px" />
-            </div>
-
-            <!-- Rewards Label and Textbox -->
-            <div class="d-flex align-items-center">
-                <label class="form-label me-2 mb-0">Rewards</label>
-                <input type="text" class="form-control form-control-sm" id="hotelReward${travelHonorIndex}" name="SingleEventStaff.TravelHonorList[${travelHonorIndex}].Rewards" />
-            </div>
-        `;
-
-        // Append the new row to the rewards container (this ensures it aligns under the first row)
-        document.getElementById('hotelRewardsContainer').appendChild(newRow);
-
-        // Increment the row count
-        travelHonorIndex++;
-        hotelRowCount++;
-    }); 
 
     function toggleAdditionalControl() {
         const noRadioButton = document.getElementById("OnboardingTrainingCompleteNo");
