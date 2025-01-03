@@ -1003,11 +1003,16 @@
                 </button>
             `;
             rewardButtonDiv.querySelector('button').addEventListener('click', () => {
-                if (controlCount < maxControls) {
-                    controlCount++;
-                    createRow(false, category); // Pass category ('Air' or 'Car')
+                if (category === 'Air' && airCounter < maxControls) {
+                    airCounter++; // Increment airCounter if category is 'Air'
+                    controlCount++; // Increment total control count
+                    createRow(false, category); // Create row for Air
+                } else if (category === 'Car' && carCounter < maxControls) {
+                    carCounter++; // Increment carCounter if category is 'Car'
+                    controlCount++; // Increment total control count
+                    createRow(false, category); // Create row for Car
                 } else {
-                    alert('You can only add up to 5 rewards.');
+                    alert('You can only add up to 5 rewards for this category.');
                 }
             });
             rowDiv.appendChild(rewardButtonDiv);
@@ -1046,7 +1051,7 @@
         airlineCheckbox.addEventListener('change', () => {
             const container = document.getElementById('dynamicControlsContainer');
             container.innerHTML = ''; // Clear existing fields
-            
+            airCounter++;
             controlCount++;
 
             if (airlineCheckbox.checked) {
@@ -1057,7 +1062,7 @@
         carCheckbox.addEventListener('change', () => {
             const container = document.getElementById('carDynamicControlsContainer');
             container.innerHTML = ''; // Clear existing fields
-            // controlCount = 0; // Reset the count
+            carCounter++;
             controlCount++;
 
             if (carCheckbox.checked) {
