@@ -95,7 +95,7 @@ namespace ExcelToCsv.Models
 
         [StringLength(100, ErrorMessage = "OutstandingTrainings cannot exceed 100 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "OutstandingTrainings cannot be only white spaces.")]
-        public string OutstandingTrainings { get; set; }
+        public string? OutstandingTrainings { get; set; }
 
         [StringLength(100, ErrorMessage = "BackgroundCheckConcerns cannot exceed 100 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "BackgroundCheckConcerns cannot be only white spaces.")]
