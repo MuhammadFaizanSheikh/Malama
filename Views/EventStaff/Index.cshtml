@@ -877,7 +877,7 @@ function createRow(includeButton, category, item = {}, index = controlCount) {
     nameDiv.classList.add('d-flex', 'align-items-center');
     nameDiv.innerHTML = `
         <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
-        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''} required" />
+        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
     `;
     rowDiv.appendChild(nameDiv);
 
@@ -885,7 +885,7 @@ function createRow(includeButton, category, item = {}, index = controlCount) {
     rewardDiv.classList.add('d-flex', 'align-items-center');
     rewardDiv.innerHTML = `
         <label class="form-label me-2 mb-0">Rewards</label>
-        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" />
+        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required />
     `;
     rowDiv.appendChild(rewardDiv);
 
@@ -1099,20 +1099,25 @@ function updateAddRewardButton() {
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
-            var form = document.querySelector('form'); // Get the form element
+             var form = document.querySelector('form'); // Get the form element
 
-            if (!form.reportValidity()) {
-                return false;
-            }
-            
-            
-            if (!validateCertificationFields()) {
-                event.preventDefault();
-            }
+    // Validate required fields using `reportValidity`
+    if (!form.reportValidity()) {
+        event.preventDefault(); // Prevent submission if form is invalid
+        return; // Exit the handler
+    }
 
-        if (!validateStaffContractAffiliation()) {
-            event.preventDefault(); // Prevent form submission if validation fails
-        }
+    // Additional custom validations
+    if (!validateCertificationFields()) {
+        event.preventDefault(); // Prevent submission if certification fields validation fails
+        return; // Exit the handler
+    }
+
+    if (!validateStaffContractAffiliation()) {
+        event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
+        return; // Exit the handler
+    }
+
         });
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
@@ -1630,10 +1635,15 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
         });
 
     function populateForm(data) {
+
         // Clear existing rows for each category before populating new data
-        document.getElementById('dynamicControlsContainer').innerHTML = '';
-        document.getElementById('carDynamicControlsContainer').innerHTML = '';
-        document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
+        const airContainer = document.getElementById('dynamicControlsContainer');
+        const carContainer = document.getElementById('carDynamicControlsContainer');
+        const hotelContainer = document.getElementById('hotelDynamicControlsContainer');
+
+        airContainer.innerHTML = '';
+        carContainer.innerHTML = '';
+        hotelContainer.innerHTML = '';
 
         // Loop through all data records and categorize them
         data.forEach((item, index) => {
@@ -1646,11 +1656,12 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             }
         });
 
-        const totalRows = document.querySelectorAll('#dynamicControlsContainer > div').length +
-            document.querySelectorAll('#carDynamicControlsContainer > div').length +
-            document.querySelectorAll('#hotelDynamicControlsContainer > div').length;
+        airCounter = airContainer.children.length;
+        carCounter = carContainer.children.length;
+        hotelCounter = hotelContainer.children.length;
 
-        controlCount = totalRows - 1; // Set controlCount to the last index
+        const totalRows = airCounter + carCounter + hotelCounter;
+        controlCount = totalRows - 1; 
     }
 
 
