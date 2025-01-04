@@ -762,7 +762,7 @@
 
                     <div class="col-md-6">
                         <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
-                        <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" required />
+                        <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" readonly required />
                     </div>
                 </div>
             </div>
@@ -1724,7 +1724,7 @@ function setStaffIdTextbox(staffId) {
 
 
           $('#addContractBtn').click(function () {
-
+                $('#StaffInfoEnteredBy').val('@User.Identity.Name');
             const controlIds = ['hiddenId','StartDate','StaffID',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
@@ -1733,7 +1733,7 @@ function setStaffIdTextbox(staffId) {
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
+            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
         controlIds.forEach(function (id) {

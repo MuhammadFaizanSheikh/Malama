@@ -119,6 +119,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                     foreach (var contract in firstEventStaff.StaffContractAffiliations)
                     { 
                         var contracts = await _unitOfWork.ContractDetails.GetByIdAsync(contract.ContractId);
+
+                        if (contracts == null)
+                        {
+                            throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                        }
+
                         affiliation.Add(new StaffContractAffiliationDto() { EventStaffId = firstEventStaff.Id, ContractId = contract.ContractId, ContractName = contracts.ContractID });
                     }
 
