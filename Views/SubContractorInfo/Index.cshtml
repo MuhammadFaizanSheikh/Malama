@@ -42,7 +42,8 @@
 <!-- DataTables JS from CDN -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <!-- SweetAlert2 from CDN -->
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -641,7 +642,7 @@
 </body>
 </html>
 <script>
-    $('#CompanyId').val('COMP123');
+    $('#CompanyId').val('COM123');
 $('#ContractClient').val('ABC Corporation');
 $('#ContractType').val('Service Agreement');
 $('#SmallBusinessType').val('Minority-Owned Business');
@@ -1093,7 +1094,24 @@ $('#TrainingEmail').val('david.williams@example.com');
         }
     });
 
-
+    $('#CompanyMainName').autocomplete({
+        source: function (request, response) {
+            $.ajax({
+                url: '@Url.Action("GetCompanyNameSuggestion", "SubContractorInfo")',
+                type: 'GET',
+                dataType: 'json',
+                data: { term: request.term }, // Send the term entered by the user
+                success: function (data) {
+                    response(data); // Return the suggestions to the autocomplete widget
+                }
+            });
+        },
+        minLength: 2, // Minimum characters before triggering the search
+        select: function (event, ui) {
+            // When a suggestion is selected, set its value in the textbox
+            $('#CompanyMainName').val(ui.item.value);
+        }
+    });
 
 
     $.getJSON('/data/statesAndCities.json', function (data) {

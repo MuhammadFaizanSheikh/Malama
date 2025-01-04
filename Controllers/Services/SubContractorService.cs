@@ -256,5 +256,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<IEnumerable<SubContractorInfoDto>> GetCompanyNameByTermAsync(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return new List<SubContractorInfoDto>();
+            }
+
+            var subcontractors = await _unitOfWork.SubContractors.GetAllAsync(c => c.CompanyMainName.Contains(term));
+
+            return subcontractors.Select(s => new SubContractorInfoDto
+            {
+                CompanyMainName = s.CompanyMainName
+            }).ToList();
+        }
     }
 }

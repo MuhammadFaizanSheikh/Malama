@@ -29,6 +29,11 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
+
         public async Task<T?> GetByIdAsync(long id)
         {
             try

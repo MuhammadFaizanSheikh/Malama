@@ -202,5 +202,13 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetCompanyNameSuggestion(string term)
+        {
+            var companies = await _subContractorService.GetCompanyNameByTermAsync(term);
+
+            // Return data in the format required by jQuery UI Autocomplete
+            return Json(companies.Select(c => c.CompanyMainName).ToList());
+        }
     }
 }
