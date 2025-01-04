@@ -676,7 +676,9 @@
                         $('#ContractStatus').val(contract.contractStatus);
 
                         
-                        $('#ContractStartDate').val(contract.contractStartDate);
+                         let contractStartDate = new Date(contract.contractStartDate);
+                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA');
+                        $('#ContractStartDate').val(formattedStartDate);
 
                         let contractEndDate = new Date(contract.contractEndDate);
                         let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
