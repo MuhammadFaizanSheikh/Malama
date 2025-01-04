@@ -9,5 +9,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ContractDetails> GetContractById(long id);
         Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);
         Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId);
+        Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId);
     }
 }

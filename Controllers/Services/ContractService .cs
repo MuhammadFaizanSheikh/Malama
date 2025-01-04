@@ -92,6 +92,19 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
+
+                var existingContract = await repository.GetByIdAsync(contract.Id);
+                contract.AddedBy = existingContract.AddedBy;
+                contract.AddedOn = existingContract.AddedOn;
+
+                if (existingContractDetails != null && existingContractDetails.Any())
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "ContractID already exist!!";
+                    return responseDto;
+                }
+
                 contract.UpdatedBy = loggedinUserName;
                 contract.UpdatedOn = DateTime.Now;
                 await repository.UpdateAsync(contract);
@@ -121,6 +134,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
+
+        public async Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId)
+        {
+            try
+            {
+                // Using the repository to query for the contract
+                return await repository.FindAsync(c => c.ContractID == contractId);
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception and rethrow it for the controller to handle
+                throw new Exception("Error while querying the contract.", ex);
             }
         }
 

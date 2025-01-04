@@ -212,7 +212,7 @@
 
 
     <div class="card-body" style="display: none;">
-        <form asp-action="CreateContractDetails" method="post">
+        <form id="contractForm" asp-action="CreateContractDetails" method="post">
             <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
             <!-- Row 1 -->
             <div class="row">
@@ -491,15 +491,15 @@
     $(document).ready(function () {
         
     // Checking TempData for ShowForm
-    var showForm = '@TempData["ShowForm"]' === 'True'; 
-    debugger;
-    if (showForm) {
-        $('#datatableWrapper').hide();  // Hide the DataTable
-        $('.card-body').show(); // Show the form
-    } else {
-        $('#datatableWrapper').show();  // Show the DataTable
-        $('.card-body').hide(); // Hide the form
-    }
+    // var showForm = '@TempData["ShowForm"]' === 'True'; 
+    // debugger;
+    // if (showForm) {
+    //     $('#datatableWrapper').hide();  // Hide the DataTable
+    //     $('.card-body').show(); // Show the form
+    // } else {
+    //     $('#datatableWrapper').show();  // Show the DataTable
+    //     $('.card-body').hide(); // Hide the form
+    // }
 
         $('#ContractID').val('12345');
     $('#ContractAgency').val('Department of Defense');
@@ -540,16 +540,12 @@
     $('#DawsonProjectManagerFirstName').val('David');
 
 
+        $('.card-body').hide();
+        $('#contractsTable').show();
 
 
 
-
-
-
-
-
-        // $('.card-body').hide();
-        // $('#contractsTable').show();
+        
 
         $('#addContractBtn').click(function () {
 
@@ -792,18 +788,53 @@
     });
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
-        if (!validatePhoneFields()) {
+    // Perform the default form validation first
+     if (!validatePhoneFields()) {
             event.preventDefault(); // Stop form submission if validation fails
         }
-    });
 
-    document.getElementById("updateBtn").addEventListener("click", function (event) {
-        if (!validatePhoneFields()) {
-            event.preventDefault(); // Stop form submission if validation fails
-        }
+        if (isContractIDExists) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Contract ID already exists',
+            text: 'Please choose a different Contract ID.',
+            confirmButtonColor: '#FF0000'
+        });
+
+        // Prevent form submission
+        event.preventDefault();
+    } else {
+        
+    }
+});
+
+function checkIfContractExists(contractID) {
+    return new Promise(function (resolve, reject) {
+        $.ajax({
+            url: '/ContractDetails/CheckIfContractIDAlreadyExist',
+            type: 'GET',
+            data: { contractId: contractID },
+            success: function (response) {
+                console.log(response); // Check the response
+                if (response && response.id !== null) {
+                    // If the contract exists (based on the API response)
+                    resolve(true);
+                } else {
+                    // If the contract does not exist
+                    resolve(false);
+                }
+            },
+            error: function (xhr, status, error) {
+                reject(error);  // Reject the promise in case of an error
+            }
+        });
     });
+}
+
+
 
     function validatePhoneFields() {
+        alert('dads')
         const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
         let isValid = true;
 
@@ -829,5 +860,56 @@
 
         return isValid;
     }
+
+    document.getElementById("updateBtn").addEventListener("click", function (event) {
+        if (!validatePhoneFields()) {
+            event.preventDefault(); // Stop form submission if validation fails
+        }
+
+    });
+
+    let isContractIDExists = false;
+
+    $('#ContractID').on('blur', function () {
+    var contractID = $('#ContractID').val().trim(); // Get and trim ContractID input
+
+    // Only call checkIfContractExists if the ContractID is not empty
+    if (contractID !== '') {
+        // Call checkIfContractExists method
+        checkIfContractExists(contractID).then(function (exists) {
+            if (exists) {
+                // Show SweetAlert error if the ContractID already exists
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contract ID already exists',
+                    text: 'Please choose a different Contract ID.',
+                    confirmButtonColor: '#FF0000'
+                });
+
+                // Optionally, add custom styling to highlight the field
+                $('#ContractID').addClass('is-invalid'); // Adding Bootstrap's invalid class
+                isContractIDExists = true;
+            } else {
+                // If ContractID doesn't exist, remove invalid class (if any)
+                $('#ContractID').removeClass('is-invalid');
+                isContractIDExists = false;
+            }
+        }).catch(function (error) {
+            // Handle errors in the API call
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while checking the Contract ID.',
+                confirmButtonColor: '#FF0000'
+            });
+        });
+    } else {
+        // If ContractID is empty, remove any invalid styling
+        $('#ContractID').removeClass('is-invalid');
+        isContractIDExists = false;
+    }
+});
+
+
     
 </script>

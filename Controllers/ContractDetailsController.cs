@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
@@ -39,45 +40,6 @@ namespace ExcelFilesCompiler.Controllers
             };
             // Pass contracts data to the view
             return View(viewModel);
-
-
-
-            //var dummyData = new ContractDetails
-            //{
-            //    ContractID = "CONTRACT12345",
-            //    ContractAgency = "Agency Name",
-            //    ContractServiceBranch = "Branch Name",
-            //    ContractComponent = "Component Name",
-            //    ContractClient = "Client Name",
-            //    ContractType = "Type Name",
-            //    DawsonRoleOnContract = "Role Name",
-            //    ContractStatus = "Active",
-            //    ContractStartDate = DateTime.Now,
-            //    ContractEndDate = DateTime.Now.AddYears(1),
-            //    KoLastName = "Smith",
-            //    KoFirstName = "John",
-            //    KOPhone = "1234567890",
-            //    KOPhone2 = "0987654321",
-            //    KOEmail = "ko@example.com",
-            //    KONotes = "Sample notes for KO",
-            //    CORLastName = "Doe",
-            //    CORPrefix = "Mr",
-            //    CORFirstName = "Jane",
-            //    CORKORank = "Rank 1",
-            //    CORPhone = "2345678901",
-            //    CORPhone2 = "5678901234",
-            //    COREmail = "cor@example.com",
-            //    CORNotes = "Sample notes for COR",
-            //    DawsonProgramManagerLastName = "Adams",
-            //    DawsonProgramManagerFirstName = "Tom",
-            //    DawsonDeputyProgramManagerLastName = "Lee",
-            //    DawsonDeputyProgramManagerFirstName = "Henry",
-            //    DawsonProjectManagerLastName = "Jackson",
-            //    DawsonProjectManagerFirstName = "Emily"
-            //};
-
-            //// Pass the dummy data to the view
-            //return View(dummyData);
 
         }
 
@@ -129,14 +91,17 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Please login and try again";
                     TempData["ShowForm"] = true;  // Using TempData instead of ViewData
-                    return RedirectToAction("Index", contractDto);
+                    TempData["ContractDto"] = contractDto;
+                    //return RedirectToAction("Index", contractDto);
+                    return RedirectToAction("Index");
                 }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
                 TempData["ResponseMessage"] = res.Message;
                 TempData["ShowForm"] = res.Success ? false : true;  // Use TempData
-                return RedirectToAction("Index", contractDto);
+                return RedirectToAction("Index");
+                //return RedirectToAction("Index", contractDto);
             }
             catch (Exception ex)
             {
@@ -144,11 +109,10 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
                 TempData["ShowForm"] = true;  // Using TempData instead of ViewData
+                TempData["ContractDto"] = contractDto;
                 return RedirectToAction("Index", contractDto);
             }
         }
-
-
 
         [HttpGet]
         public async Task<IActionResult> GetContractById(long id)
@@ -187,6 +151,31 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "An error occurred while fetching contracts." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckIfContractIDAlreadyExist(string contractId)
+        {
+            try
+            {
+                var contract = await _contractService.CheckIfContractIDAlreadyExist(contractId);
+
+                if (contract != null)
+                {
+                    // Return the contract's Id if it exists
+                    return Json(new { id = contract.Id });
+                }
+                else
+                {
+                    // Return null if no contract is found
+                    return Json(new { id = (int?)null });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Return a server error with a message if there's an exception
+                return StatusCode(500, new { message = "An error occurred while fetching contracts.", error = ex.Message });
             }
         }
 

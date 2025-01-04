@@ -19,6 +19,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate);
         Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task DeleteAgainstFieldAsync(object id, string idPropertyName);
+        Task<T> FindAsync(Expression<Func<T, bool>> predicate);
 
     }
 }

@@ -185,6 +185,18 @@ namespace ExcelFilesCompiler.Repositories.Services
                 throw new Exception("Error while querying the database.", ex);
             }
         }
+        public async Task<T> FindAsync(Expression<Func<T, bool>> predicate)
+        {
+            try
+            {
+                // Find the first matching entity
+                return await _dbSet.FirstOrDefaultAsync(predicate);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while querying the database.", ex);
+            }
+        }
 
         public async Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
         {
