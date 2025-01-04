@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
+using ExcelFilesCompiler.Repositories.Services;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,10 +22,18 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
-
+                
             try
             {
-                // Attempt to add the contract detail to the repository
+                var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
+
+                if (existingContractDetails != null && existingContractDetails.Any())
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "ContractID already exist!!";
+                    return responseDto;
+                }
+
                 contractDetail.AddedBy = loggedinUserName;
                 contractDetail.AddedOn = DateTime.Now;
                 await repository.AddAsync(contractDetail);

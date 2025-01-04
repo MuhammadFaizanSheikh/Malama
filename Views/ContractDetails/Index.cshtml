@@ -140,6 +140,7 @@
         </div>
     }
 
+   
     <div style="display: flex; justify-content: center; align-items: center;">
         <button class="btn btn-primary" id="addContractBtn"
                 style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
@@ -209,8 +210,6 @@
     </table>
     </div>
 
-
-    
 
     <div class="card-body" style="display: none;">
         <form asp-action="CreateContractDetails" method="post">
@@ -486,12 +485,22 @@
 
         </form>
     </div>
-
+    
 </div>
 <script>
-    
-
     $(document).ready(function () {
+        
+    // Checking TempData for ShowForm
+    var showForm = '@TempData["ShowForm"]' === 'True'; 
+    debugger;
+    if (showForm) {
+        $('#datatableWrapper').hide();  // Hide the DataTable
+        $('.card-body').show(); // Show the form
+    } else {
+        $('#datatableWrapper').show();  // Show the DataTable
+        $('.card-body').hide(); // Hide the form
+    }
+
         $('#ContractID').val('12345');
     $('#ContractAgency').val('Department of Defense');
     $('#ContractServiceBranch').val('Army');
@@ -505,7 +514,7 @@
     $('#ContractEndDate').val('2025-12-31');
 
     // KO
-    $('#KoLastName').val('Smith');
+    // $('#KoLastName').val('Smith');
     $('#KoFirstName').val('John');
     $('#KOPhone').val('123-456-7890');
     $('#KOPhone2').val('987-654-3210');
@@ -539,8 +548,8 @@
 
 
 
-        $('.card-body').hide();
-        $('#contractsTable').show();
+        // $('.card-body').hide();
+        // $('#contractsTable').show();
 
         $('#addContractBtn').click(function () {
 

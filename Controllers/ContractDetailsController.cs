@@ -106,10 +106,11 @@ namespace ExcelFilesCompiler.Controllers
                         }
                     }
 
+                    TempData["ShowForm"] = true;  // Using TempData instead of ViewData
                     return View("Index", contractDto);
                 }
 
-                var user = _userManager.GetUserAsync(User).Result;
+                var user = await _userManager.GetUserAsync(User);
 
                 if (user != null)
                 {
@@ -125,24 +126,28 @@ namespace ExcelFilesCompiler.Controllers
                 else
                 {
                     TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] ="Error";
+                    TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Please login and try again";
-                    return RedirectToAction("Index");
+                    TempData["ShowForm"] = true;  // Using TempData instead of ViewData
+                    return RedirectToAction("Index", contractDto);
                 }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
                 TempData["ResponseMessage"] = res.Message;
-                return RedirectToAction("Index");
+                TempData["ShowForm"] = res.Success ? false : true;  // Use TempData
+                return RedirectToAction("Index", contractDto);
             }
             catch (Exception ex)
             {
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
+                TempData["ShowForm"] = true;  // Using TempData instead of ViewData
                 return RedirectToAction("Index", contractDto);
             }
         }
+
 
 
         [HttpGet]
