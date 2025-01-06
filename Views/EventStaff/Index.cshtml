@@ -473,7 +473,7 @@
                         <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
                     </div>
             <h4 class="mt-4">States Licenses</h4>
-                    <div class="form-container" style="max-width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
+                    @* <div class="form-container" style="max-width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <div class="form-row license-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div class="col-md-3" style="flex: 1; margin-right: 15px;">
                                 <div class="form-group">
@@ -514,8 +514,14 @@
                                 <span class="button-text">Add Another License</span>
                             </button>
                         </div>
+                    </div> *@
+                    <div class="form-container">
+                        <!-- Dynamic License Rows will be inserted here -->
                     </div>
-
+                    <button type="button" class="add-row-button" id="addRowButton">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                        <span class="button-text">Add Another License</span>
+                    </button>
             <div class="form-group">
                 <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
                 <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" minlength="10" maxlength="10" inputmode="numeric" pattern="\d*" />
@@ -790,6 +796,7 @@
    
 
     $(document).ready(function () {
+
         $('#StaffContractAffiliation').select2({
             placeholder: "Select options",
             allowClear: true
@@ -1151,18 +1158,24 @@ function updateAddRewardButton() {
         width: '100%'
     });
 
-    document.getElementById('addRowButton').addEventListener('click', function () {
-    // Call the function without data to add a new row
-    manageLicenseRows();
-    });
+    // document.getElementById('addRowButton').addEventListener('click', function () {
+    // // Call the function without data to add a new row
+    // manageLicenseRows();
+    // });
+
 
     function manageLicenseRows(licenses = []) {
         const container = document.querySelector('.form-container');
-        const licenseRows = document.querySelectorAll('.license-row');
+        const addRowButton = document.getElementById('addRowButton');
 
-        // If we are adding new rows and there are fewer than 5, allow adding new rows
-        if (licenses.length === 0 && licenseRows.length < 5) {
-            const rowIndex = licenseRows.length;
+        if (!container || !addRowButton) {
+            console.error('Form container or addRowButton not found');
+            return;
+        }
+
+        // Function to create a new license row
+        function createLicenseRow(rowIndex, licenseData = null) {
+            debugger;
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
             newRow.style.display = 'flex';
@@ -1170,88 +1183,92 @@ function updateAddRewardButton() {
             newRow.style.alignItems = 'center';
             newRow.style.width = '100%';
 
+            const formattedExpiryDate = licenseData && licenseData.licenseExpiryDate
+                ? new Date(licenseData.licenseExpiryDate).toLocaleDateString('en-CA')
+                : '';
+            // License row markup with adjusted widths for smaller controls
             newRow.innerHTML = `
-                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                    <div class="form-group">
-                                <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" required />
-                    </div>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
                 </div>
-                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                    <div class="form-group">
-                                <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                            <option value="">Select State</option>
-                            <option value="State1">State1</option>
-                            <option value="State2">State2</option>
-                        </select>
-                    </div>
+            </div>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                        <option value="">Select State</option>
+                        <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
+                        <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
+                    </select>
                 </div>
-                <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                    <div class="form-group">
-                                <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                            <option value="">Select Type</option>
-                            <option value="Type1">Type1</option>
-                            <option value="Type2">Type2</option>
-                        </select>
-                    </div>
+            </div>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
+                        <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
+                    </select>
                 </div>
-                <div class="col-md-3" style="flex: 1; margin-right: 0;">
-                    <div class="form-group">
-                                <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" required />
-                    </div>
+            </div>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                        <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
                 </div>
-            `;
+            </div>
+            <div class="col-md-1" style="flex: 0; margin-left: 5px;">
+                <button type="button" class="btn btn-danger remove-row">Remove</button>
+            </div>
+        `;
 
-            // Insert the new row before the "Add Another License" button
-            container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+            // Add event listener for the "Remove" button to delete the row
+            const removeButton = newRow.querySelector('.remove-row');
+            removeButton.addEventListener('click', () => {
+                const licenseRows = document.querySelectorAll('.license-row');
+                // Prevent removal if there is only 1 row left
+                if (licenseRows.length > 1) {
+                    newRow.remove();
+                    updateRowIndices(); // Ensure correct indices after removing
+                } else {
+                    // alert('You cannot remove the last row.');
+                }
+            });
+
+            return newRow;
         }
-        else if (licenses.length > 0) {
-            // If licenses data exists (editing scenario), populate the rows with the data
-            // Clear existing rows
-            licenseRows.forEach(row => row.remove());
 
-            licenses.forEach((license, index) => {
-                const newRow = document.createElement('div');
-                newRow.classList.add('form-row', 'license-row');
-                newRow.style.display = 'flex';
-                newRow.style.justifyContent = 'space-between';
-                newRow.style.alignItems = 'center';
-                newRow.style.width = '100%';
 
-                newRow.innerHTML = `
-                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                        <div class="form-group">
-                                    <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" class="form-control" value="${license.licenseNumber}" required />
-                        </div>
-                    </div>
-                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                        <div class="form-group">
-                                    <select id="licenseState${index}"  name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
-                                <option value="">Select State</option>
-                                <option value="State1" ${license.licenseState === "State1" ? "selected" : ""}>State1</option>
-                                <option value="State2" ${license.licenseState === "State2" ? "selected" : ""}>State2</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                        <div class="form-group">
-                                    <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <option value="Type1" ${license.licenseType === "Type1" ? "selected" : ""}>Type1</option>
-                                <option value="Type2" ${license.licenseType === "Type2" ? "selected" : ""}>Type2</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-3" style="flex: 1; margin-right: 0;">
-                        <div class="form-group">
-                                    <input id="licenseExpiry${index}"  name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" value="${new Date(license.licenseExpiryDate).toLocaleDateString('en-CA')}" required />
-                        </div>
-                    </div>
-                `;
-
-                // Insert the populated row before the "Add Another License" button
-                container.insertBefore(newRow, document.getElementById('addRowButton').parentElement);
+        // Function to update row indices (important for model binding)
+        function updateRowIndices() {
+            const licenseRows = document.querySelectorAll('.license-row');
+            licenseRows.forEach((row, index) => {
+                row.querySelectorAll('input, select').forEach(input => {
+                    const name = input.name;
+                    input.name = name.replace(/\[\d+\]/, `[${index}]`); // Update the name attribute for model binding
+                });
             });
         }
+
+        // If there are licenses passed (edit mode), generate rows for them
+        if (licenses.length > 0) {
+            licenses.forEach((license, index) => {
+                const newRow = createLicenseRow(index, license);
+                container.appendChild(newRow);
+            });
+        } else {
+            // If no licenses passed (first load), create the first row
+            const firstRow = createLicenseRow(0);
+            container.appendChild(firstRow);
+        }
+
+        // Event listener for the "Add Another License" button
+        addRowButton.addEventListener('click', () => {
+            const licenseRows = document.querySelectorAll('.license-row');
+            if (licenseRows.length < 5) { // Limit the number of rows to 5
+                const newRow = createLicenseRow(licenseRows.length);
+                container.appendChild(newRow);
+            }
+        });
     }
 
 
@@ -1821,7 +1838,6 @@ function setStaffIdTextbox(staffId) {
 
                 controlIds.forEach(function(id) {
             var control = $('#' + id);
-            
             // For text input fields, clear the value
         //     if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
         //         control.val('');
@@ -1846,6 +1862,9 @@ function setStaffIdTextbox(staffId) {
             //     control.val(control.find('option:first').val()).trigger('change');
             // }
         });
+
+        manageLicenseRows();
+
         });
 
 
