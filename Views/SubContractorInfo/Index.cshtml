@@ -887,7 +887,7 @@ $('#TrainingEmail').val('');
                         } else {
                             const controlIds = [
                           'hiddenId', 'ContractId',   'SmallBusinessType',
-                          'ContractAffiliation', 'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+                          'ContractAffiliation', 'SolicitationNumber', 'CompanyMainAddress1',
                           'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
                           'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
                           'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
@@ -906,7 +906,9 @@ $('#TrainingEmail').val('');
                       });
 
 
-                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                            $('#updateBtn').show();
+                            $('#CompanyMainName').prop('readonly', true);
+                            $('#CompanyMainName').addClass('read-only-style');
                         }
                     } else {
                         alert(response.message);  // Show error message
