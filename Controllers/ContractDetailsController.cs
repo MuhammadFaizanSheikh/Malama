@@ -46,6 +46,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateContractDetails(ContractViewModel contractDto, string action)
         {
             try

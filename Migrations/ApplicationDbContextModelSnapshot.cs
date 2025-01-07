@@ -478,6 +478,9 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("CacExpiryDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CredentialingProcessDate")
                         .HasColumnType("datetime2");
 
@@ -910,6 +913,9 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<long>("EventStaffId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime>("LicenseActiveDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("LicenseExpiryDate")
                         .HasColumnType("datetime2");
 
@@ -968,12 +974,14 @@ namespace ExcelFilesCompiler.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Rewards")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Rewards")
+                        .HasColumnType("decimal(6,0)");
 
                     b.Property<string>("Type")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

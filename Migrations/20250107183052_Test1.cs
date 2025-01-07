@@ -119,7 +119,7 @@ namespace ExcelFilesCompiler.Migrations
                     HistoricalCredentialingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DAWSONInternalCredentialingCompleteDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     OnboardingTrainingComplete = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OutstandingTrainings = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    OutstandingTrainings = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     BackgroundCheckConcerns = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     BLSCertDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BLSCertNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -128,6 +128,7 @@ namespace ExcelFilesCompiler.Migrations
                     CACApplicationProcessStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StaffCAC = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StaffDoDID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    CacExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     SubContractorId = table.Column<long>(type: "bigint", nullable: false),
                     StaffCellNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
                     StaffPhone2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -433,6 +434,7 @@ namespace ExcelFilesCompiler.Migrations
                     LicenseNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseState = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LicenseType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LicenseActiveDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LicenseExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -453,9 +455,9 @@ namespace ExcelFilesCompiler.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EventStaffId = table.Column<long>(type: "bigint", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Rewards = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rewards = table.Column<decimal>(type: "decimal(6,0)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -320,6 +320,7 @@
     </div>
     <div class="card-body" style="display: none;">
         <form asp-action="CreateEventStaff" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleEventStaff.Id" id="hiddenId" />
 
                 <div class="row mb-3">
@@ -578,24 +579,35 @@
         </div>
     </div>
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Staff CAC</label>
-            <div class="form-check">
-                <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" required/>
-                <label class="form-check-label" for="staffCACYes">Yes</label>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Staff CAC</label>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" required />
+                        <label class="form-check-label" for="staffCACYes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" required />
+                        <label class="form-check-label" for="staffCACNo">No</label>
+                    </div>
+                </div>
+
+                <div class="col-md-6" id="staffDoDContainer" style="display: none;">
+                    <!-- Hidden by default -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
+                            <input asp-for="SingleEventStaff.StaffDoDID" minlength="10" maxlength="10" class="form-control" id="StaffDoDID" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SingleEventStaff.CacExpiryDate" class="form-label">CAC Expiry Date</label>
+                            <input asp-for="SingleEventStaff.CacExpiryDate" type="date" class="form-control" id="StaffCACExpiryDate" />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-check">
-                <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" required/>
-                <label class="form-check-label" for="staffCACNo">No</label>
-            </div>
-        </div>
-        <div class="col-md-6" id="staffDoDContainer" style="display: none;">
-            <!-- Hidden by default -->
-            <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
-            <input asp-for="SingleEventStaff.StaffDoDID" minlength="10" maxlength="10" class="form-control" id="StaffDoDID" />
-        </div>
-    </div>
+
+
 
                 <div class="row mb-3">
         <div class="col-md-6">
@@ -1492,15 +1504,21 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
                             $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
 
+                        debugger;
                             if (eventStaff.staffCAC === 'true') {
                                 $('#staffCACYes').prop('checked', true).trigger('change');
-                                $('#StaffDoDID').val(eventStaff.staffDoDID);
                                 $('#staffDoDContainer').show();
+                                $('#StaffDoDID').val(eventStaff.staffDoDID);
                                 $('#StaffDoDID').attr('required', 'required');
+                                $('#StaffCACExpiryDate').val(new Date(eventStaff.cacExpiryDate).toLocaleDateString('en-CA'));
+                                $('#StaffCACExpiryDate').attr('required', 'required');
+
+                        
                             } else {
                                 $('#staffCACNo').prop('checked', true).trigger('change');
                                 $('#staffDoDContainer').hide();
                                 $('#StaffDoDID').removeAttr('required');
+                                $('#StaffCACExpiryDate').removeAttr('required');
                             }
 
                             
@@ -1709,14 +1727,17 @@ function setStaffIdTextbox(staffId) {
     const staffCACNo = document.getElementById('staffCACNo');
     const staffDoDContainer = document.getElementById('staffDoDContainer');
     const staffDoDID = document.getElementById('StaffDoDID');
+    const cacExpiryDate = document.getElementById('StaffCACExpiryDate');
 
     function toggleStaffDoDID() {
         if (staffCACYes.checked) {
             staffDoDContainer.style.display = 'block'; 
             staffDoDID.setAttribute('required', 'required');
+            cacExpiryDate.setAttribute('required', 'required');
         } else {
             staffDoDContainer.style.display = 'none';
             staffDoDID.removeAttribute('required');
+            cacExpiryDate.removeAttribute('required');
         }
     }
 

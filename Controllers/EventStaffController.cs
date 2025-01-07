@@ -81,6 +81,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventStaff(EventStaffViewModel eventStaffDto, string action)
         {
             try

@@ -213,6 +213,7 @@
 
     <div class="card-body" style="display: none;">
         <form id="contractForm" asp-action="CreateContractDetails" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
             <!-- Row 1 -->
             <div class="row">

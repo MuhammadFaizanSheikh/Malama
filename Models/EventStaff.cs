@@ -114,10 +114,13 @@ namespace ExcelToCsv.Models
         [Required(ErrorMessage = "StaffCAC is required.")]
         [RegularExpression("^(true|false)$", ErrorMessage = "StaffCAC : Invalid selection. Choose 'Yes' or 'No'.")]
         public string StaffCAC { get; set; }
+        
 
         [StringLength(10, ErrorMessage = "StaffDoDID cannot exceed 10 characters.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffDoDID cannot be only white spaces.")]
         public string? StaffDoDID { get; set; }
+
+        public DateTime? CacExpiryDate { get; set; }
 
         [Required(ErrorMessage = "SubContractorId is required.")]
         public long SubContractorId { get; set; }
@@ -280,6 +283,7 @@ namespace ExcelToCsv.Models
         public string Name { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(6,0)")]
         public decimal Rewards { get; set; }
     }
 }

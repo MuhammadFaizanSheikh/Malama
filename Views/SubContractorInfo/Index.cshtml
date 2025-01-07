@@ -280,6 +280,7 @@
     </div>
     <div class="card-body" style="display: none;">
         <form asp-action="CreateSubContracttor" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleSubContractor.Id" id="hiddenId" />
 
         <h3 class="mt-5">Company Main:</h3>
