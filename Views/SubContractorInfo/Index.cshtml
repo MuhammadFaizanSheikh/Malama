@@ -220,10 +220,10 @@
         <table id="contractsTable" class="display">
             <thead>
                 <tr>
-                    <th>ContractID</th>
-                    <th>CompanyId</th>
+                    <th>Company Id</th>
+                    <th>Company Main Name</th>
+                    <th>DAWSON Contract ID</th>
                     <th>Contract Client</th>
-                    <th>Contract Type</th>
                     <th>Small Business Type</th>
                     <th>Contract Type</th>
                     <th>Contract Affiliation</th>
@@ -239,10 +239,10 @@
                     @foreach (var contract in Model.SubContractor)
                     {
                         <tr data-id="@contract.Id">
-                            <td>@contract.ContractId</td>
                             <td>@contract.CompanyId</td>
+                            <td>@contract.CompanyMainName</td>
+                            <td>@contract.ContractId</td>
                             <td>@contract.ContractClient</td>
-                            <td>@contract.ContractType</td>
                             <td>@contract.SmallBusinessType</td>
                             <td>@contract.ContractType</td>
                             <td>@contract.ContractAffiliation</td>

@@ -21,6 +21,7 @@ namespace ExcelFilesCompiler.Models
         public long Id { get; set; }
         public string ContractId { get; set; }
         public string CompanyId { get; set; }
+        public string CompanyMainName { get; set; }
         public string ContractClient { get; set; }
         public string ContractType { get; set; }
         public string SmallBusinessType { get; set; }

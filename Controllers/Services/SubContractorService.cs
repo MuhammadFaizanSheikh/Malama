@@ -47,6 +47,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 ContractServiceBranch = contract.ContractServiceBranch,
                                 ContractComponent = contract.ContractComponent,
                                 SolicitationNumber = sub.SolicitationNumber,
+                                CompanyMainName = sub.CompanyMainName,
                             };
 
                 return result.ToList();
