@@ -709,7 +709,7 @@
                     <div class="col-md-6 staff-affiliation-row">
                                 <label class="form-label">Staff Contract Affiliation</label>
                        
-                                <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" style="width: 100%; padding: 10px;">
+                                <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" style="width: 100%; padding: 10px;" required>
                                     
                                 </select>
                                 <span id="staffContractError" class="text-danger" style="display:none;">Please select at least one option.</span>
@@ -1038,20 +1038,20 @@ function updateAddRewardButton() {
         }
     }
 
-    function validateStaffContractAffiliation() {
-    var isValid = $('#StaffContractAffiliation').val() && $('#StaffContractAffiliation').val().length > 0;
+//     function validateStaffContractAffiliation() {
+//     var isValid = $('#StaffContractAffiliation').val() && $('#StaffContractAffiliation').val().length > 0;
 
-    if (!isValid) {
-        $('#staffContractError').text('Please select at least one option.').show(); // Show error message
-        $('#StaffContractAffiliation').focus();
-        return false;
-    } else {
-        $('#staffContractError').hide(); // Hide error message if valid
-        return true;
-    }
+//     if (!isValid) {
+//         $('#staffContractError').text('Please select at least one option.').show(); // Show error message
+//         $('#StaffContractAffiliation').focus();
+//         return false;
+//     } else {
+//         $('#staffContractError').hide(); // Hide error message if valid
+//         return true;
+//     }
 
-    return isValid; // Return validation result
-}
+//     return isValid; // Return validation result
+// }
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
@@ -1069,15 +1069,16 @@ function updateAddRewardButton() {
         return; // Exit the handler
     }
 
-    if (!validateStaffContractAffiliation()) {
-        event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
-        return; // Exit the handler
-    }
+    // if (!validateStaffContractAffiliation()) {
+    //     event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
+    //     return; // Exit the handler
+    // }
 
         });
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
         debugger;
+        console.log($('#StaffContractAffiliation').val());
         var form = document.querySelector('form'); // Get the form element
 
         if (!form.reportValidity()) {
@@ -1089,9 +1090,9 @@ function updateAddRewardButton() {
             event.preventDefault();
         }
 
-        if (!validateStaffContractAffiliation()) {
-            event.preventDefault(); // Prevent form submission if validation fails
-        }
+        // if (!validateStaffContractAffiliation()) {
+        //     event.preventDefault(); // Prevent form submission if validation fails
+        // }
     });
 
         function validateCertificationFields() {
@@ -1448,6 +1449,8 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             allowClear: true
                         }).trigger('change').trigger('input');
 
+                    console.log($('#StaffContractAffiliation').val());
+
                             $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
                             $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);
                             $('#hotelCheckbox').prop('checked', eventStaff.travelHonorHotel);
@@ -1535,7 +1538,6 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#secondaryState').val(eventStaff.secondaryState).trigger('change');
                             $('#secondaryCity').val(eventStaff.secondaryCity).trigger('change');
                             $('#secondaryZipCode').val(eventStaff.secondaryZip);
-                            $('#StaffContractAffiliation').val(eventStaff.staffContractAffiliation);
                             $('#StaffInfoEnteredBy').val(eventStaff.staffInfoEnteredBy);
 
 
