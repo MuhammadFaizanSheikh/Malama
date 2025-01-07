@@ -2,7 +2,7 @@
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
-    ViewData["Title"] = "Sub Contractor Info";
+    ViewData["Title"] = "Contractor Detail";
 }
 
 <!DOCTYPE html>
@@ -195,7 +195,7 @@
         </script>
     }
 
-<h2 class="text-center mb-4">Sub Contractor Info</h2>
+    <h2 class="text-center mb-4">@ViewData["Title"]</h2>
 
     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
     {
@@ -283,13 +283,69 @@
             <input type="hidden" asp-for="SingleSubContractor.Id" id="hiddenId" />
 
 
-        <!-- Row 1 -->
+       
+
+
+        <h3 class="mt-5">Company Main:</h3>
+
+        <!-- Row 6 -->
+        <div class="row mb-3">
+    <div class="col-md-6">
+        <label for="CompanyName">Name</label>
+                <input type="text" id="CompanyMainName"  class="form-control" asp-for="SingleSubContractor.CompanyMainName" placeholder="Enter Company Main Name" maxLength="50" required>
+                <span id="CompanyMainPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
+                <span asp-validation-for="SingleSubContractor.CompanyMainName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label for="Address1">Address 1</label>
+                <input type="text" id="CompanyMainAddress1"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress1" placeholder="Enter Company Main Address" maxLength="200" required>
+                <span asp-validation-for="SingleSubContractor.CompanyMainAddress1" class="text-danger"></span>
+    </div>
+</div>
+
+<!-- Row 7 -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label for="Address2">Address 2</label>
+                <input type="text" id="CompanyMainAddress2"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress2" placeholder="Enter Company Main Address2" maxLength="200">
+                <span asp-validation-for="SingleSubContractor.CompanyMainAddress2" class="text-danger"></span>
+    </div>
+            <div class="col-md-6">
+                <label for="State">State</label>
+                <select id="CompanyMainState" class="form-select" asp-for="SingleSubContractor.CompanyMainState"  required>
+                    <!-- Options will be added here -->
+                </select>
+                <span asp-validation-for="SingleSubContractor.CompanyMainState" class="text-danger"></span>
+            </div>
+</div>
+
+<!-- Row 8 -->
+<div class="row mb-3">
+            <div class="col-md-6">
+                <label for="City">City</label>
+                <select id="CompanyMainCity"  class="form-select city-dropdown" asp-for="SingleSubContractor.CompanyMainCity" required>
+                    <!-- Options will be added here -->
+                </select>
+                <span asp-validation-for="SingleSubContractor.CompanyMainCity" class="text-danger"></span>
+            </div>
+
+    <div class="col-md-6">
+        <label for="Zip">Zip</label>
+                <select id="CompanyMainZip"  class="form-select" asp-for="SingleSubContractor.CompanyMainZip" required>
+            <!-- Options will be added here -->
+        </select>
+                <span asp-validation-for="SingleSubContractor.CompanyMainZip" class="text-danger"></span>
+    </div>
+</div>
+
+
+ <!-- Row 1 -->
         <div class="row mb-3">
     <div class="col-md-6">
         <label for="ContractId">Contract ID # (DAWSON)</label>
                <select id="ContractId" class="form-select select2" asp-for="SingleSubContractor.ContractId" required>
     <!-- Options will be populated dynamically from the database -->
-</select>
+                </select>
         <span asp-validation-for="SingleSubContractor.ContractId" class="text-danger"></span>
     </div>
     <div class="col-md-6">
@@ -349,60 +405,6 @@
         <span asp-validation-for="SingleSubContractor.SolicitationNumber" class="text-danger"></span>
     </div>
 </div>
-
-
-        <h3 class="mt-5">Company Main:</h3>
-
-        <!-- Row 6 -->
-        <div class="row mb-3">
-    <div class="col-md-6">
-        <label for="CompanyName">Name</label>
-                <input type="text" id="CompanyMainName"  class="form-control" asp-for="SingleSubContractor.CompanyMainName" placeholder="Enter Company Main Name" maxLength="50" required>
-                <span id="CompanyMainPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
-                <span asp-validation-for="SingleSubContractor.CompanyMainName" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label for="Address1">Address 1</label>
-                <input type="text" id="CompanyMainAddress1"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress1" placeholder="Enter Company Main Address" maxLength="200" required>
-                <span asp-validation-for="SingleSubContractor.CompanyMainAddress1" class="text-danger"></span>
-    </div>
-</div>
-
-<!-- Row 7 -->
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="Address2">Address 2</label>
-                <input type="text" id="CompanyMainAddress2"  class="form-control" asp-for="SingleSubContractor.CompanyMainAddress2" placeholder="Enter Company Main Address2" maxLength="200">
-                <span asp-validation-for="SingleSubContractor.CompanyMainAddress2" class="text-danger"></span>
-    </div>
-            <div class="col-md-6">
-                <label for="State">State</label>
-                <select id="CompanyMainState" class="form-select" asp-for="SingleSubContractor.CompanyMainState"  required>
-                    <!-- Options will be added here -->
-                </select>
-                <span asp-validation-for="SingleSubContractor.CompanyMainState" class="text-danger"></span>
-            </div>
-</div>
-
-<!-- Row 8 -->
-<div class="row mb-3">
-            <div class="col-md-6">
-                <label for="City">City</label>
-                <select id="CompanyMainCity"  class="form-select city-dropdown" asp-for="SingleSubContractor.CompanyMainCity" required>
-                    <!-- Options will be added here -->
-                </select>
-                <span asp-validation-for="SingleSubContractor.CompanyMainCity" class="text-danger"></span>
-            </div>
-
-    <div class="col-md-6">
-        <label for="Zip">Zip</label>
-                <select id="CompanyMainZip"  class="form-select" asp-for="SingleSubContractor.CompanyMainZip" required>
-            <!-- Options will be added here -->
-        </select>
-                <span asp-validation-for="SingleSubContractor.CompanyMainZip" class="text-danger"></span>
-    </div>
-</div>
-
 
         <h3 class="mt-5">Company Main POC:</h3>
 

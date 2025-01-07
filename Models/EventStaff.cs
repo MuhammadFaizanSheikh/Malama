@@ -258,6 +258,8 @@ namespace ExcelToCsv.Models
         public string LicenseType { get; set; }
 
         [Required]
+        public DateTime LicenseActiveDate { get; set; }
+        [Required]
         public DateTime LicenseExpiryDate { get; set; }
     }
 
@@ -271,13 +273,13 @@ namespace ExcelToCsv.Models
         [ForeignKey("EventStaff")]
         public long EventStaffId { get; set; }
 
-        //[Required]
-        public string? Type { get; set; }
+        [Required]
+        public string Type { get; set; }
 
-        //[Required]
-        public string? Name { get; set; }
+        [Required]
+        public string Name { get; set; }
 
-        //[Required]
-        public string? Rewards { get; set; }
+        [Required]
+        public decimal Rewards { get; set; }
     }
 }

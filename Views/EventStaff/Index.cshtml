@@ -473,48 +473,6 @@
                         <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
                     </div>
             <h4 class="mt-4">States Licenses</h4>
-                    @* <div class="form-container" style="max-width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
-                        <div class="form-row license-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                                <div class="form-group">
-                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseNumber" class="form-label">License Number</label>
-                                    <input asp-for="SingleEventStaff.Licenses[0].LicenseNumber" id="licenseNumber0" class="form-control" placeholder="License Number" required />
-                                </div>
-                            </div>
-                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                                <div class="form-group">
-                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseState" class="form-label">License State</label>
-                                    <select asp-for="SingleEventStaff.Licenses[0].LicenseState" id="licenseState0" class="form-control" required>
-                                        <option value="">Select State</option>
-                                        <option value="State1">State1</option>
-                                        <option value="State2">State2</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3" style="flex: 1; margin-right: 15px;">
-                                <div class="form-group">
-                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseType" class="form-label">License Type</label>
-                                    <select asp-for="SingleEventStaff.Licenses[0].LicenseType" id="licenseType0" class="form-control" required>
-                                        <option value="">Select Type</option>
-                                        <option value="Type1">Type1</option>
-                                        <option value="Type2">Type2</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3" style="flex: 1; margin-right: 0;">
-                                <div class="form-group">
-                                    <label asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" class="form-label">License Expiry</label>
-                                    <input asp-for="SingleEventStaff.Licenses[0].LicenseExpiryDate" id="licenseExpiry0" type="date" class="form-control" required />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <button type="button" class="add-row-button" id="addRowButton">
-                                <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                                <span class="button-text">Add Another License</span>
-                            </button>
-                        </div>
-                    </div> *@
                     <div class="form-container">
                         <!-- Dynamic License Rows will be inserted here -->
                     </div>
@@ -863,7 +821,7 @@ function createRow(includeButton, category, item = {}, index = controlCount) {
     nameDiv.classList.add('d-flex', 'align-items-center');
     nameDiv.innerHTML = `
         <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
-        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
+        <input type="text" class="form-control form-control-sm" maxlength="24" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
     `;
     rowDiv.appendChild(nameDiv);
 
@@ -871,7 +829,7 @@ function createRow(includeButton, category, item = {}, index = controlCount) {
     rewardDiv.classList.add('d-flex', 'align-items-center');
     rewardDiv.innerHTML = `
         <label class="form-label me-2 mb-0">Rewards</label>
-        <input type="text" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required />
+                <input type="number" maxlength="6" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" />
     `;
     rowDiv.appendChild(rewardDiv);
 
@@ -1186,40 +1144,55 @@ function updateAddRewardButton() {
             const formattedExpiryDate = licenseData && licenseData.licenseExpiryDate
                 ? new Date(licenseData.licenseExpiryDate).toLocaleDateString('en-CA')
                 : '';
-            // License row markup with adjusted widths for smaller controls
+
+            const formattedActiveDate = licenseData && licenseData.licenseActiveDate
+                ? new Date(licenseData.licenseActiveDate).toLocaleDateString('en-CA')
+                : '';
+
+            // License row markup with labels
             newRow.innerHTML = `
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
-                </div>
+        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+            <div class="form-group">
+                <label for="licenseNumber${rowIndex}">License Number</label>
+                <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" maxlength="14" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
             </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                        <option value="">Select State</option>
-                        <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
-                        <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
-                    </select>
-                </div>
+        </div>
+        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+            <div class="form-group">
+                <label for="licenseState${rowIndex}">State</label>
+                <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                    <option value="">Select State</option>
+                    <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
+                    <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
+                </select>
             </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                        <option value="">Select Type</option>
-                        <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
-                        <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
-                    </select>
-                </div>
+        </div>
+        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+            <div class="form-group">
+                <label for="licenseType${rowIndex}">Type</label>
+                <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                    <option value="">Select Type</option>
+                    <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
+                    <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
+                </select>
             </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                        <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
-                </div>
+        </div>
+        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+            <div class="form-group">
+                <label for="licenseActive${rowIndex}">Active Date</label>
+                <input id="licenseActive${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseActiveDate" type="date" class="form-control" value="${licenseData ? formattedActiveDate : ''}" required />
             </div>
-            <div class="col-md-1" style="flex: 0; margin-left: 5px;">
-                <button type="button" class="btn btn-danger remove-row">Remove</button>
+        </div>
+        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+            <div class="form-group">
+                <label for="licenseExpiry${rowIndex}">Expiry Date</label>
+                <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
             </div>
-        `;
+        </div>
+        <div class="col-md-1" style="flex: 0; margin-left: 5px;">
+            <button type="button" class="btn btn-danger remove-row">Remove</button>
+        </div>
+    `;
 
             // Add event listener for the "Remove" button to delete the row
             const removeButton = newRow.querySelector('.remove-row');
