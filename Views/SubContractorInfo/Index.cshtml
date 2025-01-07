@@ -453,6 +453,15 @@
     </div>
 </div>
 
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="form-check">
+            <input type="checkbox" id="SameAsCompanyAddress" class="form-check-input">
+            <label for="SameAsCompanyAddress" class="form-check-label">Same as Company Main Address?</label>
+        </div>
+    </div>
+</div>
+
 <!-- Row 12 -->
 <div class="row mb-3">
     <div class="col-md-6">
@@ -769,11 +778,22 @@ $('#TrainingEmail').val('');
 
 
 
-        $('#backToTableBtn').click(function () {
-            $('.card-body').hide();
-            $('#datatableWrapper').show();
-            $('#addContractBtn').show();
-
+        $('#SameAsCompanyAddress').on('change', function () {
+            if ($(this).is(':checked')) {
+                // Copy values from CompanyMain fields to Finance fields and add read-only class
+                $('#FinanceAddress1').val($('#CompanyMainAddress1').val()).prop('readonly', true).addClass('read-only-style');
+                $('#FinanceAddress2').val($('#CompanyMainAddress2').val()).prop('readonly', true).addClass('read-only-style');
+                $('#FinanceState').val($('#CompanyMainState').val()).prop('readonly', true).addClass('read-only-style').trigger('change');
+                $('#FinanceCity').val($('#CompanyMainCity').val()).prop('readonly', true).addClass('read-only-style').trigger('change');
+                $('#FinanceZip').val($('#CompanyMainZip').val()).prop('readonly', true).addClass('read-only-style');
+            } else {
+                // Clear values, remove the read-only class and make fields editable
+                $('#FinanceAddress1').val('').prop('readonly', false).removeClass('read-only-style');
+                $('#FinanceAddress2').val('').prop('readonly', false).removeClass('read-only-style');
+                $('#FinanceState').val('').prop('readonly', false).removeClass('read-only-style');
+                $('#FinanceCity').val('').prop('readonly', false).removeClass('read-only-style');
+                $('#FinanceZip').val('').prop('readonly', false).removeClass('read-only-style');
+            }
         });
 
  //        $('#contractsTable').DataTable().clear().destroy(); // Destroy the current instance
