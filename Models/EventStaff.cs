@@ -122,8 +122,8 @@ namespace ExcelToCsv.Models
 
         public DateTime? CacExpiryDate { get; set; }
 
-        [Required(ErrorMessage = "SubContractorId is required.")]
-        public long SubContractorId { get; set; }
+        //[Required(ErrorMessage = "SubContractorId is required.")]
+        //public long SubContractorId { get; set; }
 
         [Required(ErrorMessage = "StaffCellNumber is required.")]
         [StringLength(12, ErrorMessage = "StaffCellNumber cannot exceed 12 characters.")]
@@ -191,11 +191,11 @@ namespace ExcelToCsv.Models
 
         public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
 
-        [Required(ErrorMessage = "StaffContractAffiliation is required.")]
-        [NotMapped]
-        public List<long> StaffContractAffiliation { get; set; } = new List<long>();
+        //[Required(ErrorMessage = "StaffContractAffiliation is required.")]
+        //[NotMapped]
+        //public List<long> StaffContractAffiliation { get; set; } = new List<long>();
 
-        public List<StaffContractAffiliation> StaffContractAffiliations { get; set; } = new List<StaffContractAffiliation>();
+        public List<StaffContractAffiliation> StaffContractAffiliation { get; set; } = new List<StaffContractAffiliation>();
         public bool TravelHonorAir { get; set; }
 
         public bool TravelHonorCar { get; set; }
@@ -214,10 +214,25 @@ namespace ExcelToCsv.Models
 
         [ForeignKey("EventStaff")]
         public long EventStaffId { get; set; }
+        public long SubContractorId { get; set; }
+        public long ContractId { get; set; }//public List<SubContractorContractAffiliation> SubContractorContractAffiliation { get; set; } = new List<SubContractorContractAffiliation>();
 
-        public long ContractId { get; set; }
 
+        [NotMapped]
+        public List<long> StaffContractAffiliationTemp { get; set; } = new List<long>();
     }
+
+    //[Table("SubContractorContractAffiliation")]
+    //public class SubContractorContractAffiliation
+    //{
+    //    [Key]
+    //    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    //    public long Id { get; set; } // Primary key
+
+    //    [ForeignKey("StaffSubContractorAffiliation")]
+    //    public long StaffSubContractorAffiliationId { get; set; }
+    //    public long ContractId { get; set; }
+    //}
 
     //[Table("StaffRoles")]
     //public class StaffRoleDto

@@ -4,6 +4,8 @@ using ExcelFilesCompiler.Models;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -113,17 +115,32 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     if (eventStaffDto.SingleEventStaff.StaffContractAffiliation != null)
                     {
-                        eventStaffDto.SingleEventStaff.StaffContractAffiliations = new List<StaffContractAffiliation>();
+                        // Create a temporary list to hold the transformed entities
+                        var updatedAffiliations = new List<StaffContractAffiliation>();
 
-                        foreach (var contractId in eventStaffDto.SingleEventStaff.StaffContractAffiliation)
+                        foreach (var affiliation in eventStaffDto.SingleEventStaff.StaffContractAffiliation)
                         {
-                            eventStaffDto.SingleEventStaff.StaffContractAffiliations.Add(new StaffContractAffiliation
+                            if (affiliation.StaffContractAffiliationTemp != null)
                             {
-                                EventStaffId = eventStaffDto.SingleEventStaff.Id,
-                                ContractId = contractId
-                            });
+                                foreach (var contractId in affiliation.StaffContractAffiliationTemp)
+                                {
+                                    // Add each transformed entity to the temporary list
+                                    updatedAffiliations.Add(new StaffContractAffiliation
+                                    {
+                                        EventStaffId = affiliation.EventStaffId,
+                                        SubContractorId = affiliation.SubContractorId,
+                                        ContractId = contractId
+                                    });
+                                }
+                            }
                         }
+
+                        // Replace the original collection with the updated list
+                        eventStaffDto.SingleEventStaff.StaffContractAffiliation = updatedAffiliations;
                     }
+
+
+
 
                     if (action == "Add")
                     {

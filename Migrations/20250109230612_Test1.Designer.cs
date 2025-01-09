@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250107183052_Test1")]
+    [Migration("20250109230612_Test1")]
     partial class Test1
     {
         /// <inheritdoc />
@@ -626,9 +626,6 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("SubContractorId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("TravelHonorAir")
                         .HasColumnType("bit");
 
@@ -958,6 +955,9 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<long>("EventStaffId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("SubContractorId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventStaffId");
@@ -1139,7 +1139,7 @@ namespace ExcelFilesCompiler.Migrations
             modelBuilder.Entity("ExcelToCsv.Models.StaffContractAffiliation", b =>
                 {
                     b.HasOne("ExcelToCsv.Models.EventStaff", null)
-                        .WithMany("StaffContractAffiliations")
+                        .WithMany("StaffContractAffiliation")
                         .HasForeignKey("EventStaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1209,7 +1209,7 @@ namespace ExcelFilesCompiler.Migrations
                 {
                     b.Navigation("Licenses");
 
-                    b.Navigation("StaffContractAffiliations");
+                    b.Navigation("StaffContractAffiliation");
 
                     b.Navigation("TravelHonorList");
                 });

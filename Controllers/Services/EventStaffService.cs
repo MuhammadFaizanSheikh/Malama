@@ -84,7 +84,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
                     x => x.Id == id,
                     x => x.Licenses,
-                    x => x.StaffContractAffiliations,
+                    x => x.StaffContractAffiliation,
                     x => x.TravelHonorList
                 );
 
@@ -98,41 +98,43 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
 
 
-                    var subContractorId = firstEventStaff.SubContractorId;  // Access SubContractorId directly
+                    //var subContractorId = firstEventStaff.SubContractorId;  // Access SubContractorId directly
 
-                    if (subContractorId == null)
-                    {
-                        throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
-                    }
+                    //if (subContractorId == null)
+                    //{
+                    //    throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                    //}
 
-                    var subContractor = await _unitOfWork.SubContractors.GetByIdAsync(subContractorId);
+                    //var subContractor = await _unitOfWork.SubContractors.GetByIdAsync(subContractorId);
 
-                    if (subContractor == null)
-                    {
-                        throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
-                    }
+                    //if (subContractor == null)
+                    //{
+                    //    throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                    //}
 
-                    var contractIds = firstEventStaff.StaffContractAffiliations.Select(a => a.ContractId).ToList();
+                    //var contractIds = firstEventStaff.StaffContractAffiliations.Select(a => a.ContractId).ToList();
 
-                    List<StaffContractAffiliationDto> affiliation = new List<StaffContractAffiliationDto>();
+                    //List<StaffContractAffiliationDto> affiliation = new List<StaffContractAffiliationDto>();
 
-                    foreach (var contract in firstEventStaff.StaffContractAffiliations)
-                    { 
-                        var contracts = await _unitOfWork.ContractDetails.GetByIdAsync(contract.ContractId);
+                    //foreach (var contract in firstEventStaff.StaffContractAffiliations)
+                    //{ 
+                    //    var contracts = await _unitOfWork.ContractDetails.GetByIdAsync(contract.ContractId);
 
-                        if (contracts == null)
-                        {
-                            throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
-                        }
+                    //    if (contracts == null)
+                    //    {
+                    //        throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
+                    //    }
 
-                        affiliation.Add(new StaffContractAffiliationDto() { EventStaffId = firstEventStaff.Id, ContractId = contract.ContractId, ContractName = contracts.ContractID });
-                    }
+                    //    affiliation.Add(new StaffContractAffiliationDto() { EventStaffId = firstEventStaff.Id, ContractId = contract.ContractId, ContractName = contracts.ContractID });
+                    //}
 
                     var combinedDto = new CombinedEventStaffSubContractorAndContractDto
                     {
-                        SubContractor = subContractor,
+                        //SubContractor = subContractor,
+                        SubContractor = null,
                         EventStaff = firstEventStaff,
-                        StaffContractAffiliation = affiliation,
+                        //StaffContractAffiliation = affiliation,
+                        StaffContractAffiliation = null,
                         TravelHonor = firstEventStaff.TravelHonorList
                     };
 
@@ -177,12 +179,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
-                foreach (var affiliation in eventStaff.StaffContractAffiliations)
+                foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
                     affiliation.EventStaffId = eventStaff.Id;
                 }
 
-                _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliations);
+                _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliation);
 
                 await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 

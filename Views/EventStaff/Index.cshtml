@@ -567,16 +567,36 @@
                 <option value="NotStarted">Not Started</option>
             </select>
         </div>
-        <div class="col-md-6">
-                    <label asp-for="SingleEventStaff.SubContractorId" class="form-label">Employer/Subcontractor</label>
-           @*  <select asp-for="SingleEventStaff.EmployerSubcontractor" class="form-control" required>
-                <option value="Employer">Employer</option>
-                <option value="Subcontractor">Subcontractor</option>
-            </select> *@
-                    <select class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
-                        <!-- Options will be populated dynamically from the database -->
-                    </select>
-        </div>
+
+                @* <div class="col-md-6">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="flex-grow-1">
+                            <label asp-for="SingleEventStaff.SubContractorId" class="form-label">Employer/Subcontractor</label>
+                            <select class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
+                                <!-- Options will be populated dynamically from the database -->
+                            </select>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <label class="form-label">Staff Contract Affiliation</label>
+                            <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" required>
+                            </select>
+                            <span id="staffContractError" class="text-danger" style="display:none;">Please select at least one option.</span>
+                        </div>
+
+                        <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
+                            <button type="button" class="btn btn-danger btn-sm" style="height: 38px;">Remove</button>
+                        </div>
+                    </div>
+                </div> *@
+                <div class="form-container-Affiliation">
+                    <!-- Dynamic License Rows will be inserted here -->
+                </div>
+                <button type="button" class="add-row-button" id="addAffiliationRowButton">
+                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                    <span class="button-text">Add another employer / sub contractor</span>
+                </button>
+
     </div>
 
             <div class="row mb-3">
@@ -701,27 +721,11 @@
                 <option value="">Select Zip Code</option> <!-- Default option -->
             </select>
         </div>
-    </div>
-
-            <div id="staff-affiliation-container">
-        <!-- Initial Row -->
-                <div class="row mb-3">
-                    <div class="col-md-6 staff-affiliation-row">
-                                <label class="form-label">Staff Contract Affiliation</label>
-                       
-                                <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" style="width: 100%; padding: 10px;" required>
-                                    
-                                </select>
-                                <span id="staffContractError" class="text-danger" style="display:none;">Please select at least one option.</span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
-                        <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id ="StaffInfoEnteredBy" maxLength="50" text = "abc@gmail.com" class="form-control" readonly required />
-                    </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
+                    <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id="StaffInfoEnteredBy" maxLength="50" text="abc@gmail.com" class="form-control" readonly required />
                 </div>
-            </div>
-
+    </div>
             <h4 class="mt-4">Travel Honor Reward Numbers</h4>
             <div class="container mt-5">
                 <!-- Air category checkbox -->
@@ -755,7 +759,7 @@
                         <i class="bi bi-pencil"></i> Update
                     </button>
                     <button id="backToTableBtn" type="button" class="btn btn-secondary">
-                        Back to Contracts
+                        Back to Event Staff
                     </button>
                 </div>
         </form>
@@ -767,48 +771,48 @@
 
     $(document).ready(function () {
 
-        $('#StaffContractAffiliation').select2({
-            placeholder: "Select options",
-            allowClear: true
-        });
+        // $('#StaffContractAffiliation').select2({
+        //     placeholder: "Select options",
+        //     allowClear: true
+        // });
 
          
-    //      $('#StartDate').val('1980-01-01');
-    // $('#StaffStatus').val('Active');
-    // $('#StaffLastName').val('Doe');
-    // $('#StaffFirstName').val('John');
-    // $('#StaffMiddleInitial').val('A');
-    // $('#StaffSSN').val('123-45-6789');
-    // $('#StaffDOB').val('1980-01-01');
-    // $('#EventOnCallStaffEvent').val('Event A');
-    // $('#npi').val('1234567890');
-    // $('#dae').val('DAE1234');
+         $('#StartDate').val('1980-01-01');
+    $('#StaffStatus').val('Active');
+    $('#StaffLastName').val('Doe');
+    $('#StaffFirstName').val('John');
+    $('#StaffMiddleInitial').val('A');
+    $('#StaffSSN').val('123-45-6789');
+    $('#StaffDOB').val('1980-01-01');
+    $('#EventOnCallStaffEvent').val('Event A');
+    $('#npi').val('1234567890');
+    $('#dae').val('DAE1234');
     
-    // $('#BLSCertDate').val('1980-01-01');
-    // $('#ACLSCertDate').val('1980-01-01');
-    // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-    // $('#CredentialingProcessDate').val('1980-01-01');
-    // $('#OnboardingTrainingComplete').val('Yes');
-    // $('#OutstandingTrainings').val('None');
-    // $('#HistoricalCredentialingDate').val('1980-01-01');
-    // $('#StaffEmail').val('john.doe@example.com');
-    // $('#PrimaryAddress1').val('123 Main St');
-    // $('#PrimaryState').val('Alabama');
-    // $('#PrimaryCity').val('Alpine');
-    // $('#PrimaryZip').val('35014');
-    // $('#SecondaryAddress1').val('456 Elm St');
-    // $('#SecondaryState').val('Kansas');
-    // $('#SecondaryCity').val('Anthony');
-    // $('#SecondaryZip').val('67003');
-    // // $('#StaffContractAffiliation').val('Contractor');
-    // $('#StaffInfoEnteredBy').val('Admin');
+    $('#BLSCertDate').val('1980-01-01');
+    $('#ACLSCertDate').val('1980-01-01');
+    $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+    $('#CredentialingProcessDate').val('1980-01-01');
+    $('#OnboardingTrainingComplete').val('Yes');
+    $('#OutstandingTrainings').val('None');
+    $('#HistoricalCredentialingDate').val('1980-01-01');
+    $('#StaffEmail').val('john.doe@example.com');
+    $('#PrimaryAddress1').val('123 Main St');
+    $('#PrimaryState').val('Alabama');
+    $('#PrimaryCity').val('Alpine');
+    $('#PrimaryZip').val('35014');
+    $('#SecondaryAddress1').val('456 Elm St');
+    $('#SecondaryState').val('Kansas');
+    $('#SecondaryCity').val('Anthony');
+    $('#SecondaryZip').val('67003');
+    // $('#StaffContractAffiliation').val('Contractor');
+    $('#StaffInfoEnteredBy').val('Admin');
 
-    // $('#ACLSCertNumber').val('1234567890');
-    // $('#BackgroundCheckConcerns').val('1234567890');
-    // $('#BLSCertNumber').val('1234567890');
+    $('#ACLSCertNumber').val('1234567890');
+    $('#BackgroundCheckConcerns').val('1234567890');
+    $('#BLSCertNumber').val('1234567890');
 
-    // $('#staffCellNumber').val('123-123-1234');
-    // $('#staffPhone2').val('123-123-1234');
+    $('#staffCellNumber').val('123-123-1234');
+    $('#staffPhone2').val('123-123-1234');
     });
 
 
@@ -1256,6 +1260,174 @@ function updateAddRewardButton() {
             }
         });
     }
+
+
+    //////////////////////////////////////////For Affiliation /////////////////////////////////////////
+
+    function manageAffiliationRows(affiliation = []) {
+        const container = document.querySelector('.form-container-Affiliation');
+        const addAffiliationRowButton = document.getElementById('addAffiliationRowButton');
+
+        if (!container || !addAffiliationRowButton) {
+            console.error('Form container or addAffiliationRowButton not found');
+            return;
+        }
+
+        // Function to create a new affiliation row
+        function createAffiliationRow(rowIndex, affiliationData = null) {
+            const newRow = document.createElement('div');
+            newRow.classList.add('form-row', 'affiliation-row');
+            newRow.style.display = 'flex';
+            newRow.style.justifyContent = 'space-between';
+            newRow.style.alignItems = 'center';
+            newRow.style.width = '100%';
+            debugger;
+            newRow.innerHTML = `
+                       <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3 dynamic-row">
+                    <div class="flex-grow-1">
+                        <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
+                            <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
+                                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
+                            <option value="">Select Employer</option>
+                        </select>
+                    </div>
+                    <div class="flex-grow-1">
+                        <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
+                            <select id="StaffContractAffiliation${rowIndex}"
+                                                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
+                                multiple class="form-control multi-select" required>
+                        </select>
+                        <span class="text-danger" style="display:none;">Please select at least one option.</span>
+                    </div>
+                    <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
+                        <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
+                    </div>
+                </div>
+            </div>`;
+
+            // Add event listener for the "Remove" button to delete the row
+            const removeButton = newRow.querySelector('.remove-row');
+            removeButton.addEventListener('click', () => {
+                const affiliationRows = document.querySelectorAll('.affiliation-row');
+                if (affiliationRows.length > 1) {
+                    newRow.remove();
+                    updateAffiliationRowIndices();
+                } else {
+                    alert('You cannot remove the last row.');
+                }
+            });
+
+            // Append the new row to the container
+            container.appendChild(newRow);
+
+            // Initialize dropdowns for this row
+            initializeDynamicDropdowns(rowIndex);
+        }
+
+        // Function to initialize dropdowns for a specific row
+        function initializeDynamicDropdowns(rowIndex) {
+            // Initialize searchable dropdown
+            $(`#EmployerSubcontractor${rowIndex}`).select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                ajax: {
+                    url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            companyName: params.term || ''
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function (SubContractor) {
+                                return {
+                                    id: SubContractor.id,
+                                    text: SubContractor.text
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+            });
+
+            // Initialize multi-select dropdown
+            $(`#StaffContractAffiliation${rowIndex}`).select2({
+                placeholder: "Select options",
+                allowClear: true
+            });
+
+            // Bind change event to searchable dropdown
+            $(`#EmployerSubcontractor${rowIndex}`).change(function () {
+                const selectedText = $(this).find("option:selected").text();
+                if (selectedText) {
+                    $.ajax({
+                        url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+                        type: 'GET',
+                        data: { companyName: selectedText },
+                        success: function (response) {
+                            if (response.success) {
+                                bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('An error occurred while fetching contract details.');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Function to bind options to multi-select dropdown
+        function bindMultiSelectDropdown(selector, contractDetails) {
+            const dropdown = $(selector);
+            dropdown.empty(); // Clear existing options
+            if (contractDetails && contractDetails.length > 0) {
+                contractDetails.forEach(function (detail) {
+                    dropdown.append(new Option(detail.text, detail.id));
+                });
+            }
+            dropdown.trigger('change'); // Notify select2 about the update
+        }
+
+        // Function to update row indices for model binding
+        function updateAffiliationRowIndices() {
+            const affiliationRows = document.querySelectorAll('.affiliation-row');
+            affiliationRows.forEach((row, index) => {
+                row.querySelectorAll('input, select').forEach(input => {
+                    const name = input.name;
+                    input.name = name.replace(/\[\d+\]/, `[${index}]`);
+                    input.id = input.id.replace(/\d+/, index);
+                });
+            });
+        }
+
+        // Initialize rows on page load
+        if (affiliation.length > 0) {
+            affiliation.forEach((affiliationData, index) => {
+                createAffiliationRow(index, affiliationData);
+            });
+        } else {
+            createAffiliationRow(0);
+        }
+
+        // Add new row on button click
+        addAffiliationRowButton.addEventListener('click', () => {
+            const affiliationRows = document.querySelectorAll('.affiliation-row');
+            if (affiliationRows.length < 5) {
+                createAffiliationRow(affiliationRows.length);
+            } else {
+                alert('You can only add up to 5 rows.');
+            }
+        });
+    }
+
 
 
 
@@ -1805,21 +1977,21 @@ function setStaffIdTextbox(staffId) {
             'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
-        // controlIds.forEach(function (id) {
-        //     const control = $('#' + id);
+        controlIds.forEach(function (id) {
+            const control = $('#' + id);
 
-        //     if (control.is('select')) {
-        //         control.prop('disabled', false);
-        //     } else if (control.is('input[type="checkbox"]')) {
-        //         // Reset checkbox states to unchecked
-        //         control.prop('checked', false); // uncheck the checkbox
-        //         control.prop('disabled', false); // Ensure the checkbox is enabled if previously disabled
-        //     } else {
-        //         control.prop('readonly', false);
-        //     }
+            if (control.is('select')) {
+                control.prop('disabled', false);
+            } else if (control.is('input[type="checkbox"]')) {
+                // Reset checkbox states to unchecked
+                control.prop('checked', false); // uncheck the checkbox
+                control.prop('disabled', false); // Ensure the checkbox is enabled if previously disabled
+            } else {
+                control.prop('readonly', false);
+            }
 
-        //     control.removeClass('read-only-style');
-        // });
+            control.removeClass('read-only-style');
+        });
 
             document.getElementById('dynamicControlsContainer').innerHTML = '';
             document.getElementById('carDynamicControlsContainer').innerHTML = '';
@@ -1859,6 +2031,7 @@ function setStaffIdTextbox(staffId) {
             // }
         });
 
+        manageAffiliationRows();
         manageLicenseRows();
 
         });

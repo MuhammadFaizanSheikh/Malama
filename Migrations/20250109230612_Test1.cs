@@ -129,7 +129,6 @@ namespace ExcelFilesCompiler.Migrations
                     StaffCAC = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StaffDoDID = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     CacExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    SubContractorId = table.Column<long>(type: "bigint", nullable: false),
                     StaffCellNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
                     StaffPhone2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StaffEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -411,6 +410,7 @@ namespace ExcelFilesCompiler.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EventStaffId = table.Column<long>(type: "bigint", nullable: false),
+                    SubContractorId = table.Column<long>(type: "bigint", nullable: false),
                     ContractId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
