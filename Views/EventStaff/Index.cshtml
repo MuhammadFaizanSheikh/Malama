@@ -557,47 +557,27 @@
     </div>
 
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
-            <select asp-for="SingleEventStaff.CACApplicationProcessStatus" id="CACApplicationProcessStatus" class="form-control" required>
-                <option value="InProgress">In Progress</option>
-                <option value="Pending">Pending</option>
-                <option value="Complete">Complete</option>
-                <option value="NotStarted">Not Started</option>
-            </select>
-        </div>
-
-                @* <div class="col-md-6">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="flex-grow-1">
-                            <label asp-for="SingleEventStaff.SubContractorId" class="form-label">Employer/Subcontractor</label>
-                            <select class="form-select select2" id="EmployerSubcontractor" asp-for="SingleEventStaff.SubContractorId" required>
-                                <!-- Options will be populated dynamically from the database -->
-                            </select>
-                        </div>
-
-                        <div class="flex-grow-1">
-                            <label class="form-label">Staff Contract Affiliation</label>
-                            <select id="StaffContractAffiliation" asp-for="SingleEventStaff.StaffContractAffiliation" multiple class="form-control" required>
-                            </select>
-                            <span id="staffContractError" class="text-danger" style="display:none;">Please select at least one option.</span>
-                        </div>
-
-                        <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
-                            <button type="button" class="btn btn-danger btn-sm" style="height: 38px;">Remove</button>
-                        </div>
-                    </div>
-                </div> *@
-                <div class="form-container-Affiliation">
-                    <!-- Dynamic License Rows will be inserted here -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
+                    <select asp-for="SingleEventStaff.CACApplicationProcessStatus" id="CACApplicationProcessStatus" class="form-control" required>
+                        <option value="InProgress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Complete">Complete</option>
+                        <option value="NotStarted">Not Started</option>
+                    </select>
                 </div>
-                <button type="button" class="add-row-button" id="addAffiliationRowButton">
-                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                    <span class="button-text">Add another employer / sub contractor</span>
-                </button>
+                <div class="col-md-6">
+                    <div class="form-container-Affiliation">
+                        <!-- Dynamic License Rows will be inserted here -->
+                    </div>
+                    <button type="button" class="add-row-button mt-3" id="addAffiliationRowButton">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                        <span class="button-text">Add another employer / sub contractor</span>
+                    </button>
+                </div>
+            </div>
 
-    </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -1276,35 +1256,28 @@ function updateAddRewardButton() {
         // Function to create a new affiliation row
         function createAffiliationRow(rowIndex, affiliationData = null) {
             const newRow = document.createElement('div');
-            newRow.classList.add('form-row', 'affiliation-row');
-            newRow.style.display = 'flex';
-            newRow.style.justifyContent = 'space-between';
-            newRow.style.alignItems = 'center';
-            newRow.style.width = '100%';
-            debugger;
+            newRow.classList.add('form-row', 'mb-3', 'd-flex', 'align-items-center', 'gap-3', 'affiliation-row');
+
             newRow.innerHTML = `
-                       <div class="col-md-6">
-                <div class="d-flex align-items-center gap-3 dynamic-row">
-                    <div class="flex-grow-1">
-                        <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
-                            <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
-                                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
-                            <option value="">Select Employer</option>
-                        </select>
-                    </div>
-                    <div class="flex-grow-1">
-                        <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
-                            <select id="StaffContractAffiliation${rowIndex}"
-                                                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
-                                multiple class="form-control multi-select" required>
-                        </select>
-                        <span class="text-danger" style="display:none;">Please select at least one option.</span>
-                    </div>
-                    <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
-                        <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
-                    </div>
-                </div>
-            </div>`;
+            <div class="flex-grow-1">
+                <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
+                <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
+                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
+                    <option value="">Select Employer</option>
+                </select>
+            </div>
+            <div class="flex-grow-1">
+                <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
+                <select id="StaffContractAffiliation${rowIndex}"
+                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
+                        multiple class="form-control multi-select" required>
+                </select>
+                <span class="text-danger" style="display:none;">Please select at least one option.</span>
+            </div>
+            <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
+                <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
+            </div>
+        `;
 
             // Add event listener for the "Remove" button to delete the row
             const removeButton = newRow.querySelector('.remove-row');
@@ -1321,7 +1294,29 @@ function updateAddRewardButton() {
             // Append the new row to the container
             container.appendChild(newRow);
 
-            // Initialize dropdowns for this row
+            const employerDropdown = document.getElementById(`EmployerSubcontractor${rowIndex}`);
+            if (affiliationData) {
+                // Populate Employer/Subcontractor dropdown
+                const employerOption = document.createElement('option');
+                employerOption.value = affiliationData.subContractorId;
+                employerOption.textContent = affiliationData.subContractorName;
+                employerOption.selected = true;
+                employerDropdown.appendChild(employerOption);
+            }
+
+            // Initialize multi-select dropdown for Staff Contract Affiliation
+            const affiliationDropdown = document.getElementById(`StaffContractAffiliation${rowIndex}`);
+            if (affiliationData && affiliationData.staffContractAffiliation) {
+                affiliationData.staffContractAffiliation.forEach((affiliation) => {
+                    const option = document.createElement('option');
+                    option.value = affiliation.contractId;
+                    option.textContent = affiliation.contractName;
+                    option.selected = true; // Bind existing data as selected
+                    affiliationDropdown.appendChild(option);
+                });
+            }
+
+            // Initialize dropdowns with their respective libraries if required
             initializeDynamicDropdowns(rowIndex);
         }
 
@@ -1579,49 +1574,51 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                 type: 'GET',
                 success: function (response) {
                     if (response.success) {
+                        debugger;
                         var combinedData = response.combinedData;
                         var eventStaff = combinedData.eventStaff;
-                        var staffContractAffiliation = combinedData.staffContractAffiliation;
+                        var staffContractAffiliation = combinedData.staffSubContractorAffiliation;
                         var subContractor = combinedData.subContractor;
                         var travelHonor = combinedData.travelHonor;
-                        // const jsonString = JSON.stringify(response.combinedData);
+                    const jsonString = JSON.stringify(staffContractAffiliation);
+                    console.log(jsonString);
                         $('#hiddenId').val(eventStaff.id);
-                    
-                        var selectedData = {
-                            id: subContractor.id,
-                            text: subContractor.companyMainName
-                        };
+                        manageAffiliationRows(staffContractAffiliation);
+                    //     var selectedData = {
+                    //         id: subContractor.id,
+                    //         text: subContractor.companyMainName
+                    //     };
 
-                        if ($("#EmployerSubcontractor").find(`option[value='${selectedData.id}']`).length === 0) {
-                            var newOption = new Option(selectedData.text, selectedData.id, true, true);
-                            $('#EmployerSubcontractor').append(newOption);
-                        } else {
-                            $('#EmployerSubcontractor').val(selectedData.id);
-                        }
+                    //     if ($("#EmployerSubcontractor").find(`option[value='${selectedData.id}']`).length === 0) {
+                    //         var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                    //         $('#EmployerSubcontractor').append(newOption);
+                    //     } else {
+                    //         $('#EmployerSubcontractor').val(selectedData.id);
+                    //     }
 
 
-                      $('#StaffContractAffiliation').empty();
+                    //   $('#StaffContractAffiliation').empty();
 
-                        staffContractAffiliation.forEach(function(item) {
-                            var option = $('<option>')
-                                .val(item.contractId)
-                                .text(item.contractName);
+                    //     staffContractAffiliation.forEach(function(item) {
+                    //         var option = $('<option>')
+                    //             .val(item.contractId)
+                    //             .text(item.contractName);
                         
-                            $('#StaffContractAffiliation').append(option);
-                        });
+                    //         $('#StaffContractAffiliation').append(option);
+                    //     });
                         
-                            $('#StaffContractAffiliation').val(
-                                staffContractAffiliation.map(function(item) {
-                                    return item.contractId;  // Get all contractIds from the response
-                                })
-                            );
+                    //         $('#StaffContractAffiliation').val(
+                    //             staffContractAffiliation.map(function(item) {
+                    //                 return item.contractId;  // Get all contractIds from the response
+                    //             })
+                    //         );
                         
-                        $('#StaffContractAffiliation').select2({
-                            placeholder: "Select options",
-                            allowClear: true
-                        }).trigger('change').trigger('input');
+                    //     $('#StaffContractAffiliation').select2({
+                    //         placeholder: "Select options",
+                    //         allowClear: true
+                    //     }).trigger('change').trigger('input');
 
-                    console.log($('#StaffContractAffiliation').val());
+                    // console.log($('#StaffContractAffiliation').val());
 
                             $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
                             $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);

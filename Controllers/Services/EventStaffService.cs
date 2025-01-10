@@ -27,6 +27,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 // Attempt to add the contract detail to the repository
+
+                foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                {
+                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId);
+                    affiliation.SubContractorId = subContractor.Id;
+                }
+
                 eventStaff.AddedBy = loggedinUserName;
                 eventStaff.AddedOn = DateTime.Now;
 
@@ -97,6 +104,70 @@ namespace ExcelFilesCompiler.Controllers.Services
                         throw new Exception($"EventStaff with ID {id} not found.");
                     }
 
+                    if (firstEventStaff.StaffContractAffiliation == null)
+                    {
+                        throw new Exception($"EventStaff Staff Contract Affiliation with ID {id} not found.");
+                    }
+
+                    var result = new List<StaffSubContractorAffiliationDto>();
+
+                    // Iterate through the first event staff's affiliations
+                    foreach (var info in firstEventStaff.StaffContractAffiliation)
+                    {
+                        // Fetch related SubContractor and ContractDetails data
+                        var filteredSubContractor1 = await _unitOfWork.SubContractors.GetByIdAsync(info.SubContractorId);
+                        var filteredContracts1 = await _unitOfWork.ContractDetails.GetByIdAsync(info.ContractId);
+
+                        // Create StaffContractAffiliationDto for each contract
+                        var contractAffilication = new StaffContractAffiliationDto
+                        {
+                            ContractId = info.ContractId,
+                            ContractName = filteredContracts1.ContractID // Assuming ContractID is the name for contract
+                        };
+
+                        // Check if the result already contains the SubContractor, otherwise add a new entry
+                        var subContractorAffiliation = result.FirstOrDefault(x => x.SubContractorName == filteredSubContractor1.CompanyMainName);
+
+                        if (subContractorAffiliation == null)
+                        {
+                            // If SubContractor does not exist in the result, create a new StaffSubContractorAffiliationDto and add the first contract
+                            subContractorAffiliation = new StaffSubContractorAffiliationDto
+                            {
+                                SubContractorId = info.SubContractorId,
+                                SubContractorName = filteredSubContractor1.CompanyMainName,
+                                StaffContractAffiliation = new List<StaffContractAffiliationDto> { contractAffilication }
+                            };
+
+                            // Add the new SubContractor with its contract to the result
+                            result.Add(subContractorAffiliation);
+                        }
+                        else
+                        {
+                            // If SubContractor exists, simply add the contract to the existing StaffSubContractorAffiliationDto
+                            subContractorAffiliation.StaffContractAffiliation.Add(contractAffilication);
+                        }
+                    }
+
+
+
+                    //var subContractorIds = firstEventStaff.StaffContractAffiliation.Select(sc => sc.SubContractorId).ToList();
+
+                    //var filteredSubContractor = await _unitOfWork.StaffContractAffiliation.FindForSearchingAsync(c => subContractorIds.Contains(c.Id));
+
+                    //if (filteredSubContractor == null)
+                    //{
+                    //    throw new Exception($"SubContracts against ContractIds with ID {id} not found.");
+                    //}
+
+                    //var contractIds = firstEventStaff.StaffContractAffiliation.Select(sc => sc.ContractId).ToList();
+
+                    //var filteredContracts = await _unitOfWork.ContractDetails.FindForSearchingAsync(c => contractIds.Contains(c.Id));
+
+                    //if (filteredSubContractor == null)
+                    //{
+                    //    throw new Exception($"SubContracts against ContractIds with ID {id} not found.");
+                    //}
+
 
                     //var subContractorId = firstEventStaff.SubContractorId;  // Access SubContractorId directly
 
@@ -131,10 +202,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var combinedDto = new CombinedEventStaffSubContractorAndContractDto
                     {
                         //SubContractor = subContractor,
-                        SubContractor = null,
+                        //SubContractor = null,
                         EventStaff = firstEventStaff,
                         //StaffContractAffiliation = affiliation,
-                        StaffContractAffiliation = null,
+                        StaffSubContractorAffiliation = result,
                         TravelHonor = firstEventStaff.TravelHonorList
                     };
 

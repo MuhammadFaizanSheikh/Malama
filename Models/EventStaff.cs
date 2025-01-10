@@ -14,14 +14,19 @@ namespace ExcelToCsv.Models
     public class CombinedEventStaffSubContractorAndContractDto
     {
         public EventStaff EventStaff { get; set; }
-        public SubContractorInfoDto SubContractor { get; set; }
-        public List<StaffContractAffiliationDto> StaffContractAffiliation { get; set; }
+        //public SubContractorInfoDto SubContractor { get; set; }
+        public List<StaffSubContractorAffiliationDto> StaffSubContractorAffiliation { get; set; }
         public List<TravelHonor> TravelHonor { get; set; }
     }
 
+    public class StaffSubContractorAffiliationDto
+    {
+        public long SubContractorId { get; set; }
+        public string SubContractorName { get; set; }
+        public List<StaffContractAffiliationDto> StaffContractAffiliation { get; set; }
+    }
     public class StaffContractAffiliationDto
     {
-        public long EventStaffId { get; set; }
         public long ContractId { get; set; }
         public string ContractName { get; set; }
     }
