@@ -1263,7 +1263,6 @@ function updateAddRewardButton() {
                 <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
                 <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
                         name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
-                    <option value="">Select Employer</option>
                 </select>
             </div>
             <div class="flex-grow-1">
@@ -1356,27 +1355,64 @@ function updateAddRewardButton() {
                 allowClear: true
             });
 
-            // Bind change event to searchable dropdown
             $(`#EmployerSubcontractor${rowIndex}`).change(function () {
-                const selectedText = $(this).find("option:selected").text();
-                if (selectedText) {
-                    $.ajax({
-                        url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
-                        type: 'GET',
-                        data: { companyName: selectedText },
-                        success: function (response) {
-                            if (response.success) {
-                                bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
-                            } else {
-                                alert(response.message);
-                            }
-                        },
-                        error: function () {
-                            alert('An error occurred while fetching contract details.');
-                        }
-                    });
+                debugger;
+    const selectedText = $(this).find("option:selected").text(); // Get the selected text
+     if (!selectedText) return;
+    const currentDropdown = this;
+    let isDuplicate = false;
+    const allEmployerDropdowns = document.querySelectorAll('.form-container-Affiliation select[id^="EmployerSubcontractor"]');
+
+    allEmployerDropdowns.forEach(function (dropdown) {
+        // Skip the current dropdown (this one)
+        if (dropdown !== currentDropdown && $(dropdown).find("option:selected").text() === selectedText) {
+            isDuplicate = true;
+        }
+    });
+
+    // If duplicate is found
+    if (isDuplicate) {
+        // Show SweetAlert for duplicate selection
+        Swal.fire({
+            title: 'Error',
+            text: 'Employer/Subcontractor can be used only once.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Only reset the dropdown value if it hasn't been reset already
+            if ($(this).val()) {
+                $(this).val(null).trigger('change'); // Reset and trigger change
+            }
+        });
+    } else {
+
+        // If no duplicate, proceed with the AJAX call
+        const selectedValue = $(this).val(); // Get the selected value
+        if (selectedText) {
+            // Show the AJAX request after no duplication
+            $.ajax({
+                url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+                type: 'GET',
+                data: { companyName: selectedText },
+                success: function (response) {
+                    if (response.success) {
+                        bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract details.');
                 }
             });
+        }
+    }
+});
+
+
+
+
+
         }
 
         // Function to bind options to multi-select dropdown
@@ -1499,61 +1535,61 @@ function updateAddRewardButton() {
 
     
 
-    $('#EmployerSubcontractor').select2({
-        ajax: {
-            url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching', // Your endpoint for fetching contracts
-            dataType: 'json',
-            delay: 250,  // Optional: delay to limit requests to avoid too many hits
-            data: function (params) {
-                return {
-                    companyName: params.term || ''  // Send the search term to the server
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: data.map(function (SubContractor) {
-                        return {
-                            id: SubContractor.id,     // Contract ID
-                            text: SubContractor.text  // Displayed text (CompanyMainName)
-                        };
-                    })
-                };
-            },
-            cache: true // Optional: caches the response to improve performance
-        },
-        placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
-        minimumInputLength: 1,  // Set a minimum number of characters to start searching (e.g., 1)
-        allowClear: true  // Optional: allows clearing the selection
-    });
+//     $('#EmployerSubcontractor').select2({
+//         ajax: {
+//             url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching', // Your endpoint for fetching contracts
+//             dataType: 'json',
+//             delay: 250,  // Optional: delay to limit requests to avoid too many hits
+//             data: function (params) {
+//                 return {
+//                     companyName: params.term || ''  // Send the search term to the server
+//                 };
+//             },
+//             processResults: function (data) {
+//                 return {
+//                     results: data.map(function (SubContractor) {
+//                         return {
+//                             id: SubContractor.id,     // Contract ID
+//                             text: SubContractor.text  // Displayed text (CompanyMainName)
+//                         };
+//                     })
+//                 };
+//             },
+//             cache: true // Optional: caches the response to improve performance
+//         },
+//         placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
+//         minimumInputLength: 1,  // Set a minimum number of characters to start searching (e.g., 1)
+//         allowClear: true  // Optional: allows clearing the selection
+//     });
 
 
-    $('#EmployerSubcontractor').change(function () {
-    var selectedId = $(this).val(); // Get the selected ID
-    var selectedText = $(this).find("option:selected").text(); // Get the selected option text
+//     $('#EmployerSubcontractor').change(function () {
+//     var selectedId = $(this).val(); // Get the selected ID
+//     var selectedText = $(this).find("option:selected").text(); // Get the selected option text
 
-    if (selectedId) {
-        $.ajax({
-            url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
-            type: 'GET',
-            data: { companyName: selectedText },
-            success: function (response) {
-                if (response.success) {
-                    debugger;
-                    bindMultiSelectDropdown(response.data.contractDetails);
-                    debugger;
-                    if (!$('#hiddenId').val()) {
-                        setStaffIdTextbox(response.data.staffId);
-                    }
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function () {
-                alert('An error occurred while fetching contract details.');
-            }
-        });
-    }
-});
+//     if (selectedId) {
+//         $.ajax({
+//             url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+//             type: 'GET',
+//             data: { companyName: selectedText },
+//             success: function (response) {
+//                 if (response.success) {
+//                     debugger;
+//                     bindMultiSelectDropdown(response.data.contractDetails);
+//                     debugger;
+//                     if (!$('#hiddenId').val()) {
+//                         setStaffIdTextbox(response.data.staffId);
+//                     }
+//                 } else {
+//                     alert(response.message);
+//                 }
+//             },
+//             error: function () {
+//                 alert('An error occurred while fetching contract details.');
+//             }
+//         });
+//     }
+// });
 
 function bindMultiSelectDropdown(data) {
     var dropdown = $('#StaffContractAffiliation');
@@ -1854,8 +1890,8 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
 
 
 function setStaffIdTextbox(staffId) {
-    var prefix = $('#EmployerSubcontractor').find("option:selected").text().substring(0, 2).toUpperCase();
-    var fullStaffId = prefix + staffId;
+    // var prefix = $('#EmployerSubcontractor').find("option:selected").text().substring(0, 2).toUpperCase();
+    var fullStaffId = 'ES' + staffId;
     $('#StaffID').val(fullStaffId);
 }
 
@@ -1958,7 +1994,7 @@ function setStaffIdTextbox(staffId) {
     }
 
      $('.card-body').hide();
-        $('#contractsTable').show();
+     $('#contractsTable').show();
 
 
           $('#addContractBtn').click(function () {
@@ -2031,7 +2067,20 @@ function setStaffIdTextbox(staffId) {
         manageAffiliationRows();
         manageLicenseRows();
 
+        fetchNextStaffId().done(function (response) {
+            if (response && response.success && response.data) {
+                var staffId = response.data.staffId; // Extract the staffId correctly
+                if (staffId) {
+                    // Set the Staff ID in the textbox
+                    $('#StaffID').val('ES' + staffId);
+                }
+            } else {
+                alert("Failed to fetch Staff ID");
+            }
         });
+
+ });
+
 
 
         $('#backToTableBtn').click(function () {
@@ -2055,10 +2104,26 @@ function setStaffIdTextbox(staffId) {
             "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
         });
 
-        
-
-        
-
+        function fetchNextStaffId() {
+            return $.ajax({
+                url: '/EventStaff/GetNextStaffId',
+                type: 'GET',  // Method is GET because you are retrieving data
+                success: function (response) {
+                    // Check if the response is successful
+                    if (response.success) {
+                        return response.data.staffId;
+                    } else {
+                        alert("Failed to fetch Staff ID");
+                        return null;
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + error);
+                    return null;
+                }
+            });
+        }
+       
     // document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
     //     event.preventDefault();
 

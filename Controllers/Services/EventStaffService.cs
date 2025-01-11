@@ -181,6 +181,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                {
+                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId);
+                    affiliation.SubContractorId = subContractor.Id;
+                }
+
                 var existingEvent = await _unitOfWork.EventStaff.GetByIdAsync(eventStaff.Id);
                 eventStaff.AddedBy = existingEvent.AddedBy;
                 eventStaff.AddedOn = existingEvent.AddedOn;
@@ -232,7 +238,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
+        public async Task<string> GetNextStaffId()
+        {
+            try
+            {
+                var allEventStaff = await _unitOfWork.EventStaff.GetAllAsync();
 
+                if (allEventStaff == null || !allEventStaff.Any())
+                {
+                    return "0001"; // Default starting code
+                }
+
+                var lastEventStaff = allEventStaff
+                    .OrderByDescending(c => c.Id) // Sort by Id or another property as necessary
+                    .FirstOrDefault();
+
+                var staffId = lastEventStaff.StaffID; // Extract the last StaffID
+                var numericPart = int.Parse(staffId.Substring(3)); // Get the numeric part (e.g., "0001")
+
+                numericPart++;
+
+                return numericPart.ToString("D4"); // Return incremented value in "0001" format
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching the next StaffID.", ex);
+            }
+        }
         //public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
         //{
         //    try

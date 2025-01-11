@@ -210,5 +210,28 @@ namespace ExcelFilesCompiler.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetNextStaffId()
+        {
+            try
+            {
+                var staffId = await _eventStaffService.GetNextStaffId();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        staffId = staffId
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // Return an error response if something goes wrong
+                return StatusCode(500, new { message = "An error occurred while fetching sequence of StaffID." });
+            }
+        }
     }
 }

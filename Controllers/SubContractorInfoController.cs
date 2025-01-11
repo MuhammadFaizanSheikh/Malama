@@ -183,16 +183,12 @@ namespace ExcelFilesCompiler.Controllers
                     text = cd.ContractID
                 }).ToList();
 
-                // Fetch the StaffID
-                var staffId = await _subContractorService.GetNextStaffId();
-
                 return Ok(new
                 {
                     success = true,
                     data = new
                     {
-                        contractDetails = contractResults,
-                        staffId = staffId
+                        contractDetails = contractResults
                     }
                 });
             }
