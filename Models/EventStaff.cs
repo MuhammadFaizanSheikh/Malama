@@ -14,7 +14,6 @@ namespace ExcelToCsv.Models
     public class CombinedEventStaffSubContractorAndContractDto
     {
         public EventStaff EventStaff { get; set; }
-        //public SubContractorInfoDto SubContractor { get; set; }
         public List<StaffSubContractorAffiliationDto> StaffSubContractorAffiliation { get; set; }
         public List<TravelHonor> TravelHonor { get; set; }
     }

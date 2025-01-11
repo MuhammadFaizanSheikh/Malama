@@ -259,17 +259,30 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<IEnumerable<SubContractorInfoDto>> GetCompanyNameByTermAsync(string term)
         {
-            if (string.IsNullOrEmpty(term))
+            try
             {
-                return new List<SubContractorInfoDto>();
+                if (string.IsNullOrEmpty(term))
+                {
+                    return new List<SubContractorInfoDto>();
+                }
+
+                var subcontractors = await _unitOfWork.SubContractors.GetAllAsync(c => c.CompanyMainName.Contains(term));
+
+                return subcontractors
+                    .Select(s => new SubContractorInfoDto
+                    {
+                        CompanyMainName = s.CompanyMainName
+                    })
+                    .GroupBy(dto => dto.CompanyMainName) // Group by CompanyMainName to remove duplicates
+                    .Select(group => group.First())     // Select the first unique instance
+                    .ToList();
             }
-
-            var subcontractors = await _unitOfWork.SubContractors.GetAllAsync(c => c.CompanyMainName.Contains(term));
-
-            return subcontractors.Select(s => new SubContractorInfoDto
+            catch (Exception ex)
             {
-                CompanyMainName = s.CompanyMainName
-            }).ToList();
+                // Log the exception (consider using a logging framework like Serilog or NLog)
+                return new List<SubContractorInfoDto>(); // Return an empty list if an error occurs
+            }
         }
+
     }
 }

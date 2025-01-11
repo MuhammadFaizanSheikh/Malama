@@ -6,7 +6,7 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName);
         Task<List<ContractDetails>> GetAllContracts();
-        Task<ContractDetails> GetContractById(long id);
+        Task<ResponseDto> GetContractById(long id);
         Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);
         Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId);
         Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId);

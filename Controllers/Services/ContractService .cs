@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
+using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class ContractService : IContractService
     {
         private readonly IGenericRepository<ContractDetails> repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ContractService(IGenericRepository<ContractDetails> repository)
+        public ContractService(IGenericRepository<ContractDetails> repository, IUnitOfWork unitOfWork)
         {
             this.repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
@@ -70,21 +73,52 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ContractDetails> GetContractById(long id)
+        public async Task<ResponseDto> GetContractById(long id)
         {
-            ContractDetails contractDetails = null;
-
             try
             {
-                contractDetails = await repository.GetByIdAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+                // Check if the contract is already assigned
+                var alreadyAssignedContract = await _unitOfWork.SubContractors.FindForSearchingAsync(sc => sc.ContractId == id);
 
-            return contractDetails;
+                if (alreadyAssignedContract != null && alreadyAssignedContract.Any())
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Contract is already assigned."
+                    };
+                }
+
+                // Retrieve the contract details
+                var contractDetails = await repository.GetByIdAsync(id);
+
+                if (contractDetails == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Contract not found."
+                    };
+                }
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Contract retrieved successfully.",
+                    Data = contractDetails // Add a dynamic property or extend ResponseDto to include Data if needed
+                };
+            }
+            catch (Exception)
+            {
+                // Log the error if needed
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving the contract."
+                };
+            }
         }
+
 
         public async Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName)
         {

@@ -205,9 +205,9 @@ namespace ExcelFilesCompiler.Controllers
 
                 return Json(new { success = true, combinedData = combinedData });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "An error occurred while retrieving the contract." });
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }

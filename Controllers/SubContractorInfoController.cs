@@ -206,10 +206,19 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCompanyNameSuggestion(string term)
         {
-            var companies = await _subContractorService.GetCompanyNameByTermAsync(term);
+            try
+            {
+                var companies = await _subContractorService.GetCompanyNameByTermAsync(term);
 
-            // Return data in the format required by jQuery UI Autocomplete
-            return Json(companies.Select(c => c.CompanyMainName).ToList());
+                // Return data in the format required by jQuery UI Autocomplete
+                return Json(companies.Select(c => c.CompanyMainName).ToList());
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and return an appropriate error response
+                return StatusCode(500, new { Message = "An error occurred while retrieving company name suggestions." });
+            }
         }
+
     }
 }

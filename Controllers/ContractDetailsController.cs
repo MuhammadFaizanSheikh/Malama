@@ -120,19 +120,29 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var contractDetails = await _contractService.GetContractById(id);
-                if (contractDetails == null)
+                var result = await _contractService.GetContractById(id);
+
+                if (!result.Success)
                 {
-                    return Json(new { success = false, message = "Contract not found." });
+                    return Json(new { success = false, message = result.Message });
                 }
 
-                return Json(new { success = true, contractDetails });
+                // Assuming ResponseDto includes a Data property to hold contract details
+                return Json(new { success = true, contractDetails = result.Data });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "An error occurred while retrieving the contract." });
+                // Log the exception here if needed, e.g., using a logging framework
+                // _logger.LogError(ex, "Error in GetContractById");
+
+                return Json(new
+                {
+                    success = false,
+                    message = "An unexpected error occurred while processing the request. Please try again later."
+                });
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetContractsForSearching(string contractId)
