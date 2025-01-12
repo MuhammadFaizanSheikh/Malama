@@ -129,7 +129,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         var contractAffilication = new StaffContractAffiliationDto
                         {
                             ContractId = info.ContractId,
-                            ContractName = filteredContracts.ContractID // Assuming ContractID is the name for contract
+                            ContractName = filteredContracts.ContractName // Assuming ContractID is the name for contract
                         };
 
                         var subContractorAffiliation = result.FirstOrDefault(x => x.SubContractorName == filteredSubContractor.CompanyMainName);

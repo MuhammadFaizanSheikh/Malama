@@ -180,7 +180,7 @@ namespace ExcelFilesCompiler.Controllers
                 var contractResults = contractDetails.Select(cd => new
                 {
                     id = cd.Id,
-                    text = cd.ContractID
+                    text = cd.ContractName
                 }).ToList();
 
                 return Ok(new

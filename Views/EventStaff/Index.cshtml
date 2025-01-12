@@ -326,7 +326,7 @@
                 <div class="row mb-3">
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
-            <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" maxLength="6" readonly required />
+                    <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" maxLength="6" readonly="readonly" required />
         </div>
         <div class="col-md-6">
             <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
@@ -1612,42 +1612,10 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                     const jsonString = JSON.stringify(staffContractAffiliation);
                     console.log(jsonString);
                         $('#hiddenId').val(eventStaff.id);
+
+                        const affiliationContainer = document.querySelector('.form-container-Affiliation');
+                        affiliationContainer.innerHTML = '';
                         manageAffiliationRows(staffContractAffiliation);
-                    //     var selectedData = {
-                    //         id: subContractor.id,
-                    //         text: subContractor.companyMainName
-                    //     };
-
-                    //     if ($("#EmployerSubcontractor").find(`option[value='${selectedData.id}']`).length === 0) {
-                    //         var newOption = new Option(selectedData.text, selectedData.id, true, true);
-                    //         $('#EmployerSubcontractor').append(newOption);
-                    //     } else {
-                    //         $('#EmployerSubcontractor').val(selectedData.id);
-                    //     }
-
-
-                    //   $('#StaffContractAffiliation').empty();
-
-                    //     staffContractAffiliation.forEach(function(item) {
-                    //         var option = $('<option>')
-                    //             .val(item.contractId)
-                    //             .text(item.contractName);
-                        
-                    //         $('#StaffContractAffiliation').append(option);
-                    //     });
-                        
-                    //         $('#StaffContractAffiliation').val(
-                    //             staffContractAffiliation.map(function(item) {
-                    //                 return item.contractId;  // Get all contractIds from the response
-                    //             })
-                    //         );
-                        
-                    //     $('#StaffContractAffiliation').select2({
-                    //         placeholder: "Select options",
-                    //         allowClear: true
-                    //     }).trigger('change').trigger('input');
-
-                    // console.log($('#StaffContractAffiliation').val());
 
                             $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
                             $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);
@@ -1678,6 +1646,9 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             }
 
                             $('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
+
+                            const licenseContainer = document.querySelector('.form-container');
+                            licenseContainer.innerHTML = '';
                             manageLicenseRows(eventStaff.licenses);
                     
                             $('#npi').val(eventStaff.npi);
@@ -1992,7 +1963,7 @@ function setStaffIdTextbox(staffId) {
 
           $('#addContractBtn').click(function () {
                 $('#StaffInfoEnteredBy').val('@User.Identity.Name');
-            const controlIds = ['hiddenId','StartDate','StaffID',
+            const controlIds = ['hiddenId','StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
