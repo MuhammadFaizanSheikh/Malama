@@ -153,6 +153,7 @@
             <tr>
                 <th>Contract ID</th>
                 <th>Contract Agency</th>
+                <th>Dawson Contract Name</th>
                 <th>Contract Service Branch</th>
                 <th>Contract Component</th>
                 <th>Contract Client</th>
@@ -172,6 +173,7 @@
                         <tr data-id="@contract.Id">
                         <td>@contract.ContractID</td>
                         <td>@contract.ContractAgency</td>
+                        <td>@contract.ContractName</td>
                         <td>@contract.ContractServiceBranch</td>
                         <td>@contract.ContractComponent</td>
                         <td>@contract.ContractClient</td>
@@ -223,14 +225,19 @@
                     <span asp-validation-for="SingleContract.ContractID" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="ContractAgency" class="form-label">Contract Agency</label>
-                    <input id="ContractAgency" asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.ContractAgency" class="text-danger"></span>
+                    <label for="ContractName" class="form-label">Dawson Contract Name</label>
+                    <input id="ContractName" asp-for="SingleContract.ContractName" class="form-control" placeholder="Enter Contract Name" maxLength="32" required />
+                    <span asp-validation-for="SingleContract.ContractName" class="text-danger"></span>
                 </div>
             </div>
 
             <!-- Row 2 -->
             <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractAgency" class="form-label">Contract Agency</label>
+                    <input id="ContractAgency" asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.ContractAgency" class="text-danger"></span>
+                </div>
                 <div class="col-md-6 mb-3">
                     <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
                     <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" maxLength="20" required>
@@ -243,6 +250,11 @@
                         <option>Space Force</option>
                     </select>
                 </div>
+                
+            </div>
+
+            <!-- Row 3 -->
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractComponent" class="form-label">Contract Component</label>
                     <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" maxLength="20" required>
@@ -253,10 +265,6 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractComponent" class="text-danger"></span>
                 </div>
-            </div>
-
-            <!-- Row 3 -->
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractClient" class="form-label">Contract Client</label>
                     <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" maxLength="20" required>
@@ -266,6 +274,11 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractClient" class="text-danger"></span>
                 </div>
+                
+            </div>
+
+            <!-- Row 4 -->
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractType" class="form-label">Contract Type</label>
                     <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" maxLength="20" required>
@@ -276,10 +289,6 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractType" class="text-danger"></span>
                 </div>
-            </div>
-
-            <!-- Row 4 -->
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
                     <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" maxLength="20" required>
@@ -289,9 +298,14 @@
                     </select>
                     <span asp-validation-for="SingleContract.DawsonRoleOnContract" class="text-danger"></span>
                 </div>
+                
+            </div>
+
+            <!-- Row 5 -->
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractStatus" class="form-label">Contract Status</label>
-                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" maxLength="20"  required>
+                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" maxLength="20" required>
                         <option value="">Select Status</option>
                         <option>Bidding</option>
                         <option>Active</option>
@@ -299,15 +313,14 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractStatus" class="text-danger"></span>
                 </div>
-            </div>
-
-            <!-- Row 5 -->
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractStartDate" class="form-label">Contract Start Date</label>
                     <input id="ContractStartDate" asp-for="SingleContract.ContractStartDate" type="date" class="form-control" required />
                     <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
                 </div>
+            </div>
+
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractEndDate" class="form-label">Contract End Date</label>
                     <input id="ContractEndDate" asp-for="SingleContract.ContractEndDate" type="date" class="form-control" required />
@@ -490,55 +503,44 @@
 </div>
 <script>
     $(document).ready(function () {
-        
-    // Checking TempData for ShowForm
-    // var showForm = '@TempData["ShowForm"]' === 'True'; 
-    // debugger;
-    // if (showForm) {
-    //     $('#datatableWrapper').hide();  // Hide the DataTable
-    //     $('.card-body').show(); // Show the form
-    // } else {
-    //     $('#datatableWrapper').show();  // Show the DataTable
-    //     $('.card-body').hide(); // Hide the form
-    // }
 
-        $('#ContractID').val('12345');
-    $('#ContractAgency').val('Department of Defense');
-    $('#ContractServiceBranch').val('Army');
-    $('#ContractComponent').val('Active Duty');
-    $('#ContractClient').val('State');
-    $('#ContractType').val('FFP');
-    $('#DawsonRoleOnContract').val('Prime');
-    $('#ContractStatus').val('Active');
+    //     $('#ContractID').val('12345');
+    // $('#ContractAgency').val('Department of Defense');
+    // $('#ContractServiceBranch').val('Army');
+    // $('#ContractComponent').val('Active Duty');
+    // $('#ContractClient').val('State');
+    // $('#ContractType').val('FFP');
+    // $('#DawsonRoleOnContract').val('Prime');
+    // $('#ContractStatus').val('Active');
 
-    $('#ContractStartDate').val('2024-01-01');
-    $('#ContractEndDate').val('2025-12-31');
+    // $('#ContractStartDate').val('2024-01-01');
+    // $('#ContractEndDate').val('2025-12-31');
 
-    // KO
-    // $('#KoLastName').val('Smith');
-    $('#KoFirstName').val('John');
-    $('#KOPhone').val('123-456-7890');
-    $('#KOPhone2').val('987-654-3210');
-    $('#KOEmail').val('john.smith@example.com');
-    $('#KONotes').val('Key contact for the project.');
-    $('#CORLastName').val('Johnson');
-    $('#CORPrefix').val('M.');
-    $('#CORFirstName').val('Alice');
+    // // KO
+    // // $('#KoLastName').val('Smith');
+    // $('#KoFirstName').val('John');
+    // $('#KOPhone').val('123-456-7890');
+    // $('#KOPhone2').val('987-654-3210');
+    // $('#KOEmail').val('john.smith@example.com');
+    // $('#KONotes').val('Key contact for the project.');
+    // $('#CORLastName').val('Johnson');
+    // $('#CORPrefix').val('M.');
+    // $('#CORFirstName').val('Alice');
 
-    $('#CORKORank').val('Colonel');
-    $('#CorPhone').val('123-456-7890');
-    $('#CorPhone2').val('987-654-3210');
-    $('#COREmail').val('alice.johnson@example.com');
-    $('#CORNotes').val('Responsible for oversight.');
+    // $('#CORKORank').val('Colonel');
+    // $('#CorPhone').val('123-456-7890');
+    // $('#CorPhone2').val('987-654-3210');
+    // $('#COREmail').val('alice.johnson@example.com');
+    // $('#CORNotes').val('Responsible for oversight.');
 
-    $('#DawsonProgramManagerLastName').val('Taylor');
-    $('#DawsonProgramManagerFirstName').val('Michael');
+    // $('#DawsonProgramManagerLastName').val('Taylor');
+    // $('#DawsonProgramManagerFirstName').val('Michael');
 
-    $('#DawsonDeputyProgramManagerLastName').val('Brown');
-    $('#DawsonDeputyProgramManagerFirstName').val('Jessica');
+    // $('#DawsonDeputyProgramManagerLastName').val('Brown');
+    // $('#DawsonDeputyProgramManagerFirstName').val('Jessica');
 
-    $('#DawsonProjectManagerLastName').val('Williams');
-    $('#DawsonProjectManagerFirstName').val('David');
+    // $('#DawsonProjectManagerLastName').val('Williams');
+    // $('#DawsonProjectManagerFirstName').val('David');
 
 
         $('.card-body').hide();
@@ -551,7 +553,7 @@
         $('#addContractBtn').click(function () {
 
             const controlIds = [
-                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
                 'ContractStatus', 'ContractStartDate', 'ContractEndDate',
                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
@@ -587,43 +589,44 @@
             $('#addContractBtn').hide();
 
             $('#hiddenId').val('');
-            // $('#ContractID').val('');
-            // $('#ContractAgency').val('');
-            // $('#ContractServiceBranch').val('');
-            // $('#ContractComponent').val('');
-            // $('#ContractClient').val('');
-            // $('#ContractType').val('');
-            // $('#DawsonRoleOnContract').val('');
-            // $('#ContractStatus').val('');
+            $('#ContractID').val('');
+            $('#ContractName').val('');
+            $('#ContractAgency').val('');
+            $('#ContractServiceBranch').val('');
+            $('#ContractComponent').val('');
+            $('#ContractClient').val('');
+            $('#ContractType').val('');
+            $('#DawsonRoleOnContract').val('');
+            $('#ContractStatus').val('');
 
-            // $('#ContractStartDate').val('');
-            // $('#ContractEndDate').val('');
+            $('#ContractStartDate').val('');
+            $('#ContractEndDate').val('');
 
-            // // KO
-            // $('#KoLastName').val('');
-            // $('#KoFirstName').val('');
-            // $('#KOPhone').val('');
-            // $('#KOPhone2').val('');
-            // $('#KOEmail').val('');
-            // $('#KONotes').val('');
-            // $('#CORLastName').val('');
-            // $('#CORPrefix').val('');
-            // $('#CORFirstName').val('');
+            // KO
+            $('#KoLastName').val('');
+            $('#KoFirstName').val('');
+            $('#KOPhone').val('');
+            $('#KOPhone2').val('');
+            $('#KOEmail').val('');
+            $('#KONotes').val('');
+            $('#CORLastName').val('');
+            $('#CORPrefix').val('');
+            $('#CORFirstName').val('');
 
-            // $('#CORKORank').val('');
-            // $('#CorPhone').val('');
-            // $('#CorPhone2').val('');
-            // $('#COREmail').val('');
-            // $('#CORNotes').val('');
+            $('#CORKORank').val('');
+            $('#CorPhone').val('');
+            $('#CorPhone2').val('');
+            $('#COREmail').val('');
+            $('#CORNotes').val('');
 
-            // $('#DawsonProgramManagerLastName').val('');
-            // $('#DawsonProgramManagerFirstName').val('');
+            $('#DawsonProgramManagerLastName').val('');
+            $('#DawsonProgramManagerFirstName').val('');
 
-            // $('#DawsonDeputyProgramManagerLastName').val('');
-            // $('#DawsonDeputyProgramManagerFirstName').val('');
+            $('#DawsonDeputyProgramManagerLastName').val('');
+            $('#DawsonDeputyProgramManagerFirstName').val('');
 
-            // $('#DawsonProjectManagerLastName').val('');
-            // $('#DawsonProjectManagerFirstName').val('');
+            $('#DawsonProjectManagerLastName').val('');
+            $('#DawsonProjectManagerFirstName').val('');
         });
 
         
@@ -664,6 +667,7 @@
                         var contract = response.contractDetails;
                         $('#hiddenId').val(contract.id);
                         $('#ContractID').val(contract.contractID);
+                        $('#ContractName').val(contract.contractName);
                         $('#ContractAgency').val(contract.contractAgency);
                         $('#ContractServiceBranch').val(contract.contractServiceBranch);
                         $('#ContractComponent').val(contract.contractComponent);
@@ -719,7 +723,7 @@
                         
                         if (isViewButton) {
                             const controlIds = [
-                                'hiddenId', 'ContractID', 'ContractAgency', 'ContractServiceBranch',
+                                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
                                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
                                 'ContractStatus', 'ContractStartDate', 'ContractEndDate',
                                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
@@ -761,6 +765,10 @@
                              var control = $('#ContractID');
                              control.prop('readonly', true);
                              control.addClass('read-only-style');
+
+                            var control = $('#ContractName');
+                            control.prop('readonly', true);
+                            control.addClass('read-only-style');
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                         }
                     } else {
@@ -807,34 +815,43 @@
 
         // Prevent form submission
         event.preventDefault();
-    } else {
-        
     }
+
+        if (isContractNameExists) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Contract Name already exists',
+                text: 'Please choose a different Contract ID.',
+                confirmButtonColor: '#FF0000'
+            });
+
+            // Prevent form submission
+            event.preventDefault();
+        }
 });
 
-function checkIfContractExists(contractID) {
-    return new Promise(function (resolve, reject) {
-        $.ajax({
-            url: '/ContractDetails/CheckIfContractIDAlreadyExist',
-            type: 'GET',
-            data: { contractId: contractID },
-            success: function (response) {
-                console.log(response); // Check the response
-                if (response && response.id !== null) {
-                    // If the contract exists (based on the API response)
-                    resolve(true);
-                } else {
-                    // If the contract does not exist
-                    resolve(false);
+    function checkIfContractExists(contractID, contractName, checkType) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: '/ContractDetails/CheckIfContractExists',
+                type: 'GET',
+                data: { contractId: contractID, contractName: contractName, checkType: checkType },
+                success: function (response) {
+                    console.log(response); // Check the response
+                    if (response && response.exists) {
+                        // If the contract exists (based on the API response)
+                        resolve(true);
+                    } else {
+                        // If the contract does not exist
+                        resolve(false);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    reject(error);  // Reject the promise in case of an error
                 }
-            },
-            error: function (xhr, status, error) {
-                reject(error);  // Reject the promise in case of an error
-            }
+            });
         });
-    });
-}
-
+    }
 
 
     function validatePhoneFields() {
@@ -871,47 +888,73 @@ function checkIfContractExists(contractID) {
 
     });
 
-    let isContractIDExists = false;
+    var isContractIDExists = false; // To track if ContractID exists
+    var isContractNameExists = false; // To track if ContractName exists
 
-    $('#ContractID').on('blur', function () {
-    var contractID = $('#ContractID').val().trim(); // Get and trim ContractID input
+    $('#ContractID, #ContractName').on('blur', function () {
+        debugger;
+        var inputField = $(this); // Get the current input field
+        var inputValue = inputField.val().trim(); // Get and trim the input value
+        var checkType = inputField.attr('id') === 'ContractID' ? 'id' : 'name'; // Determine the check type
 
-    // Only call checkIfContractExists if the ContractID is not empty
-    if (contractID !== '') {
-        // Call checkIfContractExists method
-        checkIfContractExists(contractID).then(function (exists) {
-            if (exists) {
-                // Show SweetAlert error if the ContractID already exists
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Contract ID already exists',
-                    text: 'Please choose a different Contract ID.',
-                    confirmButtonColor: '#FF0000'
+        // Only call checkIfContractExists if the input value is not empty
+        if (inputValue !== '') {
+            checkIfContractExists(
+                checkType === 'id' ? inputValue : null, // Pass ContractID if checking by ID
+                checkType === 'name' ? inputValue : null, // Pass ContractName if checking by Name
+                checkType // Indicate the type of check
+            )
+                .then(function (exists) {
+                    if (exists) {
+                        // Show SweetAlert error if the value already exists
+                        Swal.fire({
+                            icon: 'error',
+                            title: checkType === 'id' ? 'Contract ID already exists' : 'Contract Name already exists',
+                            text: 'Please choose a different ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
+                            confirmButtonColor: '#FF0000'
+                        });
+
+                        // Add custom styling to highlight the field
+                        inputField.addClass('is-invalid');
+
+                        // Set the appropriate flag variable
+                        if (checkType === 'id') {
+                            isContractIDExists = true;
+                        } else {
+                            isContractNameExists = true;
+                        }
+                    } else {
+                        // If the value doesn't exist, remove invalid class (if any)
+                        inputField.removeClass('is-invalid');
+
+                        // Reset the appropriate flag variable
+                        if (checkType === 'id') {
+                            isContractIDExists = false;
+                        } else {
+                            isContractNameExists = false;
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    // Handle errors in the API call
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while checking the ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
+                        confirmButtonColor: '#FF0000'
+                    });
                 });
-
-                // Optionally, add custom styling to highlight the field
-                $('#ContractID').addClass('is-invalid'); // Adding Bootstrap's invalid class
-                isContractIDExists = true;
-            } else {
-                // If ContractID doesn't exist, remove invalid class (if any)
-                $('#ContractID').removeClass('is-invalid');
+        } else {
+            // If input is empty, remove any invalid styling and reset the flag
+            inputField.removeClass('is-invalid');
+            if (checkType === 'id') {
                 isContractIDExists = false;
+            } else {
+                isContractNameExists = false;
             }
-        }).catch(function (error) {
-            // Handle errors in the API call
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while checking the Contract ID.',
-                confirmButtonColor: '#FF0000'
-            });
-        });
-    } else {
-        // If ContractID is empty, remove any invalid styling
-        $('#ContractID').removeClass('is-invalid');
-        isContractIDExists = false;
-    }
-});
+        }
+    });
+
 
 
     

@@ -171,12 +171,18 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId)
+        public async Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId, string contractName, string checkType)
         {
             try
             {
-                // Using the repository to query for the contract
-                return await repository.FindAsync(c => c.ContractID == contractId);
+                if (checkType.Equals("id"))
+                {
+                    return await repository.FindAsync(c => c.ContractID == contractId);
+                }
+                else
+                {
+                    return await repository.FindAsync(c => c.ContractName == contractName);
+                }
             }
             catch (Exception ex)
             {

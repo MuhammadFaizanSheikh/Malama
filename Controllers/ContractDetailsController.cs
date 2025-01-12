@@ -166,21 +166,21 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CheckIfContractIDAlreadyExist(string contractId)
+        public async Task<IActionResult> CheckIfContractExists(string contractId = null, string contractName = null, string checkType = "id")
         {
             try
             {
-                var contract = await _contractService.CheckIfContractIDAlreadyExist(contractId);
+                var contract = await _contractService.CheckIfContractIDAlreadyExist(contractId, contractName, checkType);
 
                 if (contract != null)
                 {
-                    // Return the contract's Id if it exists
-                    return Json(new { id = contract.Id });
+                    // Return true if the contract exists
+                    return Json(new { exists = true });
                 }
                 else
                 {
                     // Return null if no contract is found
-                    return Json(new { id = (int?)null });
+                    return Json(new { exists = false });
                 }
             }
             catch (Exception ex)

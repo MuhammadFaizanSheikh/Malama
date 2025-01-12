@@ -23,7 +23,11 @@
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Contract ID cannot be only white spaces.")]
         public string ContractID { get; set; }
 
-        
+        [StringLength(32, ErrorMessage = "Contract Name cannot exceed 32 characters.")]
+        [Required(ErrorMessage = "Contract Name is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Contract Name cannot be only white spaces.")]
+        public string ContractName { get; set; }
+
 
         [StringLength(50, ErrorMessage = "Contract Agency cannot exceed 50 characters.")]
         [Required(ErrorMessage = "Contract Agency is required.")]
