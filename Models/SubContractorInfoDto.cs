@@ -20,6 +20,7 @@ namespace ExcelFilesCompiler.Models
     {
         public long Id { get; set; }
         public string ContractId { get; set; }
+        public string ContractName { get; set; }
         public string CompanyId { get; set; }
         public string CompanyMainName { get; set; }
         public string ContractClient { get; set; }
@@ -41,9 +42,6 @@ namespace ExcelFilesCompiler.Models
         [Required(ErrorMessage = "Contract ID is required.")]
         [Range(1, 9999999999999, ErrorMessage = "Contract ID must be a valid numeric value.")]
         public long ContractId { get; set; }
-
-        //[ForeignKey("ContractId")]
-        //public ContractDetails? ContractDetails { get; set; }
 
         [StringLength(20, ErrorMessage = "CompanyId cannot exceed 20 characters.")]
         [Required(ErrorMessage = "CompanyId is required.")]

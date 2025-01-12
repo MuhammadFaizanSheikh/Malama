@@ -154,7 +154,7 @@ namespace ExcelFilesCompiler.Controllers
                 var result = contracts.Select(c => new
                 {
                     id = c.Id,
-                    text = c.ContractID
+                    text = c.ContractName
                 });
 
                 return Json(result);

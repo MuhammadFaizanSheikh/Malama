@@ -223,6 +223,7 @@
                     <th>Company Id</th>
                     <th>Company Main Name</th>
                     <th>DAWSON Contract ID</th>
+                    <th>DAWSON Contract Name</th>
                     <th>Contract Client</th>
                     <th>Small Business Type</th>
                     <th>Contract Type</th>
@@ -242,6 +243,7 @@
                             <td>@contract.CompanyId</td>
                             <td>@contract.CompanyMainName</td>
                             <td>@contract.ContractId</td>
+                            <td>@contract.ContractName</td>
                             <td>@contract.ContractClient</td>
                             <td>@contract.SmallBusinessType</td>
                             <td>@contract.ContractType</td>
@@ -264,6 +266,7 @@
                     <tr>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
@@ -349,7 +352,7 @@
             <!-- Row 1 -->
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="ContractId">Contract ID # (DAWSON)</label>
+                    <label for="ContractId">Contract Name (DAWSON)</label>
                     <select id="ContractId" class="form-select select2" asp-for="SingleSubContractor.ContractId" required>
                         <!-- Options will be populated dynamically from the database -->
                     </select>
@@ -738,7 +741,7 @@
             $('#addContractBtn').hide();
 
             $('#hiddenId').val('');
-            $('#ContractId').val('');
+             $('#ContractId').val(null).trigger('change');
 $('#CompanyId').val('');
 $('#ContractClient').val('');
 $('#ContractType').val('');
@@ -829,17 +832,18 @@ $('#TrainingEmail').val('');
                         $('#hiddenId').val(contract.subContractor.id);
                 var selectedData = {
                 id: contract.subContractor.id, // The value of the option
-                text: contract.contractDetails.contractID // The text to display
+                text: contract.contractDetails.contractName // The text to display
                 };
 
-                // Add the option dynamically if it doesn't exist
-                if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
-                    var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                // if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
+                    
+                // } else {
+                //     $('#ContractId').val(selectedData.id);
+                // }
+
+                var newOption = new Option(selectedData.text, selectedData.id, true, true);
                     $('#ContractId').append(newOption);
-                } else {
-                    // If the option exists, just set it as selected
-                    $('#ContractId').val(selectedData.id);
-                }
+
                         $('#CompanyId').val(contract.subContractor.companyId);
                         $('#ContractClient').val(contract.contractDetails.contractClient);
                         $('#ContractType').val(contract.contractDetails.contractType);
@@ -885,7 +889,7 @@ $('#TrainingEmail').val('');
 
                         if (isViewButton) {
                             const controlIds = [
-                              'hiddenId','ContractId','CompanyId', 'ContractClient', 'ContractType', 'SmallBusinessType',
+                                'hiddenId', 'ContractId', 'CompanyId', 'ContractClient', 'ContractType', 'SmallBusinessType',
                               'ContractAffiliation', 'ContractServiceBranch', 'ContractComponent',
                               'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
                               'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',

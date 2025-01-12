@@ -40,6 +40,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 Id = sub.Id,
                                 CompanyId = sub.CompanyId,
                                 ContractId = contract.ContractID,
+                                ContractName = contract.ContractName,
                                 ContractClient = contract.ContractClient,
                                 ContractType = contract.ContractType,
                                 SmallBusinessType = sub.SmallBusinessType,

@@ -154,16 +154,16 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
+        public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractName)
         {
             try
             {
-                if (string.IsNullOrEmpty(contractId))
+                if (string.IsNullOrEmpty(contractName))
                 {
                     return await repository.FindForSearchingAsync(c => true);
                 }
 
-                return await repository.FindForSearchingAsync(c => c.ContractID.Contains(contractId));
+                return await repository.FindForSearchingAsync(c => c.ContractName.Contains(contractName));
             }
             catch (Exception ex)
             {
