@@ -203,17 +203,27 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
-        public async Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        public async Task<IEnumerable<T>> GetWithIncludeAsync(
+      Expression<Func<T, bool>> predicate = null,
+      params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet;
 
+            // Apply includes for eager loading
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
 
-            return await query.Where(predicate).ToListAsync();
+            // Apply predicate only if it is not null
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return await query.ToListAsync();
         }
+
 
         public async Task DeleteAgainstFieldAsync(object id, string idPropertyName)
         {

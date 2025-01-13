@@ -14,10 +14,10 @@ namespace ExcelFilesCompiler.Controllers.Services
 {
     public class SubContractorService : ISubContractorService
     {
-        private readonly IGenericRepository<SubContractorInfoDto> repository;
+        private readonly IGenericRepository<SubContractor> repository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public SubContractorService(IGenericRepository<SubContractorInfoDto> repository, IUnitOfWork unitOfWork)
+        public SubContractorService(IGenericRepository<SubContractor> repository, IUnitOfWork unitOfWork)
         {
             this.repository = repository;
             _unitOfWork = unitOfWork;
@@ -30,7 +30,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var subcontractors = await _unitOfWork.SubContractors.GetAllAsync();
+                var subcontractors = await _unitOfWork.SubContractors.GetWithIncludeAsync(
+                    null,
+                    x => x.ServiceTypeProvided
+                );
+
+                //var subcontractors = await _unitOfWork.SubContractors.GetAllAsync();
                 var contracts = await _unitOfWork.ContractDetails.GetAllAsync();
 
                 var result = from sub in subcontractors
@@ -44,7 +49,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 ContractClient = contract.ContractClient,
                                 ContractType = contract.ContractType,
                                 SmallBusinessType = sub.SmallBusinessType,
-                                ContractAffiliation = sub.ContractAffiliation,
+                                ServiceTypeProvided = string.Join(", ", sub.ServiceTypeProvided.Select(stp => stp.ServiceTypeProvidedName)),
                                 ContractServiceBranch = contract.ContractServiceBranch,
                                 ContractComponent = contract.ContractComponent,
                                 SolicitationNumber = sub.SolicitationNumber,
@@ -102,21 +107,32 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (subContractor == null)
                 {
-                    return null; // Return null if not found
+                    throw new Exception("No subcontractors found.");
                 }
 
-                // Fetch the related contract details using the ContractId
                 var contractDetails = await _unitOfWork.ContractDetails.GetByIdAsync(subContractor.ContractId);
 
-                // If you want to combine the data into a single DTO, you can create a new DTO for that purpose
-                // For example, you can create a new DTO that includes both SubContractor and ContractDetails data
+                if (contractDetails == null)
+                {
+                    throw new Exception("No contract detail found.");
+                }
+
+                var serviceTypes = (await _unitOfWork.ServiceTypeProvided.GetAllAsync(c => c.SubContractorId == id));
+
+                if (serviceTypes == null)
+                {
+                    throw new Exception("No service types found.");
+                }
+
+                subContractor.ServiceTypeProvided = serviceTypes.ToList();
+
                 var combinedDto = new CombinedSubContractorAndContractDto
                 {
                     SubContractor = subContractor,
                     ContractDetails = contractDetails
                 };
 
-                return combinedDto; // Return the combined DTO
+                return combinedDto;
             }
             catch (Exception ex)
             {
@@ -124,7 +140,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ResponseDto> AddContractAsync(SubContractorInfoDto contractDetail, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
@@ -149,20 +165,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<ResponseDto> UpdateContract(SubContractorInfoDto contract, string loggedinUserName)
+        public async Task<ResponseDto> UpdateContract(SubContractor contract, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             try
             {
+                var existingEvent = await _unitOfWork.SubContractors.GetByIdAsync(contract.Id);
+                contract.AddedBy = existingEvent.AddedBy;
+                contract.AddedOn = existingEvent.AddedOn;
                 contract.UpdatedBy = loggedinUserName;
                 contract.UpdatedOn = DateTime.Now;
                 await repository.UpdateAsync(contract);
+
+
+                await _unitOfWork.ServiceTypeProvided.DeleteAgainstFieldAsync(contract.Id, "SubContractorId");
+                _unitOfWork.ServiceTypeProvided.AddRange(contract.ServiceTypeProvided);
+
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
                 responseDto.Success = true;
                 responseDto.Message = "SubContractor updated successfully!";
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred while updating SubContractor: {ex.Message}";
             }
@@ -170,7 +199,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<IEnumerable<SubContractorInfoDto>> GetSubContractorByCompanyNameForSearching(string companyName)
+        public async Task<IEnumerable<SubContractor>> GetSubContractorByCompanyNameForSearching(string companyName)
         {
             try
             {
@@ -229,19 +258,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<IEnumerable<SubContractorInfoDto>> GetCompanyNameByTermAsync(string term)
+        public async Task<IEnumerable<SubContractor>> GetCompanyNameByTermAsync(string term)
         {
             try
             {
                 if (string.IsNullOrEmpty(term))
                 {
-                    return new List<SubContractorInfoDto>();
+                    return new List<SubContractor>();
                 }
 
                 var subcontractors = await _unitOfWork.SubContractors.GetAllAsync(c => c.CompanyMainName.Contains(term));
 
                 return subcontractors
-                    .Select(s => new SubContractorInfoDto
+                    .Select(s => new SubContractor
                     {
                         CompanyMainName = s.CompanyMainName
                     })
@@ -252,7 +281,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 // Log the exception (consider using a logging framework like Serilog or NLog)
-                return new List<SubContractorInfoDto>(); // Return an empty list if an error occurs
+                return new List<SubContractor>(); // Return an empty list if an error occurs
             }
         }
 

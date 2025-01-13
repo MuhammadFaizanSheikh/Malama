@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250113185111_Test4")]
+    partial class Test4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -276,20 +279,22 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.Property<string>("ServiceTypeProvidedName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("SubContractorId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SubContractorInfoDtoId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("SubContractorId");
+                    b.HasIndex("SubContractorInfoDtoId");
 
                     b.ToTable("ServiceTypeProvided");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
+            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractorInfoDto", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1149,11 +1154,9 @@ namespace ExcelFilesCompiler.Migrations
 
             modelBuilder.Entity("ExcelFilesCompiler.Models.ServiceTypeProvided", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.SubContractor", null)
+                    b.HasOne("ExcelFilesCompiler.Models.SubContractorInfoDto", null)
                         .WithMany("ServiceTypeProvided")
-                        .HasForeignKey("SubContractorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SubContractorInfoDtoId");
                 });
 
             modelBuilder.Entity("ExcelToCsv.Models.LicenseInfoDTO", b =>
@@ -1234,7 +1237,7 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
+            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractorInfoDto", b =>
                 {
                     b.Navigation("ServiceTypeProvided");
                 });

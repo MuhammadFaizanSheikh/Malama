@@ -48,6 +48,8 @@
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    
+
 
 
     <!-- DataTables CSS for Bootstrap 5 -->
@@ -227,7 +229,7 @@
                     <th>Contract Client</th>
                     <th>Small Business Type</th>
                     <th>Contract Type</th>
-                    <th>Contract Affiliation</th>
+                    <th>Service Type Provided</th>
                     <th>Contract Service Branch</th>
                     <th>Contract Component</th>
                     <th>Solicitation Number</th>
@@ -247,7 +249,7 @@
                             <td>@contract.ContractClient</td>
                             <td>@contract.SmallBusinessType</td>
                             <td>@contract.ContractType</td>
-                            <td>@contract.ContractAffiliation</td>
+                            <td>@contract.ServiceTypeProvided</td>
                             <td>@contract.ContractServiceBranch</td>
                             <td>@contract.ContractComponent</td>
                             <td>@contract.SolicitationNumber</td>
@@ -274,7 +276,7 @@
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
                         <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                     </tr>
                 }
@@ -384,9 +386,16 @@
             <div class="row mb-3">
 
                 <div class="col-md-6">
-                    <label for="ContractAffiliation">Contract Affiliation of Subcontractor</label>
-                    <input type="text" id="ContractAffiliation" class="form-control" asp-for="SingleSubContractor.ContractAffiliation" placeholder="Enter Contract Affiliation" maxLength="50" required>
-                    <span asp-validation-for="SingleSubContractor.ContractAffiliation" class="text-danger"></span>
+                    <label for="SelectedServiceTypeProvided">Service Type Provided</label>
+                    @* <input type="text" id="ContractAffiliation" class="form-control" asp-for="SingleSubContractor.ContractAffiliation" placeholder="Enter Contract Affiliation" maxLength="50" required> *@
+
+                    <select id="ServiceTypeProvided" asp-for="SingleSubContractor.SelectedServiceTypeProvided" multiple="multiple" class="form-control" required>
+                        <option value="Audiology">Audiology</option>
+                        <option value="Staffing">Staffing</option>
+                        <option value="Vital">Vital</option>
+                    </select>
+
+                    <span asp-validation-for="SingleSubContractor.SelectedServiceTypeProvided" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
                     <label for="ContractServiceBranch">Contract Service Branch</label>
@@ -657,47 +666,52 @@
 </body>
 </html>
 <script>
-//     $('#CompanyId').val('COM123');
-// $('#ContractClient').val('ABC Corporation');
-// $('#ContractType').val('Service Agreement');
-// $('#SmallBusinessType').val('Minority-Owned Business');
-// $('#ContractAffiliation').val('Prime Contractor');
-// $('#ContractServiceBranch').val('Air Force');
-// $('#ContractComponent').val('Reserves');
-// $('#SolicitationNumber').val('SOL456789');
-// $('#CompanyMainName').val('Global Tech Solutions');
-// $('#CompanyMainAddress1').val('123 Main St');
-// $('#CompanyMainAddress2').val('Suite 456');
-// $('#CompanyMainState').val('Georiga').trigger('change');
-// $('#CompanyMainCity').val('Appling').trigger('change');
-// $('#CompanyMainZip').val('30802');
-// $('#CompanyMainLastName').val('Doe');
-// $('#CompanyMainFirstName').val('John');
-// $('#CompanyMainPhone').val('123-456-7890');
-// $('#CompanyMainEmail').val('john.doe@example.com');
-// $('#FinanceLastName').val('Smith');
-// $('#FinanceFirstName').val('Jane');
-// $('#FinanceAddress1').val('789 Finance Ave');
-// $('#FinanceAddress2').val('Apt 101');
-// $('#FinanceState').val('Kansas').trigger('change');
-// $('#FinanceCity').val('Anthony').trigger('change');
-// $('#FinanceZip').val('67003');
-// $('#FinancePhone').val('987-654-3210');
-// $('#FinanceEmail').val('jane.smith@example.com');
-// $('#EventLastName').val('Brown');
-// $('#EventFirstName').val('Emily');
-// $('#EventPhone').val('555-123-4567');
-// $('#EventEmail').val('emily.brown@example.com');
-// $('#TrainingLastName').val('Williams');
-// $('#TrainingFirstName').val('David');
-// $('#TrainingPhone').val('555-987-6543');
-// $('#TrainingEmail').val('david.williams@example.com');
+    $('#CompanyId').val('COM123');
+$('#ContractClient').val('ABC Corporation');
+$('#ContractType').val('Service Agreement');
+$('#SmallBusinessType').val('Minority-Owned Business');
+$('#ContractServiceBranch').val('Air Force');
+$('#ContractComponent').val('Reserves');
+$('#SolicitationNumber').val('SOL456789');
+$('#CompanyMainName').val('Global Tech Solutions');
+$('#CompanyMainAddress1').val('123 Main St');
+$('#CompanyMainAddress2').val('Suite 456');
+$('#CompanyMainState').val('Georiga').trigger('change');
+$('#CompanyMainCity').val('Appling').trigger('change');
+$('#CompanyMainZip').val('30802');
+$('#CompanyMainLastName').val('Doe');
+$('#CompanyMainFirstName').val('John');
+$('#CompanyMainPhone').val('123-456-7890');
+$('#CompanyMainEmail').val('john.doe@example.com');
+$('#FinanceLastName').val('Smith');
+$('#FinanceFirstName').val('Jane');
+$('#FinanceAddress1').val('789 Finance Ave');
+$('#FinanceAddress2').val('Apt 101');
+$('#FinanceState').val('Kansas').trigger('change');
+$('#FinanceCity').val('Anthony').trigger('change');
+$('#FinanceZip').val('67003');
+$('#FinancePhone').val('987-654-3210');
+$('#FinanceEmail').val('jane.smith@example.com');
+$('#EventLastName').val('Brown');
+$('#EventFirstName').val('Emily');
+$('#EventPhone').val('555-123-4567');
+$('#EventEmail').val('emily.brown@example.com');
+$('#TrainingLastName').val('Williams');
+$('#TrainingFirstName').val('David');
+$('#TrainingPhone').val('555-987-6543');
+$('#TrainingEmail').val('david.williams@example.com');
 
 
 
 
 
     $(document).ready(function () {
+
+        $(`#ServiceTypeProvided`).select2({
+            placeholder: "Select options",
+            allowClear: true
+        });
+
          $('#ContractId').select2({
             theme: 'bootstrap-5',  // Ensure it's using the Bootstrap 5 theme
             width: '100%'          // Ensure the dropdown takes full width of the select box
@@ -710,7 +724,7 @@
 
              const controlIds = [
     'hiddenId','ContractId', 'SmallBusinessType',
-    'ContractAffiliation',     'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
+    'ServiceTypeProvided',     'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
     'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
     'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
     'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',
@@ -742,41 +756,40 @@
 
             $('#hiddenId').val('');
              $('#ContractId').val(null).trigger('change');
-$('#CompanyId').val('');
-$('#ContractClient').val('');
-$('#ContractType').val('');
-$('#SmallBusinessType').val('');
-$('#ContractAffiliation').val('');
-$('#ContractServiceBranch').val('');
-$('#ContractComponent').val('');
-$('#SolicitationNumber').val('');
-$('#CompanyMainName').val('');
-$('#CompanyMainAddress1').val('');
-$('#CompanyMainAddress2').val('');
-$('#CompanyMainState').val('').trigger('change');
-$('#CompanyMainCity').val('').trigger('change');
-$('#CompanyMainZip').val('');
-$('#CompanyMainLastName').val('');
-$('#CompanyMainFirstName').val('');
-$('#CompanyMainPhone').val('');
-$('#CompanyMainEmail').val('');
-$('#FinanceLastName').val('');
-$('#FinanceFirstName').val('');
-$('#FinanceAddress1').val('');
-$('#FinanceAddress2').val('');
-$('#FinanceState').val('').trigger('change');
-$('#FinanceCity').val('').trigger('change');
-$('#FinanceZip').val('');
-$('#FinancePhone').val('');
-$('#FinanceEmail').val('');
-$('#EventLastName').val('');
-$('#EventFirstName').val('');
-$('#EventPhone').val('');
-$('#EventEmail').val('');
-$('#TrainingLastName').val('');
-$('#TrainingFirstName').val('');
-$('#TrainingPhone').val('');
-$('#TrainingEmail').val('');
+// $('#CompanyId').val('');
+// $('#ContractClient').val('');
+// $('#ContractType').val('');
+// $('#SmallBusinessType').val('');
+// $('#ContractServiceBranch').val('');
+// $('#ContractComponent').val('');
+// $('#SolicitationNumber').val('');
+// $('#CompanyMainName').val('');
+// $('#CompanyMainAddress1').val('');
+// $('#CompanyMainAddress2').val('');
+// $('#CompanyMainState').val('').trigger('change');
+// $('#CompanyMainCity').val('').trigger('change');
+// $('#CompanyMainZip').val('');
+// $('#CompanyMainLastName').val('');
+// $('#CompanyMainFirstName').val('');
+// $('#CompanyMainPhone').val('');
+// $('#CompanyMainEmail').val('');
+// $('#FinanceLastName').val('');
+// $('#FinanceFirstName').val('');
+// $('#FinanceAddress1').val('');
+// $('#FinanceAddress2').val('');
+// $('#FinanceState').val('').trigger('change');
+// $('#FinanceCity').val('').trigger('change');
+// $('#FinanceZip').val('');
+// $('#FinancePhone').val('');
+// $('#FinanceEmail').val('');
+// $('#EventLastName').val('');
+// $('#EventFirstName').val('');
+// $('#EventPhone').val('');
+// $('#EventEmail').val('');
+// $('#TrainingLastName').val('');
+// $('#TrainingFirstName').val('');
+// $('#TrainingPhone').val('');
+// $('#TrainingEmail').val('');
 
         });
 
@@ -830,25 +843,33 @@ $('#TrainingEmail').val('');
                         debugger;
                         var contract = response.combinedData;
                         $('#hiddenId').val(contract.subContractor.id);
-                var selectedData = {
-                id: contract.subContractor.id, // The value of the option
-                text: contract.contractDetails.contractName // The text to display
-                };
+                        var serviceTypeProvided = contract.subContractor.serviceTypeProvided;
+                        
+                        var selectedData = {
+                        id: contract.subContractor.contractId, // The value of the option
+                        text: contract.contractDetails.contractName // The text to display
+                        };
 
-                // if ($("#ContractId").find(`option[value='${selectedData.id}']`).length === 0) {
-                    
-                // } else {
-                //     $('#ContractId').val(selectedData.id);
-                // }
-
-                var newOption = new Option(selectedData.text, selectedData.id, true, true);
-                    $('#ContractId').append(newOption);
+                        var newOption = new Option(selectedData.text, selectedData.id, true, true);
+                        $('#ContractId').append(newOption);
 
                         $('#CompanyId').val(contract.subContractor.companyId);
                         $('#ContractClient').val(contract.contractDetails.contractClient);
                         $('#ContractType').val(contract.contractDetails.contractType);
                         $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
-                        $('#ContractAffiliation').val(contract.subContractor.contractAffiliation);
+                        
+
+                        var serviceTypeProvided = contract.subContractor.serviceTypeProvided; // This is an array of service types
+
+                        // Extract the ids of the service types that should be pre-selected
+                        var selectedValues = serviceTypeProvided.map(function(serviceType) {
+                            return serviceType.serviceTypeProvidedName; // Assuming the value of the option is the name
+                        });
+                        
+                        // Set the selected values and trigger the change event for UI update
+                        $('#ServiceTypeProvided').val(selectedValues).trigger('change');
+
+
                         $('#ContractServiceBranch').val(contract.contractDetails.contractServiceBranch);
                         $('#ContractComponent').val(contract.contractDetails.contractComponent);
                         $('#SolicitationNumber').val(contract.subContractor.solicitationNumber);
@@ -890,7 +911,7 @@ $('#TrainingEmail').val('');
                         if (isViewButton) {
                             const controlIds = [
                                 'hiddenId', 'ContractId', 'CompanyId', 'ContractClient', 'ContractType', 'SmallBusinessType',
-                              'ContractAffiliation', 'ContractServiceBranch', 'ContractComponent',
+                              'ServiceTypeProvided', 'ContractServiceBranch', 'ContractComponent',
                               'SolicitationNumber', 'CompanyMainName', 'CompanyMainAddress1',
                               'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
                               'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
@@ -914,7 +935,7 @@ $('#TrainingEmail').val('');
                         } else {
                             const controlIds = [
                           'hiddenId', 'ContractId',   'SmallBusinessType',
-                          'ContractAffiliation', 'SolicitationNumber', 'CompanyMainAddress1',
+                          'ServiceTypeProvided', 'SolicitationNumber', 'CompanyMainAddress1',
                           'CompanyMainAddress2', 'CompanyMainState', 'CompanyMainCity',
                           'CompanyMainZip', 'CompanyMainLastName', 'CompanyMainFirstName',
                           'CompanyMainPhone', 'CompanyMainEmail', 'FinanceLastName',

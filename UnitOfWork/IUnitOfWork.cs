@@ -8,11 +8,12 @@ namespace ExcelFilesCompiler.UnitOfWork
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<ContractDetails> ContractDetails { get; }
-        IGenericRepository<SubContractorInfoDto> SubContractors { get; }
+        IGenericRepository<SubContractor> SubContractors { get; }
         IGenericRepository<EventStaff> EventStaff { get; }
         IGenericRepository<LicenseInfoDTO> StaffLicenses { get; }
         IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; }
         IGenericRepository<TravelHonor> TravelHonor { get; }
+        IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

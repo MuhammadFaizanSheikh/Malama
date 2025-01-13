@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
 
 namespace ExcelFilesCompiler.Controllers
@@ -75,6 +76,17 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
+                    foreach (var serviceType in contractDto.SingleSubContractor.SelectedServiceTypeProvided)
+                    {
+                        var serviceTypeProvided = new ServiceTypeProvided
+                        {
+                            SubContractorId = contractDto.SingleSubContractor.Id, // Associate with the saved SubContractor
+                            ServiceTypeProvidedName = serviceType
+                        };
+
+                        contractDto.SingleSubContractor.ServiceTypeProvided.Add(serviceTypeProvided);
+                    }
+
                     if (action == "Add")
                     {
                         res = await _subContractorService.AddContractAsync(contractDto.SingleSubContractor, user.UserName);

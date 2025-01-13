@@ -10,21 +10,23 @@ namespace ExcelFilesCompiler.UnitOfWork
     {
         private readonly ApplicationDbContext _context;
         public IGenericRepository<ContractDetails> ContractDetails { get; private set; }
-        public IGenericRepository<SubContractorInfoDto> SubContractors { get; private set; }
+        public IGenericRepository<SubContractor> SubContractors { get; private set; }
         public IGenericRepository<EventStaff> EventStaff { get; private set; }
         public IGenericRepository<LicenseInfoDTO> StaffLicenses { get; private set; }
         public IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; private set; }
         public IGenericRepository<TravelHonor> TravelHonor { get; private set; }
+        public IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
             ContractDetails = new GenericRepository<ContractDetails>(_context);
-            SubContractors = new GenericRepository<SubContractorInfoDto>(_context);
+            SubContractors = new GenericRepository<SubContractor>(_context);
             EventStaff = new GenericRepository<EventStaff>(_context);
             StaffLicenses = new GenericRepository<LicenseInfoDTO>(_context);
             StaffContractAffiliation = new GenericRepository<StaffContractAffiliation>(_context);
             TravelHonor = new GenericRepository<TravelHonor>(_context);
+            ServiceTypeProvided = new GenericRepository<ServiceTypeProvided>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()
