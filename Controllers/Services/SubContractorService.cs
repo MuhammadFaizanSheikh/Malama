@@ -35,7 +35,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.ServiceTypeProvided
                 );
 
-                //var subcontractors = await _unitOfWork.SubContractors.GetAllAsync();
                 var contracts = await _unitOfWork.ContractDetails.GetAllAsync();
 
                 var result = from sub in subcontractors
@@ -44,20 +43,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                             {
                                 Id = sub.Id,
                                 CompanyId = sub.CompanyId,
-                                ContractId = contract.ContractID,
-                                ContractName = contract.ContractName,
-                                ContractClient = contract.ContractClient,
-                                ContractType = contract.ContractType,
-                                SmallBusinessType = sub.SmallBusinessType,
-                                ServiceTypeProvided = string.Join(", ", sub.ServiceTypeProvided.Select(stp => stp.ServiceTypeProvidedName)),
-                                ContractServiceBranch = contract.ContractServiceBranch,
-                                ContractComponent = contract.ContractComponent,
-                                SolicitationNumber = sub.SolicitationNumber,
                                 CompanyMainName = sub.CompanyMainName,
+                                CompanyMainState = sub.CompanyMainState,
+                                CompanyMainCity = sub.CompanyMainCity,
+                                CompanyMainZip = sub.CompanyMainZip,
+                                ContractName = contract.ContractName,
+                                ContractId = contract.ContractID,
+                                ServiceTypeProvided = string.Join(", ", sub.ServiceTypeProvided.Select(stp => stp.ServiceTypeProvidedName)),
                             };
 
                 return result.ToList();
-                //contracts = (await repository.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
             }
             catch (Exception ex)
             {
@@ -65,38 +60,43 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<string> GetLastCompanyCode()
+        public async Task<string> GetLastCompanyCode(string companyName)
         {
             try
             {
+                var existingCompany = await repository.FindAsync(c => c.CompanyMainName == companyName);
+
+                if (existingCompany != null)
+                {
+                    return existingCompany.CompanyId;
+                }
+
+                companyName = companyName.Replace(" ", "").ToUpper();
+
                 var allCompanies = await repository.GetAllAsync();
 
                 if (allCompanies == null || !allCompanies.Any())
                 {
-                    // If no records exist, return the default CompanyCode with the initial sequence
-                    return "0001"; // Default starting code
+                    return companyName.Substring(0, 3).ToUpper() + "0001";
                 }
 
-                // Step 2: Sort the records in descending order based on the Id or another relevant property
                 var lastCompany = allCompanies
-                    .OrderByDescending(c => c.Id) // Sort by Id or another property as necessary
+                    .OrderByDescending(c => c.Id)
                     .FirstOrDefault();
 
-                // Step 3: Extract and process the CompanyCode
                 var companyId = lastCompany.CompanyId;
-                var numericPart = int.Parse(companyId.Substring(3)); // Get the numeric part (e.g., "0001")
+                var numericPart = int.Parse(companyId.Substring(3));
 
-                // Step 4: Increment the numeric part by 1
                 numericPart++;
 
-                // Step 5: Generate the new CompanyCode
-                return numericPart.ToString("D4"); // Format the number to 4 digits (e.g., 0009, 0010, 0100)
+                return companyName.Substring(0, 3).ToUpper() + numericPart.ToString("D4");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception("An error occurred while retrieving the CompanyCode.");
+                throw new Exception("An error occurred while retrieving the CompanyCode.", ex);
             }
         }
+
 
         public async Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id)
         {

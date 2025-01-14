@@ -5,7 +5,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface ISubContractorService
     {
         Task<List<SubContractorAndContractViewModel>> GetAllSubContractors();
-        Task<string> GetLastCompanyCode();
+        Task<string> GetLastCompanyCode(string companyName);
         Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id);
         Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string loggedinUserName);
         Task<ResponseDto> UpdateContract(SubContractor contract, string loggedinUserName);

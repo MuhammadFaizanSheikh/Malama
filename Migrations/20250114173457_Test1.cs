@@ -58,6 +58,7 @@ namespace ExcelFilesCompiler.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ContractID = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    ContractName = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     ContractAgency = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ContractServiceBranch = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     ContractComponent = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
@@ -258,7 +259,6 @@ namespace ExcelFilesCompiler.Migrations
                     ContractId = table.Column<long>(type: "bigint", nullable: false),
                     CompanyId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     SmallBusinessType = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    ContractAffiliation = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     SolicitationNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     CompanyMainName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CompanyMainAddress1 = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -470,6 +470,26 @@ namespace ExcelFilesCompiler.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ServiceTypeProvided",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SubContractorId = table.Column<long>(type: "bigint", nullable: false),
+                    ServiceTypeProvidedName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceTypeProvided", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceTypeProvided_SubContractor_SubContractorId",
+                        column: x => x.SubContractorId,
+                        principalTable: "SubContractor",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -508,6 +528,11 @@ namespace ExcelFilesCompiler.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceTypeProvided_SubContractorId",
+                table: "ServiceTypeProvided",
+                column: "SubContractorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StaffContractAffiliation_EventStaffId",
@@ -550,13 +575,13 @@ namespace ExcelFilesCompiler.Migrations
                 name: "FileData");
 
             migrationBuilder.DropTable(
+                name: "ServiceTypeProvided");
+
+            migrationBuilder.DropTable(
                 name: "StaffContractAffiliation");
 
             migrationBuilder.DropTable(
                 name: "StaffLicense");
-
-            migrationBuilder.DropTable(
-                name: "SubContractor");
 
             migrationBuilder.DropTable(
                 name: "TravelHonor");
@@ -566,6 +591,9 @@ namespace ExcelFilesCompiler.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "SubContractor");
 
             migrationBuilder.DropTable(
                 name: "EventStaff");

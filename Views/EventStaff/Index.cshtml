@@ -469,10 +469,10 @@
                         <label class="form-check-label" for="eventOnCallNo">No</label>
                     </div>
 
-                    <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
+                    @* <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
                         <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
                         <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
-                    </div>
+                    </div> *@
             <h4 class="mt-4">States Licenses</h4>
                     <div class="form-container">
                         <!-- Dynamic License Rows will be inserted here -->
@@ -1114,6 +1114,7 @@ function updateAddRewardButton() {
 
     function manageLicenseRows(licenses = []) {
         const container = document.querySelector('.form-container');
+        container.innerHTML = '';
         const addRowButton = document.getElementById('addRowButton');
 
         if (!container || !addRowButton) {
@@ -1123,7 +1124,6 @@ function updateAddRewardButton() {
 
         // Function to create a new license row
         function createLicenseRow(rowIndex, licenseData = null) {
-            debugger;
             const newRow = document.createElement('div');
             newRow.classList.add('form-row', 'license-row');
             newRow.style.display = 'flex';
@@ -1239,6 +1239,8 @@ function updateAddRewardButton() {
 
     function manageAffiliationRows(affiliation = []) {
         const container = document.querySelector('.form-container-Affiliation');
+        container.innerHTML = '';
+
         const addAffiliationRowButton = document.getElementById('addAffiliationRowButton');
 
         if (!container || !addAffiliationRowButton) {
@@ -1401,11 +1403,6 @@ function updateAddRewardButton() {
         }
     }
 });
-
-
-
-
-
         }
 
         // Function to bind options to multi-select dropdown
@@ -1437,13 +1434,15 @@ function updateAddRewardButton() {
             affiliation.forEach((affiliationData, index) => {
                 createAffiliationRow(index, affiliationData);
             });
-        } else {
+        }
+        else {
             createAffiliationRow(0);
         }
 
         // Add new row on button click
         addAffiliationRowButton.addEventListener('click', () => {
             const affiliationRows = document.querySelectorAll('.affiliation-row');
+            
             if (affiliationRows.length < 5) {
                 createAffiliationRow(affiliationRows.length);
             } else {
@@ -1472,7 +1471,7 @@ function updateAddRewardButton() {
         });
 
         stateDropdowns.on('change', function () {
-            const stateName = $(this).val(); // Now this will be the state name
+            const stateName = $(this).val();
 
             const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
             const cityDropdown = $(cityDropdownId);
@@ -1488,15 +1487,14 @@ function updateAddRewardButton() {
 
 
         $('.city-dropdown').on('change', function () {
-            const cityDropdownId = $(this).attr('id'); // Get the ID of the changed city dropdown
+            const cityDropdownId = $(this).attr('id');
             const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
             const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
 
-            const stateName = $(stateDropdownId).val(); // Get the selected state for the respective city dropdown
-            const cityName = $(this).val(); // Get the selected city name
-            const zipCodeDropdown = $(zipCodeDropdownId); // Get the corresponding zip code dropdown
+            const stateName = $(stateDropdownId).val();
+            const cityName = $(this).val(); 
+            const zipCodeDropdown = $(zipCodeDropdownId);
 
-            // Clear the zip code dropdown and add a default option
             zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
 
             if (stateName && cityName && stateCityMap[stateName]) {
@@ -1523,66 +1521,6 @@ function updateAddRewardButton() {
             e.target.value = value;
         });
     }
-
-  
-
-    
-
-//     $('#EmployerSubcontractor').select2({
-//         ajax: {
-//             url: '/SubContractorInfo/GetSubContractorByCompanyNameForSearching', // Your endpoint for fetching contracts
-//             dataType: 'json',
-//             delay: 250,  // Optional: delay to limit requests to avoid too many hits
-//             data: function (params) {
-//                 return {
-//                     companyName: params.term || ''  // Send the search term to the server
-//                 };
-//             },
-//             processResults: function (data) {
-//                 return {
-//                     results: data.map(function (SubContractor) {
-//                         return {
-//                             id: SubContractor.id,     // Contract ID
-//                             text: SubContractor.text  // Displayed text (CompanyMainName)
-//                         };
-//                     })
-//                 };
-//             },
-//             cache: true // Optional: caches the response to improve performance
-//         },
-//         placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
-//         minimumInputLength: 1,  // Set a minimum number of characters to start searching (e.g., 1)
-//         allowClear: true  // Optional: allows clearing the selection
-//     });
-
-
-//     $('#EmployerSubcontractor').change(function () {
-//     var selectedId = $(this).val(); // Get the selected ID
-//     var selectedText = $(this).find("option:selected").text(); // Get the selected option text
-
-//     if (selectedId) {
-//         $.ajax({
-//             url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
-//             type: 'GET',
-//             data: { companyName: selectedText },
-//             success: function (response) {
-//                 if (response.success) {
-//                     debugger;
-//                     bindMultiSelectDropdown(response.data.contractDetails);
-//                     debugger;
-//                     if (!$('#hiddenId').val()) {
-//                         setStaffIdTextbox(response.data.staffId);
-//                     }
-//                 } else {
-//                     alert(response.message);
-//                 }
-//             },
-//             error: function () {
-//                 alert('An error occurred while fetching contract details.');
-//             }
-//         });
-//     }
-// });
 
 function bindMultiSelectDropdown(data) {
     var dropdown = $('#StaffContractAffiliation');
@@ -1636,16 +1574,16 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
 
                             if (eventStaff.eventOnCallStaff === 'true') {
                                 $('#eventOnCallYes').prop('checked', true).trigger('change');
-                                $('#eventOnCallSelectContainer').show();
-                                $('#EventOnCallStaffEvent').attr('required', 'required');
+                                //$('#eventOnCallSelectContainer').show();
+                                //$('#EventOnCallStaffEvent').attr('required', 'required');
 
                             } else {
                                 $('#eventOnCallNo').prop('checked', true).trigger('change');
-                                $('#eventOnCallSelectContainer').hide();
-                                $('#EventOnCallStaffEvent').removeAttr('required');
+                                //$('#eventOnCallSelectContainer').hide();
+                                //$('#EventOnCallStaffEvent').removeAttr('required');
                             }
 
-                            $('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
+                            //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
                             const licenseContainer = document.querySelector('.form-container');
                             licenseContainer.innerHTML = '';
@@ -1723,10 +1661,10 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
                             'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
-                            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
+                            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
+                            'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
 
@@ -1738,9 +1676,12 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                                 control.addClass('read-only-style'); // Optional: Add a class for read-only styling
                             });
 
-                        $('#StaffContractAffiliation').prop('disabled', true);
-                        $('#EmployerSubcontractor').prop('disabled', true);
-                        
+                            const container = document.querySelector('.form-container-Affiliation');
+                            const controls = container.querySelectorAll('select, input, button, textarea');
+                            controls.forEach(control => {
+                                control.disabled = true;
+                            });
+
                         const categories = ['#dynamicControlsContainer', '#carDynamicControlsContainer', '#hotelDynamicControlsContainer'];
 
                         categories.forEach(function (categorySelector) {
@@ -1775,10 +1716,10 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
                             'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
-                            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
+                            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
+                            'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
                       // Make controls editable
@@ -1788,8 +1729,11 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                           control.removeClass('read-only-style'); // Remove read-only styling class if applied
                       });
 
-                        $('#StaffContractAffiliation').prop('disabled', false);
-                        $('#EmployerSubcontractor').prop('disabled', false);
+                            const container = document.querySelector('.form-container-Affiliation');
+                            const controls = container.querySelectorAll('select, input, button, textarea');
+                            controls.forEach(control => {
+                                control.disabled = false;
+                            });
 
                             $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                         }
@@ -1919,25 +1863,25 @@ function setStaffIdTextbox(staffId) {
     toggleStaffDoDID();
 
 
-    const yesRadio = document.getElementById('eventOnCallYes');
-    const noRadio = document.getElementById('eventOnCallNo');
-    const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
-    const eventOnCallStaffEvent = document.getElementById('EventOnCallStaffEvent');
+    // const yesRadio = document.getElementById('eventOnCallYes');
+    // const noRadio = document.getElementById('eventOnCallNo');
+    // const eventOnCallSelectContainer = document.getElementById('eventOnCallSelectContainer');
+    // const eventOnCallStaffEvent = document.getElementById('EventOnCallStaffEvent');
 
-    function toggleEventOnCallContainer() {
-        if (yesRadio.checked) {
-            eventOnCallSelectContainer.style.display = 'block';
-            eventOnCallStaffEvent.setAttribute('required', 'required');
-        } else {
-            eventOnCallSelectContainer.style.display = 'none';
-            eventOnCallStaffEvent.removeAttribute('required');
-        }
-    }
+    // function toggleEventOnCallContainer() {
+    //     if (yesRadio.checked) {
+    //         eventOnCallSelectContainer.style.display = 'block';
+    //         eventOnCallStaffEvent.setAttribute('required', 'required');
+    //     } else {
+    //         eventOnCallSelectContainer.style.display = 'none';
+    //         eventOnCallStaffEvent.removeAttribute('required');
+    //     }
+    // }
 
-    yesRadio.addEventListener('change', toggleEventOnCallContainer);
-    noRadio.addEventListener('change', toggleEventOnCallContainer);
+    // yesRadio.addEventListener('change', toggleEventOnCallContainer);
+    // noRadio.addEventListener('change', toggleEventOnCallContainer);
 
-    toggleEventOnCallContainer();
+    // toggleEventOnCallContainer();
     
 
     const phoneFields = ['staffCellNumber', 'staffPhone2'];
@@ -1971,7 +1915,7 @@ function setStaffIdTextbox(staffId) {
                             'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
+                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
                             ];
 
         controlIds.forEach(function (id) {
@@ -1989,6 +1933,18 @@ function setStaffIdTextbox(staffId) {
 
             control.removeClass('read-only-style');
         });
+
+            const container = document.querySelector('.form-container-Affiliation');
+                            const controls = container.querySelectorAll('select, input, button, textarea');
+                            controls.forEach(control => {
+                                control.disabled = false;
+                            });
+
+                            const licenseContainer = document.querySelector('.form-container');
+                            const licenseControls = licenseContainer.querySelectorAll('select, input, button, textarea');
+                            licenseControls.forEach(control => {
+                                control.disabled = false;
+                            });
 
             document.getElementById('dynamicControlsContainer').innerHTML = '';
             document.getElementById('carDynamicControlsContainer').innerHTML = '';

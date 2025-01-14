@@ -119,12 +119,12 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetNextCompanyCode()
+        public async Task<IActionResult> GetNextCompanyCode(string companyName)
         {
             try
             {
                 // Call the service method to get the next CompanyCode
-                string nextCompanyCode = await _subContractorService.GetLastCompanyCode();
+                string nextCompanyCode = await _subContractorService.GetLastCompanyCode(companyName);
 
                 // Return the result as JSON response
                 return Json(new { success = true, nextCompanyCode });

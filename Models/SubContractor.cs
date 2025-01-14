@@ -19,17 +19,14 @@ namespace ExcelFilesCompiler.Models
     public class SubContractorAndContractViewModel
     {
         public long Id { get; set; }
-        public string ContractId { get; set; }
-        public string ContractName { get; set; }
         public string CompanyId { get; set; }
         public string CompanyMainName { get; set; }
-        public string ContractClient { get; set; }
-        public string ContractType { get; set; }
-        public string SmallBusinessType { get; set; }
+        public string CompanyMainState { get; set; }
+        public string CompanyMainCity { get; set; }
+        public string CompanyMainZip { get; set; }
+        public string ContractName { get; set; }
+        public string ContractId { get; set; }
         public string ServiceTypeProvided { get; set; }
-        public string ContractServiceBranch { get; set; }
-        public string ContractComponent { get; set; }
-        public string SolicitationNumber { get; set; }
     }
 
     [Table("SubContractor")]

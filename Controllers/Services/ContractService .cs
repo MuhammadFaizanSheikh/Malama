@@ -73,20 +73,22 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> GetContractById(long id)
+        public async Task<ResponseDto> GetContractById(long id, bool checkIfContractAlreadyExist)
         {
             try
             {
-                // Check if the contract is already assigned
-                var alreadyAssignedContract = await _unitOfWork.SubContractors.FindForSearchingAsync(sc => sc.ContractId == id);
-
-                if (alreadyAssignedContract != null && alreadyAssignedContract.Any())
+                if (checkIfContractAlreadyExist)
                 {
-                    return new ResponseDto
+                    var alreadyAssignedContract = await _unitOfWork.SubContractors.FindForSearchingAsync(sc => sc.ContractId == id);
+
+                    if (alreadyAssignedContract != null && alreadyAssignedContract.Any())
                     {
-                        Success = false,
-                        Message = "Contract is already assigned."
-                    };
+                        return new ResponseDto
+                        {
+                            Success = false,
+                            Message = "Contract is already assigned."
+                        };
+                    }
                 }
 
                 // Retrieve the contract details

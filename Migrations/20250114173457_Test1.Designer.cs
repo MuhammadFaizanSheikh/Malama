@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250109230612_Test1")]
+    [Migration("20250114173457_Test1")]
     partial class Test1
     {
         /// <inheritdoc />
@@ -170,6 +170,11 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(13)
                         .HasColumnType("nvarchar(13)");
 
+                    b.Property<string>("ContractName")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<string>("ContractServiceBranch")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -264,7 +269,30 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("ContractDetails");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractorInfoDto", b =>
+            modelBuilder.Entity("ExcelFilesCompiler.Models.ServiceTypeProvided", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ServiceTypeProvidedName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("SubContractorId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubContractorId");
+
+                    b.ToTable("ServiceTypeProvided");
+                });
+
+            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -328,11 +356,6 @@ namespace ExcelFilesCompiler.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("CompanyMainZip")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ContractAffiliation")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -1127,6 +1150,15 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ExcelFilesCompiler.Models.ServiceTypeProvided", b =>
+                {
+                    b.HasOne("ExcelFilesCompiler.Models.SubContractor", null)
+                        .WithMany("ServiceTypeProvided")
+                        .HasForeignKey("SubContractorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ExcelToCsv.Models.LicenseInfoDTO", b =>
                 {
                     b.HasOne("ExcelToCsv.Models.EventStaff", null)
@@ -1203,6 +1235,11 @@ namespace ExcelFilesCompiler.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
+                {
+                    b.Navigation("ServiceTypeProvided");
                 });
 
             modelBuilder.Entity("ExcelToCsv.Models.EventStaff", b =>
