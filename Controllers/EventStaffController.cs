@@ -129,7 +129,8 @@ namespace ExcelFilesCompiler.Controllers
                                     {
                                         EventStaffId = affiliation.EventStaffId,
                                         SubContractorId = affiliation.SubContractorId,
-                                        ContractId = contractId
+                                        ContractId = contractId,
+                                        SubContractorName = affiliation.SubContractorName
                                     });
                                 }
                             }
@@ -138,7 +139,13 @@ namespace ExcelFilesCompiler.Controllers
                         // Replace the original collection with the updated list
                         eventStaffDto.SingleEventStaff.StaffContractAffiliation = updatedAffiliations;
                     }
-
+                    else
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = "Contract affiliation not set";
+                        return RedirectToAction("Index");
+                    }
 
 
 

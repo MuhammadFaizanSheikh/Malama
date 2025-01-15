@@ -1054,7 +1054,6 @@ function updateAddRewardButton() {
         });
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
-        debugger;
         console.log($('#StaffContractAffiliation').val());
         var form = document.querySelector('form'); // Get the form element
 
@@ -1257,8 +1256,10 @@ function updateAddRewardButton() {
             <div class="flex-grow-1">
                 <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
                 <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
-                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" required>
+                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
                 </select>
+                <input type="hidden" id="EmployerSubcontractorText${rowIndex}" 
+                   name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" />
             </div>
             <div class="flex-grow-1">
                 <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
@@ -1266,7 +1267,7 @@ function updateAddRewardButton() {
                         name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
                         multiple class="form-control multi-select" required>
                 </select>
-                <span class="text-danger" style="display:none;">Please select at least one option.</span>
+                
             </div>
             <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
                 <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
@@ -1289,13 +1290,20 @@ function updateAddRewardButton() {
             container.appendChild(newRow);
 
             const employerDropdown = document.getElementById(`EmployerSubcontractor${rowIndex}`);
+            const hiddenField = document.getElementById(`EmployerSubcontractorText${rowIndex}`);
+
             if (affiliationData) {
+                debugger;
                 // Populate Employer/Subcontractor dropdown
                 const employerOption = document.createElement('option');
                 employerOption.value = affiliationData.subContractorId;
                 employerOption.textContent = affiliationData.subContractorName;
                 employerOption.selected = true;
                 employerDropdown.appendChild(employerOption);
+
+                if (hiddenField) {
+                    hiddenField.value = affiliationData.subContractorName;
+                }
             }
 
             // Initialize multi-select dropdown for Staff Contract Affiliation
@@ -1344,12 +1352,6 @@ function updateAddRewardButton() {
                 minimumInputLength: 1,
             });
 
-            $(`#EmployerSubcontractor${rowIndex}`).on('select2:select', function (e) {
-            var selectedText = e.params.data.text; // Get the selected text
-            // Update the value of the hidden field or the form field if needed
-            $(`#EmployerSubcontractor${rowIndex}`).val(selectedText).trigger('change'); // Set the text as value
-            });
-
             // Initialize multi-select dropdown
             $(`#StaffContractAffiliation${rowIndex}`).select2({
                 placeholder: "Select options",
@@ -1357,58 +1359,58 @@ function updateAddRewardButton() {
             });
 
             $(`#EmployerSubcontractor${rowIndex}`).change(function () {
-                debugger;
-    const selectedText = $(this).find("option:selected").text(); // Get the selected text
-     if (!selectedText) return;
-    const currentDropdown = this;
-    let isDuplicate = false;
-    const allEmployerDropdowns = document.querySelectorAll('.form-container-Affiliation select[id^="EmployerSubcontractor"]');
+                const selectedText = $(this).find("option:selected").text(); // Get the selected text
+                 if (!selectedText) return;
+                const currentDropdown = this;
+                let isDuplicate = false;
+                const allEmployerDropdowns = document.querySelectorAll('.form-container-Affiliation select[id^="EmployerSubcontractor"]');
 
-    allEmployerDropdowns.forEach(function (dropdown) {
-        // Skip the current dropdown (this one)
-        if (dropdown !== currentDropdown && $(dropdown).find("option:selected").text() === selectedText) {
-            isDuplicate = true;
-        }
-    });
-
-    // If duplicate is found
-    if (isDuplicate) {
-        // Show SweetAlert for duplicate selection
-        Swal.fire({
-            title: 'Error',
-            text: 'Employer/Subcontractor can be used only once.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            // Only reset the dropdown value if it hasn't been reset already
-            if ($(this).val()) {
-                $(this).val(null).trigger('change'); // Reset and trigger change
-            }
-        });
-    } else {
-
-        // If no duplicate, proceed with the AJAX call
-        const selectedValue = $(this).val(); // Get the selected value
-        if (selectedText) {
-            // Show the AJAX request after no duplication
-            $.ajax({
-                url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
-                type: 'GET',
-                data: { companyName: selectedText },
-                success: function (response) {
-                    if (response.success) {
-                        bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
-                    } else {
-                        alert(response.message);
+                allEmployerDropdowns.forEach(function (dropdown) {
+                    // Skip the current dropdown (this one)
+                    if (dropdown !== currentDropdown && $(dropdown).find("option:selected").text() === selectedText) {
+                        isDuplicate = true;
                     }
-                },
-                error: function () {
-                    alert('An error occurred while fetching contract details.');
+                });
+
+                // If duplicate is found
+                if (isDuplicate) {
+                    // Show SweetAlert for duplicate selection
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Employer/Subcontractor can be used only once.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Only reset the dropdown value if it hasn't been reset already
+                        if ($(this).val()) {
+                            $(this).val(null).trigger('change'); // Reset and trigger change
+                        }
+                    });
+                } else {
+
+                // If no duplicate, proceed with the AJAX call
+                const selectedValue = $(this).val(); // Get the selected value
+                if (selectedText) {
+                    // Show the AJAX request after no duplication
+                    $.ajax({
+                        url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+                        type: 'GET',
+                        data: { companyName: selectedText },
+                        success: function (response) {
+                            if (response.success) {
+                                $(`#EmployerSubcontractorText${rowIndex}`).val(selectedText);
+                                bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('An error occurred while fetching contract details.');
+                        }
+                    });
+                }
                 }
             });
-        }
-    }
-});
         }
 
         // Function to bind options to multi-select dropdown
@@ -1547,7 +1549,6 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                 type: 'GET',
                 success: function (response) {
                     if (response.success) {
-                        debugger;
                         var combinedData = response.combinedData;
                         var eventStaff = combinedData.eventStaff;
                         var staffContractAffiliation = combinedData.staffSubContractorAffiliation;
@@ -1620,7 +1621,6 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
                             $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
 
-                        debugger;
                             if (eventStaff.staffCAC === 'true') {
                                 $('#staffCACYes').prop('checked', true).trigger('change');
                                 $('#staffDoDContainer').show();

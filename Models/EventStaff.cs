@@ -221,7 +221,7 @@ namespace ExcelToCsv.Models
         public long SubContractorId { get; set; }
         
         [NotMapped]
-        public string SubContractorName { get; set; }
+        public string? SubContractorName { get; set; }
         public long ContractId { get; set; }//public List<SubContractorContractAffiliation> SubContractorContractAffiliation { get; set; } = new List<SubContractorContractAffiliation>();
 
 

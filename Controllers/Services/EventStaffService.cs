@@ -30,7 +30,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
-                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId);
+                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
                     affiliation.SubContractorId = subContractor.Id;
                 }
 
@@ -183,7 +183,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
-                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId);
+                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
                     affiliation.SubContractorId = subContractor.Id;
                 }
 
