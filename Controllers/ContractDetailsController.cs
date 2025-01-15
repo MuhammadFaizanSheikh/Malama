@@ -116,11 +116,11 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetContractById(long id, bool checkIfContractAlreadyExist = false)
+        public async Task<IActionResult> GetContractById(long id, string companyName = null, bool checkIfContractAlreadyExist = false)
         {
             try
             {
-                var result = await _contractService.GetContractById(id, checkIfContractAlreadyExist);
+                var result = await _contractService.GetContractById(id, companyName, checkIfContractAlreadyExist);
 
                 if (!result.Success)
                 {

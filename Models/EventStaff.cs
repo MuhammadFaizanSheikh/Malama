@@ -219,6 +219,9 @@ namespace ExcelToCsv.Models
         [ForeignKey("EventStaff")]
         public long EventStaffId { get; set; }
         public long SubContractorId { get; set; }
+        
+        [NotMapped]
+        public string SubContractorName { get; set; }
         public long ContractId { get; set; }//public List<SubContractorContractAffiliation> SubContractorContractAffiliation { get; set; } = new List<SubContractorContractAffiliation>();
 
 

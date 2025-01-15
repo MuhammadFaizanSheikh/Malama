@@ -695,7 +695,6 @@
 
 
 
-
     $(document).ready(function () {
 
         $(`#ServiceTypeProvided`).select2({
@@ -746,7 +745,10 @@
             $('#addContractBtn').hide();
 
             $('#hiddenId').val('');
-             $('#ContractId').val(null).trigger('change');
+
+            $('#ContractId').val(null).trigger('change');
+
+            
             $('#CompanyId').val('');
             $('#ContractClient').val('');
             $('#ContractType').val('');
@@ -971,25 +973,24 @@
 
         $('#CompanyMainName').on('blur', function () {
             if (validateCompanyMainName()) {
-                var companyName = $(this).val(); // Get the value from the CompanyMainName field
-
-                // Call the API to get the next CompanyCode
+                var companyName = $(this).val();
+                $('#ContractId').val(null).trigger('change');
+                
                 $.ajax({
-                    url: '/SubContractorInfo/GetNextCompanyCode', // Controller action URL
+                    url: '/SubContractorInfo/GetNextCompanyCode',
                     type: 'GET',
-                    data: { companyName: companyName }, // Pass companyName as a parameter to the API
+                    data: { companyName: companyName },
                     success: function (response) {
                         if (response.success) {
-                            var companyCode = response.nextCompanyCode; // Get the response from the API
+                            var companyCode = response.nextCompanyCode; 
 
-                            // Set the value in the CompanyId field
                             $('#CompanyId').val(companyCode);
                         } else {
-                            alert('Error: ' + response.message); // Display an error message
+                            alert('Error: ' + response.message);
                         }
                     },
                     error: function (xhr, status, error) {
-                        alert('Error occurred while fetching the Company Code'); // Handle request errors
+                        alert('Error occurred while fetching the Company Code'); 
                     }
                 });
             }
@@ -1061,15 +1062,40 @@
             minimumInputLength: 1  // Set a minimum number of characters to start searching (e.g., 1)
         });
 
-        $('#ContractId').change(function () {
+        $('#ContractId').change(function handleContractChange() {
+            var selectedId = $(this).val(); // Get the selected value
+
+            if (!selectedId) {
+                return;
+            }
             var selectedId = $(this).val();
-            var checkIfContractAlreadyExist = false;
+            var checkIfContractAlreadyExist = true;
+
+            var companyMainName = $('#CompanyMainName').val().trim();
+            if (!companyMainName) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Please insert company name first.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Temporarily disable the change event
+                    $('#ContractId').off('change', handleContractChange);
+
+                    // Reset the dropdown value and trigger change event
+                    $('#ContractId').val(null).trigger('change');
+
+                    // Re-enable the change event
+                    $('#ContractId').change(handleContractChange);
+                });
+                return; // Exit the function
+            }
 
             if (selectedId) {
                 $.ajax({
                     url: '/ContractDetails/GetContractById',
                     type: 'GET',
-                    data: { id: selectedId, checkIfContractAlreadyExist: checkIfContractAlreadyExist },
+                    data: { id: selectedId, companyName: companyMainName, checkIfContractAlreadyExist: checkIfContractAlreadyExist },
                     success: function (response) {
                         if (response.success) {
                             // Populate the fields with the returned data
@@ -1085,8 +1111,14 @@
                                 icon: 'error',
                                 confirmButtonText: 'OK'
                             }).then(() => {
-                                // Reset the dropdown value to empty or default
+                                // Temporarily disable the change event
+                                $('#ContractId').off('change', handleContractChange);
+
+                                // Reset the dropdown value and trigger change event
                                 $('#ContractId').val(null).trigger('change');
+
+                                // Re-enable the change event
+                                $('#ContractId').change(handleContractChange);
                             });
                         }
                     },
@@ -1097,13 +1129,20 @@
                             icon: 'error',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            // Optional: Reset the dropdown on generic error
+                            // Temporarily disable the change event
+                            $('#ContractId').off('change', handleContractChange);
+
+                            // Reset the dropdown value and trigger change event
                             $('#ContractId').val(null).trigger('change');
+
+                            // Re-enable the change event
+                            $('#ContractId').change(handleContractChange);
                         });
                     }
                 });
             }
         });
+
 
 
 
@@ -1139,7 +1178,7 @@
             }
 
             if (!validateCompanyMainName()) {
-                e.preventDefault(); // Prevent form submission if validation fails
+                event.preventDefault(); // Prevent form submission if validation fails
             }
         });
 
