@@ -750,42 +750,42 @@
    
 
     $(document).ready(function () {
-         $('#StartDate').val('1980-01-01');
-    $('#StaffStatus').val('Active');
-    $('#StaffLastName').val('Doe');
-    $('#StaffFirstName').val('John');
-    $('#StaffMiddleInitial').val('A');
-    $('#StaffSSN').val('123-45-6789');
-    $('#StaffDOB').val('1980-01-01');
-    $('#EventOnCallStaffEvent').val('Event A');
-    $('#npi').val('1234567890');
-    $('#dae').val('DAE1234');
+    //      $('#StartDate').val('1980-01-01');
+    // $('#StaffStatus').val('Active');
+    // $('#StaffLastName').val('Doe');
+    // $('#StaffFirstName').val('John');
+    // $('#StaffMiddleInitial').val('A');
+    // $('#StaffSSN').val('123-45-6789');
+    // $('#StaffDOB').val('1980-01-01');
+    // $('#EventOnCallStaffEvent').val('Event A');
+    // $('#npi').val('1234567890');
+    // $('#dae').val('DAE1234');
     
-    $('#BLSCertDate').val('1980-01-01');
-    $('#ACLSCertDate').val('1980-01-01');
-    $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-    $('#CredentialingProcessDate').val('1980-01-01');
-    $('#OnboardingTrainingComplete').val('Yes');
-    $('#OutstandingTrainings').val('None');
-    $('#HistoricalCredentialingDate').val('1980-01-01');
-    $('#StaffEmail').val('john.doe@example.com');
-    $('#PrimaryAddress1').val('123 Main St');
-    $('#PrimaryState').val('Alabama');
-    $('#PrimaryCity').val('Alpine');
-    $('#PrimaryZip').val('35014');
-    $('#SecondaryAddress1').val('456 Elm St');
-    $('#SecondaryState').val('Kansas');
-    $('#SecondaryCity').val('Anthony');
-    $('#SecondaryZip').val('67003');
-    // $('#StaffContractAffiliation').val('Contractor');
-    $('#StaffInfoEnteredBy').val('Admin');
+    // $('#BLSCertDate').val('1980-01-01');
+    // $('#ACLSCertDate').val('1980-01-01');
+    // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+    // $('#CredentialingProcessDate').val('1980-01-01');
+    // $('#OnboardingTrainingComplete').val('Yes');
+    // $('#OutstandingTrainings').val('None');
+    // $('#HistoricalCredentialingDate').val('1980-01-01');
+    // $('#StaffEmail').val('john.doe@example.com');
+    // $('#PrimaryAddress1').val('123 Main St');
+    // $('#PrimaryState').val('Alabama');
+    // $('#PrimaryCity').val('Alpine');
+    // $('#PrimaryZip').val('35014');
+    // $('#SecondaryAddress1').val('456 Elm St');
+    // $('#SecondaryState').val('Kansas');
+    // $('#SecondaryCity').val('Anthony');
+    // $('#SecondaryZip').val('67003');
+    // // $('#StaffContractAffiliation').val('Contractor');
+    // $('#StaffInfoEnteredBy').val('Admin');
 
-    $('#ACLSCertNumber').val('1234567890');
-    $('#BackgroundCheckConcerns').val('1234567890');
-    $('#BLSCertNumber').val('1234567890');
+    // $('#ACLSCertNumber').val('1234567890');
+    // $('#BackgroundCheckConcerns').val('1234567890');
+    // $('#BLSCertNumber').val('1234567890');
 
-    $('#staffCellNumber').val('123-123-1234');
-    $('#staffPhone2').val('123-123-1234');
+    // $('#staffCellNumber').val('123-123-1234');
+    // $('#staffPhone2').val('123-123-1234');
     });
 
 
@@ -1963,31 +1963,31 @@ function setStaffIdTextbox(staffId) {
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
 
-        //         controlIds.forEach(function(id) {
-        //     var control = $('#' + id);
-        //     // For text input fields, clear the value
-        //     if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
-        //         control.val('');
-        //     }
+                controlIds.forEach(function(id) {
+            var control = $('#' + id);
+            // For text input fields, clear the value
+            if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
+                control.val('');
+            }
 
-        //     // For radio buttons, uncheck them
-        //     if (control.is('input[type="radio"]')) {
-        //         control.prop('checked', false);
-        //     }
+            // For radio buttons, uncheck them
+            if (control.is('input[type="radio"]')) {
+                control.prop('checked', false);
+            }
 
-        //     // For checkboxes, uncheck them
-        //     if (control.is('input[type="checkbox"]')) {
-        //         control.prop('checked', false);
-        //     }
+            // For checkboxes, uncheck them
+            if (control.is('input[type="checkbox"]')) {
+                control.prop('checked', false);
+            }
 
-        //     if (control.is('input[type="date"]')) {
-        // control.val('');
-        //     }
+            if (control.is('input[type="date"]')) {
+        control.val('');
+            }
 
-        //     if (control.is('select')) {
-        //         control.val(control.find('option:first').val()).trigger('change');
-        //     }
-        // });
+            if (control.is('select')) {
+                control.val(control.find('option:first').val()).trigger('change');
+            }
+        });
 
         manageAffiliationRows();
         manageLicenseRows();
