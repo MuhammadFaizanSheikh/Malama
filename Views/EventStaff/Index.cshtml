@@ -1237,10 +1237,13 @@ function updateAddRewardButton() {
     //////////////////////////////////////////For Affiliation /////////////////////////////////////////
 
     function manageAffiliationRows(affiliation = []) {
+
+        debugger;
         const container = document.querySelector('.form-container-Affiliation');
         container.innerHTML = '';
 
         const addAffiliationRowButton = document.getElementById('addAffiliationRowButton');
+        const removeEventListenerButton = document.getElementById('addContractBtn'); // Another button
 
         if (!container || !addAffiliationRowButton) {
             console.error('Form container or addAffiliationRowButton not found');
@@ -1448,15 +1451,24 @@ function updateAddRewardButton() {
         }
 
         // Add new row on button click
-        addAffiliationRowButton.addEventListener('click', () => {
+        function addAffiliationRowHandler() {
             const affiliationRows = document.querySelectorAll('.affiliation-row');
-            
             if (affiliationRows.length < 5) {
                 createAffiliationRow(affiliationRows.length);
-            } else {
+            } else {    
                 alert('You can only add up to 5 rows.');
             }
-        });
+        }
+
+        if (removeEventListenerButton) {
+            removeEventListenerButton.addEventListener('click', () => {
+                addAffiliationRowButton.removeEventListener('click', addAffiliationRowHandler);
+            });
+        }
+
+        addAffiliationRowButton.addEventListener('click', addAffiliationRowHandler);
+
+        
     }
 
 

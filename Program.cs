@@ -28,6 +28,7 @@ builder.Services.AddScoped<IFileUploader, FileUploader>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IEventStaffService, EventStaffService>();
+builder.Services.AddScoped<IEventManagementService, EventManagementService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

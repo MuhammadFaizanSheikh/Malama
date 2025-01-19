@@ -1,0 +1,631 @@
+﻿@model ExcelFilesCompiler.Models.EventManagementViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+    ViewData["Title"] = "Event Management Page";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- DataTables CSS for Bootstrap 5 -->
+<link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Form</title>
+
+
+
+    <style>
+        h2 {
+            color: rgba(80, 90, 201, 1);
+        }
+
+        h3 {
+            color: rgba(80, 90, 201, 1);
+        }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        #contractsTable {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #contractsTable th, #contractsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            #contractsTable th {
+                background-color: #f4f4f4;
+            }
+
+            #contractsTable tbody tr {
+                background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+            }
+
+                #contractsTable tbody tr:hover {
+                    background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+                }
+
+            #contractsTable td, #contractsTable th {
+                text-align: center; /* Aligns the text in the middle of the cell */
+            }
+
+                #contractsTable td button, #contractsTable td a {
+                    display: inline-block; /* Makes the buttons appear side by side */
+                    margin-right: 5px; /* Optional: Adds space between the buttons */
+                }
+
+                #contractsTable td .button-container {
+                    display: flex;
+                    justify-content: center; /* Aligns buttons horizontally in the center */
+                }
+
+                    #contractsTable td .button-container a {
+                        margin-right: 5px; /* Optional: Adds space between the buttons */
+                    }
+
+            #contractsTable thead th {
+                background-color: rgba(120, 130, 221, 1); /* Header background color */
+                color: white; /* Header text color */
+                text-align: center; /* Optional: Center-align header text */
+            }
+
+        .read-only-style {
+            background-color: #f8f9fa; /* Light gray background */
+            pointer-events: none; /* Disable click and focus */
+            border-color: #ced4da; /* Light border color */
+        }
+
+        .card-title {
+        margin-bottom: 1rem;
+    }
+
+    .btn-primary {
+        min-width: 150px;
+    }
+    </style>
+</head>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+
+<h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+<div class="container mt-4 mb-5">
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    {
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+   
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <button class="btn btn-primary" id="addContractBtn"
+                style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
+            Add New Contract
+        </button>
+    </div>
+    <div id="datatableWrapper" class="datatable-wrapper">
+    <table id="contractsTable" class="display">
+        <thead>
+            <tr>
+                <th>Contract ID</th>
+                <th>Contract Agency</th>
+                <th>Dawson Contract Name</th>
+                <th>Contract Service Branch</th>
+                <th>Contract Component</th>
+                <th>Contract Client</th>
+                <th>Contract Type</th>
+                <th>Contract Dawson Role</th>
+                <th>Contract Status</th>
+                <th>Contract Start Date</th>
+                <th>Contract End Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* @if (Model != null && Model.Contracts != null && Model.Contracts.Any())
+            {
+                @foreach (var contract in Model.Contracts)
+                {
+                        <tr data-id="@contract.Id">
+                        <td>@contract.ContractID</td>
+                        <td>@contract.ContractAgency</td>
+                        <td>@contract.ContractName</td>
+                        <td>@contract.ContractServiceBranch</td>
+                        <td>@contract.ContractComponent</td>
+                        <td>@contract.ContractClient</td>
+                        <td>@contract.ContractType</td>
+                        <td>@contract.DawsonRoleOnContract</td>
+                        <td>@contract.ContractStatus</td>
+                            <td>@contract.ContractStartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.ContractEndDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="button-container">
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
+                                </div>
+                            </td>
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                </tr>
+            } *@
+        </tbody>
+    </table>
+    </div>
+
+
+    <div class="card-body" style="display: none;">
+
+                <div class="d-flex flex-wrap gap-3">
+                    <button type="button" class="btn btn-primary" onclick="scrollToCategory('EventSpecificDetails')">Event Specific Details</button>
+                    <button type="button" class="btn btn-primary" onclick="scrollToCategory('EventMainPOC')">Event Main POC</button>
+                    <button type="button" class="btn btn-primary" onclick="scrollToCategory('EventSecondaryPOC')">Event Secondary POC</button>
+                </div>
+
+
+        <form id="contractForm" asp-action="CreateContractDetails" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="SingleEventManagement.Id" id="hiddenId" />
+
+            <h3 id="EventSpecificDetails" class="mt-5 mb-3">Event Specific Details</h3>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventID" class="form-label">Event ID</label>
+                    <input asp-for="SingleEventManagement.EventID" class="form-control" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
+                    <input asp-for="SingleEventManagement.SubEventID" class="form-control" placeholder="Enter Sub Event ID" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
+                    <input asp-for="SingleEventManagement.TaskForce" class="form-control" placeholder="Enter Task Force" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
+                    <input asp-for="SingleEventManagement.EventStatus" class="form-control" placeholder="Enter Event Status" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
+                    <input asp-for="SingleEventManagement.EventAddress1" class="form-control" placeholder="Enter Address Line 1" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventAddress2" class="form-label">Event Address 2</label>
+                    <input asp-for="SingleEventManagement.EventAddress2" class="form-control" placeholder="Enter Address Line 2" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventState" class="form-label">Event State</label>
+                    <select asp-for="SingleEventManagement.EventState" class="form-select" required>
+                        <option value="">Select State</option>
+                        <option value="State1">State 1</option>
+                        <option value="State2">State 2</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventCity" class="form-label">Event City</label>
+                    <select asp-for="SingleEventManagement.EventCity" class="form-select" required>
+                        <option value="">Select City</option>
+                        <option value="City1">City 1</option>
+                        <option value="City2">City 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventZipCode" class="form-label">Event Zip Code</label>
+                    <select asp-for="SingleEventManagement.EventZipCode" class="form-select" required>
+                        <option value="">Select Zip Code</option>
+                        <option value="12345">12345</option>
+                        <option value="67890">67890</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
+                    <input asp-for="SingleEventManagement.EventStartDate" type="date" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
+                    <input asp-for="SingleEventManagement.EventEndDate" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventStartTimeDay1" class="form-label">Event Start Time Day 1</label>
+                    <input asp-for="SingleEventManagement.EventStartTimeDay1" type="time" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventEndTimeDay1" class="form-label">Event End Time Day 1</label>
+                    <input asp-for="SingleEventManagement.EventEndTimeDay1" type="time" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Deploy</label>
+                    <div>
+                        <input asp-for="SingleEventManagement.Deploy" type="radio" value="Deploying" id="deployingOption" />
+                        <label for="deployingOption">Deploying</label>
+                        <input asp-for="SingleEventManagement.Deploy" type="radio" value="Non-Deploying" id="nonDeployingOption" />
+                        <label for="nonDeployingOption">Non-Deploying</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label asp-for="SingleEventManagement.RegardingSites" class="form-label">Regarding Sites</label>
+                    <textarea asp-for="SingleEventManagement.RegardingSites" class="form-control" rows="4" placeholder="Enter details about sites"></textarea>
+                </div>
+            </div>
+
+            <h3 id="EventMainPOC" class="mt-5 mb-3">Event Main POC</h3>
+
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="MainPocLastName" class="form-label">Last Name</label>
+                    <input id="MainPocLastName" asp-for="SingleEventManagement.MainPocLastName" class="form-control" placeholder="Enter Last Name" required />
+                </div>
+                <div class="col-sm-6">
+                    <label for="MainPocFirstName" class="form-label">First Name</label>
+                    <input id="MainPocFirstName" asp-for="SingleEventManagement.MainPocFirstName" class="form-control" placeholder="Enter First Name" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="MainPocRank" class="form-label">Rank</label>
+                    <input id="MainPocRank" asp-for="SingleEventManagement.MainPocRank" class="form-control" placeholder="Enter Rank" required />
+                </div>
+                <div class="col-sm-6">
+                    <label for="MainPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                    <input id="MainPocPhonePrimary" asp-for="SingleEventManagement.MainPocPhonePrimary" class="form-control" placeholder="Enter Primary Phone Number" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="MainPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                    <input id="MainPocPhoneSecondary" asp-for="SingleEventManagement.MainPocPhoneSecondary" class="form-control" placeholder="Enter Secondary Phone Number" />
+                </div>
+                <div class="col-sm-6">
+                    <label for="MainPocEmailPrimary" class="form-label">Email (Primary)</label>
+                    <input id="MainPocEmailPrimary" asp-for="SingleEventManagement.MainPocEmailPrimary" class="form-control" placeholder="Enter Primary Email" type="email" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="MainPocEmailSecondary" class="form-label">Email (Secondary)</label>
+                    <input id="MainPocEmailSecondary" asp-for="SingleEventManagement.MainPocEmailSecondary" class="form-control" placeholder="Enter Secondary Email" type="email" />
+                </div>
+            </div>
+
+
+            <h3 id="EventSecondaryPOC" class="mt-5 mb-3">Event Secondary POC</h3>
+
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="SecondaryPocLastName" class="form-label">Last Name</label>
+                    <input id="SecondaryPocLastName" asp-for="SingleEventManagement.SecondaryPocLastName" class="form-control" placeholder="Enter Last Name" required />
+                </div>
+                <div class="col-sm-6">
+                    <label for="SecondaryPocFirstName" class="form-label">First Name</label>
+                    <input id="SecondaryPocFirstName" asp-for="SingleEventManagement.SecondaryPocFirstName" class="form-control" placeholder="Enter First Name" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="SecondaryPocRank" class="form-label">Rank</label>
+                    <input id="SecondaryPocRank" asp-for="SingleEventManagement.SecondaryPocRank" class="form-control" placeholder="Enter Rank" required />
+                </div>
+                <div class="col-sm-6">
+                    <label for="SecondaryPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                    <input id="SecondaryPocPhonePrimary" asp-for="SingleEventManagement.SecondaryPocPhonePrimary" class="form-control" placeholder="Enter Primary Phone Number" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="SecondaryPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                    <input id="SecondaryPocPhoneSecondary" asp-for="SingleEventManagement.SecondaryPocPhoneSecondary" class="form-control" placeholder="Enter Secondary Phone Number" />
+                </div>
+                <div class="col-sm-6">
+                    <label for="SecondaryPocEmailPrimary" class="form-label">Email (Primary)</label>
+                    <input id="SecondaryPocEmailPrimary" asp-for="SingleEventManagement.SecondaryPocEmailPrimary" class="form-control" placeholder="Enter Primary Email" type="email" required />
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <label for="SecondaryPocEmailSecondary" class="form-label">Email (Secondary)</label>
+                    <input id="SecondaryPocEmailSecondary" asp-for="SingleEventManagement.SecondaryPocEmailSecondary" class="form-control" placeholder="Enter Secondary Email" type="email" />
+                </div>
+            </div>
+
+
+
+        </form>
+
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+                <i class="bi bi-check-circle"></i> Submit
+            </button>
+            <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
+                <i class="bi bi-arrow-repeat"></i> Reset
+            </button>
+            <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                <i class="bi bi-pencil"></i> Update
+            </button>
+            <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                Back to Contracts
+            </button>
+        </div>
+    </div>
+
+    
+</div>
+<script>
+
+    function scrollToCategory(categoryId) {
+        const element = document.getElementById(categoryId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    $(document).ready(function () {
+
+        $('.card-body').hide();
+        $('#contractsTable').show();
+
+        $('#backToTableBtn').click(function () {
+            $('.card-body').hide();
+            $('#datatableWrapper').show();
+            $('#addContractBtn').show();
+            
+        });
+
+        $('#addContractBtn').click(function () {
+
+            $('.card-body').show();
+            $('#datatableWrapper').hide();
+            // Hide Update button and show Submit/Reset buttons
+            $('#submitBtn').show();
+            $('#resetBtn').show();
+            $('#updateBtn').hide();
+            $('#addContractBtn').hide();
+        });
+
+        $('#contractsTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": false,
+            "info": true,
+            "autoWidth": true,
+            "responsive": true,
+            "language": {
+                "search": "Search Contracts:"
+            },
+            "order": [[0, 'desc']]
+        });
+
+
+        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+            debugger;
+            var contractId = $(this).data('id');
+            var isViewButton = $(this).hasClass('view-btn');
+
+            $.ajax({
+                url: '/ContractDetails/GetContractById/' + contractId,
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        var contract = response.contractDetails;
+                        $('#hiddenId').val(contract.id);
+                        $('#ContractID').val(contract.contractID);
+                        $('#ContractName').val(contract.contractName);
+                        $('#ContractAgency').val(contract.contractAgency);
+                        $('#ContractServiceBranch').val(contract.contractServiceBranch);
+                        $('#ContractComponent').val(contract.contractComponent);
+                        $('#ContractClient').val(contract.contractClient);
+                        $('#ContractType').val(contract.contractType);
+                        $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
+                        $('#ContractStatus').val(contract.contractStatus);
+
+                        
+                         let contractStartDate = new Date(contract.contractStartDate);
+                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA');
+                        $('#ContractStartDate').val(formattedStartDate);
+
+                        let contractEndDate = new Date(contract.contractEndDate);
+                        let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
+                        $('#ContractEndDate').val(formattedEndDate);
+
+
+                        //KO
+                        $('#KoLastName').val(contract.koLastName);
+                        $('#KoFirstName').val(contract.koFirstName);
+                        $('#KOPhone').val(contract.koPhone);
+                        $('#KOPhone2').val(contract.koPhone2);
+                        $('#KOEmail').val(contract.koEmail);
+                        $('#KONotes').val(contract.koNotes);
+                        $('#CORLastName').val(contract.corLastName);
+                        $('#CORPrefix').val(contract.corPrefix);
+                        $('#CORFirstName').val(contract.corFirstName);
+
+                        $('#CORKORank').val(contract.corkoRank);
+                        $('#CorPhone').val(contract.corPhone);
+                        $('#CorPhone2').val(contract.corPhone2);
+                        $('#COREmail').val(contract.corEmail);
+                        $('#CORNotes').val(contract.corEmail);
+
+                        $('#DawsonProgramManagerLastName').val(contract.dawsonProgramManagerLastName);
+                        $('#DawsonProgramManagerFirstName').val(contract.dawsonProgramManagerFirstName);
+
+                        $('#DawsonDeputyProgramManagerLastName').val(contract.dawsonDeputyProgramManagerLastName);
+                        $('#DawsonDeputyProgramManagerFirstName').val(contract.dawsonDeputyProgramManagerFirstName);
+
+                        $('#DawsonProjectManagerLastName').val(contract.dawsonProjectManagerLastName);
+                        $('#DawsonProjectManagerFirstName').val(contract.dawsonProjectManagerFirstName);
+
+
+
+                        // Show the form and hide the table
+                        $('#datatableWrapper').hide();
+                        $('.card-body').show();
+                        $('#submitBtn').hide();
+                        $('#resetBtn').hide();
+                        $('#addContractBtn').hide();
+                        
+                        if (isViewButton) {
+                            const controlIds = [
+                                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
+                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+                            ];
+
+                            // Make controls read-only
+                            controlIds.forEach(function (id) {
+                                const control = $('#' + id);
+                                control.prop('readonly', true); // Make input read-only
+                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
+                            });
+
+                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                        } else {
+                            const controlIds = [
+                                 'hiddenId', 'ContractAgency', 'ContractServiceBranch',
+                                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                                 'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                 'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                                 'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                                 'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                                 'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                                 'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+                             ];
+
+                             // Make controls editable
+                             controlIds.forEach(function (id) {
+                                 const control = $('#' + id);
+                                 control.prop('readonly', false); // Remove readonly property
+                                 control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                             });
+
+                             var control = $('#ContractID');
+                             control.prop('readonly', true);
+                             control.addClass('read-only-style');
+
+                            var control = $('#ContractName');
+                            control.prop('readonly', true);
+                            control.addClass('read-only-style');
+                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                        }
+                    } else {
+                        alert(response.message);  // Show error message
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract data.');
+                }
+            });
+        });
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", function (event) {
+});
+
+    document.getElementById("updateBtn").addEventListener("click", function (event) {
+        if (!validatePhoneFields()) {
+            event.preventDefault(); // Stop form submission if validation fails
+        }
+
+    });
+</script>
