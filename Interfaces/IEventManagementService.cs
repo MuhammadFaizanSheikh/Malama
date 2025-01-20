@@ -4,7 +4,7 @@ namespace ExcelFilesCompiler.Interfaces
 {
     public interface IEventManagementService
     {
-        //Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName);
+        Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
         //Task<List<ContractDetails>> GetAllContracts();
         //Task<ResponseDto> GetContractById(long id, string companyName, bool checkIfContractAlreadyExist);
         //Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);

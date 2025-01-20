@@ -14,6 +14,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; }
         IGenericRepository<TravelHonor> TravelHonor { get; }
         IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; }
+        IGenericRepository<EventManagement> EventManagement { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

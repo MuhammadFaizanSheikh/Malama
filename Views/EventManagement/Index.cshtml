@@ -37,10 +37,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contract Form</title>
-
-
-
+    
     <style>
         h2 {
             color: rgba(80, 90, 201, 1);
@@ -116,19 +113,33 @@
         min-width: 150px;
     }
 
-  #progressBar span {
-    display: inline-block;
-    padding: 5px 10px;
-    margin: 0 5px;
-    background-color: lightgray;
-    color: black;
-    border-radius: 5px;
-}
+        #progressBar {
+            width: 100%;
+            height: 40px;
+            background-color: lightgray;
+            display: flex;
+            border-radius: 5px;
+            padding: 2px;
+            margin-top: 20px;
+        }
 
-#progressBar span.completed {
-    background-color: green;
-    color: white;
-}
+            #progressBar span {
+                flex-grow: 1; /* Ensure each tab takes equal space */
+                padding: 10px;
+                text-align: center;
+                background-color: lightgray;
+                color: black;
+                /* font-weight: bold; */
+                border-radius: 5px;
+                transition: background-color 0.3s, color 0.3s;
+                margin: 0; /* Remove the margin to eliminate space between the tabs */
+            }
+
+                #progressBar span.completed {
+                    background-color: green;
+                    color: white;
+                }
+
 
 
 
@@ -137,12 +148,16 @@
 
 <h2 class="text-center mb-4">Multi-Step Form</h2>
 
-<form id="multiStepForm">
+<form id="eventManagementForm" asp-action="CreateEventManagement" method="post">
+    @Html.AntiForgeryToken()
     <!-- Progress Bar -->
     <div id="progressBar">
         <span id="progress1">Event Specific Details</span>
         <span id="progress2">Event Main POC</span>
         <span id="progress3">Event Secondary POC</span>
+        <span id="progress4">Test 4</span>
+        <span id="progress5">Test 5</span>
+        <span id="progress6">Test 6</span>
     </div>
 
     <!-- Section 1 -->
@@ -211,25 +226,25 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
-                                <input asp-for="SingleEventManagement.EventStartDate" type="date" class="form-control" required />
+                <input type="date" class="form-control" value="" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" value="" required />
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
-                                <input asp-for="SingleEventManagement.EventEndDate" type="date" class="form-control" required />
+                                <input asp-for="SingleEventManagement.EventEndDate" type="date" class="form-control"  required />
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="SingleEventManagement.EventStartTimeDay1" class="form-label">Event Start Time Day 1</label>
-                                <input asp-for="SingleEventManagement.EventStartTimeDay1" type="time" class="form-control" required />
+                                <input asp-for="SingleEventManagement.EventStartTimeDay1" type="time" class="form-control"   required />
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="SingleEventManagement.EventEndTimeDay1" class="form-label">Event End Time Day 1</label>
-                                <input asp-for="SingleEventManagement.EventEndTimeDay1" type="time" class="form-control" required />
+                                <input asp-for="SingleEventManagement.EventEndTimeDay1" type="time" class="form-control"  required />
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Deploy</label>
@@ -351,7 +366,7 @@
                         <input type="hidden" id="filledSections" name="filledSections" />
 
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+        <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add" data-section="1">
                             <i class="bi bi-check-circle"></i> Submit
                         </button>
                     </div>
@@ -361,73 +376,127 @@
 
 <script>
 $(document).ready(function () {
+    //////////////////////////////////////////////////javascript////////////////////////////////////////
     let currentSection = 1;
 
-    // Show the next section
-    $(".next").click(function () {
-        const section = $(this).data("section");
-        const requiredFields = $(`#section${section}`).find('[required]'); // Get all required fields in the current section
-        let allFieldsFilled = true;
+        $(".next").click(function () {
+            const section = $(this).data("section");
+            $("#submitBtn").data("section", section + 1);
 
-        // Check if all required fields are filled for progress bar update
-        requiredFields.each(function () {
-            if ($(this).val().trim() === "") {
-                allFieldsFilled = false; // If any field is empty, set this to false
+            const isValid = validateSectionFields(section);
+
+            if (!isValid) {
+                return;
             }
+
+            $(`#section${section}`).hide();
+            $(`#section${section + 1}`).show();
+
+            currentSection++;
         });
 
-        // If all required fields are filled, update the progress bar color to green
-        if (allFieldsFilled) {
-            $(`#progress${section}`).addClass("completed");
-        } else {
-            $(`#progress${section}`).removeClass("completed"); // Reset color if fields are not filled
-        }
 
-        // Proceed to the next section regardless of the required fields status
-        $(`#section${section}`).hide();
-        $(`#section${section + 1}`).show();
-        currentSection++;
-    });
+        $(".back").click(function () {
+            const section = $(this).data("section");
+            $("#submitBtn").data("section", section - 1);
 
-    // Show the previous section
-    $(".back").click(function () {
-        const section = $(this).data("section");
-        $(`#section${section}`).hide();
-        $(`#section${section - 1}`).show();
-        currentSection--;
-    });
+            const isValid = validateSectionFields(section);
+
+            if (!isValid) {
+                return;
+            }
+
+            $(`#section${section}`).hide();
+            $(`#section${section - 1}`).show();
+            currentSection--;
+        });
+
+        $("#submitBtn").click(function (e) {
+            debugger;
+
+            e.preventDefault();
+
+            const section = $(this).data("section");
+
+            const isValid = validateSectionFields(section);
+
+            if (!isValid) {
+                return;
+            }
+
+            $("#eventManagementForm").submit();
+        });
 
     // Save button logic
-    $("#submitBtn").click(function () {
-        const filledSections = [];
+    // $("#submitBtn").click(function () {
+    //     const filledSections = [];
 
-        $(".form-section").each(function (index, section) {
-            const sectionNumber = index + 1;
+    //     $(".form-section").each(function (index, section) {
+    //         const sectionNumber = index + 1;
 
-            // Check if all required fields are filled in the section
-            const requiredFields = $(this).find('.required-input');
-            let allFieldsFilled = true;
+    //         // Check if all required fields are filled in the section
+    //         const requiredFields = $(this).find('.required-input');
+    //         let allFieldsFilled = true;
 
-            requiredFields.each(function () {
-                if ($(this).val().trim() === "") {
-                    allFieldsFilled = false;
+    //         requiredFields.each(function () {
+    //             if ($(this).val().trim() === "") {
+    //                 allFieldsFilled = false;
+    //             }
+    //         });
+
+    //         // If all required fields are filled, add section to the filledSections array
+    //         if (allFieldsFilled) {
+    //             filledSections.push(sectionNumber);
+    //         }
+    //     });
+
+    //     // If we have filled sections, set the value of the hidden input field
+    //     if (filledSections.length > 0) {
+    //         $("#filledSections").val(JSON.stringify(filledSections)); // Convert to JSON string
+    //         $("#myForm").submit(); // Submit the form
+    //     } else {
+    //         alert("Please fill at least one section to save.");
+    //     }
+    // });
+
+       
+
+
+
+        function validateSectionFields(sectionId) {
+            const sectionFields = $(`#section${sectionId}`).find("input, select, textarea");
+
+            let anyFieldFilled = false;
+            let isValid = true;
+
+            sectionFields.each(function () {
+                const fieldValue = $(this).val();
+
+                if (
+                    fieldValue !== "SingleEventManagement.EventStartDate" &&
+                    fieldValue !== "SingleEventManagement.EventEndDate" &&
+                    fieldValue !== "SingleEventManagement.EventStartTimeDay1" &&
+                    fieldValue !== "SingleEventManagement.EventEndTimeDay1" &&
+                    fieldValue !== "Deploying" &&
+                    fieldValue !== "Non-Deploying"
+                ) {
+                    if (fieldValue.trim() !== "") {
+                        anyFieldFilled = true;
+                    }
                 }
             });
 
-            // If all required fields are filled, add section to the filledSections array
-            if (allFieldsFilled) {
-                filledSections.push(sectionNumber);
+            if (anyFieldFilled) {
+                sectionFields.each(function () {
+                    if (!this.checkValidity()) {
+                        this.reportValidity();
+                        isValid = false;
+                    }
+                });
             }
-        });
 
-        // If we have filled sections, set the value of the hidden input field
-        if (filledSections.length > 0) {
-            $("#filledSections").val(JSON.stringify(filledSections)); // Convert to JSON string
-            $("#myForm").submit(); // Submit the form
-        } else {
-            alert("Please fill at least one section to save.");
+            return isValid;
         }
-    });
 
     // Real-time validation for each section's required fields
     $(document).on('input', '[required]', function () {

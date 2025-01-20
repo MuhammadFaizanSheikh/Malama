@@ -37,38 +37,37 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    return contracts;
         //}
 
-        //public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
-        //{
-        //    var responseDto = new ResponseDto();
+        public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
+        {
+            var responseDto = new ResponseDto();
 
-        //    try
-        //    {
-        //        var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
+            try
+            {
+                //var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
 
-        //        if (existingContractDetails != null && existingContractDetails.Any())
-        //        {
-        //            responseDto.Success = false;
-        //            responseDto.Message = "ContractID already exist!!";
-        //            return responseDto;
-        //        }
+                //if (existingContractDetails != null && existingContractDetails.Any())
+                //{
+                //    responseDto.Success = false;
+                //    responseDto.Message = "ContractID already exist!!";
+                //    return responseDto;
+                //}
 
-        //        contractDetail.AddedBy = loggedinUserName;
-        //        contractDetail.AddedOn = DateTime.Now;
-        //        await repository.AddAsync(contractDetail);
+                eventManagement.AddedBy = loggedinUserName;
+                eventManagement.AddedOn = DateTime.Now;
+                await _unitOfWork.EventManagement.AddAsync(eventManagement);
 
-        //        // If successful, set Success to true and provide a success message
-        //        responseDto.Success = true;
-        //        responseDto.Message = "Contract added successfully!";
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // If an exception occurs, set Success to false and provide the error message
-        //        responseDto.Success = false;
-        //        responseDto.Message = $"An error occurred: {ex.Message}";
-        //    }
+                responseDto.Success = true;
+                responseDto.Message = "Event Management added successfully!";
+            }
+            catch (Exception ex)
+            {
+                // If an exception occurs, set Success to false and provide the error message
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred: {ex.Message}";
+            }
 
-        //    return responseDto;
-        //}
+            return responseDto;
+        }
 
 
 

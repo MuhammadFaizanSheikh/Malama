@@ -69,7 +69,6 @@ namespace ExcelFilesCompiler.Controllers
                         }
                     }
 
-                    TempData["ShowForm"] = true;  // Using TempData instead of ViewData
                     return View("Index", contractDto);
                 }
 
@@ -91,7 +90,6 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Please login and try again";
-                    TempData["ShowForm"] = true;  // Using TempData instead of ViewData
                     TempData["ContractDto"] = contractDto;
                     //return RedirectToAction("Index", contractDto);
                     return RedirectToAction("Index");
@@ -100,7 +98,6 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
                 TempData["ResponseMessage"] = res.Message;
-                TempData["ShowForm"] = res.Success ? false : true;  // Use TempData
                 return RedirectToAction("Index");
                 //return RedirectToAction("Index", contractDto);
             }
@@ -109,7 +106,6 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
-                TempData["ShowForm"] = true;  // Using TempData instead of ViewData
                 TempData["ContractDto"] = contractDto;
                 return RedirectToAction("Index", contractDto);
             }
