@@ -20,22 +20,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             _unitOfWork = unitOfWork;
         }
 
-        //public async Task<List<ContractDetails>> GetAllEventManagements()
-        //{
-        //    var responseDto = new ResponseDto();
-        //    List<ContractDetails> contracts = new List<ContractDetails>(); // Initialize contracts outside try-catch
+        public async Task<List<EventManagement>> GetAllEventManagements()
+        {
+            var responseDto = new ResponseDto();
+            List<EventManagement> eventManagements = new List<EventManagement>();
 
-        //    try
-        //    {
-        //        contracts = (await _unitOfWork.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
+            try
+            {
+                eventManagements = (await _unitOfWork.EventManagement.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
 
-        //    return contracts;
-        //}
+            return eventManagements;
+        }
 
         public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
         {

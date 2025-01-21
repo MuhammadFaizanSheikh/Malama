@@ -22,31 +22,31 @@ namespace ExcelFilesCompiler.Controllers
 
         public async Task<IActionResult> Index()
         {
-            //var responseDto = new ResponseDto();
-            //List<ContractDetails> contractsList = new List<ContractDetails>();
+            var responseDto = new ResponseDto();
+            List<EventManagement> eventManagementList = new List<EventManagement>();
 
-            //try
-            //{
-            //    contractsList = await _eventManagementService.GetAllContracts();
-            //}
-            //catch (Exception ex)
-            //{
-            //    TempData["ErrorMessage"] = "We encountered an issue while loading contracts. Please try again later.";
-            //}
+            try
+            {
+                eventManagementList = await _eventManagementService.GetAllEventManagements();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "We encountered an issue while loading event managements. Please try again later.";
+            }
 
-            //var viewModel = new ContractViewModel
-            //{
-            //    Contracts = contractsList,
-            //    SingleContract = null
-            //};
-            //// Pass contracts data to the view
-            return View();
+            var viewModel = new EventManagementViewModel
+            {
+                EventManagements = eventManagementList,
+                SingleEventManagement = null
+            };
+            // Pass contracts data to the view
+            return View(viewModel);
 
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEventManagement(EventManagementViewModel eventManagement, string action)
+        public async Task<IActionResult> CreateEventManagement(EventManagementViewModel eventManagement, string action, string completedSections)
         {
             try
             {

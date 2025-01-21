@@ -1,20 +1,8 @@
 ﻿@model ExcelFilesCompiler.Models.EventManagementViewModel
 
 @{
-    ViewData["Title"] = "Multi-Step Form";
+    ViewData["Title"] = "Event Management";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-
-    // Fixed categories
-    var categories = new[]
-    {
-        "Event Specific Details",
-        "Event Main POC",
-        "Event Secondary POC",
-        "Shipping Address",
-        "Shipping POC",
-        "Preferred Pharmacy if SM needs prescription",
-        "POC for military contact (HIV Supply)"
-    };
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -115,7 +103,7 @@
 
         #progressBar {
             width: 100%;
-            height: 40px;
+            height: 50px;
             background-color: lightgray;
             display: flex;
             border-radius: 5px;
@@ -129,7 +117,7 @@
                 text-align: center;
                 background-color: lightgray;
                 color: black;
-                /* font-weight: bold; */
+                font-weight: bold;
                 border-radius: 5px;
                 transition: background-color 0.3s, color 0.3s;
                 margin: 0; /* Remove the margin to eliminate space between the tabs */
@@ -146,10 +134,125 @@
     </style>
 </head>
 
-<h2 class="text-center mb-4">Multi-Step Form</h2>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+<h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+<div class="container mt-4 mb-5">
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    {
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <button class="btn btn-primary" id="addContractBtn"
+                style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
+            Add New Event
+        </button>
+    </div>
+    <div id="datatableWrapper" class="datatable-wrapper">
+        <table id="contractsTable" class="display">
+            <thead>
+                <tr>
+                    <th>Event ID</th>
+                    <th>Sub Event Id</th>
+                    <th>Taskforce</th>
+                    <th>Event Status</th>
+                    <th>State</th>
+                    <th>City</th>
+                    <th>ZipCode</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.EventManagements != null && Model.EventManagements.Any())
+                {
+                    @foreach (var contract in Model.EventManagements)
+                    {
+                        <tr data-id="@contract.Id">
+                            <td>@contract.EventID</td>
+                            <td>@contract.SubEventID</td>
+                            <td>@contract.TaskForce</td>
+                            <td>@contract.EventStatus</td>
+                            <td>@contract.EventState</td>
+                            <td>@contract.EventCity</td>
+                            <td>@contract.EventZipCode</td>
+                            <td>@contract.EventStartDate?.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.EventEndDate?.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div class="button-container">
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td class="text-center">No data available</td>
+                      @*   <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td> *@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-body" style="display: none;">
 
 <form id="eventManagementForm" asp-action="CreateEventManagement" method="post">
     @Html.AntiForgeryToken()
+
+            <div class="col-md-6">
+                <label asp-for="SingleEventManagement.EventID" class="form-label">Event ID</label>
+                <input asp-for="SingleEventManagement.EventID" id="EventID" class="form-control" readonly />
+            </div>
+
     <!-- Progress Bar -->
     <div id="progressBar">
         <span id="progress1">Event Specific Details</span>
@@ -161,112 +264,105 @@
     </div>
 
     <!-- Section 1 -->
-    <div id="section1" class="form-section">
-        <h3 class="mt-5 mb-3">Event Specific Details</h3>
-        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventID" class="form-label">Event ID</label>
-                                <input asp-for="SingleEventManagement.EventID" class="form-control" readonly />
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
-                                <input asp-for="SingleEventManagement.SubEventID" class="form-control" placeholder="Enter Sub Event ID" required />
-                            </div>
-                        </div>
+            <div id="section1" class="form-section">
+                <h3 class="mt-5 mb-3">Event Specific Details</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
+                        <input asp-for="SingleEventManagement.SubEventID" id="SubEventID" class="form-control" placeholder="Enter Sub Event ID" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
+                        <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" placeholder="Enter Task Force" required />
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
-                                <input asp-for="SingleEventManagement.TaskForce" class="form-control" placeholder="Enter Task Force" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
-                                <input asp-for="SingleEventManagement.EventStatus" class="form-control" placeholder="Enter Event Status" required />
-                            </div>
-                        </div>
+                </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
-                                <input asp-for="SingleEventManagement.EventAddress1" class="form-control" placeholder="Enter Address Line 1" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventAddress2" class="form-label">Event Address 2</label>
-                                <input asp-for="SingleEventManagement.EventAddress2" class="form-control" placeholder="Enter Address Line 2" />
-                            </div>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
+                        <input asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control" placeholder="Enter Event Status" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
+                        <input asp-for="SingleEventManagement.EventAddress1" id="EventAddress1" class="form-control" placeholder="Enter Address Line 1" required />
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventState" class="form-label">Event State</label>
-                                <select asp-for="SingleEventManagement.EventState" class="form-select" required>
-                                    <option value="">Select State</option>
-                                    <option value="State1">State 1</option>
-                                    <option value="State2">State 2</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventCity" class="form-label">Event City</label>
-                                <select asp-for="SingleEventManagement.EventCity" class="form-select" required>
-                                    <option value="">Select City</option>
-                                    <option value="City1">City 1</option>
-                                    <option value="City2">City 2</option>
-                                </select>
-                            </div>
-                        </div>
+                </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventZipCode" class="form-label">Event Zip Code</label>
-                                <select asp-for="SingleEventManagement.EventZipCode" class="form-select" required>
-                                    <option value="">Select Zip Code</option>
-                                    <option value="12345">12345</option>
-                                    <option value="67890">67890</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
-                <input type="date" class="form-control" value="" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" value="" required />
-                            </div>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventAddress2" class="form-label">Event Address 2</label>
+                        <input asp-for="SingleEventManagement.EventAddress2" id="EventAddress2" class="form-control" placeholder="Enter Address Line 2" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventState" class="form-label">Event State</label>
+                        <select asp-for="SingleEventManagement.EventState" id="EventState" class="form-select" required>
+                        </select>
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
-                                <input asp-for="SingleEventManagement.EventEndDate" type="date" class="form-control"  required />
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventStartTimeDay1" class="form-label">Event Start Time Day 1</label>
-                                <input asp-for="SingleEventManagement.EventStartTimeDay1" type="time" class="form-control"   required />
-                            </div>
-                        </div>
+                </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="SingleEventManagement.EventEndTimeDay1" class="form-label">Event End Time Day 1</label>
-                                <input asp-for="SingleEventManagement.EventEndTimeDay1" type="time" class="form-control"  required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Deploy</label>
-                                <div>
-                                    <input asp-for="SingleEventManagement.Deploy" type="radio" value="Deploying" id="deployingOption" required/>
-                                    <label for="deployingOption">Deploying</label>
-                                    <input asp-for="SingleEventManagement.Deploy" type="radio" value="Non-Deploying" id="nonDeployingOption" required/>
-                                    <label for="nonDeployingOption">Non-Deploying</label>
-                                </div>
-                            </div>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventCity" class="form-label">Event City</label>
+                        <select asp-for="SingleEventManagement.EventCity" id="EventCity" class="form-select city-dropdown" required>
+                            <option value="">Select City</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventZipCode" class="form-label">Event Zip Code</label>
+                        <select asp-for="SingleEventManagement.EventZipCode" id="EventZipCode" class="form-select" required>
+                            <option value="">Select Zip Code</option>
+                        </select>
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="SingleEventManagement.RegardingSites" class="form-label">Regarding Sites</label>
-                                <textarea asp-for="SingleEventManagement.RegardingSites" class="form-control" rows="4" placeholder="Enter details about sites" required></textarea>
-                            </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
+                        <input type="date" class="form-control" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
+                        <input asp-for="SingleEventManagement.EventEndDate" id="EventEndDate" type="date" class="form-control" required />
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventStartTimeDay1" class="form-label">Event Start Time Day 1</label>
+                        <input asp-for="SingleEventManagement.EventStartTimeDay1" id="EventStartTimeDay1" type="time" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventEndTimeDay1" class="form-label">Event End Time Day 1</label>
+                        <input asp-for="SingleEventManagement.EventEndTimeDay1" id="EventEndTimeDay1" type="time" class="form-control" required />
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Deploy</label>
+                        <div>
+                            <input asp-for="SingleEventManagement.Deploy" id="Deploying" type="radio" value="Deploying" required />
+                            <label for="Deploying">Deploying</label>
+                            <input asp-for="SingleEventManagement.Deploy" id="NonDeploying" type="radio" value="Non-Deploying" required />
+                            <label for="NonDeploying">Non-Deploying</label>
                         </div>
-                        <div class="d-flex justify-content-end mt-4">
-                        <button type="button" class="btn btn-primary next" data-section="1">Next</button>
-                        </div>
-    </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label asp-for="SingleEventManagement.RegardingSites" class="form-label">Regarding Sites</label>
+                        <textarea asp-for="SingleEventManagement.RegardingSites" id="RegardingSites" class="form-control" rows="4" placeholder="Enter details about sites" required></textarea>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" id="NextButton" class="btn btn-primary next" data-section="1">Next</button>
+                </div>
+            </div>
+
 
     <!-- Section 2 -->
     <div id="section2" class="form-section" style="display: none;">
@@ -371,12 +467,13 @@
                         </button>
                     </div>
 </form>
+    </div>
 
+</div>
 
 
 <script>
 $(document).ready(function () {
-    //////////////////////////////////////////////////javascript////////////////////////////////////////
     let currentSection = 1;
 
         $(".next").click(function () {
@@ -424,6 +521,27 @@ $(document).ready(function () {
                 return;
             }
 
+            if (!validateSection1()) {
+                alert("Please fill in all required fields of Event Specific Details!");
+                return;
+            }
+
+            const completedSections = getCompletedSections();
+
+            $("<input>")
+                .attr("type", "hidden")
+                .attr("name", "completedSections")
+                .attr("value", JSON.stringify(completedSections)) // Send as a JSON array
+                .appendTo("#eventManagementForm");
+
+
+            const actionValue = $(this).val();
+            $("<input>")
+                .attr("type", "hidden")
+                .attr("name", "action")
+                .attr("value", actionValue)
+                .appendTo("#eventManagementForm");
+
             $("#eventManagementForm").submit();
         });
 
@@ -460,7 +578,33 @@ $(document).ready(function () {
     // });
 
        
+        function getCompletedSections() {
+            const completedSections = [];
 
+            // Loop through each section and validate required fields
+            $(".form-section").each(function () {
+                const sectionId = $(this).attr("id"); // e.g., "section1"
+                let isSectionValid = true;
+
+                // Validate required fields in the section
+                $(this)
+                    .find("[required]")
+                    .each(function () {
+                        if (!$(this).val().trim()) {
+                            isSectionValid = false; // Mark invalid if a required field is empty
+                            return false; // Break out of the loop
+                        }
+                    });
+
+                // If all required fields in the section are filled, add the section ID
+                if (isSectionValid) {
+                    const numericId = sectionId.replace(/\D/g, ""); // Extract numeric part (e.g., "section1" -> "1")
+                    completedSections.push(numericId);
+                }
+            });
+
+            return completedSections;
+        }
 
 
         function validateSectionFields(sectionId) {
@@ -498,7 +642,25 @@ $(document).ready(function () {
             return isValid;
         }
 
-    // Real-time validation for each section's required fields
+        function validateSection1() {
+            const section = document.getElementById("section1");
+            const requiredControls = section.querySelectorAll("[required]");
+            let isValid = true;
+
+            requiredControls.forEach(control => {
+                const controlValue = control.value.trim();
+
+                if (!controlValue) {
+                    isValid = false;
+                    control.classList.add("is-invalid");
+                } else {
+                    control.classList.remove("is-invalid");
+                }
+            });
+
+            return isValid;
+        }
+
     $(document).on('input', '[required]', function () {
         const section = $(this).closest(".form-section").attr("id").replace("section", "");
         updateProgressBar(section); // Update progress bar when user fills required fields
@@ -522,6 +684,81 @@ $(document).ready(function () {
             $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
         }
     }
+
+        $('#addContractBtn').click(function () {
+            $('.card-body').show();
+            $('#datatableWrapper').hide();
+            $('#submitBtn').show();
+            // $('#resetBtn').show();
+            // $('#updateBtn').hide();
+            $('#addContractBtn').hide();
+        });
+
+        $('#contractsTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true, 
+            "ordering": false,
+            "info": true,
+            "autoWidth": true,
+            "responsive": true,
+            "language": {
+                "search": "Search Contracts:" 
+            },
+            "order": [[0, 'desc']]
+        });
+
+
+        $.getJSON('/data/statesAndCities.json', function (data) {
+            const stateCityMap = {};
+            const stateDropdowns = $('#EventState');
+
+            stateDropdowns.empty().append('<option value="">Select State</option>');
+            data.states.forEach(state => {
+                stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
+                stateCityMap[state.Name] = state.Cities; // Map state name to its cities
+            });
+
+            stateDropdowns.on('change', function () {
+                const stateName = $(this).val();
+
+                const cityDropdownId = $(this).attr('id') === 'EventState' ? '#EventCity' : '#secondaryCity';
+                const cityDropdown = $(cityDropdownId);
+
+                cityDropdown.empty().append('<option value="">Select City</option>');
+
+                if (stateName && stateCityMap[stateName]) {
+                    stateCityMap[stateName].forEach(city => {
+                        cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
+                    });
+                }
+            });
+
+
+            $('.city-dropdown').on('change', function () {
+
+                debugger;
+                const cityDropdownId = $(this).attr('id');
+                const stateDropdownId = cityDropdownId === 'EventCity' ? '#EventState' : '#secondaryState';
+                const zipCodeDropdownId = cityDropdownId === 'EventCity' ? '#EventZipCode' : '#secondaryZipCode';
+
+                const stateName = $(stateDropdownId).val();
+                const cityName = $(this).val();
+                const zipCodeDropdown = $(zipCodeDropdownId);
+
+                zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
+
+                if (stateName && cityName && stateCityMap[stateName]) {
+                    const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
+
+                    if (selectedCity && selectedCity.Zipcodes) {
+                        selectedCity.Zipcodes.forEach(zip => {
+                            zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                        });
+                    }
+                }
+            });
+        });
 });
 
 
