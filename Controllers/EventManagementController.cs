@@ -4,6 +4,7 @@ using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Diagnostics.Contracts;
 
@@ -106,6 +107,28 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
                 TempData["ContractDto"] = eventManagement;
                 return RedirectToAction("Index", eventManagement);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetNextEventManagementId()
+        {
+            try
+            {
+                var eventManagementId = await _eventManagementService.GetNextEventManagementId();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        eventManagementId = eventManagementId
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching sequence of Event Management Id." });
             }
         }
     }

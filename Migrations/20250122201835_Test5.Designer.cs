@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250122201835_Test5")]
+    partial class Test5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,11 +308,6 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<TimeSpan>("EventEndTimeDay1")
                         .HasColumnType("time");
 
-                    b.Property<string>("EventHelpLine")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
                     b.Property<string>("EventID")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -411,7 +409,7 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
-                    b.Property<DateTime?>("MOBDate")
+                    b.Property<DateTime>("MOBDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("MainPocEmailPrimary")
@@ -527,10 +525,6 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("ServiceMemberPercentPerDay")
-                        .HasMaxLength(3)
-                        .HasColumnType("int");
-
                     b.Property<string>("ShippingAddressCity")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -644,11 +638,6 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("TotalRequestedServiceMembers")
-                        .IsRequired()
-                        .HasMaxLength(4)
-                        .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");

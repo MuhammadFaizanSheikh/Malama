@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250122173052_Test4")]
+    partial class Test4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,6 +283,15 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<TimeSpan?>("CloseAt")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime?>("DeliveryFromDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveryToDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Deploy")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -304,11 +316,6 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.Property<TimeSpan>("EventEndTimeDay1")
                         .HasColumnType("time");
-
-                    b.Property<string>("EventHelpLine")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
 
                     b.Property<string>("EventID")
                         .IsRequired()
@@ -335,83 +342,7 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("HIVDropOffStaffFirstName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVDropOffStaffId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVDropOffStaffLastName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVSuppliesNeeded")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCEmailPrimary")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCEmailSecondary")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCFirstName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCLastName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCPhonePrimary")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCPhoneSecondary")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("HIVSupplyMilitaryContactPOCRank")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCEmailPrimary")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCEmailSecondary")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCFirstName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCLastName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCPhonePrimary")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCPhoneSecondary")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("ImmVaccineSupplyMilitaryContactPOCRank")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ImmunizationVaccineNeeded")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<DateTime?>("MOBDate")
+                    b.Property<DateTime>("MOBDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("MainPocEmailPrimary")
@@ -442,57 +373,14 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PharmacyAddressLine1")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<TimeSpan?>("OpenAt")
+                        .HasColumnType("time");
 
-                    b.Property<string>("PharmacyAddressLine2")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<DateTime?>("PickupDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("PharmacyCity")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PharmacyMilitaryArrangement")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("PharmacyName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PharmacyPhoneNumber")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("PharmacyState")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PharmacyZipCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("QuestPickupAddressLine1")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("QuestPickupAddressLine2")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("QuestPickupCity")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("QuestPickupState")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("QuestPickupZipCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<TimeSpan?>("PickupTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("RegardingSites")
                         .IsRequired()
@@ -527,14 +415,6 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("ServiceMemberPercentPerDay")
-                        .HasMaxLength(3)
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShippingAddressCity")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("ShippingAddressLine1")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -543,61 +423,21 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("ShippingAddressState")
+                    b.Property<string>("ShippingCity")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ShippingAddressZipCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<TimeSpan?>("ShippingPocCloseAt")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime?>("ShippingPocDeliveryFromDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ShippingPocDeliveryToDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ShippingPocEventSetupDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("ShippingPocEventSetupTime")
-                        .HasColumnType("time");
+                    b.Property<string>("ShippingInstruction")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("ShippingPocFirstName")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ShippingPocInstruction")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
                     b.Property<string>("ShippingPocLastName")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ShippingPocLocationSecured")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("ShippingPocLockableRefrigerator")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<TimeSpan?>("ShippingPocOpenAt")
-                        .HasColumnType("time");
-
-                    b.Property<string>("ShippingPocParkingInstructions")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime?>("ShippingPocPickupDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("ShippingPocPickupTime")
-                        .HasColumnType("time");
 
                     b.Property<string>("ShippingPocPrimaryEmail")
                         .HasMaxLength(50)
@@ -611,10 +451,6 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ShippingPocRefrigeratorAvailable")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
                     b.Property<string>("ShippingPocSecondaryEmail")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -623,20 +459,20 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(12)
                         .HasColumnType("nvarchar(12)");
 
-                    b.Property<string>("ShippingPocSpecialGateInstructions")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                    b.Property<string>("ShippingState")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ShippingPocSuggestedHourlyFlow")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ShippingPocTablesAndChairsAvailable")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                    b.Property<string>("ShippingZipCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("SubEventID")
                         .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SuggestedHourlyFlow")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -644,11 +480,6 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("TotalRequestedServiceMembers")
-                        .IsRequired()
-                        .HasMaxLength(4)
-                        .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");

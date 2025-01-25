@@ -19,6 +19,12 @@
 <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<!-- Include Flatpickr CSS -->
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+
+<!-- Include Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -210,8 +216,8 @@
                             <td>@contract.EventState</td>
                             <td>@contract.EventCity</td>
                             <td>@contract.EventZipCode</td>
-                            <td>@contract.EventStartDate?.ToString("yyyy-MM-dd")</td>
-                            <td>@contract.EventEndDate?.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.EventStartDate.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.EventEndDate.ToString("yyyy-MM-dd")</td>
                             <td>
                                 <div class="button-container">
                                     <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
@@ -226,7 +232,6 @@
                 {
                     <tr>
                         <td class="text-center">No data available</td>
-                      @*   <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
@@ -236,7 +241,6 @@
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td> *@
                     </tr>
                 }
             </tbody>
@@ -248,19 +252,19 @@
 <form id="eventManagementForm" asp-action="CreateEventManagement" method="post">
     @Html.AntiForgeryToken()
 
-            <div class="col-md-6">
-                <label asp-for="SingleEventManagement.EventID" class="form-label">Event ID</label>
-                <input asp-for="SingleEventManagement.EventID" id="EventID" class="form-control" readonly />
+            <div class="col-md-6 d-flex align-items-center">
+                <label class="form-label me-2 fw-bold" style="font-size: 1.2rem;">Event ID : </label>
+                <label asp-for="SingleEventManagement.EventID" id="EventID" class="form-label" style="font-size: 1.2rem;" readonly></label>
             </div>
+
 
     <!-- Progress Bar -->
     <div id="progressBar">
         <span id="progress1">Event Specific Details</span>
-        <span id="progress2">Event Main POC</span>
-        <span id="progress3">Event Secondary POC</span>
-        <span id="progress4">Test 4</span>
-        <span id="progress5">Test 5</span>
-        <span id="progress6">Test 6</span>
+        <span id="progress2">Event POC</span>
+        <span id="progress3">Shipping</span>
+        <span id="progress4">Additional Information</span>
+        <span id="progress5">Immunization and Lab Info</span>
     </div>
 
     <!-- Section 1 -->
@@ -269,11 +273,11 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
-                        <input asp-for="SingleEventManagement.SubEventID" id="SubEventID" class="form-control" placeholder="Enter Sub Event ID" required />
+                        <input asp-for="SingleEventManagement.SubEventID" id="SubEventID" class="form-control" maxLength="5"  placeholder="Enter Sub Event ID" />
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
-                        <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" placeholder="Enter Task Force" required />
+                        <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" maxLength="100" placeholder="Enter Task Force" />
                     </div>
 
                 </div>
@@ -281,11 +285,20 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
-                        <input asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control" placeholder="Enter Event Status" required />
+                        <select asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control" required>
+                            <option value="" disabled selected>Select Event Status</option>
+                            <option value="Initial Pre-event">Initial Pre-event</option>
+                            <option value="Pre-Event Confirmed">Pre-Event Confirmed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Post event Incomplete">Post event Incomplete</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Canceled">Canceled</option>
+                        </select>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
-                        <input asp-for="SingleEventManagement.EventAddress1" id="EventAddress1" class="form-control" placeholder="Enter Address Line 1" required />
+                        <input asp-for="SingleEventManagement.EventAddress1" id="EventAddress1" class="form-control" maxLength="200" placeholder="Enter Address Line 1" required />
                     </div>
 
                 </div>
@@ -293,7 +306,7 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventAddress2" class="form-label">Event Address 2</label>
-                        <input asp-for="SingleEventManagement.EventAddress2" id="EventAddress2" class="form-control" placeholder="Enter Address Line 2" />
+                        <input asp-for="SingleEventManagement.EventAddress2" id="EventAddress2" class="form-control" maxLength="200" placeholder="Enter Address Line 2" />
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventState" class="form-label">Event State</label>
@@ -319,6 +332,13 @@
 
                 </div>
 
+                 <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.TotalRequestedServiceMembers" class="form-label">Total Requested Service Members</label>
+                        <input asp-for="SingleEventManagement.TotalRequestedServiceMembers" id="TotalRequestedServiceMembers" class="form-control" maxLength="4" placeholder="Enter Total Requested Service Members" required />
+                    </div>
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
@@ -331,21 +351,11 @@
 
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.EventStartTimeDay1" class="form-label">Event Start Time Day 1</label>
-                        <input asp-for="SingleEventManagement.EventStartTimeDay1" id="EventStartTimeDay1" type="time" class="form-control" required />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.EventEndTimeDay1" class="form-label">Event End Time Day 1</label>
-                        <input asp-for="SingleEventManagement.EventEndTimeDay1" id="EventEndTimeDay1" type="time" class="form-control" required />
-                    </div>
-
-                </div>
+                <div id="dynamicControlsContainer"></div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Deploy</label>
+                        <label class="form-label">Please select</label>
                         <div>
                             <input asp-for="SingleEventManagement.Deploy" id="Deploying" type="radio" value="Deploying" required />
                             <label for="Deploying">Deploying</label>
@@ -353,9 +363,19 @@
                             <label for="NonDeploying">Non-Deploying</label>
                         </div>
                     </div>
+                    <div class="col-md-6" id="MOBDateContainer" style="display: none;">
+                        <label asp-for="SingleEventManagement.MOBDate" class="form-label">MOB Date</label>
+                        <input asp-for="SingleEventManagement.MOBDate" id="EventMobDate" type="date" class="form-control" required />
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-12">
                         <label asp-for="SingleEventManagement.RegardingSites" class="form-label">Regarding Sites</label>
-                        <textarea asp-for="SingleEventManagement.RegardingSites" id="RegardingSites" class="form-control" rows="4" placeholder="Enter details about sites" required></textarea>
+                        <textarea asp-for="SingleEventManagement.RegardingSites" id="RegardingSites" class="form-control" rows="4" maxLength="300" placeholder="Enter details about sites"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SingleEventManagement.EventHelpLine" class="form-label">Event Help Line</label>
+                        <input id="KOPhone" asp-for="SingleEventManagement.EventHelpLine" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-4">
@@ -364,108 +384,649 @@
             </div>
 
 
-    <!-- Section 2 -->
-    <div id="section2" class="form-section" style="display: none;">
-        <h3 class="mt-5 mb-3">Event Main POC</h3>
-        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="MainPocLastName" class="form-label">Last Name</label>
-                                <input id="MainPocLastName" asp-for="SingleEventManagement.MainPocLastName" class="form-control" placeholder="Enter Last Name" required />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="MainPocFirstName" class="form-label">First Name</label>
-                                <input id="MainPocFirstName" asp-for="SingleEventManagement.MainPocFirstName" class="form-control" placeholder="Enter First Name" required />
-                            </div>
-                        </div>
-            
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="MainPocRank" class="form-label">Rank</label>
-                                <input id="MainPocRank" asp-for="SingleEventManagement.MainPocRank" class="form-control" placeholder="Enter Rank" required />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="MainPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
-                                <input id="MainPocPhonePrimary" asp-for="SingleEventManagement.MainPocPhonePrimary" class="form-control" placeholder="Enter Primary Phone Number" required />
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="MainPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
-                                <input id="MainPocPhoneSecondary" asp-for="SingleEventManagement.MainPocPhoneSecondary" class="form-control" placeholder="Enter Secondary Phone Number" />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="MainPocEmailPrimary" class="form-label">Email (Primary)</label>
-                                <input id="MainPocEmailPrimary" asp-for="SingleEventManagement.MainPocEmailPrimary" class="form-control" placeholder="Enter Primary Email" type="email" required />
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="MainPocEmailSecondary" class="form-label">Email (Secondary)</label>
-                                <input id="MainPocEmailSecondary" asp-for="SingleEventManagement.MainPocEmailSecondary" class="form-control" placeholder="Enter Secondary Email" type="email" />
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-secondary back" data-section="2">Back</button>
-
-                        <div class="d-flex justify-content-end mt-4">
-                        <button type="button" class="btn btn-primary next" data-section="2">Next</button>
-                        </div>
-    </div>
-
-    <!-- Section 3 -->
-    <div id="section3" class="form-section" style="display: none;">
-        <h3 class="mt-5 mb-3">Event Secondary POC</h3>
-        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocLastName" class="form-label">Last Name</label>
-                                <input id="SecondaryPocLastName" asp-for="SingleEventManagement.SecondaryPocLastName" class="form-control" placeholder="Enter Last Name" required />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocFirstName" class="form-label">First Name</label>
-                                <input id="SecondaryPocFirstName" asp-for="SingleEventManagement.SecondaryPocFirstName" class="form-control" placeholder="Enter First Name" required />
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocRank" class="form-label">Rank</label>
-                                <input id="SecondaryPocRank" asp-for="SingleEventManagement.SecondaryPocRank" class="form-control" placeholder="Enter Rank" required />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
-                                <input id="SecondaryPocPhonePrimary" asp-for="SingleEventManagement.SecondaryPocPhonePrimary" class="form-control" placeholder="Enter Primary Phone Number" required />
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
-                                <input id="SecondaryPocPhoneSecondary" asp-for="SingleEventManagement.SecondaryPocPhoneSecondary" class="form-control" placeholder="Enter Secondary Phone Number" />
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocEmailPrimary" class="form-label">Email (Primary)</label>
-                                <input id="SecondaryPocEmailPrimary" asp-for="SingleEventManagement.SecondaryPocEmailPrimary" class="form-control" placeholder="Enter Primary Email" type="email" required />
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-sm-6">
-                                <label for="SecondaryPocEmailSecondary" class="form-label">Email (Secondary)</label>
-                                <input id="SecondaryPocEmailSecondary" asp-for="SingleEventManagement.SecondaryPocEmailSecondary" class="form-control" placeholder="Enter Secondary Email" type="email" />
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-secondary back" data-section="3">Back</button>
-    </div>
-
-    <!-- Save Button -->
-                        <input type="hidden" id="filledSections" name="filledSections" />
-
-                    <div class="d-flex justify-content-end mt-4">
-        <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add" data-section="1">
-                            <i class="bi bi-check-circle"></i> Submit
-                        </button>
+            <!-- Section 2 -->
+            <div id="section2" class="form-section" style="display: none;">
+                <h3 class="mt-5 mb-3">Event Main POC</h3>
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="MainPocLastName" class="form-label">Last Name</label>
+                        <input id="MainPocLastName" asp-for="SingleEventManagement.MainPocLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" required />
                     </div>
+                    <div class="col-sm-6">
+                        <label for="MainPocFirstName" class="form-label">First Name</label>
+                        <input id="MainPocFirstName" asp-for="SingleEventManagement.MainPocFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="MainPocRank" class="form-label">Rank</label>
+                        <input id="MainPocRank" asp-for="SingleEventManagement.MainPocRank" class="form-control" maxLength="50" placeholder="Enter Rank" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="MainPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                        <input id="MainPocPhonePrimary" asp-for="SingleEventManagement.MainPocPhonePrimary" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="MainPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                        <input id="MainPocPhoneSecondary" asp-for="SingleEventManagement.MainPocPhoneSecondary" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="MainPocEmailPrimary" class="form-label">Email (Primary)</label>
+                        <input id="MainPocEmailPrimary" asp-for="SingleEventManagement.MainPocEmailPrimary" class="form-control" maxLength="50" placeholder="Enter Primary Email" type="email" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="MainPocEmailSecondary" class="form-label">Email (Secondary)</label>
+                        <input id="MainPocEmailSecondary" asp-for="SingleEventManagement.MainPocEmailSecondary" class="form-control" maxLength="50" placeholder="Enter Secondary Email" type="email" />
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">Event Secondary POC</h3>
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocLastName" class="form-label">Last Name</label>
+                        <input id="SecondaryPocLastName" asp-for="SingleEventManagement.SecondaryPocLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocFirstName" class="form-label">First Name</label>
+                        <input id="SecondaryPocFirstName" asp-for="SingleEventManagement.SecondaryPocFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocRank" class="form-label">Rank</label>
+                        <input id="SecondaryPocRank" asp-for="SingleEventManagement.SecondaryPocRank" class="form-control" maxLength="50" placeholder="Enter Rank" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                        <input id="SecondaryPocPhonePrimary" asp-for="SingleEventManagement.SecondaryPocPhonePrimary" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                        <input id="SecondaryPocPhoneSecondary" asp-for="SingleEventManagement.SecondaryPocPhoneSecondary" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocEmailPrimary" class="form-label">Email (Primary)</label>
+                        <input id="SecondaryPocEmailPrimary" asp-for="SingleEventManagement.SecondaryPocEmailPrimary" class="form-control" maxLength="50" placeholder="Enter Primary Email" type="email" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="SecondaryPocEmailSecondary" class="form-label">Email (Secondary)</label>
+                        <input id="SecondaryPocEmailSecondary" asp-for="SingleEventManagement.SecondaryPocEmailSecondary" class="form-control" maxLength="50" placeholder="Enter Secondary Email" type="email" />
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="toggleAdditionalPOC" asp-for="SingleEventManagement.AddAddtionalAlternatePoc"/>
+                    <label class="form-check-label" for="toggleAdditionalPOC">
+                        Add additional alternate POC
+                    </label>
+                </div>
+
+                <div id="additionalPocControls" style="display: none;">
+                    <h3 class="mt-5 mb-3">Addtional alternate POC</h3>
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocLastName" class="form-label">Last Name</label>
+                            <input id="AddtionalAlternatePocLastName" asp-for="SingleEventManagement.AddtionalAlternatePocLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocFirstName" class="form-label">First Name</label>
+                            <input id="AddtionalAlternatePocFirstName" asp-for="SingleEventManagement.AddtionalAlternatePocFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocRank" class="form-label">Rank</label>
+                            <input id="AddtionalAlternatePocRank" asp-for="SingleEventManagement.AddtionalAlternatePocRank" class="form-control" maxLength="50" placeholder="Enter Rank" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                            <input id="AddtionalAlternatePocPhonePrimary" asp-for="SingleEventManagement.AddtionalAlternatePocPhonePrimary" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                            <input id="AddtionalAlternatePocPhoneSecondary" asp-for="SingleEventManagement.AddtionalAlternatePocPhoneSecondary" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocEmailPrimary" class="form-label">Email (Primary)</label>
+                            <input id="AddtionalAlternatePocEmailPrimary" asp-for="SingleEventManagement.AddtionalAlternatePocEmailPrimary" class="form-control" maxLength="50" placeholder="Enter Primary Email" type="email" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocEmailSecondary" class="form-label">Email (Secondary)</label>
+                            <input id="AddtionalAlternatePocEmailSecondary" asp-for="SingleEventManagement.AddtionalAlternatePocEmailSecondary" class="form-control" maxLength="50" placeholder="Enter Secondary Email" type="email" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="AddtionalAlternatePocRole" class="form-label">Role</label>
+                            <input id="AddtionalAlternatePocRole" asp-for="SingleEventManagement.AddtionalAlternatePocRole" class="form-control" maxLength="50" placeholder="Enter Role" />
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-secondary back" data-section="2">Back</button>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-primary next" data-section="2">Next</button>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div id="section3" class="form-section" style="display: none;">
+                <h3 class="mt-5 mb-3">Shipping Address</h3>
+                <div class="row mb-3">
+                    <!-- Shipping AddressLine1 -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingAddressLine1" class="form-label">Shipping Address Line 1</label>
+                        <input asp-for="SingleEventManagement.ShippingAddressLine1" id="ShippingAddressLine1" class="form-control" maxLength="200" placeholder="Enter Shipping Address Line 1" required />
+                    </div>
+
+                    <!-- Shipping AddressLine2 -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingAddressLine2" class="form-label">Shipping Address Line 2</label>
+                        <input asp-for="SingleEventManagement.ShippingAddressLine2" id="ShippingAddressLine2" class="form-control" maxLength="200" placeholder="Enter Shipping Address Line 2" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Shipping State -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingAddressState" class="form-label">Shipping State</label>
+                        <select asp-for="SingleEventManagement.ShippingAddressState" id="ShippingState" class="form-control" required>
+                            <option value="">Select State</option>
+                            <!-- Add state options here -->
+                        </select>
+                    </div>
+
+                    <!-- Shipping City -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingAddressCity" class="form-label">Shipping City</label>
+                        <select asp-for="SingleEventManagement.ShippingAddressCity" id="ShippingCity" class="form-control city-dropdown" required>
+                            <option value="">Select City</option>
+                            <!-- Add city options here -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Shipping ZipCode -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingAddressZipCode" class="form-label">Shipping Zip Code</label>
+                        <select asp-for="SingleEventManagement.ShippingAddressZipCode" id="ShippingZipCode" class="form-control" required>
+                            <option value="">Select Zip Code</option>
+                            <!-- Add zip code options here -->
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">Shipping POC</h3>
+                <div class="row mb-3">
+                    <!-- Last Name -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocLastName" class="form-label">Last Name</label>
+                        <input asp-for="SingleEventManagement.ShippingPocLastName" id="ShippingPocLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" required />
+                    </div>
+
+                    <!-- Rank -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocRank" class="form-label">Rank</label>
+                        <input asp-for="SingleEventManagement.ShippingPocRank" id="ShippingPocRank" class="form-control" maxLength="50" placeholder="Enter Rank" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- First Name -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocFirstName" class="form-label">First Name</label>
+                        <input asp-for="SingleEventManagement.ShippingPocFirstName" id="ShippingPocFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" required />
+                    </div>
+
+                    <!-- Phone Number (Primary) -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocPrimaryPhone" class="form-label">Phone Number (Primary)</label>
+                        <input asp-for="SingleEventManagement.ShippingPocPrimaryPhone" id="ShippingPocPrimaryPhone" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Phone Number (Secondary) -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocSecondaryPhone" class="form-label">Phone Number (Secondary)</label>
+                        <input asp-for="SingleEventManagement.ShippingPocSecondaryPhone" id="ShippingPocSecondaryPhone" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                    </div>
+
+                    <!-- Email (Primary) -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocPrimaryEmail" class="form-label">Email (Primary)</label>
+                        <input asp-for="SingleEventManagement.ShippingPocPrimaryEmail" id="ShippingPocPrimaryEmail" class="form-control" maxLength="50" type="email" placeholder="Enter Primary Email" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Email (Secondary) -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocSecondaryEmail" class="form-label">Email (Secondary)</label>
+                        <input asp-for="SingleEventManagement.ShippingPocSecondaryEmail" id="ShippingPocSecondaryEmail" class="form-control" maxLength="50" type="email" placeholder="Enter Secondary Email" />
+                    </div>
+
+                    <!-- Open At -->
+
+                </div>
+
+                <div class="row mb-3">
+                    <label class="form-label">Hours the building is open prior to Event (for shipping)</label>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocOpenAt" class="form-label">Open At</label>
+                        <input asp-for="SingleEventManagement.ShippingPocOpenAt" id="OpenAt" class="form-control" type="time" />
+                    </div>
+                    <!-- Close At -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocCloseAt" class="form-label">Close At</label>
+                        <input asp-for="SingleEventManagement.ShippingPocCloseAt" id="CloseAt" class="form-control" type="time" />
+                    </div>
+
+                    <!-- Shipping Instruction -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocInstruction" class="form-label">Shipping Instruction</label>
+                        <textarea asp-for="SingleEventManagement.ShippingPocInstruction" id="ShippingInstruction" class="form-control" maxLength="300" placeholder="Enter Shipping Instructions" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Date Equipment Can Be Picked -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocPickupDate" class="form-label">Date Equipment Can Be Picked</label>
+                        <input asp-for="SingleEventManagement.ShippingPocPickupDate" id="PickupDate" class="form-control" type="date" />
+                    </div>
+
+                    <!-- Time Equipment Can Be Picked -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocPickupTime" class="form-label">Time Equipment Can Be Picked</label>
+                        <input asp-for="SingleEventManagement.ShippingPocPickupTime" id="PickupTime" class="form-control" type="time" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Delivery From -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" class="form-label">Delivery From</label>
+                        <input asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" id="DeliveryFromDate" class="form-control" type="date" />
+                    </div>
+
+                    <!-- Delivery To -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocDeliveryToDate" class="form-label">Delivery To</label>
+                        <input asp-for="SingleEventManagement.ShippingPocDeliveryToDate" id="DeliveryToDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary back" data-section="3">Back</button>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-primary next" data-section="3">Next</button>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div id="section4" class="form-section" style="display: none;">
+                
+
+                <div class="row mb-3">
+                    <!-- Suggested Hourly Flow -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocSuggestedHourlyFlow" class="form-label">Suggested Hourly Flow</label>
+                        <input asp-for="SingleEventManagement.ShippingPocSuggestedHourlyFlow" id="SuggestedHourlyFlow" class="form-control" maxLength="50" placeholder="Enter Suggested Hourly Flow" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Special Gate Instructions -->
+                    <div class="col-md-12">
+                        <label asp-for="SingleEventManagement.ShippingPocSpecialGateInstructions" class="form-label">Special Gate Instructions</label>
+                        <textarea asp-for="SingleEventManagement.ShippingPocSpecialGateInstructions" id="ShippingPocSpecialGateInstructions" class="form-control" maxLength="300" placeholder="Enter Special Gate Instructions" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Parking Instructions for Day of Event -->
+                    <div class="col-md-12">
+                        <label asp-for="SingleEventManagement.ShippingPocParkingInstructions" class="form-label">Parking Instructions for Day of Event</label>
+                        <textarea asp-for="SingleEventManagement.ShippingPocParkingInstructions" id="ShippingPocParkingInstructions" class="form-control" maxLength="300" placeholder="Enter Parking Instructions" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Tables and Chairs Available -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tables and Chairs Available at Event Location</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocTablesAndChairsAvailable" class="form-check-input" type="radio" id="ShippingPocTablesAndChairsAvailableYes" value="Yes" required />
+                            <label class="form-check-label" for="ShippingPocTablesAndChairsAvailableYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocTablesAndChairsAvailable" class="form-check-input" type="radio" id="ShippingPocTablesAndChairsAvailableNo" value="No" required />
+                            <label class="form-check-label" for="ShippingPocTablesAndChairsAvailableNo">No</label>
+                        </div>
+                    </div>
+
+                    <!-- Location Secured -->
+                    <div class="col-md-6">
+                        <label class="form-label">Can Location Be Secured to Protect Supplies/Equipment?</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocLocationSecured" class="form-check-input" type="radio" id="ShippingPocLocationSecuredYes" value="Yes" required />
+                            <label class="form-check-label" for="ShippingPocLocationSecuredYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocLocationSecured" class="form-check-input" type="radio" id="ShippingPocLocationSecuredNo" value="No" required />
+                            <label class="form-check-label" for="ShippingPocLocationSecuredNo">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Refrigerator Available -->
+                    <div class="col-md-6">
+                        <label class="form-label">Refrigerator Available for Vaccine or Labs?</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocRefrigeratorAvailable" class="form-check-input" type="radio" id="ShippingPocRefrigeratorAvailableYes" value="Yes" required />
+                            <label class="form-check-label" for="ShippingPocRefrigeratorAvailableYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocRefrigeratorAvailable" class="form-check-input" type="radio" id="ShippingPocRefrigeratorAvailableNo" value="No" required />
+                            <label class="form-check-label" for="ShippingPocRefrigeratorAvailableNo">No</label>
+                        </div>
+                    </div>
+
+                    <!-- Lockable Refrigerator -->
+                    <div class="col-md-6">
+                        <label class="form-label">Refrigerator Available for Vaccine or Labs, Is/Are Lockable?</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocLockableRefrigerator" class="form-check-input" type="radio" id="ShippingPocLockableRefrigeratorYes" value="Yes" required />
+                            <label class="form-check-label" for="ShippingPocLockableRefrigeratorYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ShippingPocLockableRefrigerator" class="form-check-input" type="radio" id="ShippingPocLockableRefrigeratorNo" value="No" required />
+                            <label class="form-check-label" for="ShippingPocLockableRefrigeratorNo">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <!-- Event Setup Requirements - Date -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocEventSetupDate" class="form-label">Event Setup Date</label>
+                        <input asp-for="SingleEventManagement.ShippingPocEventSetupDate" id="ShippingPocEventSetupDate" type="date" class="form-control" required />
+                    </div>
+
+                    <!-- Event Setup Requirements - Time -->
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ShippingPocEventSetupTime" class="form-label">Event Setup Time</label>
+                        <input asp-for="SingleEventManagement.ShippingPocEventSetupTime" id="ShippingPocEventSetupTime" type="time" class="form-control" required />
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">Prefered Pharmacy if Sm needs prescription</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyName" class="form-label">Pharmacy Name</label>
+                        <input asp-for="SingleEventManagement.PharmacyName" id="PharmacyName" class="form-control" maxLength="50" placeholder="Enter Pharmacy Name" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyAddressLine1" class="form-label">Pharmacy Address Line 1</label>
+                        <input asp-for="SingleEventManagement.PharmacyAddressLine1" id="PharmacyAddressLine1" class="form-control" maxLength="200" placeholder="Enter Pharmacy Address Line 1" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyAddressLine2" class="form-label">Pharmacy Address Line 2</label>
+                        <input asp-for="SingleEventManagement.PharmacyAddressLine2" id="PharmacyAddressLine2" class="form-control" maxLength="200" placeholder="Enter Pharmacy Address Line 2" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyState" class="form-label">State</label>
+                        <select asp-for="SingleEventManagement.PharmacyState" id="PharmacyState" class="form-select" required>
+                            <option value="" disabled selected>Select Pharmacy State</option>
+                            <!-- Add options dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyCity" class="form-label">City</label>
+                        <select asp-for="SingleEventManagement.PharmacyCity" id="PharmacyCity" class="form-select city-dropdown" required>
+                            <option value="" disabled selected>Select Pharmacy City</option>
+                            <!-- Add options dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyZipCode" class="form-label">Zip Code</label>
+                        <select asp-for="SingleEventManagement.PharmacyZipCode" id="PharmacyZipCode" class="form-select" required>
+                            <option value="" disabled selected>Select Pharmacy Zip Code</option>
+                            <!-- Add options dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.PharmacyPhoneNumber" class="form-label">Pharmacy Phone Number</label>
+                        <input asp-for="SingleEventManagement.PharmacyPhoneNumber" id="PharmacyPhoneNumber" class="form-control" maxLength="12" placeholder="Enter Pharmacy Phone Number" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Military arrangement to pick up prescriptions</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.PharmacyMilitaryArrangement" class="form-check-input" type="radio" id="MilitaryArrangementYes" value="Yes" required />
+                            <label class="form-check-label" for="MilitaryArrangementYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.PharmacyMilitaryArrangement" class="form-check-input" type="radio" id="MilitaryArrangementNo" value="No" required />
+                            <label class="form-check-label" for="MilitaryArrangementNo">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary back" data-section="4">Back</button>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-primary next" data-section="4">Next</button>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div id="section5" class="form-section" style="display: none;">
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">HIV supplies needed</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.HIVSuppliesNeeded" class="form-check-input" type="radio" id="HIVSuppliesNeededYes" value="Yes" required />
+                            <label class="form-check-label" for="MilitaryArrangementYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.HIVSuppliesNeeded" class="form-check-input" type="radio" id="HIVSuppliesNeededNo" value="No" required />
+                            <label class="form-check-label" for="MilitaryArrangementNo">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">POC for military contact (HIV Supply)</h3>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCLastName" class="form-label">Last Name</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCLastName" id="HIVSupplyMilitaryContactPOCLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCRank" class="form-label">Rank</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCRank" id="HIVSupplyMilitaryContactPOCRank" class="form-control" maxLength="50" placeholder="Enter Rank" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCFirstName" class="form-label">First Name</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCFirstName" id="HIVSupplyMilitaryContactPOCFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCPhonePrimary" id="HIVSupplyMilitaryContactPOCPhonePrimary" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCPhoneSecondary" id="HIVSupplyMilitaryContactPOCPhoneSecondary" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCEmailPrimary" class="form-label">Email (Primary)</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCEmailPrimary" id="HIVSupplyMilitaryContactPOCEmailPrimary" class="form-control" maxLength="50" placeholder="Enter Primary Email" required />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCEmailSecondary" class="form-label">Email (Secondary)</label>
+                        <input asp-for="SingleEventManagement.HIVSupplyMilitaryContactPOCEmailSecondary" id="HIVSupplyMilitaryContactPOCEmailSecondary" class="form-control" maxLength="50" placeholder="Enter Secondary Email" />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Immunization vaccine  needed</label>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ImmunizationVaccineNeeded" class="form-check-input" type="radio" id="ImmunizationVaccineNeededYes" value="Yes" required />
+                            <label class="form-check-label" for="MilitaryArrangementYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="SingleEventManagement.ImmunizationVaccineNeeded" class="form-check-input" type="radio" id="ImmunizationVaccineNeededNo" value="No" required />
+                            <label class="form-check-label" for="MilitaryArrangementNo">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">POC for military contact (HIV Supply)</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCLastName" class="form-label">Last Name</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCLastName" id="ImmVaccineSupplyMilitaryContactPOCLastName" class="form-control" maxLength="50" placeholder="Enter Last Name" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCRank" class="form-label">Rank</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCRank" id="ImmVaccineSupplyMilitaryContactPOCRank" class="form-control" maxLength="50" placeholder="Enter Rank" required />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCFirstName" class="form-label">First Name</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCFirstName" id="ImmVaccineSupplyMilitaryContactPOCFirstName" class="form-control" maxLength="50" placeholder="Enter First Name" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCPhonePrimary" class="form-label">Phone Number (Primary)</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCPhonePrimary" id="ImmVaccineSupplyMilitaryContactPOCPhonePrimary" class="form-control" maxLength="12" placeholder="Enter Primary Phone Number" required />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCPhoneSecondary" class="form-label">Phone Number (Secondary)</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCPhoneSecondary" id="ImmVaccineSupplyMilitaryContactPOCPhoneSecondary" class="form-control" maxLength="12" placeholder="Enter Secondary Phone Number" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCEmailPrimary" class="form-label">Email (Primary)</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCEmailPrimary" id="ImmVaccineSupplyMilitaryContactPOCEmailPrimary" class="form-control" maxLength="50" placeholder="Enter Primary Email" required />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCEmailSecondary" class="form-label">Email (Secondary)</label>
+                        <input asp-for="SingleEventManagement.ImmVaccineSupplyMilitaryContactPOCEmailSecondary" id="ImmVaccineSupplyMilitaryContactPOCEmailSecondary" class="form-control" maxLength="50" placeholder="Enter Secondary Email" />
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">Quest pick up arrangement or drop off address</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.QuestPickupAddressLine1" class="form-label">Address Line 1</label>
+                        <input asp-for="SingleEventManagement.QuestPickupAddressLine1" id="QuestPickupAddressLine1" class="form-control" maxLength="200" placeholder="Enter Address Line 1" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.QuestPickupAddressLine2" class="form-label">Address Line 2</label>
+                        <input asp-for="SingleEventManagement.QuestPickupAddressLine2" id="QuestPickupAddressLine2" class="form-control" maxLength="200" placeholder="Enter Address Line 2" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.QuestPickupState" class="form-label">State</label>
+                        <select asp-for="SingleEventManagement.QuestPickupState" id="QuestPickupState" class="form-select" required>
+                            <option value="">Select State</option>
+                            <!-- Add state options here -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.QuestPickupCity" class="form-label">City</label>
+                        <select asp-for="SingleEventManagement.QuestPickupCity" id="QuestPickupCity" class="form-select city-dropdown" required>
+                            <option value="">Select City</option>
+                            <!-- Add city options here -->
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.QuestPickupZipCode" class="form-label">Zip Code</label>
+                        <select asp-for="SingleEventManagement.QuestPickupZipCode" id="QuestPickupZipCode" class="form-select" required>
+                            <option value="">Select Zip Code</option>
+                            <!-- Add zip code options here -->
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-3">HIV Drop off address with who will drop off</h3>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVDropOffStaffId" class="form-label">Staff ID</label>
+                        <input asp-for="SingleEventManagement.HIVDropOffStaffId" id="HIVDropOffStaffId" class="form-control" maxLength="50" placeholder="Enter Staff ID" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVDropOffStaffLastName" class="form-label">Staff Last Name</label>
+                        <input asp-for="SingleEventManagement.HIVDropOffStaffLastName" id="HIVDropOffStaffLastName" class="form-control" maxLength="50" placeholder="Enter Staff Last Name" readonly required />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.HIVDropOffStaffFirstName" class="form-label">Staff First Name</label>
+                        <input asp-for="SingleEventManagement.HIVDropOffStaffFirstName" id="HIVDropOffStaffFirstName" class="form-control" maxLength="50" placeholder="Enter Staff First Name" readonly required />
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary back" data-section="5">Back</button>
+            </div>
+
+            <!-- Save Button -->
+            <input type="hidden" id="filledSections" name="filledSections" />
+
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add" data-section="1">
+                    <i class="bi bi-check-circle"></i> Submit
+                </button>
+            </div>
 </form>
     </div>
 
@@ -475,16 +1036,23 @@
 <script>
 $(document).ready(function () {
     let currentSection = 1;
+        $("#EventID").text('');
 
         $(".next").click(function () {
             const section = $(this).data("section");
             $("#submitBtn").data("section", section + 1);
 
-            const isValid = validateSectionFields(section);
-
-            if (!isValid) {
+            debugger;
+            if (section == 1 && !validateServiceMemberPercentages())
+            {
                 return;
             }
+
+            // const isValid = validateSectionFields(section);
+
+            // if (!isValid) {
+            //     return;
+            // }
 
             $(`#section${section}`).hide();
             $(`#section${section + 1}`).show();
@@ -512,6 +1080,11 @@ $(document).ready(function () {
             debugger;
 
             e.preventDefault();
+
+            if (!validateServiceMemberPercentages()) 
+            {
+                return;
+            }
 
             const section = $(this).data("section");
 
@@ -711,7 +1284,7 @@ $(document).ready(function () {
 
         $.getJSON('/data/statesAndCities.json', function (data) {
             const stateCityMap = {};
-            const stateDropdowns = $('#EventState');
+            const stateDropdowns = $('#EventState, #ShippingState, #PharmacyState, #QuestPickupState');
 
             stateDropdowns.empty().append('<option value="">Select State</option>');
             data.states.forEach(state => {
@@ -722,7 +1295,11 @@ $(document).ready(function () {
             stateDropdowns.on('change', function () {
                 const stateName = $(this).val();
 
-                const cityDropdownId = $(this).attr('id') === 'EventState' ? '#EventCity' : '#secondaryCity';
+                const cityDropdownId =
+                    $(this).attr('id') === 'EventState' ? '#EventCity' :
+                        $(this).attr('id') === 'ShippingState' ? '#ShippingCity' :
+                            $(this).attr('id') === 'PharmacyState' ? '#PharmacyCity' :
+                                $(this).attr('id') === 'QuestPickupState' ? '#QuestPickupCity' : null;
                 const cityDropdown = $(cityDropdownId);
 
                 cityDropdown.empty().append('<option value="">Select City</option>');
@@ -739,8 +1316,18 @@ $(document).ready(function () {
 
                 debugger;
                 const cityDropdownId = $(this).attr('id');
-                const stateDropdownId = cityDropdownId === 'EventCity' ? '#EventState' : '#secondaryState';
-                const zipCodeDropdownId = cityDropdownId === 'EventCity' ? '#EventZipCode' : '#secondaryZipCode';
+                const stateDropdownId =
+                    cityDropdownId === 'EventCity' ? '#EventState' :
+                        cityDropdownId === 'ShippingCity' ? '#ShippingState' :
+                            cityDropdownId === 'PharmacyCity' ? '#PharmacyState' :
+                                cityDropdownId === 'QuestPickupCity' ? '#QuestPickupState' : null;
+
+                const zipCodeDropdownId =
+                    cityDropdownId === 'EventCity' ? '#EventZipCode' :
+                        cityDropdownId === 'ShippingCity' ? '#ShippingZipCode' :
+                            cityDropdownId === 'PharmacyCity' ? '#PharmacyZipCode' :
+                                cityDropdownId === 'QuestPickupCity' ? '#QuestPickupZipCode' : null;
+
 
                 const stateName = $(stateDropdownId).val();
                 const cityName = $(this).val();
@@ -759,6 +1346,294 @@ $(document).ready(function () {
                 }
             });
         });
+
+
+        function generateEventID() {
+            const eventCity = $("#EventCity").val();
+            const eventState = $("#EventState").val();
+            // const eventState = $("#EventState option:selected").data("state");
+            debugger;
+            if (eventCity && eventState) {
+                const part1 = eventState.toUpperCase().substring(0, 2);
+                const part2 = eventCity.toUpperCase().substring(0, 3);
+
+                $.ajax({
+                    url: '/EventManagement/GetNextEventManagementId',
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.success) {
+                            const part3 = response.data.eventManagementId.toString().padStart(4, '0'); // Ensure 4 digits
+                            const finalEventManagementId = part1 + part2 + part3;
+                            $("#EventID").text(finalEventManagementId);
+                        } else {
+                            console.error("Error fetching Event Management ID sequence.");
+                        }
+                    },
+                    error: function () {
+                        console.error("An error occurred while making the AJAX call.");
+                    }
+                });
+            } else {
+                $("#EventID").val("");
+            }
+        }
+
+        $("#EventCity").change(function () {
+            generateEventID();
+        });
+
+        $("#EventState").on("change", function () {
+            generateEventID();
+        });
+
+
+        function toggleMobDate() {
+            const isDeployingSelected = $("#Deploying").is(":checked");
+            const mobDateContainer = $("#MOBDateContainer");
+            const mobDateInput = $("#EventMobDate");
+
+            if (isDeployingSelected) {
+                mobDateContainer.show();
+                mobDateInput.prop("required", true);
+            } else {
+                mobDateContainer.hide();
+                mobDateInput.prop("required", false);
+                mobDateInput.val("");
+            }
+        }
+
+        $("#Deploying, #NonDeploying").change(function () {
+            toggleMobDate();
+        });
+
+        toggleMobDate();
+
+
+
+        function generateControlsForDateRange(startDate, endDate) {
+            var date1 = new Date(startDate);
+            var date2 = new Date(endDate);
+            var dayCount = Math.floor((date2 - date1) / (1000 * 3600 * 24)) + 1;
+
+            if (dayCount > 14) {
+                alert("Maximum 14 days are allowed");
+                $('#EventStartDate').val('');
+                $('#EventEndDate').val('');
+                $('#dynamicControlsContainer').empty();
+                return;
+            }
+
+            $('#dynamicControlsContainer').empty();
+            for (var i = 0; i < dayCount; i++) {
+                var currentDate = new Date(date1);
+                currentDate.setDate(currentDate.getDate() + i);
+
+                var dayLabel = "Day " + (i + 1);
+                var startTimeId = "EventStartTimeDay" + (i + 1);
+                var endTimeId = "EventEndTimeDay" + (i + 1);
+                var percentId = "ServiceMemberPercentPerDay" + (i + 1);
+
+                var controlHtml = `
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
+                            <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartTimeDay${i + 1}" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
+                            <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventEndTimeDay${i + 1}" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
+                                <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.ServiceMemberPercentPerDay" placeholder="Enter % per day" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" />
+                        </div>
+                    </div>
+                `;
+
+                $('#dynamicControlsContainer').append(controlHtml);
+
+                flatpickr(`#${startTimeId}`, {
+                    enableTime: true,
+                    noCalendar: true,
+                    time_24hr: true,  
+                    dateFormat: "H:i",
+                });
+
+                flatpickr(`#${endTimeId}`, {
+                    enableTime: true,
+                    noCalendar: true,
+                    time_24hr: true, 
+                    dateFormat: "H:i",
+                });
+            }
+        }
+
+
+        $('#EventStartDate, #EventEndDate').change(function () {
+            var startDate = $('#EventStartDate').val();
+            var endDate = $('#EventEndDate').val();
+
+            if (startDate && endDate) {
+                generateControlsForDateRange(startDate, endDate);
+            }
+        });
+
+        var startDate = $('#EventStartDate').val();
+        var endDate = $('#EventEndDate').val();
+        if (startDate && endDate) {
+            generateControlsForDateRange(startDate, endDate);
+        }
+
+
+        function validateServiceMemberPercentages() {
+            let isValid = true;
+            let totalSum = 0;
+
+            // Select all inputs that match the name pattern
+            const percentInputs = $('[name^="SingleEventManagement.ServiceMemberPercentPerDay"]');
+
+            // Check if there are any percentage controls
+            if (percentInputs.length === 0) {
+                // Skip validation if no controls are found
+                return true;
+            }
+
+            // Iterate over the inputs to validate their values
+            percentInputs.each(function () {
+                const value = parseFloat($(this).val());
+                if (isNaN(value) || value <= 0) {
+                    isValid = false;
+                } else {
+                    totalSum += value;
+                }
+            });
+
+            if (!isValid) {
+                alert("Please provide correct value of Service member day wise");
+                return false;
+            }
+
+            if (totalSum !== 100) {
+                alert("Invalid breakdown of Service member day wise");
+                return false;
+            }
+
+            return true;
+        }
+
+        document.getElementById("toggleAdditionalPOC").addEventListener("change", function () {
+            toggleRequiredFields();
+        });
+
+        function toggleRequiredFields() {
+            const checkbox = document.getElementById("toggleAdditionalPOC");
+            const controlsDiv = document.getElementById("additionalPocControls");
+            const isChecked = checkbox.checked;
+
+            // Toggle visibility of additional POC controls
+            controlsDiv.style.display = isChecked ? "block" : "none";
+
+            // Define required controls
+            const requiredFields = [
+                "AddtionalAlternatePocLastName",
+                "AddtionalAlternatePocFirstName",
+                "AddtionalAlternatePocRank",
+                "AddtionalAlternatePocPhonePrimary",
+                "AddtionalAlternatePocEmailPrimary"
+            ];
+
+            // Add or remove 'required' attribute based on checkbox state
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (isChecked) {
+                    field.setAttribute("required", "required");
+                } else {
+                    field.removeAttribute("required");
+                }
+            });
+        }
+
+        document.getElementById("EventStatus").addEventListener("change", function () {
+            updateFieldRequirements();
+        });
+
+        function updateFieldRequirements() {
+            alert('dsada')
+            const eventStatus = document.getElementById("EventStatus").value;
+
+            const requirements = {
+                "Initial Pre-event": {
+                    PickupDate: true,
+                    PickupTime: false,
+                    DeliveryFromDate: false,
+                    DeliveryToDate: false,
+                    SuggestedHourlyFlow: false,
+                    TaskForce: false,
+                },
+                "Pre-Event Confirmed": {
+                    PickupDate: true,
+                    PickupTime: false,
+                    DeliveryFromDate: false,
+                    DeliveryToDate: false,
+                    SuggestedHourlyFlow: false,
+                    TaskForce: true,
+                },
+                "Pre- Event Complete": {
+                    PickupDate: true,
+                    PickupTime: true,
+                    DeliveryFromDate: true,
+                    DeliveryToDate: true,
+                    SuggestedHourlyFlow: true,
+                    TaskForce: true,
+                },
+                "In Progress": {
+                    PickupDate: true,
+                    PickupTime: true,
+                    DeliveryFromDate: true,
+                    DeliveryToDate: true,
+                    SuggestedHourlyFlow: true,
+                    TaskForce: true,
+                },
+                "Post event Incomplete": {
+                    PickupDate: true,
+                    PickupTime: true,
+                    DeliveryFromDate: true,
+                    DeliveryToDate: true,
+                    SuggestedHourlyFlow: true,
+                    TaskForce: true,
+                },
+                "Complete": {
+                    PickupDate: true,
+                    PickupTime: true,
+                    DeliveryFromDate: true,
+                    DeliveryToDate: true,
+                    SuggestedHourlyFlow: true,
+                    TaskForce: true,
+                },
+                "Canceled": {
+                    PickupDate: true,
+                    PickupTime: true,
+                    DeliveryFromDate: true,
+                    DeliveryToDate: true,
+                    SuggestedHourlyFlow: true,
+                    TaskForce: true,
+                },
+            };
+
+            const currentSettings = requirements[eventStatus] || {};
+
+            for (const [field, isRequired] of Object.entries(currentSettings)) {
+                const fieldElement = document.getElementById(field);
+                if (fieldElement) {
+                    if (isRequired) {
+                        fieldElement.setAttribute("required", "required");
+                    } else {
+                        fieldElement.removeAttribute("required");
+                    }
+                }
+            }
+        }
+
 });
 
 

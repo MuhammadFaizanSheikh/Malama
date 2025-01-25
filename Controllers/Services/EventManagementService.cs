@@ -69,8 +69,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
+        public async Task<string> GetNextEventManagementId()
+        {
+            try
+            {
+                var allEventManagement = await _unitOfWork.EventManagement.GetAllAsync();
 
+                if (allEventManagement == null || !allEventManagement.Any())
+                {
+                    return "0001"; 
+                }
 
+                var lastEventManagement = allEventManagement
+                    .OrderByDescending(c => c.Id)
+                    .FirstOrDefault();
+
+                var eventManagementId = lastEventManagement.EventID;
+                var numericPart = int.Parse(eventManagementId.Substring(3));
+
+                numericPart++;
+
+                return numericPart.ToString("D4");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching the next Event Management Id.", ex);
+            }
+        }
 
         //public async Task<ResponseDto> GetContractById(long id, string companyName, bool checkIfContractAlreadyExist)
         //{
