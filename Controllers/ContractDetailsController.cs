@@ -123,13 +123,10 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(new { success = false, message = result.Message });
                 }
 
-                // Assuming ResponseDto includes a Data property to hold contract details
                 return Json(new { success = true, contractDetails = result.Data });
             }
             catch (Exception ex)
             {
-                // Log the exception here if needed, e.g., using a logging framework
-                // _logger.LogError(ex, "Error in GetContractById");
 
                 return Json(new
                 {

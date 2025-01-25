@@ -27,6 +27,10 @@
         [Required]
         [MaxLength(50)]
         public string EventStatus { get; set; }
+
+        [Required]
+        public long ContractId { get; set; }
+
         [Required]
         [MaxLength(200)]
         public string EventAddress1 { get; set; }
@@ -296,14 +300,6 @@
 
         //HIV Drop off address with who will drop off
 
-
-        [MaxLength(50)]
-        public string? HIVDropOffStaffId { get; set; }
-
-        [MaxLength(50)]
-        public string? HIVDropOffStaffLastName { get; set; }
-
-        [MaxLength(50)]
-        public string? HIVDropOffStaffFirstName { get; set; }
+        public long? HIVDropOffStaffId { get; set; }
     }
 }

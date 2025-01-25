@@ -6,6 +6,8 @@
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/jquery.validate.unobtrusive.min.js"></script>
@@ -16,6 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- DataTables CSS for Bootstrap 5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
@@ -134,7 +137,48 @@
                     color: white;
                 }
 
+        .select2 {
+            width: 100%;
+            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+            /*
+        /* Focused state */
+            .select2:focus {
+                border-color: #0056b3;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
 
+        /* Dropdown arrow customization */
+
+
+        /* Adjust the dropdown width */
+        .select2 {
+            width: 100% !important; /* Ensures full-width dropdown */
+        }
+
+            /* Hover state for options */
+            .select2 option:hover {
+                background-color: #e6f7ff;
+            }
+
+            /* Focus state for options */
+            .select2 option:focus {
+                background-color: #cce5ff;
+            }
+
+            /* Disabled state */
+            .select2 option:disabled {
+                color: #aaa;
+                background-color: #f5f5f5;
+            }
+
+        */
 
 
     </style>
@@ -282,7 +326,23 @@
 
                 </div>
 
+                <div id="contractDetails" style="display: none;">
+                    <p><strong>Contract Id:</strong> <span id="contractIdLabel"></span></p>
+                    <p><strong>Contract Agency:</strong> <span id="contractAgencyLabel"></span></p>
+                    <p><strong>Dawson Service Branch:</strong> <span id="contractServiceBranchLabel"></span></p>
+                    <p><strong>Contract Component:</strong> <span id="contractComponentLabel"></span></p>
+                    <p><strong>Contract Type:</strong> <span id="contractTypeLabel"></span></p>
+                    <p><strong>Contract Start:</strong> <span id="contractStartDateLabel"></span></p>
+                    <p><strong>Contract End:</strong> <span id="contractEndDateLabel"></span></p>
+                    <p><strong>Dawson Project Manager:</strong> <span id="dawsonProjectManagerLabel"></span></p>
+                </div>
+
                 <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.ContractId" class="form-label">Contract Name</label>
+                        <select id="ContractId" class="form-select select2" asp-for="SingleEventManagement.ContractId" required>
+                        </select>
+                    </div>
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
                         <select asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control" required>
@@ -295,44 +355,40 @@
                             <option value="Canceled">Canceled</option>
                         </select>
                     </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
-                        <input asp-for="SingleEventManagement.EventAddress1" id="EventAddress1" class="form-control" maxLength="200" placeholder="Enter Address Line 1" required />
-                    </div>
-
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.EventAddress1" class="form-label">Event Address 1</label>
+                        <input asp-for="SingleEventManagement.EventAddress1" id="EventAddress1" class="form-control" maxLength="200" placeholder="Enter Address Line 1" required />
+                    </div>
+                    <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventAddress2" class="form-label">Event Address 2</label>
                         <input asp-for="SingleEventManagement.EventAddress2" id="EventAddress2" class="form-control" maxLength="200" placeholder="Enter Address Line 2" />
                     </div>
+                </div>
+
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventState" class="form-label">Event State</label>
                         <select asp-for="SingleEventManagement.EventState" id="EventState" class="form-select" required>
                         </select>
                     </div>
-
-                </div>
-
-                <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventCity" class="form-label">Event City</label>
                         <select asp-for="SingleEventManagement.EventCity" id="EventCity" class="form-select city-dropdown" required>
                             <option value="">Select City</option>
                         </select>
                     </div>
+                </div>
+
+                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventZipCode" class="form-label">Event Zip Code</label>
                         <select asp-for="SingleEventManagement.EventZipCode" id="EventZipCode" class="form-select" required>
                             <option value="">Select Zip Code</option>
                         </select>
                     </div>
-
-                </div>
-
-                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.TotalRequestedServiceMembers" class="form-label">Total Requested Service Members</label>
                         <input asp-for="SingleEventManagement.TotalRequestedServiceMembers" id="TotalRequestedServiceMembers" class="form-control" maxLength="4" placeholder="Enter Total Requested Service Members" required />
@@ -1002,17 +1058,18 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.HIVDropOffStaffId" class="form-label">Staff ID</label>
-                        <input asp-for="SingleEventManagement.HIVDropOffStaffId" id="HIVDropOffStaffId" class="form-control" maxLength="50" placeholder="Enter Staff ID" required />
+                        <select id="HIVDropOffStaffId" class="form-select select2" asp-for="SingleEventManagement.HIVDropOffStaffId" required>
+                        </select>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.HIVDropOffStaffLastName" class="form-label">Staff Last Name</label>
-                        <input asp-for="SingleEventManagement.HIVDropOffStaffLastName" id="HIVDropOffStaffLastName" class="form-control" maxLength="50" placeholder="Enter Staff Last Name" readonly required />
+                        <label class="form-label">Staff Last Name</label>
+                        <input id="HIVDropOffStaffLastName" class="form-control" placeholder="Staff Last Name" readonly required />
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.HIVDropOffStaffFirstName" class="form-label">Staff First Name</label>
-                        <input asp-for="SingleEventManagement.HIVDropOffStaffFirstName" id="HIVDropOffStaffFirstName" class="form-control" maxLength="50" placeholder="Enter Staff First Name" readonly required />
+                        <label class="form-label">Staff First Name</label>
+                        <input id="HIVDropOffStaffFirstName" class="form-control" placeholder="Staff First Name" readonly required />
                     </div>
                 </div>
 
@@ -1037,6 +1094,129 @@
 $(document).ready(function () {
     let currentSection = 1;
         $("#EventID").text('');
+
+        $('#HIVDropOffStaffId').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        $('#ContractId').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+
+        $('#HIVDropOffStaffId').select2({
+            ajax: {
+                url: '/EventStaff/GetEventStaffForSearching',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        staffId: params.term || ''
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function (staff) {
+                            return {
+                                id: staff.id,
+                                text: staff.text
+                            };
+                        })
+                    };
+                },
+                cache: true
+            },
+            placeholder: 'Search for Event Staff...',
+            minimumInputLength: 1
+        });
+
+        $('#HIVDropOffStaffId').on('change', function (e) {
+            const selectedStaffId = $(this).val();  // Get selected staff ID
+
+            if (!selectedStaffId) {
+                return;  // If no staff ID is selected, return early
+            }
+
+            $.ajax({
+                url: '/EventStaff/GetEventStaffWithoutIncludeById',  // Your action URL
+                type: 'GET',
+                data: { id: selectedStaffId },  // Send selected staff ID
+                success: function (response) {
+                    if (response.success) {
+                        // Populate the fields with fetched staff data
+                        $('#HIVDropOffStaffLastName').val(response.eventStaff.staffLastName);
+                        $('#HIVDropOffStaffFirstName').val(response.eventStaff.staffFirstName);
+                    } else {
+                        alert(response.message);  // Show error message if staff not found
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching staff details.');
+                }
+            });
+        });
+
+        $('#ContractId').select2({
+            ajax: {
+                url: '/ContractDetails/GetContractsForSearching', // Your endpoint for fetching contracts
+                dataType: 'json',
+                delay: 250,  // Optional: delay to limit requests to avoid too many hits
+                data: function (params) {
+                    return {
+
+                        contractId: params.term || ''  // Send the search term to the server
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function (contract) {
+                            return {
+
+                                id: contract.id,     // Contract ID
+                                text: contract.text  // Displayed text (ContractID or other)
+                            };
+                        })
+                    };
+                },
+                cache: true // Optional: caches the response to improve performance
+            },
+            placeholder: 'Search for a contract...', // Placeholder text when nothing is selected
+            minimumInputLength: 1  // Set a minimum number of characters to start searching (e.g., 1)
+        });
+
+        $('#ContractId').on('select2:select', function (e) {
+            const selectedContractId = e.params.data.id;
+
+            alert(selectedContractId);
+            $.ajax({
+                url: '/ContractDetails/GetContractById',
+                type: 'GET',
+                data: { id: selectedContractId },
+                success: function (response) {
+                    if (response.success) {
+                        const contract = response.contractDetails;
+                        $('#contractIdLabel').text(contract.id);
+                        $('#contractAgencyLabel').text(contract.contractAgency);
+                        $('#contractServiceBranchLabel').text(contract.contractServiceBranch);
+                        $('#contractComponentLabel').text(contract.contractComponent);
+                        $('#contractTypeLabel').text(contract.contractType);
+                        $('#contractStartDateLabel').text(contract.contractStartDate);
+                        $('#contractEndDateLabel').text(contract.contractEndDate);
+                        $('#dawsonProjectManagerLabel').text(
+                            `${contract.dawsonProjectManagerFirstName} ${contract.dawsonProjectManagerLastName}`
+                        );
+
+                        $('#contractDetails').show();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract details.');
+                }
+            });
+        });
 
         $(".next").click(function () {
             const section = $(this).data("section");
@@ -1096,6 +1276,10 @@ $(document).ready(function () {
 
             if (!validateSection1()) {
                 alert("Please fill in all required fields of Event Specific Details!");
+                return;
+            }
+
+            if (!validateEventStatusDependantFields(requirements)) {
                 return;
             }
 
@@ -1553,73 +1737,73 @@ $(document).ready(function () {
             });
         }
 
+        // Centralized requirements object
+        const requirements = {
+            "Initial Pre-event": {
+                PickupDate: true,
+                PickupTime: false,
+                DeliveryFromDate: false,
+                DeliveryToDate: false,
+                SuggestedHourlyFlow: false,
+                TaskForce: false,
+            },
+            "Pre-Event Confirmed": {
+                PickupDate: true,
+                PickupTime: false,
+                DeliveryFromDate: false,
+                DeliveryToDate: false,
+                SuggestedHourlyFlow: false,
+                TaskForce: true,
+            },
+            "Pre- Event Complete": {
+                PickupDate: true,
+                PickupTime: true,
+                DeliveryFromDate: true,
+                DeliveryToDate: true,
+                SuggestedHourlyFlow: true,
+                TaskForce: true,
+            },
+            "In Progress": {
+                PickupDate: true,
+                PickupTime: true,
+                DeliveryFromDate: true,
+                DeliveryToDate: true,
+                SuggestedHourlyFlow: true,
+                TaskForce: true,
+            },
+            "Post event Incomplete": {
+                PickupDate: true,
+                PickupTime: true,
+                DeliveryFromDate: true,
+                DeliveryToDate: true,
+                SuggestedHourlyFlow: true,
+                TaskForce: true,
+            },
+            "Complete": {
+                PickupDate: true,
+                PickupTime: true,
+                DeliveryFromDate: true,
+                DeliveryToDate: true,
+                SuggestedHourlyFlow: true,
+                TaskForce: true,
+            },
+            "Canceled": {
+                PickupDate: true,
+                PickupTime: true,
+                DeliveryFromDate: true,
+                DeliveryToDate: true,
+                SuggestedHourlyFlow: true,
+                TaskForce: true,
+            },
+        };
+
         document.getElementById("EventStatus").addEventListener("change", function () {
-            updateFieldRequirements();
+            updateFieldRequirements(requirements);
         });
 
-        function updateFieldRequirements() {
-            alert('dsada')
+        // Update field requirements based on EventStatus
+        function updateFieldRequirements(requirements) {
             const eventStatus = document.getElementById("EventStatus").value;
-
-            const requirements = {
-                "Initial Pre-event": {
-                    PickupDate: true,
-                    PickupTime: false,
-                    DeliveryFromDate: false,
-                    DeliveryToDate: false,
-                    SuggestedHourlyFlow: false,
-                    TaskForce: false,
-                },
-                "Pre-Event Confirmed": {
-                    PickupDate: true,
-                    PickupTime: false,
-                    DeliveryFromDate: false,
-                    DeliveryToDate: false,
-                    SuggestedHourlyFlow: false,
-                    TaskForce: true,
-                },
-                "Pre- Event Complete": {
-                    PickupDate: true,
-                    PickupTime: true,
-                    DeliveryFromDate: true,
-                    DeliveryToDate: true,
-                    SuggestedHourlyFlow: true,
-                    TaskForce: true,
-                },
-                "In Progress": {
-                    PickupDate: true,
-                    PickupTime: true,
-                    DeliveryFromDate: true,
-                    DeliveryToDate: true,
-                    SuggestedHourlyFlow: true,
-                    TaskForce: true,
-                },
-                "Post event Incomplete": {
-                    PickupDate: true,
-                    PickupTime: true,
-                    DeliveryFromDate: true,
-                    DeliveryToDate: true,
-                    SuggestedHourlyFlow: true,
-                    TaskForce: true,
-                },
-                "Complete": {
-                    PickupDate: true,
-                    PickupTime: true,
-                    DeliveryFromDate: true,
-                    DeliveryToDate: true,
-                    SuggestedHourlyFlow: true,
-                    TaskForce: true,
-                },
-                "Canceled": {
-                    PickupDate: true,
-                    PickupTime: true,
-                    DeliveryFromDate: true,
-                    DeliveryToDate: true,
-                    SuggestedHourlyFlow: true,
-                    TaskForce: true,
-                },
-            };
-
             const currentSettings = requirements[eventStatus] || {};
 
             for (const [field, isRequired] of Object.entries(currentSettings)) {
@@ -1632,6 +1816,24 @@ $(document).ready(function () {
                     }
                 }
             }
+        }
+
+        // Validate fields on form submission
+        function validateEventStatusDependantFields(requirements) {
+            const eventStatus = document.getElementById("EventStatus").value;
+            const currentSettings = requirements[eventStatus] || {};
+            let isValid = true;
+
+            for (const [field, isRequired] of Object.entries(currentSettings)) {
+                const fieldElement = document.getElementById(field);
+                if (isRequired && fieldElement && !fieldElement.value.trim()) {
+                    alert(`${field} field is required when Event Status is ${eventStatus}`);
+                    isValid = false;
+                    break;
+                }
+            }
+
+            return isValid;
         }
 
 });

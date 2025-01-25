@@ -172,6 +172,28 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<EventStaff> GetEventStaffWithoutIncludeById(long id)
+        {
+            try
+            {
+                var eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
+
+                if (eventStaff != null)
+                {
+                    return eventStaff;
+                }
+                else
+                {
+                    throw new Exception($"EventStaff with ID {id} not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log and rethrow the exception with more context if needed
+                throw new Exception("An error occurred while retrieving the EventStaff.", ex);
+            }
+        }
+
 
 
         public async Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName)
@@ -265,21 +287,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("Error while fetching the next StaffID.", ex);
             }
         }
-        //public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(contractId))
-        //        {
-        //            return await repository.FindForSearchingAsync(c => true);
-        //        }
 
-        //        return await repository.FindForSearchingAsync(c => c.ContractID.Contains(contractId));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Error while fetching contract details.", ex);
-        //    }
-        //}
+        public async Task<IEnumerable<EventStaff>> GetEventStaffForSearchingByStaffId(string staffId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(staffId))
+                {
+                    return await _unitOfWork.EventStaff.FindForSearchingAsync(c => true);
+                }
+
+                return await _unitOfWork.EventStaff.FindForSearchingAsync(c => c.StaffID.Contains(staffId));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
     }
 }

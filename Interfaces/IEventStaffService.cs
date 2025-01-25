@@ -10,5 +10,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id);
         Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName);
         Task<string> GetNextStaffId();
+        Task<IEnumerable<EventStaff>> GetEventStaffForSearchingByStaffId(string staffId);
+        Task<EventStaff> GetEventStaffWithoutIncludeById(long id);
     }
 }

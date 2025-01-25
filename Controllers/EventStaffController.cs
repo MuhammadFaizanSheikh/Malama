@@ -219,6 +219,26 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetEventStaffWithoutIncludeById(long id)
+        {
+            try
+            {
+                var eventStaff = await _eventStaffService.GetEventStaffWithoutIncludeById(id);
+
+                if (eventStaff == null)
+                {
+                    return Json(new { success = false, message = "EventStaff not found." });
+                }
+
+                return Json(new { success = true, eventStaff = eventStaff });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetNextStaffId()
         {
             try
@@ -238,6 +258,27 @@ namespace ExcelFilesCompiler.Controllers
             {
                 // Return an error response if something goes wrong
                 return StatusCode(500, new { message = "An error occurred while fetching sequence of StaffID." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEventStaffForSearching(string staffId)
+        {
+            try
+            {
+                var eventStaff = await _eventStaffService.GetEventStaffForSearchingByStaffId(staffId);
+
+                var result = eventStaff.Select(c => new
+                {
+                    id = c.Id,
+                    text = c.StaffID
+                });
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching Event Staff." });
             }
         }
     }
