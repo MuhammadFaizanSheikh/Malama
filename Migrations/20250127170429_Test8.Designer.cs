@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250127170429_Test8")]
+    partial class Test8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -339,7 +342,7 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<DateTime>("EventEndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan?>("EventEndTimeDay1")
+                    b.Property<TimeSpan>("EventEndTimeDay1")
                         .HasColumnType("time");
 
                     b.Property<string>("EventHelpLine")
@@ -354,7 +357,7 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<DateTime>("EventStartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan?>("EventStartTimeDay1")
+                    b.Property<TimeSpan>("EventStartTimeDay1")
                         .HasColumnType("time");
 
                     b.Property<string>("EventState")
@@ -523,6 +526,7 @@ namespace ExcelFilesCompiler.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RegardingSites")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
@@ -661,14 +665,13 @@ namespace ExcelFilesCompiler.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
-                    b.Property<string>("StatusDescription")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("SubEventID")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("TaskForce")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 

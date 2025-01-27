@@ -21,9 +21,9 @@
         [Required]
         public string EventID { get; set; } // Read-only field
         [MaxLength(50)]
-        public string SubEventID { get; set; }
+        public string? SubEventID { get; set; }
         [MaxLength(100)]
-        public string TaskForce { get; set; }
+        public string? TaskForce { get; set; }
         [Required]
         [MaxLength(50)]
         public string EventStatus { get; set; }
@@ -34,9 +34,8 @@
         [Required]
         [MaxLength(200)]
         public string EventAddress1 { get; set; }
-        [Required]
         [MaxLength(200)]
-        public string EventAddress2 { get; set; }
+        public string? EventAddress2 { get; set; }
         [MaxLength(50)]
         public string EventState { get; set; }
         [Required]
@@ -47,23 +46,23 @@
         public string EventZipCode { get; set; }
 
         [Required]
-        [MaxLength(4)]
-        public string TotalRequestedServiceMembers { get; set; }
+        public int TotalRequestedServiceMembers { get; set; }
 
         [Required]
         public DateTime EventStartDate { get; set; }
         [Required]
         public DateTime EventEndDate { get; set; }
-        public TimeSpan EventStartTimeDay1 { get; set; }
-        public TimeSpan EventEndTimeDay1 { get; set; }
-        [MaxLength(3)]
+        public TimeSpan? EventStartTimeDay1 { get; set; }
+        public TimeSpan? EventEndTimeDay1 { get; set; }
         public int ServiceMemberPercentPerDay { get; set; }
         [Required]
         public string Deploy { get; set; }
         public DateTime? MOBDate { get; set; }
 
         [MaxLength(300)]
-        public string RegardingSites { get; set; }
+        public string? RegardingSites { get; set; }
+
+        [Required]
         [MaxLength(12)]
         public string EventHelpLine { get; set; }
 
@@ -301,5 +300,6 @@
         //HIV Drop off address with who will drop off
 
         public long? HIVDropOffStaffId { get; set; }
+        public string? StatusDescription { get; set; }
     }
 }

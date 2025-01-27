@@ -75,6 +75,10 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
+                    int totalSections = 5; // Total number of sections
+                    var filledSectionsList = completedSections.Split(',').ToList();
+                    eventManagement.SingleEventManagement.StatusDescription = (filledSectionsList.Count == totalSections) ? "Completed" : "Pending";
+
                     if (action == "Add")
                     {
                         res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, user.UserName);

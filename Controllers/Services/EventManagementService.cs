@@ -85,7 +85,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .FirstOrDefault();
 
                 var eventManagementId = lastEventManagement.EventID;
-                var numericPart = int.Parse(eventManagementId.Substring(3));
+                int numericPart = Convert.ToInt32(eventManagementId.Substring(5));
 
                 numericPart++;
 
