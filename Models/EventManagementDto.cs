@@ -1,5 +1,6 @@
 ﻿namespace ExcelFilesCompiler.Models
 {
+    using ExcelToCsv.Models;
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
@@ -301,5 +302,28 @@
 
         public long? HIVDropOffStaffId { get; set; }
         public string? StatusDescription { get; set; }
+
+        public List<EventServiceDetail>? EventServiceDetailList { get; set; } = new List<EventServiceDetail>();
+    }
+
+    [Table("EventServiceDetail")]
+    public class EventServiceDetail
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventManagement")]
+        public long EventManagementId { get; set; }
+
+        public string? EventService { get; set; }
+        public bool IsSelected { get; set; }
+        public string? Type { get; set; }
+        public int? ClientRequestInitial { get; set; }
+
+        public int? InitialReportNumbers { get; set; }
+
+        public int? FinalPreEventConfirmedNumbers { get; set; }
+
     }
 }

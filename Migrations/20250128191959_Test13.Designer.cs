@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250128191959_Test13")]
+    partial class Test13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -694,25 +697,27 @@ namespace ExcelFilesCompiler.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<int?>("ClientRequestInitial")
+                    b.Property<int>("ClientRequestInitial")
                         .HasColumnType("int");
 
                     b.Property<long>("EventManagementId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("EventService")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FinalPreEventConfirmedNumbers")
+                    b.Property<int>("FinalPreEventConfirmedNumbers")
                         .HasColumnType("int");
 
-                    b.Property<int?>("InitialReportNumbers")
+                    b.Property<int>("InitialReportNumbers")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsSelected")
                         .HasColumnType("bit");
 
                     b.Property<string>("Type")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
