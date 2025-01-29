@@ -1982,7 +1982,7 @@ $(document).ready(function () {
         $(".next").click(function () {
             const section = $(this).data("section");
             $("#submitBtn").data("section", section + 1);
-
+            debugger;
             if (section == 1 && !validateServiceMemberPercentages())
             {
                 return;
@@ -2306,7 +2306,6 @@ $(document).ready(function () {
 
             $('.city-dropdown').on('change', function () {
 
-                debugger;
                 const cityDropdownId = $(this).attr('id');
                 const stateDropdownId =
                     cityDropdownId === 'EventCity' ? '#EventState' :
@@ -2344,7 +2343,6 @@ $(document).ready(function () {
             const eventCity = $("#EventCity").val();
             const eventState = $("#EventState").val();
             // const eventState = $("#EventState option:selected").data("state");
-            debugger;
             if (eventCity && eventState) {
                 const part1 = eventState.toUpperCase().substring(0, 2);
                 const part2 = eventCity.toUpperCase().substring(0, 3);
@@ -2431,16 +2429,17 @@ $(document).ready(function () {
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
-                            <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartTimeDay${i + 1}" />
+                                    <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTimeDay" />
                         </div>
                         <div class="col-md-4">
                             <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
-                            <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventEndTimeDay${i + 1}" />
+                                <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTimeDay" />
                         </div>
                         <div class="col-md-4">
                             <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
-                                <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.ServiceMemberPercentPerDay" placeholder="Enter % per day" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3); required" />
+                                <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].ServiceMemberPercentPerDay" placeholder="Enter % per day" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3); required" />
                         </div>
+                               <input type="hidden" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventDay" value="${i + 1}" />
                     </div>
                 `;
 
@@ -2484,7 +2483,7 @@ $(document).ready(function () {
             let totalSum = 0;
 
             // Select all inputs that match the name pattern
-            const percentInputs = $('[name^="SingleEventManagement.ServiceMemberPercentPerDay"]');
+            const percentInputs = $('[name^="SingleEventManagement.EventStartEndTimeDayWise"][name$=".ServiceMemberPercentPerDay"]');
 
             // Check if there are any percentage controls
             if (percentInputs.length === 0) {

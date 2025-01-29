@@ -24,6 +24,8 @@ namespace ExcelFilesCompiler
         public DbSet<TravelHonor> TravelHonor { get; set; }
         public DbSet<EventManagement> EventManagement { get; set; }
         public DbSet<EventServiceDetail> EventServiceDetail { get; set; }
+        public DbSet<EventStartEndTimeDayWise> EventStartEndTimeDayWise { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -53,9 +53,7 @@
         public DateTime EventStartDate { get; set; }
         [Required]
         public DateTime EventEndDate { get; set; }
-        public TimeSpan? EventStartTimeDay1 { get; set; }
-        public TimeSpan? EventEndTimeDay1 { get; set; }
-        public int ServiceMemberPercentPerDay { get; set; }
+        
         [Required]
         public string Deploy { get; set; }
         public DateTime? MOBDate { get; set; }
@@ -304,6 +302,9 @@
         public string? StatusDescription { get; set; }
 
         public List<EventServiceDetail>? EventServiceDetailList { get; set; } = new List<EventServiceDetail>();
+
+        [Required]
+        public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList { get; set; } = new List<EventStartEndTimeDayWise>();
     }
 
     [Table("EventServiceDetail")]
@@ -324,6 +325,27 @@
         public int? InitialReportNumbers { get; set; }
 
         public int? FinalPreEventConfirmedNumbers { get; set; }
+
+    }
+
+    [Table("EventStartEndTimeDayWise")]
+    public class EventStartEndTimeDayWise
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventManagement")]
+        public long EventManagementId { get; set; }
+
+        [Required]
+        public int EventDay { get; set; }
+
+        public TimeSpan? EventStartTimeDay1 { get; set; }
+        public TimeSpan? EventEndTimeDay1 { get; set; }
+
+        [Required]
+        public int ServiceMemberPercentPerDay { get; set; }
 
     }
 }
