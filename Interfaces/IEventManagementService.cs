@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Models;
+using ExcelToCsv.Models;
 
 namespace ExcelFilesCompiler.Interfaces
 {
@@ -7,6 +8,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
         Task<List<EventManagement>> GetAllEventManagements();
         Task<string> GetNextEventManagementId();
+        Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id);
         //Task<List<ContractDetails>> GetAllContracts();
         //Task<ResponseDto> GetContractById(long id, string companyName, bool checkIfContractAlreadyExist);
         //Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);

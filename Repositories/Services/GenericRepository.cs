@@ -46,6 +46,18 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
+        public async Task<T?> GetByNullableIdAsync(long? id)
+        {
+            try
+            {
+                return await _dbSet.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while retrieving the record with ID {id}.", ex);
+            }
+        }
+
         public void AddRange(IEnumerable<T> entities)
         {
             try

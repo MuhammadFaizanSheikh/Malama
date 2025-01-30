@@ -9,6 +9,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate);
         Task<T?> GetByIdAsync(long id);
+        Task<T?> GetByNullableIdAsync(long? id);
         void AddRange(IEnumerable<T> entities);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);

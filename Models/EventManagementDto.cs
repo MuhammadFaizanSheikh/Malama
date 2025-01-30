@@ -11,6 +11,14 @@
         public EventManagement SingleEventManagement { get; set; }
     }
 
+    public class CombinedEventManagementAndContractDetails
+    {
+        public EventManagement EventManagement { get; set; }
+        public ContractDetails ContractDetails { get; set; }
+        public EventStaff EventStaff { get; set; }
+    }
+
+
     [Table("EventManagement")]
     public class EventManagement : GenericProperties
     {

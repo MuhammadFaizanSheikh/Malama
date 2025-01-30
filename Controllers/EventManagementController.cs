@@ -135,5 +135,24 @@ namespace ExcelFilesCompiler.Controllers
                 return StatusCode(500, new { message = "An error occurred while fetching sequence of Event Management Id." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEventManagementById(long id)
+        {
+            try
+            {
+                var combinedData = await _eventManagementService.GetEventManagementById(id);
+                if (combinedData == null)
+                {
+                    return Json(new { success = false, message = "Contract not found." });
+                }
+
+                return Json(new { success = true, combinedData = combinedData });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
