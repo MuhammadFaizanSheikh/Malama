@@ -890,8 +890,8 @@
                         </div>
                     </div>
 
-                    <!-- Lockable Refrigerator -->
-                    <div class="col-md-6">
+                    <!-- Lockable Refrigerator (Initially Hidden) -->
+                    <div class="col-md-6" id="lockableRefrigeratorSection" style="display: none;">
                         <label class="form-label">Refrigerator Available for Vaccine or Labs, Is/Are Lockable?</label>
                         <div class="form-check">
                             <input asp-for="SingleEventManagement.ShippingPocLockableRefrigerator" class="form-check-input" type="radio" id="ShippingPocLockableRefrigeratorYes" value="Yes" required />
@@ -2701,6 +2701,25 @@ $(document).ready(function () {
             });
         });
 
+
+        const refrigeratorAvailableYes = document.getElementById("ShippingPocRefrigeratorAvailableYes");
+        const refrigeratorAvailableNo = document.getElementById("ShippingPocRefrigeratorAvailableNo");
+        const lockableRefrigeratorSection = document.getElementById("lockableRefrigeratorSection");
+
+        function toggleLockableRefrigerator() {
+            if (refrigeratorAvailableYes.checked) {
+                lockableRefrigeratorSection.style.display = "block";
+            } else {
+                lockableRefrigeratorSection.style.display = "none";
+            }
+        }
+
+        // Attach event listeners
+        refrigeratorAvailableYes.addEventListener("change", toggleLockableRefrigerator);
+        refrigeratorAvailableNo.addEventListener("change", toggleLockableRefrigerator);
+
+        // Initialize on page load
+        toggleLockableRefrigerator();
 });
 
 
