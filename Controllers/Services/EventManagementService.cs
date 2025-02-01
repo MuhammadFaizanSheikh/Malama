@@ -118,11 +118,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     var eventStaff = await _unitOfWork.EventStaff.GetByNullableIdAsync(firstEventManagement.HIVDropOffStaffId);
 
-                    if (eventStaff == null)
-                    {
-                        throw new Exception("No Event Staff found.");
-                    }
-
                     var combinedDto = new CombinedEventManagementAndContractDetails
                     {
                         EventManagement = firstEventManagement,

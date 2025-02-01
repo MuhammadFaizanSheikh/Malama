@@ -349,8 +349,8 @@
         [Required]
         public int EventDay { get; set; }
 
-        public TimeSpan? EventStartTimeDay1 { get; set; }
-        public TimeSpan? EventEndTimeDay1 { get; set; }
+        public TimeSpan? EventStartTime { get; set; }
+        public TimeSpan? EventEndTime { get; set; }
 
         [Required]
         public int ServiceMemberPercentPerDay { get; set; }
