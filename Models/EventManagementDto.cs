@@ -308,7 +308,7 @@
 
         public long? HIVDropOffStaffId { get; set; }
         public string? StatusDescription { get; set; }
-
+        public string? CompletedSections { get; set; }
         public List<EventServiceDetail>? EventServiceDetailList { get; set; } = new List<EventServiceDetail>();
 
         [Required]

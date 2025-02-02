@@ -9,10 +9,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<EventManagement>> GetAllEventManagements();
         Task<string> GetNextEventManagementId();
         Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id);
-        //Task<List<ContractDetails>> GetAllContracts();
-        //Task<ResponseDto> GetContractById(long id, string companyName, bool checkIfContractAlreadyExist);
-        //Task<ResponseDto> UpdateContract(ContractDetails contract, string loggedinUserName);
-        //Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractId);
-        //Task<ContractDetails> CheckIfContractIDAlreadyExist(string contractId, string contractName, string checkType);
+        Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
     }
 }

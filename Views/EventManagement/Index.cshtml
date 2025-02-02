@@ -786,13 +786,13 @@
                     <!-- Date Equipment Can Be Picked -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocPickupDate" class="form-label">Date Equipment Can Be Picked</label>
-                        <input asp-for="SingleEventManagement.ShippingPocPickupDate" id="PickupDate" class="form-control" type="date" required/>
+                        <input asp-for="SingleEventManagement.ShippingPocPickupDate" id="PickupDate" class="form-control" type="date"/>
                     </div>
 
                     <!-- Time Equipment Can Be Picked -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocPickupTime" class="form-label">Time Equipment Can Be Picked</label>
-                        <input asp-for="SingleEventManagement.ShippingPocPickupTime" id="PickupTime" class="form-control" type="text" required />
+                        <input asp-for="SingleEventManagement.ShippingPocPickupTime" id="PickupTime" class="form-control" type="text" />
                     </div>
                 </div>
 
@@ -800,13 +800,13 @@
                     <!-- Delivery From -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" class="form-label">Delivery From</label>
-                        <input asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" id="DeliveryFromDate" class="form-control" type="date" required/>
+                        <input asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" id="DeliveryFromDate" class="form-control" type="date"/>
                     </div>
 
                     <!-- Delivery To -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocDeliveryToDate" class="form-label">Delivery To</label>
-                        <input asp-for="SingleEventManagement.ShippingPocDeliveryToDate" id="DeliveryToDate" class="form-control" type="date" required />
+                        <input asp-for="SingleEventManagement.ShippingPocDeliveryToDate" id="DeliveryToDate" class="form-control" type="date" />
                     </div>
                 </div>
 
@@ -1794,7 +1794,7 @@
                 <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
                     <i class="bi bi-arrow-repeat"></i> Reset
                 </button>
-                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update" data-section="1">
                         <i class="bi bi-pencil"></i> Update
                     </button>
                 <button id="backToTableBtn" type="button" class="btn btn-secondary">
@@ -1973,9 +1973,9 @@ $(document).ready(function () {
         });
 
         $(".next").click(function () {
-            const section = $(this).data("section");
-            $("#submitBtn").data("section", section + 1);
             debugger;
+            const section = $(this).data("section");
+            
             if (section == 1 && !validateServiceMemberPercentages())
             {
                 return;
@@ -1987,6 +1987,8 @@ $(document).ready(function () {
                 return;
             }
 
+            $("#submitBtn").data("section", section + 1);
+            $("#updateBtn").data("section", section + 1);
             $(`#section${section}`).hide();
             $(`#section${section + 1}`).show();
 
@@ -1996,8 +1998,7 @@ $(document).ready(function () {
 
         $(".back").click(function () {
             const section = $(this).data("section");
-            $("#submitBtn").data("section", section - 1);
-
+           
             const isValid = validateSectionFields(section);
 
             if (!isValid) {
@@ -2008,6 +2009,8 @@ $(document).ready(function () {
                 return;
             }
 
+             $("#submitBtn").data("section", section - 1);
+            $("#updateBtn").data("section", section - 1);
             $(`#section${section}`).hide();
             $(`#section${section - 1}`).show();
             currentSection--;
@@ -2020,6 +2023,55 @@ $(document).ready(function () {
 
             if (!validateServiceMemberPercentages()) 
             {
+                return;
+            }
+
+            const section = $(this).data("section");
+
+            const isValid = validateSectionFields(section);
+
+            if (!isValid) {
+                return;
+            }
+
+            if (!validateSection1()) {
+                alert("Please fill in all required fields of Event Specific Details!");
+                return;
+            }
+
+            if (!validateEventStatusDependantFields(requirements)) {
+                return;
+            }
+
+            if (!validateTableRequiredFields()) {
+                return;
+            }
+
+            const completedSections = getCompletedSections();
+
+            $("<input>")
+                .attr("type", "hidden")
+                .attr("name", "completedSections")
+                .attr("value", JSON.stringify(completedSections)) // Send as a JSON array
+                .appendTo("#eventManagementForm");
+
+
+            const actionValue = $(this).val();
+            $("<input>")
+                .attr("type", "hidden")
+                .attr("name", "action")
+                .attr("value", actionValue)
+                .appendTo("#eventManagementForm");
+
+            $("#eventManagementForm").submit();
+        });
+
+        $("#updateBtn").click(function (e) {
+            debugger;
+
+            e.preventDefault();
+
+            if (!validateServiceMemberPercentages()) {
                 return;
             }
 
@@ -2104,17 +2156,35 @@ $(document).ready(function () {
                 const sectionId = $(this).attr("id"); // e.g., "section1"
                 let isSectionValid = true;
 
-                // Validate required fields in the section
-                $(this)
-                    .find("[required]")
-                    .each(function () {
-                        if (!$(this).val().trim()) {
-                            isSectionValid = false; // Mark invalid if a required field is empty
-                            return false; // Break out of the loop
-                        }
-                    });
+                // Special handling for Section 6
+                if (sectionId === "section6") {
+                    const requiredFieldsInSection6 = $(this).find("[required]");
 
-                // If all required fields in the section are filled, add the section ID
+                    // If no required fields in Section 6, don't consider it completed
+                    if (requiredFieldsInSection6.length === 0) {
+                        isSectionValid = false;
+                    } else {
+                        // Check if any required field is empty
+                        requiredFieldsInSection6.each(function () {
+                            if (!$(this).val().trim()) {
+                                isSectionValid = false;
+                                return false; // Break out of the loop
+                            }
+                        });
+                    }
+                } else {
+                    // For other sections, validate as usual
+                    $(this)
+                        .find("[required]")
+                        .each(function () {
+                            if (!$(this).val().trim()) {
+                                isSectionValid = false; // Mark invalid if a required field is empty
+                                return false; // Break out of the loop
+                            }
+                        });
+                }
+
+                // If the section is valid, add it to the completed sections list
                 if (isSectionValid) {
                     const numericId = sectionId.replace(/\D/g, ""); // Extract numeric part (e.g., "section1" -> "1")
                     completedSections.push(numericId);
@@ -2123,6 +2193,7 @@ $(document).ready(function () {
 
             return completedSections;
         }
+
 
 
         function validateSectionFields(sectionId) {
@@ -2189,30 +2260,30 @@ $(document).ready(function () {
             return isValid;
         }
 
-    $(document).on('input', '[required]', function () {
-        const section = $(this).closest(".form-section").attr("id").replace("section", "");
-        updateProgressBar(section); // Update progress bar when user fills required fields
-    });
+        $(document).on('input', '[required]', function () {
+            const section = $(this).closest(".form-section").attr("id").replace("section", "");
+            updateProgressBar(section); // Update progress bar when user fills required fields
+        });
 
-    function updateProgressBar(sectionNumber) {
-        const requiredFields = $(`#section${sectionNumber}`).find('[required]');
-        let allFieldsFilled = true;
+        function updateProgressBar(sectionNumber) {
+            const requiredFields = $(`#section${sectionNumber}`).find('[required]');
+            let allFieldsFilled = true;
 
-        // Check if all required fields are filled
-        requiredFields.each(function () {
+            // Check if all required fields are filled
+            requiredFields.each(function () {
                 const fieldValue = $(this).val();
                 if (fieldValue !== null && fieldValue !== undefined && fieldValue.trim() === "") {
                     allFieldsFilled = false;
                 }
-        });
+            });
 
-        // If all required fields are filled, change the progress bar color to green
-        if (allFieldsFilled) {
-            $(`#progress${sectionNumber}`).addClass("completed"); // Green color
-        } else {
-            $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
+            // If all required fields are filled, change the progress bar color to green
+            if (allFieldsFilled) {
+                $(`#progress${sectionNumber}`).addClass("completed"); // Green color
+            } else {
+                $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
+            }
         }
-    }
 
         $('#addContractBtn').click(function () {
             $('.card-body').show();
@@ -2221,6 +2292,7 @@ $(document).ready(function () {
             $('#resetBtn').show();
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
+            $("#submitBtn").data("section", 1);
         });
 
         $('#backToTableBtn').click(function () {
@@ -2670,6 +2742,7 @@ $(document).ready(function () {
 
     $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
         var contractId = $(this).data('id');
+        $("#updateBtn").data("section", 1);
         var isViewButton = $(this).hasClass('view-btn');
         $.ajax({
             url: '/EventManagement/GetEventManagementById/' + contractId,
@@ -2678,9 +2751,9 @@ $(document).ready(function () {
                 if (response.success) {
                     debugger;
                     var combinedData = response.combinedData;
-                    var stringdata = JSON.stringify(combinedData);
-                    $('#hiddenId').val(combinedData.id);
-
+                    //var stringdata = JSON.stringify(combinedData);
+                    setProgressFromServer(combinedData.eventManagement.completedSections);
+                    $('#hiddenId').val(combinedData.eventManagement.id);
                     $('#EventID').text(combinedData.eventManagement.eventID);
                     $('#EventIDHidden').val(combinedData.eventManagement.eventID);
                     $('#SubEventID').val(combinedData.eventManagement.subEventID);
@@ -2688,12 +2761,32 @@ $(document).ready(function () {
                     $('#EventStatus').val(combinedData.eventManagement.eventStatus);
                     
                     var selectedData = {
-                        id: combinedData.contractDetails.Id,
+                        id: combinedData.contractDetails.id,
                         text: combinedData.contractDetails.contractName
                         };
 
                         var newOption = new Option(selectedData.text, selectedData.id, true, true);
                         $('#ContractId').append(newOption);
+
+
+                    $("#contractIdLabel").text(combinedData.contractDetails.contractID);
+                    $("#contractAgencyLabel").text(combinedData.contractDetails.contractAgency);
+                    $("#contractServiceBranchLabel").text(combinedData.contractDetails.contractServiceBranch);
+                    $("#contractComponentLabel").text(combinedData.contractDetails.contractComponent);
+                    $("#contractTypeLabel").text(combinedData.contractDetails.contractType);
+
+                    let contractStartDate = new Date(combinedData.contractDetails.contractStartDate);
+                    let formattedcontractStartDate = contractStartDate.toLocaleDateString('en-US');
+                    $('#contractStartDateLabel').text(formattedcontractStartDate);
+
+                    let contractEndDate = new Date(combinedData.contractDetails.contractEndDate);
+                    let formattedcontractEndDate = contractEndDate.toLocaleDateString('en-US');
+                    $('#contractEndDateLabel').text(formattedcontractEndDate);
+
+                    var DawsonProjectManagerLastName = combinedData.contractDetails.dawsonProjectManagerLastName;
+                    var DawsonProjectManagerFirstName = combinedData.contractDetails.dawsonProjectManagerFirstName;
+                    $("#dawsonProjectManagerLabel").text(DawsonProjectManagerFirstName + ' ' + DawsonProjectManagerLastName);
+                    $("#contractDetails").show();
 
                     $('#EventAddress1').val(combinedData.eventManagement.eventAddress1);
                     $('#EventAddress2').val(combinedData.eventManagement.eventAddress2);
@@ -3055,6 +3148,26 @@ $(document).ready(function () {
         }
     });
 
+    function setProgressFromServer(completedSections) {
+        if (typeof completedSections === "string") {
+            try {
+                completedSections = JSON.parse(completedSections); // Convert JSON string to array
+            } catch (e) {
+                console.error("Invalid JSON format:", completedSections);
+                return;
+            }
+        }
+
+        if (!Array.isArray(completedSections)) {
+            console.error("Expected an array but got:", completedSections);
+            return;
+        }
+
+        $("#progressBar span").removeClass("completed"); // Reset all first
+        completedSections.forEach(sectionNumber => {
+            $(`#progress${sectionNumber}`).addClass("completed");
+        });
+    }
 
     function generateControlsForDateRange(startDate, endDate, existingData = []) {
         var date1 = new Date(startDate);

@@ -17,6 +17,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<TravelHonor> TravelHonor { get; private set; }
         public IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; private set; }
         public IGenericRepository<EventManagement> EventManagement { get; private set; }
+        public IGenericRepository<EventServiceDetail> EventServiceDetail { get; private set; }
+        public IGenericRepository<EventStartEndTimeDayWise> EventStartEndTimeDayWise { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -29,6 +31,8 @@ namespace ExcelFilesCompiler.UnitOfWork
             TravelHonor = new GenericRepository<TravelHonor>(_context);
             ServiceTypeProvided = new GenericRepository<ServiceTypeProvided>(_context);
             EventManagement = new GenericRepository<EventManagement>(_context);
+            EventServiceDetail = new GenericRepository<EventServiceDetail>(_context);
+            EventStartEndTimeDayWise = new GenericRepository<EventStartEndTimeDayWise>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

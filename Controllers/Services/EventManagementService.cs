@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.UnitOfWork;
+using ExcelToCsv.Models;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -36,15 +37,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                //var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
-
-                //if (existingContractDetails != null && existingContractDetails.Any())
-                //{
-                //    responseDto.Success = false;
-                //    responseDto.Message = "ContractID already exist!!";
-                //    return responseDto;
-                //}
-
                 eventManagement.AddedBy = loggedinUserName;
                 eventManagement.AddedOn = DateTime.Now;
                 await _unitOfWork.EventManagement.AddAsync(eventManagement);
@@ -57,6 +49,55 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // If an exception occurs, set Success to false and provide the error message
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred: {ex.Message}";
+            }
+
+            return responseDto;
+        }
+
+        public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
+        {
+            var responseDto = new ResponseDto();
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var existingEventManagement = await _unitOfWork.EventManagement.GetByIdAsync(eventManagement.Id);
+                eventManagement.AddedBy = existingEventManagement.AddedBy;
+                eventManagement.AddedOn = existingEventManagement.AddedOn;
+                eventManagement.UpdatedBy = loggedinUserName;
+                eventManagement.UpdatedOn = DateTime.Now;
+                await _unitOfWork.EventManagement.UpdateAsync(eventManagement);
+
+                await _unitOfWork.EventStartEndTimeDayWise.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+                foreach (var eventStartEndTime in eventManagement.EventStartEndTimeDayWiseList)
+                {
+                    eventStartEndTime.EventManagementId = eventManagement.Id;
+                }
+
+                _unitOfWork.EventStartEndTimeDayWise.AddRange(eventManagement.EventStartEndTimeDayWiseList);
+
+                await _unitOfWork.EventServiceDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+                foreach (var eventServiceDetail in eventManagement.EventServiceDetailList)
+                {
+                    eventServiceDetail.EventManagementId = eventManagement.Id;
+                }
+
+                _unitOfWork.EventServiceDetail.AddRange(eventManagement.EventServiceDetailList);
+
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
+                responseDto.Success = true;
+                responseDto.Message = "EventStaff updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                // Step 7: Rollback in case of any error
+                await transaction.RollbackAsync();
+                responseDto.Success = false;
+                responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
             }
 
             return responseDto;
