@@ -403,6 +403,7 @@
                             <option value="">Select Event Status</option>
                             <option value="Initial Pre-event">Initial Pre-event</option>
                             <option value="Pre-Event Confirmed">Pre-Event Confirmed</option>
+                            <option value="Pre-Event Complete">Pre-Event Complete</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Post event Incomplete">Post event Incomplete</option>
                             <option value="Complete">Complete</option>
@@ -2208,8 +2209,8 @@ $(document).ready(function () {
                 if (
                     fieldValue !== "SingleEventManagement.EventStartDate" &&
                     fieldValue !== "SingleEventManagement.EventEndDate" &&
-                    fieldValue !== "SingleEventManagement.EventStartTimeDay1" &&
-                    fieldValue !== "SingleEventManagement.EventEndTimeDay1" &&
+                    fieldValue !== "SingleEventManagement.EventStartTimeDay" &&
+                    fieldValue !== "SingleEventManagement.EventEndTimeDay" &&
                     fieldValue !== "Deploying" &&
                     fieldValue !== "Non-Deploying" &&
                     fieldValue !== "SingleEventManagement.TotalRequestedServiceMembers" &&
@@ -2230,12 +2231,23 @@ $(document).ready(function () {
             });
 
             if (anyFieldFilled) {
+                // sectionFields.each(function () {
+                //     if (!this.checkValidity()) {
+                //         this.reportValidity();
+                //         isValid = false;
+                //     }
+                // });
+
                 sectionFields.each(function () {
-                    if (!this.checkValidity()) {
+                    if ($(this).prop("required") && !$(this).val()) { // Check if field is required & empty
+                        this.setCustomValidity("This field is required.");
                         this.reportValidity();
                         isValid = false;
+                    } else {
+                        this.setCustomValidity(""); // Clear custom validation message
                     }
                 });
+
             }
 
             return isValid;
@@ -2286,12 +2298,16 @@ $(document).ready(function () {
         }
 
         $('#addContractBtn').click(function () {
+            resetFormFields();
             $('.card-body').show();
             $('#datatableWrapper').hide();
             $('#submitBtn').show();
             $('#resetBtn').show();
             $('#updateBtn').hide();
             $('#addContractBtn').hide();
+            $('[id^="section"]').hide();
+            $(`#section1`).show();
+            $('#progressBar span').removeClass('completed');
             $("#submitBtn").data("section", 1);
         });
 
@@ -2299,7 +2315,8 @@ $(document).ready(function () {
             $('.card-body').hide();
             $('#datatableWrapper').show();
             $('#addContractBtn').show();
-
+            $("#submitBtn").data("section", 1);
+            $("#updateBtn").data("section", 1);
         });
 
         $('#contractsTable').DataTable({
@@ -2580,7 +2597,7 @@ $(document).ready(function () {
                 SuggestedHourlyFlow: false,
                 TaskForce: true,
             },
-            "Pre- Event Complete": {
+            "Pre-Event Complete": {
                 PickupDate: true,
                 PickupTime: true,
                 DeliveryFromDate: true,
@@ -2994,9 +3011,7 @@ $(document).ready(function () {
                         $('#HIVDropOffStaffFirstName').val(combinedData.eventStaff.staffLastName);
                     }
 
-                    updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
-                    updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
-                    updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+                    
 
                     // Show the form and hide the table
                     $('#datatableWrapper').hide();
@@ -3004,90 +3019,45 @@ $(document).ready(function () {
                     $('#submitBtn').hide();
                     $('#resetBtn').hide();
                     $('#addContractBtn').hide();
+                    $('[id^="section"]').hide();
+                    $(`#section1`).show();
 
                     if (isViewButton) {
-                        // const controlIds = ['hiddenId', 'StartDate',
-                        //     'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                        //     'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
-                        //     'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
-                        //     'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
-                        //     'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'staffCACYes', 'staffCACNo',
-                        //     'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
-                        //     'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                        //     'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
-                        // ];
-
-
-
-                        // // Make controls read-only
-                        // controlIds.forEach(function (id) {
-                        //     const control = $('#' + id);
-                        //     control.prop('readonly', true); // Make input read-only
-                        //     control.addClass('read-only-style'); // Optional: Add a class for read-only styling
-                        // });
-
-                        // const container = document.querySelector('.form-container-Affiliation');
-                        // const controls = container.querySelectorAll('select, input, button, textarea');
-                        // controls.forEach(control => {
-                        //     control.disabled = true;
-                        // });
-
-                        // const categories = ['#dynamicControlsContainer', '#carDynamicControlsContainer', '#hotelDynamicControlsContainer'];
-
-                        // categories.forEach(function (categorySelector) {
-                        //     // Target all input fields within the category
-                        //     $(categorySelector).find('input').each(function () {
-                        //         const control = $(this);
-
-                        //         // Make input fields read-only
-                        //         control.prop('readonly', true);
-                        //     });
-
-                        //     // Target all buttons within the category
-                        //     $(categorySelector).find('button').each(function () {
-                        //         const control = $(this);
-
-                        //         // Disable the buttons
-                        //         control.prop('disabled', true);
-                        //     });
-
-                        //     // Optionally, add read-only styling if needed
-                        //     $(categorySelector).find('input').addClass('read-only-style');
-                        //     $(categorySelector).find('button').addClass('read-only-style');
-                        // });
-
-
-                        $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                        updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
+                        updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
+                        updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+                        $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
+                        $('input[type="checkbox"]').prop('disabled', true);
+                        $('select').prop('disabled', true);
+                        $('textarea').prop('disabled', true);
+                        $('#updateBtn').hide();
                     }
                     else {
-                        // const controlIds = ['hiddenId', 'StartDate',
-                        //     'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                        //     'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
-                        //     'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
-                        //     'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
-                        //     'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'staffCACYes', 'staffCACNo',
-                        //     'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
-                        //     'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                        //     'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
-                        // ];
+                        // Enable all inputs except those inside the table
+                        $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
+                            .not('#eventServicesTable input, #eventServicesTable2 input, #eventServicesTable3 input')
+                            .prop('disabled', false);
 
-                        // // Make controls editable
-                        // controlIds.forEach(function (id) {
-                        //     const control = $('#' + id);
-                        //     control.prop('readonly', false); // Remove readonly property
-                        //     control.removeClass('read-only-style'); // Remove read-only styling class if applied
-                        // });
+                        $('input[type="checkbox"]').prop('disabled', false);
 
-                        // const container = document.querySelector('.form-container-Affiliation');
-                        // const controls = container.querySelectorAll('select, input, button, textarea');
-                        // controls.forEach(control => {
-                        //     control.disabled = false;
-                        // });
+                        $('select')
+                            .not('#eventServicesTable select, #eventServicesTable2 select, #eventServicesTable3 select')
+                            .prop('disabled', false);
 
-                        $('#updateBtn').show();  // Show the Update button when Edit button is clicked
+                        $('textarea')
+                            .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
+                            .prop('disabled', false);
+
+
+                        $('#updateBtn').show();
+                        updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
+                        updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
+                        updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
                     }
+
+                    
                 } else {
-                    alert(response.message);  // Show error message
+                    alert(response.message);
                 }
             },
             error: function () {
@@ -3146,6 +3116,9 @@ $(document).ready(function () {
                 }
             });
         }
+
+        
+
     });
 
     function setProgressFromServer(completedSections) {
@@ -3234,5 +3207,165 @@ $(document).ready(function () {
                 defaultDate: eventEndTime
             });
         }
+    }
+
+    function resetFormFields() {
+        $('#hiddenId').val('');
+        $('#EventID').text('');
+        $('#EventIDHidden').val('');
+        $('#SubEventID').val('');
+        $('#TaskForce').val('');
+        $('#EventStatus').val('');
+        $('#ContractId').empty(); // Remove all options
+        $("#contractIdLabel").text('');
+        $("#contractAgencyLabel").text('');
+        $("#contractServiceBranchLabel").text('');
+        $("#contractComponentLabel").text('');
+        $("#contractTypeLabel").text('');
+        $('#contractStartDateLabel').text('');
+        $('#contractEndDateLabel').text('');
+        $("#dawsonProjectManagerLabel").text('');
+        $("#contractDetails").hide();
+        $('#EventAddress1').val('');
+        $('#EventAddress2').val('');
+        $('#EventState').val('').trigger('change');
+        $('#EventCity').val('').trigger('change');
+        $('#EventZipCode').val('');
+        $('#TotalRequestedServiceMembers').val('');
+
+        $('#EventStartDate').val('');
+        $('#EventEndDate').val('');
+
+        $('#Deploying').prop('checked', false);
+        $('#NonDeploying').prop('checked', false);
+
+        $('#EventMobDate').val('');
+        $('#RegardingSites').val('');
+        $('#EventHelpLine').val('');
+
+        $('#MainPocLastName').val('');
+        $('#MainPocFirstName').val('');
+        $('#MainPocRank').val('');
+        $('#MainPocPhonePrimary').val('');
+        $('#MainPocPhoneSecondary').val('');
+        $('#MainPocEmailPrimary').val('');
+        $('#MainPocEmailSecondary').val('');
+
+        $('#SecondaryPocLastName').val('');
+        $('#SecondaryPocFirstName').val('');
+        $('#SecondaryPocRank').val('');
+        $('#SecondaryPocPhonePrimary').val('');
+        $('#SecondaryPocPhoneSecondary').val('');
+        $('#SecondaryPocEmailPrimary').val('');
+        $('#SecondaryPocEmailSecondary').val('');
+
+        $('#toggleAdditionalPOC').prop('checked', false);
+        $('#additionalPocControls').hide();
+
+        $('#AddAdditionalAlternatePoc').prop('checked', false);
+        $('#AddtionalAlternatePocLastName').val('');
+        $('#AddtionalAlternatePocFirstName').val('');
+        $('#AddtionalAlternatePocRank').val('');
+        $('#AddtionalAlternatePocPhonePrimary').val('');
+        $('#AddtionalAlternatePocPhoneSecondary').val('');
+        $('#AddtionalAlternatePocEmailPrimary').val('');
+        $('#AddtionalAlternatePocEmailSecondary').val('');
+        $('#AddtionalAlternatePocRole').val('');
+
+        $('#ShippingAddressLine1').val('');
+        $('#ShippingAddressLine2').val('');
+        $('#ShippingState').val('').trigger('change');
+        $('#ShippingCity').val('').trigger('change');
+        $('#ShippingZipCode').val('');
+        $('#ShippingPocLastName').val('');
+        $('#ShippingPocRank').val('');
+        $('#ShippingPocFirstName').val('');
+        $('#ShippingPocPrimaryPhone').val('');
+        $('#ShippingPocSecondaryPhone').val('');
+        $('#ShippingPocPrimaryEmail').val('');
+        $('#ShippingPocSecondaryEmail').val('');
+        $('#OpenAt').val('');
+        $('#CloseAt').val('');
+        $('#ShippingInstruction').val('');
+
+        $('#PickupDate').val('');
+        $('#PickupTime').val('');
+        $('#DeliveryFromDate').val('');
+        $('#DeliveryToDate').val('');
+
+        $('#SuggestedHourlyFlow').val('');
+        $('#ShippingPocSpecialGateInstructions').val('');
+        $('#ShippingPocParkingInstructions').val('');
+
+        $('#ShippingPocTablesAndChairsAvailableYes').prop('checked', false);
+        $('#ShippingPocTablesAndChairsAvailableNo').prop('checked', false);
+
+        $('#ShippingPocLocationSecuredYes').prop('checked', false);
+        $('#ShippingPocLocationSecuredNo').prop('checked', false);
+
+        $('#ShippingPocRefrigeratorAvailableYes').prop('checked', false);
+        $('#ShippingPocRefrigeratorAvailableNo').prop('checked', false);
+        $('#lockableRefrigeratorSection').hide();
+
+        $('#ShippingPocLockableRefrigeratorYes').prop('checked', false);
+        $('#ShippingPocLockableRefrigeratorNo').prop('checked', false);
+        $('#ShippingPocEventSetupDate').val('');
+        $('#ShippingPocEventSetupTime').val('');
+        $('#PharmacyName').val('');
+        $('#PharmacyAddressLine1').val('');
+        $('#PharmacyAddressLine2').val('');
+        $('#PharmacyState').val('').trigger('change');
+        $('#PharmacyCity').val('').trigger('change');
+        $('#PharmacyZipCode').val('');
+        $('#PharmacyPhoneNumber').val('');
+        $('#MilitaryArrangementYes').prop('checked', false).trigger('change');
+        $('#MilitaryArrangementNo').prop('checked', false).trigger('change');
+        $('#HIVSuppliesNeededYes').prop('checked', false).trigger('change');
+        $('#HIVSuppliesNeededNo').prop('checked', false).trigger('change');
+        $('#HIVSupplyMilitaryContactPOCLastName').val('');
+        $('#HIVSupplyMilitaryContactPOCRank').val('');
+        $('#HIVSupplyMilitaryContactPOCFirstName').val('');
+        $('#HIVSupplyMilitaryContactPOCPhonePrimary').val('');
+        $('#HIVSupplyMilitaryContactPOCPhoneSecondary').val('');
+        $('#HIVSupplyMilitaryContactPOCEmailPrimary').val('');
+        $('#HIVSupplyMilitaryContactPOCEmailSecondary').val('');
+        $('#ImmunizationVaccineNeededYes').prop('checked', false).trigger('change');
+        $('#ImmunizationVaccineNeededNo').prop('checked', false).trigger('change');
+        $('#ImmVaccineSupplyMilitaryContactPOCLastName').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCRank').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCFirstName').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCPhonePrimary').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCPhoneSecondary').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCEmailPrimary').val('');
+        $('#ImmVaccineSupplyMilitaryContactPOCEmailSecondary').val('');
+        $('#QuestPickupAddressLine1').val('');
+        $('#QuestPickupAddressLine2').val('');
+        $('#QuestPickupState').val('').trigger('change');
+        $('#QuestPickupCity').val('').trigger('change');
+        $('#QuestPickupZipCode').val('');
+        $('#HIVDropOffStaffId').empty(); // Remove previously selected staff
+        $('#HIVDropOffStaffLastName').val('');
+        $('#HIVDropOffStaffFirstName').val('');
+
+        document.getElementById('dynamicControlsContainer').innerHTML = '';
+
+        debugger;
+        $('#eventServicesTable tbody tr').each(function () {
+            $(this).find('input[type="checkbox"]').prop('checked', false);
+            $(this).find('input[type="number"]').val('');
+            $(this).find('input[type="number"]').prop('disabled', true);
+        });
+
+        $('#eventServicesTable2 tbody tr').each(function () {
+            $(this).find('input[type="checkbox"]').prop('checked', false);
+            $(this).find('input[type="number"]').val('');
+            $(this).find('input[type="number"]').prop('disabled', true);
+        });
+
+        $('#eventServicesTable3 tbody tr').each(function () {
+            $(this).find('input[type="checkbox"]').prop('checked', false);
+            $(this).find('input[type="number"]').val('');
+            $(this).find('input[type="number"]').prop('disabled', true);
+        });
     }
 </script>
