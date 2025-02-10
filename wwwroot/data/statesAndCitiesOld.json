@@ -3,7 +3,6 @@
     {
       "Id": 1,
       "Name": "Alabama",
-	"ShortName": "AL", 
       "Cities": [
         {
           "Id": 1,
@@ -5164,7 +5163,6 @@
     {
       "Id": 2,
       "Name": "Alaska",
-	"ShortName": "AK",
       "Cities": [
         {
           "Id": 1,
@@ -7244,7 +7242,6 @@
     {
       "Id": 3,
       "Name": "American Samoa",
-"ShortName": "AS",
       "Cities": [
         {
           "Id": 1,
@@ -7260,7 +7257,6 @@
     {
       "Id": 4,
       "Name": "Arizona",
- 	"ShortName": "AZ",
       "Cities": [
         {
           "Id": 1,
@@ -10066,7 +10062,6 @@
     {
       "Id": 5,
       "Name": "Arkansas",
-"ShortName": "AR",
       "Cities": [
         {
           "Id": 1,
@@ -15380,7 +15375,6 @@
     {
       "Id": 6,
       "Name": "California",
-"ShortName": "CA",
       "Cities": [
         {
           "Id": 1,
@@ -27951,7 +27945,6 @@
     {
       "Id": 7,
       "Name": "Colorado",
-"ShortName": "CO",
       "Cities": [
         {
           "Id": 1,
@@ -31873,7 +31866,6 @@
     {
       "Id": 8,
       "Name": "Connecticut",
-"ShortName": "CT",
       "Cities": [
         {
           "Id": 1,
@@ -34196,7 +34188,6 @@
     {
       "Id": 9,
       "Name": "Delaware",
-"ShortName": "DE",
       "Cities": [
         {
           "Id": 1,
@@ -34731,7 +34722,6 @@
     {
       "Id": 10,
       "Name": "District of Columbia",
-"ShortName": "DC",
       "Cities": [
         {
           "Id": 1,
@@ -34927,7 +34917,6 @@
     {
       "Id": 11,
       "Name": "Florida",
-"ShortName": "FL",
       "Cities": [
         {
           "Id": 1,
@@ -40769,7 +40758,6 @@
     {
       "Id": 12,
       "Name": "Georgia",
-"ShortName": "GA",
       "Cities": [
         {
           "Id": 1,
@@ -46572,7 +46560,6 @@
     {
       "Id": 13,
       "Name": "Guam",
-"ShortName": "GU",
       "Cities": [
         {
           "Id": 1,
@@ -46642,7 +46629,6 @@
     {
       "Id": 14,
       "Name": "Hawaii",
-"ShortName": "HI",
       "Cities": [
         {
           "Id": 1,
@@ -47438,7 +47424,6 @@
     {
       "Id": 15,
       "Name": "Idaho",
-"ShortName": "ID",
       "Cities": [
         {
           "Id": 1,
@@ -49812,7 +49797,6 @@
     {
       "Id": 16,
       "Name": "Illinois",
-"ShortName": "IL",
       "Cities": [
         {
           "Id": 1,
@@ -61549,7 +61533,6 @@
     {
       "Id": 17,
       "Name": "Indiana",
-"ShortName": "IN",
       "Cities": [
         {
           "Id": 1,
@@ -68135,7 +68118,6 @@
     {
       "Id": 18,
       "Name": "Iowa",
-"ShortName": "IA",
       "Cities": [
         {
           "Id": 1,
@@ -76608,7 +76590,6 @@
     {
       "Id": 19,
       "Name": "Kansas",
-"ShortName": "KS",
       "Cities": [
         {
           "Id": 1,
@@ -82465,7 +82446,6 @@
     {
       "Id": 20,
       "Name": "Kentucky",
-"ShortName": "KY",
       "Cities": [
         {
           "Id": 1,
@@ -89138,7 +89118,6 @@
     {
       "Id": 21,
       "Name": "Louisiana",
-"ShortName": "LA",
       "Cities": [
         {
           "Id": 1,
@@ -93450,7 +93429,6 @@
     {
       "Id": 22,
       "Name": "Maine",
-"ShortName": "MA",
       "Cities": [
         {
           "Id": 1,
@@ -97267,7 +97245,6 @@
     {
       "Id": 23,
       "Name": "Maryland",
-"ShortName": "MD",
       "Cities": [
         {
           "Id": 1,
@@ -101093,7 +101070,6 @@
     {
       "Id": 24,
       "Name": "Massachusetts",
-"ShortName": "MA",
       "Cities": [
         {
           "Id": 1,
@@ -105495,7 +105471,6 @@
     {
       "Id": 25,
       "Name": "Michigan",
-"ShortName": "MI",
       "Cities": [
         {
           "Id": 1,
@@ -113518,7 +113493,6 @@
     {
       "Id": 26,
       "Name": "Minnesota",
-"ShortName": "MN",
       "Cities": [
         {
           "Id": 1,
@@ -120818,7 +120792,6 @@
     {
       "Id": 27,
       "Name": "Mississippi",
-"ShortName": "MS",
       "Cities": [
         {
           "Id": 1,
@@ -124452,7 +124425,6 @@
     {
       "Id": 28,
       "Name": "Missouri",
-"ShortName": "MO",
       "Cities": [
         {
           "Id": 1,
@@ -132958,7 +132930,6 @@
     {
       "Id": 29,
       "Name": "Montana",
-"ShortName": "MT",
       "Cities": [
         {
           "Id": 1,
@@ -136196,7 +136167,6 @@
     {
       "Id": 30,
       "Name": "Nebraska",
-"ShortName": "NE",
       "Cities": [
         {
           "Id": 1,
@@ -141117,7 +141087,6 @@
     {
       "Id": 31,
       "Name": "Nevada",
-"ShortName": "NV",
       "Cities": [
         {
           "Id": 1,
@@ -142231,7 +142200,6 @@
     {
       "Id": 32,
       "Name": "New Hampshire",
-"ShortName": "NH",
       "Cities": [
         {
           "Id": 1,
@@ -144401,7 +144369,6 @@
     {
       "Id": 33,
       "Name": "New Jersey",
-"ShortName": "NJ",
       "Cities": [
         {
           "Id": 1,
@@ -149448,7 +149415,6 @@
     {
       "Id": 34,
       "Name": "New Mexico",
-"ShortName": "NM",
       "Cities": [
         {
           "Id": 1,
@@ -152572,7 +152538,6 @@
     {
       "Id": 35,
       "Name": "New York",
-"ShortName": "NY",
       "Cities": [
         {
           "Id": 1,
@@ -167207,7 +167172,6 @@
     {
       "Id": 36,
       "Name": "North Carolina",
-"ShortName": "NC",
       "Cities": [
         {
           "Id": 1,
@@ -174081,7 +174045,6 @@
     {
       "Id": 37,
       "Name": "North Dakota",
-"ShortName": "ND",
       "Cities": [
         {
           "Id": 1,
@@ -177484,7 +177447,6 @@
     {
       "Id": 38,
       "Name": "Northern Mariana Islands",
-"ShortName": "MP",
       "Cities": [
         {
           "Id": 1,
@@ -177518,7 +177480,6 @@
     {
       "Id": 39,
       "Name": "Ohio",
-"ShortName": "OH",
       "Cities": [
         {
           "Id": 1,
@@ -187296,7 +187257,6 @@
     {
       "Id": 40,
       "Name": "Oklahoma",
-"ShortName": "OK",
       "Cities": [
         {
           "Id": 1,
@@ -192715,7 +192675,6 @@
     {
       "Id": 41,
       "Name": "Oregon",
-"ShortName": "OR",
       "Cities": [
         {
           "Id": 1,
@@ -196175,7 +196134,6 @@
     {
       "Id": 42,
       "Name": "Pennsylvania",
-"ShortName": "PA",
       "Cities": [
         {
           "Id": 1,
@@ -211527,7 +211485,6 @@
     {
       "Id": 43,
       "Name": "Puerto Rico",
-"ShortName": "PR",
       "Cities": [
         {
           "Id": 1,
@@ -212491,7 +212448,6 @@
     {
       "Id": 44,
       "Name": "Rhode Island",
-"ShortName": "RI",
       "Cities": [
         {
           "Id": 1,
@@ -213143,7 +213099,6 @@
     {
       "Id": 45,
       "Name": "South Carolina",
-"ShortName": "SC",
       "Cities": [
         {
           "Id": 1,
@@ -216516,7 +216471,6 @@
     {
       "Id": 46,
       "Name": "South Dakota",
-"ShortName": "SD",
       "Cities": [
         {
           "Id": 1,
@@ -219826,7 +219780,6 @@
     {
       "Id": 47,
       "Name": "Tennessee",
-"ShortName": "TN",
       "Cities": [
         {
           "Id": 1,
@@ -224861,7 +224814,6 @@
     {
       "Id": 48,
       "Name": "Texas",
-"ShortName": "TX",
       "Cities": [
         {
           "Id": 1,
@@ -239238,7 +239190,6 @@
     {
       "Id": 49,
       "Name": "Utah",
-"ShortName": "UT",
       "Cities": [
         {
           "Id": 1,
@@ -241645,7 +241596,6 @@
     {
       "Id": 50,
       "Name": "Vermont",
-"ShortName": "VT",
       "Cities": [
         {
           "Id": 1,
@@ -244007,7 +243957,6 @@
     {
       "Id": 51,
       "Name": "Virgin Islands",
-"ShortName": "VI",
       "Cities": [
         {
           "Id": 1,
@@ -244062,7 +244011,6 @@
     {
       "Id": 52,
       "Name": "Virginia",
-"ShortName": "VA",
       "Cities": [
         {
           "Id": 1,
@@ -251122,7 +251070,6 @@
     {
       "Id": 53,
       "Name": "Washington",
-"ShortName": "WA",
       "Cities": [
         {
           "Id": 1,
@@ -255722,7 +255669,6 @@
     {
       "Id": 54,
       "Name": "West Virginia",
-"ShortName": "WV",
       "Cities": [
         {
           "Id": 1,
@@ -262215,7 +262161,6 @@
     {
       "Id": 55,
       "Name": "Wisconsin",
-"ShortName": "WI",
       "Cities": [
         {
           "Id": 1,
@@ -268819,7 +268764,6 @@
     {
       "Id": 56,
       "Name": "Wyoming",
-"ShortName": "WY",
       "Cities": [
         {
           "Id": 1,
