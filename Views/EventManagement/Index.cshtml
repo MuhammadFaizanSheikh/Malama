@@ -2486,6 +2486,7 @@ $(document).ready(function () {
         function generateEventID() {
             const eventCity = $("#EventCity").val();
             const eventState = $("#EventState").val();  // This gets the selected state name
+            const existingEventID = $("#EventIDHidden").val();
 
             if (eventCity && eventState) {
                 debugger;
@@ -2495,25 +2496,30 @@ $(document).ready(function () {
                     let part1 = selectedState ? selectedState.ShortName : "";  // Get the short name safely
 
                     const part2 = eventCity.toUpperCase().substring(0, 3);
+                    let part3 = "";
 
-                    // Now fetch the next Event Management ID
-                    $.ajax({
-                        url: '/EventManagement/GetNextEventManagementId',
-                        type: 'GET',
-                        success: function (response) {
-                            if (response.success) {
-                                const part3 = response.data.eventManagementId.toString().padStart(4, '0'); // Ensure 4 digits
-                                const finalEventManagementId = part1 + part2 + part3;
-                                $("#EventID").text(finalEventManagementId);
-                                $("#EventIDHidden").val(finalEventManagementId);
-                            } else {
-                                console.error("Error fetching Event Management ID sequence.");
+                    if (existingEventID) {
+                        // Extract part3 from existing Event ID
+                        part3 = existingEventID.substring(part1.length + part2.length);
+                        updateEventID(part1, part2, part3);
+                    } else {
+                        // Fetch the next Event Management ID
+                        $.ajax({
+                            url: '/EventManagement/GetNextEventManagementId',
+                            type: 'GET',
+                            success: function (response) {
+                                if (response.success) {
+                                    part3 = response.data.eventManagementId.toString().padStart(4, '0'); // Ensure 4 digits
+                                    updateEventID(part1, part2, part3);
+                                } else {
+                                    console.error("Error fetching Event Management ID sequence.");
+                                }
+                            },
+                            error: function () {
+                                alert("An error occurred while getting EventID sequence.");
                             }
-                        },
-                        error: function () {
-                            alert("An error occurred while getting EventID sequence.");
-                        }
-                    });
+                        });
+                    }
                 }).fail(function () {
                     console.error("Error loading statesAndCities JSON file.");
                 });
@@ -2523,6 +2529,11 @@ $(document).ready(function () {
             }
         }
 
+        function updateEventID(part1, part2, part3) {
+            const finalEventManagementId = part1 + part2 + part3;
+            $("#EventID").text(finalEventManagementId);
+            $("#EventIDHidden").val(finalEventManagementId);
+        }
 
         $("#EventCity").change(function () {
             generateEventID();
