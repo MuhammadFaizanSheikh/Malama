@@ -138,7 +138,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var eventManagement = await _unitOfWork.EventManagement.GetWithIncludeAsync(
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
-                    x => x.EventStartEndTimeDayWiseList
+                    x => x.EventStartEndTimeDayWiseList,
+                    x => x.EventStaffDetailList
                 );
 
                 if (eventManagement != null)

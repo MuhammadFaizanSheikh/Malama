@@ -2077,7 +2077,6 @@ $(document).ready(function () {
         let tableInitialized = false;
 
         $("#progressBar span").click(function() {
-            debugger;
                 var target = $(this).data("target");
                 var section = currentSectionForProgressBar;
 
@@ -2112,7 +2111,6 @@ $(document).ready(function () {
             });
 
         $(".next").click(function () {
-            debugger;
             const section = $(this).data("section");
             
             if (section == 1 && !validateServiceMemberPercentages())
@@ -2194,6 +2192,10 @@ $(document).ready(function () {
 
 
         function initializeEventStaffTable() {
+            if ($.fn.DataTable.isDataTable('#eventStaffSelectionTable')) {
+                $('#eventStaffSelectionTable').DataTable().clear().destroy();
+            }
+
             $('#eventStaffSelectionTable').DataTable({
                 "processing": true,
                 "serverSide": false,
@@ -2234,7 +2236,6 @@ $(document).ready(function () {
             });
 
             $('#eventStaffSelectionTable tbody').on('click', '.add-staff-btn', function () {
-                debugger;
                 let staffData = $(this).data('staff'); // Get row data
                 addStaffToSelectedTable(staffData);
             });
@@ -2272,9 +2273,20 @@ $(document).ready(function () {
             });
         }
 
-        function addStaffToSelectedTable(staffData) {
+        function loadStaffForEditMode(staffList) {
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
-            debugger;
+
+            staffList.forEach((staffData, index) => {
+                addStaffToSelectedTable(staffData, index);
+            });
+
+            // Call updateRowIndices ONCE after all rows are added
+            updateRowIndices();
+        }
+
+        function addStaffToSelectedTable(staffData, rowIndex = null) {
+            let selectedTable = $('#eventStaffSelectedTable').DataTable();
+
             // Prevent duplicates
             let existingRows = selectedTable.rows().data().toArray();
             if (existingRows.some(row => row.staffID === staffData.staffID)) {
@@ -2282,7 +2294,10 @@ $(document).ready(function () {
                 return;
             }
 
-            let rowIndex = selectedTable.rows().count();
+            // Assign index dynamically
+            if (rowIndex === null) {
+                rowIndex = selectedTable.rows().count();
+            }
 
             // Add row to the table
             selectedTable.row.add({
@@ -2292,28 +2307,43 @@ $(document).ready(function () {
                 primaryState: staffData.primaryState,
                 primaryCity: staffData.primaryCity,
                 primaryZip: staffData.primaryZip,
-                id: staffData.id,
+                id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
+                   value="${staffData.id}" /> ${staffData.id}`,
                 action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
-                              data-staffid="${staffData.id}">Remove</button>`
+                      data-staffid="${staffData.id}">Remove</button>`
             }).draw();
         }
 
 
+
         $(document).on('click', '.remove-staff-btn', function () {
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
-            selectedTable.row($(this).closest('tr')).remove().draw();
 
-            $('#eventStaffSelectedTable tbody tr').each(function (index) {
-                $(this).find('.eventStaffIdHidden').attr('name', `SingleEventManagement.EventStaffAssociationList[${index}].EventStaffId`);
-            });
+            // Remove the selected row
+            selectedTable.row($(this).closest('tr')).remove().draw(false);
+
+            // Update row indices after removal
+            updateRowIndices();
         });
+
+        function updateRowIndices() {
+            debugger;
+            $('#eventStaffSelectedTable tbody tr').each(function (index) {
+                $(this).find('.eventStaffIdHidden').each(function () {
+                    let name = $(this).attr('name');
+                    $(this).attr('name', name.replace(/\[\d+\]/, `[${index}]`)); // Reset index correctly
+                });
+            });
+        }
+
+
+
 
         $(document).on('click', '.add-staff-btn, .remove-staff-btn', function () {
             updateProgressBar(7);
         });
 
         $("#submitBtn").click(function (e) {
-            debugger;
 
             e.preventDefault();
 
@@ -2363,7 +2393,6 @@ $(document).ready(function () {
         });
 
         $("#updateBtn").click(function (e) {
-            debugger;
 
             e.preventDefault();
 
@@ -2576,7 +2605,6 @@ $(document).ready(function () {
 
         function updateProgressBar(sectionNumber) {
             const section = $(`#section${sectionNumber}`);
-            debugger;
             // Case for Section 7 (staff selection)
             if (sectionNumber == 7) {
                 const selectedStaffCount = $('#eventStaffSelectedTable').DataTable().rows().count();
@@ -2772,7 +2800,6 @@ $(document).ready(function () {
             const existingEventID = $("#EventIDHidden").val();
 
             if (eventCity && eventState) {
-                debugger;
 
                 $.getJSON("/data/statesAndCities.json", function (data) {
                     let selectedState = data.states.find(state => state.Name === eventState);
@@ -3125,7 +3152,6 @@ $(document).ready(function () {
             type: 'GET',
             success: function (response) {
                 if (response.success) {
-                    debugger;
                     var combinedData = response.combinedData;
                     //var stringdata = JSON.stringify(combinedData);
                     setProgressFromServer(combinedData.eventManagement.completedSections);
@@ -3370,7 +3396,9 @@ $(document).ready(function () {
                         $('#HIVDropOffStaffFirstName').val(combinedData.eventStaff.staffLastName);
                     }
 
-                    
+                    debugger;
+                    var eventStaffList = combinedData.eventManagement.eventStaffDetailList;
+                    loadStaffForEditMode(eventStaffList);
 
                     // Show the form and hide the table
                     $(`#progressBar span[data-target='1']`).addClass("active");
@@ -3570,6 +3598,7 @@ $(document).ready(function () {
     }
 
     function resetFormFields() {
+        tableInitialized = false;
         $('#hiddenId').val('');
         $('#EventID').text('');
         $('#EventIDHidden').val('');

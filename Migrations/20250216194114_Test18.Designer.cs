@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250216194114_Test18")]
+    partial class Test18
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -716,7 +719,7 @@ namespace ExcelFilesCompiler.Migrations
                     b.ToTable("EventServiceDetail");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
+            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffAssociation", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -734,7 +737,7 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.HasIndex("EventManagementId");
 
-                    b.ToTable("EventStaffDetail");
+                    b.ToTable("EventStaffAssociation");
                 });
 
             modelBuilder.Entity("ExcelFilesCompiler.Models.EventStartEndTimeDayWise", b =>
@@ -1657,10 +1660,10 @@ namespace ExcelFilesCompiler.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
+            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffAssociation", b =>
                 {
                     b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
-                        .WithMany("EventStaffDetailList")
+                        .WithMany("EventStaffAssociationList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1766,7 +1769,7 @@ namespace ExcelFilesCompiler.Migrations
                 {
                     b.Navigation("EventServiceDetailList");
 
-                    b.Navigation("EventStaffDetailList");
+                    b.Navigation("EventStaffAssociationList");
 
                     b.Navigation("EventStartEndTimeDayWiseList");
                 });

@@ -75,7 +75,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
-                    int totalSections = 6; // Total number of sections
+                    int totalSections = 7; // Total number of sections
                     var filledSectionsList = completedSections.Split(',').ToList();
                     eventManagement.SingleEventManagement.StatusDescription = (filledSectionsList.Count == totalSections) ? "Completed" : "Pending";
                     eventManagement.SingleEventManagement.CompletedSections = completedSections;

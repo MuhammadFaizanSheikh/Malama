@@ -314,7 +314,7 @@
         [Required]
         public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList { get; set; } = new List<EventStartEndTimeDayWise>();
 
-        public List<EventStaffAssociation> EventStaffAssociationList { get; set; } = new List<EventStaffAssociation>();
+        public List<EventStaffDetail> EventStaffDetailList { get; set; } = new List<EventStaffDetail>();
     }
 
     [Table("EventServiceDetail")]
@@ -359,8 +359,8 @@
 
     }
 
-    [Table("EventStaffAssociation")]
-    public class EventStaffAssociation
+    [Table("EventStaffDetail")]
+    public class EventStaffDetail
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

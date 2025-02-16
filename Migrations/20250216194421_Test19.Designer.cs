@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250216194421_Test19")]
+    partial class Test19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1660,7 +1663,7 @@ namespace ExcelFilesCompiler.Migrations
             modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
                 {
                     b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
-                        .WithMany("EventStaffDetailList")
+                        .WithMany("EventStaffAssociationList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1766,7 +1769,7 @@ namespace ExcelFilesCompiler.Migrations
                 {
                     b.Navigation("EventServiceDetailList");
 
-                    b.Navigation("EventStaffDetailList");
+                    b.Navigation("EventStaffAssociationList");
 
                     b.Navigation("EventStartEndTimeDayWiseList");
                 });
