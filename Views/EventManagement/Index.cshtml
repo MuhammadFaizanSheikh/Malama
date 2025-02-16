@@ -2274,6 +2274,9 @@ $(document).ready(function () {
         }
 
         function loadStaffForEditMode(staffList) {
+            tableInitialized = true;
+            initializeEventStaffTable();
+            initializeSelectedStaffTable();
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
             staffList.forEach((staffData, index) => {
@@ -3139,319 +3142,325 @@ $(document).ready(function () {
 
         // Initialize on page load
         toggleLockableRefrigerator();
-    });
 
 
+        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+            var contractId = $(this).data('id');
+            $("#updateBtn").data("section", 1);
+            var isViewButton = $(this).hasClass('view-btn');
+            $.ajax({
+                url: '/EventManagement/GetEventManagementById/' + contractId,
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        var combinedData = response.combinedData;
+                        //var stringdata = JSON.stringify(combinedData);
+                        setProgressFromServer(combinedData.eventManagement.completedSections);
+                        $('#hiddenId').val(combinedData.eventManagement.id);
+                        $('#EventID').text(combinedData.eventManagement.eventID);
+                        $('#EventIDHidden').val(combinedData.eventManagement.eventID);
+                        $('#SubEventID').val(combinedData.eventManagement.subEventID);
+                        $('#TaskForce').val(combinedData.eventManagement.taskForce);
+                        $('#EventStatus').val(combinedData.eventManagement.eventStatus);
 
-    $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
-        var contractId = $(this).data('id');
-        $("#updateBtn").data("section", 1);
-        var isViewButton = $(this).hasClass('view-btn');
-        $.ajax({
-            url: '/EventManagement/GetEventManagementById/' + contractId,
-            type: 'GET',
-            success: function (response) {
-                if (response.success) {
-                    var combinedData = response.combinedData;
-                    //var stringdata = JSON.stringify(combinedData);
-                    setProgressFromServer(combinedData.eventManagement.completedSections);
-                    $('#hiddenId').val(combinedData.eventManagement.id);
-                    $('#EventID').text(combinedData.eventManagement.eventID);
-                    $('#EventIDHidden').val(combinedData.eventManagement.eventID);
-                    $('#SubEventID').val(combinedData.eventManagement.subEventID);
-                    $('#TaskForce').val(combinedData.eventManagement.taskForce);
-                    $('#EventStatus').val(combinedData.eventManagement.eventStatus);
-                    
-                    var selectedData = {
-                        id: combinedData.contractDetails.id,
-                        text: combinedData.contractDetails.contractName
+                        var selectedData = {
+                            id: combinedData.contractDetails.id,
+                            text: combinedData.contractDetails.contractName
                         };
 
                         var newOption = new Option(selectedData.text, selectedData.id, true, true);
                         $('#ContractId').append(newOption);
 
 
-                    $("#contractIdLabel").text(combinedData.contractDetails.contractID);
-                    $("#contractAgencyLabel").text(combinedData.contractDetails.contractAgency);
-                    $("#contractServiceBranchLabel").text(combinedData.contractDetails.contractServiceBranch);
-                    $("#contractComponentLabel").text(combinedData.contractDetails.contractComponent);
-                    $("#contractTypeLabel").text(combinedData.contractDetails.contractType);
+                        $("#contractIdLabel").text(combinedData.contractDetails.contractID);
+                        $("#contractAgencyLabel").text(combinedData.contractDetails.contractAgency);
+                        $("#contractServiceBranchLabel").text(combinedData.contractDetails.contractServiceBranch);
+                        $("#contractComponentLabel").text(combinedData.contractDetails.contractComponent);
+                        $("#contractTypeLabel").text(combinedData.contractDetails.contractType);
 
-                    let contractStartDate = new Date(combinedData.contractDetails.contractStartDate);
-                    let formattedcontractStartDate = contractStartDate.toLocaleDateString('en-US');
-                    $('#contractStartDateLabel').text(formattedcontractStartDate);
+                        let contractStartDate = new Date(combinedData.contractDetails.contractStartDate);
+                        let formattedcontractStartDate = contractStartDate.toLocaleDateString('en-US');
+                        $('#contractStartDateLabel').text(formattedcontractStartDate);
 
-                    let contractEndDate = new Date(combinedData.contractDetails.contractEndDate);
-                    let formattedcontractEndDate = contractEndDate.toLocaleDateString('en-US');
-                    $('#contractEndDateLabel').text(formattedcontractEndDate);
+                        let contractEndDate = new Date(combinedData.contractDetails.contractEndDate);
+                        let formattedcontractEndDate = contractEndDate.toLocaleDateString('en-US');
+                        $('#contractEndDateLabel').text(formattedcontractEndDate);
 
-                    var DawsonProjectManagerLastName = combinedData.contractDetails.dawsonProjectManagerLastName;
-                    var DawsonProjectManagerFirstName = combinedData.contractDetails.dawsonProjectManagerFirstName;
-                    $("#dawsonProjectManagerLabel").text(DawsonProjectManagerFirstName + ' ' + DawsonProjectManagerLastName);
-                    $("#contractDetails").show();
+                        var DawsonProjectManagerLastName = combinedData.contractDetails.dawsonProjectManagerLastName;
+                        var DawsonProjectManagerFirstName = combinedData.contractDetails.dawsonProjectManagerFirstName;
+                        $("#dawsonProjectManagerLabel").text(DawsonProjectManagerFirstName + ' ' + DawsonProjectManagerLastName);
+                        $("#contractDetails").show();
 
-                    $('#EventAddress1').val(combinedData.eventManagement.eventAddress1);
-                    $('#EventAddress2').val(combinedData.eventManagement.eventAddress2);
-                    $('#EventState').val(combinedData.eventManagement.eventState).trigger('change');
-                    $('#EventCity').val(combinedData.eventManagement.eventCity).trigger('change');
-                    $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
-                    $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
+                        $('#EventAddress1').val(combinedData.eventManagement.eventAddress1);
+                        $('#EventAddress2').val(combinedData.eventManagement.eventAddress2);
+                        $('#EventState').val(combinedData.eventManagement.eventState).trigger('change');
+                        $('#EventCity').val(combinedData.eventManagement.eventCity).trigger('change');
+                        $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
+                        $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
 
-                    //Daywise time setting pending;
-
-                    
-                    if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
-                        let eventStartDate = new Date(combinedData.eventManagement.eventStartDate).toISOString().split('T')[0];
-                        let eventEndDate = new Date(combinedData.eventManagement.eventEndDate).toISOString().split('T')[0];
-
-                        $('#EventStartDate').val(eventStartDate);
-                        $('#EventEndDate').val(eventEndDate);
-
-                        generateControlsForDateRange(eventStartDate, eventEndDate, combinedData.eventManagement.eventStartEndTimeDayWiseList);
-                    }
+                        //Daywise time setting pending;
 
 
-                    if (combinedData.eventManagement.deploy === 'Deploying') {
-                        $('#Deploying').prop('checked', true).trigger('change');
-                            } else {
-                                $('#NonDeploying').prop('checked', true).trigger('change');
-                            }
+                        if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
+                            let eventStartDate = new Date(combinedData.eventManagement.eventStartDate).toISOString().split('T')[0];
+                            let eventEndDate = new Date(combinedData.eventManagement.eventEndDate).toISOString().split('T')[0];
 
-                    if (combinedData.eventManagement.mobDate) {
-                        let eventMobDate = new Date(combinedData.eventManagement.mobDate);
-                        let formattedeventMobDate = eventMobDate.toLocaleDateString('en-CA');
-                        $('#EventMobDate').val(formattedeventMobDate);
-                    }
+                            $('#EventStartDate').val(eventStartDate);
+                            $('#EventEndDate').val(eventEndDate);
 
-                    $('#RegardingSites').val(combinedData.eventManagement.regardingSites);
-                    $('#EventHelpLine').val(combinedData.eventManagement.eventHelpLine);
-                    $('#MainPocLastName').val(combinedData.eventManagement.mainPocLastName);
-                    $('#MainPocFirstName').val(combinedData.eventManagement.mainPocFirstName);
-                    $('#MainPocRank').val(combinedData.eventManagement.mainPocRank);
-                    $('#MainPocPhonePrimary').val(combinedData.eventManagement.mainPocPhonePrimary);
-                    $('#MainPocPhoneSecondary').val(combinedData.eventManagement.mainPocPhoneSecondary);
-                    $('#MainPocEmailPrimary').val(combinedData.eventManagement.mainPocEmailPrimary);
-                    $('#MainPocEmailSecondary').val(combinedData.eventManagement.mainPocEmailSecondary);
-                    $('#SecondaryPocLastName').val(combinedData.eventManagement.secondaryPocLastName);
-                    $('#SecondaryPocFirstName').val(combinedData.eventManagement.secondaryPocFirstName);
-                    $('#SecondaryPocRank').val(combinedData.eventManagement.secondaryPocRank);
-                    $('#SecondaryPocPhonePrimary').val(combinedData.eventManagement.secondaryPocPhonePrimary);
-                    $('#SecondaryPocPhoneSecondary').val(combinedData.eventManagement.secondaryPocPhoneSecondary);
-                    $('#SecondaryPocEmailPrimary').val(combinedData.eventManagement.secondaryPocEmailPrimary);
-                    $('#SecondaryPocEmailSecondary').val(combinedData.eventManagement.secondaryPocEmailSecondary);
-
-                    $('#toggleAdditionalPOC').prop('checked', combinedData.eventManagement.addAddtionalAlternatePoc);
-
-                    if (combinedData.eventManagement.addAddtionalAlternatePoc) {
-                        $('#additionalPocControls').show();
-                    } else {
-                        $('#additionalPocControls').hide();
-                    }
+                            generateControlsForDateRange(eventStartDate, eventEndDate, combinedData.eventManagement.eventStartEndTimeDayWiseList);
+                        }
 
 
-                    $('#AddAdditionalAlternatePoc').prop('checked', combinedData.eventManagement.addAddtionalAlternatePoc);
-                    $('#AddtionalAlternatePocLastName').val(combinedData.eventManagement.addtionalAlternatePocLastName);
-                    $('#AddtionalAlternatePocFirstName').val(combinedData.eventManagement.addtionalAlternatePocFirstName);
-                    $('#AddtionalAlternatePocRank').val(combinedData.eventManagement.addtionalAlternatePocRank);
-                    $('#AddtionalAlternatePocPhonePrimary').val(combinedData.eventManagement.addtionalAlternatePocPhonePrimary);
-                    $('#AddtionalAlternatePocPhoneSecondary').val(combinedData.eventManagement.addtionalAlternatePocPhoneSecondary);
-                    $('#AddtionalAlternatePocEmailPrimary').val(combinedData.eventManagement.addtionalAlternatePocEmailPrimary);
-                    $('#AddtionalAlternatePocEmailSecondary').val(combinedData.eventManagement.addtionalAlternatePocEmailSecondary);
-                    $('#AddtionalAlternatePocRole').val(combinedData.eventManagement.addtionalAlternatePocRole);
-                    $('#ShippingAddressLine1').val(combinedData.eventManagement.shippingAddressLine1);
-                    $('#ShippingAddressLine2').val(combinedData.eventManagement.shippingAddressLine2);
-                    $('#ShippingState').val(combinedData.eventManagement.shippingAddressState).trigger('change');
-                    $('#ShippingCity').val(combinedData.eventManagement.shippingAddressCity).trigger('change');
-                    $('#ShippingZipCode').val(combinedData.eventManagement.shippingAddressZipCode);
-                    $('#ShippingPocLastName').val(combinedData.eventManagement.shippingPocLastName);
-                    $('#ShippingPocRank').val(combinedData.eventManagement.shippingPocRank);
-                    $('#ShippingPocFirstName').val(combinedData.eventManagement.shippingPocFirstName);
-                    $('#ShippingPocPrimaryPhone').val(combinedData.eventManagement.shippingPocPrimaryPhone);
-                    $('#ShippingPocSecondaryPhone').val(combinedData.eventManagement.shippingPocSecondaryPhone);
-                    $('#ShippingPocPrimaryEmail').val(combinedData.eventManagement.shippingPocPrimaryEmail);
-                    $('#ShippingPocSecondaryEmail').val(combinedData.eventManagement.shippingPocSecondaryEmail);
-                    $('#OpenAt').val(combinedData.eventManagement.shippingPocOpenAt);
-                    $('#CloseAt').val(combinedData.eventManagement.shippingPocCloseAt);
-                    $('#ShippingInstruction').val(combinedData.eventManagement.shippingPocInstruction);
+                        if (combinedData.eventManagement.deploy === 'Deploying') {
+                            $('#Deploying').prop('checked', true).trigger('change');
+                        } else {
+                            $('#NonDeploying').prop('checked', true).trigger('change');
+                        }
 
-                    if (combinedData.eventManagement.shippingPocPickupDate) {
-                    let shippingPocPickupDate = new Date(combinedData.eventManagement.shippingPocPickupDate);
-                    let formattedshippingPocPickupDate = shippingPocPickupDate.toLocaleDateString('en-CA');
-                    $('#PickupDate').val(formattedshippingPocPickupDate);
-                    }
+                        if (combinedData.eventManagement.mobDate) {
+                            let eventMobDate = new Date(combinedData.eventManagement.mobDate);
+                            let formattedeventMobDate = eventMobDate.toLocaleDateString('en-CA');
+                            $('#EventMobDate').val(formattedeventMobDate);
+                        }
 
-                    $('#PickupTime').val(combinedData.eventManagement.shippingPocPickupTime);
+                        $('#RegardingSites').val(combinedData.eventManagement.regardingSites);
+                        $('#EventHelpLine').val(combinedData.eventManagement.eventHelpLine);
+                        $('#MainPocLastName').val(combinedData.eventManagement.mainPocLastName);
+                        $('#MainPocFirstName').val(combinedData.eventManagement.mainPocFirstName);
+                        $('#MainPocRank').val(combinedData.eventManagement.mainPocRank);
+                        $('#MainPocPhonePrimary').val(combinedData.eventManagement.mainPocPhonePrimary);
+                        $('#MainPocPhoneSecondary').val(combinedData.eventManagement.mainPocPhoneSecondary);
+                        $('#MainPocEmailPrimary').val(combinedData.eventManagement.mainPocEmailPrimary);
+                        $('#MainPocEmailSecondary').val(combinedData.eventManagement.mainPocEmailSecondary);
+                        $('#SecondaryPocLastName').val(combinedData.eventManagement.secondaryPocLastName);
+                        $('#SecondaryPocFirstName').val(combinedData.eventManagement.secondaryPocFirstName);
+                        $('#SecondaryPocRank').val(combinedData.eventManagement.secondaryPocRank);
+                        $('#SecondaryPocPhonePrimary').val(combinedData.eventManagement.secondaryPocPhonePrimary);
+                        $('#SecondaryPocPhoneSecondary').val(combinedData.eventManagement.secondaryPocPhoneSecondary);
+                        $('#SecondaryPocEmailPrimary').val(combinedData.eventManagement.secondaryPocEmailPrimary);
+                        $('#SecondaryPocEmailSecondary').val(combinedData.eventManagement.secondaryPocEmailSecondary);
 
-                    if (combinedData.eventManagement.shippingPocDeliveryFromDate) {
-                        let shippingPocDeliveryFromDate = new Date(combinedData.eventManagement.shippingPocDeliveryFromDate);
-                        let formattedshippingPocDeliveryFromDate = shippingPocDeliveryFromDate.toLocaleDateString('en-CA');
-                        $('#DeliveryFromDate').val(formattedshippingPocDeliveryFromDate);
-                    }
+                        $('#toggleAdditionalPOC').prop('checked', combinedData.eventManagement.addAddtionalAlternatePoc);
 
-                    if (combinedData.eventManagement.shippingPocDeliveryToDate) {
-                        let shippingPocDeliveryToDate = new Date(combinedData.eventManagement.shippingPocDeliveryToDate);
-                        let formattedshippingPocDeliveryToDate = shippingPocDeliveryToDate.toLocaleDateString('en-CA');
-                        $('#DeliveryToDate').val(formattedshippingPocDeliveryToDate);
-                    }
+                        if (combinedData.eventManagement.addAddtionalAlternatePoc) {
+                            $('#additionalPocControls').show();
+                        } else {
+                            $('#additionalPocControls').hide();
+                        }
 
 
-                    $('#SuggestedHourlyFlow').val(combinedData.eventManagement.shippingPocSuggestedHourlyFlow);
-                    $('#ShippingPocSpecialGateInstructions').val(combinedData.eventManagement.shippingPocSpecialGateInstructions);
-                    $('#ShippingPocParkingInstructions').val(combinedData.eventManagement.shippingPocParkingInstructions);
+                        $('#AddAdditionalAlternatePoc').prop('checked', combinedData.eventManagement.addAddtionalAlternatePoc);
+                        $('#AddtionalAlternatePocLastName').val(combinedData.eventManagement.addtionalAlternatePocLastName);
+                        $('#AddtionalAlternatePocFirstName').val(combinedData.eventManagement.addtionalAlternatePocFirstName);
+                        $('#AddtionalAlternatePocRank').val(combinedData.eventManagement.addtionalAlternatePocRank);
+                        $('#AddtionalAlternatePocPhonePrimary').val(combinedData.eventManagement.addtionalAlternatePocPhonePrimary);
+                        $('#AddtionalAlternatePocPhoneSecondary').val(combinedData.eventManagement.addtionalAlternatePocPhoneSecondary);
+                        $('#AddtionalAlternatePocEmailPrimary').val(combinedData.eventManagement.addtionalAlternatePocEmailPrimary);
+                        $('#AddtionalAlternatePocEmailSecondary').val(combinedData.eventManagement.addtionalAlternatePocEmailSecondary);
+                        $('#AddtionalAlternatePocRole').val(combinedData.eventManagement.addtionalAlternatePocRole);
+                        $('#ShippingAddressLine1').val(combinedData.eventManagement.shippingAddressLine1);
+                        $('#ShippingAddressLine2').val(combinedData.eventManagement.shippingAddressLine2);
+                        $('#ShippingState').val(combinedData.eventManagement.shippingAddressState).trigger('change');
+                        $('#ShippingCity').val(combinedData.eventManagement.shippingAddressCity).trigger('change');
+                        $('#ShippingZipCode').val(combinedData.eventManagement.shippingAddressZipCode);
+                        $('#ShippingPocLastName').val(combinedData.eventManagement.shippingPocLastName);
+                        $('#ShippingPocRank').val(combinedData.eventManagement.shippingPocRank);
+                        $('#ShippingPocFirstName').val(combinedData.eventManagement.shippingPocFirstName);
+                        $('#ShippingPocPrimaryPhone').val(combinedData.eventManagement.shippingPocPrimaryPhone);
+                        $('#ShippingPocSecondaryPhone').val(combinedData.eventManagement.shippingPocSecondaryPhone);
+                        $('#ShippingPocPrimaryEmail').val(combinedData.eventManagement.shippingPocPrimaryEmail);
+                        $('#ShippingPocSecondaryEmail').val(combinedData.eventManagement.shippingPocSecondaryEmail);
+                        $('#OpenAt').val(combinedData.eventManagement.shippingPocOpenAt);
+                        $('#CloseAt').val(combinedData.eventManagement.shippingPocCloseAt);
+                        $('#ShippingInstruction').val(combinedData.eventManagement.shippingPocInstruction);
 
-                    if (combinedData.eventManagement.shippingPocTablesAndChairsAvailable === 'Yes') {
-                        $('#ShippingPocTablesAndChairsAvailableYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.shippingPocTablesAndChairsAvailable === 'No'){
-                        $('#ShippingPocTablesAndChairsAvailableNo').prop('checked', true).trigger('change');
-                    }
+                        if (combinedData.eventManagement.shippingPocPickupDate) {
+                            let shippingPocPickupDate = new Date(combinedData.eventManagement.shippingPocPickupDate);
+                            let formattedshippingPocPickupDate = shippingPocPickupDate.toLocaleDateString('en-CA');
+                            $('#PickupDate').val(formattedshippingPocPickupDate);
+                        }
 
-                    if (combinedData.eventManagement.shippingPocLocationSecured === 'Yes') {
-                        $('#ShippingPocLocationSecuredYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.shippingPocLocationSecured === 'No') {
-                        $('#ShippingPocLocationSecuredNo').prop('checked', true).trigger('change');
-                    }
+                        $('#PickupTime').val(combinedData.eventManagement.shippingPocPickupTime);
 
-                    if (combinedData.eventManagement.shippingPocRefrigeratorAvailable === 'Yes') {
-                        $('#ShippingPocRefrigeratorAvailableYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.shippingPocRefrigeratorAvailable === 'No'){
-                        $('#ShippingPocRefrigeratorAvailableNo').prop('checked', true).trigger('change');
-                    }
+                        if (combinedData.eventManagement.shippingPocDeliveryFromDate) {
+                            let shippingPocDeliveryFromDate = new Date(combinedData.eventManagement.shippingPocDeliveryFromDate);
+                            let formattedshippingPocDeliveryFromDate = shippingPocDeliveryFromDate.toLocaleDateString('en-CA');
+                            $('#DeliveryFromDate').val(formattedshippingPocDeliveryFromDate);
+                        }
 
-                    if (combinedData.eventManagement.shippingPocRefrigeratorAvailable) {
-                        $('#lockableRefrigeratorSection').show();
-                    } else{
-                        $('#lockableRefrigeratorSection').hide();
-                    }
+                        if (combinedData.eventManagement.shippingPocDeliveryToDate) {
+                            let shippingPocDeliveryToDate = new Date(combinedData.eventManagement.shippingPocDeliveryToDate);
+                            let formattedshippingPocDeliveryToDate = shippingPocDeliveryToDate.toLocaleDateString('en-CA');
+                            $('#DeliveryToDate').val(formattedshippingPocDeliveryToDate);
+                        }
 
-                    if (combinedData.eventManagement.shippingPocLockableRefrigerator === 'Yes') {
-                        $('#ShippingPocLockableRefrigeratorYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.shippingPocLockableRefrigerator === 'No') {
-                        $('#ShippingPocLockableRefrigeratorNo').prop('checked', true).trigger('change');
-                    }
 
-                    if (combinedData.eventManagement.shippingPocEventSetupDate) {
-                        let shippingPocEventSetupDate = new Date(combinedData.eventManagement.shippingPocEventSetupDate);
-                        let formattedshippingPocEventSetupDate = shippingPocEventSetupDate.toLocaleDateString('en-CA');
-                        $('#ShippingPocEventSetupDate').val(formattedshippingPocEventSetupDate);
-                    }
+                        $('#SuggestedHourlyFlow').val(combinedData.eventManagement.shippingPocSuggestedHourlyFlow);
+                        $('#ShippingPocSpecialGateInstructions').val(combinedData.eventManagement.shippingPocSpecialGateInstructions);
+                        $('#ShippingPocParkingInstructions').val(combinedData.eventManagement.shippingPocParkingInstructions);
 
-                    $('#ShippingPocEventSetupTime').val(combinedData.eventManagement.shippingPocEventSetupTime);
-                    $('#PharmacyName').val(combinedData.eventManagement.pharmacyName);
-                    $('#PharmacyAddressLine1').val(combinedData.eventManagement.pharmacyAddressLine1);
-                    $('#PharmacyAddressLine2').val(combinedData.eventManagement.pharmacyAddressLine2);
-                    $('#PharmacyState').val(combinedData.eventManagement.pharmacyState).trigger('change');
-                    $('#PharmacyCity').val(combinedData.eventManagement.pharmacyCity).trigger('change');
-                    $('#PharmacyZipCode').val(combinedData.eventManagement.pharmacyZipCode);
-                    $('#PharmacyPhoneNumber').val(combinedData.eventManagement.pharmacyPhoneNumber);
+                        if (combinedData.eventManagement.shippingPocTablesAndChairsAvailable === 'Yes') {
+                            $('#ShippingPocTablesAndChairsAvailableYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.shippingPocTablesAndChairsAvailable === 'No') {
+                            $('#ShippingPocTablesAndChairsAvailableNo').prop('checked', true).trigger('change');
+                        }
 
-                    if (combinedData.eventManagement.pharmacyMilitaryArrangement === 'Yes') {
-                        $('#MilitaryArrangementYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.pharmacyMilitaryArrangement === 'No'){
-                        $('#MilitaryArrangementNo').prop('checked', true).trigger('change');
-                    }
+                        if (combinedData.eventManagement.shippingPocLocationSecured === 'Yes') {
+                            $('#ShippingPocLocationSecuredYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.shippingPocLocationSecured === 'No') {
+                            $('#ShippingPocLocationSecuredNo').prop('checked', true).trigger('change');
+                        }
 
-                    if (combinedData.eventManagement.hivSuppliesNeeded === 'Yes') {
-                        $('#HIVSuppliesNeededYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.hivSuppliesNeeded === 'No'){
-                        $('#HIVSuppliesNeededNo').prop('checked', true).trigger('change');
-                    }
+                        if (combinedData.eventManagement.shippingPocRefrigeratorAvailable === 'Yes') {
+                            $('#ShippingPocRefrigeratorAvailableYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.shippingPocRefrigeratorAvailable === 'No') {
+                            $('#ShippingPocRefrigeratorAvailableNo').prop('checked', true).trigger('change');
+                        }
 
-                    $('#HIVSupplyMilitaryContactPOCLastName').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCLastName);
-                    $('#HIVSupplyMilitaryContactPOCRank').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCRank);
-                    $('#HIVSupplyMilitaryContactPOCFirstName').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCFirstName);
-                    $('#HIVSupplyMilitaryContactPOCPhonePrimary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCPhonePrimary);
-                    $('#HIVSupplyMilitaryContactPOCPhoneSecondary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCPhoneSecondary);
-                    $('#HIVSupplyMilitaryContactPOCEmailPrimary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCEmailPrimary);
-                    $('#HIVSupplyMilitaryContactPOCEmailSecondary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCEmailSecondary);
+                        if (combinedData.eventManagement.shippingPocRefrigeratorAvailable) {
+                            $('#lockableRefrigeratorSection').show();
+                        } else {
+                            $('#lockableRefrigeratorSection').hide();
+                        }
 
-                    if (combinedData.eventManagement.immunizationVaccineNeeded === 'Yes') {
-                        $('#ImmunizationVaccineNeededYes').prop('checked', true).trigger('change');
-                    } else if (combinedData.eventManagement.immunizationVaccineNeeded === 'No') {
-                        $('#ImmunizationVaccineNeededNo').prop('checked', true).trigger('change');
-                    }
+                        if (combinedData.eventManagement.shippingPocLockableRefrigerator === 'Yes') {
+                            $('#ShippingPocLockableRefrigeratorYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.shippingPocLockableRefrigerator === 'No') {
+                            $('#ShippingPocLockableRefrigeratorNo').prop('checked', true).trigger('change');
+                        }
 
-                    $('#ImmVaccineSupplyMilitaryContactPOCLastName').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCLastName);
-                    $('#ImmVaccineSupplyMilitaryContactPOCRank').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCRank);
-                    $('#ImmVaccineSupplyMilitaryContactPOCFirstName').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCFirstName);
-                    $('#ImmVaccineSupplyMilitaryContactPOCPhonePrimary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCPhonePrimary);
-                    $('#ImmVaccineSupplyMilitaryContactPOCPhoneSecondary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCPhoneSecondary);
-                    $('#ImmVaccineSupplyMilitaryContactPOCEmailPrimary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCEmailPrimary);
-                    $('#ImmVaccineSupplyMilitaryContactPOCEmailSecondary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCEmailSecondary);
-                    $('#QuestPickupAddressLine1').val(combinedData.eventManagement.questPickupAddressLine1);
-                    $('#QuestPickupAddressLine2').val(combinedData.eventManagement.questPickupAddressLine2);
-                    $('#QuestPickupState').val(combinedData.eventManagement.questPickupState).trigger('change');
-                    $('#QuestPickupCity').val(combinedData.eventManagement.questPickupCity).trigger('change');
-                    $('#QuestPickupZipCode').val(combinedData.eventManagement.questPickupZipCode);
+                        if (combinedData.eventManagement.shippingPocEventSetupDate) {
+                            let shippingPocEventSetupDate = new Date(combinedData.eventManagement.shippingPocEventSetupDate);
+                            let formattedshippingPocEventSetupDate = shippingPocEventSetupDate.toLocaleDateString('en-CA');
+                            $('#ShippingPocEventSetupDate').val(formattedshippingPocEventSetupDate);
+                        }
 
-                    if (combinedData.eventStaff !== null) {
-                        var selectedDataHiv = {
-                            id: combinedData.eventStaff.id,
-                            text: combinedData.eventStaff.staffID
+                        $('#ShippingPocEventSetupTime').val(combinedData.eventManagement.shippingPocEventSetupTime);
+                        $('#PharmacyName').val(combinedData.eventManagement.pharmacyName);
+                        $('#PharmacyAddressLine1').val(combinedData.eventManagement.pharmacyAddressLine1);
+                        $('#PharmacyAddressLine2').val(combinedData.eventManagement.pharmacyAddressLine2);
+                        $('#PharmacyState').val(combinedData.eventManagement.pharmacyState).trigger('change');
+                        $('#PharmacyCity').val(combinedData.eventManagement.pharmacyCity).trigger('change');
+                        $('#PharmacyZipCode').val(combinedData.eventManagement.pharmacyZipCode);
+                        $('#PharmacyPhoneNumber').val(combinedData.eventManagement.pharmacyPhoneNumber);
+
+                        if (combinedData.eventManagement.pharmacyMilitaryArrangement === 'Yes') {
+                            $('#MilitaryArrangementYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.pharmacyMilitaryArrangement === 'No') {
+                            $('#MilitaryArrangementNo').prop('checked', true).trigger('change');
+                        }
+
+                        if (combinedData.eventManagement.hivSuppliesNeeded === 'Yes') {
+                            $('#HIVSuppliesNeededYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.hivSuppliesNeeded === 'No') {
+                            $('#HIVSuppliesNeededNo').prop('checked', true).trigger('change');
+                        }
+
+                        $('#HIVSupplyMilitaryContactPOCLastName').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCLastName);
+                        $('#HIVSupplyMilitaryContactPOCRank').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCRank);
+                        $('#HIVSupplyMilitaryContactPOCFirstName').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCFirstName);
+                        $('#HIVSupplyMilitaryContactPOCPhonePrimary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCPhonePrimary);
+                        $('#HIVSupplyMilitaryContactPOCPhoneSecondary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCPhoneSecondary);
+                        $('#HIVSupplyMilitaryContactPOCEmailPrimary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCEmailPrimary);
+                        $('#HIVSupplyMilitaryContactPOCEmailSecondary').val(combinedData.eventManagement.hivSupplyMilitaryContactPOCEmailSecondary);
+
+                        if (combinedData.eventManagement.immunizationVaccineNeeded === 'Yes') {
+                            $('#ImmunizationVaccineNeededYes').prop('checked', true).trigger('change');
+                        } else if (combinedData.eventManagement.immunizationVaccineNeeded === 'No') {
+                            $('#ImmunizationVaccineNeededNo').prop('checked', true).trigger('change');
+                        }
+
+                        $('#ImmVaccineSupplyMilitaryContactPOCLastName').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCLastName);
+                        $('#ImmVaccineSupplyMilitaryContactPOCRank').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCRank);
+                        $('#ImmVaccineSupplyMilitaryContactPOCFirstName').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCFirstName);
+                        $('#ImmVaccineSupplyMilitaryContactPOCPhonePrimary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCPhonePrimary);
+                        $('#ImmVaccineSupplyMilitaryContactPOCPhoneSecondary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCPhoneSecondary);
+                        $('#ImmVaccineSupplyMilitaryContactPOCEmailPrimary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCEmailPrimary);
+                        $('#ImmVaccineSupplyMilitaryContactPOCEmailSecondary').val(combinedData.eventManagement.immVaccineSupplyMilitaryContactPOCEmailSecondary);
+                        $('#QuestPickupAddressLine1').val(combinedData.eventManagement.questPickupAddressLine1);
+                        $('#QuestPickupAddressLine2').val(combinedData.eventManagement.questPickupAddressLine2);
+                        $('#QuestPickupState').val(combinedData.eventManagement.questPickupState).trigger('change');
+                        $('#QuestPickupCity').val(combinedData.eventManagement.questPickupCity).trigger('change');
+                        $('#QuestPickupZipCode').val(combinedData.eventManagement.questPickupZipCode);
+
+                        if (combinedData.eventStaff !== null) {
+                            var selectedDataHiv = {
+                                id: combinedData.eventStaff.id,
+                                text: combinedData.eventStaff.staffID
+                            };
+
+                            var newOptionHiv = new Option(selectedDataHiv.text, selectedDataHiv.id, true, true);
+                            $('#HIVDropOffStaffId').append(newOptionHiv);
+
+                            $('#HIVDropOffStaffLastName').val(combinedData.eventStaff.staffLastName);
+                            $('#HIVDropOffStaffFirstName').val(combinedData.eventStaff.staffLastName);
+                        }
+
+                        debugger;
+                        var eventStaffList = combinedData.eventStaffDetail;
+
+                        if (eventStaffList) {
+                            loadStaffForEditMode(eventStaffList);
                         };
 
-                        var newOptionHiv = new Option(selectedDataHiv.text, selectedDataHiv.id, true, true);
-                        $('#HIVDropOffStaffId').append(newOptionHiv);
+                        // Show the form and hide the table
+                        $(`#progressBar span[data-target='1']`).addClass("active");
+                        $('#datatableWrapper').hide();
+                        $('.card-body').show();
+                        $('#submitBtn').hide();
+                        $('#resetBtn').hide();
+                        $('#addContractBtn').hide();
+                        $('[id^="section"]').hide();
+                        $(`#section1`).show();
 
-                        $('#HIVDropOffStaffLastName').val(combinedData.eventStaff.staffLastName);
-                        $('#HIVDropOffStaffFirstName').val(combinedData.eventStaff.staffLastName);
+                        if (isViewButton) {
+                            updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
+                            updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
+                            updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+                            $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
+                            $('input[type="checkbox"]').prop('disabled', true);
+                            $('select').prop('disabled', true);
+                            $('textarea').prop('disabled', true);
+                            $('#updateBtn').hide();
+                        }
+                        else {
+                            // Enable all inputs except those inside the table
+                            $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
+                                .not('#eventServicesTable input, #eventServicesTable2 input, #eventServicesTable3 input')
+                                .prop('disabled', false);
+
+                            $('input[type="checkbox"]').prop('disabled', false);
+
+                            $('select')
+                                .not('#eventServicesTable select, #eventServicesTable2 select, #eventServicesTable3 select')
+                                .prop('disabled', false);
+
+                            $('textarea')
+                                .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
+                                .prop('disabled', false);
+
+
+                            $('#updateBtn').show();
+                            updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
+                            updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
+                            updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+                        }
+
+
+                    } else {
+                        alert(response.message);
                     }
-
-                    debugger;
-                    var eventStaffList = combinedData.eventManagement.eventStaffDetailList;
-                    loadStaffForEditMode(eventStaffList);
-
-                    // Show the form and hide the table
-                    $(`#progressBar span[data-target='1']`).addClass("active");
-                    $('#datatableWrapper').hide();
-                    $('.card-body').show();
-                    $('#submitBtn').hide();
-                    $('#resetBtn').hide();
-                    $('#addContractBtn').hide();
-                    $('[id^="section"]').hide();
-                    $(`#section1`).show();
-
-                    if (isViewButton) {
-                        updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
-                        updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
-                        updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
-                        $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
-                        $('input[type="checkbox"]').prop('disabled', true);
-                        $('select').prop('disabled', true);
-                        $('textarea').prop('disabled', true);
-                        $('#updateBtn').hide();
-                    }
-                    else {
-                        // Enable all inputs except those inside the table
-                        $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
-                            .not('#eventServicesTable input, #eventServicesTable2 input, #eventServicesTable3 input')
-                            .prop('disabled', false);
-
-                        $('input[type="checkbox"]').prop('disabled', false);
-
-                        $('select')
-                            .not('#eventServicesTable select, #eventServicesTable2 select, #eventServicesTable3 select')
-                            .prop('disabled', false);
-
-                        $('textarea')
-                            .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
-                            .prop('disabled', false);
-
-
-                        $('#updateBtn').show();
-                        updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
-                        updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
-                        updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
-                    }
-
-                    
-                } else {
-                    alert(response.message);
+                },
+                error: function () {
+                    alert('An error occurred while fetching contract data.');
                 }
-            },
-            error: function () {
-                alert('An error occurred while fetching contract data.');
-            }
-        });
+            });
+    });
+
+
+
+    
 
 
 

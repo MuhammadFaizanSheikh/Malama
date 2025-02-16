@@ -16,6 +16,7 @@
         public EventManagement EventManagement { get; set; }
         public ContractDetails ContractDetails { get; set; }
         public EventStaff EventStaff { get; set; }
+        public List<EventStaff> EventStaffDetail { get; set; }
     }
 
 

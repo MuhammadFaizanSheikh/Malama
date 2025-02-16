@@ -68,6 +68,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventManagement.UpdatedOn = DateTime.Now;
                 await _unitOfWork.EventManagement.UpdateAsync(eventManagement);
 
+                //EventStartEndTimeDayWise
                 await _unitOfWork.EventStartEndTimeDayWise.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
 
                 foreach (var eventStartEndTime in eventManagement.EventStartEndTimeDayWiseList)
@@ -77,6 +78,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 _unitOfWork.EventStartEndTimeDayWise.AddRange(eventManagement.EventStartEndTimeDayWiseList);
 
+                //EventServiceDetail
                 await _unitOfWork.EventServiceDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
 
                 foreach (var eventServiceDetail in eventManagement.EventServiceDetailList)
@@ -85,6 +87,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _unitOfWork.EventServiceDetail.AddRange(eventManagement.EventServiceDetailList);
+
+                //EventStaffDetail
+                await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+                foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+                {
+                    eventStaffDetail.EventManagementId = eventManagement.Id;
+                }
+
+                _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
 
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -160,12 +172,26 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     var eventStaff = await _unitOfWork.EventStaff.GetByNullableIdAsync(firstEventManagement.HIVDropOffStaffId);
 
+                    var eventStaffDetailList = new List<EventStaff>();
+
+                    foreach (var eventStaffDetails in firstEventManagement.EventStaffDetailList)
+                    {
+                        var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
+                        if (eventStaffDetail != null)
+                        {
+                            eventStaffDetailList.Add(eventStaffDetail);
+                        }
+                    }
+
+                    // Combine data into DTO
                     var combinedDto = new CombinedEventManagementAndContractDetails
                     {
                         EventManagement = firstEventManagement,
                         ContractDetails = contractDetails,
-                        EventStaff = eventStaff
+                        EventStaff = eventStaff,
+                        EventStaffDetail = eventStaffDetailList // Now contains multiple records
                     };
+
 
                     return combinedDto;
                 }
