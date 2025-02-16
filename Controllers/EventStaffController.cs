@@ -82,6 +82,25 @@ namespace ExcelFilesCompiler.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllEventStaff()
+        {
+            try
+            {
+                var eventStaffs = await _eventStaffService.GetAllEventStaff();
+                if (eventStaffs == null)
+                {
+                    return Json(new { success = false, message = "EVent Staff not found." });
+                }
+
+                return Json(new { success = true, eventStaffs = eventStaffs });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventStaff(EventStaffViewModel eventStaffDto, string action)

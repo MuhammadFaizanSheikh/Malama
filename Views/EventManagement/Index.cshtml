@@ -98,7 +98,7 @@
 
 
         /* Common Styles for All Tables */
-        #eventServicesTable, #eventServicesTable2, #eventServicesTable3 {
+        #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable {
             border: 1px solid #ddd;
             border-collapse: collapse;
             width: 100%;
@@ -106,25 +106,27 @@
 
             #eventServicesTable th, #eventServicesTable td,
             #eventServicesTable2 th, #eventServicesTable2 td,
-            #eventServicesTable3 th, #eventServicesTable3 td {
+            #eventServicesTable3 th, #eventServicesTable3 td,
+            #eventStaffSelectionTable th, #eventStaffSelectionTable td,
+            #eventStaffSelectedTable th, #eventStaffSelectedTable td {
                 border: 1px solid #ddd;
                 padding: 8px;
             }
 
-            #eventServicesTable th, #eventServicesTable2 th, #eventServicesTable3 th {
+            #eventServicesTable th, #eventServicesTable2 th, #eventServicesTable3 th, #eventStaffSelectionTable th, #eventStaffSelectedTable th {
                 background-color: #f4f4f4;
                 text-align: center; /* Keep headers centered */
             }
 
-            #eventServicesTable tbody tr, #eventServicesTable2 tbody tr, #eventServicesTable3 tbody tr {
+            #eventServicesTable tbody tr, #eventServicesTable2 tbody tr, #eventServicesTable3 tbody tr, #eventStaffSelectionTable tbody tr, #eventStaffSelectedTable tbody tr {
                 background-color: rgba(240, 245, 255, 1); /* Very lighter version */
             }
 
-                #eventServicesTable tbody tr:hover, #eventServicesTable2 tbody tr:hover, #eventServicesTable3 tbody tr:hover {
+                #eventServicesTable tbody tr:hover, #eventServicesTable2 tbody tr:hover, #eventServicesTable3 tbody tr:hover, #eventStaffSelectionTable tbody tr:hover, #eventStaffSelectedTable tbody tr:hover {
                     background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
                 }
 
-            #eventServicesTable td, #eventServicesTable2 td, #eventServicesTable3 td {
+            #eventServicesTable td, #eventServicesTable2 td, #eventServicesTable3 td, #eventStaffSelectionTable td, #eventStaffSelectedTable td {
                 text-align: center; /* Center align all columns by default */
             }
 
@@ -133,22 +135,22 @@
                     padding-left: 12px; /* Optional: Add some left padding for better spacing */
                 }
 
-                #eventServicesTable td button, #eventServicesTable2 td button, #eventServicesTable3 td button,
-                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a {
+                #eventServicesTable td button, #eventServicesTable2 td button, #eventServicesTable3 td button, #eventStaffSelectionTable td button, #eventStaffSelectedTable td button
+                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a, #eventStaffSelectionTable td a {
                     display: inline-block;
                     margin-right: 5px;
                 }
 
-                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container {
+                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container, #eventStaffSelectionTable td .button-container, #eventStaffSelectedTable td .button-container {
                     display: flex;
                     justify-content: center;
                 }
 
-                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a {
+                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a, #eventStaffSelectionTable td .button-container a, #eventStaffSelectedTable td .button-container a {
                         margin-right: 5px;
                     }
 
-            #eventServicesTable thead th, #eventServicesTable2 thead th, #eventServicesTable3 thead th {
+            #eventServicesTable thead th, #eventServicesTable2 thead th, #eventServicesTable3 thead th, #eventStaffSelectionTable thead th, #eventStaffSelectedTable thead th {
                 background-color: rgba(120, 130, 221, 1);
                 color: white;
                 text-align: center;
@@ -391,6 +393,7 @@
         <span id="progress4"data-target="4">Additional Information</span>
         <span id="progress5"data-target="5">Immunization and Lab Info</span>
         <span id="progress6"data-target="6">Event Service Detail</span>
+        <span id="progress7" data-target="7">Event Staff Detail</span>
     </div>
 
     <!-- Section 1 -->
@@ -1794,14 +1797,96 @@
 
 
                 <div class="row mt-4">
+                    </table>
                     <div class="col-md-6 text-end">
                         <button type="button" class="btn btn-secondary back" data-section="6">Back</button>
+                    </div>
+                    <div class="col-md-6 text-start">
+                        <button type="button" id="NextButton" class="btn btn-primary next" data-section="6">Next</button>
                     </div>
                     <div class="col-md-6 text-start">
                     </div>
                 </div>
             </div>
 
+            <div id="section7" class="form-section section" style="display: none;">
+                <div class="container mt-3">
+                    <!-- Search Filter Section -->
+                    <div class="card p-3 mb-4">
+                        <h5 class="text-center">Search Event Staff</h5>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <input type="text" id="filterLastName" class="form-control" placeholder="Last Name">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="filterFirstName" class="form-control" placeholder="First Name">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="filterState" class="form-control" placeholder="State">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="filterCity" class="form-control" placeholder="City">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" id="filterZip" class="form-control" placeholder="Zip Code">
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <button id="searchStaffBtn" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Staff Table -->
+                    <h5 class="text-center mb-3">Available Event Staff</h5>
+                    <div class="table-responsive">
+                        <table id="eventStaffSelectionTable" class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Staff ID</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>State</th>
+                                    <th>City</th>
+                                    <th>ZipCode</th>
+                                   @*  <th>Role</th>
+                                    <th>Radius</th> *@
+                                    <th>Id</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+                    <!-- Selected Staff Table -->
+                    <h5 class="text-center mt-5 mb-3">Selected Event Staff</h5>
+                    <div class="table-responsive">
+                        <table id="eventStaffSelectedTable" class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Staff ID</th>
+                                    <th>Last Name</th>
+                                    <th>First Name</th>
+                                    <th>State</th>
+                                    <th>City</th>
+                                    <th>ZipCode</th>
+                                    @* <th>Role</th> *@
+                                    @* <th>Radius</th> *@
+                                    <th>Id</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="row mt-4">
+                    <div class="col-md-12 text-center">
+                        <button type="button" class="btn btn-secondary back" data-section="7">Back</button>
+                    </div>
+                </div>
+            </div>
+                
             <!-- Save Button -->
             <input type="hidden" id="filledSections" name="filledSections" />
 
@@ -1815,9 +1900,7 @@
                 <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update" data-section="1">
                         <i class="bi bi-pencil"></i> Update
                     </button>
-                <button id="backToTableBtn" type="button" class="btn btn-secondary">
-                    Back to Event Management
-                </button>
+                 
             </div>
 </form>
     </div>
@@ -1991,6 +2074,7 @@ $(document).ready(function () {
         });
 
         var currentSectionForProgressBar = "1";
+        let tableInitialized = false;
 
         $("#progressBar span").click(function() {
             debugger;
@@ -2010,6 +2094,12 @@ $(document).ready(function () {
 
                 var previousSection = currentSectionForProgressBar; // Store the previous section ID
                 currentSectionForProgressBar = target;
+
+                if (target == 7 && !tableInitialized) {
+                    initializeEventStaffTable();
+                    initializeSelectedStaffTable();
+                    tableInitialized = true; // Prevent reloading the table again
+                }
 
                 $(".section").hide();
                 $("#section" + target).show();
@@ -2069,6 +2159,157 @@ $(document).ready(function () {
             $(`#progressBar span[data-target='${section}']`).removeClass("active");
 
             currentSection--;
+        });
+
+        $('#searchStaffBtn').on('click', function () {
+            let lastName = $('#filterLastName').val().trim().toLowerCase();
+            let firstName = $('#filterFirstName').val().trim().toLowerCase();
+            let state = $('#filterState').val().trim().toLowerCase();
+            let city = $('#filterCity').val().trim().toLowerCase();
+            let zip = $('#filterZip').val().trim().toLowerCase();
+
+            // Remove any existing custom filters
+            $.fn.dataTable.ext.search.length = 0;
+
+            // Add new custom filtering logic
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                let rowLastName = data[1].toLowerCase();  // Last Name (Column index 1)
+                let rowFirstName = data[2].toLowerCase(); // First Name (Column index 2)
+                let rowState = data[3].toLowerCase();     // State (Column index 3)
+                let rowCity = data[4].toLowerCase();      // City (Column index 4)
+                let rowZip = data[5].toLowerCase();       // ZipCode (Column index 5)
+
+                return (
+                    (lastName === "" || rowLastName.includes(lastName)) &&
+                    (firstName === "" || rowFirstName.includes(firstName)) &&
+                    (state === "" || rowState.includes(state)) &&
+                    (city === "" || rowCity.includes(city)) &&
+                    (zip === "" || rowZip.includes(zip))
+                );
+            });
+
+            // Redraw the table to apply the filter
+            $('#eventStaffSelectionTable').DataTable().draw();
+        });
+
+
+        function initializeEventStaffTable() {
+            $('#eventStaffSelectionTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "destroy": true, // Ensure the table is reinitialized if needed
+                "ajax": {
+                    "url": "/EventStaff/GetAllEventStaff", // Update with actual controller name
+                    "type": "GET",
+                    "dataSrc": function (json) {
+                        if (json.success) {
+                            console.log("Fetched Event Staff Data:", JSON.stringify(json.eventStaffs, null, 2)); // Pretty-print JSON
+                            return json.eventStaffs;
+                        } else {
+                            alert(json.message);
+                            return [];
+                        }
+                    }
+                },
+                "columns": [
+                    
+                    { "data": "staffID" },
+                    { "data": "staffLastName" },
+                    { "data": "staffFirstName" },
+                    { "data": "primaryState" },
+                    { "data": "primaryCity" },
+                    { "data": "primaryZip" },
+                    // { "data": "primaryZip" },
+                    // { "data": "primaryZip" },
+                     // { "data": "id", "visible": false },
+                    { "data": "id"},
+                    
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return `<button type="button" class="btn btn-secondary btn-sm add-staff-btn" data-staff='${JSON.stringify(row)}'>Add Staff</button>`;
+                        }
+                    }
+                ]
+            });
+
+            $('#eventStaffSelectionTable tbody').on('click', '.add-staff-btn', function () {
+                debugger;
+                let staffData = $(this).data('staff'); // Get row data
+                addStaffToSelectedTable(staffData);
+            });
+        }
+
+        function initializeSelectedStaffTable() {
+            if ($.fn.DataTable.isDataTable('#eventStaffSelectedTable')) {
+                $('#eventStaffSelectedTable').DataTable().clear().destroy();
+            }
+
+            $('#eventStaffSelectedTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "destroy": true,
+                "paging": false,       // Disable pagination
+                "searching": false,    // Disable search box
+                "info": false,         // Hide "Showing X of Y entries" info
+                "ordering": false,
+                "columns": [
+                    { "data": "staffID" },
+                    { "data": "staffLastName" },
+                    { "data": "staffFirstName" },
+                    { "data": "primaryState" },
+                    { "data": "primaryCity" },
+                    { "data": "primaryZip" },
+                    {
+                        "data": "id",
+                    },
+                    {
+                        "data": "action",
+                        "orderable": false,
+                        "searchable": false
+                    }
+                ]
+            });
+        }
+
+        function addStaffToSelectedTable(staffData) {
+            let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            debugger;
+            // Prevent duplicates
+            let existingRows = selectedTable.rows().data().toArray();
+            if (existingRows.some(row => row.staffID === staffData.staffID)) {
+                alert("Staff already added!");
+                return;
+            }
+
+            let rowIndex = selectedTable.rows().count();
+
+            // Add row to the table
+            selectedTable.row.add({
+                staffID: staffData.staffID,
+                staffLastName: staffData.staffLastName,
+                staffFirstName: staffData.staffFirstName,
+                primaryState: staffData.primaryState,
+                primaryCity: staffData.primaryCity,
+                primaryZip: staffData.primaryZip,
+                id: staffData.id,
+                action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
+                              data-staffid="${staffData.id}">Remove</button>`
+            }).draw();
+        }
+
+
+        $(document).on('click', '.remove-staff-btn', function () {
+            let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            selectedTable.row($(this).closest('tr')).remove().draw();
+
+            $('#eventStaffSelectedTable tbody tr').each(function (index) {
+                $(this).find('.eventStaffIdHidden').attr('name', `SingleEventManagement.EventStaffAssociationList[${index}].EventStaffId`);
+            });
+        });
+
+        $(document).on('click', '.add-staff-btn, .remove-staff-btn', function () {
+            updateProgressBar(7);
         });
 
         $("#submitBtn").click(function (e) {
@@ -2326,16 +2567,31 @@ $(document).ready(function () {
             return isValid;
         }
 
+        
+
         $(document).on('input', '[required]', function () {
             const section = $(this).closest(".form-section").attr("id").replace("section", "");
             updateProgressBar(section); // Update progress bar when user fills required fields
         });
 
         function updateProgressBar(sectionNumber) {
-            const requiredFields = $(`#section${sectionNumber}`).find('[required]');
+            const section = $(`#section${sectionNumber}`);
+            debugger;
+            // Case for Section 7 (staff selection)
+            if (sectionNumber == 7) {
+                const selectedStaffCount = $('#eventStaffSelectedTable').DataTable().rows().count();
+                if (selectedStaffCount > 0) {
+                    $(`#progress${sectionNumber}`).addClass("completed"); // Green progress bar
+                } else {
+                    $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
+                }
+                return;
+            }
+
+            // Case for other sections (required fields validation)
+            const requiredFields = section.find('[required]');
             let allFieldsFilled = true;
 
-            // Check if all required fields are filled
             requiredFields.each(function () {
                 const fieldValue = $(this).val();
                 if (fieldValue !== null && fieldValue !== undefined && fieldValue.trim() === "") {
@@ -2343,9 +2599,8 @@ $(document).ready(function () {
                 }
             });
 
-            // If all required fields are filled, change the progress bar color to green
             if (allFieldsFilled) {
-                $(`#progress${sectionNumber}`).addClass("completed"); // Green color
+                $(`#progress${sectionNumber}`).addClass("completed"); // Green progress bar
             } else {
                 $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
             }
@@ -2387,6 +2642,34 @@ $(document).ready(function () {
             },
             "order": [[0, 'desc']]
         });
+
+        // $('#eventStaffSelectionTable').DataTable({
+        //     "paging": true,
+        //     "lengthChange": true,
+        //     "searching": true,
+        //     "ordering": false,
+        //     "info": true,
+        //     "autoWidth": true,
+        //     "responsive": true,
+        //     "language": {
+        //         "search": "Search Contracts:"
+        //     },
+        //     "order": [[0, 'desc']]
+        // });
+
+        // $('#eventStaffSelectedTable').DataTable({
+        //     "paging": false,
+        //     "lengthChange": true,
+        //     "searching": false,
+        //     "ordering": false,
+        //     "info": false,
+        //     "autoWidth": true,
+        //     "responsive": true,
+        //     "language": {
+        //         "search": "Search Contracts:"
+        //     },
+        //     "order": [[0, 'desc']]
+        // });
 
         $('#eventServicesTable').DataTable({
             "paging": false,
@@ -2658,7 +2941,7 @@ $(document).ready(function () {
         // Centralized requirements object
         const requirements = {
             "Initial Pre-event": {
-                PickupDate: true,
+                PickupDate: false,
                 PickupTime: false,
                 DeliveryFromDate: false,
                 DeliveryToDate: false,
@@ -3426,7 +3709,6 @@ $(document).ready(function () {
 
         document.getElementById('dynamicControlsContainer').innerHTML = '';
 
-        debugger;
         $('#eventServicesTable tbody tr').each(function () {
             $(this).find('input[type="checkbox"]').prop('checked', false);
             $(this).find('input[type="number"]').val('');

@@ -313,6 +313,8 @@
 
         [Required]
         public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList { get; set; } = new List<EventStartEndTimeDayWise>();
+
+        public List<EventStaffAssociation> EventStaffAssociationList { get; set; } = new List<EventStaffAssociation>();
     }
 
     [Table("EventServiceDetail")]
@@ -355,5 +357,19 @@
         [Required]
         public int ServiceMemberPercentPerDay { get; set; }
 
+    }
+
+    [Table("EventStaffAssociation")]
+    public class EventStaffAssociation
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventManagement")]
+        public long EventManagementId { get; set; }
+
+        [Required]
+        public long EventStaffId { get; set; }
     }
 }
