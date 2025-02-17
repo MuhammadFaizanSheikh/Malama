@@ -101,7 +101,8 @@
         #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable {
             border: 1px solid #ddd;
             border-collapse: collapse;
-            width: 100%;
+            width: 100% !important;
+            table-layout: auto;
         }
 
             #eventServicesTable th, #eventServicesTable td,
@@ -154,6 +155,11 @@
                 background-color: rgba(120, 130, 221, 1);
                 color: white;
                 text-align: center;
+            }
+
+            #eventStaffSelectedTable td:nth-child(7),
+            #eventStaffSelectedTable th:nth-child(7) {
+                display: none;
             }
 
 
@@ -1900,6 +1906,9 @@
                 <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update" data-section="1">
                         <i class="bi bi-pencil"></i> Update
                     </button>
+                <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                    Back to Event Management
+                </button>
                  
             </div>
 </form>
@@ -2223,8 +2232,8 @@ $(document).ready(function () {
                     { "data": "primaryZip" },
                     // { "data": "primaryZip" },
                     // { "data": "primaryZip" },
-                     // { "data": "id", "visible": false },
-                    { "data": "id"},
+                     { "data": "id", "visible": false },
+                    // { "data": "id"},
                     
                     {
                         "data": null,
@@ -2235,9 +2244,11 @@ $(document).ready(function () {
                 ]
             });
 
-            $('#eventStaffSelectionTable tbody').on('click', '.add-staff-btn', function () {
+            $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
                 let staffData = $(this).data('staff'); // Get row data
+                debugger;
                 addStaffToSelectedTable(staffData);
+                updateProgressBar(7);
             });
         }
 
@@ -2261,9 +2272,7 @@ $(document).ready(function () {
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
-                    {
-                        "data": "id",
-                    },
+                    { "data": "id" },
                     {
                         "data": "action",
                         "orderable": false,
@@ -2288,6 +2297,7 @@ $(document).ready(function () {
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
+            debugger;
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
             // Prevent duplicates
@@ -2327,6 +2337,7 @@ $(document).ready(function () {
 
             // Update row indices after removal
             updateRowIndices();
+            updateProgressBar(7);
         });
 
         function updateRowIndices() {
@@ -2338,13 +2349,6 @@ $(document).ready(function () {
                 });
             });
         }
-
-
-
-
-        $(document).on('click', '.add-staff-btn, .remove-staff-btn', function () {
-            updateProgressBar(7);
-        });
 
         $("#submitBtn").click(function (e) {
 
@@ -2500,7 +2504,14 @@ $(document).ready(function () {
                             }
                         });
                     }
-                } else {
+                } else if (sectionId === "section7") {
+                    // Check if eventStaffSelectedTable has at least one row
+                    let table = $("#eventStaffSelectedTable").DataTable();
+                    if (table.rows().count() === 0) {
+                        isSectionValid = false;
+                    } 
+                }
+                else {
                     // For other sections, validate as usual
                     $(this)
                         .find("[required]")
@@ -2673,34 +2684,6 @@ $(document).ready(function () {
             },
             "order": [[0, 'desc']]
         });
-
-        // $('#eventStaffSelectionTable').DataTable({
-        //     "paging": true,
-        //     "lengthChange": true,
-        //     "searching": true,
-        //     "ordering": false,
-        //     "info": true,
-        //     "autoWidth": true,
-        //     "responsive": true,
-        //     "language": {
-        //         "search": "Search Contracts:"
-        //     },
-        //     "order": [[0, 'desc']]
-        // });
-
-        // $('#eventStaffSelectedTable').DataTable({
-        //     "paging": false,
-        //     "lengthChange": true,
-        //     "searching": false,
-        //     "ordering": false,
-        //     "info": false,
-        //     "autoWidth": true,
-        //     "responsive": true,
-        //     "language": {
-        //         "search": "Search Contracts:"
-        //     },
-        //     "order": [[0, 'desc']]
-        // });
 
         $('#eventServicesTable').DataTable({
             "paging": false,
