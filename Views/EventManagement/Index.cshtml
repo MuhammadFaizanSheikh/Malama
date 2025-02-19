@@ -2658,8 +2658,6 @@ $(document).ready(function () {
             $('#addContractBtn').hide();
             $('[id^="section"]').hide();
             $(`#section1`).show();
-            $('#progressBar span').removeClass('completed');
-            $(`#progressBar span[data-target='1']`).addClass("active");
             $("#submitBtn").data("section", 1);
         });
 
@@ -3747,5 +3745,9 @@ $(document).ready(function () {
             $(this).find('input[type="number"]').val('');
             $(this).find('input[type="number"]').prop('disabled', true);
         });
+
+        $("#progressBar, #progressBar span").removeAttr("style").removeClass();
+        $(`#progressBar span[data-target='1']`).addClass("active");
+        $('#eventStaffSelectedTable').DataTable().clear().draw();
     }
 </script>
