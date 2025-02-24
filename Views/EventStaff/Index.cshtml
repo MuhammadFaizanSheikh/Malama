@@ -790,30 +790,30 @@
         // $('#staffPhone2').val('123-123-1234');
         let roleLicenseIndexMap = {}; // Store row indices per roleId
 
-        // Handle role checkbox click event (only for checkboxes with class 'role-checkbox')
+        // Handle role checkbox click event
         $(document).on("change", ".role-checkbox", function () {
             let roleCheckbox = $(this);
             let roleId = roleCheckbox.attr("id");
 
             if (roleCheckbox.is(":checked")) {
-                let role = rolesData.find(r => r.id === roleId); // Get selected role
+                let role = rolesData.find(r => r.id === roleId);
                 if (role) {
-                    roleLicenseIndexMap[roleId] = 0; // Reset index for this role
+                    roleLicenseIndexMap[roleId] = 0;
                     let licenseFields = generateLicenseFields(roleId, roleLicenseIndexMap[roleId], role.types);
                     roleCheckbox.closest(".form-check").after(licenseFields);
-                    roleLicenseIndexMap[roleId]++; // Increment for next row
+                    roleLicenseIndexMap[roleId]++;
                 }
             } else {
                 roleCheckbox.closest(".form-check").next(".license-container").remove();
-                delete roleLicenseIndexMap[roleId]; // Remove tracking for this role
+                delete roleLicenseIndexMap[roleId];
             }
         });
 
         // Handle Add Another License button click
         $(document).on("click", ".add-row-button", function () {
-            let licenseContainer = $(this).prev(".license-container"); // Get the closest license container
+            let licenseContainer = $(this).prev(".license-container");
             let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-            let roleId = roleCheckbox.attr("id"); // Get the role ID
+            let roleId = roleCheckbox.attr("id");
 
             if (!roleId || !(roleId in roleLicenseIndexMap)) {
                 console.warn("Role ID not found for license container.");
@@ -827,13 +827,40 @@
 
             licenseContainer.append($(newRow).find(".license-row"));
 
-            roleLicenseIndexMap[roleId]++; // Increment index for the role
+            roleLicenseIndexMap[roleId]++;
         });
 
-        // Remove license row
+        // Remove license row & reset indexing
         $(document).on("click", ".remove-row", function () {
-            $(this).closest(".license-row").remove();
+            let licenseContainer = $(this).closest(".license-container");
+            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+            let roleId = roleCheckbox.attr("id");
+
+            $(this).closest(".license-row").remove(); // Remove the row
+
+            resetIndexes(roleId); // Recalculate indexes
         });
+
+        // Function to reset indexes after removal
+        function resetIndexes(roleId) {
+            let licenseRows = $(`.license-container input[name^="SingleEventStaff.Licenses"][name$=".RoleId"][value="${roleId}"]`)
+                .closest(".license-container")
+                .find(".license-row");
+
+            roleLicenseIndexMap[roleId] = 0; // Reset index
+
+            licenseRows.each(function () {
+                let newIndex = roleLicenseIndexMap[roleId];
+                $(this).find("input, select").each(function () {
+                    let nameAttr = $(this).attr("name");
+                    if (nameAttr) {
+                        let updatedName = nameAttr.replace(/\[\d+\]/, `[${newIndex}]`);
+                        $(this).attr("name", updatedName);
+                    }
+                });
+                roleLicenseIndexMap[roleId]++; // Increment index
+            });
+        }
 
         // Function to generate license fields
         function generateLicenseFields(roleId, index, licenseTypes) {
@@ -881,6 +908,7 @@
                 <span class="button-text">Add Another License</span>
             </button>`;
         }
+
 
 
     });
