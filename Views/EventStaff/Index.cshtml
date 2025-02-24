@@ -820,6 +820,9 @@ $(document).on("change", ".role-checkbox", function () {
         roleCheckbox.closest(".form-check").next(".license-container").remove();
         delete roleIndexMap[roleId];
         delete roleLicenseIndexMap[roleId];
+
+        // Recalculate all role indexes after removing a role
+        resetRoleIndexes();
     }
 });
 
@@ -876,6 +879,32 @@ function resetLicenseIndexes(roleId, roleIndex) {
             });
 
         roleLicenseIndexMap[roleId]++;
+    });
+}
+
+function resetRoleIndexes() {
+    let checkedRoles = $(".role-checkbox:checked");
+    roleIndexMap = {}; // Reset role index map
+
+    checkedRoles.each(function (index) {
+        let roleId = $(this).attr("id");
+        roleIndexMap[roleId] = index; // Assign new consecutive index
+    });
+
+    // Update the name attributes of license fields with new role indexes
+    $(".license-container").each(function () {
+        let roleId = $(this).data("role-id");
+        if (roleId in roleIndexMap) {
+            let newRoleIndex = roleIndexMap[roleId];
+
+            $(this)
+                .find("[name]")
+                .each(function () {
+                    let nameAttr = $(this).attr("name");
+                    let updatedName = nameAttr.replace(/\[\d+\]/, `[${newRoleIndex}]`);
+                    $(this).attr("name", updatedName);
+                });
+        }
     });
 }
 
