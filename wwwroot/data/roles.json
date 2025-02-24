@@ -1,0 +1,16 @@
+[
+  { "id": "nursePractitioner", "value": "Nurse Practitioner", "types": ["APRN", "ARNP", "NP"] },
+  { "id": "physicianAssistant", "value": "Physician Assistant", "types": ["PA-C", "PA"] },
+  { "id": "registeredNurse", "value": "Registered Nurse", "types": ["RN"] },
+  { "id": "licensedVocationalNurse", "value": "Licensed Vocational Nurse", "types": ["LVN"] },
+  { "id": "licensedPracticalNurse", "value": "Licensed Practical Nurse", "types": ["LPN"] },
+  { "id": "medicalAssistant", "value": "Medical Assistant", "types": ["CMA", "RMA", "CCMA", "CMAA"] },
+  { "id": "audiologist", "value": "Audiologist", "types": ["Au.D", "CCC-A", "F-AAA", "ABA"] },
+  { "id": "audioTech", "value": "Audio Tech", "types": ["CAOHC"] },
+  { "id": "dentist", "value": "Dentist", "types": ["DDS", "DMD"] },
+  { "id": "dentalAssistant", "value": "Dental Assistant", "types": ["CDA", "RDA", "RHS"] },
+  { "id": "registeredDentalHygienist", "value": "Registered Dental Hygienist", "types": ["RDH"] },
+  { "id": "medicalDoctor", "value": "Medical Doctor", "types": ["MD", "DO"] },
+  { "id": "optometrist", "value": "Optometrist", "types": ["O.D."] },
+  { "id": "phlebotomist", "value": "Phlebotomist", "types": ["LPT", "CPT1", "CPT2"] }
+]

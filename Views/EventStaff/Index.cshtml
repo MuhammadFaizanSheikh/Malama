@@ -56,114 +56,114 @@
 
 
 
-<style>
-    h1 {
-        color: rgba(80, 90, 201, 1);
-    }
-
-    h4 {
-        color: rgba(80, 90, 201, 1);
-    }
-
-    label {
-        color: #000000; /* Darker black color */
-    }
-
-    .form-group label {
-        color: #000000; /* Darker black color */
-    }
-
-    .large-space-below {
-        margin-bottom: 60px; /* Or change to any amount of space */
-    }
-
-    .large-space-below1 {
-        margin-bottom: 50px; /* Or change to any amount of space */
-    }
-
-    .add-row-button {
-        background-color: transparent; /* No background */
-        border: none; /* Remove border */
-        padding: 0; /* Remove button padding */
-        cursor: pointer; /* Pointer cursor on hover */
-        display: inline-block;
-    }
-
-    .plus-icon {
-        width: 20px; /* Image width */
-        height: 20px; /* Image height */
-        cursor: pointer; /* Show pointer on hover */
-    }
-
-        .plus-icon:hover {
-            transform: scale(1.1); /* Slight enlarge on hover */
-            transition: 0.2s ease-in-out; /* Smooth animation */
+    <style>
+        h1 {
+            color: rgba(80, 90, 201, 1);
         }
 
-    .add-row-button img {
-        outline: none;
-    }
+        h4 {
+            color: rgba(80, 90, 201, 1);
+        }
 
-    .add-row-button:focus,
-    .add-row-button:active {
-        outline: none;
-        border: none;
-        box-shadow: none;
-    }
+        label {
+            color: #000000; /* Darker black color */
+        }
 
-    #contractsTable {
-        border: 1px solid #ddd;
-        border-collapse: collapse;
-        width: 100%;
-    }
+        .form-group label {
+            color: #000000; /* Darker black color */
+        }
 
-        #contractsTable th, #contractsTable td {
+        .large-space-below {
+            margin-bottom: 60px; /* Or change to any amount of space */
+        }
+
+        .large-space-below1 {
+            margin-bottom: 50px; /* Or change to any amount of space */
+        }
+
+        .add-row-button {
+            background-color: transparent; /* No background */
+            border: none; /* Remove border */
+            padding: 0; /* Remove button padding */
+            cursor: pointer; /* Pointer cursor on hover */
+            display: inline-block;
+        }
+
+        .plus-icon {
+            width: 20px; /* Image width */
+            height: 20px; /* Image height */
+            cursor: pointer; /* Show pointer on hover */
+        }
+
+            .plus-icon:hover {
+                transform: scale(1.1); /* Slight enlarge on hover */
+                transition: 0.2s ease-in-out; /* Smooth animation */
+            }
+
+        .add-row-button img {
+            outline: none;
+        }
+
+        .add-row-button:focus,
+        .add-row-button:active {
+            outline: none;
+            border: none;
+            box-shadow: none;
+        }
+
+        #contractsTable {
             border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            border-collapse: collapse;
+            width: 100%;
         }
 
-        #contractsTable th {
-            background-color: #f4f4f4;
-        }
-
-        #contractsTable tbody tr {
-            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
-        }
-
-            #contractsTable tbody tr:hover {
-                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            #contractsTable th, #contractsTable td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
             }
 
-        #contractsTable td, #contractsTable th {
-            text-align: center; /* Aligns the text in the middle of the cell */
-        }
-
-            #contractsTable td button, #contractsTable td a {
-                display: inline-block; /* Makes the buttons appear side by side */
-                margin-right: 5px; /* Optional: Adds space between the buttons */
+            #contractsTable th {
+                background-color: #f4f4f4;
             }
 
-            #contractsTable td .button-container {
-                display: flex;
-                justify-content: center; /* Aligns buttons horizontally in the center */
+            #contractsTable tbody tr {
+                background-color: rgba(240, 245, 255, 1); /* Very lighter version */
             }
 
-                #contractsTable td .button-container a {
+                #contractsTable tbody tr:hover {
+                    background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+                }
+
+            #contractsTable td, #contractsTable th {
+                text-align: center; /* Aligns the text in the middle of the cell */
+            }
+
+                #contractsTable td button, #contractsTable td a {
+                    display: inline-block; /* Makes the buttons appear side by side */
                     margin-right: 5px; /* Optional: Adds space between the buttons */
                 }
 
-        #contractsTable thead th {
-            background-color: rgba(120, 130, 221, 1); /* Header background color */
-            color: white; /* Header text color */
-            text-align: center; /* Optional: Center-align header text */
-        }
+                #contractsTable td .button-container {
+                    display: flex;
+                    justify-content: center; /* Aligns buttons horizontally in the center */
+                }
 
-    .read-only-style {
-        background-color: #f8f9fa; /* Light gray background */
-        pointer-events: none; /* Disable click and focus */
-        border-color: #ced4da; /* Light border color */
-    }
+                    #contractsTable td .button-container a {
+                        margin-right: 5px; /* Optional: Adds space between the buttons */
+                    }
+
+            #contractsTable thead th {
+                background-color: rgba(120, 130, 221, 1); /* Header background color */
+                color: white; /* Header text color */
+                text-align: center; /* Optional: Center-align header text */
+            }
+
+        .read-only-style {
+            background-color: #f8f9fa; /* Light gray background */
+            pointer-events: none; /* Disable click and focus */
+            border-color: #ced4da; /* Light border color */
+        }
 
         /* Base styles for the dropdown */
         .select2 {
@@ -177,7 +177,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
             /*
-        /* Focused state */
+                /* Focused state */
             .select2:focus {
                 border-color: #0056b3;
                 box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
@@ -216,7 +216,7 @@
         }
 
         */
-</style>
+    </style>
 </head>
 
 <body>
@@ -246,17 +246,17 @@
 
     <h2 class="text-center mb-4">@ViewData["Title"]</h2>
 
-     @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
     {
-            <div class="alert alert-danger">
-                <strong>Validation failed!</strong>
-                <ul>
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
                 @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                 {
-                            <li>@modelError.ErrorMessage</li>
+                    <li>@modelError.ErrorMessage</li>
                 }
-                </ul>
-            </div>
+            </ul>
+        </div>
     }
 
     <div style="display: flex; justify-content: center; align-items: center;">
@@ -265,7 +265,7 @@
             Add New Event Staff
         </button>
     </div>
-     <div id="datatableWrapper" class="datatable-wrapper">
+    <div id="datatableWrapper" class="datatable-wrapper">
         <table id="contractsTable" class="display">
             <thead>
                 <tr>
@@ -305,14 +305,14 @@
                 else
                 {
                     <tr>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
-                        <td  class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
+                        <td class="text-center">No data available</td>
                     </tr>
                 }
             </tbody>
@@ -323,143 +323,144 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleEventStaff.Id" id="hiddenId" />
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
                     <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" maxLength="6" readonly="readonly" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
-            <input asp-for="SingleEventStaff.StartDate" id="StartDate" type="date" class="form-control" required />
-        </div>
-    </div>
-
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffStatus" class="form-label">Staff Status</label>
-            <select asp-for="SingleEventStaff.StaffStatus" id="StaffStatus" maxLength="20" class="form-control" required>
-                <option value="Active">Active</option>
-                <option value="InProgress">In Progress</option>
-                <option value="RecruitCred">Recruit - Cred</option>
-                <option value="RecruitInit">Recruit - Init.</option>
-                <option value="Inactive">Inactive</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffLastName" class="form-label">Staff Last Name</label>
-                    <input asp-for="SingleEventStaff.StaffLastName" id="StaffLastName" maxLength="50"  class="form-control" required />
-        </div>
-    </div>
-
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffFirstName" class="form-label">Staff First Name</label>
-            <input asp-for="SingleEventStaff.StaffFirstName" id="StaffFirstName" maxLength="50" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
-            <input asp-for="SingleEventStaff.StaffMiddleInitial" id="StaffMiddleInitial" maxLength="50" class="form-control" />
-        </div>
-    </div>
-
-                <div class="row mb-3">
-        <!-- SSN Section -->
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffSSN" class="form-label">Staff SSN</label>
-            <div class="input-group">
-                <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" minLength="11" class="form-control"
-                       placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
-                <span class="input-group-text" onclick="togglePasswordVisibility('StaffSSN', 'toggleSsnIcon')" style="cursor: pointer;">
-                    <i id="toggleSsnIcon" class="fas fa-eye"></i>
-                </span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
+                    <input asp-for="SingleEventStaff.StartDate" id="StartDate" type="date" class="form-control" required />
+                </div>
             </div>
-        </div>
 
-        <!-- DOB Section -->
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffDOB" class="form-label">Staff DOB</label>
-            <input asp-for="SingleEventStaff.StaffDOB" id="StaffDOB" type="date" class="form-control" required />
-        </div>
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffStatus" class="form-label">Staff Status</label>
+                    <select asp-for="SingleEventStaff.StaffStatus" id="StaffStatus" maxLength="20" class="form-control" required>
+                        <option value="Active">Active</option>
+                        <option value="InProgress">In Progress</option>
+                        <option value="RecruitCred">Recruit - Cred</option>
+                        <option value="RecruitInit">Recruit - Init.</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffLastName" class="form-label">Staff Last Name</label>
+                    <input asp-for="SingleEventStaff.StaffLastName" id="StaffLastName" maxLength="50" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffFirstName" class="form-label">Staff First Name</label>
+                    <input asp-for="SingleEventStaff.StaffFirstName" id="StaffFirstName" maxLength="50" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffMiddleInitial" class="form-label">Staff Middle Initial</label>
+                    <input asp-for="SingleEventStaff.StaffMiddleInitial" id="StaffMiddleInitial" maxLength="50" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <!-- SSN Section -->
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffSSN" class="form-label">Staff SSN</label>
+                    <div class="input-group">
+                        <input type="password" asp-for="SingleEventStaff.StaffSSN" id="StaffSSN" minLength="11" class="form-control"
+                               placeholder="xxx-xx-xxxx" inputmode="numeric" maxlength="11" required />
+                        <span class="input-group-text" onclick="togglePasswordVisibility('StaffSSN', 'toggleSsnIcon')" style="cursor: pointer;">
+                            <i id="toggleSsnIcon" class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- DOB Section -->
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffDOB" class="form-label">Staff DOB</label>
+                    <input asp-for="SingleEventStaff.StaffDOB" id="StaffDOB" type="date" class="form-control" required />
+                </div>
+            </div>
 
 
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="StaffRoles" class="form-label">Select Staff Roles</label>
-            <div id="StaffRoles">
-                <div class="form-check me-3">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="StaffRoles" class="form-label">Select Staff Roles</label>
+                    <div id="StaffRoles"></div>
+                    @* <div id="StaffRoles">
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="contractManager" value="Contract Manager">
                     <label class="form-check-label" for="contractManager">Contract Manager</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="physicians" value="Physicians">
                     <label class="form-check-label" for="physicians">Physicians</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="optometrist" value="Optometrist">
                     <label class="form-check-label" for="optometrist">Optometrist</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="audiologist" value="Audiologist">
                     <label class="form-check-label" for="audiologist">Audiologist</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="physicianAssistant" value="Physician Assistant">
                     <label class="form-check-label" for="physicianAssistant">Physician Assistant</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="behaviorHealthCounselor" value="Behavior Health Counselor">
                     <label class="form-check-label" for="behaviorHealthCounselor">Behavior Health Counselor</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="nursePractitioner" value="Nurse Practitioner">
                     <label class="form-check-label" for="nursePractitioner">Nurse Practitioner</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="registeredNurse" value="Registered Nurse">
                     <label class="form-check-label" for="registeredNurse">Registered Nurse</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="medicalAssistant" value="Medical Assistant">
                     <label class="form-check-label" for="medicalAssistant">Medical Assistant</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="hearingTechnician" value="Hearing Technician">
                     <label class="form-check-label" for="hearingTechnician">Hearing Technician</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="optometryTechnician" value="Optometry Technician">
                     <label class="form-check-label" for="optometryTechnician">Optometry Technician</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="admins" value="Admins">
                     <label class="form-check-label" for="admins">Admins</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="dentist" value="Dentist">
                     <label class="form-check-label" for="dentist">Dentist</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="dentalHygienist" value="Dental Hygienist">
                     <label class="form-check-label" for="dentalHygienist">Dental Hygienist</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="dentalAssistant" value="Dental Assistant">
                     <label class="form-check-label" for="dentalAssistant">Dental Assistant</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="dentalXray" value="Dental Xray">
                     <label class="form-check-label" for="dentalXray">Dental Xray</label>
-                </div>
-                <div class="form-check me-3">
+                    </div>
+                    <div class="form-check me-3">
                     <input class="form-check-input" type="checkbox" id="immunizationPersonnel" value="Immunization Personnel">
                     <label class="form-check-label" for="immunizationPersonnel">Immunization Personnel</label>
+                    </div>
+                    </div> *@
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Event On Call Staff</label>
+                <div class="col-md-6">
+                    <label class="form-label">Event On Call Staff</label>
                     <div class="form-check">
                         <input asp-for="SingleEventStaff.EventOnCallStaff" type="radio" id="eventOnCallYes" value="true" class="form-check-input" required />
                         <label class="form-check-label" for="eventOnCallYes">Yes</label>
@@ -470,10 +471,10 @@
                     </div>
 
                     @* <div class="col-md-6" id="eventOnCallSelectContainer" style="display: none;">
-                        <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
-                        <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
+                    <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
+                    <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
                     </div> *@
-            <h4 class="mt-4">States Licenses</h4>
+                    <h4 class="mt-4">States Licenses</h4>
                     <div class="form-container">
                         <!-- Dynamic License Rows will be inserted here -->
                     </div>
@@ -481,34 +482,34 @@
                         <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
                         <span class="button-text">Add Another License</span>
                     </button>
-            <div class="form-group">
-                <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
-                <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" minlength="10" maxlength="10" inputmode="numeric" pattern="\d*" />
+                    <div class="form-group">
+                        <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
+                        <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" minlength="10" maxlength="10" inputmode="numeric" pattern="\d*" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="SingleEventStaff.DAE" class="form-label">DEA</label>
+                        <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" minlength="8" maxLength="8" required />
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="SingleEventStaff.DAE" class="form-label">DEA</label>
-                <input asp-for="SingleEventStaff.DAE" id="dae" class="form-control" minlength="8" maxLength="8" required />
-            </div>
-        </div>
-    </div>
 
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
                     <input asp-for="SingleEventStaff.CredentialingProcessDate" id="CredentialingProcessDate" type="date" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
                     <input asp-for="SingleEventStaff.HistoricalCredentialingDate" id="HistoricalCredentialingDate" type="date" class="form-control" />
-        </div>
-    </div>
+                </div>
+            </div>
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
                     <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" id="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
-        </div>
+                </div>
                 <div class="col-md-6">
                     <label class="form-label">Onboarding/Training Complete</label>
                     <div class="form-check">
@@ -520,41 +521,41 @@
                         <label class="form-check-label" for="OnboardingTrainingCompleteNo">No</label>
                     </div>
                 </div>
-    </div>
+            </div>
 
-                <div class="row mb-3">
+            <div class="row mb-3">
                 <div class="col-md-6" id="additionalControl" style="display: none;">
                     <label class="form-label">Outstanding Trainings</label>
                     <textarea class="form-control" asp-for="SingleEventStaff.OutstandingTrainings" maxLength="100" id="OutstandingTrainings" rows="3"></textarea>
                 </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.BackgroundCheckConcerns" maxLength="100" class="form-label">Background Check Concerns</label>
-            <textarea asp-for="SingleEventStaff.BackgroundCheckConcerns" id ="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
-        </div>
-    </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.BackgroundCheckConcerns" maxLength="100" class="form-label">Background Check Concerns</label>
+                    <textarea asp-for="SingleEventStaff.BackgroundCheckConcerns" id="BackgroundCheckConcerns" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="d-flex align-items-center mb-2">
-                <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
-                <div class="d-flex flex-grow-1">
-                    <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
-                    <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
-                </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
+                        <div class="d-flex flex-grow-1">
+                            <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
+                            <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
+                        </div>
                         <span id="BLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="d-flex align-items-center mb-2">
-                <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
-                <div class="d-flex flex-grow-1">
-                    <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
-                    <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" maxLength="100"  class="form-control" placeholder="Cert Number" />
+                    </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
+                        <div class="d-flex flex-grow-1">
+                            <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
+                            <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
+                        </div>
                         <span id="ACLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
 
             <div class="row mb-3">
@@ -609,40 +610,40 @@
 
 
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
-            <input asp-for="SingleEventStaff.StaffCellNumber"  id="staffCellNumber" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffPhone2" class="form-label">Staff Phone 2</label>
-            <input asp-for="SingleEventStaff.StaffPhone2" id="staffPhone2" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" />
-        </div>
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
+                    <input asp-for="SingleEventStaff.StaffCellNumber" id="staffCellNumber" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffPhone2" class="form-label">Staff Phone 2</label>
+                    <input asp-for="SingleEventStaff.StaffPhone2" id="staffPhone2" minLength="12" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" />
+                </div>
+            </div>
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.StaffEmail" class="form-label">Staff Email</label>
-            <input asp-for="SingleEventStaff.StaffEmail" id="StaffEmail" type="email" maxLength="100" class="form-control" required />
-        </div>
-    </div>
-
-
-                <h4 class="mt-4">Primary Residence</h4>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.StaffEmail" class="form-label">Staff Email</label>
+                    <input asp-for="SingleEventStaff.StaffEmail" id="StaffEmail" type="email" maxLength="100" class="form-control" required />
+                </div>
+            </div>
 
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.PrimaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="SingleEventStaff.PrimaryAddress1" id="PrimaryAddress1" maxLength="200" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.PrimaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="SingleEventStaff.PrimaryAddress2" id="PrimaryAddress2" maxLength="200" class="form-control" />
-        </div>
-    </div>
+            <h4 class="mt-4">Primary Residence</h4>
 
-                <div class="row mb-3">
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.PrimaryAddress1" class="form-label">Staff Address 1</label>
+                    <input asp-for="SingleEventStaff.PrimaryAddress1" id="PrimaryAddress1" maxLength="200" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.PrimaryAddress2" class="form-label">Staff Address 2</label>
+                    <input asp-for="SingleEventStaff.PrimaryAddress2" id="PrimaryAddress2" maxLength="200" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.PrimaryState" class="form-label">Staff State</label>
                     <select asp-for="SingleEventStaff.PrimaryState" id="primaryState" maxLength="50" class="form-control" required>
@@ -650,62 +651,62 @@
                         <!-- Uncomment below if needed: <option value="">Select State</option> -->
                     </select>
                 </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.PrimaryCity" class="form-label">Staff City</label>
-            <select asp-for="SingleEventStaff.PrimaryCity" id="primaryCity" maxLength="50" class="form-control city-dropdown" required>
-                <option value="">Select City</option> <!-- Default option -->
-            </select>
-        </div>
-    </div>
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.PrimaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="SingleEventStaff.PrimaryZip" id="primaryZipCode" maxLength="50" class="form-control" required>
-                <option value="">Select Zip Code</option> <!-- Default option -->
-            </select>
-        </div>
-    </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.PrimaryCity" class="form-label">Staff City</label>
+                    <select asp-for="SingleEventStaff.PrimaryCity" id="primaryCity" maxLength="50" class="form-control city-dropdown" required>
+                        <option value="">Select City</option> <!-- Default option -->
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.PrimaryZip" class="form-label">Staff Zip</label>
+                    <select asp-for="SingleEventStaff.PrimaryZip" id="primaryZipCode" maxLength="50" class="form-control" required>
+                        <option value="">Select Zip Code</option> <!-- Default option -->
+                    </select>
+                </div>
+            </div>
 
 
-                <h4 class="mt-4">Secondary Residence</h4>
+            <h4 class="mt-4">Secondary Residence</h4>
 
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.SecondaryAddress1" class="form-label">Staff Address 1</label>
-            <input asp-for="SingleEventStaff.SecondaryAddress1" id="SecondaryAddress1" maxLength="200" class="form-control" required />
-        </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.SecondaryAddress2" class="form-label">Staff Address 2</label>
-            <input asp-for="SingleEventStaff.SecondaryAddress2" id="SecondaryAddress2" maxLength="200" class="form-control" />
-        </div>
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.SecondaryAddress1" class="form-label">Staff Address 1</label>
+                    <input asp-for="SingleEventStaff.SecondaryAddress1" id="SecondaryAddress1" maxLength="200" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.SecondaryAddress2" class="form-label">Staff Address 2</label>
+                    <input asp-for="SingleEventStaff.SecondaryAddress2" id="SecondaryAddress2" maxLength="200" class="form-control" />
+                </div>
+            </div>
 
-                <div class="row mb-3">
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.SecondaryState" class="form-label">Staff State</label>
                     <select asp-for="SingleEventStaff.SecondaryState" id="secondaryState" maxLength="50" class="form-control" required>
                         <!-- Uncomment below if needed: <option value="">Select State</option> -->
                     </select>
                 </div>
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.SecondaryCity" class="form-label">Staff City</label>
-            <select asp-for="SingleEventStaff.SecondaryCity" id="secondaryCity" maxLength="50" class="form-control city-dropdown" required>
-                <option value="">Select City</option> <!-- Default option -->
-            </select>
-        </div>
-    </div>
-                <div class="row mb-3">
-        <div class="col-md-6">
-            <label asp-for="SingleEventStaff.SecondaryZip" class="form-label">Staff Zip</label>
-            <select asp-for="SingleEventStaff.SecondaryZip" id="secondaryZipCode" maxLength="50" class="form-control" required>
-                <option value="">Select Zip Code</option> <!-- Default option -->
-            </select>
-        </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.SecondaryCity" class="form-label">Staff City</label>
+                    <select asp-for="SingleEventStaff.SecondaryCity" id="secondaryCity" maxLength="50" class="form-control city-dropdown" required>
+                        <option value="">Select City</option> <!-- Default option -->
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.SecondaryZip" class="form-label">Staff Zip</label>
+                    <select asp-for="SingleEventStaff.SecondaryZip" id="secondaryZipCode" maxLength="50" class="form-control" required>
+                        <option value="">Select Zip Code</option> <!-- Default option -->
+                    </select>
+                </div>
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.StaffInfoEnteredBy" class="form-label">Staff Info Entered By</label>
                     <input asp-for="SingleEventStaff.StaffInfoEnteredBy" id="StaffInfoEnteredBy" maxLength="50" text="abc@gmail.com" class="form-control" readonly required />
                 </div>
-    </div>
+            </div>
             <h4 class="mt-4">Travel Honor Reward Numbers</h4>
             <div class="container mt-5">
                 <!-- Air category checkbox -->
@@ -728,218 +729,314 @@
                 <div id="hotelDynamicControlsContainer"></div> <!-- For dynamically added Car controls -->
             </div>
 
-                <div class="d-flex justify-content-end mt-4">
-                    <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
-                        <i class="bi bi-check-circle"></i> Submit
-                    </button>
-                    <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
-                        <i class="bi bi-arrow-repeat"></i> Reset
-                    </button>
-                    <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
-                        <i class="bi bi-pencil"></i> Update
-                    </button>
-                    <button id="backToTableBtn" type="button" class="btn btn-secondary">
-                        Back to Event Staff
-                    </button>
-                </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+                    <i class="bi bi-check-circle"></i> Submit
+                </button>
+                <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
+                    <i class="bi bi-arrow-repeat"></i> Reset
+                </button>
+                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                    <i class="bi bi-pencil"></i> Update
+                </button>
+                <button id="backToTableBtn" type="button" class="btn btn-secondary">
+                    Back to Event Staff
+                </button>
+            </div>
         </form>
     </div>
 </body>
 </html>
 <script>
-   
+
 
     $(document).ready(function () {
-    //      $('#StartDate').val('1980-01-01');
-    // $('#StaffStatus').val('Active');
-    // $('#StaffLastName').val('Doe');
-    // $('#StaffFirstName').val('John');
-    // $('#StaffMiddleInitial').val('A');
-    // $('#StaffSSN').val('123-45-6789');
-    // $('#StaffDOB').val('1980-01-01');
-    // $('#EventOnCallStaffEvent').val('Event A');
-    // $('#npi').val('1234567890');
-    // $('#dae').val('DAE1234');
-    
-    // $('#BLSCertDate').val('1980-01-01');
-    // $('#ACLSCertDate').val('1980-01-01');
-    // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-    // $('#CredentialingProcessDate').val('1980-01-01');
-    // $('#OnboardingTrainingComplete').val('Yes');
-    // $('#OutstandingTrainings').val('None');
-    // $('#HistoricalCredentialingDate').val('1980-01-01');
-    // $('#StaffEmail').val('john.doe@example.com');
-    // $('#PrimaryAddress1').val('123 Main St');
-    // $('#PrimaryState').val('Alabama');
-    // $('#PrimaryCity').val('Alpine');
-    // $('#PrimaryZip').val('35014');
-    // $('#SecondaryAddress1').val('456 Elm St');
-    // $('#SecondaryState').val('Kansas');
-    // $('#SecondaryCity').val('Anthony');
-    // $('#SecondaryZip').val('67003');
-    // // $('#StaffContractAffiliation').val('Contractor');
-    // $('#StaffInfoEnteredBy').val('Admin');
 
-    // $('#ACLSCertNumber').val('1234567890');
-    // $('#BackgroundCheckConcerns').val('1234567890');
-    // $('#BLSCertNumber').val('1234567890');
+        //      $('#StartDate').val('1980-01-01');
+        // $('#StaffStatus').val('Active');
+        // $('#StaffLastName').val('Doe');
+        // $('#StaffFirstName').val('John');
+        // $('#StaffMiddleInitial').val('A');
+        // $('#StaffSSN').val('123-45-6789');
+        // $('#StaffDOB').val('1980-01-01');
+        // $('#EventOnCallStaffEvent').val('Event A');
+        // $('#npi').val('1234567890');
+        // $('#dae').val('DAE1234');
 
-    // $('#staffCellNumber').val('123-123-1234');
-    // $('#staffPhone2').val('123-123-1234');
-    });
+        // $('#BLSCertDate').val('1980-01-01');
+        // $('#ACLSCertDate').val('1980-01-01');
+        // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+        // $('#CredentialingProcessDate').val('1980-01-01');
+        // $('#OnboardingTrainingComplete').val('Yes');
+        // $('#OutstandingTrainings').val('None');
+        // $('#HistoricalCredentialingDate').val('1980-01-01');
+        // $('#StaffEmail').val('john.doe@example.com');
+        // $('#PrimaryAddress1').val('123 Main St');
+        // $('#PrimaryState').val('Alabama');
+        // $('#PrimaryCity').val('Alpine');
+        // $('#PrimaryZip').val('35014');
+        // $('#SecondaryAddress1').val('456 Elm St');
+        // $('#SecondaryState').val('Kansas');
+        // $('#SecondaryCity').val('Anthony');
+        // $('#SecondaryZip').val('67003');
+        // // $('#StaffContractAffiliation').val('Contractor');
+        // $('#StaffInfoEnteredBy').val('Admin');
 
+        // $('#ACLSCertNumber').val('1234567890');
+        // $('#BackgroundCheckConcerns').val('1234567890');
+        // $('#BLSCertNumber').val('1234567890');
 
-let airCounter = 0;
-let carCounter = 0;
-let hotelCounter = 0;
-let controlCount = 0;
-const maxControls = 5;
+        // $('#staffCellNumber').val('123-123-1234');
+        // $('#staffPhone2').val('123-123-1234');
+        let rowIndexLicense = 0;
 
-function createRow(includeButton, category, item = {}, index = controlCount) {
-    const container = document.getElementById(
-        category === 'Air' ? 'dynamicControlsContainer' :
-            category === 'Car' ? 'carDynamicControlsContainer' :
-                category === 'Hotel' ? 'hotelDynamicControlsContainer' : ''
-    );
+        // Handle role checkbox click event (only for checkboxes with class 'role-checkbox')
+        $(document).on("change", ".role-checkbox", function () {
+            debugger;
+            let roleCheckbox = $(this);
+            let roleId = roleCheckbox.attr("id");
 
-    const rowDiv = document.createElement('div');
-    rowDiv.classList.add('d-flex', 'align-items-center', 'mb-2');
-    rowDiv.style.gap = '15px';
-
-    const nameDiv = document.createElement('div');
-    nameDiv.classList.add('d-flex', 'align-items-center');
-    nameDiv.innerHTML = `
-        <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
-        <input type="text" class="form-control form-control-sm" maxlength="24" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
-    `;
-    rowDiv.appendChild(nameDiv);
-
-    const rewardDiv = document.createElement('div');
-    rewardDiv.classList.add('d-flex', 'align-items-center');
-    rewardDiv.innerHTML = `
-        <label class="form-label me-2 mb-0">Rewards</label>
-                <input type="number" maxlength="6" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" />
-    `;
-    rowDiv.appendChild(rewardDiv);
-
-    // Hidden field for Type (Air, Car, or Hotel)
-    const typeHiddenDiv = document.createElement('div');
-    typeHiddenDiv.classList.add('d-none');
-    typeHiddenDiv.innerHTML = `
-        <input type="hidden" name="SingleEventStaff.TravelHonorList[${index}].Type" value="${category}" />
-    `;
-    rowDiv.appendChild(typeHiddenDiv);
-
-    // Add Remove button
-    const removeButtonDiv = document.createElement('div');
-    removeButtonDiv.classList.add('ms-4');
-    removeButtonDiv.innerHTML = `
-        <button type="button" class="btn btn-danger btn-sm">Remove</button>
-    `;
-    removeButtonDiv.querySelector('button').addEventListener('click', () => {
-        if (category === 'Air') {
-            airCounter--;
-            if (airCounter === 0) {
-            airlineCheckbox.checked = false; // Uncheck the airline checkbox if no rows remain
-        }
-        } else if (category === 'Car') {
-            carCounter--;
-            if (carCounter === 0) {
-            carCheckbox.checked = false; // Uncheck the car checkbox if no rows remain
-        }
-        } else if (category === 'Hotel') {
-            hotelCounter--;
-            if (hotelCounter === 0) {
-            hotelCheckbox.checked = false; // Uncheck the hotel checkbox if no rows remain
-        }
-        }
-        rowDiv.remove();
-        reindexControls(); // Reindex rows after removal
-        updateAddRewardButton(); // Update the Add Reward button position
-    });
-    rowDiv.appendChild(removeButtonDiv);
-
-    container.appendChild(rowDiv);
-    updateAddRewardButton(); // Ensure Add Reward button is in the correct position
-}
-
-function reindexControls() {
-    const airRows = document.querySelectorAll('#dynamicControlsContainer > div');
-    const carRows = document.querySelectorAll('#carDynamicControlsContainer > div');
-    const hotelRows = document.querySelectorAll('#hotelDynamicControlsContainer > div');
-    const allRows = [...airRows, ...carRows, ...hotelRows];
-
-    allRows.forEach((row, index) => {
-        const nameField = row.querySelector('input[name*="Name"]');
-        const rewardField = row.querySelector('input[name*="Rewards"]');
-        const typeField = row.querySelector('input[name*="Type"]'); // For Type field
-
-        if (nameField && rewardField) {
-            nameField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Name`);
-            rewardField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Rewards`);
-        }
-
-        if (typeField) {
-            typeField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Type`);
-        }
-
-        row.setAttribute('id', `row-${index}`);
-    });
-
-    // Update controlCount
-    controlCount = allRows.length - 1;
-}
-
-function updateAddRewardButton() {
-    const airRows = document.querySelectorAll('#dynamicControlsContainer > div');
-    const carRows = document.querySelectorAll('#carDynamicControlsContainer > div');
-    const hotelRows = document.querySelectorAll('#hotelDynamicControlsContainer > div');
-
-    const updateButtonForCategory = (rows) => {
-        rows.forEach((row) => {
-            const existingButton = row.querySelector('.add-reward-button');
-            if (existingButton) {
-                existingButton.remove();
+            if (roleCheckbox.is(":checked")) {
+                let role = rolesData.find(r => r.id === roleId); // Get selected role
+                if (role) {
+                    let licenseFields = generateLicenseFields(rowIndexLicense, role.types);
+                    roleCheckbox.closest(".form-check").after(licenseFields);
+                    rowIndexLicense++;
+                }
+            } else {
+                roleCheckbox.closest(".form-check").next(".license-container").remove();
             }
         });
 
-        if (rows.length > 0) {
-            const lastRow = rows[rows.length - 1];
-            const rewardButtonDiv = document.createElement('div');
-            rewardButtonDiv.classList.add('ms-4', 'add-reward-button');
-            rewardButtonDiv.innerHTML = `
-                <button type="button" class="btn btn-light d-flex align-items-center">
-                    <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                    <span>Add another reward</span>
-                </button>
-            `;
+        $(document).on("click", ".add-row-button", function () {
+            let licenseContainer = $(this).prev(".license-container"); // Get the closest license container
+            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+            let roleId = roleCheckbox.attr("id"); // Get the role ID
 
-            rewardButtonDiv.querySelector('button').addEventListener('click', () => {
-                if (rows === airRows && airCounter < maxControls) {
-                    airCounter++;
-                    controlCount++;
-                    createRow(false, 'Air');
-                } else if (rows === carRows && carCounter < maxControls) {
-                    carCounter++;
-                    controlCount++;
-                    createRow(false, 'Car');
-                } else if (rows === hotelRows && hotelCounter < maxControls) {
-                    hotelCounter++;
-                    controlCount++;
-                    createRow(false, 'Hotel');
-                } else {
-                    alert('You can only add up to 5 rewards.');
+            if (!roleId) {
+                console.warn("Role ID not found for license container.");
+                return;
+            }
+
+            let role = rolesData.find(r => r.id === roleId);
+            let licenseTypes = role ? role.types : [];
+
+            let newRow = generateLicenseFields(rowIndexLicense, licenseTypes);
+
+            // Append only the row, NOT the button
+            licenseContainer.append($(newRow).find(".license-row"));
+
+            rowIndexLicense++;
+        });
+
+
+
+
+
+        // Remove license row
+        $(document).on("click", ".remove-row", function () {
+            $(this).closest(".license-row").remove();
+        });
+
+        // Function to generate license fields
+        function generateLicenseFields(index, licenseTypes) {
+            let licenseTypeOptions = licenseTypes.map(type => `<option value="${type}">${type}</option>`).join("");
+
+            return `
+            <div class="license-container">
+                <div class="license-row d-flex align-items-end mt-2">
+                    <div class="col-md-2">
+                        <label for="licenseNumber${index}">License Number</label>
+                        <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" maxlength="14" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="licenseState${index}">State</label>
+                        <select id="licenseState${index}" name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="State1">State1</option>
+                            <option value="State2">State2</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="licenseType${index}">Type</label>
+                        <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
+                            <option value="">Select Type</option>
+                            ${licenseTypeOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="licenseActive${index}">Active Date</label>
+                        <input id="licenseActive${index}" name="SingleEventStaff.Licenses[${index}].LicenseActiveDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="licenseExpiry${index}">Expiry Date</label>
+                        <input id="licenseExpiry${index}" name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger remove-row">Remove</button>
+                    </div>
+                </div>
+            </div>
+                <button type="button" class="add-row-button">
+                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                    <span class="button-text">Add Another License</span>
+                </button>`;
+        }
+
+    });
+
+
+    let airCounter = 0;
+    let carCounter = 0;
+    let hotelCounter = 0;
+    let controlCount = 0;
+    const maxControls = 5;
+
+    function createRow(includeButton, category, item = {}, index = controlCount) {
+        const container = document.getElementById(
+            category === 'Air' ? 'dynamicControlsContainer' :
+                category === 'Car' ? 'carDynamicControlsContainer' :
+                    category === 'Hotel' ? 'hotelDynamicControlsContainer' : ''
+        );
+
+        const rowDiv = document.createElement('div');
+        rowDiv.classList.add('d-flex', 'align-items-center', 'mb-2');
+        rowDiv.style.gap = '15px';
+
+        const nameDiv = document.createElement('div');
+        nameDiv.classList.add('d-flex', 'align-items-center');
+        nameDiv.innerHTML = `
+            <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
+            <input type="text" class="form-control form-control-sm" maxlength="24" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
+        `;
+        rowDiv.appendChild(nameDiv);
+
+        const rewardDiv = document.createElement('div');
+        rewardDiv.classList.add('d-flex', 'align-items-center');
+        rewardDiv.innerHTML = `
+            <label class="form-label me-2 mb-0">Rewards</label>
+                    <input type="number" maxlength="6" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" />
+        `;
+        rowDiv.appendChild(rewardDiv);
+
+        // Hidden field for Type (Air, Car, or Hotel)
+        const typeHiddenDiv = document.createElement('div');
+        typeHiddenDiv.classList.add('d-none');
+        typeHiddenDiv.innerHTML = `
+            <input type="hidden" name="SingleEventStaff.TravelHonorList[${index}].Type" value="${category}" />
+        `;
+        rowDiv.appendChild(typeHiddenDiv);
+
+        // Add Remove button
+        const removeButtonDiv = document.createElement('div');
+        removeButtonDiv.classList.add('ms-4');
+        removeButtonDiv.innerHTML = `
+            <button type="button" class="btn btn-danger btn-sm">Remove</button>
+        `;
+        removeButtonDiv.querySelector('button').addEventListener('click', () => {
+            if (category === 'Air') {
+                airCounter--;
+                if (airCounter === 0) {
+                    airlineCheckbox.checked = false; // Uncheck the airline checkbox if no rows remain
+                }
+            } else if (category === 'Car') {
+                carCounter--;
+                if (carCounter === 0) {
+                    carCheckbox.checked = false; // Uncheck the car checkbox if no rows remain
+                }
+            } else if (category === 'Hotel') {
+                hotelCounter--;
+                if (hotelCounter === 0) {
+                    hotelCheckbox.checked = false; // Uncheck the hotel checkbox if no rows remain
+                }
+            }
+            rowDiv.remove();
+            reindexControls(); // Reindex rows after removal
+            updateAddRewardButton(); // Update the Add Reward button position
+        });
+        rowDiv.appendChild(removeButtonDiv);
+
+        container.appendChild(rowDiv);
+        updateAddRewardButton(); // Ensure Add Reward button is in the correct position
+    }
+
+    function reindexControls() {
+        const airRows = document.querySelectorAll('#dynamicControlsContainer > div');
+        const carRows = document.querySelectorAll('#carDynamicControlsContainer > div');
+        const hotelRows = document.querySelectorAll('#hotelDynamicControlsContainer > div');
+        const allRows = [...airRows, ...carRows, ...hotelRows];
+
+        allRows.forEach((row, index) => {
+            const nameField = row.querySelector('input[name*="Name"]');
+            const rewardField = row.querySelector('input[name*="Rewards"]');
+            const typeField = row.querySelector('input[name*="Type"]'); // For Type field
+
+            if (nameField && rewardField) {
+                nameField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Name`);
+                rewardField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Rewards`);
+            }
+
+            if (typeField) {
+                typeField.setAttribute('name', `SingleEventStaff.TravelHonorList[${index}].Type`);
+            }
+
+            row.setAttribute('id', `row-${index}`);
+        });
+
+        // Update controlCount
+        controlCount = allRows.length - 1;
+    }
+
+    function updateAddRewardButton() {
+        const airRows = document.querySelectorAll('#dynamicControlsContainer > div');
+        const carRows = document.querySelectorAll('#carDynamicControlsContainer > div');
+        const hotelRows = document.querySelectorAll('#hotelDynamicControlsContainer > div');
+
+        const updateButtonForCategory = (rows) => {
+            rows.forEach((row) => {
+                const existingButton = row.querySelector('.add-reward-button');
+                if (existingButton) {
+                    existingButton.remove();
                 }
             });
 
-            lastRow.appendChild(rewardButtonDiv);
-        }
-    };
+            if (rows.length > 0) {
+                const lastRow = rows[rows.length - 1];
+                const rewardButtonDiv = document.createElement('div');
+                rewardButtonDiv.classList.add('ms-4', 'add-reward-button');
+                rewardButtonDiv.innerHTML = `
+                    <button type="button" class="btn btn-light d-flex align-items-center">
+                        <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
+                        <span>Add another reward</span>
+                    </button>
+                `;
 
-    updateButtonForCategory(airRows);
-    updateButtonForCategory(carRows);
-    updateButtonForCategory(hotelRows);
-}
+                rewardButtonDiv.querySelector('button').addEventListener('click', () => {
+                    if (rows === airRows && airCounter < maxControls) {
+                        airCounter++;
+                        controlCount++;
+                        createRow(false, 'Air');
+                    } else if (rows === carRows && carCounter < maxControls) {
+                        carCounter++;
+                        controlCount++;
+                        createRow(false, 'Car');
+                    } else if (rows === hotelRows && hotelCounter < maxControls) {
+                        hotelCounter++;
+                        controlCount++;
+                        createRow(false, 'Hotel');
+                    } else {
+                        alert('You can only add up to 5 rewards.');
+                    }
+                });
+
+                lastRow.appendChild(rewardButtonDiv);
+            }
+        };
+
+        updateButtonForCategory(airRows);
+        updateButtonForCategory(carRows);
+        updateButtonForCategory(hotelRows);
+    }
 
 
 
@@ -952,15 +1049,14 @@ function updateAddRewardButton() {
         airlineCheckbox.addEventListener('change', () => {
             const container = document.getElementById('dynamicControlsContainer');
             container.innerHTML = ''; // Clear existing fields
-           
+
 
             if (airlineCheckbox.checked) {
-                 airCounter++;
-                 controlCount++;
+                airCounter++;
+                controlCount++;
                 createRow(true, 'Air'); // Pass 'Air' category
             }
-            else
-            {
+            else {
                 airCounter = 0;
                 reindexControls();
             }
@@ -969,15 +1065,14 @@ function updateAddRewardButton() {
         carCheckbox.addEventListener('change', () => {
             const container = document.getElementById('carDynamicControlsContainer');
             container.innerHTML = ''; // Clear existing fields
-            
+
 
             if (carCheckbox.checked) {
                 carCounter++;
                 controlCount++;
                 createRow(true, 'Car'); // Pass 'Car' category
             }
-            else
-            {
+            else {
                 carCounter = 0;
                 reindexControls();
             }
@@ -986,15 +1081,14 @@ function updateAddRewardButton() {
         hotelCheckbox.addEventListener('change', () => {
             const container = document.getElementById('hotelDynamicControlsContainer');
             container.innerHTML = ''; // Clear existing fields
-            
+
 
             if (hotelCheckbox.checked) {
                 hotelCounter++;
                 controlCount++;
                 createRow(true, 'Hotel'); // Pass 'Car' category
             }
-            else
-            {
+            else {
                 hotelCounter = 0;
                 reindexControls();
             }
@@ -1015,43 +1109,43 @@ function updateAddRewardButton() {
         }
     }
 
-//     function validateStaffContractAffiliation() {
-//     var isValid = $('#StaffContractAffiliation').val() && $('#StaffContractAffiliation').val().length > 0;
+    //     function validateStaffContractAffiliation() {
+    //     var isValid = $('#StaffContractAffiliation').val() && $('#StaffContractAffiliation').val().length > 0;
 
-//     if (!isValid) {
-//         $('#staffContractError').text('Please select at least one option.').show(); // Show error message
-//         $('#StaffContractAffiliation').focus();
-//         return false;
-//     } else {
-//         $('#staffContractError').hide(); // Hide error message if valid
-//         return true;
-//     }
+    //     if (!isValid) {
+    //         $('#staffContractError').text('Please select at least one option.').show(); // Show error message
+    //         $('#StaffContractAffiliation').focus();
+    //         return false;
+    //     } else {
+    //         $('#staffContractError').hide(); // Hide error message if valid
+    //         return true;
+    //     }
 
-//     return isValid; // Return validation result
-// }
+    //     return isValid; // Return validation result
+    // }
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
-             var form = document.querySelector('form'); // Get the form element
+        var form = document.querySelector('form'); // Get the form element
 
-    // Validate required fields using `reportValidity`
-    if (!form.reportValidity()) {
-        event.preventDefault(); // Prevent submission if form is invalid
-        return; // Exit the handler
-    }
+        // Validate required fields using `reportValidity`
+        if (!form.reportValidity()) {
+            event.preventDefault(); // Prevent submission if form is invalid
+            return; // Exit the handler
+        }
 
-    // Additional custom validations
-    if (!validateCertificationFields()) {
-        event.preventDefault(); // Prevent submission if certification fields validation fails
-        return; // Exit the handler
-    }
+        // Additional custom validations
+        if (!validateCertificationFields()) {
+            event.preventDefault(); // Prevent submission if certification fields validation fails
+            return; // Exit the handler
+        }
 
-    // if (!validateStaffContractAffiliation()) {
-    //     event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
-    //     return; // Exit the handler
-    // }
+        // if (!validateStaffContractAffiliation()) {
+        //     event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
+        //     return; // Exit the handler
+        // }
 
-        });
+    });
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
         console.log($('#StaffContractAffiliation').val());
@@ -1071,34 +1165,34 @@ function updateAddRewardButton() {
         // }
     });
 
-        function validateCertificationFields() {
-            const blsDate = document.getElementById('BLSCertDate').value;
-            const blsNumber = document.getElementById('BLSCertNumber').value;
-            const aclsDate = document.getElementById('ACLSCertDate').value;
-            const aclsNumber = document.getElementById('ACLSCertNumber').value;
+    function validateCertificationFields() {
+        const blsDate = document.getElementById('BLSCertDate').value;
+        const blsNumber = document.getElementById('BLSCertNumber').value;
+        const aclsDate = document.getElementById('ACLSCertDate').value;
+        const aclsNumber = document.getElementById('ACLSCertNumber').value;
 
-            const isBLSFilled = blsDate && blsNumber;
-            const isACLSFilled = aclsDate && aclsNumber;
+        const isBLSFilled = blsDate && blsNumber;
+        const isACLSFilled = aclsDate && aclsNumber;
 
-            const blsErrorSpan = document.getElementById('BLSCertError');
-            const aclsErrorSpan = document.getElementById('ACLSCertError');
+        const blsErrorSpan = document.getElementById('BLSCertError');
+        const aclsErrorSpan = document.getElementById('ACLSCertError');
 
-            blsErrorSpan.style.display = 'none';
-            aclsErrorSpan.style.display = 'none';
+        blsErrorSpan.style.display = 'none';
+        aclsErrorSpan.style.display = 'none';
 
-            if (!isBLSFilled && !isACLSFilled) {
-                const errorMessage = 'Either BLS or ACLS certification must be completed.';
-                blsErrorSpan.textContent = errorMessage;
-                blsErrorSpan.style.display = 'block';
+        if (!isBLSFilled && !isACLSFilled) {
+            const errorMessage = 'Either BLS or ACLS certification must be completed.';
+            blsErrorSpan.textContent = errorMessage;
+            blsErrorSpan.style.display = 'block';
 
-                aclsErrorSpan.textContent = errorMessage;
-                aclsErrorSpan.style.display = 'block';
+            aclsErrorSpan.textContent = errorMessage;
+            aclsErrorSpan.style.display = 'block';
 
-                return false; // Validation failed
-            }
-
-            return true; // Validation passed
+            return false; // Validation failed
         }
+
+        return true; // Validation passed
+    }
 
     $('#EmployerSubcontractor').select2({
         theme: 'bootstrap-5',
@@ -1110,6 +1204,7 @@ function updateAddRewardButton() {
     // manageLicenseRows();
     // });
 
+    
 
     function manageLicenseRows(licenses = []) {
         const container = document.querySelector('.form-container');
@@ -1140,48 +1235,48 @@ function updateAddRewardButton() {
 
             // License row markup with labels
             newRow.innerHTML = `
-        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-            <div class="form-group">
-                <label for="licenseNumber${rowIndex}">License Number</label>
-                <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" maxlength="14" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <label for="licenseNumber${rowIndex}">License Number</label>
+                    <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" maxlength="14" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
+                </div>
             </div>
-        </div>
-        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-            <div class="form-group">
-                <label for="licenseState${rowIndex}">State</label>
-                <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                    <option value="">Select State</option>
-                    <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
-                    <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
-                </select>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <label for="licenseState${rowIndex}">State</label>
+                    <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
+                        <option value="">Select State</option>
+                        <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
+                        <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-            <div class="form-group">
-                <label for="licenseType${rowIndex}">Type</label>
-                <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                    <option value="">Select Type</option>
-                    <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
-                    <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
-                </select>
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <label for="licenseType${rowIndex}">Type</label>
+                    <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
+                        <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-            <div class="form-group">
-                <label for="licenseActive${rowIndex}">Active Date</label>
-                <input id="licenseActive${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseActiveDate" type="date" class="form-control" value="${licenseData ? formattedActiveDate : ''}" required />
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <label for="licenseActive${rowIndex}">Active Date</label>
+                    <input id="licenseActive${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseActiveDate" type="date" class="form-control" value="${licenseData ? formattedActiveDate : ''}" required />
+                </div>
             </div>
-        </div>
-        <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-            <div class="form-group">
-                <label for="licenseExpiry${rowIndex}">Expiry Date</label>
-                <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
+            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+                <div class="form-group">
+                    <label for="licenseExpiry${rowIndex}">Expiry Date</label>
+                    <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
+                </div>
             </div>
-        </div>
-        <div class="col-md-1" style="flex: 0; margin-left: 5px;">
-            <button type="button" class="btn btn-danger remove-row">Remove</button>
-        </div>
-    `;
+            <div class="col-md-1" style="flex: 0; margin-left: 5px;">
+                <button type="button" class="btn btn-danger remove-row">Remove</button>
+            </div>
+        `;
 
             // Add event listener for the "Remove" button to delete the row
             const removeButton = newRow.querySelector('.remove-row');
@@ -1238,7 +1333,6 @@ function updateAddRewardButton() {
 
     function manageAffiliationRows(affiliation = []) {
 
-        debugger;
         const container = document.querySelector('.form-container-Affiliation');
         container.innerHTML = '';
 
@@ -1256,26 +1350,26 @@ function updateAddRewardButton() {
             newRow.classList.add('form-row', 'mb-3', 'd-flex', 'align-items-center', 'gap-3', 'affiliation-row');
 
             newRow.innerHTML = `
-            <div class="flex-grow-1">
-                <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
-                <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
-                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
-                </select>
-                <input type="hidden" id="EmployerSubcontractorText${rowIndex}" 
-                   name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" />
-            </div>
-            <div class="flex-grow-1">
-                <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
-                <select id="StaffContractAffiliation${rowIndex}"
-                        name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
-                        multiple class="form-control multi-select" required>
-                </select>
-                
-            </div>
-            <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
-                <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
-            </div>
-        `;
+                <div class="flex-grow-1">
+                    <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
+                    <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
+                            name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
+                    </select>
+                    <input type="hidden" id="EmployerSubcontractorText${rowIndex}"
+                       name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" />
+                </div>
+                <div class="flex-grow-1">
+                    <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
+                    <select id="StaffContractAffiliation${rowIndex}"
+                            name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
+                            multiple class="form-control multi-select" required>
+                    </select>
+
+                </div>
+                <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
+                    <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
+                </div>
+            `;
 
             // Add event listener for the "Remove" button to delete the row
             const removeButton = newRow.querySelector('.remove-row');
@@ -1363,7 +1457,7 @@ function updateAddRewardButton() {
 
             $(`#EmployerSubcontractor${rowIndex}`).change(function () {
                 const selectedText = $(this).find("option:selected").text(); // Get the selected text
-                 if (!selectedText) return;
+                if (!selectedText) return;
                 const currentDropdown = this;
                 let isDuplicate = false;
                 const allEmployerDropdowns = document.querySelectorAll('.form-container-Affiliation select[id^="EmployerSubcontractor"]');
@@ -1391,27 +1485,27 @@ function updateAddRewardButton() {
                     });
                 } else {
 
-                // If no duplicate, proceed with the AJAX call
-                const selectedValue = $(this).val(); // Get the selected value
-                if (selectedText) {
-                    // Show the AJAX request after no duplication
-                    $.ajax({
-                        url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
-                        type: 'GET',
-                        data: { companyName: selectedText },
-                        success: function (response) {
-                            if (response.success) {
-                                $(`#EmployerSubcontractorText${rowIndex}`).val(selectedText);
-                                bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
-                            } else {
-                                alert(response.message);
+                    // If no duplicate, proceed with the AJAX call
+                    const selectedValue = $(this).val(); // Get the selected value
+                    if (selectedText) {
+                        // Show the AJAX request after no duplication
+                        $.ajax({
+                            url: '/SubContractorInfo/GetContractIdsBySubContractorCompanyName',
+                            type: 'GET',
+                            data: { companyName: selectedText },
+                            success: function (response) {
+                                if (response.success) {
+                                    $(`#EmployerSubcontractorText${rowIndex}`).val(selectedText);
+                                    bindMultiSelectDropdown(`#StaffContractAffiliation${rowIndex}`, response.data.contractDetails);
+                                } else {
+                                    alert(response.message);
+                                }
+                            },
+                            error: function () {
+                                alert('An error occurred while fetching contract details.');
                             }
-                        },
-                        error: function () {
-                            alert('An error occurred while fetching contract details.');
-                        }
-                    });
-                }
+                        });
+                    }
                 }
             });
         }
@@ -1455,7 +1549,7 @@ function updateAddRewardButton() {
             const affiliationRows = document.querySelectorAll('.affiliation-row');
             if (affiliationRows.length < 5) {
                 createAffiliationRow(affiliationRows.length);
-            } else {    
+            } else {
                 alert('You can only add up to 5 rows.');
             }
         }
@@ -1468,7 +1562,7 @@ function updateAddRewardButton() {
 
         addAffiliationRowButton.addEventListener('click', addAffiliationRowHandler);
 
-        
+
     }
 
 
@@ -1481,53 +1575,53 @@ function updateAddRewardButton() {
         });
 
         $.getJSON('/data/statesAndCities.json', function (data) {
-        const stateCityMap = {};
-        const stateDropdowns = $('#primaryState, #secondaryState');
+            const stateCityMap = {};
+            const stateDropdowns = $('#primaryState, #secondaryState');
 
-        stateDropdowns.empty().append('<option value="">Select State</option>');
-        data.states.forEach(state => {
-            stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
-            stateCityMap[state.Name] = state.Cities; // Map state name to its cities
-        });
+            stateDropdowns.empty().append('<option value="">Select State</option>');
+            data.states.forEach(state => {
+                stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
+                stateCityMap[state.Name] = state.Cities; // Map state name to its cities
+            });
 
-        stateDropdowns.on('change', function () {
-            const stateName = $(this).val();
+            stateDropdowns.on('change', function () {
+                const stateName = $(this).val();
 
-            const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
-            const cityDropdown = $(cityDropdownId);
+                const cityDropdownId = $(this).attr('id') === 'primaryState' ? '#primaryCity' : '#secondaryCity';
+                const cityDropdown = $(cityDropdownId);
 
-            cityDropdown.empty().append('<option value="">Select City</option>');
+                cityDropdown.empty().append('<option value="">Select City</option>');
 
-            if (stateName && stateCityMap[stateName]) {
-                stateCityMap[stateName].forEach(city => {
-                    cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
-                });
-            }
-        });
-
-
-        $('.city-dropdown').on('change', function () {
-            const cityDropdownId = $(this).attr('id');
-            const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
-            const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
-
-            const stateName = $(stateDropdownId).val();
-            const cityName = $(this).val(); 
-            const zipCodeDropdown = $(zipCodeDropdownId);
-
-            zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
-
-            if (stateName && cityName && stateCityMap[stateName]) {
-                const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
-
-                if (selectedCity && selectedCity.Zipcodes) {
-                    selectedCity.Zipcodes.forEach(zip => {
-                        zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                if (stateName && stateCityMap[stateName]) {
+                    stateCityMap[stateName].forEach(city => {
+                        cityDropdown.append(`<option value="${city.Name}">${city.Name}</option>`);
                     });
                 }
-            }
+            });
+
+
+            $('.city-dropdown').on('change', function () {
+                const cityDropdownId = $(this).attr('id');
+                const stateDropdownId = cityDropdownId === 'primaryCity' ? '#primaryState' : '#secondaryState';
+                const zipCodeDropdownId = cityDropdownId === 'primaryCity' ? '#primaryZipCode' : '#secondaryZipCode';
+
+                const stateName = $(stateDropdownId).val();
+                const cityName = $(this).val();
+                const zipCodeDropdown = $(zipCodeDropdownId);
+
+                zipCodeDropdown.empty().append('<option value="">Select Zip Code</option>');
+
+                if (stateName && cityName && stateCityMap[stateName]) {
+                    const selectedCity = stateCityMap[stateName].find(city => city.Name === cityName); // Find the city in the selected state
+
+                    if (selectedCity && selectedCity.Zipcodes) {
+                        selectedCity.Zipcodes.forEach(zip => {
+                            zipCodeDropdown.append(`<option value="${zip.ZipCode}">${zip.ZipCode}</option>`);
+                        });
+                    }
+                }
+            });
         });
-    });
     });
 
     function applySsnMask(inputElement) {
@@ -1542,139 +1636,139 @@ function updateAddRewardButton() {
         });
     }
 
-function bindMultiSelectDropdown(data) {
-    var dropdown = $('#StaffContractAffiliation');
-    dropdown.empty(); // Clear existing options
+    function bindMultiSelectDropdown(data) {
+        var dropdown = $('#StaffContractAffiliation');
+        dropdown.empty(); // Clear existing options
 
-    $.each(data, function (index, item) {
-        dropdown.append($('<option></option>').attr('value', item.id).text(item.text));
-    });
+        $.each(data, function (index, item) {
+            dropdown.append($('<option></option>').attr('value', item.id).text(item.text));
+        });
 
-    //dropdown.multiselect('rebuild'); // Rebuild the multi-select
-}
+        //dropdown.multiselect('rebuild'); // Rebuild the multi-select
+    }
 
-$('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
-            var contractId = $(this).data('id');
-            var isViewButton = $(this).hasClass('view-btn');
-            $.ajax({
+    $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
+        var contractId = $(this).data('id');
+        var isViewButton = $(this).hasClass('view-btn');
+        $.ajax({
             url: '/EventStaff/GetEventStaffById/' + contractId,
-                type: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        var combinedData = response.combinedData;
-                        var eventStaff = combinedData.eventStaff;
-                        var staffContractAffiliation = combinedData.staffSubContractorAffiliation;
-                        var subContractor = combinedData.subContractor;
-                        var travelHonor = combinedData.travelHonor;
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    var combinedData = response.combinedData;
+                    var eventStaff = combinedData.eventStaff;
+                    var staffContractAffiliation = combinedData.staffSubContractorAffiliation;
+                    var subContractor = combinedData.subContractor;
+                    var travelHonor = combinedData.travelHonor;
                     const jsonString = JSON.stringify(staffContractAffiliation);
                     console.log(jsonString);
-                        $('#hiddenId').val(eventStaff.id);
+                    $('#hiddenId').val(eventStaff.id);
 
-                        const affiliationContainer = document.querySelector('.form-container-Affiliation');
-                        affiliationContainer.innerHTML = '';
-                        manageAffiliationRows(staffContractAffiliation);
+                    const affiliationContainer = document.querySelector('.form-container-Affiliation');
+                    affiliationContainer.innerHTML = '';
+                    manageAffiliationRows(staffContractAffiliation);
 
-                            $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
-                            $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);
-                            $('#hotelCheckbox').prop('checked', eventStaff.travelHonorHotel);
-                            populateForm(travelHonor);
-
-
-                             $('#StaffID').val(eventStaff.staffID);
-                               let eventStartDate = new Date(eventStaff.startDate);
-                            let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
-                            $('#StartDate').val(formattedStartDate);
-                             $('#StaffStatus').val(eventStaff.staffStatus);
-                            $('#StaffLastName').val(eventStaff.staffLastName);
-                            $('#StaffFirstName').val(eventStaff.staffFirstName);
-                            $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
-                            $('#StaffSSN').val(eventStaff.staffSSN);
-                            $('#StaffDOB').val(new Date(eventStaff.staffDOB).toLocaleDateString('en-CA'));
-
-                            if (eventStaff.eventOnCallStaff === 'true') {
-                                $('#eventOnCallYes').prop('checked', true).trigger('change');
-                                //$('#eventOnCallSelectContainer').show();
-                                //$('#EventOnCallStaffEvent').attr('required', 'required');
-
-                            } else {
-                                $('#eventOnCallNo').prop('checked', true).trigger('change');
-                                //$('#eventOnCallSelectContainer').hide();
-                                //$('#EventOnCallStaffEvent').removeAttr('required');
-                            }
-
-                            //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
-
-                            const licenseContainer = document.querySelector('.form-container');
-                            licenseContainer.innerHTML = '';
-                            manageLicenseRows(eventStaff.licenses);
-                    
-                            $('#npi').val(eventStaff.npi);
-                            $('#dae').val(eventStaff.dae);
-                            $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
-                            $('#HistoricalCredentialingDate').val(new Date(eventStaff.historicalCredentialingDate).toLocaleDateString('en-CA'));
-                            $('#DAWSONInternalCredentialingCompleteDate').val(new Date(eventStaff.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
-                            $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
-                            $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
-
-                            if (eventStaff.onboardingTrainingComplete === 'false') {
-                                $('#additionalControl').show();
-                                $('#OutstandingTrainings').val(eventStaff.outstandingTrainings);
-                                $('#OutstandingTrainings').attr('required', 'required');
-                            } else {
-                                $('#additionalControl').hide();
-                                $('#OutstandingTrainings').removeAttr('required');
-                            }
-
-                            $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
-                            $('#BLSCertDate').val(new Date(eventStaff.blsCertDate).toLocaleDateString('en-CA'));
-                            $('#BLSCertNumber').val(eventStaff.blsCertNumber);
-                            $('#ACLSCertDate').val(new Date(eventStaff.aclsCertDate).toLocaleDateString('en-CA'));
-                            $('#ACLSCertNumber').val(eventStaff.aclsCertNumber);
-                            $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
-                            $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
-
-                            if (eventStaff.staffCAC === 'true') {
-                                $('#staffCACYes').prop('checked', true).trigger('change');
-                                $('#staffDoDContainer').show();
-                                $('#StaffDoDID').val(eventStaff.staffDoDID);
-                                $('#StaffDoDID').attr('required', 'required');
-                                $('#StaffCACExpiryDate').val(new Date(eventStaff.cacExpiryDate).toLocaleDateString('en-CA'));
-                                $('#StaffCACExpiryDate').attr('required', 'required');
-
-                        
-                            } else {
-                                $('#staffCACNo').prop('checked', true).trigger('change');
-                                $('#staffDoDContainer').hide();
-                                $('#StaffDoDID').removeAttr('required');
-                                $('#StaffCACExpiryDate').removeAttr('required');
-                            }
-
-                            
-                            $('#staffCellNumber').val(eventStaff.staffCellNumber);
-                            $('#staffPhone2').val(eventStaff.staffPhone2);
-                            $('#StaffEmail').val(eventStaff.staffEmail);
-                            $('#PrimaryAddress1').val(eventStaff.primaryAddress1);
-                            $('#PrimaryAddress2').val(eventStaff.primaryAddress2);
-                            $('#primaryState').val(eventStaff.primaryState).trigger('change');
-                            $('#primaryCity').val(eventStaff.primaryCity).trigger('change');
-                            $('#primaryZipCode').val(eventStaff.primaryZip);
-                            $('#SecondaryAddress1').val(eventStaff.secondaryAddress1);
-                            $('#SecondaryAddress2').val(eventStaff.secondaryAddress2);
-                            $('#secondaryState').val(eventStaff.secondaryState).trigger('change');
-                            $('#secondaryCity').val(eventStaff.secondaryCity).trigger('change');
-                            $('#secondaryZipCode').val(eventStaff.secondaryZip);
-                            $('#StaffInfoEnteredBy').val(eventStaff.staffInfoEnteredBy);
+                    $('#airlineCheckbox').prop('checked', eventStaff.travelHonorAir);
+                    $('#carCheckbox').prop('checked', eventStaff.travelHonorCar);
+                    $('#hotelCheckbox').prop('checked', eventStaff.travelHonorHotel);
+                    populateForm(travelHonor);
 
 
-                             // Show the form and hide the table
-                             $('#datatableWrapper').hide();
-                             $('.card-body').show();
-                             $('#submitBtn').hide();
-                             $('#resetBtn').hide();
-                             $('#addContractBtn').hide();
+                    $('#StaffID').val(eventStaff.staffID);
+                    let eventStartDate = new Date(eventStaff.startDate);
+                    let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
+                    $('#StartDate').val(formattedStartDate);
+                    $('#StaffStatus').val(eventStaff.staffStatus);
+                    $('#StaffLastName').val(eventStaff.staffLastName);
+                    $('#StaffFirstName').val(eventStaff.staffFirstName);
+                    $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
+                    $('#StaffSSN').val(eventStaff.staffSSN);
+                    $('#StaffDOB').val(new Date(eventStaff.staffDOB).toLocaleDateString('en-CA'));
 
-                        if (isViewButton) {
-                            const controlIds = ['hiddenId','StartDate',
+                    if (eventStaff.eventOnCallStaff === 'true') {
+                        $('#eventOnCallYes').prop('checked', true).trigger('change');
+                        //$('#eventOnCallSelectContainer').show();
+                        //$('#EventOnCallStaffEvent').attr('required', 'required');
+
+                    } else {
+                        $('#eventOnCallNo').prop('checked', true).trigger('change');
+                        //$('#eventOnCallSelectContainer').hide();
+                        //$('#EventOnCallStaffEvent').removeAttr('required');
+                    }
+
+                    //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
+
+                    const licenseContainer = document.querySelector('.form-container');
+                    licenseContainer.innerHTML = '';
+                    manageLicenseRows(eventStaff.licenses);
+
+                    $('#npi').val(eventStaff.npi);
+                    $('#dae').val(eventStaff.dae);
+                    $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
+                    $('#HistoricalCredentialingDate').val(new Date(eventStaff.historicalCredentialingDate).toLocaleDateString('en-CA'));
+                    $('#DAWSONInternalCredentialingCompleteDate').val(new Date(eventStaff.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
+                    $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
+                    $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
+
+                    if (eventStaff.onboardingTrainingComplete === 'false') {
+                        $('#additionalControl').show();
+                        $('#OutstandingTrainings').val(eventStaff.outstandingTrainings);
+                        $('#OutstandingTrainings').attr('required', 'required');
+                    } else {
+                        $('#additionalControl').hide();
+                        $('#OutstandingTrainings').removeAttr('required');
+                    }
+
+                    $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
+                    $('#BLSCertDate').val(new Date(eventStaff.blsCertDate).toLocaleDateString('en-CA'));
+                    $('#BLSCertNumber').val(eventStaff.blsCertNumber);
+                    $('#ACLSCertDate').val(new Date(eventStaff.aclsCertDate).toLocaleDateString('en-CA'));
+                    $('#ACLSCertNumber').val(eventStaff.aclsCertNumber);
+                    $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
+                    $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
+
+                    if (eventStaff.staffCAC === 'true') {
+                        $('#staffCACYes').prop('checked', true).trigger('change');
+                        $('#staffDoDContainer').show();
+                        $('#StaffDoDID').val(eventStaff.staffDoDID);
+                        $('#StaffDoDID').attr('required', 'required');
+                        $('#StaffCACExpiryDate').val(new Date(eventStaff.cacExpiryDate).toLocaleDateString('en-CA'));
+                        $('#StaffCACExpiryDate').attr('required', 'required');
+
+
+                    } else {
+                        $('#staffCACNo').prop('checked', true).trigger('change');
+                        $('#staffDoDContainer').hide();
+                        $('#StaffDoDID').removeAttr('required');
+                        $('#StaffCACExpiryDate').removeAttr('required');
+                    }
+
+
+                    $('#staffCellNumber').val(eventStaff.staffCellNumber);
+                    $('#staffPhone2').val(eventStaff.staffPhone2);
+                    $('#StaffEmail').val(eventStaff.staffEmail);
+                    $('#PrimaryAddress1').val(eventStaff.primaryAddress1);
+                    $('#PrimaryAddress2').val(eventStaff.primaryAddress2);
+                    $('#primaryState').val(eventStaff.primaryState).trigger('change');
+                    $('#primaryCity').val(eventStaff.primaryCity).trigger('change');
+                    $('#primaryZipCode').val(eventStaff.primaryZip);
+                    $('#SecondaryAddress1').val(eventStaff.secondaryAddress1);
+                    $('#SecondaryAddress2').val(eventStaff.secondaryAddress2);
+                    $('#secondaryState').val(eventStaff.secondaryState).trigger('change');
+                    $('#secondaryCity').val(eventStaff.secondaryCity).trigger('change');
+                    $('#secondaryZipCode').val(eventStaff.secondaryZip);
+                    $('#StaffInfoEnteredBy').val(eventStaff.staffInfoEnteredBy);
+
+
+                    // Show the form and hide the table
+                    $('#datatableWrapper').hide();
+                    $('.card-body').show();
+                    $('#submitBtn').hide();
+                    $('#resetBtn').hide();
+                    $('#addContractBtn').hide();
+
+                    if (isViewButton) {
+                        const controlIds = ['hiddenId', 'StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
@@ -1683,22 +1777,22 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
                             'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
-                            ];
+                        ];
 
 
 
-                            // Make controls read-only
-                            controlIds.forEach(function (id) {
-                                const control = $('#' + id);
-                                control.prop('readonly', true); // Make input read-only
-                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
-                            });
+                        // Make controls read-only
+                        controlIds.forEach(function (id) {
+                            const control = $('#' + id);
+                            control.prop('readonly', true); // Make input read-only
+                            control.addClass('read-only-style'); // Optional: Add a class for read-only styling
+                        });
 
-                            const container = document.querySelector('.form-container-Affiliation');
-                            const controls = container.querySelectorAll('select, input, button, textarea');
-                            controls.forEach(control => {
-                                control.disabled = true;
-                            });
+                        const container = document.querySelector('.form-container-Affiliation');
+                        const controls = container.querySelectorAll('select, input, button, textarea');
+                        controls.forEach(control => {
+                            control.disabled = true;
+                        });
 
                         const categories = ['#dynamicControlsContainer', '#carDynamicControlsContainer', '#hotelDynamicControlsContainer'];
 
@@ -1725,11 +1819,10 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                         });
 
 
-                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
-                        } 
-                        else
-                        {
-                            const controlIds = ['hiddenId','StartDate',
+                        $('#updateBtn').hide();  // Hide the Update button when View button is clicked
+                    }
+                    else {
+                        const controlIds = ['hiddenId', 'StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
                             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
                             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
@@ -1738,32 +1831,32 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
                             'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
                             'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
                             'secondaryCity', 'secondaryZipCode', 'StaffInfoEnteredBy', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
-                            ];
+                        ];
 
-                      // Make controls editable
-                      controlIds.forEach(function (id) {
-                          const control = $('#' + id);
-                          control.prop('readonly', false); // Remove readonly property
-                          control.removeClass('read-only-style'); // Remove read-only styling class if applied
-                      });
+                        // Make controls editable
+                        controlIds.forEach(function (id) {
+                            const control = $('#' + id);
+                            control.prop('readonly', false); // Remove readonly property
+                            control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                        });
 
-                            const container = document.querySelector('.form-container-Affiliation');
-                            const controls = container.querySelectorAll('select, input, button, textarea');
-                            controls.forEach(control => {
-                                control.disabled = false;
-                            });
+                        const container = document.querySelector('.form-container-Affiliation');
+                        const controls = container.querySelectorAll('select, input, button, textarea');
+                        controls.forEach(control => {
+                            control.disabled = false;
+                        });
 
-                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
-                        }
-                        } else {
-                        alert(response.message);  // Show error message
+                        $('#updateBtn').show();  // Show the Update button when Edit button is clicked
                     }
-                },
+                } else {
+                    alert(response.message);  // Show error message
+                }
+            },
             error: function () {
                 alert('An error occurred while fetching contract data.');
             }
-            });
         });
+    });
 
     function populateForm(data) {
 
@@ -1792,34 +1885,34 @@ $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
         hotelCounter = hotelContainer.children.length;
 
         const totalRows = airCounter + carCounter + hotelCounter;
-        controlCount = totalRows - 1; 
+        controlCount = totalRows - 1;
     }
 
 
-        function formatDateField(dateValue) {
-                if (!dateValue) {
-                    return '';
-                }
+    function formatDateField(dateValue) {
+        if (!dateValue) {
+            return '';
+        }
 
-                var date = new Date(dateValue); // Convert the value to Date object
-                if (isNaN(date.getTime())) {
-                    return ''; // Return empty if the date is invalid
-                }
+        var date = new Date(dateValue); // Convert the value to Date object
+        if (isNaN(date.getTime())) {
+            return ''; // Return empty if the date is invalid
+        }
 
-                // Format the date as mm/dd/yyyy
-                var formattedDate = (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                                    date.getDate().toString().padStart(2, '0') + '/' + 
-                                    date.getFullYear();
+        // Format the date as mm/dd/yyyy
+        var formattedDate = (date.getMonth() + 1).toString().padStart(2, '0') + '/' +
+            date.getDate().toString().padStart(2, '0') + '/' +
+            date.getFullYear();
 
-                return formattedDate;
-            }
+        return formattedDate;
+    }
 
 
-function setStaffIdTextbox(staffId) {
-    // var prefix = $('#EmployerSubcontractor').find("option:selected").text().substring(0, 2).toUpperCase();
-    var fullStaffId = 'ES' + staffId;
-    $('#StaffID').val(fullStaffId);
-}
+    function setStaffIdTextbox(staffId) {
+        // var prefix = $('#EmployerSubcontractor').find("option:selected").text().substring(0, 2).toUpperCase();
+        var fullStaffId = 'ES' + staffId;
+        $('#StaffID').val(fullStaffId);
+    }
 
 
 
@@ -1843,7 +1936,7 @@ function setStaffIdTextbox(staffId) {
     allowOnlyNumericInput("StaffSSN");
     allowOnlyNumericInput("npi");
     allowOnlyNumericInput("StaffDoDID");
-    
+
 
     function allowOnlyNumericInput(inputId) {
         document.getElementById(inputId).addEventListener("keypress", function (event) {
@@ -1864,7 +1957,7 @@ function setStaffIdTextbox(staffId) {
 
     function toggleStaffDoDID() {
         if (staffCACYes.checked) {
-            staffDoDContainer.style.display = 'block'; 
+            staffDoDContainer.style.display = 'block';
             staffDoDID.setAttribute('required', 'required');
             cacExpiryDate.setAttribute('required', 'required');
         } else {
@@ -1900,7 +1993,7 @@ function setStaffIdTextbox(staffId) {
     // noRadio.addEventListener('change', toggleEventOnCallContainer);
 
     // toggleEventOnCallContainer();
-    
+
 
     const phoneFields = ['staffCellNumber', 'staffPhone2'];
     phoneFields.forEach(function (fieldId) {
@@ -1919,22 +2012,39 @@ function setStaffIdTextbox(staffId) {
         });
     }
 
-     $('.card-body').hide();
-     $('#contractsTable').show();
+    $('.card-body').hide();
+    $('#contractsTable').show();
 
+    let rolesData = {};
 
-          $('#addContractBtn').click(function () {
-                $('#StaffInfoEnteredBy').val('@User.Identity.Name');
-            const controlIds = ['hiddenId','StartDate',
-                            'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
-                            'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
-                            'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
-                            'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
-                            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
-                            'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
-                            'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
-                            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
-                            ];
+    $('#addContractBtn').click(function () {
+        $.getJSON("/data/roles.json", function (roles) {
+            let staffRolesContainer = $("#StaffRoles");
+            rolesData = roles; // Store JSON for later use
+
+            roles.forEach(role => {
+                let roleElement = `
+                <div class="form-check me-3">
+                    <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.value}">
+                    <label class="form-check-label" for="${role.id}">${role.value}</label>
+                </div>`;
+                staffRolesContainer.append(roleElement);
+            });
+        }).fail(function () {
+            console.error("Error loading roles.");
+        });
+
+        $('#StaffInfoEnteredBy').val('@User.Identity.Name');
+        const controlIds = ['hiddenId', 'StartDate',
+            'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
+            'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
+            'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
+            'OnboardingTrainingCompleteYes', 'OnboardingTrainingCompleteNo', 'OutstandingTrainings', 'BackgroundCheckConcerns', 'BLSCertDate', 'BLSCertNumber',
+            'ACLSCertDate', 'ACLSCertNumber', 'CACApplicationProcessStatus', 'EmployerSubcontractor', 'staffCACYes', 'staffCACNo',
+            'StaffDoDID', 'staffCellNumber', 'staffPhone2', 'StaffEmail', 'PrimaryAddress1', 'PrimaryAddress2',
+            'primaryState', 'primaryCity', 'primaryZipCode', 'SecondaryAddress1', 'SecondaryAddress2', 'secondaryState',
+            'secondaryCity', 'secondaryZipCode', 'StaffContractAffiliation', 'airlineCheckbox', 'carCheckbox', 'hotelCheckbox'
+        ];
 
         controlIds.forEach(function (id) {
             const control = $('#' + id);
@@ -1952,30 +2062,30 @@ function setStaffIdTextbox(staffId) {
             control.removeClass('read-only-style');
         });
 
-            const container = document.querySelector('.form-container-Affiliation');
-                            const controls = container.querySelectorAll('select, input, button, textarea');
-                            controls.forEach(control => {
-                                control.disabled = false;
-                            });
+        const container = document.querySelector('.form-container-Affiliation');
+        const controls = container.querySelectorAll('select, input, button, textarea');
+        controls.forEach(control => {
+            control.disabled = false;
+        });
 
-                            const licenseContainer = document.querySelector('.form-container');
-                            const licenseControls = licenseContainer.querySelectorAll('select, input, button, textarea');
-                            licenseControls.forEach(control => {
-                                control.disabled = false;
-                            });
+        const licenseContainer = document.querySelector('.form-container');
+        const licenseControls = licenseContainer.querySelectorAll('select, input, button, textarea');
+        licenseControls.forEach(control => {
+            control.disabled = false;
+        });
 
-            document.getElementById('dynamicControlsContainer').innerHTML = '';
-            document.getElementById('carDynamicControlsContainer').innerHTML = '';
-            document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
-            controlCount = -1;
-            $('.card-body').show();
-            $('#datatableWrapper').hide();
-            $('#submitBtn').show();
-            $('#resetBtn').show();
-            $('#updateBtn').hide();
-            $('#addContractBtn').hide();
+        document.getElementById('dynamicControlsContainer').innerHTML = '';
+        document.getElementById('carDynamicControlsContainer').innerHTML = '';
+        document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
+        controlCount = -1;
+        $('.card-body').show();
+        $('#datatableWrapper').hide();
+        $('#submitBtn').show();
+        $('#resetBtn').show();
+        $('#updateBtn').hide();
+        $('#addContractBtn').hide();
 
-                controlIds.forEach(function(id) {
+        controlIds.forEach(function (id) {
             var control = $('#' + id);
             // For text input fields, clear the value
             if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
@@ -1993,7 +2103,7 @@ function setStaffIdTextbox(staffId) {
             }
 
             if (control.is('input[type="date"]')) {
-        control.val('');
+                control.val('');
             }
 
             if (control.is('select')) {
@@ -2016,51 +2126,51 @@ function setStaffIdTextbox(staffId) {
             }
         });
 
- });
+    });
 
 
 
-        $('#backToTableBtn').click(function () {
-            $('.card-body').hide();
-            $('#datatableWrapper').show();
-            $('#addContractBtn').show();
+    $('#backToTableBtn').click(function () {
+        $('.card-body').hide();
+        $('#datatableWrapper').show();
+        $('#addContractBtn').show();
 
-        });
+    });
 
-        $('#contractsTable').DataTable({
-            "paging": true,  // Enables pagination
-            "lengthChange": true,  // Option to change number of records per page
-            "searching": true,  // Enables search box
-            "ordering": false,  // Enables column sorting
-            "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
-            "autoWidth": true,  // Adjusts table width automatically
-            "responsive": true,  // Makes the table responsive on small screens
-            "language": {
-                "search": "Search Contracts:"  // Customizing the search box label
-            },
-            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
-        });
+    $('#contractsTable').DataTable({
+        "paging": true,  // Enables pagination
+        "lengthChange": true,  // Option to change number of records per page
+        "searching": true,  // Enables search box
+        "ordering": false,  // Enables column sorting
+        "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
+        "autoWidth": true,  // Adjusts table width automatically
+        "responsive": true,  // Makes the table responsive on small screens
+        "language": {
+            "search": "Search Contracts:"  // Customizing the search box label
+        },
+        "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
+    });
 
-        function fetchNextStaffId() {
-            return $.ajax({
-                url: '/EventStaff/GetNextStaffId',
-                type: 'GET',  // Method is GET because you are retrieving data
-                success: function (response) {
-                    // Check if the response is successful
-                    if (response.success) {
-                        return response.data.staffId;
-                    } else {
-                        alert("Failed to fetch Staff ID");
-                        return null;
-                    }
-                },
-                error: function (xhr, status, error) {
-                    alert("Error: " + error);
+    function fetchNextStaffId() {
+        return $.ajax({
+            url: '/EventStaff/GetNextStaffId',
+            type: 'GET',  // Method is GET because you are retrieving data
+            success: function (response) {
+                // Check if the response is successful
+                if (response.success) {
+                    return response.data.staffId;
+                } else {
+                    alert("Failed to fetch Staff ID");
                     return null;
                 }
-            });
-        }
-       
+            },
+            error: function (xhr, status, error) {
+                alert("Error: " + error);
+                return null;
+            }
+        });
+    }
+
     // document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
     //     event.preventDefault();
 
@@ -2080,7 +2190,7 @@ function setStaffIdTextbox(staffId) {
     //     }
     // });
 
-    
+
 
 
     // document.getElementById('add-affiliation-btn').addEventListener('click', function () {
@@ -2109,7 +2219,7 @@ function setStaffIdTextbox(staffId) {
     //     container.insertBefore(newRow, document.getElementById('add-affiliation-btn').parentElement);
     // });
 
-    
 
-    
+
+
 </script>
