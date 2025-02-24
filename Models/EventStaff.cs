@@ -288,6 +288,7 @@ namespace ExcelToCsv.Models
 
         public long StaffLicenseId { get; set; }
 
+        public LicenseInfoDTO StaffLicense { get; set; }
 
         [Required]
         [StringLength(50)]

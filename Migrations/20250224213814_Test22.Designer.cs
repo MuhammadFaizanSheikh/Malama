@@ -4,6 +4,7 @@ using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExcelFilesCompiler.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250224213814_Test22")]
+    partial class Test22
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1484,6 +1487,9 @@ namespace ExcelFilesCompiler.Migrations
                     b.Property<DateTime>("LicenseExpiryDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<long?>("LicenseInfoDTOId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1504,7 +1510,7 @@ namespace ExcelFilesCompiler.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StaffLicenseId");
+                    b.HasIndex("LicenseInfoDTOId");
 
                     b.ToTable("StaffLicenseDetails");
                 });
@@ -1727,13 +1733,9 @@ namespace ExcelFilesCompiler.Migrations
 
             modelBuilder.Entity("ExcelToCsv.Models.StaffLicenseDetails", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.LicenseInfoDTO", "StaffLicense")
+                    b.HasOne("ExcelToCsv.Models.LicenseInfoDTO", null)
                         .WithMany("LicenseDetails")
-                        .HasForeignKey("StaffLicenseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StaffLicense");
+                        .HasForeignKey("LicenseInfoDTOId");
                 });
 
             modelBuilder.Entity("ExcelToCsv.Models.TravelHonor", b =>

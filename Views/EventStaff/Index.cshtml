@@ -752,162 +752,185 @@
 
     $(document).ready(function () {
 
-        //      $('#StartDate').val('1980-01-01');
-        // $('#StaffStatus').val('Active');
-        // $('#StaffLastName').val('Doe');
-        // $('#StaffFirstName').val('John');
-        // $('#StaffMiddleInitial').val('A');
-        // $('#StaffSSN').val('123-45-6789');
-        // $('#StaffDOB').val('1980-01-01');
-        // $('#EventOnCallStaffEvent').val('Event A');
-        // $('#npi').val('1234567890');
-        // $('#dae').val('DAE1234');
+             $('#StartDate').val('1980-01-01');
+        $('#StaffStatus').val('Active');
+        $('#StaffLastName').val('Doe');
+        $('#StaffFirstName').val('John');
+        $('#StaffMiddleInitial').val('A');
+        $('#StaffSSN').val('123-45-6789');
+        $('#StaffDOB').val('1980-01-01');
+        $('#EventOnCallStaffEvent').val('Event A');
+        $('#npi').val('1234567890');
+        $('#dae').val('DAE1234');
 
-        // $('#BLSCertDate').val('1980-01-01');
-        // $('#ACLSCertDate').val('1980-01-01');
-        // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-        // $('#CredentialingProcessDate').val('1980-01-01');
-        // $('#OnboardingTrainingComplete').val('Yes');
-        // $('#OutstandingTrainings').val('None');
-        // $('#HistoricalCredentialingDate').val('1980-01-01');
-        // $('#StaffEmail').val('john.doe@example.com');
-        // $('#PrimaryAddress1').val('123 Main St');
-        // $('#PrimaryState').val('Alabama');
-        // $('#PrimaryCity').val('Alpine');
-        // $('#PrimaryZip').val('35014');
-        // $('#SecondaryAddress1').val('456 Elm St');
-        // $('#SecondaryState').val('Kansas');
-        // $('#SecondaryCity').val('Anthony');
-        // $('#SecondaryZip').val('67003');
-        // // $('#StaffContractAffiliation').val('Contractor');
-        // $('#StaffInfoEnteredBy').val('Admin');
+        $('#BLSCertDate').val('1980-01-01');
+        $('#ACLSCertDate').val('1980-01-01');
+        $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+        $('#CredentialingProcessDate').val('1980-01-01');
+        $('#OnboardingTrainingComplete').val('Yes');
+        $('#OutstandingTrainings').val('None');
+        $('#HistoricalCredentialingDate').val('1980-01-01');
+        $('#StaffEmail').val('john.doe@example.com');
+        $('#PrimaryAddress1').val('123 Main St');
+        $('#PrimaryState').val('Alabama');
+        $('#PrimaryCity').val('Alpine');
+        $('#PrimaryZip').val('35014');
+        $('#SecondaryAddress1').val('456 Elm St');
+        $('#SecondaryState').val('Kansas');
+        $('#SecondaryCity').val('Anthony');
+        $('#SecondaryZip').val('67003');
+        // $('#StaffContractAffiliation').val('Contractor');
+        $('#StaffInfoEnteredBy').val('Admin');
 
-        // $('#ACLSCertNumber').val('1234567890');
-        // $('#BackgroundCheckConcerns').val('1234567890');
-        // $('#BLSCertNumber').val('1234567890');
+        $('#ACLSCertNumber').val('1234567890');
+        $('#BackgroundCheckConcerns').val('1234567890');
+        $('#BLSCertNumber').val('1234567890');
 
-        // $('#staffCellNumber').val('123-123-1234');
-        // $('#staffPhone2').val('123-123-1234');
-        let roleLicenseIndexMap = {}; // Store row indices per roleId
+        $('#staffCellNumber').val('123-123-1234');
+        $('#staffPhone2').val('123-123-1234');
+        let roleIndexMap = {}; // Stores role indices
+let roleLicenseIndexMap = {}; // Stores license indices per role
 
-        // Handle role checkbox click event
-        $(document).on("change", ".role-checkbox", function () {
-            let roleCheckbox = $(this);
-            let roleId = roleCheckbox.attr("id");
+// Handle role checkbox click event
+$(document).on("change", ".role-checkbox", function () {
+    let roleCheckbox = $(this);
+    let roleId = roleCheckbox.attr("id");
 
-            if (roleCheckbox.is(":checked")) {
-                let role = rolesData.find(r => r.id === roleId);
-                if (role) {
-                    roleLicenseIndexMap[roleId] = 0;
-                    let licenseFields = generateLicenseFields(roleId, roleLicenseIndexMap[roleId], role.types);
-                    roleCheckbox.closest(".form-check").after(licenseFields);
-                    roleLicenseIndexMap[roleId]++;
-                }
-            } else {
-                roleCheckbox.closest(".form-check").next(".license-container").remove();
-                delete roleLicenseIndexMap[roleId];
-            }
-        });
+    if (roleCheckbox.is(":checked")) {
+        // Assign a unique roleIndex if not already assigned
+        if (!(roleId in roleIndexMap)) {
+            roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
+        }
 
-        // Handle Add Another License button click
-        $(document).on("click", ".add-row-button", function () {
-            let licenseContainer = $(this).prev(".license-container");
-            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-            let roleId = roleCheckbox.attr("id");
+        let roleIndex = roleIndexMap[roleId];
 
-            if (!roleId || !(roleId in roleLicenseIndexMap)) {
-                console.warn("Role ID not found for license container.");
-                return;
-            }
+        // Only initialize license index if not set
+        if (!(roleId in roleLicenseIndexMap)) {
+            roleLicenseIndexMap[roleId] = 0;
+        }
 
-            let role = rolesData.find(r => r.id === roleId);
-            let licenseTypes = role ? role.types : [];
+        let role = rolesData.find(r => r.id === roleId);
+        if (role) {
+            let licenseIndex = roleLicenseIndexMap[roleId]++;
+            let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
+            roleCheckbox.closest(".form-check").after(licenseFields);
+        }
+    } else {
+        // Remove licenses for unchecked roles
+        roleCheckbox.closest(".form-check").next(".license-container").remove();
+        delete roleIndexMap[roleId];
+        delete roleLicenseIndexMap[roleId];
+    }
+});
 
-            let newRow = generateLicenseFields(roleId, roleLicenseIndexMap[roleId], licenseTypes);
+// Handle Add Another License button click
+$(document).on("click", ".add-row-button", function () {
+    let licenseContainer = $(this).prev(".license-container");
+    let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+    let roleId = roleCheckbox.attr("id");
 
-            licenseContainer.append($(newRow).find(".license-row"));
+    if (!roleId || !(roleId in roleIndexMap)) {
+        console.warn("Role ID not found for license container.");
+        return;
+    }
 
-            roleLicenseIndexMap[roleId]++;
-        });
+    let roleIndex = roleIndexMap[roleId];
+    let licenseIndex = roleLicenseIndexMap[roleId]++; // Increment the license index
+    let role = rolesData.find(r => r.id === roleId);
+    let licenseTypes = role ? role.types : [];
 
-        // Remove license row & reset indexing
-        $(document).on("click", ".remove-row", function () {
-            let licenseContainer = $(this).closest(".license-container");
-            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-            let roleId = roleCheckbox.attr("id");
+    let newRow = generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes);
 
-            $(this).closest(".license-row").remove(); // Remove the row
+    licenseContainer.append($(newRow).find(".license-row"));
 
-            resetIndexes(roleId); // Recalculate indexes
-        });
+    // Recalculate all indexes after adding a license
+    resetLicenseIndexes(roleId, roleIndex);
+});
 
-        // Function to reset indexes after removal
-        function resetIndexes(roleId) {
-            let licenseRows = $(`.license-container input[name^="SingleEventStaff.Licenses"][name$=".RoleId"][value="${roleId}"]`)
-                .closest(".license-container")
-                .find(".license-row");
+// Remove license row
+$(document).on("click", ".remove-row", function () {
+    let licenseRow = $(this).closest(".license-row");
+    let licenseContainer = licenseRow.parent();
+    let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+    let roleId = roleCheckbox.attr("id");
 
-            roleLicenseIndexMap[roleId] = 0; // Reset index
+    licenseRow.remove();
 
-            licenseRows.each(function () {
-                let newIndex = roleLicenseIndexMap[roleId];
-                $(this).find("input, select").each(function () {
-                    let nameAttr = $(this).attr("name");
-                    if (nameAttr) {
-                        let updatedName = nameAttr.replace(/\[\d+\]/, `[${newIndex}]`);
-                        $(this).attr("name", updatedName);
-                    }
-                });
-                roleLicenseIndexMap[roleId]++; // Increment index
+    // Recalculate all indexes after removing a license
+    resetLicenseIndexes(roleId, roleIndexMap[roleId]);
+});
+
+// Function to reset all license indexes for a role
+function resetLicenseIndexes(roleId, roleIndex) {
+    let licenseRows = $(`.license-container[data-role-id='${roleId}'] .license-row`);
+    roleLicenseIndexMap[roleId] = 0;
+
+    licenseRows.each(function (index) {
+        let newLicenseIndex = index;
+        $(this)
+            .find("[name]")
+            .each(function () {
+                let nameAttr = $(this).attr("name");
+                let updatedName = nameAttr.replace(/\[\d+\]\.LicenseDetails\[\d+\]/, `[${roleIndex}].LicenseDetails[${newLicenseIndex}]`);
+                $(this).attr("name", updatedName);
             });
-        }
 
-        // Function to generate license fields
-        function generateLicenseFields(roleId, index, licenseTypes) {
-            let licenseTypeOptions = licenseTypes.map(type => `<option value="${type}">${type}</option>`).join("");
+        roleLicenseIndexMap[roleId]++;
+    });
+}
 
-            return `
-        <div class="license-container">
-            <input type="hidden" name="SingleEventStaff.Licenses[${index}].RoleId" value="${roleId}" />
+// Function to generate license fields with correct indexes
+function generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes) {
+    let licenseTypeOptions = licenseTypes.map(type => `<option value="${type}">${type}</option>`).join("");
 
-            <div class="license-row d-flex align-items-end mt-2">
-                <div class="col-md-2">
-                    <label for="licenseNumber${index}">License Number</label>
-                    <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" maxlength="14" class="form-control" required />
-                </div>
-                <div class="col-md-2">
-                    <label for="licenseState${index}">State</label>
-                    <select id="licenseState${index}" name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
-                        <option value="">Select State</option>
-                        <option value="State1">State1</option>
-                        <option value="State2">State2</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="licenseType${index}">Type</label>
-                    <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
-                        <option value="">Select Type</option>
-                        ${licenseTypeOptions}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="licenseActive${index}">Active Date</label>
-                    <input id="licenseActive${index}" name="SingleEventStaff.Licenses[${index}].LicenseActiveDate" type="date" class="form-control" required />
-                </div>
-                <div class="col-md-2">
-                    <label for="licenseExpiry${index}">Expiry Date</label>
-                    <input id="licenseExpiry${index}" name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" required />
-                </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-danger remove-row">Remove</button>
-                </div>
-            </div>
+    return `
+<div class="license-container" data-role-id="${roleId}">
+    <input type="hidden" name="SingleEventStaff.Licenses[${roleIndex}].RoleId" value="${getRoleValueById(roleId)}" />
+
+    <div class="license-row d-flex align-items-end mt-2">
+        <div class="col-md-2">
+            <label for="licenseNumber${roleIndex}_${licenseIndex}">License Number</label>
+            <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
         </div>
-            <button type="button" class="add-row-button">
-                <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                <span class="button-text">Add Another License</span>
-            </button>`;
-        }
+        <div class="col-md-2">
+            <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
+            <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
+                <option value="">Select State</option>
+                <option value="State1">State1</option>
+                <option value="State2">State2</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
+            <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
+                <option value="">Select Type</option>
+                ${licenseTypeOptions}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
+            <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-2">
+            <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
+            <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-danger remove-row">Remove</button>
+        </div>
+    </div>
+</div>
+<button type="button" class="add-row-button mt-2">
+    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+    <span class="button-text">Add Another License</span>
+</button>`;
+}
+
+function getRoleValueById(roleId) {
+    let role = rolesData.find(r => r.id === roleId);
+    return role ? role.value : roleId; // Fallback to roleId if value is not found
+}
+
 
 
 
@@ -2113,34 +2136,34 @@
         $('#updateBtn').hide();
         $('#addContractBtn').hide();
 
-        controlIds.forEach(function (id) {
-            var control = $('#' + id);
-            // For text input fields, clear the value
-            if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
-                control.val('');
-            }
+        // controlIds.forEach(function (id) {
+        //     var control = $('#' + id);
+        //     // For text input fields, clear the value
+        //     if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
+        //         control.val('');
+        //     }
 
-            // For radio buttons, uncheck them
-            if (control.is('input[type="radio"]')) {
-                control.prop('checked', false);
-            }
+        //     // For radio buttons, uncheck them
+        //     if (control.is('input[type="radio"]')) {
+        //         control.prop('checked', false);
+        //     }
 
-            // For checkboxes, uncheck them
-            if (control.is('input[type="checkbox"]')) {
-                control.prop('checked', false);
-            }
+        //     // For checkboxes, uncheck them
+        //     if (control.is('input[type="checkbox"]')) {
+        //         control.prop('checked', false);
+        //     }
 
-            if (control.is('input[type="date"]')) {
-                control.val('');
-            }
+        //     if (control.is('input[type="date"]')) {
+        //         control.val('');
+        //     }
 
-            if (control.is('select')) {
-                control.val(control.find('option:first').val()).trigger('change');
-            }
-        });
+        //     if (control.is('select')) {
+        //         control.val(control.find('option:first').val()).trigger('change');
+        //     }
+        // });
 
         manageAffiliationRows();
-        manageLicenseRows();
+        // manageLicenseRows();
 
         fetchNextStaffId().done(function (response) {
             if (response && response.success && response.data) {
