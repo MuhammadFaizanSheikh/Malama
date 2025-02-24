@@ -98,7 +98,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
-    await SeedData.Initialize(services, builder);
+    var env = services.GetRequiredService<IWebHostEnvironment>();
+
+    await SeedData.Initialize(services, builder, env);
 }
 
 // Configure middleware

@@ -474,14 +474,14 @@
                     <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
                     <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
                     </div> *@
-                    <h4 class="mt-4">States Licenses</h4>
-                    <div class="form-container">
+                   @*  <h4 class="mt-4">States Licenses</h4> *@
+                   @*  <div class="form-container">
                         <!-- Dynamic License Rows will be inserted here -->
-                    </div>
-                    <button type="button" class="add-row-button" id="addRowButton">
+                    </div> *@
+                   @*  <button type="button" class="add-row-button" id="addRowButton">
                         <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
                         <span class="button-text">Add Another License</span>
-                    </button>
+                    </button> *@
                     <div class="form-group">
                         <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
                         <input asp-for="SingleEventStaff.NPI" id="npi" class="form-control" minlength="10" maxlength="10" inputmode="numeric" pattern="\d*" />
@@ -1234,127 +1234,127 @@
 
     
 
-    function manageLicenseRows(licenses = []) {
-        const container = document.querySelector('.form-container');
-        container.innerHTML = '';
-        const addRowButton = document.getElementById('addRowButton');
+    // function manageLicenseRows(licenses = []) {
+    //     const container = document.querySelector('.form-container');
+    //     container.innerHTML = '';
+    //     const addRowButton = document.getElementById('addRowButton');
 
-        if (!container || !addRowButton) {
-            console.error('Form container or addRowButton not found');
-            return;
-        }
+    //     if (!container || !addRowButton) {
+    //         console.error('Form container or addRowButton not found');
+    //         return;
+    //     }
 
-        // Function to create a new license row
-        function createLicenseRow(rowIndex, licenseData = null) {
-            const newRow = document.createElement('div');
-            newRow.classList.add('form-row', 'license-row');
-            newRow.style.display = 'flex';
-            newRow.style.justifyContent = 'space-between';
-            newRow.style.alignItems = 'center';
-            newRow.style.width = '100%';
+    //     // Function to create a new license row
+    //     function createLicenseRow(rowIndex, licenseData = null) {
+    //         const newRow = document.createElement('div');
+    //         newRow.classList.add('form-row', 'license-row');
+    //         newRow.style.display = 'flex';
+    //         newRow.style.justifyContent = 'space-between';
+    //         newRow.style.alignItems = 'center';
+    //         newRow.style.width = '100%';
 
-            const formattedExpiryDate = licenseData && licenseData.licenseExpiryDate
-                ? new Date(licenseData.licenseExpiryDate).toLocaleDateString('en-CA')
-                : '';
+    //         const formattedExpiryDate = licenseData && licenseData.licenseExpiryDate
+    //             ? new Date(licenseData.licenseExpiryDate).toLocaleDateString('en-CA')
+    //             : '';
 
-            const formattedActiveDate = licenseData && licenseData.licenseActiveDate
-                ? new Date(licenseData.licenseActiveDate).toLocaleDateString('en-CA')
-                : '';
+    //         const formattedActiveDate = licenseData && licenseData.licenseActiveDate
+    //             ? new Date(licenseData.licenseActiveDate).toLocaleDateString('en-CA')
+    //             : '';
 
-            // License row markup with labels
-            newRow.innerHTML = `
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <label for="licenseNumber${rowIndex}">License Number</label>
-                    <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" maxlength="14" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
-                </div>
-            </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <label for="licenseState${rowIndex}">State</label>
-                    <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
-                        <option value="">Select State</option>
-                        <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
-                        <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <label for="licenseType${rowIndex}">Type</label>
-                    <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
-                        <option value="">Select Type</option>
-                        <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
-                        <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <label for="licenseActive${rowIndex}">Active Date</label>
-                    <input id="licenseActive${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseActiveDate" type="date" class="form-control" value="${licenseData ? formattedActiveDate : ''}" required />
-                </div>
-            </div>
-            <div class="col-md-2" style="flex: 1; margin-right: 10px;">
-                <div class="form-group">
-                    <label for="licenseExpiry${rowIndex}">Expiry Date</label>
-                    <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
-                </div>
-            </div>
-            <div class="col-md-1" style="flex: 0; margin-left: 5px;">
-                <button type="button" class="btn btn-danger remove-row">Remove</button>
-            </div>
-        `;
+    //         // License row markup with labels
+    //         newRow.innerHTML = `
+    //         <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+    //             <div class="form-group">
+    //                 <label for="licenseNumber${rowIndex}">License Number</label>
+    //                 <input id="licenseNumber${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseNumber" maxlength="14" class="form-control" placeholder="License Number" value="${licenseData ? licenseData.licenseNumber : ''}" required />
+    //             </div>
+    //         </div>
+    //         <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+    //             <div class="form-group">
+    //                 <label for="licenseState${rowIndex}">State</label>
+    //                 <select id="licenseState${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseState" class="form-control" required>
+    //                     <option value="">Select State</option>
+    //                     <option value="State1" ${licenseData && licenseData.licenseState === 'State1' ? 'selected' : ''}>State1</option>
+    //                     <option value="State2" ${licenseData && licenseData.licenseState === 'State2' ? 'selected' : ''}>State2</option>
+    //                 </select>
+    //             </div>
+    //         </div>
+    //         <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+    //             <div class="form-group">
+    //                 <label for="licenseType${rowIndex}">Type</label>
+    //                 <select id="licenseType${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseType" class="form-control" required>
+    //                     <option value="">Select Type</option>
+    //                     <option value="Type1" ${licenseData && licenseData.licenseType === 'Type1' ? 'selected' : ''}>Type1</option>
+    //                     <option value="Type2" ${licenseData && licenseData.licenseType === 'Type2' ? 'selected' : ''}>Type2</option>
+    //                 </select>
+    //             </div>
+    //         </div>
+    //         <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+    //             <div class="form-group">
+    //                 <label for="licenseActive${rowIndex}">Active Date</label>
+    //                 <input id="licenseActive${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseActiveDate" type="date" class="form-control" value="${licenseData ? formattedActiveDate : ''}" required />
+    //             </div>
+    //         </div>
+    //         <div class="col-md-2" style="flex: 1; margin-right: 10px;">
+    //             <div class="form-group">
+    //                 <label for="licenseExpiry${rowIndex}">Expiry Date</label>
+    //                 <input id="licenseExpiry${rowIndex}" name="SingleEventStaff.Licenses[${rowIndex}].LicenseExpiryDate" type="date" class="form-control" value="${licenseData ? formattedExpiryDate : ''}" required />
+    //             </div>
+    //         </div>
+    //         <div class="col-md-1" style="flex: 0; margin-left: 5px;">
+    //             <button type="button" class="btn btn-danger remove-row">Remove</button>
+    //         </div>
+    //     `;
 
-            // Add event listener for the "Remove" button to delete the row
-            const removeButton = newRow.querySelector('.remove-row');
-            removeButton.addEventListener('click', () => {
-                const licenseRows = document.querySelectorAll('.license-row');
-                // Prevent removal if there is only 1 row left
-                if (licenseRows.length > 1) {
-                    newRow.remove();
-                    updateRowIndices(); // Ensure correct indices after removing
-                } else {
-                    // alert('You cannot remove the last row.');
-                }
-            });
+    //         // Add event listener for the "Remove" button to delete the row
+    //         const removeButton = newRow.querySelector('.remove-row');
+    //         removeButton.addEventListener('click', () => {
+    //             const licenseRows = document.querySelectorAll('.license-row');
+    //             // Prevent removal if there is only 1 row left
+    //             if (licenseRows.length > 1) {
+    //                 newRow.remove();
+    //                 updateRowIndices(); // Ensure correct indices after removing
+    //             } else {
+    //                 // alert('You cannot remove the last row.');
+    //             }
+    //         });
 
-            return newRow;
-        }
+    //         return newRow;
+    //     }
 
 
-        // Function to update row indices (important for model binding)
-        function updateRowIndices() {
-            const licenseRows = document.querySelectorAll('.license-row');
-            licenseRows.forEach((row, index) => {
-                row.querySelectorAll('input, select').forEach(input => {
-                    const name = input.name;
-                    input.name = name.replace(/\[\d+\]/, `[${index}]`); // Update the name attribute for model binding
-                });
-            });
-        }
+    //     // Function to update row indices (important for model binding)
+    //     function updateRowIndices() {
+    //         const licenseRows = document.querySelectorAll('.license-row');
+    //         licenseRows.forEach((row, index) => {
+    //             row.querySelectorAll('input, select').forEach(input => {
+    //                 const name = input.name;
+    //                 input.name = name.replace(/\[\d+\]/, `[${index}]`); // Update the name attribute for model binding
+    //             });
+    //         });
+    //     }
 
-        // If there are licenses passed (edit mode), generate rows for them
-        if (licenses.length > 0) {
-            licenses.forEach((license, index) => {
-                const newRow = createLicenseRow(index, license);
-                container.appendChild(newRow);
-            });
-        } else {
-            // If no licenses passed (first load), create the first row
-            const firstRow = createLicenseRow(0);
-            container.appendChild(firstRow);
-        }
+    //     // If there are licenses passed (edit mode), generate rows for them
+    //     if (licenses.length > 0) {
+    //         licenses.forEach((license, index) => {
+    //             const newRow = createLicenseRow(index, license);
+    //             container.appendChild(newRow);
+    //         });
+    //     } else {
+    //         // If no licenses passed (first load), create the first row
+    //         const firstRow = createLicenseRow(0);
+    //         container.appendChild(firstRow);
+    //     }
 
-        // Event listener for the "Add Another License" button
-        addRowButton.addEventListener('click', () => {
-            const licenseRows = document.querySelectorAll('.license-row');
-            if (licenseRows.length < 5) { // Limit the number of rows to 5
-                const newRow = createLicenseRow(licenseRows.length);
-                container.appendChild(newRow);
-            }
-        });
-    }
+    //     // Event listener for the "Add Another License" button
+    //     addRowButton.addEventListener('click', () => {
+    //         const licenseRows = document.querySelectorAll('.license-row');
+    //         if (licenseRows.length < 5) { // Limit the number of rows to 5
+    //             const newRow = createLicenseRow(licenseRows.length);
+    //             container.appendChild(newRow);
+    //         }
+    //     });
+    // }
 
 
     //////////////////////////////////////////For Affiliation /////////////////////////////////////////
@@ -2096,11 +2096,11 @@
             control.disabled = false;
         });
 
-        const licenseContainer = document.querySelector('.form-container');
-        const licenseControls = licenseContainer.querySelectorAll('select, input, button, textarea');
-        licenseControls.forEach(control => {
-            control.disabled = false;
-        });
+        // const licenseContainer = document.querySelector('.form-container');
+        // const licenseControls = licenseContainer.querySelectorAll('select, input, button, textarea');
+        // licenseControls.forEach(control => {
+        //     control.disabled = false;
+        // });
 
         document.getElementById('dynamicControlsContainer').innerHTML = '';
         document.getElementById('carDynamicControlsContainer').innerHTML = '';

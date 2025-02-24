@@ -272,6 +272,25 @@ namespace ExcelToCsv.Models
 
         [Required]
         [StringLength(50)]
+        public string RoleId { get; set; }
+
+        public List<StaffLicenseDetails> LicenseDetails { get; set; } = new List<StaffLicenseDetails>();
+    }
+
+    [Table("StaffLicenseDetails")]
+    public class StaffLicenseDetails
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; } // Primary key, auto-incremented
+
+        [ForeignKey("StaffLicense")]
+
+        public long StaffLicenseId { get; set; }
+
+
+        [Required]
+        [StringLength(50)]
         public string LicenseNumber { get; set; }
 
         [Required]

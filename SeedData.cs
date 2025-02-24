@@ -1,26 +1,56 @@
 ﻿using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Newtonsoft.Json;
 using System.Security.Policy;
 
 namespace ExcelFilesCompiler
 {
     public static class SeedData
     {
-        public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder)
+        public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder, IWebHostEnvironment env)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             // Ensure roles exist
-            string[] roles = { "Admin", "User" };
-            foreach (var role in roles)
+            //string[] roles = { "Admin", "User" };
+            //foreach (var role in roles)
+            //{
+            //    if (!await roleManager.RoleExistsAsync(role))
+            //    {
+            //        await roleManager.CreateAsync(new IdentityRole(role));
+            //    }
+            //}
+
+            var rolesFilePath = Path.Combine(env.WebRootPath, "data", "roles.json");
+
+            if (File.Exists(rolesFilePath))
             {
-                if (!await roleManager.RoleExistsAsync(role))
+                // Read the JSON file
+                var json = await File.ReadAllTextAsync(rolesFilePath);
+
+                // Deserialize into a list of RoleData objects
+                var roleDataList = JsonConvert.DeserializeObject<List<RoleData>>(json);
+
+                if (roleDataList != null)
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    foreach (var roleData in roleDataList)
+                    {
+                        string roleName = roleData.Value; // Extract "value" field as the role name
+
+                        if (!await roleManager.RoleExistsAsync(roleName))
+                        {
+                            await roleManager.CreateAsync(new IdentityRole(roleName));
+                        }
+                    }
                 }
             }
+            else
+            {
+                // Log or handle the missing file case
+            }
+
 
             var adminEmail = builder.Configuration["AdminCredentials:AdminUser"];
             var adminPassword = builder.Configuration["AdminCredentials:AdminPassword"];
@@ -84,4 +114,12 @@ namespace ExcelFilesCompiler
         //    }
         //}
     }
+
+    public class RoleData
+    {
+        public string Id { get; set; }
+        public string Value { get; set; }
+        public List<string> Types { get; set; }
+    }
+
 }
