@@ -788,32 +788,34 @@
 
         // $('#staffCellNumber').val('123-123-1234');
         // $('#staffPhone2').val('123-123-1234');
-        let rowIndexLicense = 0;
+        let roleLicenseIndexMap = {}; // Store row indices per roleId
 
         // Handle role checkbox click event (only for checkboxes with class 'role-checkbox')
         $(document).on("change", ".role-checkbox", function () {
-            debugger;
             let roleCheckbox = $(this);
             let roleId = roleCheckbox.attr("id");
 
             if (roleCheckbox.is(":checked")) {
                 let role = rolesData.find(r => r.id === roleId); // Get selected role
                 if (role) {
-                    let licenseFields = generateLicenseFields(rowIndexLicense, role.types);
+                    roleLicenseIndexMap[roleId] = 0; // Reset index for this role
+                    let licenseFields = generateLicenseFields(roleId, roleLicenseIndexMap[roleId], role.types);
                     roleCheckbox.closest(".form-check").after(licenseFields);
-                    rowIndexLicense++;
+                    roleLicenseIndexMap[roleId]++; // Increment for next row
                 }
             } else {
                 roleCheckbox.closest(".form-check").next(".license-container").remove();
+                delete roleLicenseIndexMap[roleId]; // Remove tracking for this role
             }
         });
 
+        // Handle Add Another License button click
         $(document).on("click", ".add-row-button", function () {
             let licenseContainer = $(this).prev(".license-container"); // Get the closest license container
             let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
             let roleId = roleCheckbox.attr("id"); // Get the role ID
 
-            if (!roleId) {
+            if (!roleId || !(roleId in roleLicenseIndexMap)) {
                 console.warn("Role ID not found for license container.");
                 return;
             }
@@ -821,17 +823,12 @@
             let role = rolesData.find(r => r.id === roleId);
             let licenseTypes = role ? role.types : [];
 
-            let newRow = generateLicenseFields(rowIndexLicense, licenseTypes);
+            let newRow = generateLicenseFields(roleId, roleLicenseIndexMap[roleId], licenseTypes);
 
-            // Append only the row, NOT the button
             licenseContainer.append($(newRow).find(".license-row"));
 
-            rowIndexLicense++;
+            roleLicenseIndexMap[roleId]++; // Increment index for the role
         });
-
-
-
-
 
         // Remove license row
         $(document).on("click", ".remove-row", function () {
@@ -839,49 +836,52 @@
         });
 
         // Function to generate license fields
-        function generateLicenseFields(index, licenseTypes) {
+        function generateLicenseFields(roleId, index, licenseTypes) {
             let licenseTypeOptions = licenseTypes.map(type => `<option value="${type}">${type}</option>`).join("");
 
             return `
-            <div class="license-container">
-                <div class="license-row d-flex align-items-end mt-2">
-                    <div class="col-md-2">
-                        <label for="licenseNumber${index}">License Number</label>
-                        <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" maxlength="14" class="form-control" required />
-                    </div>
-                    <div class="col-md-2">
-                        <label for="licenseState${index}">State</label>
-                        <select id="licenseState${index}" name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
-                            <option value="">Select State</option>
-                            <option value="State1">State1</option>
-                            <option value="State2">State2</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="licenseType${index}">Type</label>
-                        <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
-                            <option value="">Select Type</option>
-                            ${licenseTypeOptions}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="licenseActive${index}">Active Date</label>
-                        <input id="licenseActive${index}" name="SingleEventStaff.Licenses[${index}].LicenseActiveDate" type="date" class="form-control" required />
-                    </div>
-                    <div class="col-md-2">
-                        <label for="licenseExpiry${index}">Expiry Date</label>
-                        <input id="licenseExpiry${index}" name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" required />
-                    </div>
-                    <div class="col-md-1">
-                        <button type="button" class="btn btn-danger remove-row">Remove</button>
-                    </div>
+        <div class="license-container">
+            <input type="hidden" name="SingleEventStaff.Licenses[${index}].RoleId" value="${roleId}" />
+
+            <div class="license-row d-flex align-items-end mt-2">
+                <div class="col-md-2">
+                    <label for="licenseNumber${index}">License Number</label>
+                    <input id="licenseNumber${index}" name="SingleEventStaff.Licenses[${index}].LicenseNumber" maxlength="14" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="licenseState${index}">State</label>
+                    <select id="licenseState${index}" name="SingleEventStaff.Licenses[${index}].LicenseState" class="form-control" required>
+                        <option value="">Select State</option>
+                        <option value="State1">State1</option>
+                        <option value="State2">State2</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="licenseType${index}">Type</label>
+                    <select id="licenseType${index}" name="SingleEventStaff.Licenses[${index}].LicenseType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        ${licenseTypeOptions}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="licenseActive${index}">Active Date</label>
+                    <input id="licenseActive${index}" name="SingleEventStaff.Licenses[${index}].LicenseActiveDate" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label for="licenseExpiry${index}">Expiry Date</label>
+                    <input id="licenseExpiry${index}" name="SingleEventStaff.Licenses[${index}].LicenseExpiryDate" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger remove-row">Remove</button>
                 </div>
             </div>
-                <button type="button" class="add-row-button">
-                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                    <span class="button-text">Add Another License</span>
-                </button>`;
+        </div>
+            <button type="button" class="add-row-button">
+                <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                <span class="button-text">Add Another License</span>
+            </button>`;
         }
+
 
     });
 
