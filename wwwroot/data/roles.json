@@ -1,5 +1,4 @@
 [
-{ "id": "admin", "value": "Admin", "types": [] },
   { "id": "nursePractitioner", "value": "Nurse Practitioner", "types": ["APRN", "ARNP", "NP"] },
   { "id": "physicianAssistant", "value": "Physician Assistant", "types": ["PA-C", "PA"] },
   { "id": "registeredNurse", "value": "Registered Nurse", "types": ["RN"] },

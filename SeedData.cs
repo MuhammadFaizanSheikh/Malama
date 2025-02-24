@@ -14,14 +14,14 @@ namespace ExcelFilesCompiler
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             // Ensure roles exist
-            //string[] roles = { "Admin", "User" };
-            //foreach (var role in roles)
-            //{
-            //    if (!await roleManager.RoleExistsAsync(role))
-            //    {
-            //        await roleManager.CreateAsync(new IdentityRole(role));
-            //    }
-            //}
+            string[] roles = { "Admin", "User" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
 
             var rolesFilePath = Path.Combine(env.WebRootPath, "data", "roles.json");
 
