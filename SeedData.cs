@@ -36,7 +36,7 @@ namespace ExcelFilesCompiler
                 if (roleDataList != null)
                 {
                     // Filter the roles where IsAdditionalRole is false
-                    var filteredRoleDataList = roleDataList.Where(roleData => !roleData.IsAdditionalRole).ToList();
+                    var filteredRoleDataList = roleDataList.Where(roleData => roleData.IsBasicUserRole).ToList();
 
                     foreach (var roleData in filteredRoleDataList)
                     {
@@ -125,7 +125,7 @@ namespace ExcelFilesCompiler
     {
         public string Id { get; set; }
         public string Value { get; set; }
-        public bool IsAdditionalRole { get; set; }
+        public bool IsBasicUserRole { get; set; }
         public List<string> Types { get; set; }
     }
 

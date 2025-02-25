@@ -3,156 +3,208 @@
     "id": "nursePractitioner",
     "value": "Nurse Practitioner",
     "types": [ "APRN", "ARNP", "NP" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "physicianAssistant",
     "value": "Physician Assistant",
     "types": [ "PA-C", "PA" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "registeredNurse",
     "value": "Registered Nurse",
     "types": [ "RN" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "licensedVocationalNurse",
     "value": "Licensed Vocational Nurse",
     "types": [ "LVN" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "licensedPracticalNurse",
     "value": "Licensed Practical Nurse",
     "types": [ "LPN" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "medicalAssistant",
     "value": "Medical Assistant",
     "types": [ "CMA", "RMA", "CCMA", "CMAA" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "audiologist",
     "value": "Audiologist",
     "types": [ "Au.D", "CCC-A", "F-AAA", "ABA" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "audioTech",
     "value": "Audio Tech",
     "types": [ "CAOHC" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "dentist",
     "value": "Dentist",
     "types": [ "DDS", "DMD" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "dentalAssistant",
     "value": "Dental Assistant",
     "types": [ "CDA", "RDA", "RHS" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "registeredDentalHygienist",
     "value": "Registered Dental Hygienist",
     "types": [ "RDH" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "medicalDoctor",
     "value": "Medical Doctor",
     "types": [ "MD", "DO" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "optometrist",
     "value": "Optometrist",
     "types": [ "O.D." ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "phlebotomist",
     "value": "Phlebotomist",
     "types": [ "LPT", "CPT1", "CPT2" ],
-    "IsAdditionalRole": false
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": true,
+    "IsEventManagementRole": false
   },
   {
     "id": "caseManager",
     "value": "Case Manager",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "eventManager",
     "value": "Event Manager",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "medicalLead",
     "value": "Medical Lead",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "dentalLead",
     "value": "Dental Lead",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "treatmentCoordinator",
     "value": "Treatment Coordinator",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "cacdAdmin",
     "value": "CAC'd Admin",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "nonCacdAdmin",
     "value": "NonCAC'd Admin",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": true,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": true
   },
   {
     "id": "projectManagerProgramManager",
     "value": "Project Manager & Program Manager",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": false,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": false
   },
   {
     "id": "dawsonAdminEventCoordinator",
     "value": "DAWSON Admin - Event Coordinator",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": true,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": false
   },
   {
     "id": "dawsonAdminStaffingCredentialing",
     "value": "DAWSON Admin - Staffing/Credentialing",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": true,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": false
   },
   {
     "id": "dawsonAdminSystem",
     "value": "DAWSON Admin - System",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": true,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": false
   },
   {
     "id": "dawsonLeadership",
     "value": "DAWSON Leadership",
     "types": [],
-    "IsAdditionalRole": true
+    "IsBasicUserRole": true,
+    "IsEventStaffUserRole": false,
+    "IsEventManagementRole": false
   }
 ]

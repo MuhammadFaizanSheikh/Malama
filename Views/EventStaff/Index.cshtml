@@ -2154,7 +2154,7 @@ function getRoleValueById(roleId) {
             rolesData = roles; // Store JSON for later use
 
             // Filter roles where IsAdditionalRole is false
-            let filteredRoles = roles.filter(role => role.IsAdditionalRole === false);
+            let filteredRoles = roles.filter(role => role.IsEventStaffUserRole === true);
 
             filteredRoles.forEach(role => {
                 let roleElement = `

@@ -2323,7 +2323,7 @@
 
             $.getJSON("/data/roles.json", function (roles) {
                 // Filter roles where IsAdditionalRole is true
-                let filteredRoles = roles.filter(role => role.IsAdditionalRole === true);
+                let filteredRoles = roles.filter(role => role.IsEventManagementRole === true);
 
                 // Get the last added row's "Select Role" dropdown
                 let lastRow = selectedTable.row(rowIndex).node();
