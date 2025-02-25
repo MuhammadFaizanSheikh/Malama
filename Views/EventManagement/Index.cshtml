@@ -1865,6 +1865,7 @@
                         <table id="eventStaffSelectedTable" class="table table-bordered table-striped">
                             <thead class="table-dark">
                                 <tr>
+                                    <th>Select Role</th>
                                     <th>Staff ID</th>
                                     <th>Last Name</th>
                                     <th>First Name</th>
@@ -2256,6 +2257,7 @@
                 "info": false,         // Hide "Showing X of Y entries" info
                 "ordering": false,
                 "columns": [
+                    { "data": "role", "defaultContent": "<select class='form-control staffRoleDropdown'><option value=''>Select Role</option></select>" }, // New role column
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
@@ -2312,9 +2314,28 @@
                 primaryZip: staffData.primaryZip,
                 id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
                        value="${staffData.id}" /> ${staffData.id}`,
+                role: `<select class="form-control staffRoleDropdown" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].Role">
+                    <option value="">Select Role</option>
+                </select>`,
                 action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
                           data-staffid="${staffData.id}">Remove</button>`
             }).draw();
+
+            $.getJSON("/data/roles.json", function (roles) {
+                // Filter roles where IsAdditionalRole is true
+                let filteredRoles = roles.filter(role => role.IsAdditionalRole === true);
+
+                // Get the last added row's "Select Role" dropdown
+                let lastRow = selectedTable.row(rowIndex).node();
+                let roleDropdown = $(lastRow).find(".staffRoleDropdown");
+
+                filteredRoles.forEach(role => {
+                    let option = new Option(role.value, role.id);
+                    roleDropdown.append(option);
+                });
+            }).fail(function () {
+                console.error("Error loading roles.");
+            });
         }
 
 

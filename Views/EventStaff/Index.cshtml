@@ -325,6 +325,23 @@
 
             <div class="row mb-3">
                 <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.UserEmail" class="font-weight-bold">Staff Email</label>
+                    <input asp-for="SingleEventStaff.UserEmail" class="form-control" placeholder="Enter event staff email" autocomplete="off" required/>
+                </div>
+                <div class="col-md-6">
+    <label asp-for="SingleEventStaff.UserPassword" class="font-weight-bold">Staff Password</label>
+    <div class="input-group">
+        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="passwordField" placeholder="Enter event staff password" autocomplete="off" required/>
+        <div class="input-group-append">
+            <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
+        </div>
+    </div>
+</div>
+
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
                     <label asp-for="SingleEventStaff.StaffID" class="form-label">Staff ID</label>
                     <input asp-for="SingleEventStaff.StaffID" id="StaffID" class="form-control" maxLength="6" readonly="readonly" required />
                 </div>
@@ -825,6 +842,40 @@ $(document).on("change", ".role-checkbox", function () {
         resetRoleIndexes();
     }
 });
+
+$("#generatePasswordBtn").click(function () {
+            var newPassword = generatePassword(10); // Set the desired password length
+            $("#passwordField").val(newPassword);
+        });
+
+function generatePassword(length) {
+            if (length < 3) {
+                throw new Error("Password length must be at least 3 to include all character types.");
+            }
+
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            const digits = "0123456789";
+            const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
+
+            // Step 1: Ensure at least one of each required character type
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const randomDigit = digits[Math.floor(Math.random() * digits.length)];
+            const randomSpecial = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
+
+            let password = randomLetter + randomDigit + randomSpecial;
+
+            // Step 2: Fill the rest of the password
+            const allCharacters = letters + digits + specialCharacters;
+            for (let i = 3; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * allCharacters.length);
+                password += allCharacters[randomIndex];
+            }
+
+            // Step 3: Shuffle the password
+            password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+            return password;
+        }
 
 // Handle Add Another License button click
 $(document).on("click", ".add-row-button", function () {
@@ -2102,12 +2153,15 @@ function getRoleValueById(roleId) {
             let staffRolesContainer = $("#StaffRoles");
             rolesData = roles; // Store JSON for later use
 
-            roles.forEach(role => {
+            // Filter roles where IsAdditionalRole is false
+            let filteredRoles = roles.filter(role => role.IsAdditionalRole === false);
+
+            filteredRoles.forEach(role => {
                 let roleElement = `
-                <div class="form-check me-3">
-                    <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.value}">
-                    <label class="form-check-label" for="${role.id}">${role.value}</label>
-                </div>`;
+            <div class="form-check me-3">
+                <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.value}">
+                <label class="form-check-label" for="${role.id}">${role.value}</label>
+            </div>`;
                 staffRolesContainer.append(roleElement);
             });
         }).fail(function () {

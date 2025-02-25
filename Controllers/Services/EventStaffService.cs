@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -14,40 +15,78 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class EventStaffService : IEventStaffService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventStaffService(IUnitOfWork unitOfWork)
+        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
         {
             _unitOfWork = unitOfWork;
+            _userManager = userManager;
         }
 
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
-            try
+            using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
-                // Attempt to add the contract detail to the repository
-
-                foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                try
                 {
-                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
-                    affiliation.SubContractorId = subContractor.Id;
+                    // Attempt to add the contract detail to the repository
+
+                    foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                    {
+                        var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
+                        affiliation.SubContractorId = subContractor.Id;
+                    }
+
+                    eventStaff.AddedBy = loggedinUserName;
+                    eventStaff.AddedOn = DateTime.Now;
+
+                    await _unitOfWork.EventStaff.AddAsync(eventStaff);
+
+                    var user = new ApplicationUser
+                    {
+                        UserName = eventStaff.UserEmail,
+                        Email = eventStaff.UserEmail,
+                        IsActive = true,
+                        TwoFactorEnabled = true,
+                        IsEventUser = true
+                    };
+
+                    var result = await _userManager.CreateAsync(user, eventStaff.UserPassword);
+
+                    if (result.Succeeded)
+                    {
+                        if (eventStaff.Licenses != null && eventStaff.Licenses.Any())
+                        {
+                            var roles = eventStaff.Licenses.Select(l => l.RoleId).ToList(); // Extract RoleId as a list
+                            await _userManager.AddToRolesAsync(user, roles);
+                        }
+
+                        var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+
+                        if (!confirmationResult.Succeeded)
+                        {
+                            responseDto.Success = false;
+                            responseDto.Message = "Something wrong with email!";
+                        }
+                    }
+
+                    // Commit transaction if everything succeeds
+                    await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
+
+                    responseDto.Success = true;
+                    responseDto.Message = "Event Staff added successfully!";
                 }
-
-                eventStaff.AddedBy = loggedinUserName;
-                eventStaff.AddedOn = DateTime.Now;
-
-                await _unitOfWork.EventStaff.AddAsync(eventStaff);
-
-                responseDto.Success = true;
-                responseDto.Message = "Event Staff added successfully!";
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    responseDto.Success = false;
+                    responseDto.Message = $"An error occurred: {ex.Message}";
+                }
             }
-            catch (Exception ex)
-            {
-                responseDto.Success = false;
-                responseDto.Message = $"An error occurred: {ex.Message}";
-            }
-
             return responseDto;
         }
 

@@ -18,8 +18,10 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
+            //ViewBag.Roles = Task.Run(() => _roleManager.Roles.Select(r => r.Name).ToList());
+            ViewData["Roles"] = await Task.Run(() => _roleManager.Roles.Select(r => r.Name).ToList());
             return View();
         }
 
@@ -35,25 +37,22 @@ namespace ExcelFilesCompiler.Controllers
                         UserName = model.Email,
                         Email = model.Email,
                         IsActive = true,
-                        TwoFactorEnabled = true
+                        TwoFactorEnabled = true,
+                        IsEventUser = false
                     };
 
                     var result = await _userManager.CreateAsync(user, model.Password);
 
                     if (result.Succeeded)
                     {
-                        if (!string.IsNullOrEmpty(model.Role))
+                        if (model.SelectedRoles != null && model.SelectedRoles.Any())
                         {
-                            var roleExists = await _roleManager.RoleExistsAsync(model.Role);
-                            if (roleExists)
-                            {
-                                await _userManager.AddToRoleAsync(user, model.Role);
-                            }
-                            else
-                            {
-                                ModelState.AddModelError(string.Empty, "Role does not exist.");
-                                return View(model);
-                            }
+                            await _userManager.AddToRolesAsync(user, model.SelectedRoles);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "Role not selected.");
+                            return View(model);
                         }
 
                         // Confirm the user's email by sending an email confirmation token
@@ -143,24 +142,56 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateUser(UserUpdateDto updatedUser)
         {
-            var user = await _userManager.FindByIdAsync(updatedUser.Id);
-            if (user == null) return NotFound();
-
-            user.Email = updatedUser.Email;
-            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, updatedUser.Password); // Hash the password
-            await _userManager.UpdateAsync(user);
-
-            // Update role if necessary
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (!userRoles.Contains(updatedUser.Role))
+            try
             {
-                await _userManager.RemoveFromRolesAsync(user, userRoles);
-                await _userManager.AddToRoleAsync(user, updatedUser.Role);
-            }
+                var user = await _userManager.FindByIdAsync(updatedUser.Id);
+                if (user == null)
+                    return NotFound(new { message = "User not found" });
 
-            return Json(new { message = "User updated successfully" });
+                user.Email = updatedUser.Email;
+
+                if (!string.IsNullOrEmpty(updatedUser.Password))
+                {
+                    user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, updatedUser.Password);
+                }
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    return BadRequest(new { message = "Failed to update user", errors = updateResult.Errors });
+                }
+
+                var existingRoles = await _userManager.GetRolesAsync(user);
+
+                var rolesToRemove = existingRoles.Except(updatedUser.SelectedRoles).ToList();
+                if (rolesToRemove.Any())
+                {
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                    if (!removeResult.Succeeded)
+                    {
+                        return BadRequest(new { message = "Failed to remove roles", errors = removeResult.Errors });
+                    }
+                }
+
+                var rolesToAdd = updatedUser.SelectedRoles.Except(existingRoles).ToList();
+                if (rolesToAdd.Any())
+                {
+                    var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+                    if (!addResult.Succeeded)
+                    {
+                        return BadRequest(new { message = "Failed to add roles", errors = addResult.Errors });
+                    }
+                }
+
+                return Json(new { message = "User updated successfully", assignedRoles = updatedUser.SelectedRoles });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An internal server error occurred", error = ex.Message });
+            }
         }
-        
+
+
 
         //[HttpPost]
         //public async Task<IActionResult> DeactivateUser(string userId)

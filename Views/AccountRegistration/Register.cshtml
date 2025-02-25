@@ -107,13 +107,27 @@
 
 
             <div class="form-group" id="roleGroup">
-                <label asp-for="Role" class="font-weight-bold">Role</label>
-                <select asp-for="Role" class="form-control">
-                    <option value="User">User</option>
-                    <option value="Admin">Admin</option>
-                </select>
-                <span asp-validation-for="Role" class="text-danger"></span>
+                <label class="font-weight-bold">Roles</label>
+                <div>
+                    @if (ViewData["Roles"] != null && ViewData["Roles"] is List<string> rolesList)
+                    {
+                        foreach (var role in rolesList)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" name="SelectedRoles" value="@role" class="form-check-input" id="role_@role" />
+                                <label class="form-check-label" for="role_@role">@role</label>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No roles available</p>
+                    }
+                </div>
+                <span id="roleError" class="text-danger" style="display: none;">At least one role must be selected.</span>
             </div>
+
+
 
             <button type="submit" class="btn btn-theme" id="registerBtn">Register</button>
 
@@ -147,6 +161,16 @@
 
     <script>
         $(document).ready(function () {
+
+            $("#registerBtn").click(function (event) {
+        if ($("input[name='SelectedRoles']:checked").length === 0) {
+            $("#roleError").show();
+            event.preventDefault(); // Prevent form submission
+        } else {
+            $("#roleError").hide();
+        }
+    });
+
             $('#findUserBtn').click(function () {
                 // Show user dropdown and fetch user details
                 $.ajax({

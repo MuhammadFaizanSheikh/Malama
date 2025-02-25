@@ -13,20 +13,27 @@ namespace ExcelFilesCompiler.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Required]
-        public string Role { get; set; } // Admin or User
+        [Required(ErrorMessage = "At least one role must be selected.")]
+        [MinLength(1, ErrorMessage = "At least one role must be selected.")]
+        public List<string> SelectedRoles { get; set; }
         public bool IsActive { get; set; }
     }
     public class ApplicationUser : IdentityUser
     {
         public bool IsActive { get; set; } = true; // Default to active
+        public bool IsEventUser { get; set; } = false; // Default to active
     }
 
     public class UserUpdateDto
     {
         public string Id { get; set; }         // User's unique ID
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }      // User's email address
+        [Required]
         public string Password { get; set; }   // New password (if applicable)
-        public string Role { get; set; }       // Role (e.g., "User", "Admin")
+        [Required(ErrorMessage = "At least one role must be selected.")]
+        [MinLength(1, ErrorMessage = "At least one role must be selected.")]
+        public List<string> SelectedRoles { get; set; }      // Role (e.g., "User", "Admin")
     }
 }

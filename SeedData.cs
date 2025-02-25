@@ -35,10 +35,14 @@ namespace ExcelFilesCompiler
 
                 if (roleDataList != null)
                 {
-                    foreach (var roleData in roleDataList)
+                    // Filter the roles where IsAdditionalRole is false
+                    var filteredRoleDataList = roleDataList.Where(roleData => !roleData.IsAdditionalRole).ToList();
+
+                    foreach (var roleData in filteredRoleDataList)
                     {
                         string roleName = roleData.Value; // Extract "value" field as the role name
 
+                        // Check if the role exists and create if it doesn't
                         if (!await roleManager.RoleExistsAsync(roleName))
                         {
                             await roleManager.CreateAsync(new IdentityRole(roleName));
@@ -52,6 +56,7 @@ namespace ExcelFilesCompiler
             }
 
 
+
             var adminEmail = builder.Configuration["AdminCredentials:AdminUser"];
             var adminPassword = builder.Configuration["AdminCredentials:AdminPassword"];
 
@@ -63,7 +68,8 @@ namespace ExcelFilesCompiler
                     UserName = adminEmail,
                     Email = adminEmail,
                     IsActive = true, // You can set other properties as necessary
-                    TwoFactorEnabled = false // Admin should have 2FA enabled, you can adjust this if needed
+                    TwoFactorEnabled = false, // Admin should have 2FA enabled, you can adjust this if needed
+                    IsEventUser = false
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
@@ -119,6 +125,7 @@ namespace ExcelFilesCompiler
     {
         public string Id { get; set; }
         public string Value { get; set; }
+        public bool IsAdditionalRole { get; set; }
         public List<string> Types { get; set; }
     }
 

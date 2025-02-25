@@ -37,6 +37,14 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
+        [Required]
+        [EmailAddress]
+        public string UserEmail { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string UserPassword { get; set; }
+
         [StringLength(6, ErrorMessage = "StaffID cannot exceed 6 characters.")]
         [Required(ErrorMessage = "StaffID is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffID cannot be only white spaces.")]
