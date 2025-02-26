@@ -1852,6 +1852,7 @@
                                     <th>ZipCode</th>
                                     @*  <th>Role</th>
                                     <th>Radius</th> *@
+                                    <th>Staff Cac</th>
                                     <th>Id</th>
                                     <th>Actions</th>
                                 </tr>
@@ -2322,11 +2323,12 @@
                           data-staffid="${staffData.id}">Remove</button>`
             }).draw();
 
+            debugger;
             $.getJSON("/data/roles.json", function (roles) {
                 // Filter roles where IsAdditionalRole is true
                 let filteredRoles = roles.filter(role => role.IsEventManagementRole === true);
 
-                if (staffData.staffCAC) {
+                if (staffData.staffCAC === "true") {
             // If staffCAC is true, exclude "nonCacdAdmin"
             filteredRoles = filteredRoles.filter(role => role.id !== "nonCacdAdmin");
         } else {
