@@ -2314,44 +2314,60 @@
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
-            debugger;
-            let selectedTable = $('#eventStaffSelectedTable').DataTable();
+    debugger;
+    let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
-            let existingRows = selectedTable.rows().data().toArray();
-            if (existingRows.some(row => row.staffID === staffData.staffID)) {
-                alert("Staff already added!");
-                return;
-            }
+    let existingRows = selectedTable.rows().data().toArray();
+    if (existingRows.some(row => row.staffID === staffData.staffID)) {
+        alert("Staff already added!");
+        return;
+    }
 
-            if (rowIndex === null) {
-                rowIndex = selectedTable.rows().count();
-            }
+    if (rowIndex === null) {
+        rowIndex = selectedTable.rows().count();
+    }
 
-            let roleDropdownId = `roleSelect_${staffData.id}`;
-            let roleOptions = rolesData.map(role => `<option value="${role.id}">${role.name}</option>`).join("");
-            let roleDropdown = `
-                <select id="${roleDropdownId}" class="form-control role-multi-select" multiple>
-                    ${roleOptions}
-                </select>`;
+    let roleDropdownId = `roleSelect_${staffData.id}`;
 
-            // Add row to the table
-            selectedTable.row.add({
-                staffID: staffData.staffID,
-                staffLastName: staffData.staffLastName,
-                staffFirstName: staffData.staffFirstName,
-                primaryState: staffData.primaryState,
-                primaryCity: staffData.primaryCity,
-                primaryZip: staffData.primaryZip,
-                id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
-                       value="${staffData.id}" /> ${staffData.id}`,
-                roles: roleDropdown,  // Add dropdown to the roles column
-                action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
-                          data-staffid="${staffData.id}">Remove</button>`
-            }).draw();
-
-            // Initialize select2 for the new dropdown
-            $(`#${roleDropdownId}`).select2();
+    // Filter roles based on staffCAC condition
+    let filteredRoles = rolesData.filter(role => {
+        if (staffData.staffCAC === "false" && role.name === "CAC'd Admin") {
+            return false; // Exclude CAC'd Admin
         }
+        return true;
+    });
+
+    // Generate role options
+    let roleOptions = filteredRoles.map(role => `<option value="${role.id}">${role.name}</option>`).join("");
+
+    // If staffCAC is false, add "NonCAC'd Admin"
+    if (staffData.staffCAC === "false") {
+        roleOptions += `<option value="NonCAC">NonCAC'd Admin</option>`;
+    }
+
+    let roleDropdown = `
+        <select id="${roleDropdownId}" class="form-control role-multi-select" multiple>
+            ${roleOptions}
+        </select>`;
+
+    // Add row to the table
+    selectedTable.row.add({
+        staffID: staffData.staffID,
+        staffLastName: staffData.staffLastName,
+        staffFirstName: staffData.staffFirstName,
+        primaryState: staffData.primaryState,
+        primaryCity: staffData.primaryCity,
+        primaryZip: staffData.primaryZip,
+        id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
+               value="${staffData.id}" /> ${staffData.id}`,
+        roles: roleDropdown,  // Add dropdown to the roles column
+        action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
+                  data-staffid="${staffData.id}">Remove</button>`
+    }).draw();
+
+    // Initialize select2 for the new dropdown
+    $(`#${roleDropdownId}`).select2();
+}
 
 
 
