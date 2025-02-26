@@ -2221,6 +2221,7 @@
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
+                     { "data": "staffCAC", "visible": false },
                     // { "data": "primaryZip" },
                     // { "data": "primaryZip" },
                     { "data": "id", "visible": false },
@@ -2324,6 +2325,14 @@
             $.getJSON("/data/roles.json", function (roles) {
                 // Filter roles where IsAdditionalRole is true
                 let filteredRoles = roles.filter(role => role.IsEventManagementRole === true);
+
+                if (staffData.staffCAC) {
+            // If staffCAC is true, exclude "nonCacdAdmin"
+            filteredRoles = filteredRoles.filter(role => role.id !== "nonCacdAdmin");
+        } else {
+            // If staffCAC is false, exclude "cacdAdmin"
+            filteredRoles = filteredRoles.filter(role => role.id !== "cacdAdmin");
+        }
 
                 // Get the last added row's "Select Role" dropdown
                 let lastRow = selectedTable.row(rowIndex).node();
