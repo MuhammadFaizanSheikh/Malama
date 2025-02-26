@@ -10,18 +10,8 @@ namespace ExcelFilesCompiler
     {
         public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder, IWebHostEnvironment env)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>(); // Ensure ApplicationRole is used
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-            // Ensure roles exist
-            string[] roles = { "Admin", "User" };
-            foreach (var role in roles)
-            {
-                if (!await roleManager.RoleExistsAsync(role))
-                {
-                    await roleManager.CreateAsync(new IdentityRole(role));
-                }
-            }
 
             var rolesFilePath = Path.Combine(env.WebRootPath, "data", "roles.json");
 
@@ -35,17 +25,48 @@ namespace ExcelFilesCompiler
 
                 if (roleDataList != null)
                 {
-                    // Filter the roles where IsAdditionalRole is false
-                    var filteredRoleDataList = roleDataList.Where(roleData => roleData.IsBasicUserRole).ToList();
-
-                    foreach (var roleData in filteredRoleDataList)
+                    foreach (var roleData in roleDataList)
                     {
-                        string roleName = roleData.Value; // Extract "value" field as the role name
+                        string roleName = roleData.Value; // Extract role name
+                        string category = roleData.Category; // Extract category
+                        string types = roleData.Types != null ? string.Join(",", roleData.Types) : string.Empty; // Convert list to CSV
 
-                        // Check if the role exists and create if it doesn't
-                        if (!await roleManager.RoleExistsAsync(roleName))
+                        // Check if the role exists by fetching it from the database
+                        var existingRole = await roleManager.FindByNameAsync(roleName);
+
+                        if (existingRole == null)
                         {
-                            await roleManager.CreateAsync(new IdentityRole(roleName));
+                            // Create new role with Category and Types
+                            var role = new ApplicationRole
+                            {
+                                Name = roleName,
+                                Category = category,
+                                Types = types
+                            };
+
+                            await roleManager.CreateAsync(role);
+                        }
+                        else
+                        {
+                            // If role exists, update its Category and Types if they are different
+                            bool isUpdated = false;
+
+                            if (existingRole.Category != category)
+                            {
+                                existingRole.Category = category;
+                                isUpdated = true;
+                            }
+
+                            if (existingRole.Types != types)
+                            {
+                                existingRole.Types = types;
+                                isUpdated = true;
+                            }
+
+                            if (isUpdated)
+                            {
+                                await roleManager.UpdateAsync(existingRole);
+                            }
                         }
                     }
                 }
@@ -54,7 +75,6 @@ namespace ExcelFilesCompiler
             {
                 // Log or handle the missing file case
             }
-
 
 
             var adminEmail = builder.Configuration["AdminCredentials:AdminUser"];
@@ -125,7 +145,7 @@ namespace ExcelFilesCompiler
     {
         public string Id { get; set; }
         public string Value { get; set; }
-        public bool IsBasicUserRole { get; set; }
+        public string Category { get; set; }
         public List<string> Types { get; set; }
     }
 

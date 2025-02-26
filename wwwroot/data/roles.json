@@ -3,208 +3,168 @@
     "id": "nursePractitioner",
     "value": "Nurse Practitioner",
     "types": [ "APRN", "ARNP", "NP" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "physicianAssistant",
     "value": "Physician Assistant",
     "types": [ "PA-C", "PA" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "registeredNurse",
     "value": "Registered Nurse",
     "types": [ "RN" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "licensedVocationalNurse",
     "value": "Licensed Vocational Nurse",
     "types": [ "LVN" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "licensedPracticalNurse",
     "value": "Licensed Practical Nurse",
     "types": [ "LPN" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "medicalAssistant",
     "value": "Medical Assistant",
     "types": [ "CMA", "RMA", "CCMA", "CMAA" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "audiologist",
     "value": "Audiologist",
     "types": [ "Au.D", "CCC-A", "F-AAA", "ABA" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "audioTech",
     "value": "Audio Tech",
     "types": [ "CAOHC" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "dentist",
     "value": "Dentist",
     "types": [ "DDS", "DMD" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "dentalAssistant",
     "value": "Dental Assistant",
     "types": [ "CDA", "RDA", "RHS" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "registeredDentalHygienist",
     "value": "Registered Dental Hygienist",
     "types": [ "RDH" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "medicalDoctor",
     "value": "Medical Doctor",
     "types": [ "MD", "DO" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "optometrist",
     "value": "Optometrist",
     "types": [ "O.D." ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "phlebotomist",
     "value": "Phlebotomist",
     "types": [ "LPT", "CPT1", "CPT2" ],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": true,
-    "IsEventManagementRole": false
+    "Category": "EventStaffRole"
   },
   {
     "id": "caseManager",
     "value": "Case Manager",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "eventManager",
     "value": "Event Manager",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "medicalLead",
     "value": "Medical Lead",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "dentalLead",
     "value": "Dental Lead",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "treatmentCoordinator",
     "value": "Treatment Coordinator",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "cacdAdmin",
     "value": "CAC'd Admin",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "EventManagementRole"
   },
   {
     "id": "nonCacdAdmin",
     "value": "NonCAC'd Admin",
     "types": [],
-    "IsBasicUserRole": true,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": true
+    "Category": "BasicRole"
   },
   {
     "id": "projectManagerProgramManager",
     "value": "Project Manager & Program Manager",
     "types": [],
-    "IsBasicUserRole": false,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": false
+    "Category": "EventManagementRole"
   },
   {
     "id": "dawsonAdminEventCoordinator",
     "value": "DAWSON Admin - Event Coordinator",
     "types": [],
-    "IsBasicUserRole": true,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": false
+    "Category": "BasicRole"
   },
   {
     "id": "dawsonAdminStaffingCredentialing",
     "value": "DAWSON Admin - Staffing/Credentialing",
     "types": [],
-    "IsBasicUserRole": true,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": false
+    "Category": "BasicRole"
   },
   {
     "id": "dawsonAdminSystem",
     "value": "DAWSON Admin - System",
     "types": [],
-    "IsBasicUserRole": true,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": false
+    "Category": "BasicRole"
   },
   {
     "id": "dawsonLeadership",
     "value": "DAWSON Leadership",
     "types": [],
-    "IsBasicUserRole": true,
-    "IsEventStaffUserRole": false,
-    "IsEventManagementRole": false
+    "Category": "BasicRole"
+  },
+  {
+    "id": "admin",
+    "value": "Admin",
+    "types": [],
+    "Category": "BasicRole"
+  },
+  {
+    "id": "user",
+    "value": "User",
+    "types": [],
+    "Category": "BasicRole"
   }
 ]

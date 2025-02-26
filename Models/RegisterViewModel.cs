@@ -36,4 +36,10 @@ namespace ExcelFilesCompiler.Models
         [MinLength(1, ErrorMessage = "At least one role must be selected.")]
         public List<string> SelectedRoles { get; set; }      // Role (e.g., "User", "Admin")
     }
+
+    public class ApplicationRole : IdentityRole
+    {
+        public string Category { get; set; } // New property for categorization
+        public string Types { get; set; }
+    }
 }

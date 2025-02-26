@@ -109,7 +109,7 @@
             <div class="form-group" id="roleGroup">
                 <label class="font-weight-bold">Roles</label>
                 <div>
-                    @if (ViewData["Roles"] != null && ViewData["Roles"] is List<string> rolesList)
+                    @if (ViewData["Roles"] is List<string> rolesList && rolesList.Any())
                     {
                         foreach (var role in rolesList)
                         {
@@ -126,6 +126,7 @@
                 </div>
                 <span id="roleError" class="text-danger" style="display: none;">At least one role must be selected.</span>
             </div>
+
 
 
 

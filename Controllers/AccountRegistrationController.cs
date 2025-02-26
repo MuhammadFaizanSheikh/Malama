@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Models;
+using ExcelFilesCompiler.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,9 @@ namespace ExcelFilesCompiler.Controllers
     public class AccountRegistrationController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public AccountRegistrationController(UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager)
+        public AccountRegistrationController(UserManager<ApplicationUser> userManager , RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -20,10 +21,16 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> Register()
         {
-            //ViewBag.Roles = Task.Run(() => _roleManager.Roles.Select(r => r.Name).ToList());
-            ViewData["Roles"] = await Task.Run(() => _roleManager.Roles.Select(r => r.Name).ToList());
+            ViewData["Roles"] = await Task.Run(() =>
+                _roleManager.Roles
+                    .Where(r => r.Category == AooConstants.RolesCategory.BasicRoles)
+                    .Select(r => r.Name) // ✅ Return only role names (List<string>)
+                    .ToList()
+            );
+
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)

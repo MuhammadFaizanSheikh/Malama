@@ -177,7 +177,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
             /*
-                /* Focused state */
+                        /* Focused state */
             .select2:focus {
                 border-color: #0056b3;
                 box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
@@ -326,17 +326,17 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.UserEmail" class="font-weight-bold">Staff Email</label>
-                    <input asp-for="SingleEventStaff.UserEmail" class="form-control" placeholder="Enter event staff email" autocomplete="off" required/>
+                    <input asp-for="SingleEventStaff.UserEmail" class="form-control" placeholder="Enter event staff email" autocomplete="off" required />
                 </div>
                 <div class="col-md-6">
-    <label asp-for="SingleEventStaff.UserPassword" class="font-weight-bold">Staff Password</label>
-    <div class="input-group">
-        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="passwordField" placeholder="Enter event staff password" autocomplete="off" required/>
-        <div class="input-group-append">
-            <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
-        </div>
-    </div>
-</div>
+                    <label asp-for="SingleEventStaff.UserPassword" class="font-weight-bold">Staff Password</label>
+                    <div class="input-group">
+                        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="passwordField" placeholder="Enter event staff password" autocomplete="off" required />
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
@@ -491,13 +491,13 @@
                     <label asp-for="SingleEventStaff.EventOnCallStaffEvent" class="form-label">Select Event</label>
                     <input asp-for="SingleEventStaff.EventOnCallStaffEvent" id="EventOnCallStaffEvent" maxLength="50" class="form-control" />
                     </div> *@
-                   @*  <h4 class="mt-4">States Licenses</h4> *@
-                   @*  <div class="form-container">
-                        <!-- Dynamic License Rows will be inserted here -->
+                    @*  <h4 class="mt-4">States Licenses</h4> *@
+                    @*  <div class="form-container">
+                    <!-- Dynamic License Rows will be inserted here -->
                     </div> *@
-                   @*  <button type="button" class="add-row-button" id="addRowButton">
-                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                        <span class="button-text">Add Another License</span>
+                    @*  <button type="button" class="add-row-button" id="addRowButton">
+                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                    <span class="button-text">Add Another License</span>
                     </button> *@
                     <div class="form-group">
                         <label asp-for="SingleEventStaff.NPI" class="form-label">NPI</label>
@@ -769,7 +769,7 @@
 
     $(document).ready(function () {
 
-             $('#StartDate').val('1980-01-01');
+        $('#StartDate').val('1980-01-01');
         $('#StaffStatus').val('Active');
         $('#StaffLastName').val('Doe');
         $('#StaffFirstName').val('John');
@@ -806,49 +806,50 @@
         $('#staffCellNumber').val('123-123-1234');
         $('#staffPhone2').val('123-123-1234');
         let roleIndexMap = {}; // Stores role indices
-let roleLicenseIndexMap = {}; // Stores license indices per role
+        let roleLicenseIndexMap = {}; // Stores license indices per role
 
-// Handle role checkbox click event
-$(document).on("change", ".role-checkbox", function () {
-    let roleCheckbox = $(this);
-    let roleId = roleCheckbox.attr("id");
+        // Handle role checkbox click event
+        $(document).on("change", ".role-checkbox", function () {
+            debugger;
+            let roleCheckbox = $(this);
+            let roleId = roleCheckbox.attr("id");
 
-    if (roleCheckbox.is(":checked")) {
-        // Assign a unique roleIndex if not already assigned
-        if (!(roleId in roleIndexMap)) {
-            roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
-        }
+            if (roleCheckbox.is(":checked")) {
+                // Assign a unique roleIndex if not already assigned
+                if (!(roleId in roleIndexMap)) {
+                    roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
+                }
 
-        let roleIndex = roleIndexMap[roleId];
+                let roleIndex = roleIndexMap[roleId];
 
-        // Only initialize license index if not set
-        if (!(roleId in roleLicenseIndexMap)) {
-            roleLicenseIndexMap[roleId] = 0;
-        }
+                // Only initialize license index if not set
+                if (!(roleId in roleLicenseIndexMap)) {
+                    roleLicenseIndexMap[roleId] = 0;
+                }
 
-        let role = rolesData.find(r => r.id === roleId);
-        if (role) {
-            let licenseIndex = roleLicenseIndexMap[roleId]++;
-            let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
-            roleCheckbox.closest(".form-check").after(licenseFields);
-        }
-    } else {
-        // Remove licenses for unchecked roles
-        roleCheckbox.closest(".form-check").next(".license-container").remove();
-        delete roleIndexMap[roleId];
-        delete roleLicenseIndexMap[roleId];
+                let role = rolesData.find(r => r.id === roleId);
+                if (role) {
+                    let licenseIndex = roleLicenseIndexMap[roleId]++;
+                    let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
+                    roleCheckbox.closest(".form-check").after(licenseFields);
+                }
+            } else {
+                // Remove licenses for unchecked roles
+                roleCheckbox.closest(".form-check").next(".license-container").remove();
+                delete roleIndexMap[roleId];
+                delete roleLicenseIndexMap[roleId];
 
-        // Recalculate all role indexes after removing a role
-        resetRoleIndexes();
-    }
-});
+                // Recalculate all role indexes after removing a role
+                resetRoleIndexes();
+            }
+        });
 
-$("#generatePasswordBtn").click(function () {
+        $("#generatePasswordBtn").click(function () {
             var newPassword = generatePassword(10); // Set the desired password length
             $("#passwordField").val(newPassword);
         });
 
-function generatePassword(length) {
+        function generatePassword(length) {
             if (length < 3) {
                 throw new Error("Password length must be at least 3 to include all character types.");
             }
@@ -877,139 +878,144 @@ function generatePassword(length) {
             return password;
         }
 
-// Handle Add Another License button click
-$(document).on("click", ".add-row-button", function () {
-    let licenseContainer = $(this).prev(".license-container");
-    let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-    let roleId = roleCheckbox.attr("id");
+        // Handle Add Another License button click
+        $(document).on("click", ".add-row-button", function () {
+            let licenseContainer = $(this).prev(".license-container");
+            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+            let roleId = roleCheckbox.attr("id");
 
-    if (!roleId || !(roleId in roleIndexMap)) {
-        console.warn("Role ID not found for license container.");
-        return;
-    }
+            if (!roleId || !(roleId in roleIndexMap)) {
+                console.warn("Role ID not found for license container.");
+                return;
+            }
 
-    let roleIndex = roleIndexMap[roleId];
-    let licenseIndex = roleLicenseIndexMap[roleId]++; // Increment the license index
-    let role = rolesData.find(r => r.id === roleId);
-    let licenseTypes = role ? role.types : [];
+            let roleIndex = roleIndexMap[roleId];
+            let licenseIndex = roleLicenseIndexMap[roleId]++; // Increment the license index
+            let role = rolesData.find(r => r.id === roleId);
+            let licenseTypes = role ? role.types : [];
 
-    let newRow = generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes);
+            let newRow = generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes);
 
-    licenseContainer.append($(newRow).find(".license-row"));
+            licenseContainer.append($(newRow).find(".license-row"));
 
-    // Recalculate all indexes after adding a license
-    resetLicenseIndexes(roleId, roleIndex);
-});
+            // Recalculate all indexes after adding a license
+            resetLicenseIndexes(roleId, roleIndex);
+        });
 
-// Remove license row
-$(document).on("click", ".remove-row", function () {
-    let licenseRow = $(this).closest(".license-row");
-    let licenseContainer = licenseRow.parent();
-    let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-    let roleId = roleCheckbox.attr("id");
+        // Remove license row
+        $(document).on("click", ".remove-row", function () {
+            let licenseRow = $(this).closest(".license-row");
+            let licenseContainer = licenseRow.parent();
+            let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+            let roleId = roleCheckbox.attr("id");
 
-    licenseRow.remove();
+            licenseRow.remove();
 
-    // Recalculate all indexes after removing a license
-    resetLicenseIndexes(roleId, roleIndexMap[roleId]);
-});
+            // Recalculate all indexes after removing a license
+            resetLicenseIndexes(roleId, roleIndexMap[roleId]);
+        });
 
-// Function to reset all license indexes for a role
-function resetLicenseIndexes(roleId, roleIndex) {
-    let licenseRows = $(`.license-container[data-role-id='${roleId}'] .license-row`);
-    roleLicenseIndexMap[roleId] = 0;
+        // Function to reset all license indexes for a role
+        function resetLicenseIndexes(roleId, roleIndex) {
+            let licenseRows = $(`.license-container[data-role-id='${roleId}'] .license-row`);
+            roleLicenseIndexMap[roleId] = 0;
 
-    licenseRows.each(function (index) {
-        let newLicenseIndex = index;
-        $(this)
-            .find("[name]")
-            .each(function () {
-                let nameAttr = $(this).attr("name");
-                let updatedName = nameAttr.replace(/\[\d+\]\.LicenseDetails\[\d+\]/, `[${roleIndex}].LicenseDetails[${newLicenseIndex}]`);
-                $(this).attr("name", updatedName);
+            licenseRows.each(function (index) {
+                let newLicenseIndex = index;
+                $(this)
+                    .find("[name]")
+                    .each(function () {
+                        let nameAttr = $(this).attr("name");
+                        let updatedName = nameAttr.replace(/\[\d+\]\.LicenseDetails\[\d+\]/, `[${roleIndex}].LicenseDetails[${newLicenseIndex}]`);
+                        $(this).attr("name", updatedName);
+                    });
+
+                roleLicenseIndexMap[roleId]++;
+            });
+        }
+
+        function resetRoleIndexes() {
+            let checkedRoles = $(".role-checkbox:checked");
+            roleIndexMap = {}; // Reset role index map
+
+            checkedRoles.each(function (index) {
+                let roleId = $(this).attr("id");
+                roleIndexMap[roleId] = index; // Assign new consecutive index
             });
 
-        roleLicenseIndexMap[roleId]++;
-    });
-}
+            // Update the name attributes of license fields with new role indexes
+            $(".license-container").each(function () {
+                let roleId = $(this).data("role-id");
+                if (roleId in roleIndexMap) {
+                    let newRoleIndex = roleIndexMap[roleId];
 
-function resetRoleIndexes() {
-    let checkedRoles = $(".role-checkbox:checked");
-    roleIndexMap = {}; // Reset role index map
-
-    checkedRoles.each(function (index) {
-        let roleId = $(this).attr("id");
-        roleIndexMap[roleId] = index; // Assign new consecutive index
-    });
-
-    // Update the name attributes of license fields with new role indexes
-    $(".license-container").each(function () {
-        let roleId = $(this).data("role-id");
-        if (roleId in roleIndexMap) {
-            let newRoleIndex = roleIndexMap[roleId];
-
-            $(this)
-                .find("[name]")
-                .each(function () {
-                    let nameAttr = $(this).attr("name");
-                    let updatedName = nameAttr.replace(/\[\d+\]/, `[${newRoleIndex}]`);
-                    $(this).attr("name", updatedName);
-                });
+                    $(this)
+                        .find("[name]")
+                        .each(function () {
+                            let nameAttr = $(this).attr("name");
+                            let updatedName = nameAttr.replace(/\[\d+\]/, `[${newRoleIndex}]`);
+                            $(this).attr("name", updatedName);
+                        });
+                }
+            });
         }
-    });
-}
 
-// Function to generate license fields with correct indexes
-function generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes) {
-    let licenseTypeOptions = licenseTypes.map(type => `<option value="${type}">${type}</option>`).join("");
+        // Function to generate license fields with correct indexes
+        function generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypesString) {
+                let licenseTypes = licenseTypesString.split(","); // Convert string to array
 
-    return `
-<div class="license-container" data-role-id="${roleId}">
-    <input type="hidden" name="SingleEventStaff.Licenses[${roleIndex}].RoleId" value="${getRoleValueById(roleId)}" />
+            // Use only one declaration for licenseTypeOptions
+            let licenseTypeOptions = licenseTypes
+                .map(type => `<option value="${type.trim()}">${type.trim()}</option>`)
+                .join("");
 
-    <div class="license-row d-flex align-items-end mt-2">
-        <div class="col-md-2">
-            <label for="licenseNumber${roleIndex}_${licenseIndex}">License Number</label>
-            <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
-        </div>
-        <div class="col-md-2">
-            <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
-            <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
-                <option value="">Select State</option>
-                <option value="State1">State1</option>
-                <option value="State2">State2</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
-            <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
-                <option value="">Select Type</option>
-                ${licenseTypeOptions}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
-            <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
-        </div>
-        <div class="col-md-2">
-            <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
-            <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-danger remove-row">Remove</button>
+            return `
+    <div class="license-container" data-role-id="${roleId}">
+        <input type="hidden" name="SingleEventStaff.Licenses[${roleIndex}].RoleId" value="${getRoleValueById(roleId)}" />
+
+        <div class="license-row d-flex align-items-end mt-2">
+            <div class="col-md-2">
+                <label for="licenseNumber${roleIndex}_${licenseIndex}">License Number</label>
+                <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
+                <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
+                    <option value="">Select State</option>
+                    <option value="State1">State1</option>
+                    <option value="State2">State2</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
+                <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
+                    <option value="">Select Type</option>
+                    ${licenseTypeOptions}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
+                <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
+                <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.Licenses[${roleIndex}].LicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-danger remove-row">Remove</button>
+            </div>
         </div>
     </div>
-</div>
-<button type="button" class="add-row-button mt-2">
-    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-    <span class="button-text">Add Another License</span>
-</button>`;
-}
+    <button type="button" class="add-row-button mt-2">
+        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+        <span class="button-text">Add Another License</span>
+    </button>`;
+        }
 
-function getRoleValueById(roleId) {
-    let role = rolesData.find(r => r.id === roleId);
-    return role ? role.value : roleId; // Fallback to roleId if value is not found
-}
+        function getRoleValueById(roleId) {
+            let role = rolesData.find(r => r.id === roleId);
+            return role ? role.value : roleId; // Fallback to roleId if value is not found
+        }
 
 
 
@@ -1037,33 +1043,33 @@ function getRoleValueById(roleId) {
         const nameDiv = document.createElement('div');
         nameDiv.classList.add('d-flex', 'align-items-center');
         nameDiv.innerHTML = `
-            <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
-            <input type="text" class="form-control form-control-sm" maxlength="24" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
-        `;
+                <label class="form-label me-2 mb-0" style="width: 140px">${category} Name</label>
+                <input type="text" class="form-control form-control-sm" maxlength="24" name="SingleEventStaff.TravelHonorList[${index}].Name" value="${item.name || ''}" required />
+            `;
         rowDiv.appendChild(nameDiv);
 
         const rewardDiv = document.createElement('div');
         rewardDiv.classList.add('d-flex', 'align-items-center');
         rewardDiv.innerHTML = `
-            <label class="form-label me-2 mb-0">Rewards</label>
-                    <input type="number" maxlength="6" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" />
-        `;
+                <label class="form-label me-2 mb-0">Rewards</label>
+                        <input type="number" maxlength="6" class="form-control form-control-sm" name="SingleEventStaff.TravelHonorList[${index}].Rewards" value="${item.rewards || ''}" required oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);" />
+            `;
         rowDiv.appendChild(rewardDiv);
 
         // Hidden field for Type (Air, Car, or Hotel)
         const typeHiddenDiv = document.createElement('div');
         typeHiddenDiv.classList.add('d-none');
         typeHiddenDiv.innerHTML = `
-            <input type="hidden" name="SingleEventStaff.TravelHonorList[${index}].Type" value="${category}" />
-        `;
+                <input type="hidden" name="SingleEventStaff.TravelHonorList[${index}].Type" value="${category}" />
+            `;
         rowDiv.appendChild(typeHiddenDiv);
 
         // Add Remove button
         const removeButtonDiv = document.createElement('div');
         removeButtonDiv.classList.add('ms-4');
         removeButtonDiv.innerHTML = `
-            <button type="button" class="btn btn-danger btn-sm">Remove</button>
-        `;
+                <button type="button" class="btn btn-danger btn-sm">Remove</button>
+            `;
         removeButtonDiv.querySelector('button').addEventListener('click', () => {
             if (category === 'Air') {
                 airCounter--;
@@ -1136,11 +1142,11 @@ function getRoleValueById(roleId) {
                 const rewardButtonDiv = document.createElement('div');
                 rewardButtonDiv.classList.add('ms-4', 'add-reward-button');
                 rewardButtonDiv.innerHTML = `
-                    <button type="button" class="btn btn-light d-flex align-items-center">
-                        <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
-                        <span>Add another reward</span>
-                    </button>
-                `;
+                        <button type="button" class="btn btn-light d-flex align-items-center">
+                            <img src="/images/PlusIcon.png" alt="Add" class="me-2" style="width: 24px; height: 24px;" />
+                            <span>Add another reward</span>
+                        </button>
+                    `;
 
                 rewardButtonDiv.querySelector('button').addEventListener('click', () => {
                     if (rows === airRows && airCounter < maxControls) {
@@ -1335,7 +1341,7 @@ function getRoleValueById(roleId) {
     // manageLicenseRows();
     // });
 
-    
+
 
     // function manageLicenseRows(licenses = []) {
     //     const container = document.querySelector('.form-container');
@@ -1481,26 +1487,26 @@ function getRoleValueById(roleId) {
             newRow.classList.add('form-row', 'mb-3', 'd-flex', 'align-items-center', 'gap-3', 'affiliation-row');
 
             newRow.innerHTML = `
-                <div class="flex-grow-1">
-                    <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
-                    <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
-                            name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
-                    </select>
-                    <input type="hidden" id="EmployerSubcontractorText${rowIndex}"
-                       name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" />
-                </div>
-                <div class="flex-grow-1">
-                    <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
-                    <select id="StaffContractAffiliation${rowIndex}"
-                            name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
-                            multiple class="form-control multi-select" required>
-                    </select>
+                    <div class="flex-grow-1">
+                        <label for="Employers_${rowIndex}__SubContractorId" class="form-label">Employer/Subcontractor</label>
+                        <select class="form-select select2" id="EmployerSubcontractor${rowIndex}"
+                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorId" required>
+                        </select>
+                        <input type="hidden" id="EmployerSubcontractorText${rowIndex}"
+                           name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].SubContractorName" />
+                    </div>
+                    <div class="flex-grow-1">
+                        <label for="Employers_${rowIndex}__ContractIds" class="form-label">Staff Contract Affiliation</label>
+                        <select id="StaffContractAffiliation${rowIndex}"
+                                name="SingleEventStaff.StaffContractAffiliation[${rowIndex}].StaffContractAffiliationTemp"
+                                multiple class="form-control multi-select" required>
+                        </select>
 
-                </div>
-                <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
-                    <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
-                </div>
-            `;
+                    </div>
+                    <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
+                        <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
+                    </div>
+                `;
 
             // Add event listener for the "Remove" button to delete the row
             const removeButton = newRow.querySelector('.remove-row');
@@ -2149,24 +2155,26 @@ function getRoleValueById(roleId) {
     let rolesData = {};
 
     $('#addContractBtn').click(function () {
-        $.getJSON("/data/roles.json", function (roles) {
-            let staffRolesContainer = $("#StaffRoles");
-            rolesData = roles; // Store JSON for later use
+        // $.getJSON("/data/roles.json", function (roles) {
+        //     let staffRolesContainer = $("#StaffRoles");
+        //     rolesData = roles; // Store JSON for later use
 
-            // Filter roles where IsAdditionalRole is false
-            let filteredRoles = roles.filter(role => role.IsEventStaffUserRole === true);
+        //     // Filter roles where IsAdditionalRole is false
+        //     let filteredRoles = roles.filter(role => role.IsEventStaffUserRole === true);
 
-            filteredRoles.forEach(role => {
-                let roleElement = `
-            <div class="form-check me-3">
-                <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.value}">
-                <label class="form-check-label" for="${role.id}">${role.value}</label>
-            </div>`;
-                staffRolesContainer.append(roleElement);
-            });
-        }).fail(function () {
-            console.error("Error loading roles.");
-        });
+        //     filteredRoles.forEach(role => {
+        //         let roleElement = `
+        //         <div class="form-check me-3">
+        //             <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.value}">
+        //             <label class="form-check-label" for="${role.id}">${role.value}</label>
+        //         </div>`;
+        //         staffRolesContainer.append(roleElement);
+        //     });
+        // }).fail(function () {
+        //     console.error("Error loading roles.");
+        // });
+
+        fetchRolesByCategory();
 
         $('#StaffInfoEnteredBy').val('@User.Identity.Name');
         const controlIds = ['hiddenId', 'StartDate',
@@ -2261,6 +2269,40 @@ function getRoleValueById(roleId) {
         });
 
     });
+
+    function fetchRolesByCategory() {
+        $.ajax({
+            url: '/Roles/GetRolesByCategory',
+            type: "GET",
+            data: { category: "EventStaffRole" }, // Pass category if required
+            success: function (roles) {
+                let staffRolesContainer = $("#StaffRoles");
+                staffRolesContainer.empty(); // Clear existing roles before appending new ones
+
+                if (!roles || roles.length === 0) {
+                    staffRolesContainer.append('<p class="text-muted">No roles available</p>');
+                    return;
+                }
+
+                debugger;
+                rolesData = roles;
+
+                roles.forEach(role => {
+                    let roleElement = `
+                        <div class="form-check me-3">
+                            <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.name}">
+                            <label class="form-check-label" for="${role.id}">${role.name}</label>
+                        </div>`;
+                    staffRolesContainer.append(roleElement);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching roles:", error);
+                $("#StaffRoles").html('<p class="text-danger">Failed to load roles.</p>');
+            }
+        });
+    }
+
 
 
 

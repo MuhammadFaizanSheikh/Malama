@@ -2099,6 +2099,7 @@
             if (target == 7 && !tableInitialized) {
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
+                fetchRolesByCategory("EventManagementRole");
                 tableInitialized = true; // Prevent reloading the table again
             }
 
@@ -2192,6 +2193,24 @@
         });
 
 
+        let rolesData = []; // Global variable to store roles
+
+        function fetchRolesByCategory(category) {
+    $.ajax({
+        url: '/Roles/GetRolesByCategory',
+        type: 'GET',
+        data: { category: category },
+        success: function (response) {
+            rolesData = response; // Store response in global variable
+            console.log("Roles data stored globally:", rolesData); // Debugging
+        },
+        error: function (xhr, status, error) {
+            console.error('Error fetching roles:', error);
+        }
+    });
+}
+
+
         function initializeEventStaffTable() {
             if ($.fn.DataTable.isDataTable('#eventStaffSelectionTable')) {
                 $('#eventStaffSelectionTable').DataTable().clear().destroy();
@@ -2259,7 +2278,12 @@
                 "info": false,         // Hide "Showing X of Y entries" info
                 "ordering": false,
                 "columns": [
-                    { "data": "role", "defaultContent": "<select class='form-control staffRoleDropdown'><option value=''>Select Role</option></select>" }, // New role column
+                    { 
+                "data": "roles",
+                "render": function(data, type, row) {
+                    return data;
+                }
+            },
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
@@ -2286,7 +2310,6 @@
                 addStaffToSelectedTable(staffData, index);
             });
 
-            // Call updateRowIndices ONCE after all rows are added
             updateRowIndices();
         }
 
@@ -2294,17 +2317,22 @@
             debugger;
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
-            // Prevent duplicates
             let existingRows = selectedTable.rows().data().toArray();
             if (existingRows.some(row => row.staffID === staffData.staffID)) {
                 alert("Staff already added!");
                 return;
             }
 
-            // Assign index dynamically
             if (rowIndex === null) {
                 rowIndex = selectedTable.rows().count();
             }
+
+            let roleDropdownId = `roleSelect_${staffData.id}`;
+            let roleOptions = rolesData.map(role => `<option value="${role.id}">${role.name}</option>`).join("");
+            let roleDropdown = `
+                <select id="${roleDropdownId}" class="form-control role-multi-select" multiple>
+                    ${roleOptions}
+                </select>`;
 
             // Add row to the table
             selectedTable.row.add({
@@ -2316,38 +2344,15 @@
                 primaryZip: staffData.primaryZip,
                 id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
                        value="${staffData.id}" /> ${staffData.id}`,
-                role: `<select class="form-control staffRoleDropdown" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].Role">
-                    <option value="">Select Role</option>
-                </select>`,
+                roles: roleDropdown,  // Add dropdown to the roles column
                 action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
                           data-staffid="${staffData.id}">Remove</button>`
             }).draw();
 
-            debugger;
-            $.getJSON("/data/roles.json", function (roles) {
-                // Filter roles where IsAdditionalRole is true
-                let filteredRoles = roles.filter(role => role.IsEventManagementRole === true);
-
-                if (staffData.staffCAC === "true") {
-            // If staffCAC is true, exclude "nonCacdAdmin"
-            filteredRoles = filteredRoles.filter(role => role.id !== "nonCacdAdmin");
-        } else {
-            // If staffCAC is false, exclude "cacdAdmin"
-            filteredRoles = filteredRoles.filter(role => role.id !== "cacdAdmin");
+            // Initialize select2 for the new dropdown
+            $(`#${roleDropdownId}`).select2();
         }
 
-                // Get the last added row's "Select Role" dropdown
-                let lastRow = selectedTable.row(rowIndex).node();
-                let roleDropdown = $(lastRow).find(".staffRoleDropdown");
-
-                filteredRoles.forEach(role => {
-                    let option = new Option(role.value, role.id);
-                    roleDropdown.append(option);
-                });
-            }).fail(function () {
-                console.error("Error loading roles.");
-            });
-        }
 
 
 
