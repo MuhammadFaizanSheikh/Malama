@@ -2330,20 +2330,23 @@
     let roleDropdownId = `roleSelect_${staffData.id}`;
 
     // Filter roles based on staffCAC condition
-    let filteredRoles = rolesData.filter(role => {
-        if (staffData.staffCAC === "false" && role.name === "CAC'd Admin") {
-            return false; // Exclude CAC'd Admin
-        }
-        return true;
-    });
+            let filteredRoles = rolesData.filter(role => {
+                if (staffData.staffCAC === "false" && role.name === "CAC'd Admin") {
+                    return false; // Exclude CAC'd Admin
+                }
+                if (staffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
+                    return false; // Exclude NonCAC'd Admin
+                }
+                return true;
+            });
 
     // Generate role options
     let roleOptions = filteredRoles.map(role => `<option value="${role.id}">${role.name}</option>`).join("");
 
     // If staffCAC is false, add "NonCAC'd Admin"
-    if (staffData.staffCAC === "false") {
-        roleOptions += `<option value="NonCAC">NonCAC'd Admin</option>`;
-    }
+    // if (staffData.staffCAC === "false") {
+    //     roleOptions += `<option value="NonCAC">NonCAC'd Admin</option>`;
+    // }
 
     let roleDropdown = `
         <select id="${roleDropdownId}" class="form-control role-multi-select" multiple>

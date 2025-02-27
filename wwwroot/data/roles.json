@@ -123,13 +123,13 @@
     "id": "nonCacdAdmin",
     "value": "NonCAC'd Admin",
     "types": [],
-    "Category": "BasicRole"
+    "Category": "EventManagementRole"
   },
   {
     "id": "projectManagerProgramManager",
     "value": "Project Manager & Program Manager",
     "types": [],
-    "Category": "EventManagementRole"
+    "Category": "BasicRole"
   },
   {
     "id": "dawsonAdminEventCoordinator",
