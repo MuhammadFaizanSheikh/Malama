@@ -16,11 +16,13 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAccountRegistrationService _registrationService;
 
-        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _registrationService = registrationService;
         }
 
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
@@ -31,8 +33,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 try
                 {
-                    // Attempt to add the contract detail to the repository
-
                     foreach (var affiliation in eventStaff.StaffContractAffiliation)
                     {
                         var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
@@ -44,41 +44,32 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     await _unitOfWork.EventStaff.AddAsync(eventStaff);
 
-                    var user = new ApplicationUser
+
+                    RegisterViewModel rvm = new RegisterViewModel();
+                    rvm.Email = eventStaff.UserEmail;
+                    rvm.Password = eventStaff.UserPassword;
+
+                    if (eventStaff.Licenses != null && eventStaff.Licenses.Any())
                     {
-                        UserName = eventStaff.UserEmail,
-                        Email = eventStaff.UserEmail,
-                        IsActive = true,
-                        TwoFactorEnabled = true,
-                        IsEventUser = true
-                    };
-
-                    var result = await _userManager.CreateAsync(user, eventStaff.UserPassword);
-
-                    if (result.Succeeded)
-                    {
-                        if (eventStaff.Licenses != null && eventStaff.Licenses.Any())
-                        {
-                            var roles = eventStaff.Licenses.Select(l => l.RoleId).ToList(); // Extract RoleId as a list
-                            await _userManager.AddToRolesAsync(user, roles);
-                        }
-
-                        var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
-
-                        if (!confirmationResult.Succeeded)
-                        {
-                            responseDto.Success = false;
-                            responseDto.Message = "Something wrong with email!";
-                        }
+                        rvm.SelectedRoles = eventStaff.Licenses.Select(l => l.RoleId).ToList();
                     }
 
-                    // Commit transaction if everything succeeds
-                    await _unitOfWork.SaveAsync();
-                    await transaction.CommitAsync();
+                    responseDto = await _registrationService.RegisterUserAsync(rvm);
 
-                    responseDto.Success = true;
-                    responseDto.Message = "Event Staff added successfully!";
+                    if (responseDto.Success)
+                    {
+                        await _unitOfWork.SaveAsync();
+                        await transaction.CommitAsync();
+                        responseDto.Success = true;
+                        responseDto.Message = "Event Staff added successfully!";
+                    }
+                    else
+                    {
+                        responseDto.Success = false;
+                        responseDto.Message = $"An error occurred while saving record";
+                        await transaction.RollbackAsync();
+                    }
+                    
                 }
                 catch (Exception ex)
                 {

@@ -52,7 +52,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model)
+        public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     Email = model.Email,
                     IsActive = true,
                     TwoFactorEnabled = true,
-                    IsEventUser = false
+                    IsEventUser = IsEventUser
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

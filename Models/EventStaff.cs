@@ -296,8 +296,8 @@ namespace ExcelToCsv.Models
 
         public long StaffLicenseId { get; set; }
 
-        [NotMapped]
-        public LicenseInfoDTO StaffLicense { get; set; }
+        
+        public LicenseInfoDTO? StaffLicense { get; set; }
 
         [Required]
         [StringLength(50)]

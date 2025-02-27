@@ -31,46 +31,7 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "We encountered an issue while loading subcontractors. Please try again later.";
-                // Optionally log the exception
             }
-
-            var eventStaff = new EventStaff
-            {
-                //StartDate = DateTime.Now,
-                //StaffLastName = "Doe",
-                //StaffFirstName = "John",
-                //StaffMiddleInitial = "A",
-                //StaffSSN = "123-45-6789",
-                //EventOnCallStaff = "Yes",
-                //EventOnCallStaffEvent = "EventX",
-                //NPI = "1234567890",
-                //DAE = "12345",
-                //CredentialingProcessDate = DateTime.Now.AddDays(-30),
-                //HistoricalCredentialingDate = DateTime.Now.AddDays(-60),
-                //DAWSONInternalCredentialingCompleteDate = DateTime.Now.AddDays(-15),
-                //OutstandingTrainings = "None",
-                //BackgroundCheckConcerns = "None",
-                //BLSCertDate = DateTime.Now.AddDays(-100),
-                //BLSCertNumber = "BLS12345",
-                //ACLSCertDate = DateTime.Now.AddDays(-90),
-                //ACLSCertNumber = "ACLS67890",
-                //StaffCAC = "Yes",
-                //StaffDoDID = "1234567890",
-                //StaffCellNumber = "555-123-4567",
-                //StaffPhone2 = "555-987-6543",
-                //StaffEmail = "john.doe@example.com",
-                //PrimaryAddress1 = "123 Main St",
-                //PrimaryAddress2 = "Apt 4B",
-                //PrimaryCity = "Springfield",
-                //PrimaryState = "IL",
-                //PrimaryZip = "62701",
-                //SecondaryAddress1 = "456 Elm St",
-                //SecondaryAddress2 = "Suite 101",
-                //SecondaryCity = "Chicago",
-                //SecondaryState = "IL",
-                //SecondaryZip = "60601",
-                //StaffInfoEnteredBy = "AdminUser"
-            };
 
             var viewModel = new EventStaffViewModel
             {
@@ -116,7 +77,6 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (!ModelState.IsValid)
                 {
-                    // Log the validation errors for debugging
                     foreach (var error in ModelState.Values)
                     {
                         foreach (var err in error.Errors)
