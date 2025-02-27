@@ -31,6 +31,7 @@ builder.Services.AddScoped<IEventStaffService, EventStaffService>();
 builder.Services.AddScoped<IEventManagementService, EventManagementService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
+builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSession(options =>
 {

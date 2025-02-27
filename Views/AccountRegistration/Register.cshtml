@@ -172,14 +172,15 @@
         }
     });
 
-            $('#findUserBtn').click(function () {
+           $('#findUserBtn').click(function () {
                 // Show user dropdown and fetch user details
                 $.ajax({
                     url: '@Url.Action("GetUsers", "AccountRegistration")',
                     type: 'GET',
                     success: function (data) {
+                        var result = data.data;
                         $('#userDropdown').empty().append('<option value="">Select a user</option>');
-                        $.each(data, function (index, user) {
+                        $.each(result, function (index, user) {
                             $('#userDropdown').append(`<option value="${user.id}">${user.email}</option>`);
                         });
                         $('#userDropdown').show();
@@ -198,16 +199,15 @@
                         type: 'GET',
                         data: { userId: userId },
                         success: function (data) {
-                            $('#emailGroup input').val(data.email).prop('readonly', true);
+                            $('#emailGroup input').val(data.data.email).prop('readonly', true);
                             $('#passwordGroup input').val("********").prop('readonly', true); // Masked password
 
                             // Uncheck all roles first
                             $('input[name="SelectedRoles"]').prop('checked', false);
 
-
                             // Check only the roles that the user has
-                            if (Array.isArray(data.roles) && data.roles.length > 0) {
-                                data.roles.forEach(function (role) {
+                            if (Array.isArray(data.data.roles) && data.data.roles.length > 0) {
+                                data.data.roles.forEach(function (role) {
                                     var roleCheckbox = $('#role_' + role.id);
                                     if (roleCheckbox.length) {
                                         roleCheckbox.prop('checked', true);
@@ -234,37 +234,40 @@
 
 
             $('#deleteUserBtn').click(function () {
-                var userId = $('#userDropdown').val();
-                if (userId) {
-                    if (confirm("Are you sure you want to delete this user?")) {
-                        $.ajax({
-                            url: '@Url.Action("DeleteUser", "AccountRegistration")',
-                            type: 'POST',
-                            data: { userId: userId },
-                            success: function (response) {
-                                if (response.success) {
-                                    // Update success message and show it
-                                    $('.alert-success').text(response.message).show();
+    var userId = $('#userDropdown').val();
+    if (userId) {
+        if (confirm("Are you sure you want to delete this user?")) {
+            $.ajax({
+                url: '@Url.Action("DeleteUser", "AccountRegistration")',
+                type: 'POST',
+                contentType: 'application/json', // Ensure proper JSON format
+                data: JSON.stringify(userId), // Send as raw JSON string
+                success: function (response) {
+                    if (response.success) {
+                        debugger;
+                        // Show success message
+                        $('.alert-success').text(response.message).show();
 
-                                    // Clear and reset the form
-                                    $('#userDropdown').val("").hide();
-                                    $('#deleteUserBtn').hide();
-                                    $('#emailGroup input').val("").prop('readonly', false);
-                                    $('#passwordGroup input').val("").prop('readonly', false);
-                                    $('#roleGroup select').val("User").prop('disabled', false);
-                                    $('#registerBtn').prop('disabled', false);
-                                } else {
-                                    // Update error message and show it
-                                    $('.alert-danger').text(response.message).show();
-                                }
-                            },
-                            error: function () {
-                                $('.alert-danger').text("An unexpected error occurred while processing your request.").show();
-                            }
-                        });
+                        // Clear and reset the form
+                        $('#userDropdown').val("").hide();
+                        $('#deleteUserBtn').hide();
+                        $('#emailGroup input').val("").prop('readonly', false);
+                        $('#passwordGroup input').val("").prop('readonly', false);
+                        $('#roleGroup select').val("User").prop('disabled', false);
+                        $('#registerBtn').prop('disabled', false);
+                    } else {
+                        // Show error message
+                        $('.alert-danger').text(response.message).show();
                     }
+                },
+                error: function () {
+                    $('.alert-danger').text("An unexpected error occurred while processing your request.").show();
                 }
             });
+        }
+    }
+});
+
 
 
         });
