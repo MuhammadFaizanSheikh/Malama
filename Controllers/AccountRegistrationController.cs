@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -21,13 +22,18 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> Register()
         {
-            ViewData["Roles"] = await Task.Run(() =>
-                _roleManager.Roles
-                    .Where(r => r.Category == AooConstants.RolesCategory.BasicRoles)
-                    .Select(r => r.Name) // ✅ Return only role names (List<string>)
-                    .ToList()
-            );
+            var rolesList = await Task.Run(() =>
+     _roleManager.Roles
+         .Where(r => r.Category == AooConstants.RolesCategory.BasicRoles)
+         .Select(r => new SelectListItem
+         {
+             Value = r.Id,
+             Text = r.Name
+         })
+         .ToList()
+ );
 
+            ViewData["Roles"] = rolesList;
             return View();
         }
 
@@ -37,6 +43,19 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
+                var rolesList = await Task.Run(() =>
+                     _roleManager.Roles
+                         .Where(r => r.Category == AooConstants.RolesCategory.BasicRoles)
+                         .Select(r => new SelectListItem
+                         {
+                             Value = r.Id,
+                             Text = r.Name
+                         })
+                         .ToList()
+                 );
+
+                ViewData["Roles"] = rolesList;
+
                 if (ModelState.IsValid)
                 {
                     var user = new ApplicationUser
@@ -54,7 +73,15 @@ namespace ExcelFilesCompiler.Controllers
                     {
                         if (model.SelectedRoles != null && model.SelectedRoles.Any())
                         {
-                            await _userManager.AddToRolesAsync(user, model.SelectedRoles);
+                            // Convert role IDs to role names
+                            var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
+                            var roleNames = allRoles
+                                .Where(r => model.SelectedRoles.Contains(r.Id)) // Now filtering in memory
+                                .Select(r => r.Name)
+                                .ToList();
+
+
+                            await _userManager.AddToRolesAsync(user, roleNames);
                         }
                         else
                         {
@@ -62,7 +89,7 @@ namespace ExcelFilesCompiler.Controllers
                             return View(model);
                         }
 
-                        // Confirm the user's email by sending an email confirmation token
+                        // Confirm the user's email
                         var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                         var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
 
@@ -87,10 +114,10 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again later.");
-
                 return View(model);
             }
         }
+
 
         [HttpGet]
         public IActionResult GetUsers()
@@ -105,13 +132,40 @@ namespace ExcelFilesCompiler.Controllers
 
         public async Task<IActionResult> GetUserDetails(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return NotFound();
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                    return BadRequest("User ID cannot be null or empty.");
 
-            // Assuming password is hashed, don't send it directly to the client
-            var userDto = new { user.Email, Role = await _userManager.GetRolesAsync(user) };
-            return Json(userDto);
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return NotFound("User not found.");
+
+                var roleNames = await _userManager.GetRolesAsync(user);
+
+                // Fetch role details (ID and Name) from RoleManager
+                var roles = _roleManager.Roles
+     .AsEnumerable() // Forces execution in memory
+     .Where(r => roleNames.Contains(r.Name))
+     .Select(r => new { r.Id, r.Name })
+     .ToList();
+
+
+                var userDto = new
+                {
+                    Email = user.Email,
+                    Roles = roles // Now sending both Role ID & Name
+                };
+
+                return Json(userDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while fetching user details.");
+            }
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
