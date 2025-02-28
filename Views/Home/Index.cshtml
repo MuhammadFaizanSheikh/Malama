@@ -249,7 +249,7 @@
             const startDate = new Date(calendarInput);
             const lastDate = new Date(lastCalendarInput);
 
-            if (lastDate <= startDate) {
+            if (lastDate < startDate) {
                 alert('Event Last Date must be greater than Event Start Date.');
                 return;
             }
@@ -529,7 +529,7 @@
 
             highlightMissingFullNameRows(missingFullNameRows);
             document.getElementById('generateExcelButton').classList.remove('d-none');
-            document.getElementById('submitDataButton').classList.remove('d-none');
+            //document.getElementById('submitDataButton').classList.remove('d-none');
             document.getElementById('addRowButton').classList.remove('d-none');
             isPreviewDoneSuccessfully = true;
         }

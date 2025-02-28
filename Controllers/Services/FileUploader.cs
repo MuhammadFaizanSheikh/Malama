@@ -6,6 +6,7 @@ using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -1164,7 +1165,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (parentRow.Table.Columns.Contains("PANX"))
             {
                 string panxValue = parentRow["PANX"]?.ToString();
-                parentRow["PANO NEEDED"] = (panxValue == "N" || string.IsNullOrEmpty(panxValue)) ? "NEEDED" : "N/A";
+                parentRow["PANO NEEDED"] = (panxValue == "N" || string.IsNullOrEmpty(panxValue) || panxValue.ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
             }
             else
             {
@@ -1196,7 +1197,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 string nextTestDateValue = parentRow["Next Test Date"]?.ToString();
 
-                if (string.IsNullOrEmpty(nextTestDateValue))
+                if (string.IsNullOrEmpty(nextTestDateValue) || nextTestDateValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase))
                 {
                     parentRow["HIV"] = "NEEDED";
                 }
@@ -1373,7 +1374,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Blood Type"))
             {
-                parentRow["ABO Needed"] = string.IsNullOrEmpty(parentRow["Blood Type"]?.ToString()) ? "NEEDED" : "N/A";
+                parentRow["ABO Needed"] = (string.IsNullOrEmpty(parentRow["Blood Type"]?.ToString()) || parentRow["Blood Type"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
             }
             else
             {
@@ -1422,7 +1423,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     parentRow.Table.Columns.Add("IMM", typeof(string));
                 }
 
-                if (string.IsNullOrEmpty(mr2ImmValue))
+                if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase))
                 {
                     parentRow["IMM"] = "N/A";
                 }
@@ -1438,7 +1439,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Sickle Cell Date"))
             {
-                parentRow["SICKLE"] = string.IsNullOrEmpty(parentRow["Sickle Cell Date"]?.ToString()) ? "NEEDED" : "N/A";
+                parentRow["SICKLE"] = (string.IsNullOrWhiteSpace(parentRow["Sickle Cell Date"]?.ToString()) || parentRow["Sickle Cell Date"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
             }
             else
             {
@@ -1450,9 +1451,12 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("HB3"))
             {
-                if (string.IsNullOrEmpty(parentRow["HB3"]?.ToString()) ||
-                    parentRow["HB3"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["HB3"]?.ToString(), out DateTime hb3Date) && hb3Date < lastEventDate.Value))
+                string hb3Value = parentRow["HB3"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(hb3Value) ||
+                    hb3Value.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    hb3Value.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(hb3Value, out DateTime hb3Date) && hb3Date < lastEventDate.Value))
                 {
                     parentRow["Hep B"] = "NEEDED";
                 }
@@ -1468,9 +1472,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (parentRow.Table.Columns.Contains("HPA"))
             {
-                if (string.IsNullOrEmpty(parentRow["HPA"]?.ToString()) ||
-                    parentRow["HPA"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["HPA"]?.ToString(), out DateTime HPADate) && HPADate < lastEventDate.Value))
+                string hpaValue = parentRow["HPA"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(hpaValue) ||
+                    hpaValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    hpaValue.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(hpaValue, out DateTime hpaDate) && hpaDate < lastEventDate.Value))
                 {
                     parentRow["Hep A"] = "NEEDED";
                 }
@@ -1486,9 +1493,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (parentRow.Table.Columns.Contains("INJ"))
             {
-                if (string.IsNullOrEmpty(parentRow["INJ"]?.ToString()) ||
-                    parentRow["INJ"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["INJ"]?.ToString(), out DateTime INJDate) && INJDate < lastEventDate.Value))
+                string injValue = parentRow["INJ"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(injValue) ||
+                    injValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    injValue.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(injValue, out DateTime injDate) && injDate < lastEventDate.Value))
                 {
                     parentRow["FLU"] = "NEEDED";
                 }
@@ -1504,9 +1514,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (parentRow.Table.Columns.Contains("TDP"))
             {
-                if (string.IsNullOrEmpty(parentRow["TDP"]?.ToString()) ||
-                    parentRow["TDP"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["TDP"]?.ToString(), out DateTime TDPDate) && TDPDate < lastEventDate.Value))
+                string tdpValue = parentRow["TDP"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(tdpValue) ||
+                    tdpValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    tdpValue.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(tdpValue, out DateTime tdpDate) && tdpDate < lastEventDate.Value))
                 {
                     parentRow["Tet/TDP"] = "NEEDED";
                 }
@@ -1520,11 +1533,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentRow["Tet/TDP"] = "N/A";
             }
 
+
             if (parentRow.Table.Columns.Contains("MMR"))
             {
-                if (string.IsNullOrEmpty(parentRow["MMR"]?.ToString()) ||
-                    parentRow["MMR"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["MMR"]?.ToString(), out DateTime MMRDate) && MMRDate < lastEventDate.Value))
+                string mmrValue = parentRow["MMR"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(mmrValue) ||
+                    mmrValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    mmrValue.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(mmrValue, out DateTime mmrDate) && mmrDate < lastEventDate.Value))
                 {
                     parentRow["MMR"] = "NEEDED";
                 }
@@ -1538,11 +1555,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentRow["MMR"] = "N/A";
             }
 
+
             if (parentRow.Table.Columns.Contains("VAR"))
             {
-                if (string.IsNullOrEmpty(parentRow["VAR"]?.ToString()) ||
-                    parentRow["VAR"].ToString().StartsWith("*") ||
-                    (lastEventDate.HasValue && DateTime.TryParse(parentRow["VAR"]?.ToString(), out DateTime VARDate) && VARDate < lastEventDate.Value))
+                string varValue = parentRow["VAR"]?.ToString()?.Trim();
+
+                if (string.IsNullOrEmpty(varValue) ||
+                    varValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
+                    varValue.StartsWith("*") ||
+                    (lastEventDate.HasValue && DateTime.TryParse(varValue, out DateTime varDate) && varDate < lastEventDate.Value))
                 {
                     parentRow["Varicella"] = "NEEDED";
                 }
@@ -1555,13 +1576,14 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 parentRow["Varicella"] = "N/A";
             }
+
         }
 
         private void HandleOtherFields(DataRow parentRow, DateTime eventDate, DateTime? lastEventDate, int vision, int dental, int pha, int hiv, int hearing, string eventId)
         {
             if (parentRow.Table.Columns.Contains("G6PD Status"))
             {
-                parentRow["G6PD"] = string.IsNullOrEmpty(parentRow["G6PD Status"]?.ToString()) ? "NEEDED" : "N/A";
+                parentRow["G6PD"] = (string.IsNullOrWhiteSpace(parentRow["G6PD Status"]?.ToString()) || parentRow["G6PD Status"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
             }
             else
             {

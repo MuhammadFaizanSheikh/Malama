@@ -54,7 +54,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         rvm.SelectedRoles = eventStaff.Licenses.Select(l => l.RoleId).ToList();
                     }
 
-                    responseDto = await _registrationService.RegisterUserAsync(rvm);
+                    responseDto = await _registrationService.RegisterUserAsync(rvm, true);
 
                     if (responseDto.Success)
                     {

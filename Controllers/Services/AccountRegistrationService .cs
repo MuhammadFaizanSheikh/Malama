@@ -84,11 +84,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
                     var roleNames = allRoles
-                        .Where(r => model.SelectedRoles.Contains(r.Id))
+                        .Where(r => model.SelectedRoles.Contains(r.Name))
                         .Select(r => r.Name)
                         .ToList();
 
-                    await _userManager.AddToRolesAsync(user, roleNames);
+                    await _userManager.AddToRolesAsync(user, model.SelectedRoles);
                 }
                 else
                 {
