@@ -236,6 +236,26 @@ namespace ExcelFilesCompiler.Repositories.Services
             return await query.ToListAsync();
         }
 
+        public IQueryable<T> GetWithInclude(
+    Expression<Func<T, bool>> predicate = null,
+    params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.AsQueryable();
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return query; // Return IQueryable instead of executing ToListAsync()
+        }
+
+
 
         public async Task DeleteAgainstFieldAsync(object id, string idPropertyName)
         {

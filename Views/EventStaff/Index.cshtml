@@ -405,76 +405,7 @@
                 <div class="col-md-6">
                     <label for="StaffRoles" class="form-label">Select Staff Roles</label>
                     <div id="StaffRoles"></div>
-                    @* <div id="StaffRoles">
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="contractManager" value="Contract Manager">
-                    <label class="form-check-label" for="contractManager">Contract Manager</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="physicians" value="Physicians">
-                    <label class="form-check-label" for="physicians">Physicians</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="optometrist" value="Optometrist">
-                    <label class="form-check-label" for="optometrist">Optometrist</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="audiologist" value="Audiologist">
-                    <label class="form-check-label" for="audiologist">Audiologist</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="physicianAssistant" value="Physician Assistant">
-                    <label class="form-check-label" for="physicianAssistant">Physician Assistant</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="behaviorHealthCounselor" value="Behavior Health Counselor">
-                    <label class="form-check-label" for="behaviorHealthCounselor">Behavior Health Counselor</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="nursePractitioner" value="Nurse Practitioner">
-                    <label class="form-check-label" for="nursePractitioner">Nurse Practitioner</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="registeredNurse" value="Registered Nurse">
-                    <label class="form-check-label" for="registeredNurse">Registered Nurse</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="medicalAssistant" value="Medical Assistant">
-                    <label class="form-check-label" for="medicalAssistant">Medical Assistant</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="hearingTechnician" value="Hearing Technician">
-                    <label class="form-check-label" for="hearingTechnician">Hearing Technician</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="optometryTechnician" value="Optometry Technician">
-                    <label class="form-check-label" for="optometryTechnician">Optometry Technician</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="admins" value="Admins">
-                    <label class="form-check-label" for="admins">Admins</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="dentist" value="Dentist">
-                    <label class="form-check-label" for="dentist">Dentist</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="dentalHygienist" value="Dental Hygienist">
-                    <label class="form-check-label" for="dentalHygienist">Dental Hygienist</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="dentalAssistant" value="Dental Assistant">
-                    <label class="form-check-label" for="dentalAssistant">Dental Assistant</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="dentalXray" value="Dental Xray">
-                    <label class="form-check-label" for="dentalXray">Dental Xray</label>
-                    </div>
-                    <div class="form-check me-3">
-                    <input class="form-check-input" type="checkbox" id="immunizationPersonnel" value="Immunization Personnel">
-                    <label class="form-check-label" for="immunizationPersonnel">Immunization Personnel</label>
-                    </div>
-                    </div> *@
+                    <p id="roleError" style="color: red; display: none;"></p>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Event On Call Staff</label>
@@ -807,44 +738,7 @@
         $('#staffPhone2').val('123-123-1234');
 
 
-        let roleIndexMap = {}; // Stores role indices
-        let roleLicenseIndexMap = {}; // Stores license indices per role
-
-        // Handle role checkbox click event
-        $(document).on("change", ".role-checkbox", function () {
-            debugger;
-            let roleCheckbox = $(this);
-            let roleId = roleCheckbox.attr("id");
-
-            if (roleCheckbox.is(":checked")) {
-                // Assign a unique roleIndex if not already assigned
-                if (!(roleId in roleIndexMap)) {
-                    roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
-                }
-
-                let roleIndex = roleIndexMap[roleId];
-
-                // Only initialize license index if not set
-                if (!(roleId in roleLicenseIndexMap)) {
-                    roleLicenseIndexMap[roleId] = 0;
-                }
-
-                let role = rolesData.find(r => r.id === roleId);
-                if (role) {
-                    let licenseIndex = roleLicenseIndexMap[roleId]++;
-                    let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
-                    roleCheckbox.closest(".form-check").after(licenseFields);
-                }
-            } else {
-                // Remove licenses for unchecked roles
-                roleCheckbox.closest(".form-check").next(".license-container").remove();
-                delete roleIndexMap[roleId];
-                delete roleLicenseIndexMap[roleId];
-
-                // Recalculate all role indexes after removing a role
-                resetRoleIndexes();
-            }
-        });
+        
 
         $("#generatePasswordBtn").click(function () {
             var newPassword = generatePassword(10); // Set the desired password length
@@ -880,9 +774,47 @@
             return password;
         }
 
+        let roleIndexMap = {}; // Stores role indices
+        let roleLicenseIndexMap = {}; // Stores license indices per role
+
+        // Handle role checkbox click event
+        $(document).on("change", ".role-checkbox", function () {
+            let roleCheckbox = $(this);
+            let roleId = roleCheckbox.attr("id");
+
+            if (roleCheckbox.is(":checked")) {
+                if (!(roleId in roleIndexMap)) {
+                    roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
+                }
+
+                if (!(roleId in roleLicenseIndexMap)) {
+                    roleLicenseIndexMap[roleId] = 0;
+                }
+
+                let role = rolesData.find(r => r.id === roleId);
+                if (role) {
+                    let licenseIndex = roleLicenseIndexMap[roleId]++;
+                    let licenseFields = generateLicenseFields(roleId, roleIndexMap[roleId], licenseIndex, role.types);
+                    roleCheckbox.closest(".form-check").after(licenseFields);
+                }
+            } else {
+                // Remove associated license fields
+                $(`.license-container[data-role-id='${roleId}']`).remove();
+                roleCheckbox.closest(".form-check").next(".add-row-button").remove();
+                // Remove role from maps
+                delete roleIndexMap[roleId];
+                delete roleLicenseIndexMap[roleId];
+
+                // Recalculate indexes
+                resetRoleIndexes();
+            }
+        });
+
+
+
+
         // Handle Add Another License button click
         $(document).on("click", ".add-row-button", function () {
-            debugger;
             let licenseContainer = $(this).prev(".license-container");
             let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
             let roleId = roleCheckbox.attr("id");
@@ -906,6 +838,7 @@
         });
 
         // Remove license row
+        // Remove license row
         $(document).on("click", ".remove-row", function () {
             let licenseRow = $(this).closest(".license-row");
             let licenseContainer = licenseRow.parent();
@@ -914,9 +847,15 @@
 
             licenseRow.remove();
 
-            // Recalculate all indexes after removing a license
-            resetLicenseIndexes(roleId, roleIndexMap[roleId]);
+            // Check if there are no remaining rows for this role
+            if (licenseContainer.find(".license-row").length === 0) {
+                roleCheckbox.prop("checked", false).trigger("change"); // Uncheck and trigger change event
+            } else {
+                // Recalculate all indexes after removing a license
+                resetLicenseIndexes(roleId, roleIndexMap[roleId]);
+            }
         });
+
 
         // Function to reset all license indexes for a role
         function resetLicenseIndexes(roleId, roleIndex) {
@@ -1019,7 +958,6 @@
         }
 
         function getRoleValueById(roleId) {
-            debugger;
             let role = rolesData.find(r => r.id === roleId);
             return role ? role.name : roleId; // Fallback to roleId if value is not found
         }
@@ -1271,6 +1209,16 @@
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
         var form = document.querySelector('form'); // Get the form element
+
+        debugger; 
+        let errorContainer = $("#roleError");
+        if ($(".role-checkbox:checked").length === 0) {
+            errorContainer.text("Please select at least one role.").show();
+            event.preventDefault();
+            return;
+        } else {
+            errorContainer.hide();
+        }
 
         // Validate required fields using `reportValidity`
         if (!form.reportValidity()) {
@@ -1534,7 +1482,6 @@
             const hiddenField = document.getElementById(`EmployerSubcontractorText${rowIndex}`);
 
             if (affiliationData) {
-                debugger;
                 // Populate Employer/Subcontractor dropdown
                 const employerOption = document.createElement('option');
                 employerOption.value = affiliationData.subContractorId;
@@ -1720,7 +1667,6 @@
         });
 
         $.getJSON('/data/statesAndCities.json', function (data) {
-            alert('dasda')
             const stateCityMap = {};
             const stateDropdowns = $('#primaryState, #secondaryState');
 
@@ -2275,8 +2221,7 @@
                     staffRolesContainer.append('<p class="text-muted">No roles available</p>');
                     return;
                 }
-
-                debugger;
+                
                 rolesData = roles;
 
                 roles.forEach(role => {

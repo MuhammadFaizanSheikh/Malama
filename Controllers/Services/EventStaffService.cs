@@ -118,16 +118,28 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
+                //var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
+                //    x => x.Id == id,
+                //    x => x.Licenses,
+                //     x => x.Licenses.Select(l => l.LicenseDetails),
+                //    x => x.StaffContractAffiliation,
+                //    x => x.TravelHonorList
+                //);
+
+                var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
                     x => x.Id == id,
                     x => x.Licenses,
                     x => x.StaffContractAffiliation,
                     x => x.TravelHonorList
-                );
+                )
+                    .Include(x => x.Licenses)
+                        .ThenInclude(l => l.LicenseDetails) // Now second-level include works!
+                    .FirstOrDefaultAsync();
+
 
                 if (eventStaff != null)
                 {
-                    var firstEventStaff = eventStaff.FirstOrDefault();
+                    var firstEventStaff = eventStaff;
 
                     if (firstEventStaff == null)
                     {
