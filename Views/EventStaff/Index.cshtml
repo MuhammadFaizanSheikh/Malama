@@ -862,21 +862,22 @@
         // Function to reset all license indexes for a role
         function resetLicenseIndexes(roleId, roleIndex) {
             let licenseRows = $(`.license-container[data-role-id='${roleId}'] .license-row`);
-            roleLicenseIndexMap[roleId] = 0;
-
+            roleLicenseIndexMap[roleId] = 0; // Reset index for this role
+        
             licenseRows.each(function (index) {
-                let newLicenseIndex = index;
+                let newLicenseIndex = index; // Reassign sequential index
                 $(this)
                     .find("[name]")
                     .each(function () {
                         let nameAttr = $(this).attr("name");
-                        let updatedName = nameAttr.replace(/\[\d+\]\.LicenseDetails\[\d+\]/, `[${roleIndex}].LicenseDetails[${newLicenseIndex}]`);
+                        let updatedName = nameAttr.replace(/\[\d+\]\.StaffLicenseDetails\[\d+\]/, `[${roleIndex}].StaffLicenseDetails[${newLicenseIndex}]`);
                         $(this).attr("name", updatedName);
                     });
-
-                roleLicenseIndexMap[roleId]++;
+        
+                roleLicenseIndexMap[roleId]++; // Correctly increment index
             });
         }
+
 
         function resetRoleIndexes() {
             let checkedRoles = $(".role-checkbox:checked");
