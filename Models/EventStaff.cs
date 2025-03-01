@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Models;
 using Newtonsoft.Json;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -201,7 +202,7 @@ namespace ExcelToCsv.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffInfoEnteredBy cannot be only white spaces.")]
         public string StaffInfoEnteredBy { get; set; }
 
-        public List<LicenseInfoDTO> Licenses { get; set; } = new List<LicenseInfoDTO>();
+        public List<StaffLicense> StaffLicense { get; set; } = new List<StaffLicense>();
 
         //[Required(ErrorMessage = "StaffContractAffiliation is required.")]
         //[NotMapped]
@@ -267,7 +268,7 @@ namespace ExcelToCsv.Models
     //}
 
     [Table("StaffLicense")]
-    public class LicenseInfoDTO
+    public class StaffLicense
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -282,7 +283,7 @@ namespace ExcelToCsv.Models
         [StringLength(50)]
         public string RoleId { get; set; }
 
-        public List<StaffLicenseDetails> LicenseDetails { get; set; } = new List<StaffLicenseDetails>();
+        public List<StaffLicenseDetails> StaffLicenseDetails { get; set; } = new List<StaffLicenseDetails>();
     }
 
     [Table("StaffLicenseDetails")]
@@ -296,8 +297,7 @@ namespace ExcelToCsv.Models
 
         public long StaffLicenseId { get; set; }
 
-        
-        public LicenseInfoDTO? StaffLicense { get; set; }
+        //public StaffLicense? StaffLicense { get; set; }
 
         [Required]
         [StringLength(50)]

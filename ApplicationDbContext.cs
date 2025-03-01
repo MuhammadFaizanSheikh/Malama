@@ -19,7 +19,7 @@ namespace ExcelFilesCompiler
 
         public DbSet<ContractDetails> ContractDetails { get; set; }
         public DbSet<EventStaff> EventStaff { get; set; }
-        public DbSet<LicenseInfoDTO> EventStaffLicense { get; set; }
+        public DbSet<StaffLicense> StaffLicense { get; set; }
         public DbSet<StaffContractAffiliation> StaffContractAffiliation { get; set; }
         public DbSet<TravelHonor> TravelHonor { get; set; }
         public DbSet<EventManagement> EventManagement { get; set; }

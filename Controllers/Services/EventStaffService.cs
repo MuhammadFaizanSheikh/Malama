@@ -49,9 +49,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     rvm.Email = eventStaff.UserEmail;
                     rvm.Password = eventStaff.UserPassword;
 
-                    if (eventStaff.Licenses != null && eventStaff.Licenses.Any())
+                    if (eventStaff.StaffLicense != null && eventStaff.StaffLicense.Any())
                     {
-                        rvm.SelectedRoles = eventStaff.Licenses.Select(l => l.RoleId).ToList();
+                        rvm.SelectedRoles = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
                     }
 
                     responseDto = await _registrationService.RegisterUserAsync(rvm, true);
@@ -128,12 +128,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
                     x => x.Id == id,
-                    x => x.Licenses,
+                    x => x.StaffLicense,
                     x => x.StaffContractAffiliation,
                     x => x.TravelHonorList
                 )
-                    .Include(x => x.Licenses)
-                        .ThenInclude(l => l.LicenseDetails) // Now second-level include works!
+                    .Include(x => x.StaffLicense)
+                        .ThenInclude(l => l.StaffLicenseDetails) // Now second-level include works!
                     .FirstOrDefaultAsync();
 
 
@@ -258,14 +258,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventStaff.UpdatedOn = DateTime.Now;
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
 
-                await _unitOfWork.StaffLicenses.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+                await _unitOfWork.StaffLicense.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
-                foreach (var license in eventStaff.Licenses)
+                foreach (var license in eventStaff.StaffLicense)
                 {
                     license.EventStaffId = eventStaff.Id;
                 }
 
-                _unitOfWork.StaffLicenses.AddRange(eventStaff.Licenses);
+                _unitOfWork.StaffLicense.AddRange(eventStaff.StaffLicense);
 
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
