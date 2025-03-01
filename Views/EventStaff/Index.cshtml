@@ -917,7 +917,7 @@
 
             return `
                 <div class="license-container" data-role-id="${roleId}">
-                        <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${getRoleValueById(roleId)}" />
+                    <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
 
                     <div class="license-row d-flex align-items-end mt-2">
                         <div class="col-md-2">
@@ -1798,6 +1798,13 @@
                     fetchRolesByCategory();
                     console.log(JSON.stringify(eventStaff.staffLicense))
                     debugger;
+
+                    let staff = eventStaff.staffLicense; // Assuming response contains the staff data
+                
+                    // Call this function after fetching data
+                    bindEditData(staff); // fetchedData is the array you provided
+
+                    // resetRoleIndexes();
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
                     $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
@@ -1953,6 +1960,62 @@
             }
         });
     });
+
+    function waitForCheckbox(roleId, callback, attempts = 10) {
+        let roleCheckbox = $(`#${roleId}`);
+
+        if (roleCheckbox.length) {
+            callback(roleCheckbox);
+        } else if (attempts > 0) {
+            setTimeout(() => waitForCheckbox(roleId, callback, attempts - 1), 100); // Retry every 100ms
+        } else {
+            console.warn(`Checkbox with ID "${roleId}" not found after multiple attempts.`);
+        }
+    }
+
+    function bindEditData(staffLicenses) {
+        staffLicenses.forEach((staffLicense, roleIndex) => {
+            let roleId = staffLicense.roleId;
+
+            // Wait for checkbox to be available
+            waitForCheckbox(roleId, function (roleCheckbox) {
+                roleCheckbox.prop("checked", true).trigger("change"); // Trigger to generate fields
+
+                // Ensure the role exists in index maps
+                if (!(roleId in roleIndexMap)) {
+                    roleIndexMap[roleId] = roleIndex;
+                }
+                if (!(roleId in roleLicenseIndexMap)) {
+                    roleLicenseIndexMap[roleId] = 0;
+                }
+
+                // Iterate over the license details and generate fields
+                staffLicense.staffLicenseDetails.forEach((license, licenseIndex) => {
+                    let role = rolesData.find(r => r.id === roleId);
+                    let licenseTypes = role ? role.types : [];
+
+                    // Generate the row
+                    let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes);
+
+                    // Append the generated row
+                    $(`.license-container[data-role-id='${roleId}']`).append($(licenseFields).find(".license-row"));
+
+                    // Populate values
+                    $(`#licenseNumber${roleIndex}_${licenseIndex}`).val(license.licenseNumber);
+                    $(`#licenseState${roleIndex}_${licenseIndex}`).val(license.licenseState);
+                    $(`#licenseType${roleIndex}_${licenseIndex}`).val(license.licenseType);
+                    $(`#licenseActive${roleIndex}_${licenseIndex}`).val(license.licenseActiveDate.split("T")[0]); // Remove time part
+                    $(`#licenseExpiry${roleIndex}_${licenseIndex}`).val(license.licenseExpiryDate.split("T")[0]); // Remove time part
+
+                    roleLicenseIndexMap[roleId]++;
+                });
+            });
+        });
+    }
+// }
+
+
+
 
     function populateForm(data) {
 
