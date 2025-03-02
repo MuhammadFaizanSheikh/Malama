@@ -1,6 +1,6 @@
 ﻿namespace ExcelFilesCompiler.Utilities
 {
-    public static class AooConstants
+    public static class AppConstants
     {
         public static class RolesCategory
         {

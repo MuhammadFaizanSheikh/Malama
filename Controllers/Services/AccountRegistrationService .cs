@@ -25,7 +25,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var rolesList = await Task.Run(() =>
                     _roleManager.Roles
-                        .Where(r => r.Category == AooConstants.RolesCategory.BasicRoles)
+                        .Where(r => r.Category == AppConstants.RolesCategory.BasicRoles)
                         .Select(r => new SelectListItem
                         {
                             Value = r.Id,

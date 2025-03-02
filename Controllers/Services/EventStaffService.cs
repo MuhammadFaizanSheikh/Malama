@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
+using ExcelFilesCompiler.Utilities;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Runtime.Intrinsics.Arm;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -16,13 +18,17 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IAccountRegistrationService _registrationService;
+        private readonly IRoleService _roleService;
 
-        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService)
+        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _registrationService = registrationService;
+            _roleManager = roleManager;
+            _roleService = roleService;
         }
 
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
@@ -97,35 +103,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return eventStaff;
         }
-
-
-        //public async Task<EventStaffDto> GetEventStaffById(long id)
-        //{
-        //    EventStaffDto eventStaff = null;
-
-        //    try
-        //    {
-        //        eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-
-        //    return eventStaff;
-        //}
+        
         public async Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id)
         {
             try
             {
-                //var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeAsync(
-                //    x => x.Id == id,
-                //    x => x.Licenses,
-                //     x => x.Licenses.Select(l => l.LicenseDetails),
-                //    x => x.StaffContractAffiliation,
-                //    x => x.TravelHonorList
-                //);
-
                 var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
                     x => x.Id == id,
                     x => x.StaffLicense,
@@ -263,6 +245,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 foreach (var license in eventStaff.StaffLicense)
                 {
                     license.EventStaffId = eventStaff.Id;
+                }
+
+                var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
+
+                if (!result.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return result;
                 }
 
                 _unitOfWork.StaffLicense.AddRange(eventStaff.StaffLicense);

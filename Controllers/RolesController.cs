@@ -1,47 +1,41 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using ExcelFilesCompiler.Interfaces;
+using ExcelFilesCompiler.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    public class RolesController : Controller
+    public class RolesController : ControllerBase
     {
-        private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IRoleService _roleService;
 
-        public RolesController(RoleManager<ApplicationRole> roleManager)
+        public RolesController(IRoleService roleService)
         {
-            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetRolesByCategory(string category)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(category))
-                {
-                    return BadRequest(new { message = "Category parameter is required." });
-                }
+                var roles = await _roleService.GetRolesByCategoryAsync(category);
 
-                var roles = _roleManager.Roles
-    .Where(r => r.Category == category) // Filter roles by category
-    .Select(r => new { r.Id, r.Name, r.Types })
-    .ToList(); // Use ToList() instead of ToListAsync()
-
-
-                if (roles == null || !roles.Any())
+                if (!roles.Any())
                 {
                     return NotFound(new { message = "No roles found for the given category." });
                 }
 
-                return Ok(roles); // Return roles as JSON array
+                return Ok(roles.Select(r => new { r.Id, r.Name, r.Types }));
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                // Log the error (You can replace this with a proper logging framework like Serilog)
-
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
                 return StatusCode(500, new { message = "An error occurred while fetching roles. Please try again later." });
             }
         }
-
     }
 }

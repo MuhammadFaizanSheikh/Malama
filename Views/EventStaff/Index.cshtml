@@ -1226,6 +1226,15 @@
         console.log($('#StaffContractAffiliation').val());
         var form = document.querySelector('form'); // Get the form element
 
+        let errorContainer = $("#roleError");
+        if ($(".role-checkbox:checked").length === 0) {
+            errorContainer.text("Please select at least one role.").show();
+            event.preventDefault();
+            return;
+        } else {
+            errorContainer.hide();
+        }
+
         if (!form.reportValidity()) {
             return false;
         }
@@ -1737,8 +1746,8 @@
                     var subContractor = combinedData.subContractor;
                     var travelHonor = combinedData.travelHonor;
                     $('#hiddenId').val(eventStaff.id);
-                    // $('#StaffRoles').empty();
-                    // rolesData = {};
+                    
+                    
                     fetchRolesByCategory();// load roles from server
                     const affiliationContainer = document.querySelector('.form-container-Affiliation');
                     affiliationContainer.innerHTML = '';
@@ -1777,6 +1786,7 @@
                     //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
                     // console.log(JSON.stringify(eventStaff.staffLicense))
+                    debugger;
                     bindLicenseOnEditMode(eventStaff.staffLicense); // // bind roles and license with data from server
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
@@ -1939,7 +1949,7 @@
         if (roleCheckbox.length) {
             callback(roleCheckbox);
         } else if (attempts > 0) {
-            setTimeout(() => waitForCheckbox(roleId, callback, attempts - 1), 100); // Retry every 100ms
+            setTimeout(() => waitForCheckbox(roleId, callback, attempts - 1), 1000); // Retry every 100ms
         } else {
             console.warn(`Checkbox with ID "${roleId}" not found after multiple attempts.`);
         }
@@ -1973,9 +1983,9 @@
                         $(`#licenseActive${roleIndex}_${licenseIndex}`).val(license.licenseActiveDate.split("T")[0]); // Remove time part
                         $(`#licenseExpiry${roleIndex}_${licenseIndex}`).val(license.licenseExpiryDate.split("T")[0]); // Remove time part
                     });
-                }, 500); // Give time for rows to be generated
+                }, 100); // Give time for rows to be generated
 
-            }, 500); // Ensure first row is created before clicking "Add another license"
+            }, 100); // Ensure first row is created before clicking "Add another license"
         });
     });
 }
@@ -2243,6 +2253,10 @@
     });
 
     function fetchRolesByCategory() {
+        roleIndexMap = {}; // Stores role indices
+        roleLicenseIndexMap = {};
+        $('#StaffRoles').empty();
+
         $.ajax({
             url: '/Roles/GetRolesByCategory',
             type: "GET",
@@ -2279,7 +2293,6 @@
 
     $('#backToTableBtn').click(function () {
         $('.card-body').hide();
-        // $('#StaffRoles').empty();
         $('#datatableWrapper').show();
         $('#addContractBtn').show();
 
