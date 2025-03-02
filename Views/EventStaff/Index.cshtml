@@ -1776,7 +1776,6 @@
 
                     //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
-                    debugger;
                     // console.log(JSON.stringify(eventStaff.staffLicense))
                     bindLicenseOnEditMode(eventStaff.staffLicense); // // bind roles and license with data from server
                     $('#npi').val(eventStaff.npi);
@@ -1844,6 +1843,7 @@
                     $('#resetBtn').hide();
                     $('#addContractBtn').hide();
 
+                    debugger;
                     if (isViewButton) {
                         const controlIds = ['hiddenId', 'StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
@@ -2279,6 +2279,7 @@
 
     $('#backToTableBtn').click(function () {
         $('.card-body').hide();
+        // $('#StaffRoles').empty();
         $('#datatableWrapper').show();
         $('#addContractBtn').show();
 

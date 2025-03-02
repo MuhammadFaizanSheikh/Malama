@@ -1143,7 +1143,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             else
             {
-                parentRow["VISION"] = "N/A";
+                parentRow["VISION"] = "NEEDED";
             }
         }
 
@@ -1157,8 +1157,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             else
             {
-                parentRow["Dental Needed"] = "N/A";
-                parentRow["BWX Needed"] = "N/A";
+                parentRow["Dental Needed"] = "NEEDED";
+                parentRow["BWX Needed"] = "NEEDED";
                 parentRow["Dental Exam"] = "";
             }
 
@@ -1181,7 +1181,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             else
             {
-                parentRow["PHA"] = "N/A";
+                parentRow["PHA"] = "NEEDED";
             }
 
             if (parentRow.Table.Columns.Contains("PULHES Code"))
@@ -1193,26 +1193,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private void HandleHivFile(DataRow parentRow, DateTime hivDate)
         {
-            if (parentRow.Table.Columns.Contains("Next Test Date"))
+            if (parentRow.Table.Columns.Contains("Next Test Date") && DateTime.TryParse(parentRow["Next Test Date"]?.ToString(), out DateTime hivTestDate))
             {
-                string nextTestDateValue = parentRow["Next Test Date"]?.ToString();
-
-                if (string.IsNullOrEmpty(nextTestDateValue) || nextTestDateValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase))
-                {
-                    parentRow["HIV"] = "NEEDED";
-                }
-                else if (DateTime.TryParse(nextTestDateValue, out DateTime hivTestDate))
-                {
-                    parentRow["HIV"] = hivDate >= hivTestDate ? "NEEDED" : "N/A";
-                }
-                else
-                {
-                    parentRow["HIV"] = "N/A";
-                }
+                parentRow["HIV"] = hivDate >= hivTestDate ? "NEEDED" : "N/A";
             }
             else
             {
-                parentRow["HIV"] = "N/A";
+                parentRow["HIV"] = "NEEDED";
             }
         }
 
@@ -1224,7 +1211,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             else
             {
-                parentRow["HEARING"] = "N/A";
+                parentRow["HEARING"] = "NEEDED";
             }
         }
 
