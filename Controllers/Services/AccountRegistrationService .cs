@@ -80,42 +80,66 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
-                if (model.SelectedRoles != null && model.SelectedRoles.Any())
+                try
                 {
-                    var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
-                    var roleNames = allRoles
-                        .Where(r => model.SelectedRoles.Contains(r.Id))
-                        .Select(r => r.Name)
-                        .ToList();
+                    if (model.SelectedRoles != null && model.SelectedRoles.Any())
+                    {
+                        var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
+                        var roleNames = allRoles
+                            .Where(r => model.SelectedRoles.Contains(r.Id))
+                            .Select(r => r.Name)
+                            .ToList();
 
-                    await _userManager.AddToRolesAsync(user, roleNames);
+                        var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
+                        if (!roleResult.Succeeded)
+                        {
+                            // Rollback by deleting the user
+                            await _userManager.DeleteAsync(user);
+                            return new ResponseDto
+                            {
+                                Success = false,
+                                Message = "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description))
+                            };
+                        }
+                    }
+                    else
+                    {
+                        // If roles are not selected, rollback user creation
+                        await _userManager.DeleteAsync(user);
+                        return new ResponseDto { Success = false, Message = "Role not selected." };
+                    }
+
+                    // Confirm the user's email
+                    var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+
+                    if (!confirmationResult.Succeeded)
+                    {
+                        // Rollback by deleting the user
+                        await _userManager.DeleteAsync(user);
+                        return new ResponseDto { Success = false, Message = "Email confirmation failed." };
+                    }
+
+                    return new ResponseDto
+                    {
+                        Success = true,
+                        Message = "User has been created successfully.",
+                        Data = new { user.Id, user.Email }
+                    };
                 }
-                else
+                catch (Exception ex)
                 {
-                    return new ResponseDto { Success = false, Message = "Role not selected." };
+                    // Rollback by deleting the user in case of any unexpected exception
+                    await _userManager.DeleteAsync(user);
+                    return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
                 }
-
-                // Confirm the user's email
-                var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
-
-                if (!confirmationResult.Succeeded)
-                {
-                    return new ResponseDto { Success = false, Message = "Email confirmation failed." };
-                }
-
-                return new ResponseDto
-                {
-                    Success = true,
-                    Message = "User has been created successfully.",
-                    Data = new { user.Id, user.Email } // Returning user details as Data
-                };
             }
             catch (Exception ex)
             {
                 return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
             }
         }
+
 
         public async Task<ResponseDto> GetUsersAsync()
         {

@@ -37,85 +37,94 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             var responseDto = new ResponseDto { Success = true };
 
-            if (eventStaff.StaffLicense != null && eventStaff.StaffLicense.Any())
+            if (eventStaff.StaffLicense == null || !eventStaff.StaffLicense.Any())
+            {
+                return new ResponseDto { Success = false, Message = "No roles selected." };
+            }
+
+            try
             {
                 var user = await _userManager.FindByEmailAsync(eventStaff.UserEmail);
-
                 if (user == null)
                 {
-                    responseDto.Success = false;
-                    responseDto.Message = "User not found";
-                    return responseDto;
+                    return new ResponseDto { Success = false, Message = "User not found." };
                 }
 
                 // Get existing role names assigned to the user
                 var existingRoleNames = await _userManager.GetRolesAsync(user);
-
                 if (existingRoleNames == null || !existingRoleNames.Any())
                 {
-                    responseDto.Success = false;
-                    responseDto.Message = "No existing roles found for the user.";
-                    return responseDto;
+                    return new ResponseDto { Success = false, Message = "No existing roles found for the user." };
                 }
 
-                // Fetch roles that belong to the "EventStaffRoles" category and are assigned to the user
-                var allRoles = await _roleManager.Roles.ToListAsync(); // Fetch all roles into memory
+                // Fetch roles from the database
+                var allRoles = await _roleManager.Roles.ToListAsync();
 
+                // Identify event staff roles currently assigned to the user
                 var existingRoles = allRoles
                     .Where(r => existingRoleNames.Contains(r.Name) && r.Category == AppConstants.RolesCategory.EventStaffRoles)
                     .ToList();
 
                 if (!existingRoles.Any())
                 {
-                    responseDto.Success = false;
-                    responseDto.Message = "User has no roles under 'EventStaffRoles' category.";
-                    return responseDto;
+                    return new ResponseDto { Success = false, Message = "User has no roles under 'EventStaffRoles' category." };
                 }
 
                 var rolesToRemove = existingRoles.Select(r => r.Name).ToList();
 
-                if (rolesToRemove.Any())
-                {
-                    var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
-                    if (!removeResult.Succeeded)
-                    {
-                        responseDto.Success = false;
-                        responseDto.Message = "Failed to remove existing roles.";
-                        return responseDto;
-                    }
-                }
-
-
+                // Get new role names based on provided Role IDs
                 var roleIds = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
-
                 var newRoleNames = allRoles
-                        .Where(r => roleIds.Contains(r.Id))
-                        .Select(r => r.Name)
-                        .ToList();
+                    .Where(r => roleIds.Contains(r.Id))
+                    .Select(r => r.Name)
+                    .ToList();
 
                 if (!newRoleNames.Any())
                 {
-                    responseDto.Success = false;
-                    responseDto.Message = "Invalid role IDs provided.";
-                    return responseDto;
+                    return new ResponseDto { Success = false, Message = "Invalid role IDs provided." };
                 }
 
-                var addResult = await _userManager.AddToRolesAsync(user, newRoleNames);
-                if (!addResult.Succeeded)
+                // Remove existing event staff roles
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                if (!removeResult.Succeeded)
                 {
-                    responseDto.Success = false;
-                    responseDto.Message = "Failed to assign new roles.";
-                    return responseDto;
+                    return new ResponseDto { Success = false, Message = "Failed to remove existing roles." };
                 }
+
+                try
+                {
+                    // Attempt to add new roles
+                    var addResult = await _userManager.AddToRolesAsync(user, newRoleNames);
+                    if (!addResult.Succeeded)
+                    {
+                        // Rollback: Reassign the previous roles in case of failure
+                        await _userManager.AddToRolesAsync(user, rolesToRemove);
+                        return new ResponseDto { Success = false, Message = "Failed to assign new roles. Previous roles restored." };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Rollback on exception and log the error
+                    await _userManager.AddToRolesAsync(user, rolesToRemove);
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "An error occurred while assigning new roles. Previous roles restored.",
+                    };
+                }
+
+                return new ResponseDto { Success = true, Message = "Roles updated successfully." };
             }
-            else
+            catch (Exception ex)
             {
-                responseDto.Success = false;
-                responseDto.Message = "No roles selected.";
-                return responseDto;
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred. Please try again later."
+                };
             }
-            return responseDto;
         }
+
     }
 
 }
