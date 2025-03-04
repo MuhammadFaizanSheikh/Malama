@@ -38,6 +38,8 @@ namespace ExcelToCsv.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
+        public string? UserId { get; set; }
+
         [Required]
         [EmailAddress(ErrorMessage = "Please enter a valid Staff Email address.")]
         public string UserEmail { get; set; }

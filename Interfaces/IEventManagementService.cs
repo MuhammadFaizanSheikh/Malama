@@ -10,5 +10,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<string> GetNextEventManagementId();
         Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id);
         Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
+        Task<EventManagement> GetEventManagementForEventSelectionById(long id);
     }
 }

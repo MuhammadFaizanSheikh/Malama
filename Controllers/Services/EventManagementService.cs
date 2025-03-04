@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -147,16 +148,18 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                var eventManagement = await _unitOfWork.EventManagement.GetWithIncludeAsync(
+                var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
                     x => x.EventStartEndTimeDayWiseList,
                     x => x.EventStaffDetailList
-                );
+                ).Include(x => x.EventStaffDetailList)
+                        .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
+                    .FirstOrDefaultAsync();
 
                 if (eventManagement != null)
                 {
-                    var firstEventManagement = eventManagement.FirstOrDefault();
+                    var firstEventManagement = eventManagement;
 
                     if (firstEventManagement == null)
                     {
@@ -207,5 +210,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<EventManagement> GetEventManagementForEventSelectionById(long id)
+        {
+            try
+            {
+                var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
+                    x => x.Id == id,
+                    x => x.EventServiceDetailList,
+                    x => x.EventStartEndTimeDayWiseList,
+                    x => x.EventStaffDetailList
+                ).Include(x => x.EventStaffDetailList)
+                        .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
+                    .FirstOrDefaultAsync();
+
+                if (eventManagement != null)
+                {
+                    return eventManagement;
+                }
+                else
+                {
+                    throw new Exception($"EventManagement with ID {id} not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log and rethrow the exception with more context if needed
+                throw new Exception("An error occurred while retrieving the Event Management data.", ex);
+            }
+        }
     }
 }

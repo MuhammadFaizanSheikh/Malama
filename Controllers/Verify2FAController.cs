@@ -39,7 +39,14 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Dashboard");
+                    if (user.IsEventUser)
+                    {
+                        return RedirectToAction("Index", "EventSelection");
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Dashboard");
+                    }
                 }
                 else
                 {

@@ -34,6 +34,8 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
+            bool userCreated = false; // Track if user was created
+            ApplicationUser createdUser = null; // Store the created user for deletion if needed
 
             using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
@@ -42,50 +44,64 @@ namespace ExcelFilesCompiler.Controllers.Services
                     foreach (var affiliation in eventStaff.StaffContractAffiliation)
                     {
                         var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
-                        affiliation.SubContractorId = subContractor.Id;
+                        affiliation.SubContractorId = subContractor?.Id ?? 0;
                     }
 
                     eventStaff.AddedBy = loggedinUserName;
                     eventStaff.AddedOn = DateTime.Now;
 
-                    await _unitOfWork.EventStaff.AddAsync(eventStaff);
-
-
-                    RegisterViewModel rvm = new RegisterViewModel();
-                    rvm.Email = eventStaff.UserEmail;
-                    rvm.Password = eventStaff.UserPassword;
-
-                    if (eventStaff.StaffLicense != null && eventStaff.StaffLicense.Any())
+                    RegisterViewModel rvm = new RegisterViewModel
                     {
-                        rvm.SelectedRoles = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
+                        Email = eventStaff.UserEmail,
+                        Password = eventStaff.UserPassword,
+                        SelectedRoles = eventStaff.StaffLicense?.Select(l => l.RoleId).ToList() ?? new List<string>()
+                    };
+
+                    if (!rvm.SelectedRoles.Any())
+                    {
+                        return new ResponseDto { Success = false, Message = "Role not selected." };
                     }
 
                     responseDto = await _registrationService.RegisterUserAsync(rvm, true);
 
                     if (responseDto.Success)
                     {
+                        createdUser = responseDto.Data?.GetType().GetProperty("user")?.GetValue(responseDto.Data) as ApplicationUser;
+
+                        if (createdUser != null)
+                        {
+                            eventStaff.UserId = createdUser.Id;
+                            userCreated = true; // Mark that user was successfully created
+                        }
+
+                        await _unitOfWork.EventStaff.AddAsync(eventStaff);
                         await _unitOfWork.SaveAsync();
-                        await transaction.CommitAsync();
-                        responseDto.Success = true;
-                        responseDto.Message = "Event Staff added successfully!";
+                        await transaction.CommitAsync(); // ✅ Commit only if everything is successful
+
+                        return new ResponseDto { Success = true, Message = "Event Staff added successfully!" };
                     }
                     else
                     {
-                        responseDto.Success = false;
-                        responseDto.Message = $"An error occurred while saving record";
-                        await transaction.RollbackAsync();
+                        return new ResponseDto { Success = false, Message = "An error occurred while saving record." };
                     }
-                    
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    responseDto.Success = false;
-                    responseDto.Message = $"An error occurred: {ex.Message}";
+
+                    // ✅ Delete the user only if it was actually created
+                    if (userCreated && createdUser != null)
+                    {
+                        await _userManager.DeleteAsync(createdUser);
+                    }
+
+                    return new ResponseDto { Success = false, Message = $"An error occurred: {ex.Message}" };
                 }
             }
-            return responseDto;
         }
+
+
+
 
         public async Task<List<EventStaff>> GetAllEventStaff()
         {
@@ -334,6 +350,28 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 throw new Exception("Error while fetching contract details.", ex);
+            }
+        }
+
+        public async Task<EventStaff> GetEventStaffByColumn(string userId)
+        {
+            try
+            {
+                var eventStaff = await _unitOfWork.EventStaff.FindAsync(es => es.UserId == userId);
+
+                if (eventStaff != null)
+                {
+                    return eventStaff;
+                }
+                else
+                {
+                    throw new Exception($"EventManagement with UserId {userId} not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log and rethrow the exception with more context if needed
+                throw new Exception("An error occurred while retrieving the Event Staff data.", ex);
             }
         }
     }

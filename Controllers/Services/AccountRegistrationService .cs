@@ -52,6 +52,94 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        //public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
+        //{
+        //    try
+        //    {
+        //        if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
+        //        {
+        //            return new ResponseDto { Success = false, Message = "Invalid user data." };
+        //        }
+
+        //        var user = new ApplicationUser
+        //        {
+        //            UserName = model.Email,
+        //            Email = model.Email,
+        //            IsActive = true,
+        //            TwoFactorEnabled = true,
+        //            IsEventUser = IsEventUser
+        //        };
+
+        //        var result = await _userManager.CreateAsync(user, model.Password);
+        //        if (!result.Succeeded)
+        //        {
+        //            return new ResponseDto
+        //            {
+        //                Success = false,
+        //                Message = string.Join(", ", result.Errors.Select(e => e.Description))
+        //            };
+        //        }
+
+        //        try
+        //        {
+        //            if (model.SelectedRoles != null && model.SelectedRoles.Any())
+        //            {
+        //                var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
+        //                var roleNames = allRoles
+        //                    .Where(r => model.SelectedRoles.Contains(r.Id))
+        //                    .Select(r => r.Name)
+        //                    .ToList();
+
+        //                var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
+        //                if (!roleResult.Succeeded)
+        //                {
+        //                    // Rollback by deleting the user
+        //                    await _userManager.DeleteAsync(user);
+        //                    return new ResponseDto
+        //                    {
+        //                        Success = false,
+        //                        Message = "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description))
+        //                    };
+        //                }
+        //            }
+        //            else
+        //            {
+        //                // If roles are not selected, rollback user creation
+        //                await _userManager.DeleteAsync(user);
+        //                return new ResponseDto { Success = false, Message = "Role not selected." };
+        //            }
+
+        //            // Confirm the user's email
+        //            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //            var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+
+        //            if (!confirmationResult.Succeeded)
+        //            {
+        //                // Rollback by deleting the user
+        //                await _userManager.DeleteAsync(user);
+        //                return new ResponseDto { Success = false, Message = "Email confirmation failed." };
+        //            }
+
+        //            return new ResponseDto
+        //            {
+        //                Success = true,
+        //                Message = "User has been created successfully.",
+        //                Data = new { user.Id, user.Email }
+        //            };
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            // Rollback by deleting the user in case of any unexpected exception
+        //            await _userManager.DeleteAsync(user);
+        //            return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
+        //    }
+        //}
+
         public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
         {
             try
@@ -82,31 +170,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 try
                 {
-                    if (model.SelectedRoles != null && model.SelectedRoles.Any())
-                    {
-                        var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
-                        var roleNames = allRoles
-                            .Where(r => model.SelectedRoles.Contains(r.Id))
-                            .Select(r => r.Name)
-                            .ToList();
+                    var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
+                    var roleNames = allRoles
+                        .Where(r => model.SelectedRoles.Contains(r.Id))
+                        .Select(r => r.Name)
+                        .ToList();
 
-                        var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
-                        if (!roleResult.Succeeded)
-                        {
-                            // Rollback by deleting the user
-                            await _userManager.DeleteAsync(user);
-                            return new ResponseDto
-                            {
-                                Success = false,
-                                Message = "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description))
-                            };
-                        }
-                    }
-                    else
+                    var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
+                    if (!roleResult.Succeeded)
                     {
-                        // If roles are not selected, rollback user creation
-                        await _userManager.DeleteAsync(user);
-                        return new ResponseDto { Success = false, Message = "Role not selected." };
+                        return await RollbackUserCreationAsync(user, "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
                     }
 
                     // Confirm the user's email
@@ -115,30 +188,38 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     if (!confirmationResult.Succeeded)
                     {
-                        // Rollback by deleting the user
-                        await _userManager.DeleteAsync(user);
-                        return new ResponseDto { Success = false, Message = "Email confirmation failed." };
+                        return await RollbackUserCreationAsync(user, "Email confirmation failed.");
                     }
 
                     return new ResponseDto
                     {
                         Success = true,
                         Message = "User has been created successfully.",
-                        Data = new { user.Id, user.Email }
+                        Data = new { user }
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    // Rollback by deleting the user in case of any unexpected exception
-                    await _userManager.DeleteAsync(user);
-                    return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
+                    return await RollbackUserCreationAsync(user, "An unexpected error occurred during user setup.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
             }
         }
+
+
+        /// <summary>
+        /// Rolls back user creation by deleting the user and returning a failure response.
+        /// </summary>
+        private async Task<ResponseDto> RollbackUserCreationAsync(ApplicationUser user, string errorMessage)
+        {
+            await _userManager.DeleteAsync(user);
+            return new ResponseDto { Success = false, Message = errorMessage };
+        }
+
+
 
 
         public async Task<ResponseDto> GetUsersAsync()

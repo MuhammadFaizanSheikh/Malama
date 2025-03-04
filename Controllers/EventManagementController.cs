@@ -80,6 +80,14 @@ namespace ExcelFilesCompiler.Controllers
                     eventManagement.SingleEventManagement.StatusDescription = (filledSectionsList.Count == totalSections) ? "Completed" : "Pending";
                     eventManagement.SingleEventManagement.CompletedSections = completedSections;
 
+                    foreach (var staffDetail in eventManagement.SingleEventManagement.EventStaffDetailList)
+                    {
+                        // Convert SelectedRoles (list of role IDs) into EventWiseStaffRoleList (list of objects)
+                        staffDetail.EventWiseStaffRoleList = staffDetail.SelectedRoles
+                            .Select(roleId => new EventWiseStaffRole { RoleId = roleId })
+                            .ToList();
+                    }
+
                     if (action == "Add")
                     {
                         res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, user.UserName);

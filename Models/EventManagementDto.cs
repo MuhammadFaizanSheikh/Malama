@@ -372,5 +372,23 @@
 
         [Required]
         public long EventStaffId { get; set; }
+        [NotMapped]
+        public List<string> SelectedRoles { get; set; } = new List<string>();
+
+        public List<EventWiseStaffRole> EventWiseStaffRoleList { get; set; } = new List<EventWiseStaffRole>();
+    }
+
+    [Table("EventWiseStaffRole")]
+    public class EventWiseStaffRole
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventStaffDetail")]
+        public long EventStaffDetailId { get; set; }
+
+        [Required]
+        public string RoleId { get; set; }
     }
 }

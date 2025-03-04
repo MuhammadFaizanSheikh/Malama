@@ -2080,6 +2080,7 @@
         let tableInitialized = false;
 
         $("#progressBar span").click(function () {
+            debugger;
             var target = $(this).data("target");
             var section = currentSectionForProgressBar;
 
@@ -2087,10 +2088,13 @@
                 return;
             }
 
+            if (section !== 7)
+            {
             const isValid = validateSectionFields(section);
 
             if (!isValid) {
                 return;
+            }
             }
 
             var previousSection = currentSectionForProgressBar; // Store the previous section ID
@@ -2120,10 +2124,12 @@
                 return;
             }
 
-            const isValid = validateSectionFields(section);
+            if (section !== 7) {
+                const isValid = validateSectionFields(section);
 
-            if (!isValid) {
-                return;
+                if (!isValid) {
+                    return;
+                }
             }
 
             $("#submitBtn").data("section", section + 1);
@@ -2141,10 +2147,12 @@
         $(".back").click(function () {
             const section = $(this).data("section");
 
-            const isValid = validateSectionFields(section);
+            if (section !== 7) {
+                const isValid = validateSectionFields(section);
 
-            if (!isValid) {
-                return;
+                if (!isValid) {
+                    return;
+                }
             }
 
             if (!validateTableRequiredFields()) {
@@ -2349,7 +2357,7 @@
     // }
 
     let roleDropdown = `
-        <select id="${roleDropdownId}" class="form-control role-multi-select" multiple>
+                <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles" class="form-control role-multi-select" multiple>
             ${roleOptions}
         </select>`;
 
@@ -2406,10 +2414,12 @@
 
             const section = $(this).data("section");
 
-            const isValid = validateSectionFields(section);
+            if (section !== 7) {
+                const isValid = validateSectionFields(section);
 
-            if (!isValid) {
-                return;
+                if (!isValid) {
+                    return;
+                }
             }
 
             if (!validateSection1()) {
@@ -2454,10 +2464,12 @@
 
             const section = $(this).data("section");
 
-            const isValid = validateSectionFields(section);
+            if (section !== 7) {
+                const isValid = validateSectionFields(section);
 
-            if (!isValid) {
-                return;
+                if (!isValid) {
+                    return;
+                }
             }
 
             if (!validateSection1()) {
