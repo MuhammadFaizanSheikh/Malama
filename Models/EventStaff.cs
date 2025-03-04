@@ -39,7 +39,7 @@ namespace ExcelToCsv.Models
         public long Id { get; set; } // Primary key, auto-incremented
 
         [Required]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Please enter a valid Staff Email address.")]
         public string UserEmail { get; set; }
 
         [Required]
@@ -144,9 +144,9 @@ namespace ExcelToCsv.Models
         public string StaffCellNumber { get; set; }
         public string? StaffPhone2 { get; set; }
 
-        [Required(ErrorMessage = "StaffEmail is required.")]
-        [EmailAddress(ErrorMessage = "Please enter a valid StaffEmail address.")]
-        public string StaffEmail { get; set; }
+        //[Required(ErrorMessage = "StaffEmail is required.")]
+        //[EmailAddress(ErrorMessage = "Please enter a valid StaffEmail address.")]
+        //public string StaffEmail { get; set; }
 
         // Primary Residence fields
         [Required(ErrorMessage = "PrimaryAddress1 is required.")]
