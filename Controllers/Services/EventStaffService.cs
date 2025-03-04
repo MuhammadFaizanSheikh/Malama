@@ -247,14 +247,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                     license.EventStaffId = eventStaff.Id;
                 }
 
-                var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
-
-                if (!result.Success)
-                {
-                    await transaction.RollbackAsync();
-                    return result;
-                }
-
                 _unitOfWork.StaffLicense.AddRange(eventStaff.StaffLicense);
 
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
@@ -274,6 +266,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _unitOfWork.TravelHonor.AddRange(eventStaff.TravelHonorList);
+
+                var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
+
+                if (!result.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return result;
+                }
 
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
