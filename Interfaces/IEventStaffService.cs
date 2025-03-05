@@ -13,5 +13,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<IEnumerable<EventStaff>> GetEventStaffForSearchingByStaffId(string staffId);
         Task<EventStaff> GetEventStaffWithoutIncludeById(long id);
         Task<EventStaff> GetEventStaffByColumn(string userId);
+        Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses();
     }
 }

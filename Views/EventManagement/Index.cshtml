@@ -1847,6 +1847,8 @@
                                     <th>Staff ID</th>
                                     <th>Last Name</th>
                                     <th>First Name</th>
+                                    <th>Roles</th>
+                                    <th>License(s)</th>
                                     <th>State</th>
                                     <th>City</th>
                                     <th>ZipCode</th>
@@ -1870,6 +1872,8 @@
                                     <th>Staff ID</th>
                                     <th>Last Name</th>
                                     <th>First Name</th>
+                                    <th>Roles</th>
+                                    <th>License(s)</th>
                                     <th>State</th>
                                     <th>City</th>
                                     <th>ZipCode</th>
@@ -2246,14 +2250,13 @@
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
+                    { "data": "roles" },
+                    { "data": "licenseStateAndTypes" },
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
                      { "data": "staffCAC", "visible": false },
-                    // { "data": "primaryZip" },
-                    // { "data": "primaryZip" },
                     { "data": "id", "visible": false },
-                    // { "data": "id"},
 
                     {
                         "data": null,
@@ -2287,7 +2290,7 @@
                 "ordering": false,
                 "columns": [
                     { 
-                "data": "roles",
+                "data": "additionalroles",
                 "render": function(data, type, row) {
                     return data;
                 }
@@ -2295,6 +2298,8 @@
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
+                     { "data": "roles" },
+                    { "data": "licenseStateAndTypes" },
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
@@ -2366,12 +2371,14 @@
         staffID: staffData.staffID,
         staffLastName: staffData.staffLastName,
         staffFirstName: staffData.staffFirstName,
+        roles: staffData.roles,
+        licenseStateAndTypes: staffData.licenseStateAndTypes,
         primaryState: staffData.primaryState,
         primaryCity: staffData.primaryCity,
         primaryZip: staffData.primaryZip,
         id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
                value="${staffData.id}" /> ${staffData.id}`,
-        roles: roleDropdown,  // Add dropdown to the roles column
+        additionalroles: roleDropdown,  // Add dropdown to the roles column
         action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
                   data-staffid="${staffData.id}">Remove</button>`
     }).draw();

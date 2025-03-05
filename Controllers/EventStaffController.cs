@@ -48,19 +48,25 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var eventStaffs = await _eventStaffService.GetAllEventStaff();
-                if (eventStaffs == null)
+                var eventStaffs = await _eventStaffService.GetAllEventStaffWithRolesAndLicenses();
+
+                if (eventStaffs == null || !eventStaffs.Any())
                 {
-                    return Json(new { success = false, message = "EVent Staff not found." });
+                    return Json(new { success = false, message = "No Event Staff found." });
                 }
 
-                return Json(new { success = true, eventStaffs = eventStaffs });
+                return Json(new { success = true, eventStaffs });
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
                 return Json(new { success = false, message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An internal server error occurred. Please try again later." });
+            }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

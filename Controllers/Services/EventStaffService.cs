@@ -82,7 +82,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
                     else
                     {
-                        return new ResponseDto { Success = false, Message = "An error occurred while saving record." };
+                        return new ResponseDto { Success = false, Message = responseDto.Message };
                     }
                 }
                 catch (Exception ex)
@@ -119,7 +119,88 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return eventStaff;
         }
-        
+
+        public async Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses()
+        {
+            try
+            {
+                var eventStaffList = await _unitOfWork.EventStaff.GetWithInclude()
+                    .Include(x => x.StaffLicense)
+                        .ThenInclude(l => l.StaffLicenseDetails)
+                    .Include(x => x.StaffContractAffiliation)
+                    .Include(x => x.TravelHonorList)
+                    .ToListAsync();
+
+                if (eventStaffList == null || !eventStaffList.Any())
+                {
+                    throw new KeyNotFoundException("No Event Staff records found.");
+                }
+
+                var roles = await _roleManager.Roles.ToListAsync();
+                var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
+
+                List<CombinedEventStaffRolesNameAndLicense> model = new List<CombinedEventStaffRolesNameAndLicense>();
+
+                foreach (var staff in eventStaffList)
+                {
+                    var roleLicenseMapping = new Dictionary<string, List<string>>();
+
+                    foreach (var staffLicense in staff.StaffLicense)
+                    {
+                        // Fetch Role Name from RoleManager using RoleId
+                        if (roleDictionary.TryGetValue(staffLicense.RoleId, out string roleName))
+                        {
+                            if (!roleLicenseMapping.ContainsKey(roleName))
+                            {
+                                roleLicenseMapping[roleName] = new List<string>();
+                            }
+
+                            // Extract LicenseState & LicenseType from StaffLicenseDetails
+                            foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
+                            {
+                                roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
+                            }
+                        }
+                    }
+
+                    // Generate formatted strings
+                    var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
+                    var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
+
+                    // Create a new instance for each staff
+                    model.Add(new CombinedEventStaffRolesNameAndLicense
+                    {
+                        Id = staff.Id,
+                        StaffID = staff.StaffID,
+                        StaffLastName = staff.StaffLastName,
+                        StaffFirstName = staff.StaffFirstName,
+                        PrimaryCity = staff.PrimaryCity,
+                        PrimaryState = staff.PrimaryState,
+                        PrimaryZip = staff.PrimaryZip,
+                        StaffCAC = staff.StaffCAC,
+                        Roles = rolesString,  // Roles in one line, comma-separated
+                        LicenseStateAndTypes = licensesString // Each role's licenses in one line, comma-separated, with line breaks per role
+                    });
+                }
+
+
+
+                return model;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return new List<CombinedEventStaffRolesNameAndLicense>(); // Return empty list
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An internal error occurred while processing your request.");
+            }
+        }
+
+
+
+
+
         public async Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id)
         {
             try

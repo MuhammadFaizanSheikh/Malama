@@ -31,6 +31,28 @@ namespace ExcelToCsv.Models
         public string ContractName { get; set; }
     }
 
+    public class CombinedEventStaffRolesNameAndLicense
+    {
+        public long Id { get; set; }
+        public string StaffID { get; set; }
+        
+        public string StaffLastName { get; set; }
+
+        public string StaffFirstName { get; set; }
+
+        public string PrimaryCity { get; set; }
+
+        public string PrimaryState { get; set; }
+
+        public string PrimaryZip { get; set; }
+
+        public string StaffCAC { get; set; }
+        public string Roles { get; set; }
+        public string LicenseStateAndTypes { get; set; }
+
+
+    }
+
     [Table("EventStaff")]
     public class EventStaff : GenericProperties
     {
