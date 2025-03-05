@@ -179,7 +179,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         PrimaryZip = staff.PrimaryZip,
                         StaffCAC = staff.StaffCAC,
                         Roles = rolesString,  // Roles in one line, comma-separated
-                        LicenseStateAndTypes = licensesString // Each role's licenses in one line, comma-separated, with line breaks per role
+                        LicenseStateAndTypes = licensesString,
+                        Status = staff.StaffStatus
                     });
                 }
 

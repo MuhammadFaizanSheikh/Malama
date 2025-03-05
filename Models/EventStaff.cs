@@ -49,6 +49,7 @@ namespace ExcelToCsv.Models
         public string StaffCAC { get; set; }
         public string Roles { get; set; }
         public string LicenseStateAndTypes { get; set; }
+        public string Status { get; set; }
 
 
     }

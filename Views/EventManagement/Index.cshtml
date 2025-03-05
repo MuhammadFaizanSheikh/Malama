@@ -1856,6 +1856,7 @@
                                     <th>Radius</th> *@
                                     <th>Staff Cac</th>
                                     <th>Id</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1880,6 +1881,7 @@
                                     @* <th>Role</th> *@
                                     @* <th>Radius</th> *@
                                     <th>Id</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -2257,6 +2259,7 @@
                     { "data": "primaryZip" },
                      { "data": "staffCAC", "visible": false },
                     { "data": "id", "visible": false },
+                    { "data": "status" },
 
                     {
                         "data": null,
@@ -2304,6 +2307,7 @@
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
                     { "data": "id" },
+                    { "data": "status" },
                     {
                         "data": "action",
                         "orderable": false,
@@ -2376,6 +2380,7 @@
         primaryState: staffData.primaryState,
         primaryCity: staffData.primaryCity,
         primaryZip: staffData.primaryZip,
+        status: staffData.status,
         id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
                value="${staffData.id}" /> ${staffData.id}`,
         additionalroles: roleDropdown,  // Add dropdown to the roles column
