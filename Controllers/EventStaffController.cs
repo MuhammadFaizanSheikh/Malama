@@ -266,5 +266,33 @@ namespace ExcelFilesCompiler.Controllers
                 return StatusCode(500, new { message = "An error occurred while fetching Event Staff." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckSSNExists(string ssn)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(ssn))
+                {
+                    return BadRequest(new { exists = false, message = "SSN cannot be empty." });
+                }
+
+                bool exists = await _eventStaffService.CheckSSNExistsAsync(ssn);
+
+                if (exists)
+                {
+                    return Ok(new { exists = true, message = "This SSN already exists." });
+                }
+                else
+                {
+                    return Ok(new { exists = false });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { exists = false, message = "Server error. Please try again later." });
+            }
+        }
+
     }
 }

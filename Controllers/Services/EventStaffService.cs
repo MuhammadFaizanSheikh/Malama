@@ -456,5 +456,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("An error occurred while retrieving the Event Staff data.", ex);
             }
         }
+
+        public async Task<bool> CheckSSNExistsAsync(string ssn)
+        {
+            try
+            {
+                var staff = await _unitOfWork.EventStaff.FindAsync(es => es.StaffSSN == ssn);
+                return staff != null;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
     }
 }

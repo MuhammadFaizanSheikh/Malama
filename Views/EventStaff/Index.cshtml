@@ -1196,6 +1196,24 @@
 
         var form = document.querySelector('form'); // Get the form element
 
+        if (!emailValid) {
+            e.preventDefault(); // Stop form submission
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please enter a valid and unique email before submitting.'
+            });
+        }
+
+        if (!ssnValid) {
+            e.preventDefault(); // Stop form submission
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please enter a valid and unique SSN before submitting.'
+            });
+        }
+
         let errorContainer = $("#roleError");
         if ($(".role-checkbox:checked").length === 0) {
             errorContainer.text("Please select at least one role.").show();
@@ -2205,6 +2223,95 @@
             }
         });
     }
+
+    let emailValid = false; // Flag to track email validation
+
+    $("#UserEmail").blur(function () {
+        var email = $(this).val().trim();
+        if (email === "") return; // Ignore empty input
+
+        $.ajax({
+            url: '/Account/CheckUserExists', // Adjust this path if needed
+            type: 'GET',
+            data: { email: email },
+            success: function (response) {
+                if (response.exists) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message
+                    });
+
+                    $("#UserEmail").val(""); // Clear input
+                    emailValid = false; // Mark email as invalid
+                } else {
+                    emailValid = true; // Mark email as valid
+                }
+            },
+            error: function (xhr, status, error) {
+                let errorMessage = "Something went wrong. Try again later.";
+
+                if (xhr.status === 400) {
+                    errorMessage = "Invalid email input.";
+                } else if (xhr.status === 500) {
+                    errorMessage = "Server error. Please contact support.";
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
+
+                emailValid = false; // Mark email as invalid in case of error
+            }
+        });
+    });
+
+    let ssnValid = false; // Flag to track SSN validation
+
+    $("#StaffSSN").blur(function () {
+        var ssn = $(this).val().trim();
+        if (ssn === "" || ssn.length < 11) return; // Ignore empty or incomplete input
+
+        $.ajax({
+            url: '/EventStaff/CheckSSNExists', // Adjust this path if needed
+            type: 'GET',
+            data: { ssn: ssn },
+            success: function (response) {
+                if (response.exists) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: response.message
+                    });
+
+                    $("#StaffSSN").val(""); // Clear input if needed
+                    ssnValid = false; // Mark SSN as invalid
+                } else {
+                    ssnValid = true; // Mark SSN as valid
+                }
+            },
+            error: function (xhr, status, error) {
+                let errorMessage = "Something went wrong. Try again later.";
+
+                if (xhr.status === 400) {
+                    errorMessage = "Invalid SSN input.";
+                } else if (xhr.status === 500) {
+                    errorMessage = "Server error. Please contact support.";
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
+
+                ssnValid = false; // Mark SSN as invalid in case of error
+            }
+        });
+    });
+
 
     // document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
     //     event.preventDefault();

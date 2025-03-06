@@ -24,6 +24,31 @@ namespace ExcelFilesCompiler.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CheckUserExists(string email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(email))
+                    return BadRequest(new { message = "Email is required." });
+
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user != null)
+                {
+                    return Json(new { exists = true, message = "User already exists." });
+                }
+
+                return Json(new { exists = false });
+            }
+            catch (Exception ex)
+            {
+                // Log the error (Consider using ILogger)
+                return StatusCode(500, new { message = "An error occurred while checking the user." });
+            }
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
