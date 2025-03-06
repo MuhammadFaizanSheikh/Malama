@@ -4,6 +4,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace ExcelFilesCompiler.Controllers
@@ -13,12 +14,19 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IEventManagementService _eventManagementService;
         private readonly IEventStaffService _eventStaffService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public EventSelectionController(IEventManagementService eventManagementService, IEventStaffService eventStaffService, IUnitOfWork unitOfWork)
+
+        public EventSelectionController(IEventManagementService eventManagementService, IEventStaffService eventStaffService, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
         {
             _eventManagementService = eventManagementService;
             _eventStaffService = eventStaffService;
             _unitOfWork = unitOfWork;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _roleManager = roleManager;
         }
 
 
@@ -106,12 +114,18 @@ namespace ExcelFilesCompiler.Controllers
                     return View("Index", eventViewModels);
                 }
 
-                var roles = eventManagement.EventStaffDetailList
+                var eventRolesIds = eventManagement.EventStaffDetailList
                     .Where(esd => esd.EventStaffId == eventStaff.Id) // Manual join using EventStaffId
                     .SelectMany(esd => esd.EventWiseStaffRoleList)
                     .Select(ewsr => ewsr.RoleId)
                     .ToList();
 
+                var allRoles = await _roleManager.Roles.ToListAsync(); // Fetch all roles first
+
+                var eventRoleNames = allRoles
+                    .Where(r => eventRolesIds.Contains(r.Id)) // Now filter in memory
+                    .Select(r => r.Name)
+                    .ToList();
                 // Assign role if necessary
                 //var assignResult = await _eventManagementService.AssignUserRoleToEvent(userId, selectedEventId);
                 //if (!assignResult)
@@ -119,6 +133,27 @@ namespace ExcelFilesCompiler.Controllers
                 //    ViewBag.ErrorMessage = "Failed to assign the role.";
                 //    return View("Index", await _eventManagementService.GetAllEventManagements());
                 //}
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return Unauthorized();
+                }
+
+                var identityRoles = await _userManager.GetRolesAsync(user);
+
+                var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+                identity.AddClaim(new Claim("EventId", selectedEventId.ToString())); // Store event ID in claims
+
+                // Add all roles as claims
+                foreach (var role in identityRoles.Concat(eventRoleNames))
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Role, role));
+                }
+
+                var principal = new ClaimsPrincipal(identity);
+                await _signInManager.SignOutAsync();
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
                 ViewBag.Message = "Role successfully assigned!";
                 return RedirectToAction("Index", "Dashboard");

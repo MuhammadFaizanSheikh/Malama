@@ -336,6 +336,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventStaff.AddedOn = existingEvent.AddedOn;
                 eventStaff.UpdatedBy = loggedinUserName;
                 eventStaff.UpdatedOn = DateTime.Now;
+                eventStaff.UserId = existingEvent.UserId;
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
 
                 await _unitOfWork.StaffLicense.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
