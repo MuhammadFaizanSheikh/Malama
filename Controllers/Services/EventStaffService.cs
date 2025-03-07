@@ -441,22 +441,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var eventStaff = await _unitOfWork.EventStaff.FindAsync(es => es.UserId == userId);
-
-                if (eventStaff != null)
+                if (eventStaff == null)
                 {
-                    return eventStaff;
+                    throw new KeyNotFoundException($"EventStaff with UserId {userId} not found.");
                 }
-                else
-                {
-                    throw new Exception($"EventManagement with UserId {userId} not found.");
-                }
+                return eventStaff;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                // Log and rethrow the exception with more context if needed
-                throw new Exception("An error occurred while retrieving the Event Staff data.", ex);
+                throw new ApplicationException("An error occurred while retrieving event staff details.", ex);
             }
         }
+
 
         public async Task<bool> CheckSSNExistsAsync(string ssn)
         {

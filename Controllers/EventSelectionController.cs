@@ -1,10 +1,12 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.UnitOfWork;
+using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Security.Claims;
 
 namespace ExcelFilesCompiler.Controllers
@@ -66,86 +68,100 @@ namespace ExcelFilesCompiler.Controllers
                 if (selectedEventId == 0)
                 {
                     ViewBag.ErrorMessage = "Please select a valid event.";
-                    var events = await _eventManagementService.GetAllEventManagements();
-                    var eventViewModels = events.Select(e => new EventViewModel
-                    {
-                        EventId = e.Id,       
-                        EventName = e.EventID
-                    }).ToList();
-                    return View("Index", eventViewModels);
+                    return await ReturnIndexView();
                 }
 
-                // Get logged-in user (assuming you have Identity set up)
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     ViewBag.ErrorMessage = "User not found. Please log in again.";
-                    var events = await _eventManagementService.GetAllEventManagements();
-                    var eventViewModels = events.Select(e => new EventViewModel
-                    {
-                        EventId = e.Id,       // Assuming `Id` is the primary key in your data
-                        EventName = e.EventID // Assuming `EventID` is the event name or identifier
-                    }).ToList();
-                    return View("Index", eventViewModels);
+                    return await ReturnIndexView();
                 }
 
-                // Check role against EventId
-                //var eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
-                //if (eventManagement == null)
-                //{
-                //    ViewBag.ErrorMessage = "You are not assigned to this event.";
-                //    return View("Index", await _eventManagementService.GetAllEventManagements());
-                //}
+                EventManagement eventManagement;
+                EventStaff eventStaff;
 
-                var eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
-                var eventStaff = await _eventStaffService.GetEventStaffByColumn(userId);
+                try
+                {
+                    eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
+                    eventStaff = await _eventStaffService.GetEventStaffByColumn(userId);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    ViewBag.ErrorMessage = ex.Message; // Show user-friendly message
+                    return await ReturnIndexView();
+                }
+                catch (ApplicationException ex)
+                {
+                    ViewBag.ErrorMessage = ex.Message;
+                    return await ReturnIndexView();
+                }
 
                 bool isUserInEvent = eventManagement.EventStaffDetailList.Any(esd => esd.EventStaffId == eventStaff.Id);
-                
+
                 if (!isUserInEvent)
                 {
-                    ViewBag.ErrorMessage = "You are not assigned in selected Event.";
-                    var events = await _eventManagementService.GetAllEventManagements();
-                    var eventViewModels = events.Select(e => new EventViewModel
-                    {
-                        EventId = e.Id,       // Assuming `Id` is the primary key in your data
-                        EventName = e.EventID // Assuming `EventID` is the event name or identifier
-                    }).ToList();
-                    return View("Index", eventViewModels);
+                    ViewBag.ErrorMessage = "You are not assigned to the selected event.";
+                    return await ReturnIndexView();
                 }
 
                 var eventRolesIds = eventManagement.EventStaffDetailList
-                    .Where(esd => esd.EventStaffId == eventStaff.Id) // Manual join using EventStaffId
+                    .Where(esd => esd.EventStaffId == eventStaff.Id)
                     .SelectMany(esd => esd.EventWiseStaffRoleList)
                     .Select(ewsr => ewsr.RoleId)
                     .ToList();
 
-                var allRoles = await _roleManager.Roles.ToListAsync(); // Fetch all roles first
-
+                var allRoles = await _roleManager.Roles.ToListAsync();
                 var eventRoleNames = allRoles
-                    .Where(r => eventRolesIds.Contains(r.Id)) // Now filter in memory
+                    .Where(r => eventRolesIds.Contains(r.Id))
                     .Select(r => r.Name)
                     .ToList();
-                // Assign role if necessary
-                //var assignResult = await _eventManagementService.AssignUserRoleToEvent(userId, selectedEventId);
-                //if (!assignResult)
-                //{
-                //    ViewBag.ErrorMessage = "Failed to assign the role.";
-                //    return View("Index", await _eventManagementService.GetAllEventManagements());
-                //}
+
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return Unauthorized();
                 }
 
-                var identityRoles = await _userManager.GetRolesAsync(user);
+                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventRoleNames);
 
+                if (!isClaimsUpdated)
+                {
+                    ViewBag.ErrorMessage = "Failed to update user claims. Please try again.";
+                    return View("Index", await _eventManagementService.GetAllEventManagements());
+                }
+
+                ViewBag.Message = "Role successfully assigned!";
+                return RedirectToAction("Index", "Dashboard");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again later.";
+                return await ReturnIndexView();
+            }
+        }
+
+        // Helper method to return the index view
+        private async Task<IActionResult> ReturnIndexView()
+        {
+            var events = await _eventManagementService.GetAllEventManagements();
+            var eventViewModels = events.Select(e => new EventViewModel
+            {
+                EventId = e.Id,
+                EventName = e.EventID
+            }).ToList();
+            return View("Index", eventViewModels);
+        }
+
+        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames)
+        {
+            try
+            {
+                var identityRoles = await _userManager.GetRolesAsync(user);
                 var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
-                identity.AddClaim(new Claim("EventId", selectedEventId.ToString())); // Store event ID in claims
+                identity.AddClaim(new Claim("EventId", selectedEventId.ToString()));
 
-                // Add all roles as claims
                 foreach (var role in identityRoles.Concat(eventRoleNames))
                 {
                     identity.AddClaim(new Claim(ClaimTypes.Role, role));
@@ -155,21 +171,14 @@ namespace ExcelFilesCompiler.Controllers
                 await _signInManager.SignOutAsync();
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
-                ViewBag.Message = "Role successfully assigned!";
-                return RedirectToAction("Index", "Dashboard");
+                return true;
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorMessage = "An error occurred: " + ex.Message;
-                var events = await _eventManagementService.GetAllEventManagements();
-                var eventViewModels = events.Select(e => new EventViewModel
-                {
-                    EventId = e.Id,       // Assuming `Id` is the primary key in your data
-                    EventName = e.EventID // Assuming `EventID` is the event name or identifier
-                }).ToList();
-                return View("Index", eventViewModels);
+                return false;
             }
         }
+
 
     }
 }

@@ -220,22 +220,23 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventStartEndTimeDayWiseList,
                     x => x.EventStaffDetailList
                 ).Include(x => x.EventStaffDetailList)
-                        .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
-                    .FirstOrDefaultAsync();
+                 .ThenInclude(l => l.EventWiseStaffRoleList)
+                 .FirstOrDefaultAsync();
 
-                if (eventManagement != null)
+                if (eventManagement == null)
                 {
-                    return eventManagement;
+                    throw new KeyNotFoundException($"EventManagement with ID {id} not found.");
                 }
-                else
-                {
-                    throw new Exception($"EventManagement with ID {id} not found.");
-                }
+
+                return eventManagement;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                // Log and rethrow the exception with more context if needed
-                throw new Exception("An error occurred while retrieving the Event Management data.", ex);
+                throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
     }
