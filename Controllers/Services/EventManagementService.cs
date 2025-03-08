@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
@@ -9,10 +10,12 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class EventManagementService : IEventManagementService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public EventManagementService(IUnitOfWork unitOfWork)
+        public EventManagementService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager)
         {
             _unitOfWork = unitOfWork;
+            _roleManager = roleManager;
         }
 
         public async Task<List<EventManagement>> GetAllEventManagements()
@@ -175,14 +178,60 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     var eventStaff = await _unitOfWork.EventStaff.GetByNullableIdAsync(firstEventManagement.HIVDropOffStaffId);
 
-                    var eventStaffDetailList = new List<EventStaff>();
+                    var EventStaffDetailAndAdditionalRoleslist = new List<EventStaffDetailAndAdditionalRoles>();
 
                     foreach (var eventStaffDetails in firstEventManagement.EventStaffDetailList)
                     {
-                        var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
+                        EventStaffDetailAndAdditionalRoles eventStaffDetailAndAdditionalRoles = new EventStaffDetailAndAdditionalRoles();
+                        //var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
+                        var eventStaffDetail = await _unitOfWork.EventStaff.GetWithInclude(
+                        x => x.Id == eventStaffDetails.EventStaffId,
+                        x => x.StaffLicense).Include(x => x.StaffLicense).ThenInclude(l => l.StaffLicenseDetails).FirstOrDefaultAsync();
+
+
                         if (eventStaffDetail != null)
                         {
-                            eventStaffDetailList.Add(eventStaffDetail);
+                            var roles = await _roleManager.Roles.ToListAsync();
+                            var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
+                            var roleLicenseMapping = new Dictionary<string, List<string>>();
+
+                            foreach (var staffLicense in eventStaffDetail.StaffLicense)
+                            {
+                                // Fetch Role Name from RoleManager using RoleId
+                                if (roleDictionary.TryGetValue(staffLicense.RoleId, out string roleName))
+                                {
+                                    if (!roleLicenseMapping.ContainsKey(roleName))
+                                    {
+                                        roleLicenseMapping[roleName] = new List<string>();
+                                    }
+
+                                    // Extract LicenseState & LicenseType from StaffLicenseDetails
+                                    foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
+                                    {
+                                        roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
+                                    }
+                                }
+                            }
+
+                            var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
+                            var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
+
+                            eventStaffDetailAndAdditionalRoles.EventStaffRolesNameAndLicense = new CombinedEventStaffRolesNameAndLicense
+                            {
+                                Id = eventStaffDetail.Id,
+                                StaffID = eventStaffDetail.StaffID,
+                                StaffLastName = eventStaffDetail.StaffLastName,
+                                StaffFirstName = eventStaffDetail.StaffFirstName,
+                                PrimaryCity = eventStaffDetail.PrimaryCity,
+                                PrimaryState = eventStaffDetail.PrimaryState,
+                                PrimaryZip = eventStaffDetail.PrimaryZip,
+                                StaffCAC = eventStaffDetail.StaffCAC,
+                                Roles = rolesString,
+                                LicenseStateAndTypes = licensesString,
+                                Status = eventStaffDetail.StaffStatus
+                            };
+                            eventStaffDetailAndAdditionalRoles.EventStaffDetail = eventStaffDetails;
+                            EventStaffDetailAndAdditionalRoleslist.Add(eventStaffDetailAndAdditionalRoles);
                         }
                     }
 
@@ -191,8 +240,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         EventManagement = firstEventManagement,
                         ContractDetails = contractDetails,
-                        EventStaff = eventStaff,
-                        EventStaffDetail = eventStaffDetailList // Now contains multiple records
+                        EventStaffForHIVDropOff = eventStaff,
+                        EventStaffDetailAndAdditionalRoleslist = EventStaffDetailAndAdditionalRoleslist // Now contains multiple records
                     };
 
 

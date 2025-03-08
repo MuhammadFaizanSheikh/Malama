@@ -157,10 +157,11 @@
                 text-align: center;
             }
 
-            #eventStaffSelectedTable td:nth-child(7),
-            #eventStaffSelectedTable th:nth-child(7) {
-                display: none;
-            }
+        /*     #eventStaffSelectedTable th:nth-child(10) {
+    display: none;
+} */
+
+           
 
 
 
@@ -1878,8 +1879,6 @@
                                     <th>State</th>
                                     <th>City</th>
                                     <th>ZipCode</th>
-                                    @* <th>Role</th> *@
-                                    @* <th>Radius</th> *@
                                     <th>Id</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -1919,6 +1918,10 @@
     </div>
 <script>
     $(document).ready(function () {
+
+        fetchRolesByCategory("EventManagementRole");
+
+
         let currentSection = 1;
         $("#EventID").text('');
 
@@ -2109,7 +2112,7 @@
             if (target == 7 && !tableInitialized) {
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
-                fetchRolesByCategory("EventManagementRole");
+                // fetchRolesByCategory("EventManagementRole");
                 tableInitialized = true; // Prevent reloading the table again
             }
 
@@ -2215,6 +2218,7 @@
         type: 'GET',
         data: { category: category },
         success: function (response) {
+            debugger;
             rolesData = response; // Store response in global variable
             console.log("Roles data stored globally:", rolesData); // Debugging
         },
@@ -2331,67 +2335,74 @@
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
-    debugger;
-    let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
+            let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
-    let existingRows = selectedTable.rows().data().toArray();
-    if (existingRows.some(row => row.staffID === staffData.staffID)) {
-        alert("Staff already added!");
-        return;
-    }
+            let existingRows = selectedTable.rows().data().toArray();
+            if (existingRows.some(row => row.staffID === eventStaffData.staffID)) {
+                alert("Staff already added!");
+                return;
+            }
 
-    if (rowIndex === null) {
-        rowIndex = selectedTable.rows().count();
-    }
+            if (rowIndex === null) {
+                rowIndex = selectedTable.rows().count();
+            }
 
-    let roleDropdownId = `roleSelect_${staffData.id}`;
+            let roleDropdownId = `roleSelect_${eventStaffData.id}`;
 
-    // Filter roles based on staffCAC condition
+            // Filter roles based on CAC status
             let filteredRoles = rolesData.filter(role => {
-                if (staffData.staffCAC === "false" && role.name === "CAC'd Admin") {
-                    return false; // Exclude CAC'd Admin
+                if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") {
+                    return false;
                 }
-                if (staffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
-                    return false; // Exclude NonCAC'd Admin
+                if (eventStaffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
+                    return false;
                 }
                 return true;
             });
 
-    // Generate role options
-    let roleOptions = filteredRoles.map(role => `<option value="${role.id}">${role.name}</option>`).join("");
+            // Create role dropdown options
+            let roleOptions = filteredRoles.map(role => {
+                let isSelected = false;
 
-    // If staffCAC is false, add "NonCAC'd Admin"
-    // if (staffData.staffCAC === "false") {
-    //     roleOptions += `<option value="NonCAC">NonCAC'd Admin</option>`;
-    // }
+                // Handle edit mode: Check if this role is in eventWiseStaffRoleList
+                if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffRoleList) {
+                    isSelected = staffData.eventStaffDetail.eventWiseStaffRoleList.some(r => r.roleId === role.id);
+                }
 
-    let roleDropdown = `
-                <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles" class="form-control role-multi-select" multiple>
-            ${roleOptions}
-        </select>`;
+                return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
+            }).join("");
 
-    // Add row to the table
-    selectedTable.row.add({
-        staffID: staffData.staffID,
-        staffLastName: staffData.staffLastName,
-        staffFirstName: staffData.staffFirstName,
-        roles: staffData.roles,
-        licenseStateAndTypes: staffData.licenseStateAndTypes,
-        primaryState: staffData.primaryState,
-        primaryCity: staffData.primaryCity,
-        primaryZip: staffData.primaryZip,
-        status: staffData.status,
-        id: `<input type="hidden" class="eventStaffIdHidden" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
-               value="${staffData.id}" /> ${staffData.id}`,
-        additionalroles: roleDropdown,  // Add dropdown to the roles column
-        action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
-                  data-staffid="${staffData.id}">Remove</button>`
-    }).draw();
+            let roleDropdown = `
+                <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles"
+                        class="form-control role-multi-select" multiple>
+                    ${roleOptions}
+                </select>`;
+                debugger;
+            // Add row to DataTable
+          selectedTable.row.add({
+    staffID: `${eventStaffData.staffID} 
+              <input type="hidden" class="eventStaffIdHidden" 
+                name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
+                value="${eventStaffData.id}" />`,
+    staffLastName: eventStaffData.staffLastName,
+    staffFirstName: eventStaffData.staffFirstName,
+    roles: eventStaffData.roles,
+    licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
+    primaryState: eventStaffData.primaryState,
+    primaryCity: eventStaffData.primaryCity,
+    primaryZip: eventStaffData.primaryZip,
+    status: eventStaffData.status,
+    id: eventStaffData.id, // Keep id as plain text (or remove if not needed)
+    additionalroles: roleDropdown,  // Add dropdown to the roles column
+    action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
+              data-staffid="${eventStaffData.id}">Remove</button>`
+}).draw();
 
-    // Initialize select2 for the new dropdown
-    $(`#${roleDropdownId}`).select2();
-}
 
+            // Initialize select2 for the new dropdown
+            $(`#${roleDropdownId}`).select2();
+        }
 
 
 
@@ -3204,6 +3215,7 @@
                 success: function (response) {
                     if (response.success) {
                         var combinedData = response.combinedData;
+                        // fetchRolesByCategory("EventManagementRole");
                         //var stringdata = JSON.stringify(combinedData);
                         setProgressFromServer(combinedData.eventManagement.completedSections);
                         $('#hiddenId').val(combinedData.eventManagement.id);
@@ -3434,24 +3446,26 @@
                         $('#QuestPickupCity').val(combinedData.eventManagement.questPickupCity).trigger('change');
                         $('#QuestPickupZipCode').val(combinedData.eventManagement.questPickupZipCode);
 
-                        if (combinedData.eventStaff !== null) {
+                        debugger;
+                        if (combinedData.eventStaffForHIVDropOff !== null) {
                             var selectedDataHiv = {
-                                id: combinedData.eventStaff.id,
-                                text: combinedData.eventStaff.staffID
+                                id: combinedData.eventStaffForHIVDropOff.id,
+                                text: combinedData.eventStaffForHIVDropOff.staffID
                             };
 
                             var newOptionHiv = new Option(selectedDataHiv.text, selectedDataHiv.id, true, true);
                             $('#HIVDropOffStaffId').append(newOptionHiv);
 
-                            $('#HIVDropOffStaffLastName').val(combinedData.eventStaff.staffLastName);
-                            $('#HIVDropOffStaffFirstName').val(combinedData.eventStaff.staffLastName);
+                            $('#HIVDropOffStaffLastName').val(combinedData.eventStaffForHIVDropOff.staffLastName);
+                            $('#HIVDropOffStaffFirstName').val(combinedData.eventStaffForHIVDropOff.staffLastName);
                         }
 
-                        debugger;
-                        var eventStaffList = combinedData.eventStaffDetail;
+                        var EventStaffDetailAndAdditionalRoleslist = combinedData.eventStaffDetailAndAdditionalRoleslist;
 
-                        if (eventStaffList) {
-                            loadStaffForEditMode(eventStaffList);
+                        if (EventStaffDetailAndAdditionalRoleslist) {
+                            // var stringdata = JSON.stringify(EventStaffDetailAndAdditionalRoleslist);
+                            // console.log(stringdata);
+                            loadStaffForEditMode(EventStaffDetailAndAdditionalRoleslist);
                         };
 
                         // Show the form and hide the table

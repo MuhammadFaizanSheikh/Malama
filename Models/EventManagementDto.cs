@@ -15,8 +15,15 @@
     {
         public EventManagement EventManagement { get; set; }
         public ContractDetails ContractDetails { get; set; }
-        public EventStaff EventStaff { get; set; }
-        public List<EventStaff> EventStaffDetail { get; set; }
+        public EventStaff EventStaffForHIVDropOff { get; set; }
+        public List<EventStaffDetailAndAdditionalRoles> EventStaffDetailAndAdditionalRoleslist { get; set; }
+    }
+
+    public class EventStaffDetailAndAdditionalRoles
+    {
+        public CombinedEventStaffRolesNameAndLicense EventStaffRolesNameAndLicense { get; set; }
+        public EventStaffDetail EventStaffDetail { get; set; }
+
     }
 
 
