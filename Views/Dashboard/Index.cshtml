@@ -22,32 +22,44 @@
         <span>Checkin Station</span>
     </a>
 
-    <a class="icon-box">
-        <img src="/images/Vision Station.jpg" alt="Vision Station" />
-        <span>Vision Station</span>
-    </a>
+    @if (User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
+    {
+        <a class="icon-box">
+            <img src="/images/Vision Station.jpg" alt="Vision Station" />
+            <span>Vision Station</span>
+        </a>
+    }
 
-    <a class="icon-box">
-        <img src="/images/Vital Station.jpg" alt="Vital Station" />
-        <span>Vital Station</span>
-    </a>
+    @if (User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
+    {
+        <a class="icon-box">
+            <img src="/images/Vital Station.jpg" alt="Vital Station" />
+            <span>Vital Station</span>
+        </a>
+    }
 
-    <a class="icon-box">
-        <img src="/images/Audiology Station.jpg" alt="Audiology Station" />
-        <span>Audiology Station</span>
-    </a>
+    @if (User.IsInRole("Audiologist") || User.IsInRole("Audio tech"))
+    {
+        <a class="icon-box">
+            <img src="/images/Audiology Station.jpg" alt="Audiology Station" />
+            <span>Audiology Station</span>
+        </a>
+    }
 
     <a class="icon-box">
         <img src="/images/Hearing Station.jpg" alt="Hearing Station" />
         <span>Hearing Station</span>
     </a>
 
-    <a class="icon-box">
-        <img src="/images/Lab Station.jpg" alt="Lab Station" />
-        <span>Lab Station</span>
-    </a>
+    @if (User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant"))
+    {
+        <a class="icon-box">
+            <img src="/images/Lab Station.jpg" alt="Lab Station" />
+            <span>Lab Station</span>
+        </a>
+    }
 
-    @if (User.IsInRole("Nurse Practitioner"))
+    @if (User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Doctor"))
     {
         <a class="icon-box">
             <img src="/images/PHA Station.jpg" alt="PHA Station" />
