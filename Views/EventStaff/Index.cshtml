@@ -331,7 +331,7 @@
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.UserPassword" class="font-weight-bold">Staff Password</label>
                     <div class="input-group">
-                        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="UserPassword" placeholder="Enter event staff password" autocomplete="off" required />
+                        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="UserPassword" placeholder="Enter event staff password" autocomplete="off" readonly required />
                         <div class="input-group-append">
                             <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
                         </div>
@@ -1651,7 +1651,8 @@
                     $('#hotelCheckbox').prop('checked', eventStaff.travelHonorHotel);
                     populateForm(travelHonor);
 
-                    $('#UserEmail').val(eventStaff.userEmail).prop('readonly', true).addClass('read-only-style');
+                    // $('#UserEmail').val(eventStaff.userEmail).prop('readonly', true).addClass('read-only-style');
+                    $('#UserEmail').val(eventStaff.userEmail);
                     $('#UserPassword').val(eventStaff.userPassword).prop('readonly', true).addClass('read-only-style');
 
                     $('#StaffID').val(eventStaff.staffID);
@@ -2051,7 +2052,7 @@
         fetchRolesByCategory();
 
         $('#StaffInfoEnteredBy').val('@User.Identity.Name');
-        const controlIds = ['hiddenId', 'UserEmail', 'UserPassword', 'StartDate',
+        const controlIds = ['hiddenId', 'UserEmail', 'StartDate',
             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',

@@ -7,7 +7,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IRoleService
     {
         Task<List<ApplicationRole>> GetRolesByCategoryAsync(string category);
-        Task<ResponseDto> UpdateUserEventStaffRolesAsync(EventStaff eventStaff);
+        //Task<ResponseDto> UpdateUserEventStaffRolesAsync(EventStaff eventStaff);
     }
 
 }

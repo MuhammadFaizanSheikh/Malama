@@ -1,8 +1,10 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Utilities;
+using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -51,94 +53,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 };
             }
         }
-
-        //public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
-        //{
-        //    try
-        //    {
-        //        if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
-        //        {
-        //            return new ResponseDto { Success = false, Message = "Invalid user data." };
-        //        }
-
-        //        var user = new ApplicationUser
-        //        {
-        //            UserName = model.Email,
-        //            Email = model.Email,
-        //            IsActive = true,
-        //            TwoFactorEnabled = true,
-        //            IsEventUser = IsEventUser
-        //        };
-
-        //        var result = await _userManager.CreateAsync(user, model.Password);
-        //        if (!result.Succeeded)
-        //        {
-        //            return new ResponseDto
-        //            {
-        //                Success = false,
-        //                Message = string.Join(", ", result.Errors.Select(e => e.Description))
-        //            };
-        //        }
-
-        //        try
-        //        {
-        //            if (model.SelectedRoles != null && model.SelectedRoles.Any())
-        //            {
-        //                var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
-        //                var roleNames = allRoles
-        //                    .Where(r => model.SelectedRoles.Contains(r.Id))
-        //                    .Select(r => r.Name)
-        //                    .ToList();
-
-        //                var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
-        //                if (!roleResult.Succeeded)
-        //                {
-        //                    // Rollback by deleting the user
-        //                    await _userManager.DeleteAsync(user);
-        //                    return new ResponseDto
-        //                    {
-        //                        Success = false,
-        //                        Message = "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description))
-        //                    };
-        //                }
-        //            }
-        //            else
-        //            {
-        //                // If roles are not selected, rollback user creation
-        //                await _userManager.DeleteAsync(user);
-        //                return new ResponseDto { Success = false, Message = "Role not selected." };
-        //            }
-
-        //            // Confirm the user's email
-        //            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        //            var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
-
-        //            if (!confirmationResult.Succeeded)
-        //            {
-        //                // Rollback by deleting the user
-        //                await _userManager.DeleteAsync(user);
-        //                return new ResponseDto { Success = false, Message = "Email confirmation failed." };
-        //            }
-
-        //            return new ResponseDto
-        //            {
-        //                Success = true,
-        //                Message = "User has been created successfully.",
-        //                Data = new { user.Id, user.Email }
-        //            };
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            // Rollback by deleting the user in case of any unexpected exception
-        //            await _userManager.DeleteAsync(user);
-        //            return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
-        //    }
-        //}
 
         public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
         {
@@ -328,7 +242,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto { Success = false, Message = "User not found." };
                 }
 
+                var originalEmail = user.Email;
+                var originalPasswordHash = user.PasswordHash;
+                var originalRoles = await _userManager.GetRolesAsync(user);
+
                 user.Email = updatedUser.Email;
+                user.UserName = updatedUser.Email;
 
                 if (!string.IsNullOrEmpty(updatedUser.Password))
                 {
@@ -341,39 +260,76 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto
                     {
                         Success = false,
-                        Message = "Failed to update user.",
+                        Message = "Failed to update user details.",
                         Data = updateResult.Errors.Select(e => e.Description).ToList()
                     };
                 }
 
-                var existingRoles = await _userManager.GetRolesAsync(user);
+                var newRoleNames = new List<string>();
 
-                var rolesToRemove = existingRoles.Except(updatedUser.SelectedRoles).ToList();
+                try
+                {
+                    var allRoles = await _roleManager.Roles.ToListAsync();
+                    var roleIds = updatedUser.SelectedRoles;
+                    newRoleNames = allRoles
+                        .Where(r => roleIds.Contains(r.Id) && r.Category == AppConstants.RolesCategory.EventStaffRoles)
+                        .Select(r => r.Name)
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Failed to fetch roles.",
+                        Data = ex.Message
+                    };
+                }
+
+                var rolesToRemove = originalRoles.Except(newRoleNames).ToList();
                 if (rolesToRemove.Any())
                 {
-                    var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
-                    if (!removeResult.Succeeded)
+                    try
+                    {
+                        var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                        if (!removeResult.Succeeded)
+                        {
+                            throw new Exception("Failed to remove roles: " +
+                                string.Join(", ", removeResult.Errors.Select(e => e.Description)));
+                        }
+                    }
+                    catch (Exception removeEx)
                     {
                         return new ResponseDto
                         {
                             Success = false,
-                            Message = "Failed to remove roles.",
-                            Data = removeResult.Errors.Select(e => e.Description).ToList()
+                            Message = "User update failed due to role removal issue. Changes rolled back.",
+                            Data = removeEx.Message
                         };
                     }
                 }
 
-                var rolesToAdd = updatedUser.SelectedRoles.Except(existingRoles).ToList();
+                var rolesToAdd = newRoleNames.Except(originalRoles).ToList();
                 if (rolesToAdd.Any())
                 {
-                    var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
-                    if (!addResult.Succeeded)
+                    try
                     {
+                        var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+                        if (!addResult.Succeeded)
+                        {
+                            throw new Exception("Failed to add roles: " +
+                                string.Join(", ", addResult.Errors.Select(e => e.Description)));
+                        }
+                    }
+                    catch (Exception addEx)
+                    {
+                        await _userManager.AddToRolesAsync(user, rolesToRemove);
+
                         return new ResponseDto
                         {
                             Success = false,
-                            Message = "Failed to add roles.",
-                            Data = addResult.Errors.Select(e => e.Description).ToList()
+                            Message = "User update failed due to role addition issue. Changes rolled back.",
+                            Data = addEx.Message
                         };
                     }
                 }
@@ -395,6 +351,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 };
             }
         }
-    }
 
+    }
 }

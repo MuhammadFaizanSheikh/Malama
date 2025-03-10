@@ -366,7 +366,9 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 _unitOfWork.TravelHonor.AddRange(eventStaff.TravelHonorList);
 
-                var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
+
+                var result = await UpdateUser(eventStaff);
+                //var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
 
                 if (!result.Success)
                 {
@@ -471,6 +473,35 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        private async Task<ResponseDto> UpdateUser(EventStaff eventStaff)
+        {
+            var responseDto = new ResponseDto();
 
+            try
+            {
+                UserUpdateDto userUpdateDto = new UserUpdateDto();
+
+                var user = await _userManager.FindByIdAsync(eventStaff.UserId);
+
+                if (user == null)
+                {
+                    responseDto.Success = true;
+                    responseDto.Message = "User not found!";
+                    return responseDto;
+                }
+
+                var existingRoleNames = await _userManager.GetRolesAsync(user);
+                userUpdateDto.Id = eventStaff.UserId;
+                userUpdateDto.Email = eventStaff.UserEmail;
+                userUpdateDto.Password = eventStaff.UserPassword;
+                userUpdateDto.SelectedRoles = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
+
+                return await _registrationService.UpdateUserAsync(userUpdateDto);
+            }
+            catch (Exception)
+            {
+                return new ResponseDto { Success = false, Message = "An unexpected error occurred while updating user. Please try again later or contact your administrator." };
+            }
+        }
     }
 }
