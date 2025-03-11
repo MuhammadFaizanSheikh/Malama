@@ -26,7 +26,7 @@ namespace ExcelFilesCompiler.Controllers
                     return NotFound(new { message = "No roles found for the given category." });
                 }
 
-                return Ok(roles.Select(r => new { r.Id, r.Name, r.Types }));
+                return Ok(roles.Select(r => new { r.Id, r.Name, r.Types, r.Category }));
             }
             catch (ArgumentException ex)
             {

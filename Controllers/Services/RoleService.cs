@@ -21,17 +21,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<List<ApplicationRole>> GetRolesByCategoryAsync(string category)
         {
-            if (string.IsNullOrWhiteSpace(category))
+            var query = _roleManager.Roles.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(category))
             {
-                throw new ArgumentException("Category parameter is required.", nameof(category));
+                query = query.Where(r => r.Category == category);
             }
 
-            var roles = _roleManager.Roles
-                                    .Where(r => r.Category == category)
-                                    .ToList(); // ToListAsync() not needed as it's in-memory filtering
-
-            return roles;
+            return await query.ToListAsync(); // Ensure async execution if using Entity Framework
         }
+
 
         //public async Task<ResponseDto> UpdateUserEventStaffRolesAsync(EventStaff eventStaff)
         //{

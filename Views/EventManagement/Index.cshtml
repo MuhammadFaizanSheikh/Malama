@@ -1825,16 +1825,25 @@
                                 <input type="text" id="filterFirstName" class="form-control" placeholder="First Name">
                             </div>
                             <div class="col-md-2">
-                                <input type="text" id="filterState" class="form-control" placeholder="State">
+                                <select id="filterRoles" class="form-select"></select>
                             </div>
                             <div class="col-md-2">
-                                <input type="text" id="filterCity" class="form-control" placeholder="City">
+                                <select id="filterLicenseStates" class="form-select"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="filterLicenseTypes" class="form-select"></select>
+                            </div>
+                            <div class="col-md-2">
+                            <select id="filterState" class="form-select"></select>
+                            </div>
+                            <div class="col-md-2">
+                            <select id="filterCity" class="form-select"></select>
                             </div>
                             <div class="col-md-2">
                                 <input type="text" id="filterZip" class="form-control" placeholder="Zip Code">
                             </div>
                             <div class="col-md-2 text-center">
-                                <button id="searchStaffBtn" class="btn btn-primary w-100">Search</button>
+                                <button id="searchStaffBtn" type="button" class="btn btn-primary w-100">Search</button>
                             </div>
                         </div>
                     </div>
@@ -1919,8 +1928,7 @@
 <script>
     $(document).ready(function () {
 
-        fetchRolesByCategory("EventManagementRole");
-
+        fetchRolesByCategory("");
 
         let currentSection = 1;
         $("#EventID").text('');
@@ -2111,7 +2119,6 @@
             if (target == 7 && !tableInitialized) {
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
-                // fetchRolesByCategory("EventManagementRole");
                 tableInitialized = true; // Prevent reloading the table again
             }
 
@@ -2180,24 +2187,35 @@
         $('#searchStaffBtn').on('click', function () {
             let lastName = $('#filterLastName').val().trim().toLowerCase();
             let firstName = $('#filterFirstName').val().trim().toLowerCase();
-            let state = $('#filterState').val().trim().toLowerCase();
-            let city = $('#filterCity').val().trim().toLowerCase();
+            let roles = $('#filterRoles').val()?.trim().toLowerCase() || "";
+            let licenseStates = $('#filterLicenseStates').val()?.trim().toLowerCase() || "";
+            let licenseTypes = $('#filterLicenseTypes').val()?.trim().toLowerCase() || "";
+            let state = $('#filterState').val()?.trim().toLowerCase() || "";
+            let city = $('#filterCity').val()?.trim().toLowerCase() || "";
             let zip = $('#filterZip').val().trim().toLowerCase();
 
             // Remove any existing custom filters
-            $.fn.dataTable.ext.search.length = 0;
+            // $.fn.dataTable.ext.search.length = 0;
+            $.fn.dataTable.ext.search = [];
 
+            debugger;
             // Add new custom filtering logic
             $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                let rowLastName = data[1].toLowerCase();  // Last Name (Column index 1)
-                let rowFirstName = data[2].toLowerCase(); // First Name (Column index 2)
-                let rowState = data[3].toLowerCase();     // State (Column index 3)
-                let rowCity = data[4].toLowerCase();      // City (Column index 4)
-                let rowZip = data[5].toLowerCase();       // ZipCode (Column index 5)
+                let rowLastName = data[1]?.toLowerCase() || ""; 
+            let rowFirstName = data[2]?.toLowerCase() || ""; 
+            let rowRoles = data[3]?.toLowerCase() || "";     
+            let rowLicenseStates = data[4]?.toLowerCase() || ""; 
+            let rowLicenseTpes = data[4]?.toLowerCase() || ""; 
+            let rowState = data[5]?.toLowerCase() || "";     
+            let rowCity = data[6]?.toLowerCase() || "";      
+            let rowZip = data[7]?.toLowerCase() || "";       
 
                 return (
                     (lastName === "" || rowLastName.includes(lastName)) &&
                     (firstName === "" || rowFirstName.includes(firstName)) &&
+                    (roles === "" || rowRoles.includes(roles)) &&
+                    (licenseStates === "" || rowLicenseStates.includes(licenseStates)) &&
+                    (licenseTypes === "" || rowLicenseTpes.includes(licenseTypes)) &&
                     (state === "" || rowState.includes(state)) &&
                     (city === "" || rowCity.includes(city)) &&
                     (zip === "" || rowZip.includes(zip))
@@ -2218,6 +2236,7 @@
         data: { category: category },
         success: function (response) {
             rolesData = response; // Store response in global variable
+            populateFilterRolesAndLicenseTypeDropdown();
             console.log("Roles data stored globally:", rolesData); // Debugging
         },
         error: function (xhr, status, error) {
@@ -2226,6 +2245,45 @@
     });
 }
 
+
+function populateFilterRolesAndLicenseTypeDropdown() {
+        if (!rolesData || rolesData.length === 0) {
+            console.warn("No roles available to populate dropdown.");
+            return;
+        }
+
+        var filteredRoles = rolesData.filter(role => role.category === "EventStaffRole");
+        var $dropdown = $("#filterRoles");
+
+        $dropdown.empty();
+        $dropdown.append('<option value="">Select Role</option>'); // Default option
+
+        filteredRoles.forEach(function (role) {
+            $dropdown.append(`<option value="${role.name}">${role.name}</option>`);
+        });
+
+        console.log("Dropdown populated with EventStaffRole roles:", filteredRoles);
+
+        var licenseTypesSet = new Set(); // Using Set to ensure unique values
+
+        filteredRoles.forEach(function (role) {
+            if (role.types) {
+                let typesArray = role.types.split(',').map(type => type.trim()); // Split and trim
+                typesArray.forEach(type => licenseTypesSet.add(type)); // Add unique types
+            }
+        });
+
+        debugger;
+        var $licenseDropdown = $("#filterLicenseTypes");
+        $licenseDropdown.empty();
+        $licenseDropdown.append('<option value="">Select License Type</option>');
+
+        licenseTypesSet.forEach(function (type) {
+            $licenseDropdown.append(`<option value="${type}">${type}</option>`);
+        });
+
+        console.log("Dropdown populated with unique license types:", Array.from(licenseTypesSet));
+    }
 
         function initializeEventStaffTable() {
             if ($.fn.DataTable.isDataTable('#eventStaffSelectionTable')) {
@@ -2348,7 +2406,8 @@
             let roleDropdownId = `roleSelect_${eventStaffData.id}`;
 
             // Filter roles based on CAC status
-            let filteredRoles = rolesData.filter(role => {
+            let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole");
+                filteredRoles = filteredRoles.filter(role => {
                 if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") {
                     return false;
                 }
@@ -2790,9 +2849,16 @@
 
         $.getJSON('/data/statesAndCities.json', function (data) {
             const stateCityMap = {};
-            const stateDropdowns = $('#EventState, #ShippingState, #PharmacyState, #QuestPickupState');
+            const stateDropdowns = $('#EventState, #ShippingState, #PharmacyState, #QuestPickupState, #filterState, #filterLicenseStates');
 
-            stateDropdowns.empty().append('<option value="">Select State</option>');
+            stateDropdowns.each(function () {
+                if ($(this).attr('id') === 'filterLicenseStates') {
+                    $(this).empty().append('<option value="">Select License State</option>');
+                } else {
+                    $(this).empty().append('<option value="">Select State</option>');
+                }
+            });
+
             data.states.forEach(state => {
                 stateDropdowns.append(`<option value="${state.Name}">${state.Name}</option>`);
                 stateCityMap[state.Name] = state.Cities; // Map state name to its cities
@@ -2805,7 +2871,8 @@
                     $(this).attr('id') === 'EventState' ? '#EventCity' :
                         $(this).attr('id') === 'ShippingState' ? '#ShippingCity' :
                             $(this).attr('id') === 'PharmacyState' ? '#PharmacyCity' :
-                                $(this).attr('id') === 'QuestPickupState' ? '#QuestPickupCity' : null;
+                                $(this).attr('id') === 'QuestPickupState' ? '#QuestPickupCity' :
+                                    $(this).attr('id') === 'filterState' ? '#filterCity' : null;
                 const cityDropdown = $(cityDropdownId);
 
                 cityDropdown.empty().append('<option value="">Select City</option>');
@@ -2906,7 +2973,6 @@
         }
 
         $("#EventCity").change(function () {
-            debugger;
             if (!isEditMode)
             {
                 generateEventID();
@@ -2914,7 +2980,6 @@
         });
 
         $("#EventState").on("change", function () {
-            debugger;
              if (!isEditMode)
              {
                 generateEventID();
@@ -3220,8 +3285,6 @@
                     if (response.success) {
                         isEditMode = true;
                         var combinedData = response.combinedData;
-                        // fetchRolesByCategory("EventManagementRole");
-                        //var stringdata = JSON.stringify(combinedData);
                         setProgressFromServer(combinedData.eventManagement.completedSections);
                         $('#hiddenId').val(combinedData.eventManagement.id);
                         $('#EventID').text(combinedData.eventManagement.eventID);
@@ -3675,7 +3738,6 @@
     }
 
     function resetFormFields() {
-        debugger;
         tableInitialized = false;
         isEditMode = false;
         $('#hiddenId').val('');
