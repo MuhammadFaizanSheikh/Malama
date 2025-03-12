@@ -1818,41 +1818,53 @@
                     <div class="card p-3 mb-4">
                         <h5 class="text-center">Search Event Staff</h5>
                         <div class="container">
-    <div class="row g-2">
-        <!-- First Row -->
-        <div class="col-md-3">
-            <input type="text" id="filterLastName" class="form-control" placeholder="Last Name">
-        </div>
-        <div class="col-md-3">
-            <input type="text" id="filterFirstName" class="form-control" placeholder="First Name">
-        </div>
-        <div class="col-md-3">
-            <select id="filterRoles" class="form-select"></select>
-        </div>
-        <div class="col-md-3">
-            <select id="filterLicenseStates" class="form-select"></select>
-        </div>
+                        <div class="row g-2">
+                            <!-- First Row -->
+                            <div class="col-md-3">
+                                <input type="text" id="filterLastName" class="form-control" placeholder="Last Name">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="filterFirstName" class="form-control" placeholder="First Name">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterRoles" class="form-select"></select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterLicenseStates" class="form-select"></select>
+                            </div>
 
-        <!-- Second Row -->
-        <div class="col-md-3">
-            <select id="filterLicenseTypes" class="form-select"></select>
-        </div>
-        <div class="col-md-3">
-            <select id="filterState" class="form-select"></select>
-        </div>
-        <div class="col-md-3">
-            <select id="filterCity" class="form-select"></select>
-        </div>
-        <div class="col-md-3">
-            <input type="text" id="filterZip" class="form-control" placeholder="Zip Code">
-        </div>
-
-        <!-- Search Button (Centered) -->
-        <div class="col-12 text-center mt-2">
-            <button id="searchStaffBtn" type="button" class="btn btn-primary px-4">Search</button>
-        </div>
-    </div>
-</div>
+                            <!-- Second Row -->
+                            <div class="col-md-3">
+                                <select id="filterLicenseTypes" class="form-select"></select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterState" class="form-select"></select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterCity" class="form-select">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="filterZip" class="form-control" placeholder="Zip Code">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterStatus" class="form-select">
+                                    <option value="">Select Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="InProgress">In Progress</option>
+                                    <option value="RecruitCred">Recruit - Cred</option>
+                                    <option value="RecruitInit">Recruit - Init.</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <!-- Search Button (Centered) -->
+                            <div class="col-12 text-center mt-2">
+                                <button id="searchStaffBtn" type="button" class="btn btn-primary px-4">Search</button>
+                                 <button id="resetFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
+                            </div>
+                        </div>
+            </div>
 
                     </div>
 
@@ -2201,6 +2213,7 @@
             let state = $('#filterState').val()?.trim().toLowerCase() || "";
             let city = $('#filterCity').val()?.trim().toLowerCase() || "";
             let zip = $('#filterZip').val().trim().toLowerCase();
+            let status = $('#filterStatus').val()?.trim().toLowerCase() || "";
 
             // Remove any existing custom filters
             // $.fn.dataTable.ext.search.length = 0;
@@ -2217,6 +2230,7 @@
             let rowState = data[5]?.toLowerCase() || "";     
             let rowCity = data[6]?.toLowerCase() || "";      
             let rowZip = data[7]?.toLowerCase() || "";       
+            let rowStatus = data[10]?.toLowerCase() || "";  
 
                 return (
                     (lastName === "" || rowLastName.includes(lastName)) &&
@@ -2226,12 +2240,19 @@
                     (licenseTypes === "" || rowLicenseTpes.includes(licenseTypes)) &&
                     (state === "" || rowState.includes(state)) &&
                     (city === "" || rowCity.includes(city)) &&
-                    (zip === "" || rowZip.includes(zip))
+                    (zip === "" || rowZip.includes(zip)) &&
+                    (status === "" || rowStatus.includes(status))
                 );
             });
 
             // Redraw the table to apply the filter
             $('#eventStaffSelectionTable').DataTable().draw();
+        });
+
+        $("#resetFiltersBtn").click(function () {
+            $("#filterLastName, #filterFirstName, #filterZip").val(""); // Reset text inputs
+            $("#filterRoles, #filterLicenseStates, #filterLicenseTypes, #filterState, #filterCity, #filterStatus").prop("selectedIndex", 0);
+             $("#searchStaffBtn").click();
         });
 
 
