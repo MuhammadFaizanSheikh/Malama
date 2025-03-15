@@ -11,6 +11,8 @@
 <script src="https://cdn.datatables.net/fixedcolumns/4.2.2/js/dataTables.fixedColumns.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
 
 
@@ -134,7 +136,7 @@
         <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
-    </div>
+        <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
 
     <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -461,6 +463,8 @@
                 let fullRowData = smIdData.concat(rowData);
                 let actionButtons = `
                             <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                                                                <button class="btn mr-2 btn-print">Print</button>
+
                             <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
                         `;
                 fullRowData.push(actionButtons);
@@ -530,6 +534,7 @@
             highlightMissingFullNameRows(missingFullNameRows);
             document.getElementById('generateExcelButton').classList.remove('d-none');
             //document.getElementById('submitDataButton').classList.remove('d-none');
+                document.getElementById('btnDownloadPDF').classList.remove('d-none');
             document.getElementById('addRowButton').classList.remove('d-none');
             isPreviewDoneSuccessfully = true;
         }
@@ -1398,6 +1403,163 @@
             });
             return data;
         }
+
+            const { jsPDF } = window.jspdf;
+
+            // 📌 Print Single Row
+            $(document).on("click", ".btn-print", function () {
+                var row = $(this).closest("tr");
+                var rowData = getRowData(row);
+                generatePDF([rowData], true);  // Print mode
+            });
+
+            $("#btnDownloadPDF").click(function () {
+                var allRowsData = [];
+
+                $("#previewTable tbody tr").each(function () {
+                    var rowData = getRowData($(this));
+                    allRowsData.push(rowData);
+                });
+
+                if (allRowsData.length > 0) {
+                    generatePDF(allRowsData, false); // Pass all rows and save PDF
+                } else {
+                    alert("No data available for download.");
+                }
+            });
+
+            
+
+            function getRowData(row) {
+                debugger;
+                var table = row.closest("table"); // Get the table reference
+
+                var fullNameIndex = getColumnIndex(table, "FULL NAME");
+                var dodIdIndex = getColumnIndex(table, "DOD ID");
+                var last4Index = getColumnIndex(table, "LAST 4");
+                var bwxNeededIndex = getColumnIndex(table, "BWX Needed");
+                var dentalNeededIndex = getColumnIndex(table, "Dental Needed");
+                var panoNeededIndex = getColumnIndex(table, "PANO Needed");
+                var visionNeededIndex = getColumnIndex(table, "VISION");
+                var labNeededIndex = getColumnIndex(table, "Lab Needed");
+                var immNeededIndex = getColumnIndex(table, "IMM");
+                var hearingNeededIndex = getColumnIndex(table, "HEARING");
+
+                return {
+                    fullName: fullNameIndex !== -1 ? row.find("td").eq(fullNameIndex).text().trim() : "N/A",
+                    dodId: dodIdIndex !== -1 ? row.find("td").eq(dodIdIndex).text().trim() : "N/A",
+                    last4: last4Index !== -1 ? row.find("td").eq(last4Index).text().trim() : "N/A",
+                    bwxNeeded: bwxNeededIndex !== -1 ? row.find("td").eq(bwxNeededIndex).text().trim() : "N/A",
+                    dentalNeeded: dentalNeededIndex !== -1 ? row.find("td").eq(dentalNeededIndex).text().trim() : "N/A",
+                    panoNeeded: panoNeededIndex !== -1 ? row.find("td").eq(panoNeededIndex).text().trim() : "N/A",
+                    visionNeeded: visionNeededIndex !== -1 ? row.find("td").eq(visionNeededIndex).text().trim() : "N/A",
+                    labNeeded: labNeededIndex !== -1 ? row.find("td").eq(labNeededIndex).text().trim() : "N/A",
+                    immNeeded: immNeededIndex !== -1 ? row.find("td").eq(immNeededIndex).text().trim() : "N/A",
+                    hearingNeeded: hearingNeededIndex !== -1 ? row.find("td").eq(hearingNeededIndex).text().trim() : "N/A",
+                };
+            }
+
+            function getColumnIndex(table, columnName) {
+                var index = -1;
+                table.find("thead th").each(function (i) {
+                    if ($(this).text().trim() === columnName) {
+                        index = i;
+                    }
+                });
+                return index;
+            }
+
+            function generatePDF(dataList, isPrint) {
+                var doc = new jsPDF();
+
+                dataList.forEach((data, index) => {
+                    if (index > 0) doc.addPage();  // New page for each row
+
+                    let pageWidth = doc.internal.pageSize.getWidth();
+                    let pageHeight = doc.internal.pageSize.getHeight();
+                    let yOffset = 20;  // Starting Y position
+
+                    // **Title in Center**
+                    doc.setFontSize(16);
+                    doc.setFont("helvetica", "bold");
+                    let title = "Service Routing Sheet";
+                    let titleWidth = doc.getTextWidth(title);
+                    doc.text(title, (pageWidth - titleWidth) / 2, yOffset);
+                    yOffset += 10;
+
+                    // **Name and DoD ID/Last 4**
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`Name: ${data.fullName}`, 10, yOffset);
+                    doc.text(`DoD ID/Last 4: ${data.dodId} / ${data.last4}`, 110, yOffset);
+                    yOffset += 10;
+
+                    // **Station Required (Center)**
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    let subHeading = "Station Required";
+                    let subHeadingWidth = doc.getTextWidth(subHeading);
+                    doc.text(subHeading, (pageWidth - subHeadingWidth) / 2, yOffset);
+                    yOffset += 10;
+
+                    // **Data Fields (Left-Aligned)**
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+
+                    doc.text(`Dental X-ray: ${data.bwxNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Panorex X-ray: ${data.panoNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Dental Exam: ${data.dentalNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text("Dental Treatment: _______________", 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Vitals: NEEDED`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Vision: ${data.visionNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Labs: ${data.labNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Immunizations: ${data.immNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Audio: ${data.hearingNeeded}`, 10, yOffset);
+                    yOffset += 8;
+                    doc.text(`Audiologist: _______________`, 10, yOffset);
+                    yOffset += 8;
+
+                    // **Footer Text**
+                    let footerText = "Malama only adds services on the Service Routing Sheet that SM needs to complete. The station requirements are generated from a preloaded roster or manual entry at the event and then printed when the SM checks in at the event.";
+                    let footerYOffset = pageHeight - 40; // Move footer higher
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "italic");
+                    doc.text(footerText, 10, footerYOffset, { maxWidth: pageWidth - 20 });
+
+                    // **Barcode Generation**
+                    let barcodeYOffset = footerYOffset - 30; // Adjust to fit above footer
+                    let barcodeCanvas = document.createElement("canvas"); // Create a canvas for barcode
+                    JsBarcode(barcodeCanvas, data.dodId, {
+                        format: "CODE128",
+                        displayValue: true,  // Show the DoD ID below the barcode
+                        fontSize: 14,        // Adjust text size
+                        textMargin: 5        // Space between barcode and text
+                    });
+
+                    let barcodeDataURL = barcodeCanvas.toDataURL("image/png");
+                    doc.addImage(barcodeDataURL, "PNG", (pageWidth - 60) / 2, barcodeYOffset, 60, 20); // Centered
+
+                });
+
+                // **Print or Download**
+                if (isPrint) {
+                    doc.autoPrint();
+                    doc.output("dataurlnewwindow"); // Open print dialog
+                } else {
+                    doc.save("Service_Routing_Sheet.pdf"); // Download PDF
+                }
+            }
+
+
+
     </script>
 </div>
 <style>
