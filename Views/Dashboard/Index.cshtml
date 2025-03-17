@@ -5,7 +5,7 @@
 @* <h1>Welcome to the Dashboard!</h1> *@
 
 <div class="dashboard-icons">
-    @if (User.IsInRole("Admin"))
+    @if (User.IsInRole("Super Admin"))
     {
         <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
             <img src="/images/Admin.jpg" alt="Admin" />
@@ -22,7 +22,7 @@
         <span>Checkin Station</span>
     </a>
 
-    @if (User.IsInRole("Admin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
+    @if (User.IsInRole("Super dmin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
     {
         <a class="icon-box">
             <img src="/images/Vision Station.jpg" alt="Vision Station" />
@@ -30,7 +30,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Admin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Assistant") || User.IsInRole("Audio tech"))
     {
         <a class="icon-box">
             <img src="/images/Vital Station.jpg" alt="Vital Station" />
@@ -38,7 +38,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Admin") || User.IsInRole("Audiologist") || User.IsInRole("Audio tech"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Audiologist") || User.IsInRole("Audio tech"))
     {
         <a class="icon-box">
             <img src="/images/Audiology Station.jpg" alt="Audiology Station" />
@@ -51,7 +51,7 @@
         <span>Hearing Station</span>
     </a>
 
-    @if (User.IsInRole("Admin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Registered Nurse") || User.IsInRole("Licensed Vocational Nurse") || User.IsInRole("Licensed Practical Nurse") || User.IsInRole("Medical Assistant"))
     {
         <a class="icon-box">
             <img src="/images/Lab Station.jpg" alt="Lab Station" />
@@ -59,7 +59,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Admin") || User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Doctor"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Nurse Practitioner") || User.IsInRole("Physician Assistant") || User.IsInRole("Medical Doctor"))
     {
         <a class="icon-box">
             <img src="/images/PHA Station.jpg" alt="PHA Station" />

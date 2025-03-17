@@ -97,7 +97,7 @@ namespace ExcelFilesCompiler
                 if (result.Succeeded)
                 {
                     // Assign the Admin role to the user
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                    await userManager.AddToRoleAsync(adminUser, "Super Admin");
 
                     // Optionally, confirm the admin's email if you are bypassing email confirmation
                     await userManager.ConfirmEmailAsync(adminUser, await userManager.GenerateEmailConfirmationTokenAsync(adminUser));

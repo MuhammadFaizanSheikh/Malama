@@ -156,15 +156,21 @@
     "Category": "BasicRole"
   },
   {
-    "id": "admin",
-    "value": "Admin",
+    "id": "superAdmin",
+    "value": "Super Admin",
     "types": [],
     "Category": "BasicRole"
   },
   {
-    "id": "user",
-    "value": "User",
+    "id": "admin",
+    "value": "Admin",
     "types": [],
-    "Category": "BasicRole"
+    "Category": "EventStaffRole"
+  },
+  {
+    "id": "admin (cacd)",
+    "value": "Admin (CAC'd)",
+    "types": [],
+    "Category": "EventStaffRole"
   }
 ]
