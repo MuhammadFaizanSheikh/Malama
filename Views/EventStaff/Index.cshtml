@@ -399,7 +399,44 @@
                 </div>
             </div>
 
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
+                    <select asp-for="SingleEventStaff.CACApplicationProcessStatus" id="CACApplicationProcessStatus" class="form-control" required>
+                        <option value="InProgress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Complete">Complete</option>
+                        <option value="NotStarted">Not Started</option>
+                    </select>
+                </div>
+            </div>
 
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Staff CAC</label>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" required />
+                        <label class="form-check-label" for="staffCACYes">Yes</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" required />
+                        <label class="form-check-label" for="staffCACNo">No</label>
+                    </div>
+                </div>
+                <div class="col-md-6" id="staffDoDContainer" style="display: none;">
+                    <!-- Hidden by default -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
+                            <input asp-for="SingleEventStaff.StaffDoDID" minlength="10" maxlength="10" class="form-control" id="StaffDoDID" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SingleEventStaff.CacExpiryDate" class="form-label">CAC Expiry Date</label>
+                            <input asp-for="SingleEventStaff.CacExpiryDate" type="date" class="form-control" id="StaffCACExpiryDate" />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -496,15 +533,6 @@
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label asp-for="SingleEventStaff.CACApplicationProcessStatus" class="form-label">CAC Application Process Status</label>
-                    <select asp-for="SingleEventStaff.CACApplicationProcessStatus" id="CACApplicationProcessStatus" class="form-control" required>
-                        <option value="InProgress">In Progress</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Complete">Complete</option>
-                        <option value="NotStarted">Not Started</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
                     <div class="form-container-Affiliation">
                         <!-- Dynamic License Rows will be inserted here -->
                     </div>
@@ -515,38 +543,6 @@
 
                 </div>
             </div>
-
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Staff CAC</label>
-                    <div class="form-check">
-                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="true" class="form-check-input" id="staffCACYes" required />
-                        <label class="form-check-label" for="staffCACYes">Yes</label>
-                    </div>
-                    <div class="form-check">
-                        <input asp-for="SingleEventStaff.StaffCAC" type="radio" value="false" class="form-check-input" id="staffCACNo" required />
-                        <label class="form-check-label" for="staffCACNo">No</label>
-                    </div>
-                </div>
-
-                <div class="col-md-6" id="staffDoDContainer" style="display: none;">
-                    <!-- Hidden by default -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label asp-for="SingleEventStaff.StaffDoDID" class="form-label">Staff DoD ID</label>
-                            <input asp-for="SingleEventStaff.StaffDoDID" minlength="10" maxlength="10" class="form-control" id="StaffDoDID" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="SingleEventStaff.CacExpiryDate" class="form-label">CAC Expiry Date</label>
-                            <input asp-for="SingleEventStaff.CacExpiryDate" type="date" class="form-control" id="StaffCACExpiryDate" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.StaffCellNumber" class="form-label">Staff Cell Number</label>
@@ -772,6 +768,12 @@
     $(document).on("change", ".role-checkbox", function () {
         let roleCheckbox = $(this);
         let roleId = roleCheckbox.attr("id");
+
+        let roleName = roleCheckbox.val();
+
+        if (roleName === "Admin" || roleName === "Admin (CAC'd)") {
+            return;
+        }
 
         if (roleCheckbox.is(":checked")) {
             if (!(roleId in roleIndexMap)) {
@@ -2145,6 +2147,11 @@
 
     });
 
+    $("#CACApplicationProcessStatus").on("change", function () {
+        debugger;
+        toggleAdminRoles();
+    });
+
     function fetchRolesByCategory() {
         roleIndexMap = {}; // Stores role indices
         roleLicenseIndexMap = {};
@@ -2163,16 +2170,21 @@
                     return;
                 }
 
+                roles.sort((a, b) => a.name.localeCompare(b.name));
                 rolesData = roles;
 
                 roles.forEach(role => {
                     let roleElement = `
-                            <div class="form-check me-3">
-                                <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.name}">
-                                <label class="form-check-label" for="${role.id}">${role.name}</label>
-                            </div>`;
+                    <div class="form-check me-3 role-item" data-role="${role.name}">
+                        <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.name}">
+                        <label class="form-check-label" for="${role.id}">${role.name}</label>
+                    </div>`;
+
                     staffRolesContainer.append(roleElement);
                 });
+
+                $(".role-item[data-role=\"Admin (CAC'd)\"]").hide();
+                toggleAdminRoles();
             },
             error: function (xhr, status, error) {
                 console.error("Error fetching roles:", error);
@@ -2181,6 +2193,27 @@
         });
     }
 
+    function toggleAdminRoles() {
+        let selectedStatus = $("#CACApplicationProcessStatus").val();
+
+        console.log("Selected Status:", selectedStatus); // Debugging
+
+        let adminRole = $(".role-item[data-role='Admin']");
+        let adminCACRole = $(".role-item[data-role=\"Admin (CAC'd)\"]");
+
+        console.log("Admin found:", adminRole.length); // Check if Admin role exists
+        console.log("Admin (CAC'd) found:", adminCACRole.length); // Check if Admin CAC'd exists
+
+        if (selectedStatus === "Complete") {
+            adminRole.hide();
+            adminCACRole.show();
+            console.log("Hiding Admin, Showing Admin (CAC'd)");
+        } else {
+            adminRole.show();
+            adminCACRole.hide();
+            console.log("Showing Admin, Hiding Admin (CAC'd)");
+        }
+    }
 
 
 
