@@ -50,6 +50,7 @@
                 <option value="180">180</option>
                 <option value="270">270</option>
                 <option value="365">365</option>
+                <option value="455">455</option>
             </select>
         </div>
         <div class="col-md-2">
@@ -958,7 +959,7 @@
 
         function calculateAge(dob) {
             const birthDate = new Date(dob);
-            const today = new Date();
+                const today = new Date(document.getElementById("calendarInput").value);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDiff = today.getMonth() - birthDate.getMonth();
 
@@ -980,13 +981,13 @@
             // Update "OVER 40" field
             const over40Field = document.querySelector('input[name="OVER 40"]');
             if (over40Field) {
-                over40Field.value = age > 40 ? "YES" : "NO";
+                over40Field.value = age >= 40 ? "YES" : "NO";
             }
 
             // Update "OVER 44" field
             const over44Field = document.querySelector('input[name="Over 44"]');
             if (over44Field) {
-                over44Field.value = age > 44 ? "YES" : "NO";
+                over44Field.value = age >= 44 ? "YES" : "NO";
             }
 
             // Update fields based on age > 39.5

@@ -933,7 +933,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     if (isTaskForceFile)
                     {
-                        HandleTaskForceFile(parentRow);
+                        HandleTaskForceFile(parentRow, eventDate);
                     }
 
                     if (isBloodFile)
@@ -1215,12 +1215,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private void HandleTaskForceFile(DataRow parentRow)
+        private void HandleTaskForceFile(DataRow parentRow, DateTime eventDate)
         {
             if (parentRow.Table.Columns.Contains("DOB") && DateTime.TryParse(parentRow["DOB"]?.ToString(), out DateTime dobTaskForce))
             {
                 // Calculate exact age
-                var today = DateTime.Now;
+                var today = eventDate;
                 int age = today.Year - dobTaskForce.Year;
                 if (dobTaskForce > today.AddYears(-age)) age--; // Adjust if birthday hasn't occurred this year
 
@@ -1228,7 +1228,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 double exactAge = (today - dobTaskForce).TotalDays / 365.25; // Using 365.25 to account for leap years
 
                 // Over 40 logic
-                if (age > 40)
+                if (age >= 40)
                 {
                     if (!parentRow.Table.Columns.Contains("OVER 40"))
                     {
@@ -1268,7 +1268,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 // Over 44 logic
-                if (age > 44)
+                if (age >= 44)
                 {
                     if (!parentRow.Table.Columns.Contains("OVER 44"))
                     {
@@ -1320,6 +1320,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                         parentRow.Table.Columns.Add("EKG NEEDED", typeof(string));
                     }
                     parentRow["EKG NEEDED"] = "NEEDED";
+
+                    if (!parentRow.Table.Columns.Contains("Framingham"))
+                    {
+                        parentRow.Table.Columns.Add("Framingham", typeof(string));
+                    }
+                    parentRow["Framingham"] = "NEEDED";
                 }
                 else
                 {
@@ -1353,6 +1359,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                         parentRow.Table.Columns.Add("EKG NEEDED", typeof(string));
                     }
                     parentRow["EKG NEEDED"] = "N/A";
+
+                    if (!parentRow.Table.Columns.Contains("Framingham"))
+                    {
+                        parentRow.Table.Columns.Add("Framingham", typeof(string));
+                    }
+                    parentRow["Framingham"] = "N/A";
                 }
             }
         }
@@ -1410,7 +1422,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     parentRow.Table.Columns.Add("IMM", typeof(string));
                 }
 
-                if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("IPV", StringComparison.OrdinalIgnoreCase))
                 {
                     parentRow["IMM"] = "N/A";
                 }
