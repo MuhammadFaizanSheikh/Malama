@@ -13,6 +13,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 
@@ -534,7 +537,7 @@
 
             highlightMissingFullNameRows(missingFullNameRows);
             document.getElementById('generateExcelButton').classList.remove('d-none');
-            //document.getElementById('submitDataButton').classList.remove('d-none');
+            document.getElementById('submitDataButton').classList.remove('d-none');
                 document.getElementById('btnDownloadPDF').classList.remove('d-none');
             document.getElementById('addRowButton').classList.remove('d-none');
             isPreviewDoneSuccessfully = true;
@@ -711,7 +714,7 @@
         const calendarIndexes = [13];
         const dropdownIndexes = [8, 10, 12, 20, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 54, 55, 56, 57, 58, 59, 60];
         // const readOnlyIndexes = [7, 14, 15, 16, 17, 18, 19, 22, 21, 43, 23, 25, 26, 31, 32, 35, 36, 40, 45, 48, 49, 51, 52, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71];
-        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,18,17,16,19,20,21,23,24,22,25,27,29,26,28,30,31,32,33,34,40,45,37,41,46,38,35,36,39,42,43,44,47,49,51,48,50,52,55,57,59,56,58,60,54];
+        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,17,16,19,20,21,23,24,22,25,27,29,26,28,30,31,32,33,34,40,45,37,41,46,38,35,36,39,42,43,44,47,52,55,57,59,56,58,60,54];
         const multilineTextbox = [62];
 
         // Define specific dropdown options for certain fields
@@ -788,14 +791,57 @@
 
                 let rowHtml = '<div class="row">';
                 let inputCount = 0;
-
+                debugger;
                 categoryKeys.forEach((key, index) => {
                     const value = data[key] || '';
                     let inputHtml = '';
+                        let keyIndex = keys.indexOf(key);
                     let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
                     let textColor = 'style="color: black;"'; // Set text color to black
 
-                    if (multilineTextbox.includes(keys.indexOf(key))) {
+                        if (keyIndex === 18 || keyIndex === 48 || keyIndex === 51) {
+                            if (value.trim().toLowerCase() === "needed") {
+                                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                                inputHtml = `
+                                                <div class="form-group col-lg-2">
+                                                    <label>${key}</label>
+                                                    <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                                </div>`;
+                            } else {
+                                inputHtml = `
+                                        <div class="form-group col-lg-2">
+                                                    <label>${key}</label>
+                                                                <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                </div>`;
+                            }
+                        }
+                        else if (keyIndex === 49) {
+                            if (value.trim().toLowerCase() === "needed") {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                            <label>${key}</label>
+                                                                                                    <input type="text" class="form-control" name="${key}" ${readOnly} ${textColor} />
+                                                                        </div>`;
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                <label>${key}</label>
+                                                                            <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                            </div>`;
+                            }
+                        }
+                        else if (keyIndex === 50) {
+                            if (value.trim().toLowerCase() === "needed") {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                            <label>${key}</label>
+                                                                            <input type="number" class="form-control decimal-input" name="${key}" step="0.1" inputmode="decimal" ${readOnly} ${textColor} />
+                                                                        </div>`;
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                            <label>${key}</label>
+                                                                                        <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                                        </div>`;
+                            }
+                        }
+                    else if (multilineTextbox.includes(keys.indexOf(key))) {
                         inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
@@ -956,6 +1002,20 @@
         //         labNeededField.val("N/A");
         //     }
         // }
+
+            $(document).on("input", ".decimal-input", function () {
+                let value = $(this).val();
+
+                // Allow only numbers with a single decimal place
+                let validValue = value.match(/^\d*(\.\d{0,1})?$/);
+
+                if (!validValue) {
+                    $(this).val(value.slice(0, -1)); // Remove last invalid character
+                }
+            });
+
+
+
 
         function calculateAge(dob) {
             const birthDate = new Date(dob);
@@ -1343,17 +1403,22 @@
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        // If no data exists, proceed to insert
-                        debugger;
                         submitDataToDatabase(tableRows, eventId);
                     } else {
-                        // Ask user if they want to overwrite
-                        if (confirm('Data already exists for this Event ID. Do you want to proceed and overwrite it?')) {
-                            // User wants to proceed, call the insert function
-                            submitDataToDatabase(tableRows, eventId);
-                        } else {
-                            alert("No changes were made.");
-                        }
+                            Swal.fire({
+                                title: 'Data Exists!',
+                                text: 'Data already exists for this Event ID. Do you want to overwrite it?',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, overwrite',
+                                cancelButtonText: 'No, cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    submitDataToDatabase(tableRows, eventId);
+                                } else {
+                                    Swal.fire('Cancelled', 'No changes were made.', 'info');
+                                }
+                            });
                     }
                 },
                 error: function (xhr, status, error) {
@@ -1378,11 +1443,24 @@
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
                 success: function (response) {
-                    alert(response.message);
-                    clearPreview();
+                        Swal.fire({
+                            title: response.success ? "Success!" : "Error!",
+                            text: response.message,
+                            icon: response.success ? "success" : "error",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            if (response.success) {
+                                clearPreview();
+                            }
+                        });
                 },
                 error: function (xhr, status, error) {
-                    alert("Error: " + error);
+                        Swal.fire({
+                            title: "Error!",
+                            text: "Something went wrong: " + error,
+                            icon: "error",
+                            confirmButtonText: "OK"
+                        });
                 },
                 complete: function () {
                     $('#loader').addClass('d-none');
@@ -1682,5 +1760,17 @@
         border: 2px solid red !important;
         background-color: #ffe6e6 !important; /* Light red background */
     }
+
+        input[readonly] {
+            background-color: #e9ecef !important;
+            cursor: not-allowed;
+        }
+
+        select:disabled {
+            background-color: #e9ecef !important; /* Light gray background */
+            color: #6c757d !important; /* Gray text */
+            cursor: not-allowed; /* Show "not allowed" cursor */
+            opacity: 1; /* Ensure full visibility */
+        }
 </style>
 
