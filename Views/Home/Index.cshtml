@@ -200,7 +200,6 @@
         document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
         function clearPreview() {
-            debugger;
             if ($.fn.DataTable.isDataTable('#previewTable')) {
                 $('#previewTable').DataTable().clear().destroy(); // Clear data and destroy the instance
             }
@@ -279,7 +278,6 @@
             formData.append('hearing', document.getElementById('dropdownHearing').value);
 
             document.getElementById('loader').classList.remove('d-none');
-            debugger;
             fetch('@Url.Action("UploadAndPreview", "Home")', {
                 method: 'POST',
                 body: formData
@@ -393,7 +391,6 @@
         ];
 
         function displayPreview(data) {
-            debugger;
             isPreviewDoneSuccessfully = false;
             uploadCounter++; // Increment the upload counter for each upload session
 
@@ -697,7 +694,6 @@
         let isAddingNewRow = false;
 
         function editRow(button) {
-            debugger;
             currentRow = $(button).closest('tr');  // Get the row clicked for editing
             const rowData = {};
 
@@ -791,7 +787,6 @@
 
                 let rowHtml = '<div class="row">';
                 let inputCount = 0;
-                debugger;
                 categoryKeys.forEach((key, index) => {
                     const value = data[key] || '';
                     let inputHtml = '';
@@ -800,45 +795,51 @@
                     let textColor = 'style="color: black;"'; // Set text color to black
 
                         if (keyIndex === 18 || keyIndex === 48 || keyIndex === 51) {
-                            if (value.trim().toLowerCase() === "needed") {
-                                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                            if (value.trim().toLowerCase() === "n/a") {
                                 inputHtml = `
-                                                <div class="form-group col-lg-2">
-                                                    <label>${key}</label>
-                                                    <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
-                                                </div>`;
-                            } else {
-                                inputHtml = `
-                                        <div class="form-group col-lg-2">
-                                                    <label>${key}</label>
-                                                                <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
-                                                </div>`;
-                            }
-                        }
-                        else if (keyIndex === 49) {
-                            if (value.trim().toLowerCase() === "needed") {
-                                inputHtml = `<div class="form-group col-lg-2">
-                                                                            <label>${key}</label>
-                                                                                                    <input type="text" class="form-control" name="${key}" ${readOnly} ${textColor} />
-                                                                        </div>`;
-                            } else {
-                                inputHtml = `<div class="form-group col-lg-2">
+                                                    <div class="form-group col-lg-2">
                                                                 <label>${key}</label>
                                                                             <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
                                                             </div>`;
+                                
+                            } else {
+                                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                                inputHtml = `
+                                                            <div class="form-group col-lg-2">
+                                                                <label>${key}</label>
+                                                                <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                                            </div>`;
                             }
                         }
-                        else if (keyIndex === 50) {
-                            if (value.trim().toLowerCase() === "needed") {
-                                inputHtml = `<div class="form-group col-lg-2">
-                                                                            <label>${key}</label>
-                                                                            <input type="number" class="form-control decimal-input" name="${key}" step="0.1" inputmode="decimal" ${readOnly} ${textColor} />
-                                                                        </div>`;
-                            } else {
+                        else if (keyIndex === 49) {
+                            if (value.trim().toLowerCase() === "n/a") {
                                 inputHtml = `<div class="form-group col-lg-2">
                                                                             <label>${key}</label>
                                                                                         <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
                                                                         </div>`;
+                                
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                                        <label>${key}</label>
+                                                                                                    <input type="text" class="form-control" name="${key}" value="${value.toLowerCase() === 'needed' ? '' : value}" ${readOnly} ${textColor} />
+                                                                                    </div>`;
+                            }
+                        }
+                        else if (keyIndex === 50) {
+                            if (value.trim().toLowerCase() === "n/a") {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                                        <label>${key}</label>
+                                                                                                    <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                                                    </div>`;
+                                
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
+                                                                                        <label>${key}</label>
+                                                                                            <input type="number" class="form-control decimal-input" name="${key}"
+                                                                                            value="${value.toLowerCase() === 'needed' ? '' : value}"
+                                                                                            step="0.1" inputmode="decimal" ${readOnly} ${textColor} />
+
+                                                                                    </div>`;
                             }
                         }
                     else if (multilineTextbox.includes(keys.indexOf(key))) {
@@ -934,10 +935,8 @@
             // const aboField = modalContent.find('select[name="ABO"]');
             // const aboNeededField = modalContent.find('select[name="ABO Needed"]');
 
-            // debugger;
             // if (aboField.length > 0 && aboNeededField.length > 0) {
             //     aboField.on('change', function () {
-            //         debugger;
             //         const aboValue = $(this).val();
             //         if (aboValue === "") { // If "ABO" is blank
             //             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
@@ -968,7 +967,6 @@
         //****************************************************This can be needed in future*************************************************/
         // function checkQuestField() 
         // {
-        //     debugger;
         //     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
         //     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
         //     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
@@ -1143,98 +1141,110 @@
 
 
 
-        function saveChangesButton() {
-            debugger;
-            const modalInputs = $('#editModal').find('input, select, textarea');
-            const updatedData = {};
+            function saveChangesButton() {
+                debugger;
+                const modalInputs = $('#editModal').find('input, select, textarea');
+                const updatedData = {};
 
-            // const requiredFields = ['FULL NAME', 'UIC', 'LAST 4', 'DOD ID', 'MOS', 'RANK'];
-            const requiredFields = ['FULL NAME', 'LAST 4', 'DOD ID', 'DOB'];
-            let hasError = false;
+                const requiredFields = ['FULL NAME', 'LAST 4', 'DOD ID', 'DOB'];
+                let hasError = false;
 
-            // Clear any previous highlights
-            modalInputs.removeClass('highlight-error');
+                // Clear previous highlights
+                modalInputs.removeClass('highlight-error');
 
-            modalInputs.each(function () {
-                const key = $(this).attr('name');
-                const value = $(this).val() || '';
+                modalInputs.each(function () {
+                    const key = $(this).attr('name');
+                    const value = $(this).val() || '';
 
-                if (isDateField(key) && value) {
-                    updatedData[key] = formatDateToMMDDYYYY(value);
-                } else {
-                    updatedData[key] = value;
-                }
+                    debugger;
+                    if (isDateField(key) && isValidDateOnSavingEditModal(value)) {
+                        updatedData[key] = formatDateToMMDDYYYY(value);
+                    } else {
+                        updatedData[key] = value;
+                    }
 
-                // Highlight required fields if they are empty
-                if (requiredFields.includes(key) && value.trim() === '') {
-                    $(this).removeClass('valid-class').addClass('highlight-error');
-                    hasError = true;
-                }
-            });
-
-            // If any required field is missing, do not proceed further
-            if (hasError) {
-                return;
-            }
-
-            let newRowData = new Array(73).fill('');
-            const last4Value = updatedData['LAST 4'];
-            const fullSSNIndex = keys.indexOf('FULL SSN'); // Find index of FULL SSN column
-
-            tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
-                if (keysIndex !== -1 && updatedData[keys[keysIndex]]) {
-                    newRowData[tableColIndex] = updatedData[keys[keysIndex]];
-                }
-            });
-
-            if (isAddingNewRow) {
-                smIdCounter++;
-                newRowData[0] = smIdCounter;
-            } else {
-                newRowData[0] = currentRow.find('td').eq(0).text();
-
-                if (fullSSNIndex !== -1 && last4Value) {
-                    // Get current FULL SSN
-                    const currentFullSSN = currentRow.find('td').eq(fullSSNIndex).text();
-
-                    // Replace the last 4 digits of FULL SSN with the new LAST 4 value
-                    const updatedFullSSN = currentFullSSN.slice(0, -4) + last4Value;
-                    newRowData[fullSSNIndex] = updatedFullSSN; // Update the FULL SSN in newRowData
-                }
-            }
-
-            let actionButtons = `
-                        <button class="btn mr-2" onclick="editRow(this)">Edit</button>
-                        <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
-                    `;
-            newRowData[72] = actionButtons;
-
-            if (isAddingNewRow) {
-                $('#previewTable').DataTable().row.add(newRowData).draw(false);
-            } else {
-                keys.forEach((key, index) => {
-                    if (updatedData[key] !== undefined && updatedData[key] !== null) {
-                        currentRow.find('td').eq(index).text(updatedData[key]);
+                    // Highlight required fields if they are empty
+                    if (requiredFields.includes(key) && value.trim() === '') {
+                        $(this).removeClass('valid-class').addClass('highlight-error');
+                        hasError = true;
                     }
                 });
 
-                if (fullSSNIndex !== -1) {
-                    currentRow.find('td').eq(fullSSNIndex).text(newRowData[fullSSNIndex]);
+                // If any required field is missing, do not proceed further
+                if (hasError) {
+                    return;
                 }
+
+                let newRowData = new Array(73).fill('');
+                const last4Value = updatedData['LAST 4'];
+                const fullSSNIndex = keys.indexOf('FULL SSN'); // Find index of FULL SSN column
+
+                debugger;
+                tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
+                    if (keysIndex !== -1) {
+                        const fieldName = keys[keysIndex];
+
+                        // Keep original value if the field is empty
+                        if (updatedData[fieldName] && updatedData[fieldName].trim() !== '') {
+                            newRowData[tableColIndex] = updatedData[fieldName];
+                        } else {
+                            newRowData[tableColIndex] = currentRow.find('td').eq(tableColIndex).text(); // Keep original value
+                        }
+                    }
+                });
+
+                if (isAddingNewRow) {
+                    smIdCounter++;
+                    newRowData[0] = smIdCounter;
+                } else {
+                    newRowData[0] = currentRow.find('td').eq(0).text();
+
+                    if (fullSSNIndex !== -1 && last4Value) {
+                        const currentFullSSN = currentRow.find('td').eq(fullSSNIndex).text();
+                        const updatedFullSSN = currentFullSSN.slice(0, -4) + last4Value;
+                        newRowData[fullSSNIndex] = updatedFullSSN;
+                    }
+                }
+
+                let actionButtons = `
+                    <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                    <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
+                `;
+                newRowData[72] = actionButtons;
+
+                if (isAddingNewRow) {
+                    $('#previewTable').DataTable().row.add(newRowData).draw(false);
+                } else {
+                    keys.forEach((key, index) => {
+                        if (updatedData[key] !== undefined) {
+                            // Keep original value if empty
+                            if (updatedData[key].trim() !== '') {
+                                currentRow.find('td').eq(index).text(updatedData[key]);
+                            }
+                        }
+                    });
+
+                    if (fullSSNIndex !== -1) {
+                        currentRow.find('td').eq(fullSSNIndex).text(newRowData[fullSSNIndex]);
+                    }
+                }
+
+                isAddingNewRow = false;
+                AdjustWidth();
+                $('#editModal').modal('hide');
             }
 
-            isAddingNewRow = false;
-            AdjustWidth();
-            $('#editModal').modal('hide');
-        }
 
 
         function isDateField(fieldName) {
-            const dateFields = ['DOB']; // Replace with actual date field names
+            const dateFields = ['DOB', 'PANO Needed', 'LIPID PANEL', 'EKG']; // Replace with actual date field names
             return dateFields.includes(fieldName);
         }
 
-
+            function isValidDateOnSavingEditModal(value) {
+                const date = new Date(value);
+                return !isNaN(date.getTime()); // Returns true if it's a valid date
+            }
 
         // function generateNewRowHtml(rowData) {
         //     let newRowHtml = '<tr>'; // Start a new row
@@ -1269,7 +1279,6 @@
         }
 
         function isValidDate(dateString) {
-            debugger;
             const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
             if (!dateRegex.test(dateString)) {
@@ -1308,7 +1317,6 @@
 
 
         function submitData() {
-            debugger;
             $('#loader').removeClass('d-none');
             // Get all data from the DataTable
             let tableRows = [];
@@ -1510,7 +1518,6 @@
             
 
             function getRowData(row) {
-                debugger;
                 var table = row.closest("table"); // Get the table reference
 
                 var fullNameIndex = getColumnIndex(table, "FULL NAME");
