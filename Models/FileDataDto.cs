@@ -84,5 +84,6 @@ namespace ExcelToCsv.Models
         public int? HivWin { get; set; }
         public int? HearingWin { get; set; }
         public bool? isDeleted { get; set; }
+        public string? Barcode { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
+using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.RegularExpressions;
+using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -24,14 +26,24 @@ namespace ExcelFilesCompiler.Controllers.Services
         private string DateFormat = "MM/dd/yyyy";
 
         private readonly IGenericRepository<FileDataDto> fileUploaderRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository)
+        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository, IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
             this.fileUploaderRepository = fileUploaderRepository;
         }
 
         public List<List<Dictionary<string, object>>> UploadAndPreview(List<IFormFile> files, IFormFile G6PDFile, DateTime parsedEventDate, DateTime? parsedLastEventDate, string eventId, int lastDentalExam, int vision, int dental, int pha, int hiv, int hearing)
         {
+            var eventRecords = _unitOfWork.EventManagement.GetAllAsync().Result;
+            var matchedEvent = eventRecords.FirstOrDefault(e => string.Equals(e.EventID, eventId, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedEvent == null)
+            {
+                throw new Exception($"No Event Id found against {eventId}");
+            }
+
             var processingSequence = GetProcessingSequence();
 
             var validationErrors = CheckFieldsBeforeUploading(files, processingSequence);
@@ -46,7 +58,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             var G6PDDataTable = GetDataFromFile(G6PDFile, fileConfigG6PD.Headers, fileConfigG6PD.SelectedColumns, fileConfigG6PD.stoppingKeyword, isG6PD: true, out string taskForceValue, out long totalRecordValueInG6pdFile);
             CheckG6PDTotalAssignedCountWithTotalRow(G6PDDataTable, totalRecordValueInG6pdFile);
             ProcessExcelFiles(files, G6PDDataTable, processingSequence, fileConfigurations, parsedLastEventDate, visionDate, dentalDate, phaDate, hivDate, hearingDate, parsedEventDate, lastDentalExam, vision, dental, pha, hiv, hearing, eventId);
-            MergeSomeMoreColumns(G6PDDataTable, taskForceValue);
+            MergeSomeMoreColumns(G6PDDataTable, taskForceValue, matchedEvent.Id);
             var headerMapping = GetHeaderMapping();
             string[] predefinedColumnOrder = GetPredefinedColumnHeader();
             var preparedDataTable = RenameReorderAndProcess(G6PDDataTable, headerMapping, predefinedColumnOrder);
@@ -156,7 +168,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 HearingWin = dto.HearingWin,
                 isDeleted = false,
                 AddedBy = loggedinUserName,
-                AddedOn = DateTime.Now
+                AddedOn = DateTime.Now,
+                Barcode = dto.Barcode
             }).ToList();
 
             fileUploaderRepository.AddRange(Records);
@@ -481,7 +494,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 "Dental_Win",
                 "PHA_Win",
                 "HIV_Win",
-                "Hearing_WIN"
+                "Hearing_WIN",
+                "Barcode"
                 };
         }
 
@@ -562,6 +576,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 { "PHA_Win", "PHA_Win" },
                 { "HIV_Win", "HIV_Win" },
                 { "Hearing_WIN", "Hearing_WIN" },
+                { "Barcode", "Barcode" }
             };
         }
 
@@ -620,7 +635,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             };
         }
 
-        private void MergeSomeMoreColumns(DataTable parentTable, string taskForceValue)
+        private void MergeSomeMoreColumns(DataTable parentTable, string taskForceValue, long eventId)
         {
             if (!parentTable.Columns.Contains("TaskForce"))
             {
@@ -636,6 +651,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 parentTable.Columns.Add("Lab Needed", typeof(string));
             }
+
+            if (!parentTable.Columns.Contains("Barcode"))
+            {
+                parentTable.Columns.Add("Barcode", typeof(string));
+            }
+
+            string paddedEventId = eventId.ToString("D5");
 
             foreach (DataRow parentRow in parentTable.Rows)
             {
@@ -668,6 +690,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     parentRow["Lab Needed"] = "N/A";
                 }
+
+                parentRow["Barcode"] = $"{paddedEventId}";
             }
 
         }

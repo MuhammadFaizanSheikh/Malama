@@ -462,6 +462,14 @@
                 smIdCounter++;
                 let smIdData = [smIdCounter];
                 let fullRowData = smIdData.concat(rowData);
+
+                    let barcodeIndex = Object.keys(row).indexOf("Barcode") + 1; // +1 because SM ID is added at index 0
+                    if (barcodeIndex > 0) {
+                        let originalBarcode = fullRowData[barcodeIndex]; // Get original barcode value
+                        let smIdPadded = smIdCounter.toString().padStart(5, '0'); // Pad SM ID to 5 digits
+                        fullRowData[barcodeIndex] = `${originalBarcode}-${smIdPadded}`; // Append formatted SM ID
+                    }
+
                 let actionButtons = `
                             <button class="btn mr-2" onclick="editRow(this)">Edit</button>
                                                                 <button class="btn mr-2 btn-print">Print</button>
@@ -1317,6 +1325,7 @@
 
 
         function submitData() {
+            debugger;
             $('#loader').removeClass('d-none');
             // Get all data from the DataTable
             let tableRows = [];
@@ -1394,6 +1403,7 @@
                     PhaWin: parseInt($(this).find('td:eq(69)').text()),        // Convert to integer
                     HivWin: parseInt($(this).find('td:eq(70)').text()),        // Convert to integer
                     HearingWin: parseInt($(this).find('td:eq(71)').text()),
+                    Barcode: $(this).find('td:eq(72)').text(),
                     isDeleted: false
                 };
 
@@ -1401,7 +1411,7 @@
             });
 
             const eventId = document.getElementById('eventId').value;
-
+            debugger;
             // First, check if data exists for the given eventId
             $.ajax({
                 url: '@Url.Action("CheckForExistingDataAgainstEventId", "Home")',
@@ -1439,6 +1449,7 @@
         }
 
         function submitDataToDatabase(tableRows, eventId) {
+            debugger;
             const dataToSend = JSON.stringify({
                 Entities: tableRows,
                 EventId: eventId
@@ -1509,6 +1520,7 @@
                 });
 
                 if (allRowsData.length > 0) {
+                    allRowsData.sort((a, b) => a.fullName.localeCompare(b.fullName));
                     generatePDF(allRowsData, false); // Pass all rows and save PDF
                 } else {
                     alert("No data available for download.");
@@ -1530,6 +1542,7 @@
                 var labNeededIndex = getColumnIndex(table, "Lab Needed");
                 var immNeededIndex = getColumnIndex(table, "IMM");
                 var hearingNeededIndex = getColumnIndex(table, "HEARING");
+                var barcodeIndex = getColumnIndex(table, "Barcode");
 
                 return {
                     fullName: fullNameIndex !== -1 ? row.find("td").eq(fullNameIndex).text().trim() : "N/A",
@@ -1542,6 +1555,7 @@
                     labNeeded: labNeededIndex !== -1 ? row.find("td").eq(labNeededIndex).text().trim() : "N/A",
                     immNeeded: immNeededIndex !== -1 ? row.find("td").eq(immNeededIndex).text().trim() : "N/A",
                     hearingNeeded: hearingNeededIndex !== -1 ? row.find("td").eq(hearingNeededIndex).text().trim() : "N/A",
+                    barcode: barcodeIndex !== -1 ? row.find("td").eq(barcodeIndex).text().trim() : "0",
                 };
             }
 
@@ -1623,7 +1637,7 @@
                     // **Barcode Generation**
                     let barcodeYOffset = footerYOffset - 30; // Adjust to fit above footer
                     let barcodeCanvas = document.createElement("canvas"); // Create a canvas for barcode
-                    JsBarcode(barcodeCanvas, data.dodId, {
+                    JsBarcode(barcodeCanvas, data.barcode, {
                         format: "CODE128",
                         displayValue: true,  // Show the DoD ID below the barcode
                         fontSize: 14,        // Adjust text size

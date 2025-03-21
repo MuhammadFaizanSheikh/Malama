@@ -1812,12 +1812,11 @@
                 </div>
             </div>
 
-            <div id="section7" class="form-section section" style="display: none;">
-                <div class="container mt-3">
-                    <!-- Search Filter Section -->
-                    <div class="card p-3 mb-4">
-                        <h5 class="text-center">Search Event Staff</h5>
-                        <div class="container">
+        <div id="section7" class="form-section section" style="display: none;">
+                <!-- Search Filter Section -->
+                <div class="card p-3 mb-4">
+                    <h5 class="text-center">Search Event Staff</h5>
+                    <div class="container">
                         <div class="row g-2">
                             <!-- First Row -->
                             <div class="col-md-3">
@@ -1861,69 +1860,68 @@
                             <!-- Search Button (Centered) -->
                             <div class="col-12 text-center mt-2">
                                 <button id="searchStaffBtn" type="button" class="btn btn-primary px-4">Search</button>
-                                 <button id="resetFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
+                                <button id="resetFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
                             </div>
                         </div>
-            </div>
-
                     </div>
 
-                    <!-- Available Staff Table -->
-                    <h5 class="text-center mb-3">Available Event Staff</h5>
-                    <div class="table-responsive">
-                        <table id="eventStaffSelectionTable" class="table table-bordered table-striped">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Staff ID</th>
-                                    <th>Last Name</th>
-                                    <th>First Name</th>
-                                    <th>Roles</th>
-                                    <th>License(s)</th>
-                                    <th>State</th>
-                                    <th>City</th>
-                                    <th>ZipCode</th>
-                                    @*  <th>Role</th>
-                                    <th>Radius</th> *@
-                                    <th>Staff Cac</th>
-                                    <th>Id</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-
-                    <!-- Selected Staff Table -->
-                    <h5 class="text-center mt-5 mb-3">Selected Event Staff</h5>
-                    <div class="table-responsive">
-                        <table id="eventStaffSelectedTable" class="table table-bordered table-striped">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Select Role</th>
-                                    <th>Staff ID</th>
-                                    <th>Last Name</th>
-                                    <th>First Name</th>
-                                    <th>Roles</th>
-                                    <th>License(s)</th>
-                                    <th>State</th>
-                                    <th>City</th>
-                                    <th>ZipCode</th>
-                                    <th>Id</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
                 </div>
 
-                <!-- Navigation Buttons -->
-                <div class="row mt-4">
-                    <div class="col-md-12 text-center">
-                        <button type="button" class="btn btn-secondary back" data-section="7">Back</button>
-                    </div>
+                <!-- Available Staff Table -->
+                <h5 class="text-center mb-3">Available Event Staff</h5>
+                <div class="table-responsive">
+                    <table id="eventStaffSelectionTable" class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Staff ID</th>
+                                <th>Last Name</th>
+                                <th>First Name</th>
+                                <th>Roles</th>
+                                <th>License(s)</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>ZipCode</th>
+                                @*  <th>Role</th>
+                                <th>Radius</th> *@
+                                <th>Staff Cac</th>
+                                <th>Id</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <!-- Selected Staff Table -->
+                <h5 class="text-center mt-5 mb-3">Selected Event Staff</h5>
+                <div class="table-responsive">
+                    <table id="eventStaffSelectedTable" class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Select Role</th>
+                                <th>Staff ID</th>
+                                <th>Last Name</th>
+                                <th>First Name</th>
+                                <th>Roles</th>
+                                <th>License(s)</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>ZipCode</th>
+                                <th>Id</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+            <!-- Navigation Buttons -->
+            <div class="row mt-4">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-secondary back" data-section="7">Back</button>
                 </div>
             </div>
+        </div>
 
             <!-- Save Button -->
             <input type="hidden" id="filledSections" name="filledSections" />
