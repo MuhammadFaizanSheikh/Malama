@@ -716,9 +716,9 @@
         }
 
         const calendarIndexes = [13];
-        const dropdownIndexes = [8, 10, 12, 19, 20, 23, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 54, 55, 56, 57, 58, 59, 60];
+        const dropdownIndexes = [8, 10, 12, 19, 20, 23, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 55, 56, 57, 58, 59, 60];
         // const readOnlyIndexes = [7, 14, 15, 16, 17, 18, 19, 22, 21, 43, 23, 25, 26, 31, 32, 35, 36, 40, 45, 48, 49, 51, 52, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71];
-        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,17,16,21,24,22,25,26,31,32,33,34,40,45,35,36,43,44,52,55,57,59,56,58,60,54];
+        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,17,16,21,24,22,25,26,31,32,33,34,40,45,35,36,43,44,52,54];
         const multilineTextbox = [62];
 
         // Define specific dropdown options for certain fields
@@ -957,6 +957,7 @@
 
             const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
             const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+                const fieldsToCheckImmunization = ['Hep B', 'Hep A', 'FLU', 'Tet/TDP', 'MMR', 'Varicella'];
 
             fieldsToCheckQuest.forEach(field => {
                 const inputField = modalContent.find(`select[name="${field}"]`);
@@ -971,6 +972,13 @@
                     inputField.on('change', checkLabNeededField);
                 }
             });
+
+                fieldsToCheckImmunization.forEach(field => {
+                    const inputField = modalContent.find(`select[name="${field}"]`);
+                    if (inputField.length > 0) {
+                        inputField.on('change', checkIMMNeededField);
+                    }
+                });
         }
 
         //****************************************************This can be needed in future*************************************************/
@@ -1010,6 +1018,24 @@
                 labNeededField.val("N/A");
             }
         }
+
+            function checkIMMNeededField() {
+                debugger;
+                const hepBValue = modalContent.find('select[name="Hep B"]').val();
+                const hepAValue = modalContent.find('select[name="Hep A"]').val();
+                const fluValue = modalContent.find('select[name="FLU"]').val();
+                const tetTdpValue = modalContent.find('select[name="Tet/TDP"]').val();
+                const mmrValue = modalContent.find('select[name="MMR"]').val();
+                const vericellaValue = modalContent.find('select[name="Varicella"]').val();
+
+                const immNeededField = modalContent.find('input[name="IMM"]');
+
+                if (hepBValue === "NEEDED" || hepAValue === "NEEDED" || fluValue === "NEEDED" || tetTdpValue === "NEEDED" || mmrValue === "NEEDED" || vericellaValue === "NEEDED") {
+                    immNeededField.val("NEEDED");
+                } else {
+                    immNeededField.val("N/A");
+                }
+            }
 
             $(document).on("input", ".decimal-input", function () {
                 let value = $(this).val();

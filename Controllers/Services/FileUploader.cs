@@ -1407,7 +1407,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     parentRow.Table.Columns.Add("IMM", typeof(string));
                 }
 
-                if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("IPV", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("IPV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("MEN", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("TYV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("YEL", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("ANT", StringComparison.OrdinalIgnoreCase))
                 {
                     parentRow["IMM"] = "N/A";
                 }
