@@ -3357,13 +3357,22 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                         //Daywise time setting pending;
 
-
+                        debugger;
                         if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
-                            let eventStartDate = new Date(combinedData.eventManagement.eventStartDate).toISOString().split('T')[0];
-                            let eventEndDate = new Date(combinedData.eventManagement.eventEndDate).toISOString().split('T')[0];
+                            let eventStartDate = new Date(combinedData.eventManagement.eventStartDate);
+                            let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
+                            $('#EventStartDate').val(formattedStartDate);
 
-                            $('#EventStartDate').val(eventStartDate);
-                            $('#EventEndDate').val(eventEndDate);
+                            let eventEndDate = new Date(combinedData.eventManagement.eventEndDate);
+                            let formattedEndDate = eventEndDate.toLocaleDateString('en-CA');
+                            $('#EventEndDate').val(formattedEndDate);
+
+
+                            // let eventStartDate = new Date(combinedData.eventManagement.eventStartDate).toISOString().split('T')[0];
+                            // let eventEndDate = new Date(combinedData.eventManagement.eventEndDate).toISOString().split('T')[0];
+
+                            // $('#EventStartDate').val(eventStartDate);
+                            // $('#EventEndDate').val(eventEndDate);
 
                             generateControlsForDateRange(eventStartDate, eventEndDate, combinedData.eventManagement.eventStartEndTimeDayWiseList);
                         }
@@ -3730,11 +3739,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
-                                <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTimeDay" value="${eventStartTime}" />
+                                <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTime" value="${eventStartTime}" />
                             </div>
                             <div class="col-md-4">
                                 <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
-                                <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTimeDay" value="${eventEndTime}" />
+                                <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTime" value="${eventEndTime}" />
                             </div>
                             <div class="col-md-4">
                                 <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
