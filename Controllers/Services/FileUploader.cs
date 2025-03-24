@@ -1243,73 +1243,34 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("DOB") && DateTime.TryParse(parentRow["DOB"]?.ToString(), out DateTime dobTaskForce))
             {
-                // Calculate exact age
                 var today = eventDate;
-                int age = today.Year - dobTaskForce.Year;
-                if (dobTaskForce > today.AddYears(-age)) age--; // Adjust if birthday hasn't occurred this year
-
-                // Calculate whether age is greater than 39.5 years
                 double exactAge = (today - dobTaskForce).TotalDays / 365.25; // Using 365.25 to account for leap years
+                double ageWithGrace = ((today.AddDays(14)) - dobTaskForce).TotalDays / 365.25;
 
                 // Over 40 logic
-                if (age >= 40)
+                if (!parentRow.Table.Columns.Contains("OVER 40"))
                 {
-                    if (!parentRow.Table.Columns.Contains("OVER 40"))
-                    {
-                        parentRow.Table.Columns.Add("OVER 40", typeof(string));
-                    }
-
-                    parentRow["OVER 40"] = "YES";  // Mark the user as over 40
+                    parentRow.Table.Columns.Add("OVER 40", typeof(string));
                 }
-                else
-                {
-                    if (!parentRow.Table.Columns.Contains("OVER 40"))
-                    {
-                        parentRow.Table.Columns.Add("OVER 40", typeof(string));
-                    }
 
-                    parentRow["OVER 40"] = "NO"; // Mark the user as under 40
-                }
+                // Set "OVER 40" column value based on 39.5 years threshold
+                parentRow["OVER 40"] = exactAge > 39.5 ? "YES" : "NO";
 
                 // Near Vision logic
-                if (age > 45)
+                if (!parentRow.Table.Columns.Contains("NEAR VISION"))
                 {
-                    if (!parentRow.Table.Columns.Contains("NEAR VISION"))
-                    {
-                        parentRow.Table.Columns.Add("NEAR VISION", typeof(string));
-                    }
-
-                    parentRow["NEAR VISION"] = "NEEDED";
-                }
-                else
-                {
-                    if (!parentRow.Table.Columns.Contains("NEAR VISION"))
-                    {
-                        parentRow.Table.Columns.Add("NEAR VISION", typeof(string));
-                    }
-
-                    parentRow["NEAR VISION"] = "N/A";
+                    parentRow.Table.Columns.Add("NEAR VISION", typeof(string));
                 }
 
-                // Over 44 logic
-                if (age >= 44)
-                {
-                    if (!parentRow.Table.Columns.Contains("OVER 44"))
-                    {
-                        parentRow.Table.Columns.Add("OVER 44", typeof(string));
-                    }
+                parentRow["NEAR VISION"] = ageWithGrace >= 45 ? "NEEDED" : "N/A";
 
-                    parentRow["OVER 44"] = "YES";
-                }
-                else
-                {
-                    if (!parentRow.Table.Columns.Contains("OVER 44"))
-                    {
-                        parentRow.Table.Columns.Add("OVER 44", typeof(string));
-                    }
 
-                    parentRow["OVER 44"] = "NO";
+                if (!parentRow.Table.Columns.Contains("OVER 44"))
+                {
+                    parentRow.Table.Columns.Add("OVER 44", typeof(string));
                 }
+
+                parentRow["OVER 44"] = ageWithGrace >= 45 ? "YES" : "NO";
 
                 // Additional logic for exact age > 39.5
                 if (exactAge > 39.5)  // Check if exact age is greater than 39.5

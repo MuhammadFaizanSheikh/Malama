@@ -716,9 +716,9 @@
         }
 
         const calendarIndexes = [13];
-        const dropdownIndexes = [8, 10, 12, 20, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 54, 55, 56, 57, 58, 59, 60];
+        const dropdownIndexes = [8, 10, 12, 19, 20, 23, 27, 28, 29, 30, 37, 38,39, 41,42, 46,47, 53, 54, 55, 56, 57, 58, 59, 60];
         // const readOnlyIndexes = [7, 14, 15, 16, 17, 18, 19, 22, 21, 43, 23, 25, 26, 31, 32, 35, 36, 40, 45, 48, 49, 51, 52, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71];
-        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,17,16,19,20,21,23,24,22,25,27,29,26,28,30,31,32,33,34,40,45,37,41,46,38,35,36,39,42,43,44,47,52,55,57,59,56,58,60,54];
+        const readOnlyIndexes = [6, 7, 8, 9,10,11,12, 14, 61,66,63,64,65,70,67,69,71,68,15,17,16,21,24,22,25,26,31,32,33,34,40,45,35,36,43,44,52,55,57,59,56,58,60,54];
         const multilineTextbox = [62];
 
         // Define specific dropdown options for certain fields
@@ -933,8 +933,9 @@
                 dobField.on('change', function () {
                     const dobValue = $(this).val();
                     if (dobValue) {
-                        const age = calculateAge(dobValue); // Calculate age based on DOB
-                        updateFieldsBasedOnAge(age); // Update other fields based on the age
+                            handleColumnsRelatedToDob(dobValue)
+                        // const age = calculateAge(dobValue); // Calculate age based on DOB
+                        // updateFieldsBasedOnAge(age); // Update other fields based on the age
                     }
                 });
             }
@@ -954,60 +955,61 @@
             //     });
             // }
 
-            // const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
-            // const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+            const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
+            const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
 
-            // fieldsToCheckQuest.forEach(field => {
-            //     const inputField = modalContent.find(`select[name="${field}"]`);
-            //     if (inputField.length > 0) {
-            //         inputField.on('change', checkQuestField);
-            //     }
-            // });
+            fieldsToCheckQuest.forEach(field => {
+                const inputField = modalContent.find(`select[name="${field}"]`);
+                if (inputField.length > 0) {
+                    inputField.on('change', checkQuestField);
+                }
+            });
 
-            // fieldsToCheckLab.forEach(field => {
-            //     const inputField = modalContent.find(`select[name="${field}"]`);
-            //     if (inputField.length > 0) {
-            //         inputField.on('change', checkLabNeededField);
-            //     }
-            // });
+            fieldsToCheckLab.forEach(field => {
+                const inputField = modalContent.find(`select[name="${field}"]`);
+                if (inputField.length > 0) {
+                    inputField.on('change', checkLabNeededField);
+                }
+            });
         }
 
         //****************************************************This can be needed in future*************************************************/
-        // function checkQuestField() 
-        // {
-        //     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
-        //     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
-        //     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
-        //     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
+        function checkQuestField() 
+        {
+            debugger;
+            const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
+            const g6pdValue = modalContent.find('select[name="G6PD"]').val();
+            const sickleValue = modalContent.find('select[name="SICKLE"]').val();
+            const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
 
-        //     const questField = modalContent.find('input[name="QUEST"]');
+            const questField = modalContent.find('input[name="QUEST"]');
             
-        //     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED") {
-        //         questField.val("NEEDED");
-        //     }
-
-        //     if (aboNeededValue !== "NEEDED" && g6pdValue !== "NEEDED" && sickleValue !== "NEEDED" && lipidNeededValue !== "NEEDED") {
-        //         questField.val("N/A");
-        //     }
-        // }
+            if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED") {
+                questField.val("NEEDED");
+            }
+                else {
+                    questField.val("N/A");
+                }
+        }
 
         //****************************************************This can be needed in future*************************************************/
-        // function checkLabNeededField() {
-        //     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
-        //     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
-        //     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
-        //     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
-        //     const hivValue = modalContent.find('select[name="HIV"]').val();
-        //     const dnaValue = modalContent.find('select[name="DNA"]').val();
+        function checkLabNeededField() {
+            debugger;
+            const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
+            const g6pdValue = modalContent.find('select[name="G6PD"]').val();
+            const sickleValue = modalContent.find('select[name="SICKLE"]').val();
+            const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
+            const hivValue = modalContent.find('select[name="HIV"]').val();
+            const dnaValue = modalContent.find('select[name="DNA"]').val();
 
-        //     const labNeededField = modalContent.find('input[name="Lab Needed"]');
+            const labNeededField = modalContent.find('input[name="Lab Needed"]');
 
-        //     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED" || hivValue === "NEEDED" || dnaValue === "NEEDED") {
-        //         labNeededField.val("NEEDED");
-        //     } else {
-        //         labNeededField.val("N/A");
-        //     }
-        // }
+            if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED" || hivValue === "NEEDED" || dnaValue === "NEEDED") {
+                labNeededField.val("NEEDED");
+            } else {
+                labNeededField.val("N/A");
+            }
+        }
 
             $(document).on("input", ".decimal-input", function () {
                 let value = $(this).val();
@@ -1022,65 +1024,116 @@
 
 
 
+            function handleColumnsRelatedToDob(dob) {
+                if (!dob) return; // Ensure DOB is provided
+                debugger;
+                let dobDate = new Date(dob);
+                let today = new Date(document.getElementById("calendarInput").value);
+                let exactAge = (today - dobDate) / (365.25 * 24 * 60 * 60 * 1000); // Age calculation
+                let ageWithGrace = ((new Date(today.setDate(today.getDate() + 14))) - dobDate) / (365.25 * 24 * 60 * 60 * 1000);
 
-        function calculateAge(dob) {
-            const birthDate = new Date(dob);
-                const today = new Date(document.getElementById("calendarInput").value);
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
+                const over40Field = document.querySelector('input[name="OVER 40"]');
+                if (over40Field) {
+                    over40Field.value = exactAge > 39.5 ? "YES" : "NO";
+                }
 
-            // Adjust age if the birth month hasn't occurred yet this year
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
+                const over44Field = document.querySelector('input[name="Over 44"]');
+                if (over44Field) {
+                    over44Field.value = ageWithGrace >= 45 ? "YES" : "NO";
+                }
+
+                const nearVisionField = document.querySelector('select[name="NEAR VISION"]');
+                if (nearVisionField) {
+                    nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+                }
+
+                const lipidNeededField = document.querySelector('select[name="Lipid Needed"]');
+                const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
+                const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
+                const ekgField = document.querySelector('input[name="EKG"]');
+                const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
+                const framinghamField = document.querySelector('input[name="Framingham"]');
+
+                const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
+
+                if (lipidNeededField) {
+                    lipidNeededField.value = valueForAge;
+                }
+                if (lipidPanelField) {
+                    lipidPanelField.value = valueForAge;
+                }
+                if (cholesterolField) {
+                    cholesterolField.value = valueForAge;
+                }
+                if (ekgField) {
+                    ekgField.value = valueForAge;
+                }
+                if (ekgNeededField) {
+                    ekgNeededField.value = valueForAge;
+                }
+                if (framinghamField) {
+                    framinghamField.value = valueForAge;
+                }
             }
 
-            return age;
-        }
+        // function calculateAge(dob) {
+        //     const birthDate = new Date(dob);
+        //         const today = new Date(document.getElementById("calendarInput").value);
+        //     let age = today.getFullYear() - birthDate.getFullYear();
+        //     const monthDiff = today.getMonth() - birthDate.getMonth();
 
-        function updateFieldsBasedOnAge(age) {
+        //     // Adjust age if the birth month hasn't occurred yet this year
+        //     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        //         age--;
+        //     }
 
-            const ageField = document.querySelector('input[name="AGE"]');
-            if (ageField) {
-                ageField.value = age; // Set the value of the AGE field to the calculated age
-            }
+        //     return age;
+        // }
 
-            // Update "OVER 40" field
-            const over40Field = document.querySelector('input[name="OVER 40"]');
-            if (over40Field) {
-                over40Field.value = age >= 40 ? "YES" : "NO";
-            }
+        // function updateFieldsBasedOnAge(age) {
 
-            // Update "OVER 44" field
-            const over44Field = document.querySelector('input[name="Over 44"]');
-            if (over44Field) {
-                over44Field.value = age >= 44 ? "YES" : "NO";
-            }
+        //     const ageField = document.querySelector('input[name="AGE"]');
+        //     if (ageField) {
+        //         ageField.value = age; // Set the value of the AGE field to the calculated age
+        //     }
 
-            // Update fields based on age > 39.5
-            const lipidNeededField = document.querySelector('input[name="Lipid Needed"]');
-            const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
-            const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
-            const ekgField = document.querySelector('input[name="EKG"]');
-            const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
+        //     // Update "OVER 40" field
+        //     const over40Field = document.querySelector('input[name="OVER 40"]');
+        //     if (over40Field) {
+        //         over40Field.value = age >= 40 ? "YES" : "NO";
+        //     }
 
-            const valueForAge = age > 39.5 ? "NEEDED" : "N/A";
+        //     // Update "OVER 44" field
+        //     const over44Field = document.querySelector('input[name="Over 44"]');
+        //     if (over44Field) {
+        //         over44Field.value = age >= 44 ? "YES" : "NO";
+        //     }
 
-            if (lipidNeededField) {
-                lipidNeededField.value = valueForAge;
-            }
-            if (lipidPanelField) {
-                lipidPanelField.value = valueForAge;
-            }
-            if (cholesterolField) {
-                cholesterolField.value = valueForAge;
-            }
-            if (ekgField) {
-                ekgField.value = valueForAge;
-            }
-            if (ekgNeededField) {
-                ekgNeededField.value = valueForAge;
-            }
-        }
+        //     // Update fields based on age > 39.5
+        //     const lipidNeededField = document.querySelector('input[name="Lipid Needed"]');
+        //     const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
+        //     const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
+        //     const ekgField = document.querySelector('input[name="EKG"]');
+        //     const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
+
+        //     const valueForAge = age > 39.5 ? "NEEDED" : "N/A";
+
+        //     if (lipidNeededField) {
+        //         lipidNeededField.value = valueForAge;
+        //     }
+        //     if (lipidPanelField) {
+        //         lipidPanelField.value = valueForAge;
+        //     }
+        //     if (cholesterolField) {
+        //         cholesterolField.value = valueForAge;
+        //     }
+        //     if (ekgField) {
+        //         ekgField.value = valueForAge;
+        //     }
+        //     if (ekgNeededField) {
+        //         ekgNeededField.value = valueForAge;
+        //     }
+        // }
 
 
         const validationRules = {
