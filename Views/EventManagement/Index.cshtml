@@ -157,6 +157,36 @@
                 text-align: center;
             }
 
+        .plus-icon {
+            width: 20px; /* Image width */
+            height: 20px; /* Image height */
+            cursor: pointer; /* Show pointer on hover */
+        }
+
+            .plus-icon:hover {
+                transform: scale(1.1); /* Slight enlarge on hover */
+                transition: 0.2s ease-in-out; /* Smooth animation */
+            }
+
+        .add-row-button {
+            background-color: transparent; /* No background */
+            border: none; /* Remove border */
+            padding: 0; /* Remove button padding */
+            cursor: pointer; /* Pointer cursor on hover */
+            display: inline-block;
+        }
+
+            .add-row-button img {
+                outline: none;
+            }
+
+            .add-row-button:focus,
+            .add-row-button:active {
+                outline: none;
+                border: none;
+                box-shadow: none;
+            }
+
         /*     #eventStaffSelectedTable th:nth-child(10) {
     display: none;
 } */
@@ -407,11 +437,6 @@
                         <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
                         <input asp-for="SingleEventManagement.SubEventID" id="SubEventID" class="form-control" maxLength="5" placeholder="Enter Sub Event ID" />
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
-                        <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" maxLength="100" placeholder="Enter Task Force" />
-                    </div>
-
                 </div>
 
                 <div class="row mb-3">
@@ -521,7 +546,20 @@
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventHelpLine" class="form-label">Event Help Line</label>
                         <input id="EventHelpLine" asp-for="SingleEventManagement.EventHelpLine" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+
+                    <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
+                    @* <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" maxLength="100" placeholder="Enter Task Force" /> *@
+
+                    <div class="form-container-Taskforce">
+                        <!-- Dynamic License Rows will be inserted here -->
                     </div>
+
+                    <button type="button" id="addTaskForceRowButton" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" style="margin-right: 8px;" />
+                        <span class="button-text">Add another taskforce</span>
+                    </button>
+                    </div>
+                
                 </div>
 
                 <div class="row mt-4">
@@ -1989,6 +2027,30 @@
             width: '100%'
         });
 
+        let taskForceIndex = 0;
+
+         function addTaskForceRow() {
+            let newInput = `
+                <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
+                    <input name="SingleEventManagement.TaskForce[${taskForceIndex}]" class="form-control" maxLength="100" placeholder="Enter Task Force" style="margin-right: 8px;"/>
+                        <button type="button" class="btn btn-danger btn-sm remove-row remove-taskforce-row" style="height: 38px;">Remove</button>
+                </div>
+            `;
+
+            $(".form-container-Taskforce").append(newInput);
+            taskForceIndex++; // Increment index for next entry
+        }
+
+        // Call function on button click
+        $("#addTaskForceRowButton").click(function () {
+            addTaskForceRow();
+        });
+
+        // Remove a Task Force row when the 'X' button is clicked
+        $(document).on("click", ".remove-taskforce-row", function () {
+            $(this).parent(".taskforce-row").remove();
+        });
+
         $('#HIVDropOffStaffId').select2({
             ajax: {
                 url: '/EventStaff/GetEventStaffForSearching',
@@ -2810,6 +2872,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         $('#addContractBtn').click(function () {
+            addTaskForceRow();
             resetFormFields();
             $('.card-body').show();
             $('#datatableWrapper').hide();
