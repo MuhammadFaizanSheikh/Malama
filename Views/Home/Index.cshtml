@@ -142,13 +142,13 @@
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
 
-    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" >
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">Edit Row</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="modalBodyContent">
@@ -837,7 +837,7 @@
                             if (value.trim().toLowerCase() === "n/a") {
                                 inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
-                                                                                                    <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                                                                                <input type="text" class="form-control decimal-input" name="${key}" value="${value}" readonly ${textColor} />
                                                                                     </div>`;
                                 
                             } else {
@@ -1058,6 +1058,11 @@
                 let exactAge = (today - dobDate) / (365.25 * 24 * 60 * 60 * 1000); // Age calculation
                 let ageWithGrace = ((new Date(today.setDate(today.getDate() + 14))) - dobDate) / (365.25 * 24 * 60 * 60 * 1000);
 
+                const ageField = document.querySelector('input[name="AGE"]');
+                    if (ageField) {
+                    ageField.value = Math.floor(exactAge); // Set the value of the AGE field to the calculated age
+                    }
+
                 const over40Field = document.querySelector('input[name="OVER 40"]');
                 if (over40Field) {
                     over40Field.value = exactAge > 39.5 ? "YES" : "NO";
@@ -1086,19 +1091,49 @@
                     lipidNeededField.value = valueForAge;
                 }
                 if (lipidPanelField) {
-                    lipidPanelField.value = valueForAge;
+                    if (exactAge > 39.5) {
+                        lipidPanelField.type = "date"; // Make it a calendar input
+                        lipidPanelField.value = "";
+                        lipidPanelField.readOnly = false;
+                    } else {
+                        lipidPanelField.type = "text"; // Make it a text input
+                        lipidPanelField.value = "N/A";
+                        lipidPanelField.readOnly = true;
+                    }
                 }
                 if (cholesterolField) {
-                    cholesterolField.value = valueForAge;
+                    if (exactAge > 39.5) {
+                        cholesterolField.value = ""; // Set empty value
+                        cholesterolField.readOnly = false; // Make it editable
+                    } else {
+                        cholesterolField.value = "N/A"; // Set value to N/A
+                        cholesterolField.readOnly = true; // Make it readonly
+                    }
                 }
                 if (ekgField) {
-                    ekgField.value = valueForAge;
+                    if (exactAge > 39.5) {
+                        ekgField.type = "date"; // Make it a calendar input
+                        ekgField.value = "";
+                        ekgField.readOnly = false;
+                    } else {
+                        ekgField.type = "text"; // Make it a text input
+                        ekgField.value = "N/A";
+                        ekgField.readOnly = true;
+                    }
                 }
                 if (ekgNeededField) {
                     ekgNeededField.value = valueForAge;
                 }
                 if (framinghamField) {
-                    framinghamField.value = valueForAge;
+                    if (exactAge > 39.5) {
+                        framinghamField.type = "number";
+                        framinghamField.value = ""; // Set empty value
+                        framinghamField.readOnly = false; // Make it editable
+                    } else {
+                        framinghamField.type = "text";
+                        framinghamField.value = "N/A"; // Set value to N/A
+                        framinghamField.readOnly = true; // Make it readonly
+                    }
                 }
             }
 
