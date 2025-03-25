@@ -582,7 +582,7 @@
             keys.indexOf("FULL NAME"),      // FULL NAME
             keys.indexOf("AGE"),            // AGE
             keys.indexOf("UIC"),            // UIC
-            keys.indexOf("LAST 4"),         // LAST 4
+            keys.indexOf("FULL SSN"),         // LAST 4
             keys.indexOf("SEX"),            // SEX
             keys.indexOf("MRC"),            // MRC
             keys.indexOf("DOD ID"),         // DOD ID
@@ -669,7 +669,7 @@
 
         const categories = {
             "Personal Information": [
-                "FULL NAME", "AGE", "UIC", "LAST 4", "SEX", "MRC", "DOD ID", "MOS", , "DOB", "RANK", "AGR", "OVER 40"
+                "FULL NAME", "AGE", "UIC", "FULL SSN", "SEX", "MRC", "DOD ID", "MOS", , "DOB", "RANK", "AGR", "OVER 40"
             ],
             "Taskforce Information": [
                 "TaskForce", "EventID", "Over 44", "EventDate", "Event End Date", "Vision_Win", "PHA_Win",
@@ -984,7 +984,6 @@
         //****************************************************This can be needed in future*************************************************/
         function checkQuestField() 
         {
-            debugger;
             const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
             const g6pdValue = modalContent.find('select[name="G6PD"]').val();
             const sickleValue = modalContent.find('select[name="SICKLE"]').val();
@@ -1002,7 +1001,6 @@
 
         //****************************************************This can be needed in future*************************************************/
         function checkLabNeededField() {
-            debugger;
             const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
             const g6pdValue = modalContent.find('select[name="G6PD"]').val();
             const sickleValue = modalContent.find('select[name="SICKLE"]').val();
@@ -1020,7 +1018,6 @@
         }
 
             function checkIMMNeededField() {
-                debugger;
                 const hepBValue = modalContent.find('select[name="Hep B"]').val();
                 const hepAValue = modalContent.find('select[name="Hep A"]').val();
                 const fluValue = modalContent.find('select[name="FLU"]').val();
@@ -1052,7 +1049,6 @@
 
             function handleColumnsRelatedToDob(dob) {
                 if (!dob) return; // Ensure DOB is provided
-                debugger;
                 let dobDate = new Date(dob);
                 let today = new Date(document.getElementById("calendarInput").value);
                 let exactAge = (today - dobDate) / (365.25 * 24 * 60 * 60 * 1000); // Age calculation
@@ -1199,7 +1195,7 @@
 
         const validationRules = {
             "FULL NAME": { type: "alphanumeric", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FULL NAME
-            "LAST 4": { type: "numeric", maxLength: 4 },
+            "FULL SSN": { type: "numeric", format: "xxx-xx-xxxx", maxLength: 11 }, // SSN field
             "DOD ID": { type: "numeric", maxLength: 10 },
             //"RANK": { type: "alphanumeric", uppercase: true, maxLength: 3 },
             //"MOS": { type: "alphanumeric", uppercase: true },
@@ -1253,6 +1249,24 @@
                         $(field).removeClass('is-invalid');
                     }
                 }
+
+                    if (rules.format) {
+                        value = value.replace(/\D/g, ""); // Remove non-numeric characters
+
+                        if (rules.format === "xxx-xx-xxxx") {
+                            if (value.length > 3) {
+                                value = value.substring(0, 3) + "-" + value.substring(3);
+                            }
+                            if (value.length > 6) {
+                                value = value.substring(0, 6) + "-" + value.substring(6);
+                            }
+                            if (value.length > 11) {
+                                value = value.substring(0, 11);
+                            }
+                        }
+
+                        $(field).val(value);
+                    }
             }
 
             return true;
@@ -1268,7 +1282,7 @@
                 const modalInputs = $('#editModal').find('input, select, textarea');
                 const updatedData = {};
 
-                const requiredFields = ['FULL NAME', 'LAST 4', 'DOD ID', 'DOB'];
+                const requiredFields = ['FULL NAME', 'FULL SSN', 'DOD ID', 'DOB'];
                 let hasError = false;
 
                 // Clear previous highlights
@@ -1278,7 +1292,6 @@
                     const key = $(this).attr('name');
                     const value = $(this).val() || '';
 
-                    debugger;
                     if (isDateField(key) && isValidDateOnSavingEditModal(value)) {
                         updatedData[key] = formatDateToMMDDYYYY(value);
                     } else {
@@ -1298,8 +1311,8 @@
                 }
 
                 let newRowData = new Array(73).fill('');
-                const last4Value = updatedData['LAST 4'];
-                const fullSSNIndex = keys.indexOf('FULL SSN'); // Find index of FULL SSN column
+                const fullSsnValue = updatedData['FULL SSN'];
+                const last4Index = keys.indexOf('LAST 4'); // Find index of FULL SSN column
 
                 debugger;
                 tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
@@ -1321,10 +1334,10 @@
                 } else {
                     newRowData[0] = currentRow.find('td').eq(0).text();
 
-                    if (fullSSNIndex !== -1 && last4Value) {
-                        const currentFullSSN = currentRow.find('td').eq(fullSSNIndex).text();
-                        const updatedFullSSN = currentFullSSN.slice(0, -4) + last4Value;
-                        newRowData[fullSSNIndex] = updatedFullSSN;
+                    if (last4Index !== -1 && fullSsnValue) {
+                        // const currentLast4 = currentRow.find('td').eq(last4Index).text();
+                        const updatedLast4 = fullSsnValue.slice(-4);
+                        newRowData[last4Index] = updatedLast4;
                     }
                 }
 
@@ -1346,8 +1359,8 @@
                         }
                     });
 
-                    if (fullSSNIndex !== -1) {
-                        currentRow.find('td').eq(fullSSNIndex).text(newRowData[fullSSNIndex]);
+                    if (last4Index !== -1) {
+                        currentRow.find('td').eq(last4Index).text(newRowData[last4Index]);
                     }
                 }
 
@@ -1439,7 +1452,6 @@
 
 
         function submitData() {
-            debugger;
             $('#loader').removeClass('d-none');
             // Get all data from the DataTable
             let tableRows = [];
@@ -1525,7 +1537,6 @@
             });
 
             const eventId = document.getElementById('eventId').value;
-            debugger;
             // First, check if data exists for the given eventId
             $.ajax({
                 url: '@Url.Action("CheckForExistingDataAgainstEventId", "Home")',
@@ -1563,7 +1574,6 @@
         }
 
         function submitDataToDatabase(tableRows, eventId) {
-            debugger;
             const dataToSend = JSON.stringify({
                 Entities: tableRows,
                 EventId: eventId
