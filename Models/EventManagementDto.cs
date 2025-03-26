@@ -7,7 +7,7 @@
 
     public class EventManagementViewModel
     {
-        public List<EventManagement>? EventManagements { get; set; }
+        public List<EventManagementPreview>? EventManagements { get; set; }
         public EventManagement SingleEventManagement { get; set; }
     }
 
@@ -26,6 +26,20 @@
 
     }
 
+    public class EventManagementPreview
+    {
+        public long Id { get; set; }
+        public string? EventID { get; set; }
+        public string? SubEventID { get; set; }
+        public string? EventStatus { get; set; }
+        public string? TaskForce { get; set; }
+        public string? EventState { get; set; }
+        public string? EventCity { get; set; }
+        public string? EventZipCode { get; set; }
+        public string? StatusDescription { get; set; }
+        public DateTime EventStartDate { get; set; }
+        public DateTime EventEndDate { get; set; }
+    }
 
     [Table("EventManagement")]
     public class EventManagement : GenericProperties

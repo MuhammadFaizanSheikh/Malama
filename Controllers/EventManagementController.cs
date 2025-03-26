@@ -24,7 +24,7 @@ namespace ExcelFilesCompiler.Controllers
         public async Task<IActionResult> Index()
         {
             var responseDto = new ResponseDto();
-            List<EventManagement> eventManagementList = new List<EventManagement>();
+            List<EventManagementPreview> eventManagementList = new List<EventManagementPreview>();
 
             try
             {

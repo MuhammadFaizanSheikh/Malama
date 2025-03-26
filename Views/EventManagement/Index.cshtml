@@ -351,7 +351,7 @@
                 <tr>
                     <th>Event ID</th>
                     <th>Sub Event Id</th>
-                    @* <th>Taskforce</th> *@
+                    <th>Taskforce</th>
                     <th>Event Status</th>
                     <th>State</th>
                     <th>City</th>
@@ -369,7 +369,7 @@
                         <tr data-id="@contract.Id">
                             <td>@contract.EventID</td>
                             <td>@contract.SubEventID</td>
-                            @* <td>@contract.TaskForce</td> *@
+                            <td>@contract.TaskForce</td>
                             <td>@contract.EventStatus</td>
                             <td>@contract.EventState</td>
                             <td>@contract.EventCity</td>
@@ -399,6 +399,7 @@
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
+                    <td class="text-center">No data available</td>
                     </tr>
                 }
             </tbody>
@@ -2048,18 +2049,31 @@
         }
 
         // Modify function when adding a new row
-        function addTaskForceRow() {
+        function addTaskForceRow(value = "") {
+            let taskForceValue = value ? value : "";
             let newInput = `
-            <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
-                <input name="SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce" class="form-control" maxLength="100" placeholder="Enter Task Force" style="margin-right: 8px;"/>
-                <button type="button" class="btn btn-danger btn-sm remove-row remove-taskforce-row" style="height: 38px;">Remove</button>
-            </div>
-            `;
+        <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
+                <input name="SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce" class="form-control" maxLength="100" placeholder="Enter Task Force" style="margin-right: 8px;" value="${taskForceValue}"/>
+            <button type="button" class="btn btn-danger btn-sm remove-row remove-taskforce-row" style="height: 38px;">Remove</button>
+        </div>
+        `;
 
             $(".form-container-Taskforce").append(newInput);
             taskForceIndex++;
-            toggleTaskForceRequired(); // Apply required attribute based on dropdown selection
         }
+
+        // Function to populate Taskforce fields in Edit Mode
+        function populateTaskForces(taskForces) {
+            $(".form-container-Taskforce").empty(); // Clear existing fields if needed
+            taskForceIndex = 0; // Reset index
+
+            taskForces.forEach(taskForce => {
+                addTaskForceRow(taskForce.taskforce); // Generate input fields with values
+            });
+
+            toggleTaskForceRequired(); // Apply validation logic
+        }
+
 
         $("#addTaskForceRowButton").click(function () {
             addTaskForceRow();
@@ -2948,7 +2962,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             "autoWidth": true,
             "responsive": true,
             "language": {
-                "search": "Search Contracts:"
+                "search": "Search:"
             },
             "order": [[0, 'desc']]
         });
@@ -3426,7 +3440,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventID').text(combinedData.eventManagement.eventID);
                         $('#EventIDHidden').val(combinedData.eventManagement.eventID);
                         $('#SubEventID').val(combinedData.eventManagement.subEventID);
-                        $('#TaskForce').val(combinedData.eventManagement.taskForce);
+                        debugger;
+                        populateTaskForces(combinedData.eventManagement.eventManagementTaskforcesList);
                         $('#EventStatus').val(combinedData.eventManagement.eventStatus);
 
                         var selectedData = {

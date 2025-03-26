@@ -18,14 +18,36 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
         }
 
-        public async Task<List<EventManagement>> GetAllEventManagements()
+        public async Task<List<EventManagementPreview>> GetAllEventManagements()
         {
             var responseDto = new ResponseDto();
-            List<EventManagement> eventManagements = new List<EventManagement>();
+            List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
 
             try
             {
-                eventManagements = (await _unitOfWork.EventManagement.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+                var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
+                    null,
+                    x => x.EventManagementTaskforcesList
+                );
+
+                eventManagements = eventData.OrderByDescending(c => c.Id)
+                    .Select(e => new EventManagementPreview
+                    {
+                        Id = e.Id,
+                        EventID = e.EventID,
+                        SubEventID = e.SubEventID,
+                        EventStatus = e.EventStatus,
+                        EventState = e.EventState,
+                        EventCity = e.EventCity,
+                        EventZipCode = e.EventZipCode,
+                        StatusDescription = e.StatusDescription,
+                        EventStartDate = e.EventStartDate,
+                        EventEndDate = e.EventEndDate,
+                        TaskForce = e.EventManagementTaskforcesList != null
+                            ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                            : string.Empty
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -34,6 +56,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return eventManagements;
         }
+
 
         public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
         {
@@ -165,6 +188,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
                     x => x.EventStartEndTimeDayWiseList,
+                    x => x.EventManagementTaskforcesList,
                     x => x.EventStaffDetailList
                 ).Include(x => x.EventStaffDetailList)
                         .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
