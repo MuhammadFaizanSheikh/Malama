@@ -102,6 +102,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
 
+                //EventTaskforce
+                await _unitOfWork.EventManagementTaskforces.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+                foreach (var eventManagementTaskforce in eventManagement.EventManagementTaskforcesList)
+                {
+                    eventManagementTaskforce.EventManagementId = eventManagement.Id;
+                }
+
+                _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
+
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 

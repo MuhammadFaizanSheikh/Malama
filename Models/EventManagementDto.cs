@@ -39,8 +39,7 @@
         public string EventID { get; set; } // Read-only field
         [MaxLength(50)]
         public string? SubEventID { get; set; }
-        [MaxLength(100)]
-        public string? TaskForce { get; set; }
+        
         [Required]
         [MaxLength(50)]
         public string EventStatus { get; set; }
@@ -323,6 +322,7 @@
         public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList { get; set; } = new List<EventStartEndTimeDayWise>();
 
         public List<EventStaffDetail> EventStaffDetailList { get; set; } = new List<EventStaffDetail>();
+        public List<EventManagementTaskforces> EventManagementTaskforcesList { get; set; } = new List<EventManagementTaskforces>();
     }
 
     [Table("EventServiceDetail")]
@@ -397,5 +397,19 @@
 
         [Required]
         public string RoleId { get; set; }
+    }
+
+    [Table("EventManagementTaskforces")]
+    public class EventManagementTaskforces
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventManagement")]
+        public long EventManagementId { get; set; }
+
+        [MaxLength(100)]
+        public string? Taskforce { get; set; }
     }
 }

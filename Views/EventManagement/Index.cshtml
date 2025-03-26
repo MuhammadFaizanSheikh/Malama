@@ -351,7 +351,7 @@
                 <tr>
                     <th>Event ID</th>
                     <th>Sub Event Id</th>
-                    <th>Taskforce</th>
+                    @* <th>Taskforce</th> *@
                     <th>Event Status</th>
                     <th>State</th>
                     <th>City</th>
@@ -369,7 +369,7 @@
                         <tr data-id="@contract.Id">
                             <td>@contract.EventID</td>
                             <td>@contract.SubEventID</td>
-                            <td>@contract.TaskForce</td>
+                            @* <td>@contract.TaskForce</td> *@
                             <td>@contract.EventStatus</td>
                             <td>@contract.EventState</td>
                             <td>@contract.EventCity</td>
@@ -390,7 +390,6 @@
                 else
                 {
                     <tr>
-                        <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
@@ -547,7 +546,7 @@
                         <label asp-for="SingleEventManagement.EventHelpLine" class="form-label">Event Help Line</label>
                         <input id="EventHelpLine" asp-for="SingleEventManagement.EventHelpLine" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
 
-                    <label asp-for="SingleEventManagement.TaskForce" class="form-label">Task Force</label>
+                    <label class="form-label">Task Force</label>
                     @* <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" maxLength="100" placeholder="Enter Task Force" /> *@
 
                     <div class="form-container-Taskforce">
@@ -2029,27 +2028,74 @@
 
         let taskForceIndex = 0;
 
-         function addTaskForceRow() {
+
+        $("#EventStatus").change(function () {
+            toggleTaskForceRequired();
+        });
+
+        // Call this function when adding a new Task Force row
+        function toggleTaskForceRequired() {
+            let selectedStatus = $("#EventStatus").val();
+            let isRequired = selectedStatus && selectedStatus !== "Initial Pre-event";
+
+            $(".form-container-Taskforce .taskforce-row input").each(function () {
+                if (isRequired) {
+                    $(this).attr("required", "required");
+                } else {
+                    $(this).removeAttr("required");
+                }
+            });
+        }
+
+        // Modify function when adding a new row
+        function addTaskForceRow() {
             let newInput = `
-                <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
-                    <input name="SingleEventManagement.TaskForce[${taskForceIndex}]" class="form-control" maxLength="100" placeholder="Enter Task Force" style="margin-right: 8px;"/>
-                        <button type="button" class="btn btn-danger btn-sm remove-row remove-taskforce-row" style="height: 38px;">Remove</button>
-                </div>
+            <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
+                <input name="SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce" class="form-control" maxLength="100" placeholder="Enter Task Force" style="margin-right: 8px;"/>
+                <button type="button" class="btn btn-danger btn-sm remove-row remove-taskforce-row" style="height: 38px;">Remove</button>
+            </div>
             `;
 
             $(".form-container-Taskforce").append(newInput);
-            taskForceIndex++; // Increment index for next entry
+            taskForceIndex++;
+            toggleTaskForceRequired(); // Apply required attribute based on dropdown selection
         }
 
-        // Call function on button click
         $("#addTaskForceRowButton").click(function () {
             addTaskForceRow();
         });
 
-        // Remove a Task Force row when the 'X' button is clicked
         $(document).on("click", ".remove-taskforce-row", function () {
             $(this).parent(".taskforce-row").remove();
+            resetTaskForceIndices();
         });
+
+        function resetTaskForceIndices() {
+            taskForceIndex = 0;
+            $(".form-container-Taskforce .taskforce-row").each(function () {
+                $(this).attr("data-index", taskForceIndex);
+                $(this).find("input").attr("name", `SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce`);
+                taskForceIndex++;
+            });
+            toggleTaskForceRequired(); // Re-check requirement after resetting
+        }
+
+        // Remove a Task Force row
+        $(document).on("click", ".remove-taskforce-row", function () {
+            $(this).parent(".taskforce-row").remove();
+            resetTaskForceIndices();
+        });
+
+        // Reset indices after removing a row
+        function resetTaskForceIndices() {
+            taskForceIndex = 0;
+            $(".form-container-Taskforce .taskforce-row").each(function () {
+                $(this).attr("data-index", taskForceIndex);
+                $(this).find("input").attr("name", `SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce`);
+                taskForceIndex++;
+            });
+        }
+
 
         $('#HIVDropOffStaffId').select2({
             ajax: {

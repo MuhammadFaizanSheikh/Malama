@@ -18,6 +18,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<EventServiceDetail> EventServiceDetail { get; }
         IGenericRepository<EventStartEndTimeDayWise> EventStartEndTimeDayWise { get; }
         IGenericRepository<EventStaffDetail> EventStaffDetail { get; }
+        IGenericRepository<EventManagementTaskforces> EventManagementTaskforces { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

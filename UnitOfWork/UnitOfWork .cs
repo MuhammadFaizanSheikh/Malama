@@ -20,6 +20,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<EventServiceDetail> EventServiceDetail { get; private set; }
         public IGenericRepository<EventStartEndTimeDayWise> EventStartEndTimeDayWise { get; private set; }
         public IGenericRepository<EventStaffDetail> EventStaffDetail { get; private set; }
+        public IGenericRepository<EventManagementTaskforces> EventManagementTaskforces { get; private set; }
+        
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -35,6 +37,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             EventServiceDetail = new GenericRepository<EventServiceDetail>(_context);
             EventStartEndTimeDayWise = new GenericRepository<EventStartEndTimeDayWise>(_context);
             EventStaffDetail = new GenericRepository<EventStaffDetail>(_context);
+            EventManagementTaskforces = new GenericRepository<EventManagementTaskforces>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()
