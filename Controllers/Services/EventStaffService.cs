@@ -100,9 +100,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-
-
-
         public async Task<List<EventStaff>> GetAllEventStaff()
         {
             var responseDto = new ResponseDto();
@@ -136,6 +133,35 @@ namespace ExcelFilesCompiler.Controllers.Services
                     throw new KeyNotFoundException("No Event Staff records found.");
                 }
 
+                // ✅ Fetch Completed Events first and ensure it's a List
+                var completedEventList = (await _unitOfWork.EventManagement.FindForSearchingAsync(c => c.EventStatus == "Complete")).ToList();
+
+                // ✅ Extract only Event IDs
+                var eventIds = completedEventList.Select(e => e.Id).ToList();
+
+
+                var groupedResult = new Dictionary<long, int>(); // Dictionary to store StaffId and CompletedEventCount
+
+                foreach (var eventId in eventIds)
+                {
+                    var eventStaffDetailList = await _unitOfWork.EventStaffDetail
+                        .GetWithInclude()
+                        .Where(esd => esd.EventManagementId == eventId)
+                        .ToListAsync(); // Get records for this Event ID
+
+                    foreach (var staff in eventStaffDetailList)
+                    {
+                        if (groupedResult.ContainsKey(staff.EventStaffId))
+                        {
+                            groupedResult[staff.EventStaffId]++; // Increment count if staff exists
+                        }
+                        else
+                        {
+                            groupedResult[staff.EventStaffId] = 1; // Initialize count
+                        }
+                    }
+                }
+
                 var roles = await _roleManager.Roles.ToListAsync();
                 var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
 
@@ -167,6 +193,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                     var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
 
+                    int completedEventCount = groupedResult.ContainsKey(staff.Id) ? groupedResult[staff.Id] : 0;
+
                     // Create a new instance for each staff
                     model.Add(new CombinedEventStaffRolesNameAndLicense
                     {
@@ -180,11 +208,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                         StaffCAC = staff.StaffCAC,
                         Roles = rolesString,  // Roles in one line, comma-separated
                         LicenseStateAndTypes = licensesString,
-                        Status = staff.StaffStatus
+                        Status = staff.StaffStatus,
+                        CountOfStaffEnrolledInEvent = completedEventCount
                     });
                 }
-
-
 
                 return model;
             }
@@ -197,10 +224,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("An internal error occurred while processing your request.");
             }
         }
-
-
-
-
 
         public async Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id)
         {

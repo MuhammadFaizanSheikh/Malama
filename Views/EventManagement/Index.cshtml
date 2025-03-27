@@ -1919,10 +1919,9 @@
                                 <th>State</th>
                                 <th>City</th>
                                 <th>ZipCode</th>
-                                @*  <th>Role</th>
-                                <th>Radius</th> *@
                                 <th>Staff Cac</th>
                                 <th>Id</th>
+                                <th>CountOfStaffEnrolledInEvent</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -1946,6 +1945,7 @@
                                 <th>City</th>
                                 <th>ZipCode</th>
                                 <th>Id</th>
+                            <th>Event Count</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -2448,7 +2448,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     "type": "GET",
                     "dataSrc": function (json) {
                         if (json.success) {
-                            console.log("Fetched Event Staff Data:", JSON.stringify(json.eventStaffs, null, 2)); // Pretty-print JSON
+                            json.eventStaffs.forEach(staff => {
+                                staffEventCountCache[staff.id] = staff.countOfStaffEnrolledInEvent || 0;
+                            });
+
                             return json.eventStaffs;
                         } else {
                             alert(json.message);
@@ -2468,6 +2471,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "primaryZip" },
                      { "data": "staffCAC", "visible": false },
                     { "data": "id", "visible": false },
+                    { "data": "countOfStaffEnrolledInEvent", "visible": false },
                     { "data": "status" },
 
                     {
@@ -2515,6 +2519,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
                     { "data": "id", "visible": false },
+                    { "data": "countOfStaffEnrolledInEvent" },
                     { "data": "status" },
                     {
                         "data": "action",
@@ -2524,6 +2529,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 ]
             });
         }
+
+        var staffEventCountCache = {};
 
         function loadStaffForEditMode(staffList) {
             tableInitialized = true;
@@ -2539,6 +2546,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
+            debugger;
             let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
@@ -2589,16 +2597,18 @@ function populateFilterRolesAndLicenseTypeDropdown() {
               <input type="hidden" class="eventStaffIdHidden" 
                 name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
                 value="${eventStaffData.id}" />`,
-    staffLastName: eventStaffData.staffLastName,
-    staffFirstName: eventStaffData.staffFirstName,
-    roles: eventStaffData.roles,
-    licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
-    primaryState: eventStaffData.primaryState,
-    primaryCity: eventStaffData.primaryCity,
-    primaryZip: eventStaffData.primaryZip,
-    status: eventStaffData.status,
-    id: eventStaffData.id, // Keep id as plain text (or remove if not needed)
-    additionalroles: roleDropdown,  // Add dropdown to the roles column
+                staffLastName: eventStaffData.staffLastName,
+                staffFirstName: eventStaffData.staffFirstName,
+                roles: eventStaffData.roles,
+                licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
+                primaryState: eventStaffData.primaryState,
+                primaryCity: eventStaffData.primaryCity,
+                primaryZip: eventStaffData.primaryZip,
+                status: eventStaffData.status,
+                id: eventStaffData.id, // Keep id as plain text (or remove if not needed)
+                countOfStaffEnrolledInEvent: eventStaffData.countOfStaffEnrolledInEvent,
+                // countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
+                additionalroles: roleDropdown,  // Add dropdown to the roles column
     action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
               data-staffid="${eventStaffData.id}">Remove</button>`
 }).draw();

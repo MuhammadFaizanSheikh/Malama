@@ -240,7 +240,7 @@ namespace ExcelFilesCompiler.Repositories.Services
     Expression<Func<T, bool>> predicate = null,
     params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.AsQueryable();
+            IQueryable<T> query = _dbSet.AsNoTracking();
 
             foreach (var include in includes)
             {
