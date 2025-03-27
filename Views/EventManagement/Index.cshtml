@@ -2339,7 +2339,6 @@
             // $.fn.dataTable.ext.search.length = 0;
             $.fn.dataTable.ext.search = [];
 
-            debugger;
             // Add new custom filtering logic
             $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
                 let rowLastName = data[1]?.toLowerCase() || ""; 
@@ -2422,7 +2421,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }
         });
 
-        debugger;
         var $licenseDropdown = $("#filterLicenseTypes");
         $licenseDropdown.empty();
         $licenseDropdown.append('<option value="">Select License Type</option>');
@@ -2439,28 +2437,38 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 $('#eventStaffSelectionTable').DataTable().clear().destroy();
             }
 
+            let eventStaffData = [];
+
+            // Synchronous AJAX call (not recommended)
+            $.ajax({
+                url: "/EventStaff/GetAllEventStaff",
+                type: "GET",
+                async: false, // Force synchronous request (not recommended)
+                success: function (response) {
+                    if (response.success) {
+                        eventStaffData = response.eventStaffs;
+
+                        // Populate cache
+                        eventStaffData.forEach(staff => {
+                            staffEventCountCache[staff.id] = staff.countOfStaffEnrolledInEvent;
+                        });
+
+                        console.log("Cache populated:", staffEventCountCache);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching event staff:", error);
+                }
+            });
+
             $('#eventStaffSelectionTable').DataTable({
                 "processing": true,
                 "serverSide": false,
-                "destroy": true, // Ensure the table is reinitialized if needed
-                "ajax": {
-                    "url": "/EventStaff/GetAllEventStaff", // Update with actual controller name
-                    "type": "GET",
-                    "dataSrc": function (json) {
-                        if (json.success) {
-                            json.eventStaffs.forEach(staff => {
-                                staffEventCountCache[staff.id] = staff.countOfStaffEnrolledInEvent || 0;
-                            });
-
-                            return json.eventStaffs;
-                        } else {
-                            alert(json.message);
-                            return [];
-                        }
-                    }
-                },
+                "destroy": true,
+                "data": eventStaffData, // Use preloaded data
                 "columns": [
-
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
@@ -2469,11 +2477,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
                     { "data": "primaryZip" },
-                     { "data": "staffCAC", "visible": false },
+                    { "data": "staffCAC", "visible": false },
                     { "data": "id", "visible": false },
                     { "data": "countOfStaffEnrolledInEvent", "visible": false },
                     { "data": "status" },
-
                     {
                         "data": null,
                         "render": function (data, type, row) {
@@ -2484,11 +2491,12 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
 
             $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
-                let staffData = $(this).data('staff'); // Get row data
+                let staffData = $(this).data('staff');
                 addStaffToSelectedTable(staffData);
                 updateProgressBar(7);
             });
         }
+
 
         function initializeSelectedStaffTable() {
             if ($.fn.DataTable.isDataTable('#eventStaffSelectedTable')) {
@@ -2551,7 +2559,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
             let existingRows = selectedTable.rows().data().toArray();
-            if (existingRows.some(row => row.staffID === eventStaffData.staffID)) {
+            if (existingRows.some(row => row.id === eventStaffData.id)) {
                 alert("Staff already added!");
                 return;
             }
@@ -2606,8 +2614,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 primaryZip: eventStaffData.primaryZip,
                 status: eventStaffData.status,
                 id: eventStaffData.id, // Keep id as plain text (or remove if not needed)
-                countOfStaffEnrolledInEvent: eventStaffData.countOfStaffEnrolledInEvent,
-                // countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
+                // countOfStaffEnrolledInEvent: eventStaffData.countOfStaffEnrolledInEvent,
+                countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
                 additionalroles: roleDropdown,  // Add dropdown to the roles column
     action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
               data-staffid="${eventStaffData.id}">Remove</button>`
@@ -3450,7 +3458,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventID').text(combinedData.eventManagement.eventID);
                         $('#EventIDHidden').val(combinedData.eventManagement.eventID);
                         $('#SubEventID').val(combinedData.eventManagement.subEventID);
-                        debugger;
                         populateTaskForces(combinedData.eventManagement.eventManagementTaskforcesList);
                         $('#EventStatus').val(combinedData.eventManagement.eventStatus);
 
@@ -3491,7 +3498,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                         //Daywise time setting pending;
 
-                        debugger;
                         if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
                             let eventStartDate = new Date(combinedData.eventManagement.eventStartDate);
                             let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
