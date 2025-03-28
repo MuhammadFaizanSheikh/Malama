@@ -395,8 +395,26 @@
         public long EventStaffId { get; set; }
         [NotMapped]
         public List<string> SelectedRoles { get; set; } = new List<string>();
-
         public List<EventWiseStaffRole> EventWiseStaffRoleList { get; set; } = new List<EventWiseStaffRole>();
+        [NotMapped]
+        public List<DateTime> AvailabilityDates { get; set; } // List of selected dates
+        public List<EventManagementStaffAvailability> AvailabilityDatesList { get; set; } = new List<EventManagementStaffAvailability>();
+        public bool PreEventAvailability { get; set; } // Pre-Event checkbox
+
+        
+    }
+
+    [Table("EventManagementStaffAvailability")]
+    public class EventManagementStaffAvailability
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("EventStaffDetail")]
+        public long EventStaffDetailId { get; set; }
+
+        public DateTime AvailabilityDate { get; set; }
     }
 
     [Table("EventWiseStaffRole")]

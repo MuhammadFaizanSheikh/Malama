@@ -117,10 +117,19 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 //EventStaffDetail
                 await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+                //EventStaff Availability Date
+                await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
 
                 foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
                 {
                     eventStaffDetail.EventManagementId = eventManagement.Id;
+
+                    foreach (var staffAvailabilityDate in eventStaffDetail.AvailabilityDatesList)
+                    {
+                        staffAvailabilityDate.EventStaffDetailId = eventStaffDetail.Id;
+                    }
+
+                    _unitOfWork.EventManagementStaffAvailability.AddRange(eventStaffDetail.AvailabilityDatesList);
                 }
 
                 _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
@@ -132,6 +141,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     eventManagementTaskforce.EventManagementId = eventManagement.Id;
                 }
+
+                
 
                 _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
 
@@ -190,8 +201,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventStartEndTimeDayWiseList,
                     x => x.EventManagementTaskforcesList,
                     x => x.EventStaffDetailList
-                ).Include(x => x.EventStaffDetailList)
+                        ).Include(x => x.EventStaffDetailList)
                         .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
+                        .Include(x => x.EventStaffDetailList)
+                        .ThenInclude(l => l.AvailabilityDatesList)
                     .FirstOrDefaultAsync();
 
                 if (eventManagement != null)

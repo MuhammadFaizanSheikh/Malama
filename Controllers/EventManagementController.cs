@@ -86,6 +86,10 @@ namespace ExcelFilesCompiler.Controllers
                         staffDetail.EventWiseStaffRoleList = staffDetail.SelectedRoles
                             .Select(roleId => new EventWiseStaffRole { RoleId = roleId })
                             .ToList();
+
+                        staffDetail.AvailabilityDatesList = staffDetail.AvailabilityDates
+                            .Select(AvailabilityDate => new EventManagementStaffAvailability { AvailabilityDate = AvailabilityDate })
+                            .ToList();
                     }
 
                     if (action == "Add")
