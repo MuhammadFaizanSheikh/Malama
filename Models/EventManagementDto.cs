@@ -397,7 +397,7 @@
         public List<string> SelectedRoles { get; set; } = new List<string>();
         public List<EventWiseStaffRole> EventWiseStaffRoleList { get; set; } = new List<EventWiseStaffRole>();
         [NotMapped]
-        public List<DateTime> AvailabilityDates { get; set; } // List of selected dates
+        public List<DateTime>? AvailabilityDates { get; set; } // List of selected dates
         public List<EventManagementStaffAvailability> AvailabilityDatesList { get; set; } = new List<EventManagementStaffAvailability>();
         public bool PreEventAvailability { get; set; } // Pre-Event checkbox
 

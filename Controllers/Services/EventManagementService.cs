@@ -117,13 +117,20 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 //EventStaffDetail
                 await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-                //EventStaff Availability Date
-                await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+                
 
                 foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
                 {
                     eventStaffDetail.EventManagementId = eventManagement.Id;
+                }
 
+                _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
+
+                //EventStaff Availability Date
+                await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventStaffDetailId");
+
+                foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+                {
                     foreach (var staffAvailabilityDate in eventStaffDetail.AvailabilityDatesList)
                     {
                         staffAvailabilityDate.EventStaffDetailId = eventStaffDetail.Id;
@@ -131,8 +138,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     _unitOfWork.EventManagementStaffAvailability.AddRange(eventStaffDetail.AvailabilityDatesList);
                 }
-
-                _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
 
                 //EventTaskforce
                 await _unitOfWork.EventManagementTaskforces.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");

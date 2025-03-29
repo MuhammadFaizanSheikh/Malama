@@ -87,9 +87,10 @@ namespace ExcelFilesCompiler.Controllers
                             .Select(roleId => new EventWiseStaffRole { RoleId = roleId })
                             .ToList();
 
-                        staffDetail.AvailabilityDatesList = staffDetail.AvailabilityDates
-                            .Select(AvailabilityDate => new EventManagementStaffAvailability { AvailabilityDate = AvailabilityDate })
-                            .ToList();
+                        staffDetail.AvailabilityDatesList = (staffDetail.AvailabilityDates ?? new List<DateTime>())
+                        .Select(availabilityDate => new EventManagementStaffAvailability { AvailabilityDate = availabilityDate })
+                        .ToList();
+
                     }
 
                     if (action == "Add")
