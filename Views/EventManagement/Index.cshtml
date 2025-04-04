@@ -1905,6 +1905,10 @@
 
                 </div>
 
+                <table id="finalStaffTable" class="table">
+    <!-- The final table content will be dynamically inserted here -->
+</table>
+
                 <!-- Available Staff Table -->
                 <h5 class="text-center mb-3">Available Event Staff</h5>
                 <div class="table-responsive">
@@ -2262,6 +2266,7 @@
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
                 tableInitialized = true; // Prevent reloading the table again
+                GenerateStaffRequirementTable();
             }
 
             $(".section").hide();
@@ -2709,6 +2714,99 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 });
             });
         }
+
+            // Function to generate final table dynamically based on selected rows from eventServicesTable
+    function GenerateStaffRequirementTable() {
+        const ratePerHour = 8.57;
+        let finalTableHtml = '<thead><tr><th>Event Service</th>'; // Start table headers
+
+        let dayIndex = 1;
+        const checkedRows = [];
+
+        // Get all checked rows from eventServicesTable and their respective FinalPreEventConfirmedNumbers
+        $('#eventServicesTable tbody tr').each(function () {
+            const checkbox = $(this).find('input[type="checkbox"]');
+            if (checkbox.prop('checked')) {
+                const eventService = $(this).find('.EventService').text();
+                const dawsonValue = parseFloat($(this).find('.DAWSONFinalPreEventNumbers').text());
+                const totalMembers = parseInt($(this).find('.FinalPreEventConfirmedNumbers').text()); // Get total members dynamically from the checked row
+                checkedRows.push({ eventService, dawsonValue, totalMembers });
+            }
+        });
+
+        // Add dynamic columns based on number of days
+        while ($(`#EventStartTimeDay${dayIndex}`).length) {
+            finalTableHtml += `<th>Required Staff Count Day ${dayIndex}</th>`;
+            dayIndex++;
+        }
+
+        finalTableHtml += '</tr></thead><tbody>';
+
+        // Loop through each checked row from eventServicesTable and calculate required staff per day
+        checkedRows.forEach(function (row) {
+            finalTableHtml += `<tr><td>${row.eventService}</td>`; // Add EventService name as first column
+
+            let dayIndex = 1;
+            while ($(`#EventStartTimeDay${dayIndex}`).length) {
+                const start = $(`#EventStartTimeDay${dayIndex}`).val();
+                const end = $(`#EventEndTimeDay${dayIndex}`).val();
+                const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
+
+                if (!start || !end || isNaN(percent)) {
+                    finalTableHtml += '<td>Invalid data</td>';
+                    dayIndex++;
+                    continue;
+                }
+
+                const [sh, sm] = start.split(':').map(Number);
+                const [eh, em] = end.split(':').map(Number);
+                const startDate = new Date(0, 0, 0, sh, sm, 0);
+                const endDate = new Date(0, 0, 0, eh, em, 0);
+
+                let availableHours = 0;
+                if (endDate > startDate) {
+                    const diffMs = endDate - startDate;
+                    availableHours = diffMs / (1000 * 60 * 60);
+                }
+
+                const membersForDay = (row.totalMembers * percent) / 100;
+                const capacityPerMan = ratePerHour * availableHours;
+
+                let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
+
+                // Round to nearest whole number
+                const fractional = menRequired % 1;
+                menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+
+                finalTableHtml += `<td>${menRequired}</td>`;
+                dayIndex++;
+            }
+
+            finalTableHtml += '</tr>';
+        });
+
+        finalTableHtml += '</tbody>';
+
+        // Append the final table to the container
+        $('#finalStaffTable').html(finalTableHtml);
+
+        // Initialize or re-draw DataTable
+        if (!$.fn.DataTable.isDataTable('#finalStaffTable')) {
+            $('#finalStaffTable').DataTable({
+                searching: false,
+                paging: false,
+                info: false
+            });
+        } else {
+            $('#finalStaffTable').DataTable().clear().destroy();
+            $('#finalStaffTable').DataTable({
+                searching: false,
+                paging: false,
+                info: false
+            });
+        }
+    };
+
 
         $("#submitBtn").click(function (e) {
 
