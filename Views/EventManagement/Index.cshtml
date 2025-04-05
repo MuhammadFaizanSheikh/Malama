@@ -2744,21 +2744,57 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // Function to generate final table dynamically based on selected rows from eventServicesTable
         function GenerateStaffRequirementTable() {
             debugger;
-            const ratePerHour = 8.57;
-            let finalTableHtml = '<thead><tr><th>Event Service</th>'; // Start table headers
+            const ratePerHourData = {
+                "Dental Exam": { rate: 8.57, roles: "Dentist" },
+                "Dental Treatment": { rate: 1, roles: "Dentist" },
+                "BWX": { rate: 10, roles: "Dental Assistant/RDH" },
+                "Panorex X-ray": { rate: 6, roles: "Dental Assistant/RDH" },
+                "Periodic Health Assessment": { rate: 3.5, roles: "Physician Assistant/Nurse Practitioner/Medical Doctor" },
+                "Record Review (Periodic Health Assessment)": { rate: 15, roles: "Medcial Assistant/LVN/Admin w/CAC/RN" },
+                "Vitals (Height, Weight, BP)": { rate: 18, roles: "Admin" },
+                "Vision Screening": { rate: 18, roles: "Admin" },
+                "Behavioral Health": { rate: 5, roles: "Nurse Practitioner/Medical Doctor/Physician Assistant/MSW (Masters Social Work)" },
+                "Audio Testing": { rate: 35, roles: "Audio Tech  (CAOHC)" },
+                "DOEHRS Entry": { rate: 45, roles: "Admin (w CAC)" },
+                "Comprehensive Audio/MOHT test (audiologist)": { rate: 4, roles: "Audiologist" },
+                "EKG": { rate: 4, roles: "MA/LVN/RN/Phlebotomist" },
+                "Optometry/Eyewear": { rate: 6, roles: "Optometrist" },
+                "Check-In/Out": { rate: 20, roles: "Admin" },
+                "HIV Testing": { rate: 7, roles: "Phlebotomist" },
+                "G6PD testing": { rate: 7, roles: "Medical Assistant" },
+                "Blood Typing (ABO)": { rate: 7, roles: "LVN" },
+                "Sickle Cell Trait": { rate: 7, roles: "RN" },
+                "DNA": { rate: 7, roles: "LVN/RN" },
+                "Lipid Panel": { rate: 7, roles: "LVN/RN" },
+                "Pregnancy Test": { rate: 6, roles: "Medical Assistant" },
+                "Lab station Admin": { rate: 14, roles: "Admin" },
+                "Hep A": { rate: 8, roles: "RN" },
+                "Hep B": { rate: 8, roles: "LVN" },
+                "MMR": { rate: 8, roles: "MA" },
+                "Tdap": { rate: 8, roles: "RN" },
+                "Influenza": { rate: 8, roles: "RN" }
+            };
+
+            let finalTableHtml = '<thead><tr><th>Role</th><th>Event Service</th>'; // Start table headers
 
             let dayIndex = 1;
             const checkedRows = [];
 
             // Get all checked rows from eventServicesTable and their respective FinalPreEventConfirmedNumbers
-            $('#eventServicesTable tbody tr').each(function () {
-                const checkbox = $(this).find('input[type="checkbox"]');
-                if (checkbox.prop('checked')) {
-                    const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
-                    const totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
-                    checkedRows.push({ eventService, totalMembers });
-                }
-            });
+            function collectCheckedRowsFrom(tableSelector) {
+                $(`${tableSelector} tbody tr`).each(function () {
+                    const checkbox = $(this).find('input[type="checkbox"]');
+                    if (checkbox.prop('checked')) {
+                        const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
+                        const totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
+                        checkedRows.push({ eventService, totalMembers });
+                    }
+                });
+            }
+
+            collectCheckedRowsFrom('#eventServicesTable');
+            collectCheckedRowsFrom('#eventServicesTable2');
+            collectCheckedRowsFrom('#eventServicesTable3');
 
             // Add dynamic columns based on number of days
             while ($(`#EventStartTimeDay${dayIndex}`).length) {
@@ -2770,7 +2806,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             // Loop through each checked row from eventServicesTable and calculate required staff per day
             checkedRows.forEach(function (row) {
-                finalTableHtml += `<tr><td>${row.eventService}</td>`; // Add EventService name as first column
+                const ratePerHour = ratePerHourData[row.eventService]?.rate;
+                const role = ratePerHourData[row.eventService]?.roles;
+
+                if (!ratePerHour || !role) {
+                    return; // Skip if no rate or role found for EventService
+                }
+
+                // Add first row for the EventService
+                finalTableHtml += `<tr><td>${role}</td><td>${row.eventService}</td>`; // Add EventService and Role as first columns
 
                 let dayIndex = 1;
                 while ($(`#EventStartTimeDay${dayIndex}`).length) {
@@ -2809,6 +2853,49 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
 
                 finalTableHtml += '</tr>';
+
+                // Add second row for "Dental Assistant/RDH" when EventService is "Dental Exam"
+                if (row.eventService === "Dental Exam") {
+                    finalTableHtml += `<tr><td>Dental Assistant/ RDH</td><td>${row.eventService}</td>`; // Add "Dental Assistant/RDH" as EventService and Role
+
+                    dayIndex = 1;
+                    while ($(`#EventStartTimeDay${dayIndex}`).length) {
+                        const start = $(`#EventStartTimeDay${dayIndex}`).val();
+                        const end = $(`#EventEndTimeDay${dayIndex}`).val();
+                        const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
+
+                        if (!start || !end || isNaN(percent)) {
+                            finalTableHtml += '<td>Invalid data</td>';
+                            dayIndex++;
+                            continue;
+                        }
+
+                        const [sh, sm] = start.split(':').map(Number);
+                        const [eh, em] = end.split(':').map(Number);
+                        const startDate = new Date(0, 0, 0, sh, sm, 0);
+                        const endDate = new Date(0, 0, 0, eh, em, 0);
+
+                        let availableHours = 0;
+                        if (endDate > startDate) {
+                            const diffMs = endDate - startDate;
+                            availableHours = diffMs / (1000 * 60 * 60);
+                        }
+
+                        const membersForDay = (row.totalMembers * percent) / 100;
+                        const capacityPerMan = ratePerHour * availableHours;
+
+                        let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
+
+                        // Round to nearest whole number
+                        const fractional = menRequired % 1;
+                        menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+
+                        finalTableHtml += `<td>${menRequired}</td>`;
+                        dayIndex++;
+                    }
+
+                    finalTableHtml += '</tr>';
+                }
             });
 
             finalTableHtml += '</tbody>';
@@ -2826,10 +2913,12 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 $('#StaffRequirementTable').DataTable({
                     searching: false,
                     paging: false,
-                    info: false
+                    info: false,
+                    order: []
                 });
             }, 100); // Timeout to ensure DataTable is initialized after content is inserted
         }
+
 
 
 
