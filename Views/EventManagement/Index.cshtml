@@ -98,7 +98,7 @@
 
 
         /* Common Styles for All Tables */
-        #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable {
+        #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable, #StaffRequirementTable {
             border: 1px solid #ddd;
             border-collapse: collapse;
             width: 100% !important;
@@ -109,49 +109,50 @@
             #eventServicesTable2 th, #eventServicesTable2 td,
             #eventServicesTable3 th, #eventServicesTable3 td,
             #eventStaffSelectionTable th, #eventStaffSelectionTable td,
-            #eventStaffSelectedTable th, #eventStaffSelectedTable td {
+            #eventStaffSelectedTable th, #eventStaffSelectedTable td,
+            #StaffRequirementTable th, #StaffRequirementTable td {
                 border: 1px solid #ddd;
                 padding: 8px;
             }
 
-            #eventServicesTable th, #eventServicesTable2 th, #eventServicesTable3 th, #eventStaffSelectionTable th, #eventStaffSelectedTable th {
+            #eventServicesTable th, #eventServicesTable2 th, #eventServicesTable3 th, #eventStaffSelectionTable th, #eventStaffSelectedTable th, #StaffRequirementTable th {
                 background-color: #f4f4f4;
                 text-align: center; /* Keep headers centered */
             }
 
-            #eventServicesTable tbody tr, #eventServicesTable2 tbody tr, #eventServicesTable3 tbody tr, #eventStaffSelectionTable tbody tr, #eventStaffSelectedTable tbody tr {
+            #eventServicesTable tbody tr, #eventServicesTable2 tbody tr, #eventServicesTable3 tbody tr, #eventStaffSelectionTable tbody tr, #eventStaffSelectedTable tbody tr, #StaffRequirementTable tbody tr {
                 background-color: rgba(240, 245, 255, 1); /* Very lighter version */
             }
 
-                #eventServicesTable tbody tr:hover, #eventServicesTable2 tbody tr:hover, #eventServicesTable3 tbody tr:hover, #eventStaffSelectionTable tbody tr:hover, #eventStaffSelectedTable tbody tr:hover {
+                #eventServicesTable tbody tr:hover, #eventServicesTable2 tbody tr:hover, #eventServicesTable3 tbody tr:hover, #eventStaffSelectionTable tbody tr:hover, #eventStaffSelectedTable tbody tr:hover, #StaffRequirementTable tbody tr:hover {
                     background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
                 }
 
-            #eventServicesTable td, #eventServicesTable2 td, #eventServicesTable3 td, #eventStaffSelectionTable td, #eventStaffSelectedTable td {
+            #eventServicesTable td, #eventServicesTable2 td, #eventServicesTable3 td, #eventStaffSelectionTable td, #eventStaffSelectedTable td, #StaffRequirementTable td {
                 text-align: center; /* Center align all columns by default */
             }
 
-                #eventServicesTable td:first-child, #eventServicesTable2 td:first-child, #eventServicesTable3 td:first-child {
+                #eventServicesTable td:first-child, #eventServicesTable2 td:first-child, #eventServicesTable3 td:first-child, #StaffRequirementTable td:first-child {
                     text-align: left; /* Left align the first column */
                     padding-left: 12px; /* Optional: Add some left padding for better spacing */
                 }
 
-                #eventServicesTable td button, #eventServicesTable2 td button, #eventServicesTable3 td button, #eventStaffSelectionTable td button, #eventStaffSelectedTable td button
-                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a, #eventStaffSelectionTable td a {
+                #eventServicesTable td button, #eventServicesTable2 td button, #eventServicesTable3 td button, #eventStaffSelectionTable td button, #eventStaffSelectedTable td button, #StaffRequirementTable td button
+                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a, #eventStaffSelectionTable td a, #StaffRequirementTable td a {
                     display: inline-block;
                     margin-right: 5px;
                 }
 
-                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container, #eventStaffSelectionTable td .button-container, #eventStaffSelectedTable td .button-container {
+                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container, #eventStaffSelectionTable td .button-container, #eventStaffSelectedTable td .button-container, #StaffRequirementTable td .button-container {
                     display: flex;
                     justify-content: center;
                 }
 
-                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a, #eventStaffSelectionTable td .button-container a, #eventStaffSelectedTable td .button-container a {
+                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a, #eventStaffSelectionTable td .button-container a, #eventStaffSelectedTable td .button-container a, #StaffRequirementTable td .button-container a {
                         margin-right: 5px;
                     }
 
-            #eventServicesTable thead th, #eventServicesTable2 thead th, #eventServicesTable3 thead th, #eventStaffSelectionTable thead th, #eventStaffSelectedTable thead th {
+            #eventServicesTable thead th, #eventServicesTable2 thead th, #eventServicesTable3 thead th, #eventStaffSelectionTable thead th, #eventStaffSelectedTable thead th, #StaffRequirementTable thead th {
                 background-color: rgba(120, 130, 221, 1);
                 color: white;
                 text-align: center;
@@ -1565,6 +1566,23 @@
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[17].FinalPreEventConfirmedNumbers" />
                             </td>
                         </tr>
+                    <tr data-event-service="Pregnancy Test">
+                        <td>
+                            <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[18].IsSelected" />
+                            <span>Pregnancy Test</span>
+                            <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].EventService" value="Pregnancy Test" />
+                            <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].Type" value="Labs" />
+                        </td>
+                        <td>
+                            <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].ClientRequestInitial" />
+                        </td>
+                        <td>
+                            <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].InitialReportNumbers" />
+                        </td>
+                        <td>
+                            <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].FinalPreEventConfirmedNumbers" />
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
 
@@ -1905,9 +1923,7 @@
 
                 </div>
 
-                <table id="finalStaffTable" class="table">
-    <!-- The final table content will be dynamically inserted here -->
-</table>
+           
 
                 <!-- Available Staff Table -->
                 <h5 class="text-center mb-3">Available Event Staff</h5>
@@ -1930,6 +1946,13 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
+                    </table>
+                </div>
+
+                <h5 class="text-center mb-3">Staff Requirement for this event</h5>
+                <div class="table-responsive">
+                    <table id="StaffRequirementTable" class="table">
+                        <!-- The final table content will be dynamically inserted here -->
                     </table>
                 </div>
 
@@ -2266,6 +2289,9 @@
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
                 tableInitialized = true; // Prevent reloading the table again
+            }
+
+            if (target == 7) {
                 GenerateStaffRequirementTable();
             }
 
@@ -2716,96 +2742,95 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
             // Function to generate final table dynamically based on selected rows from eventServicesTable
-    function GenerateStaffRequirementTable() {
-        const ratePerHour = 8.57;
-        let finalTableHtml = '<thead><tr><th>Event Service</th>'; // Start table headers
-
-        let dayIndex = 1;
-        const checkedRows = [];
-
-        // Get all checked rows from eventServicesTable and their respective FinalPreEventConfirmedNumbers
-        $('#eventServicesTable tbody tr').each(function () {
-            const checkbox = $(this).find('input[type="checkbox"]');
-            if (checkbox.prop('checked')) {
-                const eventService = $(this).find('.EventService').text();
-                const dawsonValue = parseFloat($(this).find('.DAWSONFinalPreEventNumbers').text());
-                const totalMembers = parseInt($(this).find('.FinalPreEventConfirmedNumbers').text()); // Get total members dynamically from the checked row
-                checkedRows.push({ eventService, dawsonValue, totalMembers });
-            }
-        });
-
-        // Add dynamic columns based on number of days
-        while ($(`#EventStartTimeDay${dayIndex}`).length) {
-            finalTableHtml += `<th>Required Staff Count Day ${dayIndex}</th>`;
-            dayIndex++;
-        }
-
-        finalTableHtml += '</tr></thead><tbody>';
-
-        // Loop through each checked row from eventServicesTable and calculate required staff per day
-        checkedRows.forEach(function (row) {
-            finalTableHtml += `<tr><td>${row.eventService}</td>`; // Add EventService name as first column
+        function GenerateStaffRequirementTable() {
+            debugger;
+            const ratePerHour = 8.57;
+            let finalTableHtml = '<thead><tr><th>Event Service</th>'; // Start table headers
 
             let dayIndex = 1;
+            const checkedRows = [];
+
+            // Get all checked rows from eventServicesTable and their respective FinalPreEventConfirmedNumbers
+            $('#eventServicesTable tbody tr').each(function () {
+                const checkbox = $(this).find('input[type="checkbox"]');
+                if (checkbox.prop('checked')) {
+                    const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
+                    const totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
+                    checkedRows.push({ eventService, totalMembers });
+                }
+            });
+
+            // Add dynamic columns based on number of days
             while ($(`#EventStartTimeDay${dayIndex}`).length) {
-                const start = $(`#EventStartTimeDay${dayIndex}`).val();
-                const end = $(`#EventEndTimeDay${dayIndex}`).val();
-                const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
-
-                if (!start || !end || isNaN(percent)) {
-                    finalTableHtml += '<td>Invalid data</td>';
-                    dayIndex++;
-                    continue;
-                }
-
-                const [sh, sm] = start.split(':').map(Number);
-                const [eh, em] = end.split(':').map(Number);
-                const startDate = new Date(0, 0, 0, sh, sm, 0);
-                const endDate = new Date(0, 0, 0, eh, em, 0);
-
-                let availableHours = 0;
-                if (endDate > startDate) {
-                    const diffMs = endDate - startDate;
-                    availableHours = diffMs / (1000 * 60 * 60);
-                }
-
-                const membersForDay = (row.totalMembers * percent) / 100;
-                const capacityPerMan = ratePerHour * availableHours;
-
-                let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
-
-                // Round to nearest whole number
-                const fractional = menRequired % 1;
-                menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
-
-                finalTableHtml += `<td>${menRequired}</td>`;
+                finalTableHtml += `<th>Required Staff Count Day ${dayIndex}</th>`;
                 dayIndex++;
             }
 
-            finalTableHtml += '</tr>';
-        });
+            finalTableHtml += '</tr></thead><tbody>';
 
-        finalTableHtml += '</tbody>';
+            // Loop through each checked row from eventServicesTable and calculate required staff per day
+            checkedRows.forEach(function (row) {
+                finalTableHtml += `<tr><td>${row.eventService}</td>`; // Add EventService name as first column
 
-        // Append the final table to the container
-        $('#finalStaffTable').html(finalTableHtml);
+                let dayIndex = 1;
+                while ($(`#EventStartTimeDay${dayIndex}`).length) {
+                    const start = $(`#EventStartTimeDay${dayIndex}`).val();
+                    const end = $(`#EventEndTimeDay${dayIndex}`).val();
+                    const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
 
-        // Initialize or re-draw DataTable
-        if (!$.fn.DataTable.isDataTable('#finalStaffTable')) {
-            $('#finalStaffTable').DataTable({
-                searching: false,
-                paging: false,
-                info: false
+                    if (!start || !end || isNaN(percent)) {
+                        finalTableHtml += '<td>Invalid data</td>';
+                        dayIndex++;
+                        continue;
+                    }
+
+                    const [sh, sm] = start.split(':').map(Number);
+                    const [eh, em] = end.split(':').map(Number);
+                    const startDate = new Date(0, 0, 0, sh, sm, 0);
+                    const endDate = new Date(0, 0, 0, eh, em, 0);
+
+                    let availableHours = 0;
+                    if (endDate > startDate) {
+                        const diffMs = endDate - startDate;
+                        availableHours = diffMs / (1000 * 60 * 60);
+                    }
+
+                    const membersForDay = (row.totalMembers * percent) / 100;
+                    const capacityPerMan = ratePerHour * availableHours;
+
+                    let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
+
+                    // Round to nearest whole number
+                    const fractional = menRequired % 1;
+                    menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+
+                    finalTableHtml += `<td>${menRequired}</td>`;
+                    dayIndex++;
+                }
+
+                finalTableHtml += '</tr>';
             });
-        } else {
-            $('#finalStaffTable').DataTable().clear().destroy();
-            $('#finalStaffTable').DataTable({
-                searching: false,
-                paging: false,
-                info: false
-            });
+
+            finalTableHtml += '</tbody>';
+
+            // Append the final table to the container
+            $('#StaffRequirementTable').html(finalTableHtml);
+
+            // Initialize or re-draw DataTable
+            if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
+                $('#StaffRequirementTable').DataTable().clear().destroy();
+            }
+
+            // Ensure that the table is ready before initializing DataTable
+            setTimeout(function () {
+                $('#StaffRequirementTable').DataTable({
+                    searching: false,
+                    paging: false,
+                    info: false
+                });
+            }, 100); // Timeout to ensure DataTable is initialized after content is inserted
         }
-    };
+
 
 
         $("#submitBtn").click(function (e) {
@@ -2997,6 +3022,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
         function validateSectionFields(sectionId) {
+            debugger;
             const sectionFields = $(`#section${sectionId}`).find("input, select, textarea");
 
             let anyFieldFilled = false;
@@ -3038,14 +3064,17 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 // });
 
                 sectionFields.each(function () {
-                    if ($(this).prop("required") && !$(this).val()) { // Check if field is required & empty
+                    if ($(this).prop("required") && !$(this).val()) {
                         this.setCustomValidity("This field is required.");
                         this.reportValidity();
+                        this.focus(); // 👈 Force focus to show the message
                         isValid = false;
+                        return false; // 👈 Exit .each early to avoid jumping messages
                     } else {
-                        this.setCustomValidity(""); // Clear custom validation message
+                        this.setCustomValidity("");
                     }
                 });
+
 
             }
 
@@ -4039,15 +4068,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
-                                <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTime" value="${eventStartTime}" />
+                                <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTime" value="${eventStartTime}" required/>
                             </div>
                             <div class="col-md-4">
                                 <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
-                                <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTime" value="${eventEndTime}" />
+                                    <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTime" value="${eventEndTime}" required/>
                             </div>
                             <div class="col-md-4">
                                 <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
-                                <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].ServiceMemberPercentPerDay" placeholder="Enter % per day" value="${serviceMemberPercent}" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" />
+                                    <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].ServiceMemberPercentPerDay" placeholder="Enter % per day" value="${serviceMemberPercent}" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" required/>
                             </div>
                             <input type="hidden" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventDay" value="${i + 1}" />
                         </div>
