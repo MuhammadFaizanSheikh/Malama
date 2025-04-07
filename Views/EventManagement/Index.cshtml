@@ -2792,7 +2792,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 });
             }
 
-            function calculateStaffPerDay(ratePerHour, totalMembers) {
+            function generateStaffCountCells(ratePerHour, totalMembers) {
                 let html = "";
                 let dayIdx = 1;
                 while ($(`#EventStartTimeDay${dayIdx}`).length) {
@@ -2820,7 +2820,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     const capacityPerMan = ratePerHour * availableHours;
                     let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
 
-                    // Round to nearest whole number
                     const fractional = menRequired % 1;
                     menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
@@ -2846,7 +2845,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
 
                 row += `<td>${eventService}</td>`;
-                row += calculateStaffPerDay(ratePerHour, totalMembers);
+                row += generateStaffCountCells(ratePerHour, totalMembers);
                 row += `</tr>`;
                 return row;
             }
@@ -2881,7 +2880,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
 
             finalTableHtml += '</tbody>';
-
             $('#StaffRequirementTable').html(finalTableHtml);
 
             if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
@@ -2905,108 +2903,30 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 const totalMembers = parseInt(row.data('total-members')) || 0;
                 const ratePerHour = ratePerHourData[eventService]?.rate;
 
-                let dayIndex = 1;
+                const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers);
 
-                // Function to calculate the required staff count for a role
-                function calculateRequiredStaffCount() {
-                    let newRowHtml = '';
+                row.find('td:gt(1)').remove();
+                row.append(staffCountHtml);
 
-                    while ($(`#EventStartTimeDay${dayIndex}`).length) {
-                        const start = $(`#EventStartTimeDay${dayIndex}`).val();
-                        const end = $(`#EventEndTimeDay${dayIndex}`).val();
-                        const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
-
-                        if (!start || !end || isNaN(percent)) {
-                            newRowHtml += '<td>Invalid data</td>';
-                            dayIndex++;
-                            continue;
-                        }
-
-                        const [sh, sm] = start.split(':').map(Number);
-                        const [eh, em] = end.split(':').map(Number);
-                        const startDate = new Date(0, 0, 0, sh, sm, 0);
-                        const endDate = new Date(0, 0, 0, eh, em, 0);
-
-                        let availableHours = 0;
-                        if (endDate > startDate) {
-                            const diffMs = endDate - startDate;
-                            availableHours = diffMs / (1000 * 60 * 60);
-                        }
-
-                        const membersForDay = (totalMembers * percent) / 100;
-                        const capacityPerMan = ratePerHour * availableHours;
-
-                        let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
-
-                        // Round to nearest whole number
-                        const fractional = menRequired % 1;
-                        menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
-
-                        newRowHtml += `<td>${menRequired}</td>`;
-                        dayIndex++;
-                    }
-
-                    return newRowHtml;
-                }
-
-                // Case when "Dental Assistant/RDH" is selected
-                if (selectedRole === "Dental Assistant/RDH") {
-                    // Remove the generated row for "Dental Assistant/RDH" and "Dental Treatment"
-                    $('#StaffRequirementTable tbody tr').each(function () {
-                        const tr = $(this);
-                        const role = tr.find('td:nth-child(1)').text();
-                        const eventServiceColumn = tr.find('td:nth-child(2)').text();
-
-                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment") {
-                            tr.remove(); // Remove the row for "Dental Assistant/RDH"
-                        }
-                    });
-
-                    // Calculate and update the current row for "Dental Assistant/RDH"
-                    const requiredStaffCountHtml = calculateRequiredStaffCount();
-
-                    // Append the calculated required staff count to the same row
-                    // Remove all <td> elements after the second one
-                    row.find('td:gt(1)').remove();
-
-                    // Append the new <td> elements for staff count
-                    row.append(requiredStaffCountHtml);
-
-                }
-
-                // Case when "Dentist" is selected
                 if (selectedRole === "Dentist") {
-                    // Calculate and update the current row for "Dentist"
-                    const requiredStaffCountHtml = calculateRequiredStaffCount();
-
-                    // Append the calculated required staff count to the same row
-                    // Remove all <td> elements after the second one
-                    row.find('td:gt(1)').remove();
-
-                    // Append the new <td> elements for staff count
-                    row.append(requiredStaffCountHtml);
-
-
-                    // Add a new row for "Dental Assistant/RDH"
-                    const newRowHtml = `<tr><td>Dental Assistant/RDH</td><td>${eventService}</td>${requiredStaffCountHtml}</tr>`;
+                    const newRowHtml = `<tr><td>Dental Assistant/RDH</td><td>${eventService}</td>${staffCountHtml}</tr>`;
                     $('#StaffRequirementTable tbody').append(newRowHtml);
                 }
 
-                // If "Dental Assistant/RDH" is selected again after "Dentist"
                 if (selectedRole === "Dental Assistant/RDH") {
-                    // Remove the row created for "Dentist"
                     $('#StaffRequirementTable tbody tr').each(function () {
                         const tr = $(this);
                         const role = tr.find('td:nth-child(1)').text();
                         const eventServiceColumn = tr.find('td:nth-child(2)').text();
 
-                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment") {
-                            tr.remove(); // Remove the row for "Dental Assistant/RDH" if switching back
+                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
+                            tr.remove();
                         }
                     });
                 }
             });
         }
+
 
 
 
