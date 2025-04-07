@@ -2741,10 +2741,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
         }
 
-            // Function to generate final table dynamically based on selected rows from eventServicesTable
-        function GenerateStaffRequirementTable() {
-            debugger;
-            const ratePerHourData = {
+
+         const ratePerHourData = {
                 "Dental Exam": { rate: 8.57, roles: "Dentist" },
                 "Dental Treatment": { rate: 1, roles: "Dentist" },
                 "BWX": { rate: 10, roles: "Dental Assistant/RDH" },
@@ -2775,12 +2773,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 "Influenza": { rate: 8, roles: "RN" }
             };
 
-            let finalTableHtml = '<thead><tr><th>Role</th><th>Event Service</th>'; // Start table headers
+            // Function to generate final table dynamically based on selected rows from eventServicesTable
+        function GenerateStaffRequirementTable() {
+            debugger;
 
+            let finalTableHtml = '<thead><tr><th>Role</th><th>Event Service</th>';
             let dayIndex = 1;
             const checkedRows = [];
 
-            // Get all checked rows from eventServicesTable and their respective FinalPreEventConfirmedNumbers
             function collectCheckedRowsFrom(tableSelector) {
                 $(`${tableSelector} tbody tr`).each(function () {
                     const checkbox = $(this).find('input[type="checkbox"]');
@@ -2792,39 +2792,17 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 });
             }
 
-            collectCheckedRowsFrom('#eventServicesTable');
-            collectCheckedRowsFrom('#eventServicesTable2');
-            collectCheckedRowsFrom('#eventServicesTable3');
-
-            // Add dynamic columns based on number of days
-            while ($(`#EventStartTimeDay${dayIndex}`).length) {
-                finalTableHtml += `<th>Required Staff Count Day ${dayIndex}</th>`;
-                dayIndex++;
-            }
-
-            finalTableHtml += '</tr></thead><tbody>';
-
-            // Loop through each checked row from eventServicesTable and calculate required staff per day
-            checkedRows.forEach(function (row) {
-                const ratePerHour = ratePerHourData[row.eventService]?.rate;
-                const role = ratePerHourData[row.eventService]?.roles;
-
-                if (!ratePerHour || !role) {
-                    return; // Skip if no rate or role found for EventService
-                }
-
-                // Add first row for the EventService
-                finalTableHtml += `<tr><td>${role}</td><td>${row.eventService}</td>`; // Add EventService and Role as first columns
-
-                let dayIndex = 1;
-                while ($(`#EventStartTimeDay${dayIndex}`).length) {
-                    const start = $(`#EventStartTimeDay${dayIndex}`).val();
-                    const end = $(`#EventEndTimeDay${dayIndex}`).val();
-                    const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
+            function calculateStaffPerDay(ratePerHour, totalMembers) {
+                let html = "";
+                let dayIdx = 1;
+                while ($(`#EventStartTimeDay${dayIdx}`).length) {
+                    const start = $(`#EventStartTimeDay${dayIdx}`).val();
+                    const end = $(`#EventEndTimeDay${dayIdx}`).val();
+                    const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIdx}`).val());
 
                     if (!start || !end || isNaN(percent)) {
-                        finalTableHtml += '<td>Invalid data</td>';
-                        dayIndex++;
+                        html += '<td>Invalid data</td>';
+                        dayIdx++;
                         continue;
                     }
 
@@ -2835,37 +2813,111 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                     let availableHours = 0;
                     if (endDate > startDate) {
-                        const diffMs = endDate - startDate;
-                        availableHours = diffMs / (1000 * 60 * 60);
+                        availableHours = (endDate - startDate) / (1000 * 60 * 60);
                     }
 
-                    const membersForDay = (row.totalMembers * percent) / 100;
+                    const membersForDay = (totalMembers * percent) / 100;
                     const capacityPerMan = ratePerHour * availableHours;
-
                     let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
 
                     // Round to nearest whole number
                     const fractional = menRequired % 1;
                     menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
-                    finalTableHtml += `<td>${menRequired}</td>`;
-                    dayIndex++;
+                    html += `<td>${menRequired}</td>`;
+                    dayIdx++;
+                }
+                return html;
+            }
+
+            function renderRow(role, eventService, totalMembers, isDropdown = false) {
+                const ratePerHour = ratePerHourData[eventService]?.rate;
+                if (!ratePerHour) return '';
+
+                let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
+
+                if (isDropdown) {
+                    row += `<td><select class="form-select roleDropdown">
+                            <option value="Dentist" selected>Dentist</option>
+                            <option value="Dental Assistant/RDH">Dental Assistant/RDH</option>
+                        </select></td>`;
+                } else {
+                    row += `<td>${role}</td>`;
                 }
 
-                finalTableHtml += '</tr>';
+                row += `<td>${eventService}</td>`;
+                row += calculateStaffPerDay(ratePerHour, totalMembers);
+                row += `</tr>`;
+                return row;
+            }
 
-                // Add second row for "Dental Assistant/RDH" when EventService is "Dental Exam"
-                if (row.eventService === "Dental Exam") {
-                    finalTableHtml += `<tr><td>Dental Assistant/ RDH</td><td>${row.eventService}</td>`; // Add "Dental Assistant/RDH" as EventService and Role
+            collectCheckedRowsFrom('#eventServicesTable');
+            collectCheckedRowsFrom('#eventServicesTable2');
+            collectCheckedRowsFrom('#eventServicesTable3');
 
-                    dayIndex = 1;
+            while ($(`#EventStartTimeDay${dayIndex}`).length) {
+                finalTableHtml += `<th>Required Staff Count Day ${dayIndex}</th>`;
+                dayIndex++;
+            }
+
+            finalTableHtml += '</tr></thead><tbody>';
+
+            checkedRows.forEach(function (row) {
+                const { eventService, totalMembers } = row;
+                const role = ratePerHourData[eventService]?.roles;
+                const rate = ratePerHourData[eventService]?.rate;
+
+                if (!rate || !role) return;
+
+                if (eventService === "Dental Treatment") {
+                    finalTableHtml += renderRow(role, eventService, totalMembers, true);
+                } else {
+                    finalTableHtml += renderRow(role, eventService, totalMembers);
+                }
+
+                if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
+                    finalTableHtml += renderRow("Dental Assistant/RDH", eventService, totalMembers);
+                }
+            });
+
+            finalTableHtml += '</tbody>';
+
+            $('#StaffRequirementTable').html(finalTableHtml);
+
+            if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
+                $('#StaffRequirementTable').DataTable().clear().destroy();
+            }
+
+            setTimeout(function () {
+                $('#StaffRequirementTable').DataTable({
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    order: []
+                });
+            }, 100);
+
+            $('select.roleDropdown').change(function () {
+                debugger;
+                const selectedRole = $(this).val();
+                const row = $(this).closest('tr');
+                const eventService = row.find('td:nth-child(2)').text();
+                const totalMembers = parseInt(row.data('total-members')) || 0;
+                const ratePerHour = ratePerHourData[eventService]?.rate;
+
+                let dayIndex = 1;
+
+                // Function to calculate the required staff count for a role
+                function calculateRequiredStaffCount() {
+                    let newRowHtml = '';
+
                     while ($(`#EventStartTimeDay${dayIndex}`).length) {
                         const start = $(`#EventStartTimeDay${dayIndex}`).val();
                         const end = $(`#EventEndTimeDay${dayIndex}`).val();
                         const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIndex}`).val());
 
                         if (!start || !end || isNaN(percent)) {
-                            finalTableHtml += '<td>Invalid data</td>';
+                            newRowHtml += '<td>Invalid data</td>';
                             dayIndex++;
                             continue;
                         }
@@ -2881,7 +2933,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             availableHours = diffMs / (1000 * 60 * 60);
                         }
 
-                        const membersForDay = (row.totalMembers * percent) / 100;
+                        const membersForDay = (totalMembers * percent) / 100;
                         const capacityPerMan = ratePerHour * availableHours;
 
                         let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
@@ -2890,34 +2942,72 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const fractional = menRequired % 1;
                         menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
-                        finalTableHtml += `<td>${menRequired}</td>`;
+                        newRowHtml += `<td>${menRequired}</td>`;
                         dayIndex++;
                     }
 
-                    finalTableHtml += '</tr>';
+                    return newRowHtml;
+                }
+
+                // Case when "Dental Assistant/RDH" is selected
+                if (selectedRole === "Dental Assistant/RDH") {
+                    // Remove the generated row for "Dental Assistant/RDH" and "Dental Treatment"
+                    $('#StaffRequirementTable tbody tr').each(function () {
+                        const tr = $(this);
+                        const role = tr.find('td:nth-child(1)').text();
+                        const eventServiceColumn = tr.find('td:nth-child(2)').text();
+
+                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment") {
+                            tr.remove(); // Remove the row for "Dental Assistant/RDH"
+                        }
+                    });
+
+                    // Calculate and update the current row for "Dental Assistant/RDH"
+                    const requiredStaffCountHtml = calculateRequiredStaffCount();
+
+                    // Append the calculated required staff count to the same row
+                    // Remove all <td> elements after the second one
+                    row.find('td:gt(1)').remove();
+
+                    // Append the new <td> elements for staff count
+                    row.append(requiredStaffCountHtml);
+
+                }
+
+                // Case when "Dentist" is selected
+                if (selectedRole === "Dentist") {
+                    // Calculate and update the current row for "Dentist"
+                    const requiredStaffCountHtml = calculateRequiredStaffCount();
+
+                    // Append the calculated required staff count to the same row
+                    // Remove all <td> elements after the second one
+                    row.find('td:gt(1)').remove();
+
+                    // Append the new <td> elements for staff count
+                    row.append(requiredStaffCountHtml);
+
+
+                    // Add a new row for "Dental Assistant/RDH"
+                    const newRowHtml = `<tr><td>Dental Assistant/RDH</td><td>${eventService}</td>${requiredStaffCountHtml}</tr>`;
+                    $('#StaffRequirementTable tbody').append(newRowHtml);
+                }
+
+                // If "Dental Assistant/RDH" is selected again after "Dentist"
+                if (selectedRole === "Dental Assistant/RDH") {
+                    // Remove the row created for "Dentist"
+                    $('#StaffRequirementTable tbody tr').each(function () {
+                        const tr = $(this);
+                        const role = tr.find('td:nth-child(1)').text();
+                        const eventServiceColumn = tr.find('td:nth-child(2)').text();
+
+                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment") {
+                            tr.remove(); // Remove the row for "Dental Assistant/RDH" if switching back
+                        }
+                    });
                 }
             });
-
-            finalTableHtml += '</tbody>';
-
-            // Append the final table to the container
-            $('#StaffRequirementTable').html(finalTableHtml);
-
-            // Initialize or re-draw DataTable
-            if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
-                $('#StaffRequirementTable').DataTable().clear().destroy();
-            }
-
-            // Ensure that the table is ready before initializing DataTable
-            setTimeout(function () {
-                $('#StaffRequirementTable').DataTable({
-                    searching: false,
-                    paging: false,
-                    info: false,
-                    order: []
-                });
-            }, 100); // Timeout to ensure DataTable is initialized after content is inserted
         }
+
 
 
 
