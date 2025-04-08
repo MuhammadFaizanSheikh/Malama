@@ -1941,7 +1941,8 @@
                                 <th>ZipCode</th>
                                 <th>Staff Cac</th>
                                 <th>Id</th>
-                                <th>CountOfStaffEnrolledInEvent</th>
+                            <th>Event Count</th>
+                                @* <th>CountOfStaffEnrolledInEvent</th> *@
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -2512,7 +2513,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "primaryZip" },
                     { "data": "staffCAC", "visible": false },
                     { "data": "id", "visible": false },
-                    { "data": "countOfStaffEnrolledInEvent", "visible": false },
+                    { "data": "countOfStaffEnrolledInEvent" },
                     { "data": "status" },
                     {
                         "data": null,
@@ -2589,7 +2590,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
-    debugger;
     let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
     let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
@@ -2758,24 +2758,25 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 "EKG": { rate: 4, roles: "MA/LVN/RN/Phlebotomist" },
                 "Optometry/Eyewear": { rate: 6, roles: "Optometrist" },
                 "Check-In/Out": { rate: 20, roles: "Admin" },
-                "HIV Testing": { rate: 7, roles: "Phlebotomist" },
-                "G6PD testing": { rate: 7, roles: "Medical Assistant" },
-                "Blood Typing (ABO)": { rate: 7, roles: "LVN" },
-                "Sickle Cell Trait": { rate: 7, roles: "RN" },
-                "DNA": { rate: 7, roles: "LVN/RN" },
-                "Lipid Panel": { rate: 7, roles: "LVN/RN" },
+                "LABS": { rate: 7, roles: "Phlebotomist/ Medical Assistant/ LVN" },
+                "HIV Testing": { rate: 0, roles: "", group: "LABS" },
+                "G6PD testing": { rate: 0, roles: "", group: "LABS" },
+                "Blood Typing (ABO)": { rate: 0, roles: "", group: "LABS" },
+                "Sickle Cell Trait": { rate: 0, roles: "", group: "LABS" },
+                "DNA": { rate: 0, roles: "", group: "LABS" },
+                "Lipid Panel": { rate: 0, roles: "", group: "LABS" },
                 "Pregnancy Test": { rate: 6, roles: "Medical Assistant" },
                 "Lab station Admin": { rate: 14, roles: "Admin" },
-                "Hep A": { rate: 8, roles: "RN" },
-                "Hep B": { rate: 8, roles: "LVN" },
-                "MMR": { rate: 8, roles: "MA" },
-                "Tdap": { rate: 8, roles: "RN" },
-                "Influenza": { rate: 8, roles: "RN" }
+                "Immunizations": { rate: 8, roles: "RN/LVN/MA" },
+                "Hep A": { rate: 0, roles: "", group: "Immunizations" },
+                "Hep B": { rate: 0, roles: "", group: "Immunizations" },
+                "MMR": { rate: 0, roles: "", group: "Immunizations" },
+                "Tdap": { rate: 0, roles: "", group: "Immunizations" },
+                "Influenza": { rate: 0, roles: "", group: "Immunizations" }
             };
 
             // Function to generate final table dynamically based on selected rows from eventServicesTable
         function GenerateStaffRequirementTable() {
-            debugger;
 
             let finalTableHtml = '<thead><tr><th>Role</th><th>Event Service</th>';
             let dayIndex = 1;
@@ -2870,34 +2871,52 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             finalTableHtml += '</tr></thead><tbody>';
 
+            let labTotalMembers = 0;  // Variable to store sum of totalMembers for LABS events
+            let immunizationsTotalMembers = 0;
+
             checkedRows.forEach(function (row) {
                 const { eventService, totalMembers } = row;
-                const role = ratePerHourData[eventService]?.roles;
-                const rate = ratePerHourData[eventService]?.rate;
+                const rateData = ratePerHourData[eventService];
+                const role = rateData?.roles;
+                const rate = rateData?.rate;
+                const group = rateData?.group;  // Get the group if it exists
 
-                if (!rate || !role) return;
+                // Check if the eventService belongs to the LABS group
+                if (group === "LABS") {
+                    labTotalMembers += totalMembers;  // Sum the totalMembers for LABS-related services
+                } else if (group === "Immunizations") {
+                    immunizationsTotalMembers += totalMembers;  // Sum the totalMembers for LABS-related services
+                    } else {
+                    // Process non-LABS events as usual
+                    if (eventService === "Dental Treatment") {
+                        finalTableHtml += renderRow(role, eventService, totalMembers, true);
+                    } else {
+                        finalTableHtml += renderRow(role, eventService, totalMembers);
+                    }
 
-                if (eventService === "Dental Treatment") {
-                    finalTableHtml += renderRow(role, eventService, totalMembers, true);
-                } else {
-                    finalTableHtml += renderRow(role, eventService, totalMembers);
-                }
+                    if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
+                        finalTableHtml += renderRow("Dental Assistant/RDH", eventService, totalMembers);
+                    }
 
-                if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
-                    finalTableHtml += renderRow("Dental Assistant/RDH", eventService, totalMembers);
-                }
+                    if (eventService === "Periodic Health Assessment") {
+                        const rrEventService = "Record Review (Periodic Health Assessment)";
+                        const rrRole = ratePerHourData[rrEventService]?.roles;
+                        const rrRate = ratePerHourData[rrEventService]?.rate;
 
-                if (eventService === "Periodic Health Assessment") {
-                    const rrEventService = "Record Review (Periodic Health Assessment)";
-                    const rrRole = ratePerHourData[rrEventService]?.roles;
-                    const rrRate = ratePerHourData[rrEventService]?.rate;
-
-                    if (rrRole && rrRate) {
-                        finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
+                        if (rrRole && rrRate) {
+                            finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
+                        }
                     }
                 }
             });
 
+            if (labTotalMembers > 0) {
+                finalTableHtml += renderRow("Phlebotomist/Medical Assistant/LVN", "LABS", labTotalMembers);
+            }
+
+            if (immunizationsTotalMembers > 0) {
+                finalTableHtml += renderRow("RN/LVN/MA", "Immunizations", immunizationsTotalMembers);
+            }
             const doerhsEvent = "DOEHRS Entry";
             const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
             const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
@@ -2916,11 +2935,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             finalTableHtml += '</tbody>';
             $('#StaffRequirementTable').html(finalTableHtml);
 
-            if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
-                $('#StaffRequirementTable').DataTable().clear().destroy();
-            }
-
             setTimeout(function () {
+                // Check if DataTable is already initialized and destroy it
+                if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
+                    $('#StaffRequirementTable').DataTable().clear().destroy();
+                }
+
+                // Reinitialize DataTable
                 $('#StaffRequirementTable').DataTable({
                     searching: false,
                     paging: false,
@@ -2930,7 +2951,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }, 100);
 
             $('select.roleDropdown').change(function () {
-                debugger;
                 const selectedRole = $(this).val();
                 const row = $(this).closest('tr');
                 const eventService = row.find('td:nth-child(2)').text();
@@ -3150,7 +3170,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
         function validateSectionFields(sectionId) {
-            debugger;
             const sectionFields = $(`#section${sectionId}`).find("input, select, textarea");
 
             let anyFieldFilled = false;
