@@ -2877,7 +2877,32 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
                     finalTableHtml += renderRow("Dental Assistant/RDH", eventService, totalMembers);
                 }
+
+                if (eventService === "Periodic Health Assessment") {
+                    const rrEventService = "Record Review (Periodic Health Assessment)";
+                    const rrRole = ratePerHourData[rrEventService]?.roles;
+                    const rrRate = ratePerHourData[rrEventService]?.rate;
+
+                    if (rrRole && rrRate) {
+                        finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
+                    }
+                }
             });
+
+            const doerhsEvent = "DOEHRS Entry";
+            const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
+            const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
+            if (doerhsRole && doerhsRate) {
+                finalTableHtml += renderRow(doerhsRole, doerhsEvent, 1);
+            }
+
+            const checkInOutEvent = "Check-In/Out";
+            const checkInOutRole = ratePerHourData[checkInOutEvent]?.roles;
+            const checkInOutRate = ratePerHourData[checkInOutEvent]?.rate;
+            if (checkInOutRole && checkInOutRate) {
+                finalTableHtml += renderRow(checkInOutRole, checkInOutEvent, 1);
+            }
+
 
             finalTableHtml += '</tbody>';
             $('#StaffRequirementTable').html(finalTableHtml);
@@ -2926,11 +2951,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
             });
         }
-
-
-
-
-
 
         $("#submitBtn").click(function (e) {
 
