@@ -98,11 +98,17 @@
 
 
         /* Common Styles for All Tables */
-        #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable, #StaffRequirementTable {
+        #eventServicesTable, #eventServicesTable2, #eventServicesTable3, #eventStaffSelectionTable, #eventStaffSelectedTable {
             border: 1px solid #ddd;
             border-collapse: collapse;
             width: 100% !important;
             table-layout: auto;
+        }
+
+        #StaffRequirementTable {
+            border: 1px solid #ddd;
+            border-collapse: collapse;
+            table-layout: auto; /* Ensures the table columns resize based on content */
         }
 
             #eventServicesTable th, #eventServicesTable td,
@@ -2946,7 +2952,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     searching: false,
                     paging: false,
                     info: false,
-                    order: []
+                    order: [],
+                    autoWidth: true
                 });
             }, 100);
 
