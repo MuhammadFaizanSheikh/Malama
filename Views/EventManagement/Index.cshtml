@@ -2792,7 +2792,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 });
             }
 
-            function generateStaffCountCells(ratePerHour, totalMembers) {
+            function generateStaffCountCells(ratePerHour, totalMembers, eventService) {
                 let html = "";
                 let dayIdx = 1;
                 while ($(`#EventStartTimeDay${dayIdx}`).length) {
@@ -2816,14 +2816,23 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         availableHours = (endDate - startDate) / (1000 * 60 * 60);
                     }
 
-                    const membersForDay = (totalMembers * percent) / 100;
-                    const capacityPerMan = ratePerHour * availableHours;
-                    let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
+                    if (eventService === "DOEHRS Entry") {
+                        html += `<td>${1}</td>`;
+                    }
+                    else if (eventService === "Check-In/Out")
+                    {
+                        html += `<td>${2}</td>`;
+                    }
+                    else {
+                        const membersForDay = (totalMembers * percent) / 100;
+                        const capacityPerMan = ratePerHour * availableHours;
+                        let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
 
-                    const fractional = menRequired % 1;
-                    menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+                        const fractional = menRequired % 1;
+                        menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
-                    html += `<td>${menRequired}</td>`;
+                        html += `<td>${menRequired}</td>`;
+                    }
                     dayIdx++;
                 }
                 return html;
@@ -2845,7 +2854,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
 
                 row += `<td>${eventService}</td>`;
-                row += generateStaffCountCells(ratePerHour, totalMembers);
+                row += generateStaffCountCells(ratePerHour, totalMembers, eventService);
                 row += `</tr>`;
                 return row;
             }
