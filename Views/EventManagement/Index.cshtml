@@ -2838,6 +2838,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const fractional = menRequired % 1;
                         menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
+                        if (menRequired < 1) {
+                            menRequired = 1;
+                        }
+
                         html += `<td>${menRequired}</td>`;
                     }
                     dayIdx++;
