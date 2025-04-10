@@ -2816,7 +2816,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 if (isDropdown) {
                         row += `<td><select class="form-select text-center roleDropdown">
                             <option value="Dentist" selected>Dentist</option>
-                            <option value="Dental Assistant/RDH">Dental Assistant/RDH</option>
+                            <option value="RDH">RDH</option>
                         </select></td>`;
                 } else {
                     row += `<td>${role}</td>`;
@@ -2930,17 +2930,17 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 row.append(staffCountHtml);
 
                 if (selectedRole === "Dentist") {
-                    const newRowHtml = `<tr><td>Dental Assistant/RDH</td><td>${eventService}</td>${staffCountHtml}</tr>`;
+                    const newRowHtml = `<tr><td>RDH</td><td>${eventService}</td>${staffCountHtml}</tr>`;
                     $('#StaffRequirementTable tbody').append(newRowHtml);
                 }
 
-                if (selectedRole === "Dental Assistant/RDH") {
+                if (selectedRole === "RDH") {
                     $('#StaffRequirementTable tbody tr').each(function () {
                         const tr = $(this);
                         const role = tr.find('td:nth-child(1)').text();
                         const eventServiceColumn = tr.find('td:nth-child(2)').text();
 
-                        if (role === "Dental Assistant/RDH" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
+                        if (role === "RDH" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
                             tr.remove();
                         }
                     });
