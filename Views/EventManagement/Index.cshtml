@@ -108,7 +108,6 @@
         #StaffRequirementTable {
             border: 1px solid #ddd;
             border-collapse: collapse;
-            table-layout: auto; /* Ensures the table columns resize based on content */
         }
 
             #eventServicesTable th, #eventServicesTable td,
@@ -138,23 +137,23 @@
                 text-align: center; /* Center align all columns by default */
             }
 
-                #eventServicesTable td:first-child, #eventServicesTable2 td:first-child, #eventServicesTable3 td:first-child, #StaffRequirementTable td:first-child {
+                #eventServicesTable td:first-child, #eventServicesTable2 td:first-child, #eventServicesTable3 td:first-child{
                     text-align: left; /* Left align the first column */
                     padding-left: 12px; /* Optional: Add some left padding for better spacing */
                 }
 
                 #eventServicesTable td button, #eventServicesTable2 td button, #eventServicesTable3 td button, #eventStaffSelectionTable td button, #eventStaffSelectedTable td button, #StaffRequirementTable td button
-                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a, #eventStaffSelectionTable td a, #StaffRequirementTable td a {
+                #eventServicesTable td a, #eventServicesTable2 td a, #eventServicesTable3 td a, #eventStaffSelectionTable td a {
                     display: inline-block;
                     margin-right: 5px;
                 }
 
-                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container, #eventStaffSelectionTable td .button-container, #eventStaffSelectedTable td .button-container, #StaffRequirementTable td .button-container {
+                #eventServicesTable td .button-container, #eventServicesTable2 td .button-container, #eventServicesTable3 td .button-container, #eventStaffSelectionTable td .button-container, #eventStaffSelectedTable td .button-container{
                     display: flex;
                     justify-content: center;
                 }
 
-                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a, #eventStaffSelectionTable td .button-container a, #eventStaffSelectedTable td .button-container a, #StaffRequirementTable td .button-container a {
+                    #eventServicesTable td .button-container a, #eventServicesTable2 td .button-container a, #eventServicesTable3 td .button-container a, #eventStaffSelectionTable td .button-container a, #eventStaffSelectedTable td .button-container a {
                         margin-right: 5px;
                     }
 
@@ -2784,6 +2783,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // Function to generate final table dynamically based on selected rows from eventServicesTable
         function GenerateStaffRequirementTable() {
 
+              setTimeout(function () {
+                // Check if DataTable is already initialized and destroy it
+                if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
+                    $('#StaffRequirementTable').DataTable().clear().destroy();
+                }
+
+
             let finalTableHtml = '<thead><tr><th>Role</th><th>Event Service</th>';
             let dayIndex = 1;
             const checkedRows = [];
@@ -2799,57 +2805,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 });
             }
 
-            function generateStaffCountCells(ratePerHour, totalMembers, eventService) {
-                let html = "";
-                let dayIdx = 1;
-                while ($(`#EventStartTimeDay${dayIdx}`).length) {
-                    const start = $(`#EventStartTimeDay${dayIdx}`).val();
-                    const end = $(`#EventEndTimeDay${dayIdx}`).val();
-                    const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIdx}`).val());
-
-                    if (!start || !end || isNaN(percent)) {
-                        html += '<td>Invalid data</td>';
-                        dayIdx++;
-                        continue;
-                    }
-
-                    const [sh, sm] = start.split(':').map(Number);
-                    const [eh, em] = end.split(':').map(Number);
-                    const startDate = new Date(0, 0, 0, sh, sm, 0);
-                    const endDate = new Date(0, 0, 0, eh, em, 0);
-
-                    let availableHours = 0;
-                    if (endDate > startDate) {
-                        availableHours = (endDate - startDate) / (1000 * 60 * 60);
-                    }
-
-                    if (eventService === "DOEHRS Entry") {
-                        html += `<td>${1}</td>`;
-                    }
-                    else if (eventService === "Check-In/Out")
-                    {
-                        html += `<td>${2}</td>`;
-                    }
-                    else {
-                        const membersForDay = (totalMembers * percent) / 100;
-                        const capacityPerMan = ratePerHour * availableHours;
-                        let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
-
-                        // const fractional = menRequired % 1;
-                        // menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
-
-                        // if (menRequired < 1) {
-                        //     menRequired = 1;
-                        // }
-
-                        menRequired = menRequired.toFixed(1);
-
-                        html += `<td>${menRequired}</td>`;
-                    }
-                    dayIdx++;
-                }
-                return html;
-            }
+            
 
             function renderRow(role, eventService, totalMembers, isDropdown = false) {
                 const ratePerHour = ratePerHourData[eventService]?.rate;
@@ -2858,7 +2814,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
 
                 if (isDropdown) {
-                    row += `<td><select class="form-select roleDropdown">
+                        row += `<td><select class="form-select text-center roleDropdown">
                             <option value="Dentist" selected>Dentist</option>
                             <option value="Dental Assistant/RDH">Dental Assistant/RDH</option>
                         </select></td>`;
@@ -2947,30 +2903,28 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             finalTableHtml += '</tbody>';
             $('#StaffRequirementTable').html(finalTableHtml);
 
-            setTimeout(function () {
-                // Check if DataTable is already initialized and destroy it
-                if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
-                    $('#StaffRequirementTable').DataTable().clear().destroy();
-                }
-
+          
                 // Reinitialize DataTable
                 $('#StaffRequirementTable').DataTable({
                     searching: false,
                     paging: false,
                     info: false,
                     order: [],
-                    autoWidth: true
+                    autoWidth: false
                 });
-            }, 100);
+            }, 300);
 
-            $('select.roleDropdown').change(function () {
+            // $(document).on('change', 'select.roleDropdown', function () {
+            // $('select.roleDropdown').change(function () {
+            $('#StaffRequirementTable').on('change', 'select.roleDropdown', function () {
+                debugger;
                 const selectedRole = $(this).val();
                 const row = $(this).closest('tr');
                 const eventService = row.find('td:nth-child(2)').text();
                 const totalMembers = parseInt(row.data('total-members')) || 0;
                 const ratePerHour = ratePerHourData[eventService]?.rate;
 
-                const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers);
+                const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
 
                 row.find('td:gt(1)').remove();
                 row.append(staffCountHtml);
@@ -2993,6 +2947,58 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
             });
         }
+
+        function generateStaffCountCells(ratePerHour, totalMembers, eventService) {
+                let html = "";
+                let dayIdx = 1;
+                while ($(`#EventStartTimeDay${dayIdx}`).length) {
+                    const start = $(`#EventStartTimeDay${dayIdx}`).val();
+                    const end = $(`#EventEndTimeDay${dayIdx}`).val();
+                    const percent = parseFloat($(`#ServiceMemberPercentPerDay${dayIdx}`).val());
+
+                    if (!start || !end || isNaN(percent)) {
+                        html += '<td>Invalid data</td>';
+                        dayIdx++;
+                        continue;
+                    }
+
+                    const [sh, sm] = start.split(':').map(Number);
+                    const [eh, em] = end.split(':').map(Number);
+                    const startDate = new Date(0, 0, 0, sh, sm, 0);
+                    const endDate = new Date(0, 0, 0, eh, em, 0);
+
+                    let availableHours = 0;
+                    if (endDate > startDate) {
+                        availableHours = (endDate - startDate) / (1000 * 60 * 60);
+                    }
+
+                    if (eventService === "DOEHRS Entry") {
+                        html += `<td>${1}</td>`;
+                    }
+                    else if (eventService === "Check-In/Out")
+                    {
+                        html += `<td>${2}</td>`;
+                    }
+                    else {
+                        const membersForDay = (totalMembers * percent) / 100;
+                        const capacityPerMan = ratePerHour * availableHours;
+                        let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
+
+                        // const fractional = menRequired % 1;
+                        // menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+
+                        // if (menRequired < 1) {
+                        //     menRequired = 1;
+                        // }
+
+                        menRequired = menRequired.toFixed(1);
+
+                        html += `<td>${menRequired}</td>`;
+                    }
+                    dayIdx++;
+                }
+                return html;
+            }
 
         $("#submitBtn").click(function (e) {
 
