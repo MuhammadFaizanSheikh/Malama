@@ -2771,7 +2771,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 "Sickle Cell Trait": { rate: 0, roles: "", group: "LABS" },
                 "DNA": { rate: 0, roles: "", group: "LABS" },
                 "Lipid Panel": { rate: 0, roles: "", group: "LABS" },
-                "Pregnancy Test": { rate: 6, roles: "Medical Assistant" },
+                "Pregnancy Test": { rate: 0, roles: "Medical Assistant", group: "LABS" },
                 "Lab station Admin": { rate: 14, roles: "Admin" },
                 "Immunizations": { rate: 8, roles: "RN/LVN/MA" },
                 "Hep A": { rate: 0, roles: "", group: "Immunizations" },
@@ -2835,12 +2835,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const capacityPerMan = ratePerHour * availableHours;
                         let menRequired = capacityPerMan > 0 ? (membersForDay / capacityPerMan) : 0;
 
-                        const fractional = menRequired % 1;
-                        menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
+                        // const fractional = menRequired % 1;
+                        // menRequired = fractional >= 0.5 ? Math.ceil(menRequired) : Math.floor(menRequired);
 
-                        if (menRequired < 1) {
-                            menRequired = 1;
-                        }
+                        // if (menRequired < 1) {
+                        //     menRequired = 1;
+                        // }
+
+                        menRequired = menRequired.toFixed(1);
 
                         html += `<td>${menRequired}</td>`;
                     }
