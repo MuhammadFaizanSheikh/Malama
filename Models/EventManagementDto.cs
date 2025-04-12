@@ -400,8 +400,9 @@
         public List<DateTime>? AvailabilityDates { get; set; } // List of selected dates
         public List<EventManagementStaffAvailability> AvailabilityDatesList { get; set; } = new List<EventManagementStaffAvailability>();
         public bool PreEventAvailability { get; set; } // Pre-Event checkbox
+        public string SelectedStation { get; set; } // Pre-Event checkbox
 
-        
+
     }
 
     [Table("EventManagementStaffAvailability")]
