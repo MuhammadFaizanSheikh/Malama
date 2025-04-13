@@ -2295,6 +2295,8 @@
             var previousSection = currentSectionForProgressBar; // Store the previous section ID
             currentSectionForProgressBar = target;
 
+           
+
             if (target == 7 && !tableInitialized) {
                 initializeEventStaffTable();
                 initializeSelectedStaffTable();
@@ -2302,7 +2304,11 @@
             }
 
             if (target == 7) {
+                debugger;
                 GenerateStaffRequirementTable();
+                setTimeout(() => {
+                    updateStaffRequirementTable();
+                }, 500);
             }
 
             $(".section").hide();
@@ -2590,48 +2596,52 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             tableInitialized = true;
             initializeEventStaffTable();
             initializeSelectedStaffTable();
-            let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            // let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            GenerateStaffRequirementTable(); //this function is being called here to set allEventServices (allEventServices is being set in this function) so that addStaffToSelectedTable function can have all stations in dropdown with selected value
+            setTimeout(() => {
+                staffList.forEach((staffData, index) => {
+                    addStaffToSelectedTable(staffData, index);
+                });
 
-            staffList.forEach((staffData, index) => {
-                addStaffToSelectedTable(staffData, index);
-            });
-
-            updateRowIndices();
+                updateRowIndices();
+            }, 500);
+            // updateStaffRequirementTable();
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
-    let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
-    let selectedTable = $('#eventStaffSelectedTable').DataTable();
+            debugger;
+            let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
+            let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
-    let existingRows = selectedTable.rows().data().toArray();
-    if (existingRows.some(row => row.id === eventStaffData.id)) {
-        alert("Staff already added!");
-        return;
-    }
+            let existingRows = selectedTable.rows().data().toArray();
+            if (existingRows.some(row => row.id === eventStaffData.id)) {
+                alert("Staff already added!");
+                return;
+            }
 
-    if (rowIndex === null) {
-        rowIndex = selectedTable.rows().count();
-    }
+            if (rowIndex === null) {
+                rowIndex = selectedTable.rows().count();
+            }
 
-    let roleDropdownId = `roleSelect_${eventStaffData.id}`;
-            let stationDropdownId = `stationSelect_${eventStaffData.id}`;
+            let roleDropdownId = `roleSelect_${eventStaffData.id}`;
+                    let stationDropdownId = `stationSelect_${eventStaffData.id}`;
 
-    let eventStartDate = $('#EventStartDate').val();
-    let eventEndDate = $('#EventEndDate').val();
+            let eventStartDate = $('#EventStartDate').val();
+            let eventEndDate = $('#EventEndDate').val();
 
-    // Validate event dates
-    if (!eventStartDate || !eventEndDate) {
-        alert("Please fill Event Start Date and Event End Date first");
-        return;
-    }
+            // Validate event dates
+            if (!eventStartDate || !eventEndDate) {
+                alert("Please fill Event Start Date and Event End Date first");
+                return;
+            }
 
-    let startDate = new Date(eventStartDate);
-    let endDate = new Date(eventEndDate);
+            let startDate = new Date(eventStartDate);
+            let endDate = new Date(eventEndDate);
 
-    if (startDate > endDate) {
-        alert("Event Start Date cannot be after Event End Date");
-        return;
-    }
+            if (startDate > endDate) {
+                alert("Event Start Date cannot be after Event End Date");
+                return;
+            }
 
             let selectedDates = (staffData.eventStaffDetail?.availabilityDatesList || []).map(item => {
                 let dt = new Date(item.availabilityDate); // Access the availabilityDate property
@@ -2652,188 +2662,161 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 let isChecked = selectedDates.includes(formattedDate) ? "checked" : "";
 
                 availabilityCheckboxes += `
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="chk_${eventStaffData.id}_${formattedDate}"
-                name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
-                value="${formattedDate}" ${isChecked}>
-            <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
-                ${formattedDate}
-            </label>
-        </div>`;
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="chk_${eventStaffData.id}_${formattedDate}"
+                        name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+                        value="${formattedDate}" ${isChecked}>
+                    <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
+                        ${formattedDate}
+                    </label>
+                </div>`;
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
 
-    // Handle Pre-Event Availability Checkbox for Edit Mode
-    let isPreEventChecked = staffData.eventStaffDetail?.preEventAvailability ? "checked" : "";
-    let preEventAvailabilityCheckbox = `
-        <input type="checkbox" class="form-check-input" id="preEventChk_${eventStaffData.id}"
-            name="SingleEventManagement.EventStaffDetailList[${rowIndex}].PreEventAvailability"
-            value="true" ${isPreEventChecked}>
-    `;
+            // Handle Pre-Event Availability Checkbox for Edit Mode
+            let isPreEventChecked = staffData.eventStaffDetail?.preEventAvailability ? "checked" : "";
+            let preEventAvailabilityCheckbox = `
+                <input type="checkbox" class="form-check-input" id="preEventChk_${eventStaffData.id}"
+                    name="SingleEventManagement.EventStaffDetailList[${rowIndex}].PreEventAvailability"
+                    value="true" ${isPreEventChecked}>
+            `;
 
-    // Filter roles based on CAC status
-    let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole");
-    filteredRoles = filteredRoles.filter(role => {
-        if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") {
-            return false;
-        }
-        if (eventStaffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
-            return false;
-        }
-        return true;
-    });
+            // Filter roles based on CAC status
+            let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole");
+            filteredRoles = filteredRoles.filter(role => {
+                if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") {
+                    return false;
+                }
+                if (eventStaffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
+                    return false;
+                }
+                return true;
+            });
 
-    // Create role dropdown options
-    let roleOptions = filteredRoles.map(role => {
-        let isSelected = false;
+            // Create role dropdown options
+            let roleOptions = filteredRoles.map(role => {
+                let isSelected = false;
 
-        // Handle edit mode: Check if this role is in eventWiseStaffRoleList
-        if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffRoleList) {
-            isSelected = staffData.eventStaffDetail.eventWiseStaffRoleList.some(r => r.roleId === role.id);
-        }
+                // Handle edit mode: Check if this role is in eventWiseStaffRoleList
+                if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffRoleList) {
+                    isSelected = staffData.eventStaffDetail.eventWiseStaffRoleList.some(r => r.roleId === role.id);
+                }
 
-        return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
-    }).join("");
+                return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
+            }).join("");
+
+            let selectedStation = staffData.eventStaffDetail?.selectedStation || "";
+
 
             let stationDropdown = `
-    <select id="${stationDropdownId}"
-            name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedStation"
-            class="form-select text-center station-dropdown"
-            style="width: 230px;">
-        <option value="" disabled selected>Select Station</option>
-        ${allEventServices.map(service =>
-                `<option value="${service}">${service}</option>`
-            ).join("")}
-    </select>`;
+            <select id="${stationDropdownId}"
+                    name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedStation"
+                    class="form-select text-center station-dropdown"
+                    style="width: 230px;">
+                <option value="" disabled ${selectedStation === "" ? "selected" : ""}>Select Station</option>
+                ${allEventServices.map(service =>
+                    `<option value="${service}" ${service === selectedStation ? "selected" : ""}>${service}</option>`
+                ).join("")}
+            </select>`;
+
 
 
             $(document).on('change', `#${stationDropdownId}`, function () {
                 debugger;
-
-                // let selectedStation = $(this).val()?.trim();
-                // let rolesColumnValue = $(`#eventStaffSelectedTable tbody tr:eq(${rowIndex}) td:nth-child(6)`).text()?.trim();
-
-                // if (!selectedStation || !rolesColumnValue) return; // Stop if either is missing
-
-                // let staffRequirementTable = $('#StaffRequirementTable').DataTable();
-                // staffRequirementTable.rows().every(function () {
-                //     let row = this.data();
-
-                //     let roleColumnValue = row[0]?.toString().trim();  // Assuming "Role"
-                //     let eventServiceColumnValue = row[1]?.toString().trim();  // Assuming "Event Service"
-
-                //     if (!roleColumnValue || !eventServiceColumnValue) return; // Skip this row if data missing
-
-                //     let rowRoles = roleColumnValue.split('/').map(r => r.trim().toLowerCase()).filter(Boolean);
-                //     let selectedRoles = rolesColumnValue.split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
-
-                //     let hasMatchingRole = rowRoles.some(role => selectedRoles.includes(role));
-
-                //     if (selectedStation === eventServiceColumnValue && hasMatchingRole) {
-                //         let columnIndex = getColumnIndexByName('#StaffRequirementTable', 'Total Required Staff');
-                //         let currentRequiredStaff = parseInt(row[columnIndex]) || 0;
-                //         let newStaffCount = currentRequiredStaff + 1;
-
-                //         // Update the DataTable
-                //         staffRequirementTable.cell(this.index(), columnIndex).data(newStaffCount).draw();
-                //     }
-                // });
-
                 updateStaffRequirementTable();
             });
 
-            function updateStaffRequirementTable() {
-                let staffRequirementTable = $('#StaffRequirementTable').DataTable();
+            let roleDropdown = `
+                <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles"
+                        class="form-control role-multi-select" multiple>
+                    ${roleOptions}
+                </select>`;
 
-                // 1️⃣ Reset "Total Required Staff" to 0 for all rows
+            // Add row to DataTable
+            selectedTable.row.add({
+                staffID: `${eventStaffData.staffID} 
+                          <input type="hidden" class="eventStaffIdHidden" 
+                            name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
+                            value="${eventStaffData.id}" />`,
+                staffLastName: eventStaffData.staffLastName,
+                staffFirstName: eventStaffData.staffFirstName,
+                roles: eventStaffData.roles,
+                licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
+                primaryState: eventStaffData.primaryState,
+                primaryCity: eventStaffData.primaryCity,
+                primaryZip: eventStaffData.primaryZip,
+                status: eventStaffData.status,
+                id: eventStaffData.id, 
+                countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
+                availability: availabilityCheckboxes,  // Add checkboxes for availability
+                preEventAvailability: preEventAvailabilityCheckbox, // Fix: Ensure it is checked in edit mode
+                additionalroles: roleDropdown,
+                        station: stationDropdown,
+                action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
+                          data-staffid="${eventStaffData.id}">Remove</button>`
+            }).draw();
+
+            // Initialize select2 for the new dropdown
+            $(`#${roleDropdownId}`).select2();
+        }
+
+        function updateStaffRequirementTable() {
+            let staffRequirementTable = $('#StaffRequirementTable').DataTable();
+
+            // 1️⃣ Reset "Total Required Staff" to 0 for all rows
+            staffRequirementTable.rows().every(function () {
+                let rowData = this.data();
+                let columnIndex = getColumnIndexByName('#StaffRequirementTable', 'Total Required Staff');
+                rowData[columnIndex] = 0;
+                this.data(rowData); // Update row data
+            });
+            staffRequirementTable.draw(); // Redraw after resetting
+
+            // 2️⃣ Loop through each row of eventStaffSelectedTable
+            $('#eventStaffSelectedTable tbody tr').each(function () {
+                let $row = $(this);
+
+                let selectedStation = $row.find('select.station-dropdown').val()?.trim();
+                let rolesColumnValue = $row.find('td:eq(5)').text()?.trim(); // Roles is at 7th column (index 6)
+
+                if (!selectedStation || !rolesColumnValue) return;
+
+                let selectedRoles = rolesColumnValue.split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
+
+                // 3️⃣ Loop through StaffRequirementTable to find matches
                 staffRequirementTable.rows().every(function () {
                     let rowData = this.data();
-                    let columnIndex = getColumnIndexByName('#StaffRequirementTable', 'Total Required Staff');
-                    rowData[columnIndex] = 0;
-                    this.data(rowData); // Update row data
-                });
-                staffRequirementTable.draw(); // Redraw after resetting
+                    let roleColumnValue = rowData[0]?.toString().trim();
+                    let eventServiceColumnValue = rowData[1]?.toString().trim();
 
-                // 2️⃣ Loop through each row of eventStaffSelectedTable
-                $('#eventStaffSelectedTable tbody tr').each(function () {
-                    let $row = $(this);
+                    if (!roleColumnValue || !eventServiceColumnValue) return;
 
-                    let selectedStation = $row.find('select.station-dropdown').val()?.trim();
-                    let rolesColumnValue = $row.find('td:eq(5)').text()?.trim(); // Roles is at 7th column (index 6)
+                    let rowRoles = roleColumnValue.split('/').map(r => r.trim().toLowerCase()).filter(Boolean);
+                    let hasMatchingRole = rowRoles.some(role => selectedRoles.includes(role));
 
-                    if (!selectedStation || !rolesColumnValue) return;
-
-                    let selectedRoles = rolesColumnValue.split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
-
-                    // 3️⃣ Loop through StaffRequirementTable to find matches
-                    staffRequirementTable.rows().every(function () {
-                        let rowData = this.data();
-                        let roleColumnValue = rowData[0]?.toString().trim();
-                        let eventServiceColumnValue = rowData[1]?.toString().trim();
-
-                        if (!roleColumnValue || !eventServiceColumnValue) return;
-
-                        let rowRoles = roleColumnValue.split('/').map(r => r.trim().toLowerCase()).filter(Boolean);
-                        let hasMatchingRole = rowRoles.some(role => selectedRoles.includes(role));
-
-                        if (selectedStation === eventServiceColumnValue && hasMatchingRole) {
-                            let columnIndex = getColumnIndexByName('#StaffRequirementTable', 'Total Required Staff');
-                            let currentCount = parseInt(rowData[columnIndex]) || 0;
-                            rowData[columnIndex] = currentCount + 1;
-                            this.data(rowData); // Update row
-                        }
-                    });
-                });
-
-                staffRequirementTable.draw(); // Redraw after updates
-            }
-
-
-            function getColumnIndexByName(tableSelector, columnName) {
-                let headers = $(`${tableSelector} thead th`);
-                for (let i = 0; i < headers.length; i++) {
-                    if ($(headers[i]).text().trim() === columnName) {
-                        return i;
+                    if (selectedStation === eventServiceColumnValue && hasMatchingRole) {
+                        let columnIndex = getColumnIndexByName('#StaffRequirementTable', 'Total Required Staff');
+                        let currentCount = parseInt(rowData[columnIndex]) || 0;
+                        rowData[columnIndex] = currentCount + 1;
+                        this.data(rowData); // Update row
                     }
+                });
+            });
+
+            staffRequirementTable.draw(); // Redraw after updates
+        }
+
+
+        function getColumnIndexByName(tableSelector, columnName) {
+            let headers = $(`${tableSelector} thead th`);
+            for (let i = 0; i < headers.length; i++) {
+                if ($(headers[i]).text().trim() === columnName) {
+                    return i;
                 }
-                return -1; // Not found
             }
-
-
-    let roleDropdown = `
-        <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles"
-                class="form-control role-multi-select" multiple>
-            ${roleOptions}
-        </select>`;
-
-    // Add row to DataTable
-    selectedTable.row.add({
-        staffID: `${eventStaffData.staffID} 
-                  <input type="hidden" class="eventStaffIdHidden" 
-                    name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
-                    value="${eventStaffData.id}" />`,
-        staffLastName: eventStaffData.staffLastName,
-        staffFirstName: eventStaffData.staffFirstName,
-        roles: eventStaffData.roles,
-        licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
-        primaryState: eventStaffData.primaryState,
-        primaryCity: eventStaffData.primaryCity,
-        primaryZip: eventStaffData.primaryZip,
-        status: eventStaffData.status,
-        id: eventStaffData.id, 
-        countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
-        availability: availabilityCheckboxes,  // Add checkboxes for availability
-        preEventAvailability: preEventAvailabilityCheckbox, // Fix: Ensure it is checked in edit mode
-        additionalroles: roleDropdown,
-                station: stationDropdown,
-        action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
-                  data-staffid="${eventStaffData.id}">Remove</button>`
-    }).draw();
-
-    // Initialize select2 for the new dropdown
-    $(`#${roleDropdownId}`).select2();
-}
+            return -1; // Not found
+        }
 
 
        
@@ -2845,17 +2828,47 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             selectedTable.row($(this).closest('tr')).remove().draw(false);
 
             // Update row indices after removal
+            debugger;
             updateRowIndices();
             updateProgressBar(7);
+            updateStaffRequirementTable();
         });
 
         function updateRowIndices() {
             $('#eventStaffSelectedTable tbody tr').each(function (index) {
+                // Update hidden field
                 $(this).find('.eventStaffIdHidden').each(function () {
-                    let name = $(this).attr('name');
-                    $(this).attr('name', name.replace(/\[\d+\]/, `[${index}]`)); // Reset index correctly
+                    updateNameAttribute(this, index);
+                });
+
+                // Update availability checkboxes
+                $(this).find('input[name*="AvailabilityDates"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
+
+                // Update pre-event checkbox
+                $(this).find('input[name*="PreEventAvailability"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
+
+                // Update station dropdown
+                $(this).find('select[name*="SelectedStation"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
+
+                // Update role dropdown
+                $(this).find('select[name*="SelectedRoles"]').each(function () {
+                    updateNameAttribute(this, index);
                 });
             });
+        }
+
+        function updateNameAttribute(element, index) {
+            let nameAttr = $(element).attr('name');
+            if (nameAttr) {
+                let updatedName = nameAttr.replace(/\[\d+\]/, `[${index}]`);
+                $(element).attr('name', updatedName);
+            }
         }
 
 
@@ -3048,7 +3061,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // $(document).on('change', 'select.roleDropdown', function () {
             // $('select.roleDropdown').change(function () {
             $('#StaffRequirementTable').on('change', 'select.roleDropdown', function () {
-                debugger;
                 const selectedRole = $(this).val();
                 const row = $(this).closest('tr');
                 const eventService = row.find('td:nth-child(2)').text();
