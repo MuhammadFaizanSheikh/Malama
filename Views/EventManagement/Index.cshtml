@@ -536,9 +536,9 @@
                     <div class="col-md-6">
                         <label class="form-label">Please select</label>
                         <div>
-                            <input asp-for="SingleEventManagement.Deploy" id="Deploying" type="radio" value="Deploying" required />
+                            <input asp-for="SingleEventManagement.Deploy" id="Deploying" type="radio" value="Deploying" name="SingleEventManagement.Deploy" required />
                             <label for="Deploying">Deploying</label>
-                            <input asp-for="SingleEventManagement.Deploy" id="NonDeploying" type="radio" value="Non-Deploying" required />
+                            <input asp-for="SingleEventManagement.Deploy" id="NonDeploying" type="radio" value="Non-Deploying" name="SingleEventManagement.Deploy" required />
                             <label for="NonDeploying">Non-Deploying</label>
                         </div>
                     </div>
@@ -2787,7 +2787,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 // 3️⃣ Loop through StaffRequirementTable to find matches
                 staffRequirementTable.rows().every(function () {
                     let rowData = this.data();
-                    let roleColumnValue = rowData[0]?.toString().trim();
+                    let roleColumnValue = getCellText(rowData[0]);
                     let eventServiceColumnValue = rowData[1]?.toString().trim();
 
                     if (!roleColumnValue || !eventServiceColumnValue) return;
@@ -2806,6 +2806,19 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             staffRequirementTable.draw(); // Redraw after updates
         }
+
+        function getCellText(cellData) {
+            // Try parsing as jQuery if it's HTML
+            const $cell = $('<div>').html(cellData);
+            const $select = $cell.find('select');
+
+            if ($select.length > 0) {
+                return $select.find('option:selected').text().trim().toLowerCase();
+            }
+
+            return $cell.text().trim().toLowerCase();
+        }
+
 
 
         function getColumnIndexByName(tableSelector, columnName) {
@@ -3001,7 +3014,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     }
 
                     if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
-                            finalTableHtml += renderRow("Dental Assistant/Registered Dental Hygienist", eventService, totalMembers);
+                            finalTableHtml += renderRow("Registered Dental Hygienist", eventService, totalMembers);
                     }
 
                     if (eventService === "Periodic Health Assessment") {
@@ -3060,35 +3073,61 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             // $(document).on('change', 'select.roleDropdown', function () {
             // $('select.roleDropdown').change(function () {
-            $('#StaffRequirementTable').on('change', 'select.roleDropdown', function () {
+            let roleDropdownChanging = false;
+
+            $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
+                debugger;
+                if (roleDropdownChanging) return;
+
+                roleDropdownChanging = true;
+
                 const selectedRole = $(this).val();
                 const row = $(this).closest('tr');
-                const eventService = row.find('td:nth-child(2)').text();
+                const eventService = row.find('td:nth-child(2)').text().trim();
                 const totalMembers = parseInt(row.data('total-members')) || 0;
                 const ratePerHour = ratePerHourData[eventService]?.rate;
 
                 const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
 
-                row.find('td:gt(1)').remove();
-                row.append(staffCountHtml);
+                // Remove previous day count cells (everything between 2nd and last td)
+                const tds = row.find('td');
+                const lastIndex = tds.length - 1;
+                tds.each(function (index) {
+                    if (index > 1 && index < lastIndex) {
+                        $(this).remove();
+                    }
+                });
+
+                // Insert new day count cells before "Total Count"
+                $(staffCountHtml).insertBefore(tds.last());
+
+
 
                 if (selectedRole === "Dentist") {
-                    const newRowHtml = `<tr><td>Registered Dental Hygienist</td><td>${eventService}</td>${staffCountHtml}</tr>`;
+                    const newRowHtml = `<tr><td>Registered Dental Hygienist</td><td>${eventService}</td>${staffCountHtml}<td>0</td></tr>`;
                     $('#StaffRequirementTable tbody').append(newRowHtml);
                 }
 
                 if (selectedRole === "Registered Dental Hygienist") {
                     $('#StaffRequirementTable tbody tr').each(function () {
                         const tr = $(this);
-                        const role = tr.find('td:nth-child(1)').text();
-                        const eventServiceColumn = tr.find('td:nth-child(2)').text();
+                        const roleTd = tr.find('td:nth-child(1)');
+                        let role = roleTd.find('select').length > 0
+                            ? roleTd.find('select option:selected').text().trim()
+                            : roleTd.text().trim();
+                        const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
 
                         if (role === "Registered Dental Hygienist" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
                             tr.remove();
                         }
                     });
                 }
+
+                setTimeout(() => {
+                    roleDropdownChanging = false;
+                }, 100); // Delay long enough to prevent re-entry
             });
+
         }
 
         function generateStaffCountCells(ratePerHour, totalMembers, eventService) {
@@ -3144,7 +3183,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }
 
         $("#submitBtn").click(function (e) {
-
+            debugger;
             e.preventDefault();
 
             if (!validateServiceMemberPercentages()) {
@@ -3332,6 +3371,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
         function validateSectionFields(sectionId) {
+            debugger;
             const sectionFields = $(`#section${sectionId}`).find("input, select, textarea");
 
             let anyFieldFilled = false;
