@@ -2606,7 +2606,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             tableInitialized = true;
             initializeEventStaffTable();
             initializeSelectedStaffTable();
-            // let selectedTable = $('#eventStaffSelectedTable').DataTable();
             GenerateStaffRequirementTable(); //this function is being called here to set allEventServices (allEventServices is being set in this function) so that addStaffToSelectedTable function can have all stations in dropdown with selected value
             setTimeout(() => {
                 staffList.forEach((staffData, index) => {
@@ -2615,7 +2614,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                 updateRowIndices();
             }, 500);
-            // updateStaffRequirementTable();
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
@@ -3125,8 +3123,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 // Insert new day count cells before "Total Count"
                 $(staffCountHtml).insertBefore(tds.last());
 
-
-                debugger;
                 const table = $('#StaffRequirementTable').DataTable();
 
                 if (selectedRole === "Dentist") {
