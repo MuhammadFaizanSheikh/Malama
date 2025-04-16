@@ -768,12 +768,33 @@
     $(document).on("change", ".role-checkbox", function () {
         let roleCheckbox = $(this);
         let roleId = roleCheckbox.attr("id");
-
         let roleName = roleCheckbox.val();
 
+        // Skip Admin roles
         if (roleName === "Admin" || roleName === "Admin (CAC'd)") {
             return;
         }
+
+        const roleAttributes = {
+            "Nurse Practitioner": ["Behavioral Health", "EKG Reading"],
+            "Physician Assistant": ["Behavioral Health", "EKG Reading"],
+            "Registered Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            "Licensed Vocational Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            "Licensed Practical Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            "Medical Assistant": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            "Audiologist": [],
+            "Audio tech": [],
+            "Dentist": ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
+            "Dental Assistant": ["Exam Assist", "Treatment Assist", "X-ray"],
+            "Registered Dental Hygienist": [],
+            "Medical Doctor": ["Behavioral Health", "EKG Reading"],
+            "Optometrist": [],
+            "Phlebotomist": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            "Admin(CAC'd)": ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
+            "Admin": []
+        };
+
+        const attributes = roleAttributes[roleName] || [];
 
         if (roleCheckbox.is(":checked")) {
             if (!(roleId in roleIndexMap)) {
@@ -786,22 +807,32 @@
 
             let role = rolesData.find(r => r.id === roleId);
             if (role) {
+                let roleIndex = roleIndexMap[roleId];
                 let licenseIndex = roleLicenseIndexMap[roleId]++;
-                let licenseFields = generateLicenseFields(roleId, roleIndexMap[roleId], licenseIndex, role.types);
-                roleCheckbox.closest(".form-check").after(licenseFields);
+
+                // ✅ Use generateAttributeDropdown with attributes
+                let attributeDropdown = generateAttributeDropdown(roleId, roleIndex, attributes);
+                let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
+
+                roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
+
+                $('.attribute-multiselect').select2({
+                    placeholder: "Select Attribute(s)",
+                    width: '100%'
+                });
             }
         } else {
-            // Remove associated license fields
             $(`.license-container[data-role-id='${roleId}']`).remove();
+            $(`.attribute-multiselect-container[data-role-id='${roleId}']`).remove();
             roleCheckbox.closest(".form-check").next(".add-row-button").remove();
-            // Remove role from maps
+
             delete roleIndexMap[roleId];
             delete roleLicenseIndexMap[roleId];
 
-            // Recalculate indexes
             resetRoleIndexes();
         }
     });
+
 
 
 
@@ -950,6 +981,45 @@
                         <span class="button-text">Add Another License</span>
                     </button>`;
     }
+
+    const roleAttributes = {
+        "Nurse Practitioner": ["Behavioral Health", "EKG Reading"],
+        "Physician Assistant": ["Behavioral Health", "EKG Reading"],
+        "Registered Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+        "Licensed Vocational Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+        "Licensed Practical Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+        "Medical Assistant": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+        "Audiologist": [],
+        "Audio tech": [],
+        "Dentist": ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
+        "Dental Assistant": ["Exam Assist", "Treatment Assist", "X-ray"],
+        "Registered Dental Hygienist": [],
+        "Medical Doctor": ["Behavioral Health", "EKG Reading"],
+        "Optometrist": [],
+        "Phlebotomist": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+        "Admin(CAC'd)": ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
+        "Admin": []
+    };
+
+
+    function generateAttributeDropdown(roleId, roleIndex, attributes) {
+        if (!attributes || attributes.length === 0) return '';
+
+        const options = attributes.map(attr => `<option value="${attr}">${attr}</option>`).join('');
+        return `
+            <div class="mb-2 attribute-multiselect-container" data-role-id="${roleId}">
+                <label><strong>Select Attribute(s)</strong></label>
+                <select class="form-select attribute-multiselect" name="SelectedAttributes_${roleId}[]" multiple data-role-id="${roleId}" required>
+                    ${options}
+                </select>
+            </div>
+        `;
+    }
+
+
+
+
+
 
     function getRoleValueById(roleId) {
         let role = rolesData.find(r => r.id === roleId);
@@ -2169,7 +2239,7 @@
                     staffRolesContainer.append('<p class="text-muted">No roles available</p>');
                     return;
                 }
-
+                debugger;
                 roles.sort((a, b) => a.name.localeCompare(b.name));
                 rolesData = roles;
 
