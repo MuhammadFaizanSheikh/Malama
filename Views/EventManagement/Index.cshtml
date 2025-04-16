@@ -3127,25 +3127,33 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
                 debugger;
+                const table = $('#StaffRequirementTable').DataTable();
+
                 if (selectedRole === "Dentist") {
-                    const newRowHtml = `<tr><td>Registered Dental Hygienist</td><td>${eventService}</td>${staffCountHtml}<td>0</td></tr>`;
-                    $('#StaffRequirementTable tbody').append(newRowHtml);
+                    const newRowData = [
+                        'Registered Dental Hygienist',
+                        eventService,
+                        ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(), // convert staffCountHtml tds to strings
+                        '0'
+                    ];
+                    table.row.add(newRowData).draw(false);
                 }
 
+
                 if (selectedRole === "Registered Dental Hygienist") {
-                    $('#StaffRequirementTable tbody tr').each(function () {
-                        const tr = $(this);
+                    table.rows().every(function () {
+                        const tr = $(this.node());
                         const roleTd = tr.find('td:nth-child(1)');
-                        let role = roleTd.find('select').length > 0
+                        const role = roleTd.find('select').length > 0
                             ? roleTd.find('select option:selected').text().trim()
                             : roleTd.text().trim();
                         const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
 
                         if (role === "Registered Dental Hygienist" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
-                            tr.remove();
+                            this.remove(); // DataTables way
                         }
-
                     });
+                    table.draw(false); // Redraw to reflect removals
                 }
 
 
