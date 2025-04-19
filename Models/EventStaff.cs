@@ -309,7 +309,28 @@ namespace ExcelToCsv.Models
         [StringLength(50)]
         public string RoleId { get; set; }
 
+        [NotMapped]
+        public List<string> StaffAttributeTemp { get; set; } = new List<string>();
+
+        public List<StaffAttributeDetails> StaffAttributeDetails { get; set; } = new List<StaffAttributeDetails>();
+
         public List<StaffLicenseDetails> StaffLicenseDetails { get; set; } = new List<StaffLicenseDetails>();
+    }
+
+    [Table("StaffAttributeDetails")]
+    public class StaffAttributeDetails
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; } // Primary key, auto-incremented
+
+        [ForeignKey("StaffLicense")]
+
+        public long StaffLicenseId { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string Attribute { get; set; }
     }
 
     [Table("StaffLicenseDetails")]

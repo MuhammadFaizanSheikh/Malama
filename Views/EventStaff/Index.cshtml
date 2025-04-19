@@ -81,13 +81,7 @@
             margin-bottom: 50px; /* Or change to any amount of space */
         }
 
-        .add-row-button {
-            background-color: transparent; /* No background */
-            border: none; /* Remove border */
-            padding: 0; /* Remove button padding */
-            cursor: pointer; /* Pointer cursor on hover */
-            display: inline-block;
-        }
+       
 
         .plus-icon {
             width: 20px; /* Image width */
@@ -100,16 +94,29 @@
                 transition: 0.2s ease-in-out; /* Smooth animation */
             }
 
-        .add-row-button img {
-            outline: none;
+        .add-row-button,
+        .add-row-button-affiliation {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: inline-block;
         }
 
-        .add-row-button:focus,
-        .add-row-button:active {
-            outline: none;
-            border: none;
-            box-shadow: none;
-        }
+            .add-row-button img,
+            .add-row-button-affiliation img {
+                outline: none;
+            }
+
+            .add-row-button:focus,
+            .add-row-button:active,
+            .add-row-button-affiliation:focus,
+            .add-row-button-affiliation:active {
+                outline: none;
+                border: none;
+                box-shadow: none;
+            }
+
 
         #contractsTable {
             border: 1px solid #ddd;
@@ -536,7 +543,7 @@
                     <div class="form-container-Affiliation">
                         <!-- Dynamic License Rows will be inserted here -->
                     </div>
-                    <button type="button" id="addAffiliationRowButton" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
+                    <button type="button" id="addAffiliationRowButton" class="add-row-button-affiliation mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 6px 10px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
                         <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" style="margin-right: 8px;" />
                         <span class="button-text">Add another employer / sub contractor</span>
                     </button>
@@ -685,41 +692,41 @@
 
     $(document).ready(function () {
 
-        // $('#StartDate').val('1980-01-01');
-        // $('#StaffStatus').val('Active');
-        // $('#StaffLastName').val('Doe');
-        // $('#StaffFirstName').val('John');
-        // $('#StaffMiddleInitial').val('A');
-        // $('#StaffSSN').val('123-45-6789');
-        // $('#StaffDOB').val('1980-01-01');
-        // $('#EventOnCallStaffEvent').val('Event A');
-        // $('#npi').val('1234567890');
-        // $('#dae').val('DAE1234');
+        $('#StartDate').val('1980-01-01');
+        $('#StaffStatus').val('Active');
+        $('#StaffLastName').val('Doe');
+        $('#StaffFirstName').val('John');
+        $('#StaffMiddleInitial').val('A');
+        $('#StaffSSN').val('123-45-6789');
+        $('#StaffDOB').val('1980-01-01');
+        $('#EventOnCallStaffEvent').val('Event A');
+        $('#npi').val('1234567890');
+        $('#dae').val('DAE1234');
 
-        // $('#BLSCertDate').val('1980-01-01');
-        // $('#ACLSCertDate').val('1980-01-01');
-        // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-        // $('#CredentialingProcessDate').val('1980-01-01');
-        // $('#OnboardingTrainingComplete').val('Yes');
-        // $('#OutstandingTrainings').val('None');
-        // $('#HistoricalCredentialingDate').val('1980-01-01');
-        // $('#PrimaryAddress1').val('123 Main St');
-        // $('#PrimaryState').val('Alabama');
-        // $('#PrimaryCity').val('Alpine');
-        // $('#PrimaryZip').val('35014');
-        // $('#SecondaryAddress1').val('456 Elm St');
-        // $('#SecondaryState').val('Kansas');
-        // $('#SecondaryCity').val('Anthony');
-        // $('#SecondaryZip').val('67003');
-        // // $('#StaffContractAffiliation').val('Contractor');
-        // $('#StaffInfoEnteredBy').val('Admin');
+        $('#BLSCertDate').val('1980-01-01');
+        $('#ACLSCertDate').val('1980-01-01');
+        $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+        $('#CredentialingProcessDate').val('1980-01-01');
+        $('#OnboardingTrainingComplete').val('Yes');
+        $('#OutstandingTrainings').val('None');
+        $('#HistoricalCredentialingDate').val('1980-01-01');
+        $('#PrimaryAddress1').val('123 Main St');
+        $('#PrimaryState').val('Alabama');
+        $('#PrimaryCity').val('Alpine');
+        $('#PrimaryZip').val('35014');
+        $('#SecondaryAddress1').val('456 Elm St');
+        $('#SecondaryState').val('Kansas');
+        $('#SecondaryCity').val('Anthony');
+        $('#SecondaryZip').val('67003');
+        // $('#StaffContractAffiliation').val('Contractor');
+        $('#StaffInfoEnteredBy').val('Admin');
 
-        // $('#ACLSCertNumber').val('1234567890');
-        // $('#BackgroundCheckConcerns').val('1234567890');
-        // $('#BLSCertNumber').val('1234567890');
+        $('#ACLSCertNumber').val('1234567890');
+        $('#BackgroundCheckConcerns').val('1234567890');
+        $('#BLSCertNumber').val('1234567890');
 
-        // $('#staffCellNumber').val('123-123-1234');
-        // $('#staffPhone2').val('123-123-1234');
+        $('#staffCellNumber').val('123-123-1234');
+        $('#staffPhone2').val('123-123-1234');
 
 
 
@@ -771,8 +778,10 @@
         let roleName = roleCheckbox.val();
 
         // Skip Admin roles
+        let requiredLicense = true;
+
         if (roleName === "Admin" || roleName === "Admin (CAC'd)") {
-            return;
+            requiredLicense = false;
         }
 
         const roleAttributes = {
@@ -812,7 +821,7 @@
 
                 // ✅ Use generateAttributeDropdown with attributes
                 let attributeDropdown = generateAttributeDropdown(roleId, roleIndex, attributes);
-                let licenseFields = generateLicenseFields(roleId, roleIndex, licenseIndex, role.types);
+                let licenseFields = generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, role.types);
 
                 roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
 
@@ -839,6 +848,7 @@
 
     // Handle Add Another License button click
     $(document).on("click", ".add-row-button", function () {
+        alert('dasad')
         let licenseContainer = $(this).prev(".license-container");
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
         let roleId = roleCheckbox.attr("id");
@@ -853,7 +863,7 @@
         let role = rolesData.find(r => r.id === roleId);
         let licenseTypes = role ? role.types : [];
 
-        let newRow = generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypes);
+        let newRow = generateLicenseFields(true, roleId, roleIndex, licenseIndex, licenseTypes);
 
         licenseContainer.append($(newRow).find(".license-row"));
 
@@ -928,7 +938,7 @@
     }
 
     // Function to generate license fields with correct indexes
-    function generateLicenseFields(roleId, roleIndex, licenseIndex, licenseTypesString) {
+    function generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, licenseTypesString) {
         let licenseTypes = licenseTypesString.split(","); // Convert string to array
 
         // Use only one declaration for licenseTypeOptions
@@ -940,7 +950,17 @@
             .map(state => `<option value="${state.Name}">${state.Name}</option>`)
             .join("");
 
-        return `
+        let licenseControls = '';
+        if (requiredLicense === false)
+        {
+            licenseControls = `
+                        <div class="license-container" data-role-id="${roleId}">
+                            <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
+                        </div>`;
+        }
+        else
+        {
+            licenseControls = `
                     <div class="license-container" data-role-id="${roleId}">
                         <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
 
@@ -976,31 +996,14 @@
                             </div>
                         </div>
                     </div>
-                            <button type="button" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
+                            <button type="button" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 6px 10px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
                         <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
                         <span class="button-text">Add Another License</span>
-                    </button>`;
+                    </button>`
+        };
+
+        return licenseControls;
     }
-
-    const roleAttributes = {
-        "Nurse Practitioner": ["Behavioral Health", "EKG Reading"],
-        "Physician Assistant": ["Behavioral Health", "EKG Reading"],
-        "Registered Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-        "Licensed Vocational Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-        "Licensed Practical Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-        "Medical Assistant": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-        "Audiologist": [],
-        "Audio tech": [],
-        "Dentist": ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
-        "Dental Assistant": ["Exam Assist", "Treatment Assist", "X-ray"],
-        "Registered Dental Hygienist": [],
-        "Medical Doctor": ["Behavioral Health", "EKG Reading"],
-        "Optometrist": [],
-        "Phlebotomist": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-        "Admin(CAC'd)": ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
-        "Admin": []
-    };
-
 
     function generateAttributeDropdown(roleId, roleIndex, attributes) {
         if (!attributes || attributes.length === 0) return '';
@@ -1009,18 +1012,12 @@
         return `
             <div class="mb-2 attribute-multiselect-container" data-role-id="${roleId}">
                 <label><strong>Select Attribute(s)</strong></label>
-                <select class="form-select attribute-multiselect" name="SelectedAttributes_${roleId}[]" multiple data-role-id="${roleId}" required>
+                                        <select class="form-select attribute-multiselect multi-select" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffAttributeTemp" multiple data-role-id="${roleId}" required>
                     ${options}
                 </select>
             </div>
         `;
     }
-
-
-
-
-
-
     function getRoleValueById(roleId) {
         let role = rolesData.find(r => r.id === roleId);
         return role ? role.name : roleId; // Fallback to roleId if value is not found
@@ -1752,7 +1749,6 @@
                     //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
                     // console.log(JSON.stringify(eventStaff.staffLicense))
-                    debugger;
                     bindLicenseOnEditMode(eventStaff.staffLicense); // // bind roles and license with data from server
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
@@ -1818,7 +1814,6 @@
                     $('#resetBtn').hide();
                     $('#addContractBtn').hide();
 
-                    debugger;
                     if (isViewButton) {
                         const controlIds = ['hiddenId', 'StartDate',
                             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
@@ -1923,7 +1918,7 @@
     function bindLicenseOnEditMode(staffLicenses) {
         staffLicenses.forEach((staffLicense, roleIndex) => {
             let roleId = staffLicense.roleId;
-
+            debugger;
             // Wait for checkbox to be available
             waitForCheckbox(roleId, function (roleCheckbox) {
                 roleCheckbox.prop("checked", true).trigger("change"); // Trigger change event to generate the first row
@@ -1948,6 +1943,14 @@
                             $(`#licenseActive${roleIndex}_${licenseIndex}`).val(license.licenseActiveDate.split("T")[0]); // Remove time part
                             $(`#licenseExpiry${roleIndex}_${licenseIndex}`).val(license.licenseExpiryDate.split("T")[0]); // Remove time part
                         });
+
+                        let attributeValues = staffLicense.staffAttributeDetails.map(attr => attr.attribute);
+                        let attributeSelect = $(`select[name='SingleEventStaff.StaffLicense[${roleIndex}].StaffAttributeTemp']`);
+
+                        if (attributeSelect.length && attributeValues.length > 0) {
+                            attributeSelect.val(attributeValues);
+                            attributeSelect.trigger("change");
+                        }
                     }, 100); // Give time for rows to be generated
 
                 }, 100); // Ensure first row is created before clicking "Add another license"
@@ -2174,31 +2177,31 @@
         $('#updateBtn').hide();
         $('#addContractBtn').hide();
 
-        controlIds.forEach(function (id) {
-            var control = $('#' + id);
-            // For text input fields, clear the value
-            if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
-                control.val('');
-            }
+        // controlIds.forEach(function (id) {
+        //     var control = $('#' + id);
+        //     // For text input fields, clear the value
+        //     if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
+        //         control.val('');
+        //     }
 
-            // For radio buttons, uncheck them
-            if (control.is('input[type="radio"]')) {
-                control.prop('checked', false);
-            }
+        //     // For radio buttons, uncheck them
+        //     if (control.is('input[type="radio"]')) {
+        //         control.prop('checked', false);
+        //     }
 
-            // For checkboxes, uncheck them
-            if (control.is('input[type="checkbox"]')) {
-                control.prop('checked', false);
-            }
+        //     // For checkboxes, uncheck them
+        //     if (control.is('input[type="checkbox"]')) {
+        //         control.prop('checked', false);
+        //     }
 
-            if (control.is('input[type="date"]')) {
-                control.val('');
-            }
+        //     if (control.is('input[type="date"]')) {
+        //         control.val('');
+        //     }
 
-            if (control.is('select')) {
-                control.val(control.find('option:first').val()).trigger('change');
-            }
-        });
+        //     if (control.is('select')) {
+        //         control.val(control.find('option:first').val()).trigger('change');
+        //     }
+        // });
 
         manageAffiliationRows();
         // manageLicenseRows();
@@ -2218,7 +2221,6 @@
     });
 
     $("#CACApplicationProcessStatus").on("change", function () {
-        debugger;
         toggleAdminRoles();
     });
 
@@ -2239,7 +2241,6 @@
                     staffRolesContainer.append('<p class="text-muted">No roles available</p>');
                     return;
                 }
-                debugger;
                 roles.sort((a, b) => a.name.localeCompare(b.name));
                 rolesData = roles;
 

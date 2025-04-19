@@ -236,7 +236,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.TravelHonorList
                 )
                     .Include(x => x.StaffLicense)
-                        .ThenInclude(l => l.StaffLicenseDetails) // Now second-level include works!
+                        .ThenInclude(l => l.StaffLicenseDetails).Include(x => x.StaffLicense).ThenInclude(l => l.StaffAttributeDetails) // Now second-level include works!
                     .FirstOrDefaultAsync();
 
 

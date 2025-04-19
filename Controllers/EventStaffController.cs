@@ -132,6 +132,29 @@ namespace ExcelFilesCompiler.Controllers
                         return RedirectToAction("Index");
                     }
 
+                    if (eventStaffDto.SingleEventStaff.StaffLicense != null)
+                    {
+                        var attributeDetails = new List<StaffAttributeDetails>();
+
+                        foreach (var role in eventStaffDto.SingleEventStaff.StaffLicense)
+                        {
+                            if (role.StaffAttributeTemp != null && role.StaffAttributeTemp.Count > 0)
+                            {
+                                role.StaffAttributeDetails = new List<StaffAttributeDetails>();
+
+                                foreach (var attribute in role.StaffAttributeTemp)
+                                {
+                                    role.StaffAttributeDetails.Add(new StaffAttributeDetails
+                                    {
+                                        Attribute = attribute
+                                    });
+
+
+                                }
+                            }
+                        }
+                    }
+
 
 
                     if (action == "Add")
