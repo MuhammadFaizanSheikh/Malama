@@ -801,6 +801,7 @@
 
     // Handle role checkbox click event
     $(document).on("change", ".role-checkbox", function () {
+        debugger;
         let roleCheckbox = $(this);
         let roleId = roleCheckbox.attr("id");
         let roleName = roleCheckbox.val();
@@ -904,11 +905,13 @@
     // Remove license row
     // Remove license row
     $(document).on("click", ".remove-row", function () {
-        alert('dasda')
+        debugger;
         let licenseRow = $(this).closest(".license-row");
         let licenseContainer = licenseRow.parent();
-        let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-        let roleId = roleCheckbox.attr("id");
+        // let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
+        // let roleId = roleCheckbox.attr("id");
+        let roleId = licenseContainer.data("role-id");
+        let roleCheckbox = $(`.role-checkbox[id='${roleId}']`);
 
         licenseRow.remove();
 
@@ -1461,12 +1464,12 @@
 
                         </div>
                         <div class="d-flex align-items-center" style="height: 100%; margin-top: 32px;">
-                            <button type="button" class="btn btn-danger btn-sm remove-row" style="height: 38px;">Remove</button>
+                            <button type="button" class="btn btn-danger btn-sm remove-row-affiliation" style="height: 38px;">Remove</button>
                         </div>
                     `;
 
             // Add event listener for the "Remove" button to delete the row
-            const removeButton = newRow.querySelector('.remove-row');
+            const removeButton = newRow.querySelector('.remove-row-affiliation');
             removeButton.addEventListener('click', () => {
                 const affiliationRows = document.querySelectorAll('.affiliation-row');
                 if (affiliationRows.length > 1) {
