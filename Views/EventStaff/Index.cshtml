@@ -94,7 +94,7 @@
                 transition: 0.2s ease-in-out; /* Smooth animation */
             }
 
-        .add-row-button,
+       /*  .add-row-button,
         .add-row-button-affiliation {
             background-color: transparent;
             border: none;
@@ -115,7 +115,35 @@
                 outline: none;
                 border: none;
                 box-shadow: none;
+            } */
+
+
+        .add-row-button,
+        .add-row-button-affiliation {
+            background-color: rgba(80, 90, 201, 1);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+            .add-row-button img,
+            .add-row-button-affiliation img {
+                margin-right: 8px;
             }
+
+            .add-row-button:focus,
+            .add-row-button:active,
+            .add-row-button-affiliation:focus,
+            .add-row-button-affiliation:active {
+                outline: none;
+                border: none;
+                box-shadow: none;
+            }
+
 
 
         #contractsTable {
@@ -543,8 +571,8 @@
                     <div class="form-container-Affiliation">
                         <!-- Dynamic License Rows will be inserted here -->
                     </div>
-                    <button type="button" id="addAffiliationRowButton" class="add-row-button-affiliation mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 6px 10px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
-                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" style="margin-right: 8px;" />
+                    <button type="button" id="addAffiliationRowButton" class="add-row-button-affiliation mt-2">
+                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
                         <span class="button-text">Add another employer / sub contractor</span>
                     </button>
 
@@ -848,10 +876,12 @@
 
     // Handle Add Another License button click
     $(document).on("click", ".add-row-button", function () {
-        alert('dasad')
+        debugger;
         let licenseContainer = $(this).prev(".license-container");
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
-        let roleId = roleCheckbox.attr("id");
+        // let roleId = roleCheckbox.attr("id");
+        let roleId = licenseContainer.data("role-id");
+
 
         if (!roleId || !(roleId in roleIndexMap)) {
             console.warn("Role ID not found for license container.");
@@ -874,6 +904,7 @@
     // Remove license row
     // Remove license row
     $(document).on("click", ".remove-row", function () {
+        alert('dasda')
         let licenseRow = $(this).closest(".license-row");
         let licenseContainer = licenseRow.parent();
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
@@ -935,7 +966,24 @@
                     });
             }
         });
+
+        // 🔁 Now also update attribute field names
+        $(".attribute-multiselect-container").each(function () {
+            let roleId = $(this).data("role-id");
+            if (roleId in roleIndexMap) {
+                let newRoleIndex = roleIndexMap[roleId];
+
+                $(this)
+                    .find("[name]")
+                    .each(function () {
+                        let nameAttr = $(this).attr("name");
+                        let updatedName = nameAttr.replace(/\[\d+\]/, `[${newRoleIndex}]`);
+                        $(this).attr("name", updatedName);
+                    });
+            }
+        });
     }
+
 
     // Function to generate license fields with correct indexes
     function generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, licenseTypesString) {
@@ -996,10 +1044,10 @@
                             </div>
                         </div>
                     </div>
-                            <button type="button" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 6px 10px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
-                        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-                        <span class="button-text">Add Another License</span>
-                    </button>`
+                                <button type="button" class="add-row-button mt-2">
+        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+        <span class="button-text">Add Another License</span>
+    </button>`
         };
 
         return licenseControls;
@@ -2243,7 +2291,7 @@
                 }
                 roles.sort((a, b) => a.name.localeCompare(b.name));
                 rolesData = roles;
-
+                debugger;
                 roles.forEach(role => {
                     let roleElement = `
                     <div class="form-check me-3 role-item" data-role="${role.name}">
