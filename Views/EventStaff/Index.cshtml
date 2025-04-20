@@ -366,7 +366,12 @@
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.UserPassword" class="font-weight-bold">Staff Password</label>
                     <div class="input-group">
-                        <input asp-for="SingleEventStaff.UserPassword" type="text" class="form-control" id="UserPassword" placeholder="Enter event staff password" autocomplete="off" readonly required />
+                        <input asp-for="SingleEventStaff.UserPassword" type="text"
+                               class="form-control" id="UserPassword"
+                               placeholder="Enter event staff password"
+                               autocomplete="off" required
+                               onkeydown="return false;" />
+
                         <div class="input-group-append">
                             <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
                         </div>
@@ -720,41 +725,41 @@
 
     $(document).ready(function () {
 
-        $('#StartDate').val('1980-01-01');
-        $('#StaffStatus').val('Active');
-        $('#StaffLastName').val('Doe');
-        $('#StaffFirstName').val('John');
-        $('#StaffMiddleInitial').val('A');
-        $('#StaffSSN').val('123-45-6789');
-        $('#StaffDOB').val('1980-01-01');
-        $('#EventOnCallStaffEvent').val('Event A');
-        $('#npi').val('1234567890');
-        $('#dae').val('DAE1234');
+        // $('#StartDate').val('1980-01-01');
+        // $('#StaffStatus').val('Active');
+        // $('#StaffLastName').val('Doe');
+        // $('#StaffFirstName').val('John');
+        // $('#StaffMiddleInitial').val('A');
+        // $('#StaffSSN').val('123-45-6789');
+        // $('#StaffDOB').val('1980-01-01');
+        // $('#EventOnCallStaffEvent').val('Event A');
+        // $('#npi').val('1234567890');
+        // $('#dae').val('DAE1234');
 
-        $('#BLSCertDate').val('1980-01-01');
-        $('#ACLSCertDate').val('1980-01-01');
-        $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
-        $('#CredentialingProcessDate').val('1980-01-01');
-        $('#OnboardingTrainingComplete').val('Yes');
-        $('#OutstandingTrainings').val('None');
-        $('#HistoricalCredentialingDate').val('1980-01-01');
-        $('#PrimaryAddress1').val('123 Main St');
-        $('#PrimaryState').val('Alabama');
-        $('#PrimaryCity').val('Alpine');
-        $('#PrimaryZip').val('35014');
-        $('#SecondaryAddress1').val('456 Elm St');
-        $('#SecondaryState').val('Kansas');
-        $('#SecondaryCity').val('Anthony');
-        $('#SecondaryZip').val('67003');
-        // $('#StaffContractAffiliation').val('Contractor');
-        $('#StaffInfoEnteredBy').val('Admin');
+        // $('#BLSCertDate').val('1980-01-01');
+        // $('#ACLSCertDate').val('1980-01-01');
+        // $('#DAWSONInternalCredentialingCompleteDate').val('1980-01-01');
+        // $('#CredentialingProcessDate').val('1980-01-01');
+        // $('#OnboardingTrainingComplete').val('Yes');
+        // $('#OutstandingTrainings').val('None');
+        // $('#HistoricalCredentialingDate').val('1980-01-01');
+        // $('#PrimaryAddress1').val('123 Main St');
+        // $('#PrimaryState').val('Alabama');
+        // $('#PrimaryCity').val('Alpine');
+        // $('#PrimaryZip').val('35014');
+        // $('#SecondaryAddress1').val('456 Elm St');
+        // $('#SecondaryState').val('Kansas');
+        // $('#SecondaryCity').val('Anthony');
+        // $('#SecondaryZip').val('67003');
+        // // $('#StaffContractAffiliation').val('Contractor');
+        // $('#StaffInfoEnteredBy').val('Admin');
 
-        $('#ACLSCertNumber').val('1234567890');
-        $('#BackgroundCheckConcerns').val('1234567890');
-        $('#BLSCertNumber').val('1234567890');
+        // $('#ACLSCertNumber').val('1234567890');
+        // $('#BackgroundCheckConcerns').val('1234567890');
+        // $('#BLSCertNumber').val('1234567890');
 
-        $('#staffCellNumber').val('123-123-1234');
-        $('#staffPhone2').val('123-123-1234');
+        // $('#staffCellNumber').val('123-123-1234');
+        // $('#staffPhone2').val('123-123-1234');
 
 
 
@@ -765,33 +770,35 @@
         });
 
         function generatePassword(length) {
-            if (length < 3) {
-                throw new Error("Password length must be at least 3 to include all character types.");
+            if (length < 4) {
+                throw new Error("Password length must be at least 4 to include all character types.");
             }
 
-            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const lowercase = "abcdefghijklmnopqrstuvwxyz";
             const digits = "0123456789";
             const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
 
             // Step 1: Ensure at least one of each required character type
-            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const randomUpper = uppercase[Math.floor(Math.random() * uppercase.length)];
+            const randomLower = lowercase[Math.floor(Math.random() * lowercase.length)];
             const randomDigit = digits[Math.floor(Math.random() * digits.length)];
             const randomSpecial = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
 
-            let password = randomLetter + randomDigit + randomSpecial;
+            let password = randomUpper + randomLower + randomDigit + randomSpecial;
 
-            // Step 2: Fill the rest of the password
-            const allCharacters = letters + digits + specialCharacters;
-            for (let i = 3; i < length; i++) {
-                const randomIndex = Math.floor(Math.random() * allCharacters.length);
-                password += allCharacters[randomIndex];
+            // Step 2: Fill the rest
+            const allCharacters = uppercase + lowercase + digits + specialCharacters;
+            for (let i = 4; i < length; i++) {
+                password += allCharacters[Math.floor(Math.random() * allCharacters.length)];
             }
 
-            // Step 3: Shuffle the password
+            // Step 3: Shuffle
             password = password.split('').sort(() => Math.random() - 0.5).join('');
 
             return password;
         }
+
     });
 
     //////////////////////////////////////////For Roles and its license /////////////////////////////////////////
@@ -801,7 +808,6 @@
 
     // Handle role checkbox click event
     $(document).on("change", ".role-checkbox", function () {
-        debugger;
         let roleCheckbox = $(this);
         let roleId = roleCheckbox.attr("id");
         let roleName = roleCheckbox.val();
@@ -877,7 +883,6 @@
 
     // Handle Add Another License button click
     $(document).on("click", ".add-row-button", function () {
-        debugger;
         let licenseContainer = $(this).prev(".license-container");
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
         // let roleId = roleCheckbox.attr("id");
@@ -905,7 +910,6 @@
     // Remove license row
     // Remove license row
     $(document).on("click", ".remove-row", function () {
-        debugger;
         let licenseRow = $(this).closest(".license-row");
         let licenseContainer = licenseRow.parent();
         // let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
@@ -1317,7 +1321,7 @@
         var form = document.querySelector('form'); // Get the form element
 
         if (!emailValid) {
-            e.preventDefault(); // Stop form submission
+            event.preventDefault(); // Stop form submission
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -1326,7 +1330,7 @@
         }
 
         if (!ssnValid) {
-            e.preventDefault(); // Stop form submission
+            event.preventDefault(); // Stop form submission
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -1969,7 +1973,6 @@
     function bindLicenseOnEditMode(staffLicenses) {
         staffLicenses.forEach((staffLicense, roleIndex) => {
             let roleId = staffLicense.roleId;
-            debugger;
             // Wait for checkbox to be available
             waitForCheckbox(roleId, function (roleCheckbox) {
                 roleCheckbox.prop("checked", true).trigger("change"); // Trigger change event to generate the first row
@@ -2074,9 +2077,12 @@
 
 
 
-    function togglePasswordVisibility(inputId) {
+    function togglePasswordVisibility(inputId, iconId) {
+        debugger;
         const input = document.getElementById(inputId);
-        const icon = document.getElementById(`toggle${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Icon`);
+        const icon = document.getElementById(iconId); // Now directly using passed ID
+
+        if (!input || !icon) return; // Optional: guard clause
 
         if (input.type === 'password') {
             input.type = 'text';
@@ -2088,6 +2094,7 @@
             icon.classList.add('fa-eye');
         }
     }
+
 
     allowOnlyNumericInput("StaffSSN");
     allowOnlyNumericInput("npi");
@@ -2228,31 +2235,31 @@
         $('#updateBtn').hide();
         $('#addContractBtn').hide();
 
-        // controlIds.forEach(function (id) {
-        //     var control = $('#' + id);
-        //     // For text input fields, clear the value
-        //     if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
-        //         control.val('');
-        //     }
+        controlIds.forEach(function (id) {
+            var control = $('#' + id);
+            // For text input fields, clear the value
+            if (control.is('input[type="text"]') || control.is('input[type="email"]') || control.is('input[type="password"]') || control.is('input[type="number"]') || control.is('textarea')) {
+                control.val('');
+            }
 
-        //     // For radio buttons, uncheck them
-        //     if (control.is('input[type="radio"]')) {
-        //         control.prop('checked', false);
-        //     }
+            // For radio buttons, uncheck them
+            if (control.is('input[type="radio"]')) {
+                control.prop('checked', false);
+            }
 
-        //     // For checkboxes, uncheck them
-        //     if (control.is('input[type="checkbox"]')) {
-        //         control.prop('checked', false);
-        //     }
+            // For checkboxes, uncheck them
+            if (control.is('input[type="checkbox"]')) {
+                control.prop('checked', false);
+            }
 
-        //     if (control.is('input[type="date"]')) {
-        //         control.val('');
-        //     }
+            if (control.is('input[type="date"]')) {
+                control.val('');
+            }
 
-        //     if (control.is('select')) {
-        //         control.val(control.find('option:first').val()).trigger('change');
-        //     }
-        // });
+            if (control.is('select')) {
+                control.val(control.find('option:first').val()).trigger('change');
+            }
+        });
 
         manageAffiliationRows();
         // manageLicenseRows();
@@ -2294,7 +2301,6 @@
                 }
                 roles.sort((a, b) => a.name.localeCompare(b.name));
                 rolesData = roles;
-                debugger;
                 roles.forEach(role => {
                     let roleElement = `
                     <div class="form-check me-3 role-item" data-role="${role.name}">
@@ -2427,6 +2433,7 @@
     let ssnValid = false; // Flag to track SSN validation
 
     $("#StaffSSN").blur(function () {
+        debugger;
         var ssn = $(this).val().trim();
         if (ssn === "" || ssn.length < 11) return; // Ignore empty or incomplete input
 
@@ -2469,24 +2476,24 @@
     });
 
 
-    // document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
-    //     event.preventDefault();
+    document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-    //     const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
-    //     let isChecked = false;
+        const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
+        let isChecked = false;
 
-    //     checkboxes.forEach(function (checkbox) {
-    //         if (checkbox.checked) {
-    //             isChecked = true;
-    //         }
-    //     });
+        checkboxes.forEach(function (checkbox) {
+            if (checkbox.checked) {
+                isChecked = true;
+            }
+        });
 
-    //     if (!isChecked) {
-    //         alert('Please select at least one role.');
-    //     } else {
-    //         alert('Form submitted successfully!');
-    //     }
-    // });
+        if (!isChecked) {
+            alert('Please select at least one role.');
+        } else {
+            alert('Form submitted successfully!');
+        }
+    });
 
 
 
