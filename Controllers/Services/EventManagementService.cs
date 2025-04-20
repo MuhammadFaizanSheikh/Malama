@@ -238,7 +238,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                         //var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
                         var eventStaffDetail = await _unitOfWork.EventStaff.GetWithInclude(
                         x => x.Id == eventStaffDetails.EventStaffId,
-                        x => x.StaffLicense).Include(x => x.StaffLicense).ThenInclude(l => l.StaffLicenseDetails).FirstOrDefaultAsync();
+                        x => x.StaffLicense).Include(x => x.StaffLicense).ThenInclude(l => l.StaffLicenseDetails)
+                        .Include(x => x.StaffLicense)
+                        .ThenInclude(l => l.StaffAttributeDetails).FirstOrDefaultAsync();
 
 
                         if (eventStaffDetail != null)
@@ -246,6 +248,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                             var roles = await _roleManager.Roles.ToListAsync();
                             var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
                             var roleLicenseMapping = new Dictionary<string, List<string>>();
+                            var attributeAbbreviations = new HashSet<string>();
 
                             foreach (var staffLicense in eventStaffDetail.StaffLicense)
                             {
@@ -262,11 +265,30 @@ namespace ExcelFilesCompiler.Controllers.Services
                                     {
                                         roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
                                     }
+
+                                    if (staffLicense.StaffAttributeDetails != null)
+                                    {
+                                        foreach (var attrDetail in staffLicense.StaffAttributeDetails)
+                                        {
+                                            var attributeName = attrDetail.Attribute;
+
+                                            if (!string.IsNullOrWhiteSpace(attributeName))
+                                            {
+                                                var abbreviation = string.Join("", attributeName
+                                                    .Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
+                                                    .Select(word => char.ToUpper(word[0])));
+
+                                                attributeAbbreviations.Add(abbreviation);
+                                            }
+                                        }
+
+                                    }
                                 }
                             }
 
                             var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                             var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
+                            var attributesString = string.Join(", ", attributeAbbreviations.OrderBy(a => a));
 
                             eventStaffDetailAndAdditionalRoles.EventStaffRolesNameAndLicense = new CombinedEventStaffRolesNameAndLicense
                             {
@@ -280,7 +302,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 StaffCAC = eventStaffDetail.StaffCAC,
                                 Roles = rolesString,
                                 LicenseStateAndTypes = licensesString,
-                                Status = eventStaffDetail.StaffStatus
+                                Status = eventStaffDetail.StaffStatus,
+                                Attributes = attributesString
                             };
                             eventStaffDetailAndAdditionalRoles.EventStaffDetail = eventStaffDetails;
                             EventStaffDetailAndAdditionalRoleslist.Add(eventStaffDetailAndAdditionalRoles);

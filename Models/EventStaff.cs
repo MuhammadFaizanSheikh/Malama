@@ -51,6 +51,8 @@ namespace ExcelToCsv.Models
         public string LicenseStateAndTypes { get; set; }
         public string Status { get; set; }
         public int CountOfStaffEnrolledInEvent { get; set; }
+        public string Attributes { get; set; }
+        
 
 
     }

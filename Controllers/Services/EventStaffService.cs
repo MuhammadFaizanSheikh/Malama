@@ -126,6 +126,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         .ThenInclude(l => l.StaffLicenseDetails)
                     .Include(x => x.StaffContractAffiliation)
                     .Include(x => x.TravelHonorList)
+                    .Include(x => x.StaffLicense)
+                        .ThenInclude(l => l.StaffAttributeDetails)
                     .ToListAsync();
 
                 if (eventStaffList == null || !eventStaffList.Any())
@@ -170,6 +172,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 foreach (var staff in eventStaffList)
                 {
                     var roleLicenseMapping = new Dictionary<string, List<string>>();
+                    var attributeAbbreviations = new HashSet<string>();
 
                     foreach (var staffLicense in staff.StaffLicense)
                     {
@@ -186,12 +189,31 @@ namespace ExcelFilesCompiler.Controllers.Services
                             {
                                 roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
                             }
+
+                            if (staffLicense.StaffAttributeDetails != null)
+                            {
+                                foreach (var attrDetail in staffLicense.StaffAttributeDetails)
+                                {
+                                    var attributeName = attrDetail.Attribute;
+
+                                    if (!string.IsNullOrWhiteSpace(attributeName))
+                                    {
+                                        var abbreviation = string.Join("", attributeName
+                                            .Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(word => char.ToUpper(word[0])));
+
+                                        attributeAbbreviations.Add(abbreviation);
+                                    }
+                                }
+
+                            }
                         }
                     }
 
                     // Generate formatted strings
                     var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                     var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
+                    var attributesString = string.Join(", ", attributeAbbreviations.OrderBy(a => a));
 
                     int completedEventCount = groupedResult.ContainsKey(staff.Id) ? groupedResult[staff.Id] : 0;
 
@@ -209,7 +231,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         Roles = rolesString,  // Roles in one line, comma-separated
                         LicenseStateAndTypes = licensesString,
                         Status = staff.StaffStatus,
-                        CountOfStaffEnrolledInEvent = completedEventCount
+                        CountOfStaffEnrolledInEvent = completedEventCount,
+                        Attributes = attributesString
                     });
                 }
 

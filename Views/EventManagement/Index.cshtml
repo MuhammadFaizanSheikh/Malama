@@ -2522,14 +2522,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
-                    {
-                        "data": null,
-                        "render": function () {
-                            return ""; // Placeholder for attributes
-                        },
-                        "orderable": false,
-                        "searchable": false
-                    },
+                    // {
+                    //     "data": null,
+                    //     "render": function () {
+                    //         return ""; // Placeholder for attributes
+                    //     },
+                    //     "orderable": false,
+                    //     "searchable": false
+                    // },
+                    { "data": "attributes" },
                     { "data": "roles" },
                     { "data": "licenseStateAndTypes" },
                     { "data": "primaryState" },
@@ -2542,16 +2543,28 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     {
                         "data": null,
                         "render": function (data, type, row) {
-                            return `<button type="button" class="btn btn-secondary btn-sm add-staff-btn" data-staff='${JSON.stringify(row)}'>Add Staff</button>`;
+                            // return `<button type="button" class="btn btn-secondary btn-sm add-staff-btn" data-staff='${JSON.stringify(row)}'>Add Staff</button>`;
+                            return `<button type="button" class="btn btn-secondary btn-sm add-staff-btn" data-id='${row.id}'>Add Staff</button>`;
                         }
                     }
                 ]
             });
 
+            // $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
+            //     let staffData = $(this).data('staff');
+            //     addStaffToSelectedTable(staffData);
+            //     updateProgressBar(7);
+            // });
+
             $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
-                let staffData = $(this).data('staff');
-                addStaffToSelectedTable(staffData);
-                updateProgressBar(7);
+                let staffId = $(this).data('id');
+                let staffData = eventStaffData.find(s => s.id == staffId);
+                if (staffData) {
+                    addStaffToSelectedTable(staffData);
+                    updateProgressBar(7);
+                } else {
+                    console.warn("Staff data not found for ID:", staffId);
+                }
             });
         }
 
@@ -2617,6 +2630,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
+            debugger;
             let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
@@ -2746,7 +2760,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             value="${eventStaffData.id}" />`,
                 staffLastName: eventStaffData.staffLastName,
                 staffFirstName: eventStaffData.staffFirstName,
-                attributes: null,
+                attributes: eventStaffData.attributes,
                 roles: eventStaffData.roles,
                 licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
                 primaryState: eventStaffData.primaryState,
