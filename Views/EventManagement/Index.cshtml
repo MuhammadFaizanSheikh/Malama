@@ -2970,16 +2970,27 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             let dayIndex = 1;
             const checkedRows = [];
 
-            function collectCheckedRowsFrom(tableSelector) {
-                $(`${tableSelector} tbody tr`).each(function () {
-                    const checkbox = $(this).find('input[type="checkbox"]');
-                    if (checkbox.prop('checked')) {
-                        const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
-                        const totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
-                        checkedRows.push({ eventService, totalMembers });
-                    }
-                });
-            }
+                function collectCheckedRowsFrom(tableSelector) {
+                    $(`${tableSelector} tbody tr`).each(function () {
+                        const checkbox = $(this).find('input[type="checkbox"]');
+                        if (checkbox.prop('checked')) {
+                            const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
+
+                            let totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
+
+                            if (!totalMembers) {
+                                totalMembers = parseInt($(this).find("input[type='number'][name*='InitialReportNumbers']").val()) || 0;
+                            }
+
+                            if (!totalMembers) {
+                                totalMembers = parseInt($(this).find("input[type='number'][name*='ClientRequestInitial']").val()) || 0;
+                            }
+
+                            checkedRows.push({ eventService, totalMembers });
+                        }
+                    });
+                }
+
 
             
 
@@ -4377,25 +4388,25 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const isEnabled = checkbox.checked;
 
                         if (clientRequestInput) {
-                            clientRequestInput.value = matchingData.clientRequestInitial || '';
+                            clientRequestInput.value = matchingData.clientRequestInitial ?? '';
                             clientRequestInput.disabled = !isEnabled;
                             clientRequestInput.required = isEnabled;
                         }
                         if (initialReportInput) {
-                            initialReportInput.value = matchingData.initialReportNumbers || '';
+                            initialReportInput.value = matchingData.initialReportNumbers ?? '';
                             initialReportInput.disabled = !isEnabled;
                             initialReportInput.required = isEnabled;
                         }
                         if (finalPreEventInput) {
-                            finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers || '';
+                            finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
                             finalPreEventInput.disabled = !isEnabled;
                             finalPreEventInput.required = isEnabled;
                         }
                         if (eventServiceHidden) {
-                            eventServiceHidden.value = matchingData.eventService || '';
+                            eventServiceHidden.value = matchingData.eventService ?? '';
                         }
                         if (typeHidden) {
-                            typeHidden.value = matchingData.type || '';
+                            typeHidden.value = matchingData.type ?? '';
                         }
                     }
                 }
