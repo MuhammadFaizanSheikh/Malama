@@ -25,7 +25,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CheckUserExists(string email)
+        public async Task<IActionResult> CheckUserExists(string email, string userId)
         {
             try
             {
@@ -36,17 +36,21 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
-                    return Json(new { exists = true, message = "User already exists." });
+                    // If user exists but it's not the same user being updated
+                    if (user.Id != userId)
+                    {
+                        return Json(new { exists = true, message = "User already exists." });
+                    }
                 }
 
                 return Json(new { exists = false });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log the error (Consider using ILogger)
                 return StatusCode(500, new { message = "An error occurred while checking the user." });
             }
         }
+
 
 
         [HttpPost]

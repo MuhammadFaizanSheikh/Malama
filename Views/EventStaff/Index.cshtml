@@ -357,6 +357,7 @@
         <form asp-action="CreateEventStaff" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleEventStaff.Id" id="hiddenId" />
+            <input type="hidden" id="hiddenUserId" />
 
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -551,21 +552,23 @@
                 <div class="col-md-6">
                     <div class="d-flex align-items-center mb-2">
                         <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
-                        <div class="d-flex flex-grow-1">
+                        <div class="d-flex flex-grow-1 position-relative">
                             <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
                             <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
+                            <span id="BLSCertError" class="text-danger position-absolute small d-none" style="bottom: -18px; left: 0;"></span>
                         </div>
-                        <span id="BLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
+
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="d-flex align-items-center mb-2">
                         <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
-                        <div class="d-flex flex-grow-1">
+                        <div class="d-flex flex-grow-1 position-relative">
                             <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
                             <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
+                            <span id="ACLSCertError" class="text-danger position-absolute small d-none" style="bottom: -18px; left: 0;"></span>
                         </div>
-                        <span id="ACLSCertError" class="text-danger invalid-feedback" style="display: none;"></span>
+
                     </div>
                 </div>
             </div>
@@ -1405,22 +1408,30 @@
         const blsErrorSpan = document.getElementById('BLSCertError');
         const aclsErrorSpan = document.getElementById('ACLSCertError');
 
-        blsErrorSpan.style.display = 'none';
-        aclsErrorSpan.style.display = 'none';
+        // Hide errors first
+        blsErrorSpan.classList.remove('d-block');
+        blsErrorSpan.classList.add('d-none');
+
+        aclsErrorSpan.classList.remove('d-block');
+        aclsErrorSpan.classList.add('d-none');
 
         if (!isBLSFilled && !isACLSFilled) {
             const errorMessage = 'Either BLS or ACLS certification must be completed.';
+
             blsErrorSpan.textContent = errorMessage;
-            blsErrorSpan.style.display = 'block';
+            blsErrorSpan.classList.remove('d-none');
+            blsErrorSpan.classList.add('d-block');
 
             aclsErrorSpan.textContent = errorMessage;
-            aclsErrorSpan.style.display = 'block';
+            aclsErrorSpan.classList.remove('d-none');
+            aclsErrorSpan.classList.add('d-block');
 
-            return false; // Validation failed
+            return false;
         }
 
-        return true; // Validation passed
+        return true;
     }
+
 
     $('#EmployerSubcontractor').select2({
         theme: 'bootstrap-5',
@@ -1763,7 +1774,7 @@
                     var subContractor = combinedData.subContractor;
                     var travelHonor = combinedData.travelHonor;
                     $('#hiddenId').val(eventStaff.id);
-
+                    $('#hiddenUserId').val(eventStaff.userId);
 
                     fetchRolesByCategory();// load roles from server
                     const affiliationContainer = document.querySelector('.form-container-Affiliation');
@@ -2185,7 +2196,7 @@
         fetchRolesByCategory();
 
         $('#StaffInfoEnteredBy').val('@User.Identity.Name');
-        const controlIds = ['hiddenId', 'UserEmail', 'StartDate',
+        const controlIds = ['hiddenId', 'hiddenUserId', 'UserEmail', 'StartDate',
             'StaffStatus', 'StaffLastName', 'StaffFirstName', 'StaffMiddleInitial', 'StaffSSN', 'StaffDOB',
             'eventOnCallYes', 'eventOnCallNo', 'EventOnCallStaffEvent', 'licenseNumber0', 'licenseState0', 'licenseType0',
             'licenseExpiry0', 'npi', 'dae', 'CredentialingProcessDate', 'HistoricalCredentialingDate', 'DAWSONInternalCredentialingCompleteDate',
@@ -2389,13 +2400,16 @@
     let emailValid = false; // Flag to track email validation
 
     $("#UserEmail").blur(function () {
+        debugger;
         var email = $(this).val().trim();
-        if (email === "") return; // Ignore empty input
+        var userId = $("#hiddenUserId").val(); // Get user ID
+
+        if (email === "") return;
 
         $.ajax({
-            url: '/Account/CheckUserExists', // Adjust this path if needed
+            url: '/Account/CheckUserExists',
             type: 'GET',
-            data: { email: email },
+            data: { email: email, userId: userId },
             success: function (response) {
                 if (response.exists) {
                     Swal.fire({
@@ -2404,15 +2418,14 @@
                         text: response.message
                     });
 
-                    $("#UserEmail").val(""); // Clear input
-                    emailValid = false; // Mark email as invalid
+                    // $("#UserEmail").val("");
+                    emailValid = false;
                 } else {
-                    emailValid = true; // Mark email as valid
+                    emailValid = true;
                 }
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 let errorMessage = "Something went wrong. Try again later.";
-
                 if (xhr.status === 400) {
                     errorMessage = "Invalid email input.";
                 } else if (xhr.status === 500) {
@@ -2425,10 +2438,11 @@
                     text: errorMessage
                 });
 
-                emailValid = false; // Mark email as invalid in case of error
+                emailValid = false;
             }
         });
     });
+
 
     let ssnValid = false; // Flag to track SSN validation
 
