@@ -3141,7 +3141,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 "Tdap": { rate: 0, roles: "", group: "Immunizations" },
                 "Influenza": { rate: 0, roles: "", group: "Immunizations" },
                 "IPV": { rate: 0, roles: "", group: "Immunizations" },
-                "Varicella": { rate: 0, roles: "", group: "Immunizations" }
+                "Varicella": { rate: 0, roles: "", group: "Immunizations" },
+                "COVID": { rate: 0, roles: "", group: "Immunizations" },
+                "Japanese Encephalitis": { rate: 0, roles: "", group: "Immunizations" },
+                "Yellow Fever": { rate: 0, roles: "", group: "Immunizations" },
+                "Pneumococcal": { rate: 0, roles: "", group: "Immunizations" },
+                "Anthrax": { rate: 0, roles: "", group: "Immunizations" },
+                "Rabies": { rate: 0, roles: "", group: "Immunizations" },
+                "Typhoid": { rate: 0, roles: "", group: "Immunizations" }
             };
 
         const allEventServices = [];
@@ -3434,6 +3441,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return;
             }
 
+            if (!validateDeployRadioGroup()) {
+                return; // Stop form submission
+            }
+
             const section = $(this).data("section");
 
             if (section !== 7) {
@@ -3484,6 +3495,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return;
             }
 
+            if (!validateDeployRadioGroup()) {
+                return; // Stop form submission
+            }
+
             const section = $(this).data("section");
 
             if (section !== 7) {
@@ -3525,6 +3540,18 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             $("#eventManagementForm").submit();
         });
+
+        function validateDeployRadioGroup() {
+            const isRadioGroupChecked = $('input[name="SingleEventManagement.Deploy"]:checked').length > 0;
+
+            if (!isRadioGroupChecked) {
+                alert("Please select Deploying or Non-Deploying.");
+                $('input[name="SingleEventManagement.Deploy"]').first().focus();
+                return false;
+            }
+
+            return true;
+        }
 
         function validateTableRequiredFields() {
             var isValidForm = true;
