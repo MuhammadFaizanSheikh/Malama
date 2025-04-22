@@ -383,8 +383,8 @@
                             <td>@contract.EventState</td>
                             <td>@contract.EventCity</td>
                             <td>@contract.EventZipCode</td>
-                            <td>@contract.EventStartDate.ToString("yyyy-MM-dd")</td>
-                            <td>@contract.EventEndDate.ToString("yyyy-MM-dd")</td>
+                            <td>@contract.EventStartDate.ToString("MM-dd-yyyy")</td>
+                            <td>@contract.EventEndDate.ToString("MM-dd-yyyy")</td>
                             <td>
                                 <div class="button-container">
                                     <a href="javascript:void(0);" class="btn btn-primary" data-id="@contract.Id" style="background-color: @(contract.StatusDescription == "Pending" ? "#f5db8e" : (contract.StatusDescription == "Completed" ? "green" : ""))">@contract.StatusDescription</a>
@@ -2952,7 +2952,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 "Hep B": { rate: 0, roles: "", group: "Immunizations" },
                 "MMR": { rate: 0, roles: "", group: "Immunizations" },
                 "Tdap": { rate: 0, roles: "", group: "Immunizations" },
-                "Influenza": { rate: 0, roles: "", group: "Immunizations" }
+                "Influenza": { rate: 0, roles: "", group: "Immunizations" },
+                "IPV": { rate: 0, roles: "", group: "Immunizations" },
+                "Varicella": { rate: 0, roles: "", group: "Immunizations" }
             };
 
         const allEventServices = [];
