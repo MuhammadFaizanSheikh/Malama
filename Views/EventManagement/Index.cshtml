@@ -2027,6 +2027,173 @@
 
         fetchRolesByCategory("");
 
+        function resetFormFields() {
+            tableInitialized = false;
+            isEditMode = false;
+            taskForceIndex = 0;
+            $(".form-container-Taskforce").empty();
+            $('#hiddenId').val('');
+            $('#EventID').text('');
+            $('#EventIDHidden').val('');
+            $('#SubEventID').val('');
+            $('#TaskForce').val('');
+            $('#EventStatus').val('');
+            $('#ContractId').empty(); // Remove all options
+            $("#contractIdLabel").text('');
+            $("#contractAgencyLabel").text('');
+            $("#contractServiceBranchLabel").text('');
+            $("#contractComponentLabel").text('');
+            $("#contractTypeLabel").text('');
+            $('#contractStartDateLabel').text('');
+            $('#contractEndDateLabel').text('');
+            $("#dawsonProjectManagerLabel").text('');
+            $("#contractDetails").hide();
+            $('#EventAddress1').val('');
+            $('#EventAddress2').val('');
+            $('#EventState').val('').trigger('change');
+            $('#EventCity').val('').trigger('change');
+            $('#EventZipCode').val('');
+            $('#TotalRequestedServiceMembers').val('');
+
+            $('#EventStartDate').val('');
+            $('#EventEndDate').val('');
+
+            $('#Deploying').prop('checked', false);
+            $('#NonDeploying').prop('checked', false);
+
+            $('#EventMobDate').val('');
+            $('#RegardingSites').val('');
+            $('#EventHelpLine').val('');
+
+            $('#MainPocLastName').val('');
+            $('#MainPocFirstName').val('');
+            $('#MainPocRank').val('');
+            $('#MainPocPhonePrimary').val('');
+            $('#MainPocPhoneSecondary').val('');
+            $('#MainPocEmailPrimary').val('');
+            $('#MainPocEmailSecondary').val('');
+
+            $('#SecondaryPocLastName').val('');
+            $('#SecondaryPocFirstName').val('');
+            $('#SecondaryPocRank').val('');
+            $('#SecondaryPocPhonePrimary').val('');
+            $('#SecondaryPocPhoneSecondary').val('');
+            $('#SecondaryPocEmailPrimary').val('');
+            $('#SecondaryPocEmailSecondary').val('');
+
+            $('#toggleAdditionalPOC').prop('checked', false);
+            $('#additionalPocControls').hide();
+
+            $('#AddAdditionalAlternatePoc').prop('checked', false);
+            $('#AddtionalAlternatePocLastName').val('');
+            $('#AddtionalAlternatePocFirstName').val('');
+            $('#AddtionalAlternatePocRank').val('');
+            $('#AddtionalAlternatePocPhonePrimary').val('');
+            $('#AddtionalAlternatePocPhoneSecondary').val('');
+            $('#AddtionalAlternatePocEmailPrimary').val('');
+            $('#AddtionalAlternatePocEmailSecondary').val('');
+            $('#AddtionalAlternatePocRole').val('');
+
+            $('#ShippingAddressLine1').val('');
+            $('#ShippingAddressLine2').val('');
+            $('#ShippingState').val('').trigger('change');
+            $('#ShippingCity').val('').trigger('change');
+            $('#ShippingZipCode').val('');
+            $('#ShippingPocLastName').val('');
+            $('#ShippingPocRank').val('');
+            $('#ShippingPocFirstName').val('');
+            $('#ShippingPocPrimaryPhone').val('');
+            $('#ShippingPocSecondaryPhone').val('');
+            $('#ShippingPocPrimaryEmail').val('');
+            $('#ShippingPocSecondaryEmail').val('');
+            $('#OpenAt').val('');
+            $('#CloseAt').val('');
+            $('#ShippingInstruction').val('');
+
+            $('#PickupDate').val('');
+            $('#PickupTime').val('');
+            $('#DeliveryFromDate').val('');
+            $('#DeliveryToDate').val('');
+
+            $('#SuggestedHourlyFlow').val('');
+            $('#ShippingPocSpecialGateInstructions').val('');
+            $('#ShippingPocParkingInstructions').val('');
+
+            $('#ShippingPocTablesAndChairsAvailableYes').prop('checked', false);
+            $('#ShippingPocTablesAndChairsAvailableNo').prop('checked', false);
+
+            $('#ShippingPocLocationSecuredYes').prop('checked', false);
+            $('#ShippingPocLocationSecuredNo').prop('checked', false);
+
+            $('#ShippingPocRefrigeratorAvailableYes').prop('checked', false);
+            $('#ShippingPocRefrigeratorAvailableNo').prop('checked', false);
+            $('#lockableRefrigeratorSection').hide();
+
+            $('#ShippingPocLockableRefrigeratorYes').prop('checked', false);
+            $('#ShippingPocLockableRefrigeratorNo').prop('checked', false);
+            $('#ShippingPocEventSetupDate').val('');
+            $('#ShippingPocEventSetupTime').val('');
+            $('#PharmacyName').val('');
+            $('#PharmacyAddressLine1').val('');
+            $('#PharmacyAddressLine2').val('');
+            $('#PharmacyState').val('').trigger('change');
+            $('#PharmacyCity').val('').trigger('change');
+            $('#PharmacyZipCode').val('');
+            $('#PharmacyPhoneNumber').val('');
+            $('#MilitaryArrangementYes').prop('checked', false).trigger('change');
+            $('#MilitaryArrangementNo').prop('checked', false).trigger('change');
+            $('#HIVSuppliesNeededYes').prop('checked', false).trigger('change');
+            $('#HIVSuppliesNeededNo').prop('checked', false).trigger('change');
+            $('#HIVSupplyMilitaryContactPOCLastName').val('');
+            $('#HIVSupplyMilitaryContactPOCRank').val('');
+            $('#HIVSupplyMilitaryContactPOCFirstName').val('');
+            $('#HIVSupplyMilitaryContactPOCPhonePrimary').val('');
+            $('#HIVSupplyMilitaryContactPOCPhoneSecondary').val('');
+            $('#HIVSupplyMilitaryContactPOCEmailPrimary').val('');
+            $('#HIVSupplyMilitaryContactPOCEmailSecondary').val('');
+            $('#ImmunizationVaccineNeededYes').prop('checked', false).trigger('change');
+            $('#ImmunizationVaccineNeededNo').prop('checked', false).trigger('change');
+            $('#ImmVaccineSupplyMilitaryContactPOCLastName').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCRank').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCFirstName').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCPhonePrimary').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCPhoneSecondary').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCEmailPrimary').val('');
+            $('#ImmVaccineSupplyMilitaryContactPOCEmailSecondary').val('');
+            $('#QuestPickupAddressLine1').val('');
+            $('#QuestPickupAddressLine2').val('');
+            $('#QuestPickupState').val('').trigger('change');
+            $('#QuestPickupCity').val('').trigger('change');
+            $('#QuestPickupZipCode').val('');
+            $('#HIVDropOffStaffId').empty(); // Remove previously selected staff
+            $('#HIVDropOffStaffLastName').val('');
+            $('#HIVDropOffStaffFirstName').val('');
+
+            document.getElementById('dynamicControlsContainer').innerHTML = '';
+
+            $('#eventServicesTable tbody tr').each(function () {
+                $(this).find('input[type="checkbox"]').prop('checked', false);
+                $(this).find('input[type="number"]').val('');
+                $(this).find('input[type="number"]').prop('disabled', true);
+            });
+
+            $('#eventServicesTable2 tbody tr').each(function () {
+                $(this).find('input[type="checkbox"]').prop('checked', false);
+                $(this).find('input[type="number"]').val('');
+                $(this).find('input[type="number"]').prop('disabled', true);
+            });
+
+            $('#eventServicesTable3 tbody tr').each(function () {
+                $(this).find('input[type="checkbox"]').prop('checked', false);
+                $(this).find('input[type="number"]').val('');
+                $(this).find('input[type="number"]').prop('disabled', true);
+            });
+
+            $("#progressBar, #progressBar span").removeAttr("style").removeClass();
+            $(`#progressBar span[data-target='1']`).addClass("active");
+            $('#eventStaffSelectedTable').DataTable().clear().draw();
+        }
+
         let currentSection = 1;
         $("#EventID").text('');
 
@@ -2068,7 +2235,23 @@
             width: '100%'
         });
 
-        let taskForceIndex = 0;
+
+        // numberInputs.prop("disabled", true).removeAttr('required');
+
+
+        $('form').on('reset', function () {
+            // Reset logic for all 3 tables
+            const tables = ['#eventServicesTable', '#eventServicesTable2', '#eventServicesTable3'];
+
+            tables.forEach(function (tableId) {
+                $(`${tableId} tbody tr`).each(function () {
+                    $(this).find('input[type="checkbox"]').prop('checked', false);
+                    $(this).find('input[type="number"]')
+                        .val('')                  // clear number fields
+                        .prop('disabled', true).removeAttr('required'); // disable them
+                });
+            });
+        });
 
 
         $("#EventStatus").change(function () {
@@ -2089,8 +2272,12 @@
             });
         }
 
+        let taskForceIndex = 0;
+
+
         // Modify function when adding a new row
         function addTaskForceRow(value = "") {
+            debugger;
             let taskForceValue = value ? value : "";
             let newInput = `
         <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
@@ -2141,15 +2328,15 @@
             resetTaskForceIndices();
         });
 
-        // Reset indices after removing a row
-        function resetTaskForceIndices() {
-            taskForceIndex = 0;
-            $(".form-container-Taskforce .taskforce-row").each(function () {
-                $(this).attr("data-index", taskForceIndex);
-                $(this).find("input").attr("name", `SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce`);
-                taskForceIndex++;
-            });
-        }
+        // // Reset indices after removing a row
+        // function resetTaskForceIndices() {
+        //     taskForceIndex = 0;
+        //     $(".form-container-Taskforce .taskforce-row").each(function () {
+        //         $(this).attr("data-index", taskForceIndex);
+        //         $(this).find("input").attr("name", `SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce`);
+        //         taskForceIndex++;
+        //     });
+        // }
 
 
         $('#HIVDropOffStaffId').select2({
@@ -3544,8 +3731,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         $('#addContractBtn').click(function () {
-            addTaskForceRow();
+            debugger;
             resetFormFields();
+            addTaskForceRow();
             $('.card-body').show();
             $('#datatableWrapper').hide();
             $('#submitBtn').show();
@@ -4507,168 +4695,5 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
     }
 
-    function resetFormFields() {
-        tableInitialized = false;
-        isEditMode = false;
-        $('#hiddenId').val('');
-        $('#EventID').text('');
-        $('#EventIDHidden').val('');
-        $('#SubEventID').val('');
-        $('#TaskForce').val('');
-        $('#EventStatus').val('');
-        $('#ContractId').empty(); // Remove all options
-        $("#contractIdLabel").text('');
-        $("#contractAgencyLabel").text('');
-        $("#contractServiceBranchLabel").text('');
-        $("#contractComponentLabel").text('');
-        $("#contractTypeLabel").text('');
-        $('#contractStartDateLabel').text('');
-        $('#contractEndDateLabel').text('');
-        $("#dawsonProjectManagerLabel").text('');
-        $("#contractDetails").hide();
-        $('#EventAddress1').val('');
-        $('#EventAddress2').val('');
-        $('#EventState').val('').trigger('change');
-        $('#EventCity').val('').trigger('change');
-        $('#EventZipCode').val('');
-        $('#TotalRequestedServiceMembers').val('');
-
-        $('#EventStartDate').val('');
-        $('#EventEndDate').val('');
-
-        $('#Deploying').prop('checked', false);
-        $('#NonDeploying').prop('checked', false);
-
-        $('#EventMobDate').val('');
-        $('#RegardingSites').val('');
-        $('#EventHelpLine').val('');
-
-        $('#MainPocLastName').val('');
-        $('#MainPocFirstName').val('');
-        $('#MainPocRank').val('');
-        $('#MainPocPhonePrimary').val('');
-        $('#MainPocPhoneSecondary').val('');
-        $('#MainPocEmailPrimary').val('');
-        $('#MainPocEmailSecondary').val('');
-
-        $('#SecondaryPocLastName').val('');
-        $('#SecondaryPocFirstName').val('');
-        $('#SecondaryPocRank').val('');
-        $('#SecondaryPocPhonePrimary').val('');
-        $('#SecondaryPocPhoneSecondary').val('');
-        $('#SecondaryPocEmailPrimary').val('');
-        $('#SecondaryPocEmailSecondary').val('');
-
-        $('#toggleAdditionalPOC').prop('checked', false);
-        $('#additionalPocControls').hide();
-
-        $('#AddAdditionalAlternatePoc').prop('checked', false);
-        $('#AddtionalAlternatePocLastName').val('');
-        $('#AddtionalAlternatePocFirstName').val('');
-        $('#AddtionalAlternatePocRank').val('');
-        $('#AddtionalAlternatePocPhonePrimary').val('');
-        $('#AddtionalAlternatePocPhoneSecondary').val('');
-        $('#AddtionalAlternatePocEmailPrimary').val('');
-        $('#AddtionalAlternatePocEmailSecondary').val('');
-        $('#AddtionalAlternatePocRole').val('');
-
-        $('#ShippingAddressLine1').val('');
-        $('#ShippingAddressLine2').val('');
-        $('#ShippingState').val('').trigger('change');
-        $('#ShippingCity').val('').trigger('change');
-        $('#ShippingZipCode').val('');
-        $('#ShippingPocLastName').val('');
-        $('#ShippingPocRank').val('');
-        $('#ShippingPocFirstName').val('');
-        $('#ShippingPocPrimaryPhone').val('');
-        $('#ShippingPocSecondaryPhone').val('');
-        $('#ShippingPocPrimaryEmail').val('');
-        $('#ShippingPocSecondaryEmail').val('');
-        $('#OpenAt').val('');
-        $('#CloseAt').val('');
-        $('#ShippingInstruction').val('');
-
-        $('#PickupDate').val('');
-        $('#PickupTime').val('');
-        $('#DeliveryFromDate').val('');
-        $('#DeliveryToDate').val('');
-
-        $('#SuggestedHourlyFlow').val('');
-        $('#ShippingPocSpecialGateInstructions').val('');
-        $('#ShippingPocParkingInstructions').val('');
-
-        $('#ShippingPocTablesAndChairsAvailableYes').prop('checked', false);
-        $('#ShippingPocTablesAndChairsAvailableNo').prop('checked', false);
-
-        $('#ShippingPocLocationSecuredYes').prop('checked', false);
-        $('#ShippingPocLocationSecuredNo').prop('checked', false);
-
-        $('#ShippingPocRefrigeratorAvailableYes').prop('checked', false);
-        $('#ShippingPocRefrigeratorAvailableNo').prop('checked', false);
-        $('#lockableRefrigeratorSection').hide();
-
-        $('#ShippingPocLockableRefrigeratorYes').prop('checked', false);
-        $('#ShippingPocLockableRefrigeratorNo').prop('checked', false);
-        $('#ShippingPocEventSetupDate').val('');
-        $('#ShippingPocEventSetupTime').val('');
-        $('#PharmacyName').val('');
-        $('#PharmacyAddressLine1').val('');
-        $('#PharmacyAddressLine2').val('');
-        $('#PharmacyState').val('').trigger('change');
-        $('#PharmacyCity').val('').trigger('change');
-        $('#PharmacyZipCode').val('');
-        $('#PharmacyPhoneNumber').val('');
-        $('#MilitaryArrangementYes').prop('checked', false).trigger('change');
-        $('#MilitaryArrangementNo').prop('checked', false).trigger('change');
-        $('#HIVSuppliesNeededYes').prop('checked', false).trigger('change');
-        $('#HIVSuppliesNeededNo').prop('checked', false).trigger('change');
-        $('#HIVSupplyMilitaryContactPOCLastName').val('');
-        $('#HIVSupplyMilitaryContactPOCRank').val('');
-        $('#HIVSupplyMilitaryContactPOCFirstName').val('');
-        $('#HIVSupplyMilitaryContactPOCPhonePrimary').val('');
-        $('#HIVSupplyMilitaryContactPOCPhoneSecondary').val('');
-        $('#HIVSupplyMilitaryContactPOCEmailPrimary').val('');
-        $('#HIVSupplyMilitaryContactPOCEmailSecondary').val('');
-        $('#ImmunizationVaccineNeededYes').prop('checked', false).trigger('change');
-        $('#ImmunizationVaccineNeededNo').prop('checked', false).trigger('change');
-        $('#ImmVaccineSupplyMilitaryContactPOCLastName').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCRank').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCFirstName').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCPhonePrimary').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCPhoneSecondary').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCEmailPrimary').val('');
-        $('#ImmVaccineSupplyMilitaryContactPOCEmailSecondary').val('');
-        $('#QuestPickupAddressLine1').val('');
-        $('#QuestPickupAddressLine2').val('');
-        $('#QuestPickupState').val('').trigger('change');
-        $('#QuestPickupCity').val('').trigger('change');
-        $('#QuestPickupZipCode').val('');
-        $('#HIVDropOffStaffId').empty(); // Remove previously selected staff
-        $('#HIVDropOffStaffLastName').val('');
-        $('#HIVDropOffStaffFirstName').val('');
-
-        document.getElementById('dynamicControlsContainer').innerHTML = '';
-
-        $('#eventServicesTable tbody tr').each(function () {
-            $(this).find('input[type="checkbox"]').prop('checked', false);
-            $(this).find('input[type="number"]').val('');
-            $(this).find('input[type="number"]').prop('disabled', true);
-        });
-
-        $('#eventServicesTable2 tbody tr').each(function () {
-            $(this).find('input[type="checkbox"]').prop('checked', false);
-            $(this).find('input[type="number"]').val('');
-            $(this).find('input[type="number"]').prop('disabled', true);
-        });
-
-        $('#eventServicesTable3 tbody tr').each(function () {
-            $(this).find('input[type="checkbox"]').prop('checked', false);
-            $(this).find('input[type="number"]').val('');
-            $(this).find('input[type="number"]').prop('disabled', true);
-        });
-
-        $("#progressBar, #progressBar span").removeAttr("style").removeClass();
-        $(`#progressBar span[data-target='1']`).addClass("active");
-        $('#eventStaffSelectedTable').DataTable().clear().draw();
-    }
+    
 </script>
