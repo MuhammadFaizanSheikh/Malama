@@ -2575,7 +2575,7 @@
                 return;
             }
 
-            if (section !== 6 && section !== 7)
+            if (section !== 7)
             {
                 const isValid = validateSectionFields(section);
 
@@ -2620,7 +2620,7 @@
                 return;
             }
 
-            if (section !== 6 && section !== 7) {
+            if (section !== 7) {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -2644,7 +2644,7 @@
             debugger;
             const section = $(this).data("section");
 
-            if (section !== 6 && section !== 7) {
+            if (section !== 7) {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -3544,7 +3544,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             const section = $(this).data("section");
 
-            if (section !== 6 && section !== 7)
+            if (section !== 7)
             {
                 const isValid = validateSectionFields(section);
 
@@ -3599,7 +3599,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             const section = $(this).data("section");
 
-            if (section !== 6 && section !== 7)
+            if (section !== 7)
             {
                 const isValid = validateSectionFields(section);
 
@@ -3660,37 +3660,37 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             return true;
         }
 
-        function validateTableRequiredFields() {
-            var isValidForm = true;
+        // function validateTableRequiredFields() {
+        //     var isValidForm = true;
 
-            // Loop through each table (eventServicesTable, eventServicesTable2, eventServicesTable3)
-            var tableIds = ["eventServicesTable", "eventServicesTable2", "eventServicesTable3"];
-            tableIds.forEach(function (tableId) {
-                $("#" + tableId + " tbody tr").each(function () {
-                    var row = $(this);
+        //     // Loop through each table (eventServicesTable, eventServicesTable2, eventServicesTable3)
+        //     var tableIds = ["eventServicesTable", "eventServicesTable2", "eventServicesTable3"];
+        //     tableIds.forEach(function (tableId) {
+        //         $("#" + tableId + " tbody tr").each(function () {
+        //             var row = $(this);
 
-                    // Check for required td input fields
-                    row.find("td input[required]").each(function () {
-                        if ($(this).val() === "") {
-                            isValidForm = false;
-                            // Trigger browser validation (focus on empty required field)
-                            $(this)[0].setCustomValidity('This field is required.');
-                            $(this).focus();
-                            return false; // Break out of the each loop for this row
-                        } else {
-                            // Clear custom validity if input is not empty
-                            $(this)[0].setCustomValidity('');
-                        }
-                    });
+        //             // Check for required td input fields
+        //             row.find("td input[required]").each(function () {
+        //                 if ($(this).val() === "") {
+        //                     isValidForm = false;
+        //                     // Trigger browser validation (focus on empty required field)
+        //                     $(this)[0].setCustomValidity('This field is required.');
+        //                     $(this).focus();
+        //                     return false; // Break out of the each loop for this row
+        //                 } else {
+        //                     // Clear custom validity if input is not empty
+        //                     $(this)[0].setCustomValidity('');
+        //                 }
+        //             });
 
-                    if (!isValidForm) {
-                        return false; // Break out of the each loop for all rows
-                    }
-                });
-            });
+        //             if (!isValidForm) {
+        //                 return false; // Break out of the each loop for all rows
+        //             }
+        //         });
+        //     });
 
-            return isValidForm;
-        }
+        //     return isValidForm;
+        // }
 
 
         function getCompletedSections() {
@@ -3838,7 +3838,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         function updateProgressBar(sectionNumber) {
             const section = $(`#section${sectionNumber}`);
-            // Case for Section 7 (staff selection)
+
             if (sectionNumber == 7) {
                 const selectedStaffCount = $('#eventStaffSelectedTable').DataTable().rows().count();
                 if (selectedStaffCount > 0) {
@@ -4314,14 +4314,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 $(this).find("input.is-confirmed-checkbox").prop("disabled", true);
             });
 
-            // Enable number inputs and add 'required' when the checkbox is checked
+            //Enable number inputs and add 'required' when the checkbox is checked
             $(tableSelector + " tbody").on("change", "input.is-selected-checkbox", function () {
                 var row = $(this).closest("tr");
                 var numberInputs = row.find("td input[type='number']");
                 if ($(this).is(":checked")) {
-                    numberInputs.prop("disabled", false).attr('required', true);
+                    numberInputs.prop("disabled", false);
                 } else {
-                    numberInputs.prop("disabled", true).removeAttr('required');
+                    numberInputs.prop("disabled", true);
                 }
             });
 
@@ -4348,6 +4348,33 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     isConfirmedCheckbox.prop("checked", false); // Optional: uncheck if disabled
                 }
             });
+
+            // Handling IsConfirmed checkbox changes across all tables
+            $("table").on("change", "input.is-confirmed-checkbox", function () {
+                var allConfirmed = true;
+
+                // Loop through all tables
+                tableIds.forEach(function (tableId) {
+                    var tableSelector = "#" + tableId;
+
+                    // For each enabled IsConfirmed checkbox, check if it's checked
+                    $(tableSelector + " tbody tr").each(function () {
+                        var checkbox = $(this).find("input.is-confirmed-checkbox");
+                        if (!checkbox.prop("disabled") && !checkbox.prop("checked")) {
+                            allConfirmed = false;
+                            return false; // Exit early if any unchecked
+                        }
+                    });
+                });
+
+                // Update progress bar
+                if (allConfirmed) {
+                    $("#progress6").addClass("completed");
+                } else {
+                    $("#progress6").removeClass("completed");
+                }
+            });
+
         });
 
 
