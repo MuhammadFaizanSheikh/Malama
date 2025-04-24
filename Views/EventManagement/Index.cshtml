@@ -1249,12 +1249,13 @@
                             <th>Client Request/Initial</th>
                             <th>DAWSON Initial Report Numbers</th>
                             <th>DAWSON Final Pre-Event Numbers</th>
+                            <th>Confirmed</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-event-service="Dental Exam">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[0].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[0].IsSelected" />
                                 <span>Dental Exam</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[0].EventService" value="Dental Exam" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[0].Type" value="Event Services" />
@@ -1268,10 +1269,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[0].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[0].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Dental Treatment">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[1].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[1].IsSelected" />
                                 <span>Dental Treatment</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[1].EventService" value="Dental Treatment" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[1].Type" value="Event Services" />
@@ -1285,10 +1289,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[1].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[1].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="BWX">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[2].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[2].IsSelected" />
                                 <span>BWX</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[2].EventService" value="BWX" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[2].Type" value="Event Services" />
@@ -1302,10 +1309,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[2].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[2].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Panorex X-ray">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[3].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[3].IsSelected" />
                                 <span>Panorex X-ray</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[3].EventService" value="Panorex X-ray" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[3].Type" value="Event Services" />
@@ -1319,10 +1329,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[3].FinalPreEventConfirmedNumbers" />
                             </td>
+                        <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[3].IsConfirmed" />
+                        </td>
                         </tr>
                         <tr data-event-service="Periodic Health Assessment">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[4].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[4].IsSelected" />
                                 <span>Periodic Health Assessment</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[4].EventService" value="Periodic Health Assessment" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[4].Type" value="Event Services" />
@@ -1336,10 +1349,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[4].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[4].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Vitals (Height, Weight, BP)">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[5].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[5].IsSelected" />
                                 <span>Vitals (Height, Weight, BP)</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[5].EventService" value="Vitals (Height, Weight, BP)" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[5].Type" value="Event Services" />
@@ -1353,10 +1369,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[5].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[5].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Vision Screening">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[6].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[6].IsSelected" />
                                 <span>Vision Screening</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[6].EventService" value="Vision Screening" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[6].Type" value="Event Services" />
@@ -1370,10 +1389,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[6].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[6].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Behavioral Health">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[7].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[7].IsSelected" />
                                 <span>Behavioral Health</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[7].EventService" value="Behavioral Health" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[7].Type" value="Event Services" />
@@ -1387,10 +1409,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[7].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[7].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Audio Testing">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[8].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[8].IsSelected" />
                                 <span>Audio Testing</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[8].EventService" value="Audio Testing" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[8].Type" value="Event Services" />
@@ -1404,10 +1429,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[8].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[8].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Comprehensive Audio/MOHT test (audiologist)">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[9].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[9].IsSelected" />
                                 <span>Comprehensive Audio/MOHT test (audiologist)</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[9].EventService" value="Comprehensive Audio/MOHT test (audiologist)" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[9].Type" value="Event Services" />
@@ -1421,10 +1449,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[9].FinalPreEventConfirmedNumbers" />
                             </td>
+                        <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[9].IsConfirmed" />
+                        </td>
                         </tr>
                         <tr data-event-service="EKG">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[10].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[10].IsSelected" />
                                 <span>EKG</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[10].EventService" value="EKG" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[10].Type" value="Event Services" />
@@ -1438,10 +1469,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[10].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[10].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Optometry/Eyewear">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[11].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[11].IsSelected" />
                                 <span>Optometry/Eyewear</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[11].EventService" value="Optometry/Eyewear" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[11].Type" value="Event Services" />
@@ -1454,6 +1488,9 @@
                             </td>
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[11].FinalPreEventConfirmedNumbers" />
+                            </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[11].IsConfirmed" />
                             </td>
                         </tr>
                     </tbody>
@@ -1469,12 +1506,13 @@
                             <th>Client Request/Initial</th>
                             <th>DAWSON Initial Report Numbers</th>
                             <th>DAWSON Final Pre-Event Numbers</th>
+                        <th>Confirmed</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-event-service="HIV Testing">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[12].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[12].IsSelected" />
                                 <span>HIV Testing</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[12].EventService" value="HIV Testing" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[12].Type" value="Labs" />
@@ -1488,10 +1526,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[12].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[12].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="G6PD testing">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[13].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[13].IsSelected" />
                                 <span>G6PD testing</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[13].EventService" value="G6PD testing" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[13].Type" value="Labs" />
@@ -1505,10 +1546,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[13].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[13].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Blood Typing (ABO)">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[14].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[14].IsSelected" />
                                 <span>Blood Typing (ABO)</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[14].EventService" value="Blood Typing (ABO)" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[14].Type" value="Labs" />
@@ -1522,10 +1566,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[14].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[14].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Sickle Cell Trait">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[15].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[15].IsSelected" />
                                 <span>Sickle Cell Trait</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[15].EventService" value="Sickle Cell Trait" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[15].Type" value="Labs" />
@@ -1539,10 +1586,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[15].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[15].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="DNA">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[16].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[16].IsSelected" />
                                 <span>DNA</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[16].EventService" value="DNA" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[16].Type" value="Labs" />
@@ -1556,10 +1606,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[16].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[16].IsConfirmed" />
+                            </td>
                         </tr>
                         <tr data-event-service="Lipid Panel">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[17].IsSelected" />
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[17].IsSelected" />
                                 <span>Lipid Panel</span>
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[17].EventService" value="Lipid Panel" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[17].Type" value="Labs" />
@@ -1573,10 +1626,13 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[17].FinalPreEventConfirmedNumbers" />
                             </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[17].IsConfirmed" />
+                            </td>
                         </tr>
                     <tr data-event-service="Pregnancy Test">
                         <td>
-                            <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[18].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[18].IsSelected" />
                             <span>Pregnancy Test</span>
                             <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].EventService" value="Pregnancy Test" />
                             <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].Type" value="Labs" />
@@ -1589,6 +1645,9 @@
                         </td>
                         <td>
                             <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].FinalPreEventConfirmedNumbers" />
+                        </td>
+                        <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[18].IsConfirmed" />
                         </td>
                     </tr>
                     </tbody>
@@ -1604,33 +1663,16 @@
                             <th>Client Request/Initial</th>
                             <th>DAWSON Initial Report Numbers</th>
                             <th>DAWSON Final Pre-Event Numbers</th>
+                        <th>Confirmed</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-event-service="Hep A">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[18].IsSelected" />
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[19].IsSelected" />
                                 <span>Hep A</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].EventService" value="Hep A" />
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[18].Type" value="Immunizations" />
-                            </td>
-                            <td>
-                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].ClientRequestInitial" />
-                            </td>
-                            <td>
-                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].InitialReportNumbers" />
-                            </td>
-                            <td>
-                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[18].FinalPreEventConfirmedNumbers" />
-                            </td>
-                        </tr>
-                        <tr data-event-service="Hep B">
-                            <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[19].IsSelected" />
-                                <span>Hep B</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[19].EventService" value="Hep B" />
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[19].EventService" value="Hep A" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[19].Type" value="Immunizations" />
-
                             </td>
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[19].ClientRequestInitial" />
@@ -1641,12 +1683,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[19].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="MMR">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[20].IsSelected" />
-                                <span>MMR</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[20].EventService" value="MMR" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[19].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Hep B">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[20].IsSelected" />
+                                <span>Hep B</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[20].EventService" value="Hep B" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[20].Type" value="Immunizations" />
 
                             </td>
@@ -1659,12 +1704,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[20].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Tdap">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[21].IsSelected" />
-                                <span>Tdap</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[21].EventService" value="Tdap" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[20].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="MMR">
+                            <td>
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[21].IsSelected" />
+                                <span>MMR</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[21].EventService" value="MMR" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[21].Type" value="Immunizations" />
 
                             </td>
@@ -1677,12 +1725,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[21].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Influenza">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[22].IsSelected" />
-                                <span>Influenza</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[22].EventService" value="Influenza" />
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[21].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Tdap">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[22].IsSelected" />
+                                <span>Tdap</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[22].EventService" value="Tdap" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[22].Type" value="Immunizations" />
 
                             </td>
@@ -1695,12 +1746,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[22].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="IPV">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[23].IsSelected" />
-                                <span>IPV</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[23].EventService" value="IPV" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[22].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Influenza">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[23].IsSelected" />
+                                <span>Influenza</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[23].EventService" value="Influenza" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[23].Type" value="Immunizations" />
 
                             </td>
@@ -1713,12 +1767,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[23].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Varicella">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[24].IsSelected" />
-                                <span>Varicella</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[24].EventService" value="Varicella" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[23].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="IPV">
+                            <td>
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[24].IsSelected" />
+                                <span>IPV</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[24].EventService" value="IPV" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[24].Type" value="Immunizations" />
 
                             </td>
@@ -1731,12 +1788,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[24].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="COVID">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[25].IsSelected" />
-                                <span>COVID</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[25].EventService" value="COVID" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[24].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Varicella">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[25].IsSelected" />
+                                <span>Varicella</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[25].EventService" value="Varicella" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[25].Type" value="Immunizations" />
 
                             </td>
@@ -1749,12 +1809,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[25].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Japanese Encephalitis">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[26].IsSelected" />
-                                <span>Japanese Encephalitis</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[26].EventService" value="Japanese Encephalitis" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[25].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="COVID">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[26].IsSelected" />
+                                <span>COVID</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[26].EventService" value="COVID" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[26].Type" value="Immunizations" />
 
                             </td>
@@ -1767,12 +1830,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[26].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Yellow Fever">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[27].IsSelected" />
-                                <span>Yellow Fever</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[27].EventService" value="Yellow Fever" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[26].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Japanese Encephalitis">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[27].IsSelected" />
+                                <span>Japanese Encephalitis</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[27].EventService" value="Japanese Encephalitis" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[27].Type" value="Immunizations" />
 
                             </td>
@@ -1785,12 +1851,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[27].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Pneumococcal">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[28].IsSelected" />
-                                <span>Pneumococcal</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[28].EventService" value="Pneumococcal" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[27].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Yellow Fever">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[28].IsSelected" />
+                                <span>Yellow Fever</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[28].EventService" value="Yellow Fever" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[28].Type" value="Immunizations" />
 
                             </td>
@@ -1803,12 +1872,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[28].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Anthrax">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[29].IsSelected" />
-                                <span>Anthrax</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[29].EventService" value="Anthrax" />
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[28].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Pneumococcal">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[29].IsSelected" />
+                                <span>Pneumococcal</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[29].EventService" value="Pneumococcal" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[29].Type" value="Immunizations" />
 
                             </td>
@@ -1821,12 +1893,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[29].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Rabies">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[30].IsSelected" />
-                                <span>Rabies</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[30].EventService" value="Rabies" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[29].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Anthrax">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[30].IsSelected" />
+                                <span>Anthrax</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[30].EventService" value="Anthrax" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[30].Type" value="Immunizations" />
 
                             </td>
@@ -1839,12 +1914,15 @@
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[30].FinalPreEventConfirmedNumbers" />
                             </td>
-                        </tr>
-                        <tr data-event-service="Typhoid">
                             <td>
-                                <input type="checkbox" asp-for="SingleEventManagement.EventServiceDetailList[31].IsSelected" />
-                                <span>Typhoid</span>
-                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[31].EventService" value="Typhoid" />
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[30].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Rabies">
+                            <td>
+                                <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[31].IsSelected" />
+                                <span>Rabies</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[31].EventService" value="Rabies" />
                                 <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[31].Type" value="Immunizations" />
 
                             </td>
@@ -1856,6 +1934,30 @@
                             </td>
                             <td>
                                 <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[31].FinalPreEventConfirmedNumbers" />
+                            </td>
+                            <td>
+                                <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[31].IsConfirmed" />
+                            </td>
+                        </tr>
+                        <tr data-event-service="Typhoid">
+                            <td>
+                            <input type="checkbox" class="is-selected-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[32].IsSelected" />
+                                <span>Typhoid</span>
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[32].EventService" value="Typhoid" />
+                                <input type="hidden" asp-for="SingleEventManagement.EventServiceDetailList[32].Type" value="Immunizations" />
+
+                            </td>
+                            <td>
+                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[32].ClientRequestInitial" />
+                            </td>
+                            <td>
+                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[32].InitialReportNumbers" />
+                            </td>
+                            <td>
+                                <input type="number" asp-for="SingleEventManagement.EventServiceDetailList[32].FinalPreEventConfirmedNumbers" />
+                            </td>
+                            <td>
+                            <input type="checkbox" class="is-confirmed-checkbox" asp-for="SingleEventManagement.EventServiceDetailList[32].IsConfirmed" />
                             </td>
                         </tr>
                     </tbody>
@@ -2465,6 +2567,7 @@
         let tableInitialized = false;
 
         $("#progressBar span").click(function () {
+            debugger;
             var target = $(this).data("target");
             var section = currentSectionForProgressBar;
 
@@ -2472,13 +2575,13 @@
                 return;
             }
 
-            if (section !== 7)
+            if (section !== 6 && section !== 7)
             {
-            const isValid = validateSectionFields(section);
+                const isValid = validateSectionFields(section);
 
-            if (!isValid) {
-                return;
-            }
+                if (!isValid) {
+                    return;
+                }
             }
 
             var previousSection = currentSectionForProgressBar; // Store the previous section ID
@@ -2510,13 +2613,14 @@
         });
 
         $(".next").click(function () {
+            debugger;
             const section = $(this).data("section");
 
             if (section == 1 && !validateServiceMemberPercentages()) {
                 return;
             }
 
-            if (section !== 7) {
+            if (section !== 6 && section !== 7) {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -2537,9 +2641,10 @@
 
 
         $(".back").click(function () {
+            debugger;
             const section = $(this).data("section");
 
-            if (section !== 7) {
+            if (section !== 6 && section !== 7) {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -2547,9 +2652,9 @@
                 }
             }
 
-            if (!validateTableRequiredFields()) {
-                return;
-            }
+            // if (!validateTableRequiredFields()) {
+            //     return;
+            // }
 
             $("#submitBtn").data("section", section - 1);
             $("#updateBtn").data("section", section - 1);
@@ -3437,17 +3542,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         $("#submitBtn").click(function (e) {
             e.preventDefault();
 
-            if (!validateServiceMemberPercentages()) {
-                return;
-            }
-
-            if (!validateDeployRadioGroup()) {
-                return; // Stop form submission
-            }
-
             const section = $(this).data("section");
 
-            if (section !== 7) {
+            if (section !== 6 && section !== 7)
+            {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -3460,13 +3558,21 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return;
             }
 
+             if (!validateServiceMemberPercentages()) {
+                return;
+            }
+
+            if (!validateDeployRadioGroup()) {
+                return; // Stop form submission
+            }
+
             if (!validateEventStatusDependantFields(requirements)) {
                 return;
             }
 
-            if (!validateTableRequiredFields()) {
-                return;
-            }
+            // if (!validateTableRequiredFields()) {
+            //     return;
+            // }
 
             const completedSections = getCompletedSections();
 
@@ -3491,17 +3597,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             e.preventDefault();
 
-            if (!validateServiceMemberPercentages()) {
-                return;
-            }
-
-            if (!validateDeployRadioGroup()) {
-                return; // Stop form submission
-            }
-
             const section = $(this).data("section");
 
-            if (section !== 7) {
+            if (section !== 6 && section !== 7)
+            {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
@@ -3514,13 +3613,21 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return;
             }
 
+            if (!validateServiceMemberPercentages()) {
+                return;
+            }
+
+            if (!validateDeployRadioGroup()) {
+                return; // Stop form submission
+            }
+
             if (!validateEventStatusDependantFields(requirements)) {
                 return;
             }
 
-            if (!validateTableRequiredFields()) {
-                return;
-            }
+            // if (!validateTableRequiredFields()) {
+            //     return;
+            // }
 
             const completedSections = getCompletedSections();
 
@@ -3686,7 +3793,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     if ($(this).prop("required") && !$(this).val()) {
                         this.setCustomValidity("This field is required.");
                         this.reportValidity();
-                        this.focus(); // 👈 Force focus to show the message
+                        if (!$(this).is(":hidden") && !$(this).hasClass("select2-hidden-accessible")) {
+                            this.focus();
+                        }
+                        // 👈 Force focus to show the message
                         isValid = false;
                         return false; // 👈 Exit .each early to avoid jumping messages
                     } else {
@@ -4201,10 +4311,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // Disable all number inputs and remove 'required' attribute by default
             $(tableSelector + " tbody tr").each(function () {
                 $(this).find("td input[type='number']").prop("disabled", true).removeAttr('required');
+                $(this).find("input.is-confirmed-checkbox").prop("disabled", true);
             });
 
             // Enable number inputs and add 'required' when the checkbox is checked
-            $(tableSelector + " tbody").on("change", "input[type='checkbox']", function () {
+            $(tableSelector + " tbody").on("change", "input.is-selected-checkbox", function () {
                 var row = $(this).closest("tr");
                 var numberInputs = row.find("td input[type='number']");
                 if ($(this).is(":checked")) {
@@ -4216,17 +4327,26 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             // Restrict number inputs to 9 digits
             $(tableSelector + " tbody").on("input", "td input[type='number']", function () {
-                var value = $(this).val();
+                var input = $(this);
+                var row = input.closest("tr");
 
-                // Remove non-numeric characters
-                value = value.replace(/\D/g, '');
+                // Limit to digits and max 9
+                var value = input.val().replace(/\D/g, '').substring(0, 9);
+                input.val(value);
 
-                // Limit to 9 digits
-                if (value.length > 9) {
-                    value = value.substring(0, 9);
+                // Check if all 3 number fields > 0
+                var allFilled = true;
+                row.find("td input[type='number']").each(function () {
+                    if (parseInt($(this).val()) <= 0 || $(this).val() === "") {
+                        allFilled = false;
+                    }
+                });
+
+                var isConfirmedCheckbox = row.find("input.is-confirmed-checkbox");
+                isConfirmedCheckbox.prop("disabled", !allFilled);
+                if (!allFilled) {
+                    isConfirmedCheckbox.prop("checked", false); // Optional: uncheck if disabled
                 }
-
-                $(this).val(value);
             });
         });
 

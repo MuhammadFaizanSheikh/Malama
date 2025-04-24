@@ -357,6 +357,7 @@
         public int? InitialReportNumbers { get; set; }
 
         public int? FinalPreEventConfirmedNumbers { get; set; }
+        public bool IsConfirmed { get; set; }
 
     }
 
