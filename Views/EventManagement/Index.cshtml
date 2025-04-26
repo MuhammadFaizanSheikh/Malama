@@ -3574,7 +3574,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             //     return;
             // }
 
-            const completedSections = getCompletedSections();
+            const completedSections = getCompletedProgressSections();
 
             $("<input>")
                 .attr("type", "hidden")
@@ -3629,7 +3629,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             //     return;
             // }
 
-            const completedSections = getCompletedSections();
+            const completedSections = getCompletedProgressSections();
 
             $("<input>")
                 .attr("type", "hidden")
@@ -3693,58 +3693,72 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         // }
 
 
-        function getCompletedSections() {
+        // function getCompletedSections() {
+        //     const completedSections = [];
+
+        //     // Loop through each section and validate required fields
+        //     $(".form-section").each(function () {
+        //         const sectionId = $(this).attr("id"); // e.g., "section1"
+        //         let isSectionValid = true;
+
+        //         // Special handling for Section 6
+        //         if (sectionId === "section6") {
+        //             const requiredFieldsInSection6 = $(this).find("[required]");
+
+        //             // If no required fields in Section 6, don't consider it completed
+        //             if (requiredFieldsInSection6.length === 0) {
+        //                 isSectionValid = false;
+        //             } else {
+        //                 // Check if any required field is empty
+        //                 requiredFieldsInSection6.each(function () {
+        //                     if (!$(this).val().trim()) {
+        //                         isSectionValid = false;
+        //                         return false; // Break out of the loop
+        //                     }
+        //                 });
+        //             }
+        //         } else if (sectionId === "section7") {
+        //             // Check if eventStaffSelectedTable has at least one row
+        //             let table = $("#eventStaffSelectedTable").DataTable();
+        //             if (table.rows().count() === 0) {
+        //                 isSectionValid = false;
+        //             }
+        //         }
+        //         else {
+        //             // For other sections, validate as usual
+        //             $(this)
+        //                 .find("[required]")
+        //                 .each(function () {
+        //                     if (!$(this).val().trim()) {
+        //                         isSectionValid = false; // Mark invalid if a required field is empty
+        //                         return false; // Break out of the loop
+        //                     }
+        //                 });
+        //         }
+
+        //         // If the section is valid, add it to the completed sections list
+        //         if (isSectionValid) {
+        //             const numericId = sectionId.replace(/\D/g, ""); // Extract numeric part (e.g., "section1" -> "1")
+        //             completedSections.push(numericId);
+        //         }
+        //     });
+
+        //     return completedSections;
+        // }
+
+        function getCompletedProgressSections() {
             const completedSections = [];
 
-            // Loop through each section and validate required fields
-            $(".form-section").each(function () {
-                const sectionId = $(this).attr("id"); // e.g., "section1"
-                let isSectionValid = true;
-
-                // Special handling for Section 6
-                if (sectionId === "section6") {
-                    const requiredFieldsInSection6 = $(this).find("[required]");
-
-                    // If no required fields in Section 6, don't consider it completed
-                    if (requiredFieldsInSection6.length === 0) {
-                        isSectionValid = false;
-                    } else {
-                        // Check if any required field is empty
-                        requiredFieldsInSection6.each(function () {
-                            if (!$(this).val().trim()) {
-                                isSectionValid = false;
-                                return false; // Break out of the loop
-                            }
-                        });
-                    }
-                } else if (sectionId === "section7") {
-                    // Check if eventStaffSelectedTable has at least one row
-                    let table = $("#eventStaffSelectedTable").DataTable();
-                    if (table.rows().count() === 0) {
-                        isSectionValid = false;
-                    }
-                }
-                else {
-                    // For other sections, validate as usual
-                    $(this)
-                        .find("[required]")
-                        .each(function () {
-                            if (!$(this).val().trim()) {
-                                isSectionValid = false; // Mark invalid if a required field is empty
-                                return false; // Break out of the loop
-                            }
-                        });
-                }
-
-                // If the section is valid, add it to the completed sections list
-                if (isSectionValid) {
-                    const numericId = sectionId.replace(/\D/g, ""); // Extract numeric part (e.g., "section1" -> "1")
-                    completedSections.push(numericId);
+            $("#progressBar span.completed").each(function () {
+                const sectionNumber = $(this).data("target"); // Get data-target attribute
+                if (sectionNumber) {
+                    completedSections.push(sectionNumber);
                 }
             });
 
             return completedSections;
         }
+
 
 
 
@@ -3874,6 +3888,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
                 return;
             }
+
 
 
 
@@ -4764,10 +4779,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 const matchingData = data.find(item => item.eventService === eventService);
 
                 if (matchingData) {
-                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    const checkbox = row.querySelector('input.is-selected-checkbox');
                     const clientRequestInput = row.querySelector('td:nth-of-type(2) input[type="number"]');
                     const initialReportInput = row.querySelector('td:nth-of-type(3) input[type="number"]');
                     const finalPreEventInput = row.querySelector('td:nth-of-type(4) input[type="number"]');
+                    const isConfirmedCheckbox = row.querySelector('input.is-confirmed-checkbox');
                     const eventServiceHidden = row.querySelector('input[type="hidden"][name$=".EventService"]');
                     const typeHidden = row.querySelector('input[type="hidden"][name$=".Type"]');
 
@@ -4780,17 +4796,27 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         if (clientRequestInput) {
                             clientRequestInput.value = matchingData.clientRequestInitial ?? '';
                             clientRequestInput.disabled = !isEnabled;
-                            clientRequestInput.required = isEnabled;
                         }
                         if (initialReportInput) {
                             initialReportInput.value = matchingData.initialReportNumbers ?? '';
                             initialReportInput.disabled = !isEnabled;
-                            initialReportInput.required = isEnabled;
                         }
                         if (finalPreEventInput) {
                             finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
                             finalPreEventInput.disabled = !isEnabled;
-                            finalPreEventInput.required = isEnabled;
+                        }
+                        if (isConfirmedCheckbox) {
+                            isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
+
+                            if (isConfirmedCheckbox.checked)
+                            {
+                                isConfirmedCheckbox.disabled = false;
+                            }
+                            else
+                            {
+                            isConfirmedCheckbox.disabled = true;
+                            }
+                            
                         }
                         if (eventServiceHidden) {
                             eventServiceHidden.value = matchingData.eventService ?? '';
