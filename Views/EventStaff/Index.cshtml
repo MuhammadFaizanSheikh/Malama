@@ -863,6 +863,8 @@
 
                 roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
 
+                attachValidation(roleIndex, licenseIndex);
+
                 $('.attribute-multiselect').select2({
                     placeholder: "Select Attribute(s)",
                     width: '100%'
@@ -905,6 +907,8 @@
         let newRow = generateLicenseFields(true, roleId, roleIndex, licenseIndex, licenseTypes);
 
         licenseContainer.append($(newRow).find(".license-row"));
+
+        attachValidation(roleIndex, licenseIndex);
 
         // Recalculate all indexes after adding a license
         resetLicenseIndexes(roleId, roleIndex);
@@ -1058,10 +1062,33 @@
         <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
         <span class="button-text">Add Another License</span>
     </button>`
+
+
         };
 
         return licenseControls;
     }
+
+    function attachValidation(roleIndex, licenseIndex) {
+        const activeInput = document.getElementById(`licenseActive${roleIndex}_${licenseIndex}`);
+        const expiryInput = document.getElementById(`licenseExpiry${roleIndex}_${licenseIndex}`);
+
+        if (activeInput && expiryInput) {
+            activeInput.addEventListener("change", validateDates);
+            expiryInput.addEventListener("change", validateDates);
+        }
+
+        function validateDates() {
+            const activeDate = activeInput.value;
+            const expiryDate = expiryInput.value;
+
+            if (activeDate && expiryDate && new Date(expiryDate) < new Date(activeDate)) {
+                alert("Active date should be smaller than expiry date");
+                expiryInput.value = ""; // Clear expiry date
+            }
+        }
+    }
+
 
     function generateAttributeDropdown(roleId, roleIndex, attributes) {
         if (!attributes || attributes.length === 0) return '';
@@ -2490,24 +2517,24 @@
     });
 
 
-    document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
-        event.preventDefault();
+    // document.getElementById('staffRolesForm').addEventListener('submit', function (event) {
+    //     event.preventDefault();
 
-        const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
-        let isChecked = false;
+    //     const checkboxes = document.querySelectorAll('#StaffRoles input[type="checkbox"]');
+    //     let isChecked = false;
 
-        checkboxes.forEach(function (checkbox) {
-            if (checkbox.checked) {
-                isChecked = true;
-            }
-        });
+    //     checkboxes.forEach(function (checkbox) {
+    //         if (checkbox.checked) {
+    //             isChecked = true;
+    //         }
+    //     });
 
-        if (!isChecked) {
-            alert('Please select at least one role.');
-        } else {
-            alert('Form submitted successfully!');
-        }
-    });
+    //     if (!isChecked) {
+    //         alert('Please select at least one role.');
+    //     } else {
+    //         alert('Form submitted successfully!');
+    //     }
+    // });
 
 
 

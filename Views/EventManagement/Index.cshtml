@@ -3213,6 +3213,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }
         }
 
+        const dentalAssitantAndRDHRole = "Dental Assistant/Registered Dental Hygienist";
 
          const ratePerHourData = {
                 "Dental Exam": { rate: 8.57, roles: "Dentist" },
@@ -3304,7 +3305,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 if (isDropdown) {
                         row += `<td><select class="form-select text-center roleDropdown">
                             <option value="Dentist" selected>Dentist</option>
-                                <option value="Registered Dental Hygienist">Registered Dental Hygienist</option>
+                                                <option value="${dentalAssitantAndRDHRole}">${dentalAssitantAndRDHRole}</option>
                         </select></td>`;
                 } else {
                     row += `<td>${role}</td>`;
@@ -3363,7 +3364,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     }
 
                     if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
-                            finalTableHtml += renderRow("Registered Dental Hygienist", eventService, totalMembers);
+                            finalTableHtml += renderRow(dentalAssitantAndRDHRole, eventService, totalMembers);
                     }
 
                     if (eventService === "Periodic Health Assessment") {
@@ -3425,6 +3426,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             let roleDropdownChanging = false;
 
             $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
+                debugger;
                 if (roleDropdownChanging) return;
 
                 roleDropdownChanging = true;
@@ -3453,7 +3455,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                 if (selectedRole === "Dentist") {
                     const newRowData = [
-                        'Registered Dental Hygienist',
+                dentalAssitantAndRDHRole,
                         eventService,
                         ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(), // convert staffCountHtml tds to strings
                         '0'
@@ -3462,7 +3464,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
 
 
-                if (selectedRole === "Registered Dental Hygienist") {
+        if (selectedRole === dentalAssitantAndRDHRole) {
                     table.rows().every(function () {
                         const tr = $(this.node());
                         const roleTd = tr.find('td:nth-child(1)');
@@ -3471,7 +3473,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             : roleTd.text().trim();
                         const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
 
-                        if (role === "Registered Dental Hygienist" && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
+                        if (role === dentalAssitantAndRDHRole && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
                             this.remove(); // DataTables way
                         }
                     });

@@ -69,7 +69,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _unitOfWork.EventManagement.AddAsync(eventManagement);
 
                 responseDto.Success = true;
-                responseDto.Message = "Event Management added successfully!";
+                responseDto.Message = "Event added successfully!";
             }
             catch (Exception ex)
             {
@@ -155,7 +155,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await transaction.CommitAsync();
 
                 responseDto.Success = true;
-                responseDto.Message = "EventStaff updated successfully!";
+                responseDto.Message = "Event updated successfully!";
             }
             catch (Exception ex)
             {
