@@ -3839,6 +3839,44 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         function updateProgressBar(sectionNumber) {
             const section = $(`#section${sectionNumber}`);
 
+            if (sectionNumber == 6) {
+                var tableIds = ["eventServicesTable", "eventServicesTable2", "eventServicesTable3"];
+                var allConfirmed = true;
+
+                tableIds.forEach(function (tableId) {
+                    var tableSelector = "#" + tableId;
+
+                    $(tableSelector + " tbody tr").each(function () {
+                        var checkbox = $(this).find("input.is-confirmed-checkbox");
+                        var numberInputs = $(this).find("input[type='number']");
+
+                        var isCheckboxOk = checkbox.length === 0 || checkbox.prop("disabled") || checkbox.prop("checked");
+
+                        var areAllNumberInputsOk = true;
+                        numberInputs.each(function () {
+                            if (!$(this).prop("disabled") && ($(this).val() === "" || parseFloat($(this).val()) <= 0)) {
+                                areAllNumberInputsOk = false;
+                                return false; // exit each loop early if any invalid
+                            }
+                        });
+
+                        if (!(isCheckboxOk && areAllNumberInputsOk)) {
+                            allConfirmed = false;
+                            return false; // exit row loop early
+                        }
+                    });
+                });
+
+                if (allConfirmed) {
+                    $(`#progress${sectionNumber}`).addClass("completed");
+                } else {
+                    $(`#progress${sectionNumber}`).removeClass("completed");
+                }
+                return;
+            }
+
+
+
             if (sectionNumber == 7) {
                 const selectedStaffCount = $('#eventStaffSelectedTable').DataTable().rows().count();
                 if (selectedStaffCount > 0) {
@@ -3848,6 +3886,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
                 return;
             }
+
+            
 
             // Case for other sections (required fields validation)
             const requiredFields = section.find('[required]');
@@ -4318,11 +4358,16 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $(tableSelector + " tbody").on("change", "input.is-selected-checkbox", function () {
                 var row = $(this).closest("tr");
                 var numberInputs = row.find("td input[type='number']");
+                var confirmedCheckbox = row.find("input.is-confirmed-checkbox");
+
                 if ($(this).is(":checked")) {
                     numberInputs.prop("disabled", false);
                 } else {
-                    numberInputs.prop("disabled", true);
+                     numberInputs.prop("disabled", true).val(""); // Disable and clear value
+                    confirmedCheckbox.prop("checked", false).prop("disabled", true); // Uncheck and disable confirmed checkbox
                 }
+
+                updateProgressBar(6);
             });
 
             // Restrict number inputs to 9 digits
@@ -4347,32 +4392,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 if (!allFilled) {
                     isConfirmedCheckbox.prop("checked", false); // Optional: uncheck if disabled
                 }
+
+                updateProgressBar(6);
             });
 
             // Handling IsConfirmed checkbox changes across all tables
             $("table").on("change", "input.is-confirmed-checkbox", function () {
-                var allConfirmed = true;
-
-                // Loop through all tables
-                tableIds.forEach(function (tableId) {
-                    var tableSelector = "#" + tableId;
-
-                    // For each enabled IsConfirmed checkbox, check if it's checked
-                    $(tableSelector + " tbody tr").each(function () {
-                        var checkbox = $(this).find("input.is-confirmed-checkbox");
-                        if (!checkbox.prop("disabled") && !checkbox.prop("checked")) {
-                            allConfirmed = false;
-                            return false; // Exit early if any unchecked
-                        }
-                    });
-                });
-
-                // Update progress bar
-                if (allConfirmed) {
-                    $("#progress6").addClass("completed");
-                } else {
-                    $("#progress6").removeClass("completed");
-                }
+                updateProgressBar(6);
             });
 
         });
