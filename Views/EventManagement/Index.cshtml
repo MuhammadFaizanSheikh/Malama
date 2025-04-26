@@ -3856,30 +3856,43 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             if (sectionNumber == 6) {
                 var tableIds = ["eventServicesTable", "eventServicesTable2", "eventServicesTable3"];
                 var allConfirmed = true;
+                var anySelectedCheckboxChecked = false; // New flag
 
                 tableIds.forEach(function (tableId) {
                     var tableSelector = "#" + tableId;
 
                     $(tableSelector + " tbody tr").each(function () {
-                        var checkbox = $(this).find("input.is-confirmed-checkbox");
-                        var numberInputs = $(this).find("input[type='number']");
+                        var row = $(this);
+                        var confirmedCheckbox = row.find("input.is-confirmed-checkbox");
+                        var selectedCheckbox = row.find("input.is-selected-checkbox");
+                        var numberInputs = row.find("input[type='number']");
 
-                        var isCheckboxOk = checkbox.length === 0 || checkbox.prop("disabled") || checkbox.prop("checked");
+                        // Check if any selected checkbox is checked
+                        if (selectedCheckbox.length > 0 && selectedCheckbox.prop("checked")) {
+                            anySelectedCheckboxChecked = true;
+                        }
+
+                        var isCheckboxOk = confirmedCheckbox.length === 0 || confirmedCheckbox.prop("disabled") || confirmedCheckbox.prop("checked");
 
                         var areAllNumberInputsOk = true;
                         numberInputs.each(function () {
                             if (!$(this).prop("disabled") && ($(this).val() === "" || parseFloat($(this).val()) <= 0)) {
                                 areAllNumberInputsOk = false;
-                                return false; // exit each loop early if any invalid
+                                return false; // exit early
                             }
                         });
 
                         if (!(isCheckboxOk && areAllNumberInputsOk)) {
                             allConfirmed = false;
-                            return false; // exit row loop early
+                            return false; // exit early
                         }
                     });
                 });
+
+                // 🛑 If NO selected checkbox is checked, force allConfirmed = false
+                if (!anySelectedCheckboxChecked) {
+                    allConfirmed = false;
+                }
 
                 if (allConfirmed) {
                     $(`#progress${sectionNumber}`).addClass("completed");
@@ -3888,6 +3901,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
                 return;
             }
+
 
 
 
