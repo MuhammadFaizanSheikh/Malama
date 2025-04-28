@@ -4821,19 +4821,34 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
                             finalPreEventInput.disabled = !isEnabled;
                         }
+                        // if (isConfirmedCheckbox) {
+                        //     isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
+
+                        //     if (isConfirmedCheckbox.checked)
+                        //     {
+                        //         isConfirmedCheckbox.disabled = false;
+                        //     }
+                        //     else
+                        //     {
+                        //     isConfirmedCheckbox.disabled = true;
+                        //     }
+                            
+                        // }
+
                         if (isConfirmedCheckbox) {
                             isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
 
-                            if (isConfirmedCheckbox.checked)
-                            {
+                            const clientRequestValue = parseInt(clientRequestInput?.value) || 0;
+                            const initialReportValue = parseInt(initialReportInput?.value) || 0;
+                            const finalPreEventValue = parseInt(finalPreEventInput?.value) || 0;
+
+                            if (clientRequestValue > 0 && initialReportValue > 0 && finalPreEventValue > 0) {
                                 isConfirmedCheckbox.disabled = false;
+                            } else {
+                                isConfirmedCheckbox.disabled = true;
                             }
-                            else
-                            {
-                            isConfirmedCheckbox.disabled = true;
-                            }
-                            
                         }
+
                         if (eventServiceHidden) {
                             eventServiceHidden.value = matchingData.eventService ?? '';
                         }
