@@ -166,13 +166,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var roles = await _roleManager.Roles.ToListAsync();
                 var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
+                var attributeList = new List<string>();
 
                 List<CombinedEventStaffRolesNameAndLicense> model = new List<CombinedEventStaffRolesNameAndLicense>();
 
                 foreach (var staff in eventStaffList)
                 {
                     var roleLicenseMapping = new Dictionary<string, List<string>>();
-                    var attributeAbbreviations = new HashSet<string>();
 
                     foreach (var staffLicense in staff.StaffLicense)
                     {
@@ -194,15 +194,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                             {
                                 foreach (var attrDetail in staffLicense.StaffAttributeDetails)
                                 {
-                                    var attributeName = attrDetail.Attribute;
-
-                                    if (!string.IsNullOrWhiteSpace(attributeName))
+                                    if (!string.IsNullOrWhiteSpace(attrDetail.Attribute))
                                     {
-                                        var abbreviation = string.Join("", attributeName
-                                            .Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(word => char.ToUpper(word[0])));
-
-                                        attributeAbbreviations.Add(abbreviation);
+                                        attributeList.Add(attrDetail.Attribute.Trim());
                                     }
                                 }
 
@@ -213,7 +207,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     // Generate formatted strings
                     var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                     var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
-                    var attributesString = string.Join(", ", attributeAbbreviations.OrderBy(a => a));
+                    var attributesString = string.Join(", ", attributeList.OrderBy(a => a));
 
                     int completedEventCount = groupedResult.ContainsKey(staff.Id) ? groupedResult[staff.Id] : 0;
 

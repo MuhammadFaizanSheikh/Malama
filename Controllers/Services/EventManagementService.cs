@@ -248,7 +248,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                             var roles = await _roleManager.Roles.ToListAsync();
                             var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
                             var roleLicenseMapping = new Dictionary<string, List<string>>();
-                            var attributeAbbreviations = new HashSet<string>();
+                            var attributeList = new List<string>();
 
                             foreach (var staffLicense in eventStaffDetail.StaffLicense)
                             {
@@ -270,15 +270,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                                     {
                                         foreach (var attrDetail in staffLicense.StaffAttributeDetails)
                                         {
-                                            var attributeName = attrDetail.Attribute;
-
-                                            if (!string.IsNullOrWhiteSpace(attributeName))
+                                            if (!string.IsNullOrWhiteSpace(attrDetail.Attribute))
                                             {
-                                                var abbreviation = string.Join("", attributeName
-                                                    .Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries)
-                                                    .Select(word => char.ToUpper(word[0])));
-
-                                                attributeAbbreviations.Add(abbreviation);
+                                                attributeList.Add(attrDetail.Attribute.Trim());
                                             }
                                         }
 
@@ -288,7 +282,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                             var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                             var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
-                            var attributesString = string.Join(", ", attributeAbbreviations.OrderBy(a => a));
+                            var attributesString = string.Join(", ", attributeList.OrderBy(a => a));
 
                             eventStaffDetailAndAdditionalRoles.EventStaffRolesNameAndLicense = new CombinedEventStaffRolesNameAndLicense
                             {
