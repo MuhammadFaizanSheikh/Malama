@@ -446,19 +446,19 @@ namespace ExcelFilesCompiler.Controllers.Services
                 "DRC",
                 "PHA Date",
                 "PHA Due",
-                "PHA",
+                "PHA Needed",
                 "PULHES",
                 "Vision Date",
-                "VISION",
-                "NEAR VISION",
+                "VISION Needed",
+                "NEAR VISION Needed",
                 "VRC",
                 "Vision 2PG",
-                "Vision 1MI",
+                "Vision Mask Insert",
                 "Hearing Date",
-                "HEARING",
+                "HEARING Needed",
                 "HRC",
                 "Hearing Profile",
-                "QUEST",
+                "Lab Requisition",
                 "Lab Needed",
                 "ABO",
                 "ABO Needed",
@@ -477,13 +477,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 "EKG",
                 "EKG NEEDED",
                 "hcg",
-                "IMM",
-                "Hep B",
-                "Hep A",
-                "FLU",
-                "Tet/TDP",
-                "MMR",
-                "Varicella",
+                "IMM Needed",
+                "Hep B Needed",
+                "Hep A Needed",
+                "FLU Needed",
+                "Tet/TDP Needed",
+                "MMR Needed",
+                "Varicella Needed",
                 "TaskForce",
                 "Notes",
                 "Over 44",
@@ -526,19 +526,19 @@ namespace ExcelFilesCompiler.Controllers.Services
                 { "DRC", "DRC" },
                 { "PHA Date", "PHA Date" },
                 { "Next PHA Date", "PHA Due" },
-                { "PHA", "PHA" },
+                { "PHA Needed", "PHA Needed" },
                 { "PULHES Code", "PULHES" },
                 { "Date of Vision Screen", "Vision Date" },
-                { "VISION", "VISION" },
-                { "NEAR VISION", "NEAR VISION" },
+                { "VISION Needed", "VISION Needed" },
+                { "NEAR VISION Needed", "NEAR VISION Needed" },
                 { "VRC", "VRC" },
                 { "2PG", "Vision 2PG" },
-                { "1MI", "Vision 1MI" },
+                { "1MI", "Vision Mask Insert" },
                 { "Audiogram Date", "Hearing Date" },
-                { "HEARING", "HEARING" },
+                { "HEARING Needed", "HEARING Needed" },
                 { "HRC", "HRC" },
                 { "Hearing Profile", "Hearing Profile" },
-                { "QUEST", "QUEST" },
+                { "Lab Requisition", "Lab Requisition" },
                 { "Lab Needed", "Lab Needed" },
 
                 { "Blood Type", "ABO" },
@@ -558,13 +558,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 { "EKG", "EKG" },
                 { "EKG NEEDED", "EKG NEEDED" },
                 { "hcg", "hcg" },
-                { "IMM", "IMM" },
-                { "Hep B", "Hep B" },
-                { "Hep A", "Hep A" },
-                { "FLU", "FLU" },
-                { "Tet/TDP", "Tet/TDP" },
-                { "MMR", "MMR" },
-                { "Varicella", "Varicella" },
+                { "IMM Needed", "IMM Needed" },
+                { "Hep B Needed", "Hep B Needed" },
+                { "Hep A Needed", "Hep A Needed" },
+                { "FLU Needed", "FLU Needed" },
+                { "Tet/TDP Needed", "Tet/TDP Needed" },
+                { "MMR Needed", "MMR Needed" },
+                { "Varicella Needed", "Varicella Needed" },
                 { "TaskForce","TaskForce"},
                 { "Over 44", "Over 44" },
                 { "Notes", "Notes" },
@@ -642,9 +642,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentTable.Columns.Add("TaskForce", typeof(string));
             }
 
-            if (!parentTable.Columns.Contains("QUEST"))
+            if (!parentTable.Columns.Contains("Lab Requisition"))
             {
-                parentTable.Columns.Add("QUEST", typeof(string));
+                parentTable.Columns.Add("Lab Requisition", typeof(string));
             }
 
             if (!parentTable.Columns.Contains("Lab Needed"))
@@ -675,11 +675,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (commonNeeded)
                 {
-                    parentRow["QUEST"] = "NEEDED";
+                    parentRow["Lab Requisition"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["QUEST"] = "N/A";
+                    parentRow["Lab Requisition"] = "N/A";
                 }
 
                 if (commonNeeded || additionalLabNeeded)
@@ -1047,8 +1047,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (!parentTable.Columns.Contains("FULL SSN"))
                 parentTable.Columns.Add("FULL SSN", typeof(string));
 
-            if (!parentTable.Columns.Contains("VISION"))
-                parentTable.Columns.Add("VISION", typeof(string));
+            if (!parentTable.Columns.Contains("VISION Needed"))
+                parentTable.Columns.Add("VISION Needed", typeof(string));
 
             if (!parentTable.Columns.Contains("Dental Needed"))
                 parentTable.Columns.Add("Dental Needed", typeof(string));
@@ -1056,14 +1056,14 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (!parentTable.Columns.Contains("Dental Exam"))
                 parentTable.Columns.Add("Dental Exam", typeof(string));
 
-            if (!parentTable.Columns.Contains("PHA"))
-                parentTable.Columns.Add("PHA", typeof(string));
+            if (!parentTable.Columns.Contains("PHA Needed"))
+                parentTable.Columns.Add("PHA Needed", typeof(string));
 
             if (!parentTable.Columns.Contains("HIV"))
                 parentTable.Columns.Add("HIV", typeof(string));
 
-            if (!parentTable.Columns.Contains("HEARING"))
-                parentTable.Columns.Add("HEARING", typeof(string));
+            if (!parentTable.Columns.Contains("HEARING Needed"))
+                parentTable.Columns.Add("HEARING Needed", typeof(string));
 
             if (!parentTable.Columns.Contains("PANO NEEDED"))
                 parentTable.Columns.Add("PANO NEEDED", typeof(string));
@@ -1107,26 +1107,26 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (!parentTable.Columns.Contains("hcg"))
                 parentTable.Columns.Add("hcg", typeof(string));
 
-            if (!parentTable.Columns.Contains("IMM"))
-                parentTable.Columns.Add("IMM", typeof(string));
+            if (!parentTable.Columns.Contains("IMM Needed"))
+                parentTable.Columns.Add("IMM Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("Hep B"))
-                parentTable.Columns.Add("Hep B", typeof(string));
+            if (!parentTable.Columns.Contains("Hep B Needed"))
+                parentTable.Columns.Add("Hep B Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("Hep A"))
-                parentTable.Columns.Add("Hep A", typeof(string));
+            if (!parentTable.Columns.Contains("Hep A Needed"))
+                parentTable.Columns.Add("Hep A Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("FLU"))
-                parentTable.Columns.Add("FLU", typeof(string));
+            if (!parentTable.Columns.Contains("FLU Needed"))
+                parentTable.Columns.Add("FLU Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("Tet/TDP"))
-                parentTable.Columns.Add("Tet/TDP", typeof(string));
+            if (!parentTable.Columns.Contains("Tet/TDP Needed"))
+                parentTable.Columns.Add("Tet/TDP Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("MMR"))
-                parentTable.Columns.Add("MMR", typeof(string));
+            if (!parentTable.Columns.Contains("MMR Needed"))
+                parentTable.Columns.Add("MMR Needed", typeof(string));
 
-            if (!parentTable.Columns.Contains("Varicella"))
-                parentTable.Columns.Add("Varicella", typeof(string));
+            if (!parentTable.Columns.Contains("Varicella Needed"))
+                parentTable.Columns.Add("Varicella Needed", typeof(string));
 
             if (!parentTable.Columns.Contains("Over 44"))
                 parentTable.Columns.Add("Over 44", typeof(string));
@@ -1163,11 +1163,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Date of Vision Screen") && DateTime.TryParse(parentRow["Date of Vision Screen"]?.ToString(), out DateTime visionScreenDate))
             {
-                parentRow["VISION"] = visionDate >= visionScreenDate ? "NEEDED" : "N/A";
+                parentRow["VISION Needed"] = visionDate >= visionScreenDate ? "NEEDED" : "N/A";
             }
             else
             {
-                parentRow["VISION"] = "NEEDED";
+                parentRow["VISION Needed"] = "NEEDED";
             }
         }
 
@@ -1201,11 +1201,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Next PHA Date") && DateTime.TryParse(parentRow["Next PHA Date"]?.ToString(), out DateTime phaExamDate))
             {
-                parentRow["PHA"] = phaDate >= phaExamDate ? "NEEDED" : "N/A";
+                parentRow["PHA Needed"] = phaDate >= phaExamDate ? "NEEDED" : "N/A";
             }
             else
             {
-                parentRow["PHA"] = "NEEDED";
+                parentRow["PHA Needed"] = "NEEDED";
             }
 
             if (parentRow.Table.Columns.Contains("PULHES Code"))
@@ -1231,11 +1231,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Audiogram Date") && DateTime.TryParse(parentRow["Audiogram Date"]?.ToString(), out DateTime hearingTestDate))
             {
-                parentRow["HEARING"] = hearingDate >= hearingTestDate ? "NEEDED" : "N/A";
+                parentRow["HEARING Needed"] = hearingDate >= hearingTestDate ? "NEEDED" : "N/A";
             }
             else
             {
-                parentRow["HEARING"] = "NEEDED";
+                parentRow["HEARING Needed"] = "NEEDED";
             }
         }
 
@@ -1257,12 +1257,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentRow["OVER 40"] = exactAge > 39.5 ? "YES" : "NO";
 
                 // Near Vision logic
-                if (!parentRow.Table.Columns.Contains("NEAR VISION"))
+                if (!parentRow.Table.Columns.Contains("NEAR VISION Needed"))
                 {
-                    parentRow.Table.Columns.Add("NEAR VISION", typeof(string));
+                    parentRow.Table.Columns.Add("NEAR VISION Needed", typeof(string));
                 }
 
-                parentRow["NEAR VISION"] = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+                parentRow["NEAR VISION Needed"] = ageWithGrace >= 45 ? "NEEDED" : "N/A";
 
 
                 if (!parentRow.Table.Columns.Contains("OVER 44"))
@@ -1402,18 +1402,18 @@ namespace ExcelFilesCompiler.Controllers.Services
                 string mr2ImmValue = parentRow["MR2-IMM"].ToString().Trim();
 
                 // Ensure "IMM" column exists
-                if (!parentRow.Table.Columns.Contains("IMM"))
+                if (!parentRow.Table.Columns.Contains("IMM Needed"))
                 {
-                    parentRow.Table.Columns.Add("IMM", typeof(string));
+                    parentRow.Table.Columns.Add("IMM Needed", typeof(string));
                 }
 
                 if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("IPV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("MEN", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("TYV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("YEL", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("ANT", StringComparison.OrdinalIgnoreCase))
                 {
-                    parentRow["IMM"] = "N/A";
+                    parentRow["IMM Needed"] = "N/A";
                 }
                 else
                 {
-                    parentRow["IMM"] = "NEEDED";
+                    parentRow["IMM Needed"] = "NEEDED";
                 }
             }
 
@@ -1442,16 +1442,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     hb3Value.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(hb3Value, out DateTime hb3Date) && hb3Date < lastEventDate.Value))
                 {
-                    parentRow["Hep B"] = "NEEDED";
+                    parentRow["Hep B Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["Hep B"] = "N/A";
+                    parentRow["Hep B Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["Hep B"] = "N/A";
+                parentRow["Hep B Needed"] = "N/A";
             }
 
             if (parentRow.Table.Columns.Contains("HPA"))
@@ -1463,16 +1463,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     hpaValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(hpaValue, out DateTime hpaDate) && hpaDate < lastEventDate.Value))
                 {
-                    parentRow["Hep A"] = "NEEDED";
+                    parentRow["Hep A Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["Hep A"] = "N/A";
+                    parentRow["Hep A Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["Hep A"] = "N/A";
+                parentRow["Hep A Needed"] = "N/A";
             }
 
             if (parentRow.Table.Columns.Contains("INJ"))
@@ -1484,16 +1484,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     injValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(injValue, out DateTime injDate) && injDate < lastEventDate.Value))
                 {
-                    parentRow["FLU"] = "NEEDED";
+                    parentRow["FLU Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["FLU"] = "N/A";
+                    parentRow["FLU Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["FLU"] = "N/A";
+                parentRow["FLU Needed"] = "N/A";
             }
 
             if (parentRow.Table.Columns.Contains("TDP"))
@@ -1505,38 +1505,38 @@ namespace ExcelFilesCompiler.Controllers.Services
                     tdpValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(tdpValue, out DateTime tdpDate) && tdpDate < lastEventDate.Value))
                 {
-                    parentRow["Tet/TDP"] = "NEEDED";
+                    parentRow["Tet/TDP Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["Tet/TDP"] = "N/A";
+                    parentRow["Tet/TDP Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["Tet/TDP"] = "N/A";
+                parentRow["Tet/TDP Needed"] = "N/A";
             }
 
 
-            if (parentRow.Table.Columns.Contains("MMR"))
+            if (parentRow.Table.Columns.Contains("MMR Needed"))
             {
-                string mmrValue = parentRow["MMR"]?.ToString()?.Trim();
+                string mmrValue = parentRow["MMR Needed"]?.ToString()?.Trim();
 
                 if (string.IsNullOrEmpty(mmrValue) ||
                     mmrValue.Equals("Blank", StringComparison.OrdinalIgnoreCase) ||
                     mmrValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(mmrValue, out DateTime mmrDate) && mmrDate < lastEventDate.Value))
                 {
-                    parentRow["MMR"] = "NEEDED";
+                    parentRow["MMR Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["MMR"] = "N/A";
+                    parentRow["MMR Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["MMR"] = "N/A";
+                parentRow["MMR Needed"] = "N/A";
             }
 
 
@@ -1549,16 +1549,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     varValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(varValue, out DateTime varDate) && varDate < lastEventDate.Value))
                 {
-                    parentRow["Varicella"] = "NEEDED";
+                    parentRow["Varicella Needed"] = "NEEDED";
                 }
                 else
                 {
-                    parentRow["Varicella"] = "N/A";
+                    parentRow["Varicella Needed"] = "N/A";
                 }
             }
             else
             {
-                parentRow["Varicella"] = "N/A";
+                parentRow["Varicella Needed"] = "N/A";
             }
 
         }

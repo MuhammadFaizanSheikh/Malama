@@ -1,12 +1,12 @@
 ﻿const keys = [
     "SM ID", "FULL NAME", "NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
     "AGR", "UIC", "MRC", "DOB", "OVER 40", "Dental Due", "Dental Exam", "Dental Needed",
-    "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA", "PULHES", "Vision Date",
-    "VISION", "NEAR VISION", "VRC", "Vision 2PG", "Vision 1MI", "Hearing Date", "HEARING",
-    "HRC", "Hearing Profile", "QUEST", "Lab Needed", "ABO", "ABO Needed", "DNA", "Sickle Date",
+    "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA Needed", "PULHES", "Vision Date",
+    "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert", "Hearing Date", "HEARING Needed",
+    "HRC", "Hearing Profile", "Lab Requisition", "Lab Needed", "ABO", "ABO Needed", "DNA", "Sickle Date",
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
-    "IMM", "Hep B", "Hep A", "FLU", "Tet/TDP", "MMR", "Varicella", "TaskForce", "Notes", "Over 44",
+    "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN"
 ];
 
@@ -47,21 +47,21 @@ const tableToKeysIndexMap = [
 
     // PHA Information
     keys.indexOf("PHA Date"),       // PHA Date
-    keys.indexOf("PHA"),            // PHA
+    keys.indexOf("PHA Needed"),            // PHA
     keys.indexOf("PULHES"),         // PULHES
     keys.indexOf("PHA Due"),        // PHA Due
 
     // Vision Information
     keys.indexOf("Vision Date"),    // Vision Date
-    keys.indexOf("NEAR VISION"),    // NEAR VISION
+    keys.indexOf("NEAR VISION Needed"),    // NEAR VISION
     keys.indexOf("Vision 2PG"),     // Vision 2PG
-    keys.indexOf("VISION"),         // VISION
+    keys.indexOf("VISION Needed"),         // VISION
     keys.indexOf("VRC"),            // VRC
-    keys.indexOf("Vision 1MI"),     // Vision 1MI
+    keys.indexOf("Vision Mask Insert"),     // Vision 1MI
 
     // Hearing Information
     keys.indexOf("Hearing Date"),   // Hearing Date
-    keys.indexOf("HEARING"),        // HEARING
+    keys.indexOf("HEARING Needed"),        // HEARING
     keys.indexOf("HRC"),            // HRC
     keys.indexOf("Hearing Profile"),// Hearing Profile
 
@@ -72,7 +72,7 @@ const tableToKeysIndexMap = [
     keys.indexOf("SICKLE"),         // SICKLE
     keys.indexOf("HIV"),            // HIV
     keys.indexOf("ABO Needed"),     // ABO Needed
-    keys.indexOf("QUEST"),          // QUEST
+    keys.indexOf("Lab Requisition"),          // QUEST
     keys.indexOf("Lab Needed"),     // Lab Needed
     keys.indexOf("DNA"),            // DNA
     keys.indexOf("G6PD"),           // G6PD
@@ -86,13 +86,13 @@ const tableToKeysIndexMap = [
     keys.indexOf("EKG NEEDED"),     // EKG NEEDED
     keys.indexOf("hcg"),            // hcg
     // Immunization information
-    keys.indexOf("IMM"),            // IMM
-    keys.indexOf("Hep B"),          // Hep B
-    keys.indexOf("FLU"),            // FLU
-    keys.indexOf("MMR"),            // MMR
-    keys.indexOf("Hep A"),          // Hep A
-    keys.indexOf("Tet/TDP"),        // Tet/TDP
-    keys.indexOf("Varicella")       // Varicella
+    keys.indexOf("IMM Needed"),            // IMM
+    keys.indexOf("Hep B Needed"),          // Hep B
+    keys.indexOf("FLU Needed"),            // FLU
+    keys.indexOf("MMR Needed"),            // MMR
+    keys.indexOf("Hep A Needed"),          // Hep A
+    keys.indexOf("Tet/TDP Needed"),        // Tet/TDP
+    keys.indexOf("Varicella Needed")       // Varicella
 ];
 
 
@@ -111,20 +111,20 @@ const categories = {
         "Dental Due", "PANO Needed", "Dental Needed", "Dental Exam", "BWX Needed", "DRC"
     ],
     "PHA Information": [
-        "PHA Date", "PHA", "PULHES", "PHA Due"
+        "PHA Date", "PHA Needed", "PULHES", "PHA Due"
     ],
     "Vision Information": [
-        "Vision Date", "NEAR VISION", "Vision 2PG", "VISION", "VRC", "Vision 1MI"
+        "Vision Date", "NEAR VISION Needed", "Vision 2PG", "VISION Needed", "VRC", "Vision Mask Insert"
     ],
     "Hearing Information": [
-        "Hearing Date", "HEARING", "HRC", "Hearing Profile"
+        "Hearing Date", "HEARING Needed", "HRC", "Hearing Profile"
     ],
     "Lab Information": [
-        "Sickle Date", "HIV NEXT TEST DATE", "ABO", "SICKLE", "HIV", "ABO Needed", "QUEST", "Lab Needed", "DNA", "G6PD", "G6PD Date", "G6PD Status", "Lipid Needed", "Cholesterol / HDL Cholesterol"
+        "Sickle Date", "HIV NEXT TEST DATE", "ABO", "SICKLE", "HIV", "ABO Needed", "Lab Requisition", "Lab Needed", "DNA", "G6PD", "G6PD Date", "G6PD Status", "Lipid Needed", "Cholesterol / HDL Cholesterol"
         , "EKG", "LIPID PANEL", "Framingham", "EKG NEEDED", "hcg"
     ],
     "Immunization Information": [
-        "IMM", "Hep B", "FLU", "MMR", "Hep A", "Tet/TDP", "Varicella"
+        "IMM Needed", "Hep B Needed", "FLU Needed", "MMR Needed", "Hep A Needed", "Tet/TDP Needed", "Varicella Needed"
     ]
 };
 
@@ -187,7 +187,7 @@ const dropdownOptionsMapping = {
         { value: "Y", label: "Y" },
         { value: "NA", label: "NA" }
     ],
-    "Vision 1MI": [
+    "Vision Mask Insert": [
         { value: "N", label: "N" },
         { value: "Y", label: "Y" },
         { value: "NA", label: "NA" }
@@ -390,7 +390,7 @@ function populateModal(data) {
 
     const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
     const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
-    const fieldsToCheckImmunization = ['Hep B', 'Hep A', 'FLU', 'Tet/TDP', 'MMR', 'Varicella'];
+    const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
 
     fieldsToCheckQuest.forEach(field => {
         const inputField = modalContent.find(`select[name="${field}"]`);
@@ -421,7 +421,7 @@ function checkQuestField() {
     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
 
-    const questField = modalContent.find('input[name="QUEST"]');
+    const questField = modalContent.find('input[name="Lab Requisition"]');
 
     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED") {
         questField.val("NEEDED");
@@ -450,14 +450,14 @@ function checkLabNeededField() {
 }
 
 function checkIMMNeededField() {
-    const hepBValue = modalContent.find('select[name="Hep B"]').val();
-    const hepAValue = modalContent.find('select[name="Hep A"]').val();
-    const fluValue = modalContent.find('select[name="FLU"]').val();
-    const tetTdpValue = modalContent.find('select[name="Tet/TDP"]').val();
-    const mmrValue = modalContent.find('select[name="MMR"]').val();
-    const vericellaValue = modalContent.find('select[name="Varicella"]').val();
+    const hepBValue = modalContent.find('select[name="Hep B Needed"]').val();
+    const hepAValue = modalContent.find('select[name="Hep A Needed"]').val();
+    const fluValue = modalContent.find('select[name="FLU Needed"]').val();
+    const tetTdpValue = modalContent.find('select[name="Tet/TDP Needed"]').val();
+    const mmrValue = modalContent.find('select[name="MMR Needed"]').val();
+    const vericellaValue = modalContent.find('select[name="Varicella Needed"]').val();
 
-    const immNeededField = modalContent.find('input[name="IMM"]');
+    const immNeededField = modalContent.find('input[name="IMM Needed"]');
 
     if (hepBValue === "NEEDED" || hepAValue === "NEEDED" || fluValue === "NEEDED" || tetTdpValue === "NEEDED" || mmrValue === "NEEDED" || vericellaValue === "NEEDED") {
         immNeededField.val("NEEDED");
@@ -501,7 +501,7 @@ function handleColumnsRelatedToDob(dob) {
         over44Field.value = ageWithGrace >= 45 ? "YES" : "NO";
     }
 
-    const nearVisionField = document.querySelector('select[name="NEAR VISION"]');
+    const nearVisionField = document.querySelector('select[name="NEAR VISION Needed"]');
     if (nearVisionField) {
         nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
     }
