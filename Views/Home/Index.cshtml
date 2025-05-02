@@ -462,6 +462,7 @@
                 smIdCounter++;
                 let smIdData = [smIdCounter];
                 let fullRowData = smIdData.concat(rowData);
+                    fullRowData.push("No", "No", "", "", "", "");
 
                     let barcodeIndex = Object.keys(row).indexOf("Barcode") + 1; // +1 because SM ID is added at index 0
                     if (barcodeIndex > 0) {
@@ -495,6 +496,7 @@
                 let headers = Object.keys(filteredData[0]);
                 fullNameColumnIndex = headers.indexOf("FULL NAME") + 1;
                 headers.unshift('SM ID');
+                    headers.push('Checked In', 'Checked Out', 'Checked In By', 'Checked Out By', 'Checked In Time', 'Checked Out Time');
                 headers.push('Actions');
                 let headerRowHtml = headers.map(header => `<th>${header}</th>`).join('');
                 tableHead.innerHTML = `<tr>${headerRowHtml}</tr>`;
@@ -507,7 +509,15 @@
                     data: formattedData,
                     columns: [{ title: 'SM ID' }].concat(
                         Object.keys(filteredData[0]).map(header => ({ title: header }))
-                    ).concat({ title: 'Actions' }),
+                        ).concat([
+                            { title: 'Checked In' },
+                            { title: 'Checked Out' },
+                            { title: 'Checked In By' },
+                            { title: 'Checked Out By' },
+                            { title: 'Checked In Time' },
+                            { title: 'Checked Out Time' },
+                            { title: 'Actions' }
+                        ]),
                     scrollY: 400,
                     scrollX: true,
                     scrollCollapse: true,
