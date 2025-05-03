@@ -1,0 +1,45 @@
+﻿<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Row</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                <!-- Dynamic content will be injected here -->
+            </div>
+            <div class="modal-footer d-flex justify-content-end w-100">
+                <!-- Print Routing Sheet Button -->
+                <button class="btn btn-primary" id="printRoutingSheet">
+                    <i class="fa fa-print"></i> Print Routing Sheet
+                </button>
+
+                <!-- Checked In Dropdown -->
+                <div class="form-group mb-0 mx-2 d-flex flex-column align-items-start">
+                    <label for="checkedIn">Checked In</label>
+                    <select class="form-control" id="checkedIn" name="checkedIn">
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    </select>
+                </div>
+
+                <!-- Checked Out Dropdown -->
+                <div class="form-group mb-0 mx-2 d-flex flex-column align-items-start">
+                    <label for="checkedOut">Checked Out</label>
+                    <select class="form-control" id="checkedOut" name="checkedOut" disabled>
+                        <option value="Yes">Yes</option>
+                        <option value="No" selected>No</option>
+                    </select>
+                </div>
+
+                <!-- Close Button -->
+                <button type="button" class="btn btn-secondary text-white" data-dismiss="modal">Close</button>
+
+                <!-- Save Changes Button -->
+                <button type="button" id="saveChangesButton" class="btn btn-primary text-white" onclick="saveChangesButton()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
