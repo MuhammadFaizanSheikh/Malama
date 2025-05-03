@@ -171,6 +171,7 @@
 
                 let headerRow = "<tr>";
                 validIndexes.forEach(col => headerRow += `<th>${col.header}</th>`);
+                headerRow += `<th>Actions</th>`;
                 headerRow += "</tr>";
                 $("#previewTable thead").append(headerRow);
 
@@ -181,8 +182,11 @@
                         const cellData = json[i][col.index] ?? "";
                         rowData.push($('<div>').text(cellData).html());
                     });
+                    // Add an empty placeholder for the action column
+                    rowData.push(null); // This is for the "Actions" column
                     formattedData.push(rowData);
                 }
+
 
                 const colors = ["#f9f9f9", "#eef9f9", "#f0f9ff", "#fff0f0"]; // or your actual color array
                 const uploadCounter = 1; // you can manage this as per your logic
@@ -190,7 +194,21 @@
 
                 $("#previewTable").DataTable({
                     data: formattedData,
-                    columns: validIndexes.map(col => ({ title: col.header })),
+                    columns: [
+                        ...validIndexes.map(col => ({ title: col.header })),
+                        {
+                            title: "Actions",
+                            data: null,
+                            orderable: false,
+                            render: function () {
+                                return `
+                    <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
+                        <button class="btn mr-2 btn-print">Print</button>
+                `;
+                            }
+                        }
+                    ],
+
                     scrollY: 400,
                     scrollX: true,
                     scrollCollapse: true,
@@ -228,3 +246,4 @@
 <style>
     
 </style>
+<script src="~/js/ScrubSheet.js"></script>
