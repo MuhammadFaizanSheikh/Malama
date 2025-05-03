@@ -703,3 +703,11 @@ function validateInput(field, value) {
 
     return true;
 }
+
+$(document).on('change', '#checkedIn', function () {
+    if ($(this).val() === 'Yes') {
+        $('#checkedOut').prop('disabled', false);
+    } else {
+        $('#checkedOut').prop('disabled', true).val('No'); // Reset value to No when disabled
+    }
+});

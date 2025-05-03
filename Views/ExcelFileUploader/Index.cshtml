@@ -1,0 +1,261 @@
+﻿@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<!-- Required Libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.2.2/css/fixedColumns.dataTables.min.css">
+<script src="https://cdn.datatables.net/fixedcolumns/4.2.2/js/dataTables.fixedColumns.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="container-fluid" style="max-width: 100%; padding-top: 0; margin-top: 0;">
+    <!-- Header -->
+    <!-- Heading -->
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <h1 style="color: rgba(80,90,201,1);">Malama</h1>
+        </div>
+    </div>
+
+    <!-- File Input Section -->
+    <div class="d-flex justify-content-center mt-4">
+        <div class="form-group w-75">
+            <div class="row justify-content-center align-items-center">
+                <label for="excelFile" class="col-auto col-form-label">Select Excel File:</label>
+                <div class="col-auto">
+                    <input type="file" id="excelFile" class="form-control-file" accept=".xlsx,.xls" />
+                </div>
+                <div class="col-auto">
+                    <input type="text" id="filePathDisplay" class="form-control event-input" placeholder="No file selected" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Loader -->
+    <div id="loader" class="d-none loader-container">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Preview Table -->
+    @await Html.PartialAsync("_PreviewTable")
+
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-center my-3 button-container">
+        <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
+        <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
+        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
+        <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Row</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalBodyContent">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="modal-footer d-flex justify-content-end w-100">
+                    <button class="btn btn-primary" id="printRoutingSheet">
+                        <i class="fa fa-print"></i> Print Routing Sheet
+                    </button>
+
+                    <div class="form-group mb-0 mx-2 d-flex flex-column align-items-start">
+                        <label for="checkedIn">Checked In</label>
+                        <select class="form-control" id="checkedIn">
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0 mx-2 d-flex flex-column align-items-start">
+                        <label for="checkedOut">Checked Out</label>
+                        <select class="form-control" id="checkedOut" disabled>
+                            <option value="Yes">Yes</option>
+                            <option value="No" selected>No</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary text-white" data-dismiss="modal">Close</button>
+                    <button type="button" id="saveChangesButton" class="btn btn-primary text-white" onclick="saveChangesButton()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Validation Errors</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Report</th>
+                                <th>Row No</th>
+                                <th>Column</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="errorTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Excel Preview Script -->
+<script>
+    $("#excelFile").on("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        $("#filePathDisplay").val(file.name);
+        $("#loader").removeClass("d-none"); // Show loader
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                if (json.length === 0 || !json[0]) return;
+
+                const originalHeaders = json[0];
+                const validIndexes = originalHeaders
+                    .map((header, index) => ({ header, index }))
+                    .filter(col => col.header && col.header.toString().trim() !== "");
+
+                if (validIndexes.length === 0) return;
+
+                if ($.fn.DataTable.isDataTable("#previewTable")) {
+                    $("#previewTable").DataTable().clear().destroy();
+                }
+
+                $("#previewTable thead").empty();
+                $("#previewTable tbody").empty();
+
+                let headerRow = "<tr>";
+                validIndexes.forEach(col => headerRow += `<th>${col.header}</th>`);
+                headerRow += "</tr>";
+                $("#previewTable thead").append(headerRow);
+
+                let formattedData = [];
+                for (let i = 1; i < json.length; i++) {
+                    let rowData = [];
+                    validIndexes.forEach(col => {
+                        const cellData = json[i][col.index] ?? "";
+                        rowData.push($('<div>').text(cellData).html());
+                    });
+                    formattedData.push(rowData);
+                }
+
+                const colors = ["#f9f9f9", "#eef9f9", "#f0f9ff", "#fff0f0"]; // or your actual color array
+                const uploadCounter = 1; // you can manage this as per your logic
+                const missingFullNameRows = []; // update this based on validation if needed
+
+                $("#previewTable").DataTable({
+                    data: formattedData,
+                    columns: validIndexes.map(col => ({ title: col.header })),
+                    scrollY: 400,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    paging: false,
+                    autoWidth: false,
+                    fixedColumns: {
+                        leftColumns: 6
+                    },
+                    ordering: false,
+                    order: [],
+                    createdRow: function (row, data, dataIndex) {
+                        let backgroundColor = colors[(uploadCounter - 1) % colors.length];
+                        $(row).find('td').css('background-color', backgroundColor);
+                        if (missingFullNameRows.includes(dataIndex + 1)) {
+                            $(row).css('border', '2px solid red');
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error while processing Excel:", error);
+            } finally {
+                $("#loader").addClass("d-none"); // Hide loader after processing
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+
+
+
+</script>
+
+<!-- Styles -->
+<style>
+    body {
+        background-color: rgba(80,90,201,0.1);
+    }
+
+    .form-control, .btn {
+        background-color: rgba(80,90,201,1);
+        border-color: rgba(80,90,201,1);
+        color: white;
+    }
+
+    select.form-control, .event-input {
+        background-color: #fff;
+        border-color: #ced4da;
+        color: black;
+    }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 1000;
+    }
+</style>
