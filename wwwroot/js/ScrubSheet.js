@@ -134,7 +134,6 @@ let currentRow;
 let isAddingNewRow = false;
 
 function editRow(button) {
-    alert('asdasd')
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
     const rowData = {};
 
@@ -711,3 +710,25 @@ $(document).on('change', '#checkedIn', function () {
         $('#checkedOut').prop('disabled', true).val('No'); // Reset value to No when disabled
     }
 });
+
+function isValidDate(dateString) {
+    const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+
+    if (!dateRegex.test(dateString)) {
+        return false; // Invalid format
+    }
+
+    const [month, day, year] = dateString.split('/').map(Number); // Convert to numbers
+
+    const dateObj = new Date(year, month - 1, day); // Note: month is zero-based in JS Date
+
+    return dateObj &&
+        dateObj.getFullYear() === year &&
+        dateObj.getMonth() + 1 === month &&
+        dateObj.getDate() === day;
+}
+
+function isValidDateOnSavingEditModal(value) {
+    const date = new Date(value);
+    return !isNaN(date.getTime()); // Returns true if it's a valid date
+}
