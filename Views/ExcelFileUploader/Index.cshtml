@@ -37,10 +37,10 @@
                     <input type="file" id="excelFile" class="form-control-file" accept=".xlsx,.xls" />
                 </div>
                 <div class="col-auto">
-                    <input type="text" id="filePathDisplay" class="form-control event-input" placeholder="No file selected" readonly />
+                    <input type="text" id="filePathDisplay" class="form-control eve000000000121 48yu44u u N u40 k+nt-input" placeholder="No file selected" readonly />
                 </div>
             </div>
-        </div>
+         </div>
     </div>
 
 
@@ -59,7 +59,7 @@
     <div class="d-flex justify-content-center my-3 button-container">
         <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
-        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
+        <button id="submitDataButton" class="btn btn-success" onclick="submitData()">Submit Data</button>
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
     </div>
 
@@ -99,6 +99,8 @@
 
 <!-- Excel Preview Script -->
 <script>
+    window.shouldRunAfterSave = true;
+
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -199,6 +201,57 @@
 
         reader.readAsArrayBuffer(file);
     });
+
+    function UpdateExcelFile() {
+        const table = document.getElementById("previewTable");
+        const data = [];
+
+        // Extract headers (excluding the last one, assuming it's "Actions")
+        const headers = [];
+        const headerCells = table.querySelectorAll("thead tr th");
+        headerCells.forEach((th, i) => {
+            if (th.innerText.trim() !== "Actions") {
+                headers.push(th.innerText.trim());
+            }
+        });
+
+        // Extract actual data from table rows
+        const bodyRows = table.querySelectorAll("tbody tr");
+        bodyRows.forEach(row => {
+            const rowData = {};
+            const cells = row.querySelectorAll("td");
+
+            headers.forEach((header, i) => {
+                rowData[header] = cells[i]?.innerText.trim() ?? "";
+            });
+
+            data.push(rowData);
+        });
+
+        // Get filename from file input
+        const fileInput = document.getElementById("excelFile");
+        const filename = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : "";
+
+        if (!filename) {
+            Swal.fire("Error", "Filename not found. Please upload a file first.", "error");
+            return;
+        }
+
+        // Send to server
+        $.ajax({
+            url: `/ExcelFileUploader/ExportToExcel?filename=${encodeURIComponent(filename)}`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (response) {
+                Swal.fire("Success", response, "success");
+            },
+            error: function (xhr) {
+                const error = xhr.responseText || "Failed to export data";
+                Swal.fire("Error", error, "error");
+            }
+        });
+    }
 
 
 

@@ -41,6 +41,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
 // CORS policy
 builder.Services.AddCors(options =>
 {

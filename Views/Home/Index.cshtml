@@ -178,7 +178,8 @@
     </div>
 
     <script>
-        
+            window.shouldRunAfterSave = false;
+
         document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
         function clearPreview() {
@@ -201,27 +202,61 @@
             uploadCounter = 0;
         }
 
+    
             document.getElementById('generateExcelButton').addEventListener('click', function () {
                 const originalTable = document.getElementById('previewTable');
-
                 if (!originalTable) {
                     console.error('Table element not found.');
                     return;
                 }
 
-                // Clone the table to avoid modifying the original
-                const clonedTable = originalTable.cloneNode(true);
+                const aoa = [];
 
-                // Remove the last column (e.g., buttons) from all rows
-                for (let row of clonedTable.rows) {
-                    row.deleteCell(-1); // -1 means the last cell
+                // Extract rows from table manually
+                for (let row of originalTable.rows) {
+                    const rowData = [];
+                    for (let i = 0; i < row.cells.length - 1; i++) { // skip last column
+                        let cellText = row.cells[i].innerText || row.cells[i].textContent;
+                        if (i === getBarcodeColumnIndex(originalTable)) {
+                            // Force barcode cell as exact string
+                            cellText = cellText.trim();
+                        }
+                        rowData.push(cellText);
+                    }
+                    aoa.push(rowData);
                 }
 
-                const worksheet = XLSX.utils.table_to_sheet(clonedTable);
+                const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+
+                // Optional: force all barcode cells as string
+                const barcodeCol = getBarcodeColumnIndex(originalTable);
+                if (barcodeCol >= 0) {
+                    for (let r = 1; r < aoa.length; r++) { // skip header
+                        const cellRef = XLSX.utils.encode_cell({ c: barcodeCol, r });
+                        const cell = worksheet[cellRef];
+                        if (cell) {
+                            cell.t = 's';
+                        }
+                    }
+                }
+
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'PreviewData');
                 XLSX.writeFile(workbook, 'PreviewData.xlsx');
             });
+
+            // Helper to find the barcode column index based on header
+            function getBarcodeColumnIndex(table) {
+                const headerCells = table.rows[0]?.cells || [];
+                for (let i = 0; i < headerCells.length; i++) {
+                    const text = headerCells[i].innerText.trim();
+                    if (text.toLowerCase() === 'barcode') {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
 
         document.getElementById('uploadButton').addEventListener('click', function () {
             const calendarInput = document.getElementById('calendarInput').value;
