@@ -32,13 +32,13 @@
     <div class="d-flex justify-content-center mt-4">
         <div class="form-group w-75">
             <div class="row justify-content-center align-items-center">
-                <label for="excelFile" class="col-auto col-form-label">Select Excel File:</label>
+                @* <label for="excelFile" class="col-auto col-form-label">Select Excel File:</label> *@
                 <div class="col-auto">
                     <input type="file" id="excelFile" class="form-control-file" accept=".xlsx,.xls" />
                 </div>
-                <div class="col-auto">
+                @* <div class="col-auto">
                     <input type="text" id="filePathDisplay" class="form-control eve000000000121 48yu44u u N u40 k+nt-input" placeholder="No file selected" readonly />
-                </div>
+                </div> *@
             </div>
          </div>
     </div>
@@ -59,7 +59,7 @@
     <div class="d-flex justify-content-center my-3 button-container">
         <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
-        <button id="submitDataButton" class="btn btn-success" onclick="submitData()">Submit Data</button>
+        @* <button id="submitDataButton" class="btn btn-success" onclick="submitData()">Submit Data</button> *@
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
     </div>
 
@@ -105,7 +105,7 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        $("#filePathDisplay").val(file.name);
+        // $("#filePathDisplay").val(file.name);
         $("#loader").removeClass("d-none"); // Show loader
 
         const reader = new FileReader();
