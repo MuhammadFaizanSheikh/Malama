@@ -11,7 +11,7 @@
 ];
 
 const tableToKeysIndexMap = [
-    keys.indexOf("FULL NAME"),      // FULL NAME
+    keys.indexOf("FULL NAME"),      // FULL NAME 
     keys.indexOf("AGE"),            // AGE
     keys.indexOf("UIC"),            // UIC
     keys.indexOf("FULL SSN"),         // LAST 4
@@ -234,7 +234,26 @@ function populateModal(data) {
             let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
 
-            if (keyIndex === 18 || keyIndex === 48 || keyIndex === 51) {
+            if (keyIndex === 18) {
+                if (value.trim().toLowerCase() === "n/a") {
+                    inputHtml = `
+            <div class="form-group col-lg-2">
+                <label>${key}</label>
+                <select class="form-control" name="${key}" ${textColor}>
+                    <option value="NEEDED">NEEDED</option>
+                    <option value="N/A" selected>N/A</option>
+                </select>
+            </div>`;
+                } else {
+                    let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                    inputHtml = `
+            <div class="form-group col-lg-2">
+                <label>${key}</label>
+                <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+            </div>`;
+                }
+            }
+            else if (keyIndex === 48 || keyIndex === 51) {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `
                                                     <div class="form-group col-lg-2">
