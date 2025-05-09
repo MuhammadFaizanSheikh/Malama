@@ -147,11 +147,16 @@ function editRow(button) {
     $('#editModal').modal('show');  // Show the modal
 }
 
+//for edit
 const calendarIndexes = [13];
 const dropdownIndexes = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-// const readOnlyIndexes = [7, 14, 15, 16, 17, 18, 19, 22, 21, 43, 23, 25, 26, 31, 32, 35, 36, 40, 45, 48, 49, 51, 52, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71];
 const readOnlyIndexes = [ 7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
 const multilineTextbox = [62];
+
+//for add
+const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
+const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
+const tableDataFieldsForAdd = [61, 64, 65, 66, 67,68,69,70,71];
 
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
@@ -382,6 +387,8 @@ function populateModal(data) {
     const dobField = modalContent.find('input[name="DOB"]');
     if (dobField.length > 0) {
         dobField.on('change', function () {
+            alert('dasda')
+            debugger;
             const dobValue = $(this).val();
             if (dobValue) {
                 handleColumnsRelatedToDob(dobValue)
@@ -413,7 +420,197 @@ function populateModal(data) {
     fieldsToCheckQuest.forEach(field => {
         const inputField = modalContent.find(`select[name="${field}"]`);
         if (inputField.length > 0) {
-            inputField.on('change', checkQuestField);
+            inputField.on('change', checkLabRequisitionField);
+        }
+    });
+
+    fieldsToCheckLab.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkLabNeededField);
+        }
+    });
+
+    fieldsToCheckImmunization.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkIMMNeededField);
+        }
+    });
+}
+
+function populateModalForAdd(data) {
+    modalContent.empty(); // Clear previous content
+
+    const fieldsPerRow = 5; // Set to 5 fields per row now
+
+    for (const [categoryName, categoryKeys] of Object.entries(categories)) {
+        modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+
+        let rowHtml = '<div class="row">';
+        let inputCount = 0;
+        categoryKeys.forEach((key, index) => {
+            const value = data[key] || '';
+            let inputHtml = '';
+            let keyIndex = keys.indexOf(key);
+            let readOnly = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'readonly' : '';
+            let textColor = 'style="color: black;"'; // Set text color to black
+
+            if (multilineTextbox.includes(keys.indexOf(key))) {
+                inputHtml = `
+                            <div class="form-group col-lg-12">
+                                <label>${key}</label>
+                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
+                            </div>
+                        `;
+            } 
+            else if (calendarIndexes.includes(keys.indexOf(key))) {
+                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                    </div>
+                                `;
+            }
+            // Dropdown field
+            else if (dropdownIndexesForAdd.includes(keys.indexOf(key))) {
+                const dropdownOptions = dropdownOptionsMapping[key] || [
+                    { value: "NEEDED", label: "NEEDED" },
+                    { value: "N/A", label: "N/A" }
+                ];
+
+                // Build dropdown options dynamically
+                let optionsHtml = dropdownOptions.map(option =>
+                    `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                ).join('');
+
+                let disabled = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'disabled' : '';
+
+                inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+
+                                            ${optionsHtml}
+                                        </select>
+                                    </div>
+                                `;
+            }
+            else if (tableDataFieldsForAdd.includes(keys.indexOf(key))) {
+                if (key === "TaskForce") {
+                    const table = $('#previewTable').DataTable();
+
+                    // Collect distinct TaskForce values from column index 61
+                    const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[61]).filter(Boolean))];
+
+                    // Add default option first
+                    let optionsHtml = `<option value="">---Select Taskforce---</option>`;
+
+                    // Add dynamic options
+                    optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
+
+                    let disabled = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'disabled' : '';
+
+                    inputHtml = `
+                    <div class="form-group col-lg-2">
+                        <label>${key}</label>
+                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    `;
+                }
+                else {
+                    var table = $('#previewTable').DataTable();
+                    var valueOfColumn = table.row(0).data()[keys.indexOf(key)];
+
+                    inputHtml = `
+                                     <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="text" class="form-control" name="${key}" value="${valueOfColumn}" ${readOnly} ${textColor} />
+                                    </div>
+                                `;
+                }
+            }
+           
+
+            // Default text field
+            else {
+                inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
+                                    </div>
+                                `;
+            }
+
+            rowHtml += inputHtml;
+            inputCount++;
+
+            // If we have 5 fields, close the row and start a new one
+            if (inputCount % fieldsPerRow === 0) {
+                rowHtml += '</div><div class="row">';
+            }
+        });
+
+        if (inputCount % fieldsPerRow !== 0) {
+            const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+            for (let i = 0; i < emptyDivsNeeded; i++) {
+                rowHtml += '<div class="form-group col-lg-2"></div>';
+            }
+        }
+
+        rowHtml += '</div>';
+        modalContent.append(rowHtml);
+
+        // Attach input validation listeners to all text fields
+        modalContent.find('input[type="text"]').on('input', function () {
+            const value = $(this).val();
+            validateInput(this, value);
+        });
+    }
+
+    checkLabRequisitionField();
+    checkLabNeededField();
+    checkIMMNeededField();
+
+    // After modal is populated, bind the event listener to the DOB field
+    const dobField = modalContent.find('input[name="DOB"]');
+    if (dobField.length > 0) {
+        dobField.on('change', function () {
+            const dobValue = $(this).val();
+            if (dobValue) {
+                handleColumnsRelatedToDob(dobValue)
+                // const age = calculateAge(dobValue); // Calculate age based on DOB
+                // updateFieldsBasedOnAge(age); // Update other fields based on the age
+            }
+        });
+    }
+
+    //****************************************************This can be needed in future*************************************************/
+    // const aboField = modalContent.find('select[name="ABO"]');
+    // const aboNeededField = modalContent.find('select[name="ABO Needed"]');
+
+    // if (aboField.length > 0 && aboNeededField.length > 0) {
+    //     aboField.on('change', function () {
+    //         const aboValue = $(this).val();
+    //         if (aboValue === "") { // If "ABO" is blank
+    //             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
+    //         } else {
+    //             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
+    //         }
+    //     });
+    // }
+
+    const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
+    const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+    const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
+
+    fieldsToCheckQuest.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkLabRequisitionField);
         }
     });
 
@@ -433,13 +630,13 @@ function populateModal(data) {
 }
 
 //****************************************************This can be needed in future*************************************************/
-function checkQuestField() {
+function checkLabRequisitionField() {
     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
     const lipidNeededValue = modalContent.find('select[name="Lipid Needed"]').val();
 
-    const questField = modalContent.find('input[name="Lab Requisition"]');
+    const questField = modalContent.find('[name="Lab Requisition"]');
 
     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED") {
         questField.val("NEEDED");
@@ -451,6 +648,7 @@ function checkQuestField() {
 
 //****************************************************This can be needed in future*************************************************/
 function checkLabNeededField() {
+    debugger;
     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
@@ -458,7 +656,8 @@ function checkLabNeededField() {
     const hivValue = modalContent.find('select[name="HIV"]').val();
     const dnaValue = modalContent.find('select[name="DNA"]').val();
 
-    const labNeededField = modalContent.find('input[name="Lab Needed"]');
+    /*const labNeededField = modalContent.find('input[name="Lab Needed"]');*/
+    const labNeededField = modalContent.find('[name="Lab Needed"]');
 
     if (aboNeededValue === "NEEDED" || g6pdValue === "NEEDED" || sickleValue === "NEEDED" || lipidNeededValue === "NEEDED" || hivValue === "NEEDED" || dnaValue === "NEEDED") {
         labNeededField.val("NEEDED");
@@ -494,94 +693,6 @@ $(document).on("input", ".decimal-input", function () {
         $(this).val(value.slice(0, -1)); // Remove last invalid character
     }
 });
-
-
-
-function handleColumnsRelatedToDob(dob) {
-    if (!dob) return; // Ensure DOB is provided
-    let dobDate = new Date(dob);
-    let today = new Date(document.getElementById("calendarInput").value);
-    let exactAge = (today - dobDate) / (365.25 * 24 * 60 * 60 * 1000); // Age calculation
-    let ageWithGrace = ((new Date(today.setDate(today.getDate() + 14))) - dobDate) / (365.25 * 24 * 60 * 60 * 1000);
-
-    const ageField = document.querySelector('input[name="AGE"]');
-    if (ageField) {
-        ageField.value = Math.floor(exactAge); // Set the value of the AGE field to the calculated age
-    }
-
-    const over40Field = document.querySelector('input[name="OVER 40"]');
-    if (over40Field) {
-        over40Field.value = exactAge > 39.5 ? "YES" : "NO";
-    }
-
-    const over44Field = document.querySelector('input[name="Over 44"]');
-    if (over44Field) {
-        over44Field.value = ageWithGrace >= 45 ? "YES" : "NO";
-    }
-
-    const nearVisionField = document.querySelector('select[name="NEAR VISION Needed"]');
-    if (nearVisionField) {
-        nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
-    }
-
-    const lipidNeededField = document.querySelector('select[name="Lipid Needed"]');
-    const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
-    const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
-    const ekgField = document.querySelector('input[name="EKG"]');
-    const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
-    const framinghamField = document.querySelector('input[name="Framingham"]');
-
-    const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
-
-    if (lipidNeededField) {
-        lipidNeededField.value = valueForAge;
-    }
-    if (lipidPanelField) {
-        if (exactAge > 39.5) {
-            lipidPanelField.type = "date"; // Make it a calendar input
-            lipidPanelField.value = "";
-            lipidPanelField.readOnly = false;
-        } else {
-            lipidPanelField.type = "text"; // Make it a text input
-            lipidPanelField.value = "N/A";
-            lipidPanelField.readOnly = true;
-        }
-    }
-    if (cholesterolField) {
-        if (exactAge > 39.5) {
-            cholesterolField.value = ""; // Set empty value
-            cholesterolField.readOnly = false; // Make it editable
-        } else {
-            cholesterolField.value = "N/A"; // Set value to N/A
-            cholesterolField.readOnly = true; // Make it readonly
-        }
-    }
-    if (ekgField) {
-        if (exactAge > 39.5) {
-            ekgField.type = "date"; // Make it a calendar input
-            ekgField.value = "";
-            ekgField.readOnly = false;
-        } else {
-            ekgField.type = "text"; // Make it a text input
-            ekgField.value = "N/A";
-            ekgField.readOnly = true;
-        }
-    }
-    if (ekgNeededField) {
-        ekgNeededField.value = valueForAge;
-    }
-    if (framinghamField) {
-        if (exactAge > 39.5) {
-            framinghamField.type = "number";
-            framinghamField.value = ""; // Set empty value
-            framinghamField.readOnly = false; // Make it editable
-        } else {
-            framinghamField.type = "text";
-            framinghamField.value = "N/A"; // Set value to N/A
-            framinghamField.readOnly = true; // Make it readonly
-        }
-    }
-}
 
 // function calculateAge(dob) {
 //     const birthDate = new Date(dob);
@@ -1029,3 +1140,113 @@ function generatePDF(dataList, isPrint) {
         doc.save("Service_Routing_Sheet.pdf"); // Download PDF
     }
 }
+
+
+document.getElementById('addRowButton').addEventListener('click', function () {
+    addRow();
+});
+
+function addRow() {
+    isAddingNewRow = true;
+    const emptyData = {};
+    populateModalForAdd(emptyData);
+    $('#editModal').modal('show');
+}
+
+function handleColumnsRelatedToDob(dob) {
+    if (!dob) return; // Ensure DOB is provided
+    let dobDate = new Date(dob);
+    let today;
+
+    if (window.isCheckInOutPage) {
+        var table = $('#previewTable').DataTable();
+        today = new Date(table.row(0).data()[64]);
+    }
+    else {
+        today = new Date(document.getElementById("calendarInput").value);
+    }
+
+    let exactAge = (today - dobDate) / (365.25 * 24 * 60 * 60 * 1000); // Age calculation
+    let ageWithGrace = ((new Date(today.setDate(today.getDate() + 14))) - dobDate) / (365.25 * 24 * 60 * 60 * 1000);
+
+    const ageField = document.querySelector('input[name="AGE"]');
+    if (ageField) {
+        ageField.value = Math.floor(exactAge); // Set the value of the AGE field to the calculated age
+    }
+
+    const over40Field = document.querySelector('input[name="OVER 40"]');
+    if (over40Field) {
+        over40Field.value = exactAge > 39.5 ? "YES" : "NO";
+    }
+
+    const over44Field = document.querySelector('input[name="Over 44"]');
+    if (over44Field) {
+        over44Field.value = ageWithGrace >= 45 ? "YES" : "NO";
+    }
+
+    if (!window.isCheckInOutPage) {
+        const nearVisionField = document.querySelector('select[name="NEAR VISION Needed"]');
+        if (nearVisionField) {
+            nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+        }
+
+        const lipidNeededField = document.querySelector('select[name="Lipid Needed"]');
+        const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
+        const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
+        const ekgField = document.querySelector('input[name="EKG"]');
+        const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
+        const framinghamField = document.querySelector('input[name="Framingham"]');
+
+        const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
+
+        if (lipidNeededField) {
+            lipidNeededField.value = valueForAge;
+        }
+        if (lipidPanelField) {
+            if (exactAge > 39.5) {
+                lipidPanelField.type = "date"; // Make it a calendar input
+                lipidPanelField.value = "";
+                lipidPanelField.readOnly = false;
+            } else {
+                lipidPanelField.type = "text"; // Make it a text input
+                lipidPanelField.value = "N/A";
+                lipidPanelField.readOnly = true;
+            }
+        }
+        if (cholesterolField) {
+            if (exactAge > 39.5) {
+                cholesterolField.value = ""; // Set empty value
+                cholesterolField.readOnly = false; // Make it editable
+            } else {
+                cholesterolField.value = "N/A"; // Set value to N/A
+                cholesterolField.readOnly = true; // Make it readonly
+            }
+        }
+        if (ekgField) {
+            if (exactAge > 39.5) {
+                ekgField.type = "date"; // Make it a calendar input
+                ekgField.value = "";
+                ekgField.readOnly = false;
+            } else {
+                ekgField.type = "text"; // Make it a text input
+                ekgField.value = "N/A";
+                ekgField.readOnly = true;
+            }
+        }
+        if (ekgNeededField) {
+            ekgNeededField.value = valueForAge;
+        }
+        if (framinghamField) {
+            if (exactAge > 39.5) {
+                framinghamField.type = "number";
+                framinghamField.value = ""; // Set empty value
+                framinghamField.readOnly = false; // Make it editable
+            } else {
+                framinghamField.type = "text";
+                framinghamField.value = "N/A"; // Set value to N/A
+                framinghamField.readOnly = true; // Make it readonly
+            }
+        }
+    }
+}
+

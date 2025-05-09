@@ -100,6 +100,7 @@
 <!-- Excel Preview Script -->
 <script>
     window.shouldRunAfterSave = true;
+    window.isCheckInOutPage = true;
 
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
@@ -190,7 +191,11 @@
                             $(row).css('border', '2px solid red');
                         }
                     }
+
+                      
                 });
+
+                document.getElementById('addRowButton').classList.remove('d-none');
 
             } catch (error) {
                 console.error("Error while processing Excel:", error);
@@ -252,8 +257,6 @@
             }
         });
     }
-
-
 
 </script>
 
