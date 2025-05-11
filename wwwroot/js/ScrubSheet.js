@@ -911,7 +911,7 @@ function saveChangesButton() {
         return;
     }
 
-    let newRowData = new Array(79).fill('');
+    //let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
     const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
@@ -940,6 +940,11 @@ function saveChangesButton() {
         $('#previewTable').DataTable().row.add(fullRowData).draw(false);
     }
     else {
+        if (last4Index !== -1 && fullSsnValue) {
+            const updatedLast4 = fullSsnValue.slice(-4);
+            updatedData['LAST 4'] = updatedLast4;
+        }
+
         keys.forEach((key, index) => {
             if (updatedData[key] !== undefined) {
                 // Keep original value if empty
@@ -948,11 +953,6 @@ function saveChangesButton() {
                 }
             }
         });
-
-        if (last4Index !== -1 && fullSsnValue) {
-            const updatedLast4 = fullSsnValue.slice(-4);
-            currentRow.find('td').eq(last4Index).text(updatedLast4);
-        }
     }
 
     isAddingNewRow = false;
