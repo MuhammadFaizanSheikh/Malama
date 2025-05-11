@@ -7,7 +7,8 @@
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
-    "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN"
+    "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
+    "Checked Out By", "Checked In Time", "Checked Out Time"
 ];
 
 const tableToKeysIndexMap = [
@@ -134,6 +135,7 @@ let currentRow;
 let isAddingNewRow = false;
 
 function editRow(button) {
+    debugger;
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
     const rowData = {};
 
@@ -387,7 +389,6 @@ function populateModal(data) {
     const dobField = modalContent.find('input[name="DOB"]');
     if (dobField.length > 0) {
         dobField.on('change', function () {
-            alert('dasda')
             debugger;
             const dobValue = $(this).val();
             if (dobValue) {
@@ -882,7 +883,7 @@ function saveChangesButton() {
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
 
-    const requiredFields = ['FULL NAME', 'FULL SSN', 'DOD ID', 'DOB'];
+    const requiredFields = ['FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce'];
     let hasError = false;
 
     // Clear previous highlights
@@ -910,29 +911,37 @@ function saveChangesButton() {
         return;
     }
 
-    let newRowData = new Array(73).fill('');
+    let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
-    const last4Index = keys.indexOf('LAST 4'); // Find index of FULL SSN column
+    const last4Index = keys.indexOf('LAST 4');
+    const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
 
-    debugger;
-    tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
-        if (keysIndex !== -1) {
-            const fieldName = keys[keysIndex];
+    if (!isAddingNewRow) {
+        // Edit Mode: Apply fallback logic
+        tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
+            if (keysIndex !== -1) {
+                const fieldName = keys[keysIndex];
 
-            // Keep original value if the field is empty
-            if (updatedData[fieldName] && updatedData[fieldName].trim() !== '') {
-                newRowData[tableColIndex] = updatedData[fieldName];
-            } else {
-                newRowData[tableColIndex] = currentRow.find('td').eq(tableColIndex).text(); // Keep original value
+                if (updatedData[fieldName] && updatedData[fieldName].trim() !== '') {
+                    newRowData[tableColIndex] = updatedData[fieldName];
+                } else {
+                    newRowData[tableColIndex] = currentRow.find('td').eq(tableColIndex).text();
+                }
             }
-        }
-    });
-
-    if (isAddingNewRow) {
-        smIdCounter++;
-        newRowData[0] = smIdCounter;
+        });
     } else {
-        newRowData[0] = currentRow.find('td').eq(0).text();
+        // Add Mode: Assign values directly from updatedData
+        tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
+            if (keysIndex !== -1) {
+                const fieldName = keys[keysIndex];
+                newRowData[tableColIndex] = updatedData[fieldName] || ""; // Use empty string if undefined
+            }
+        });
+    }
+
+
+    if (!isAddingNewRow) {
+        newRowData[smIdIndex] = currentRow.find('td').eq(smIdIndex).text();
 
         if (last4Index !== -1 && fullSsnValue) {
             // const currentLast4 = currentRow.find('td').eq(last4Index).text();
@@ -945,11 +954,30 @@ function saveChangesButton() {
                     <button class="btn mr-2" onclick="editRow(this)">Edit</button>
                     <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
                 `;
-    newRowData[72] = actionButtons;
+    newRowData[73] = actionButtons;
 
     if (isAddingNewRow) {
-        $('#previewTable').DataTable().row.add(newRowData).draw(false);
-    } else {
+        // Initialize a full row with empty values
+        const fullRowData = Array(keys.length).fill('');
+        smIdCounter++;
+        fullRowData[smIdIndex] = smIdCounter;
+
+        if (last4Index !== -1 && fullSsnValue) {
+            const updatedLast4 = fullSsnValue.slice(-4);
+            fullRowData[last4Index] = updatedLast4;
+        }
+
+        // Fill in only the known fields using tableToKeysIndexMap
+        tableToKeysIndexMap.forEach((keyIndex, modalIndex) => {
+            if (keyIndex !== -1) {
+                const fieldKey = keys[keyIndex];
+                fullRowData[keyIndex] = updatedData[fieldKey] || '';
+            }
+        });
+
+        $('#previewTable').DataTable().row.add(fullRowData).draw(false);
+    }
+    else {
         keys.forEach((key, index) => {
             if (updatedData[key] !== undefined) {
                 // Keep original value if empty

@@ -102,6 +102,8 @@
     window.shouldRunAfterSave = true;
     window.isCheckInOutPage = true;
 
+    let smIdCounter = null;
+
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -152,6 +154,8 @@
                     formattedData.push(rowData);
                 }
 
+                const lastRow = json[json.length - 1];
+                smIdCounter = lastRow[0] ?? null;
 
                 const colors = ["#f9f9f9", "#eef9f9", "#f0f9ff", "#fff0f0"]; // or your actual color array
                 const uploadCounter = 1; // you can manage this as per your logic
