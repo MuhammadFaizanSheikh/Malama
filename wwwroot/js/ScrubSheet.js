@@ -916,49 +916,11 @@ function saveChangesButton() {
     const last4Index = keys.indexOf('LAST 4');
     const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
 
-    if (!isAddingNewRow) {
-        // Edit Mode: Apply fallback logic
-        tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
-            if (keysIndex !== -1) {
-                const fieldName = keys[keysIndex];
-
-                if (updatedData[fieldName] && updatedData[fieldName].trim() !== '') {
-                    newRowData[tableColIndex] = updatedData[fieldName];
-                } else {
-                    newRowData[tableColIndex] = currentRow.find('td').eq(tableColIndex).text();
-                }
-            }
-        });
-    } else {
-        // Add Mode: Assign values directly from updatedData
-        tableToKeysIndexMap.forEach((keysIndex, tableColIndex) => {
-            if (keysIndex !== -1) {
-                const fieldName = keys[keysIndex];
-                newRowData[tableColIndex] = updatedData[fieldName] || ""; // Use empty string if undefined
-            }
-        });
-    }
-
-
-    if (!isAddingNewRow) {
-        newRowData[smIdIndex] = currentRow.find('td').eq(smIdIndex).text();
-
-        if (last4Index !== -1 && fullSsnValue) {
-            // const currentLast4 = currentRow.find('td').eq(last4Index).text();
-            const updatedLast4 = fullSsnValue.slice(-4);
-            newRowData[last4Index] = updatedLast4;
-        }
-    }
-
-    let actionButtons = `
-                    <button class="btn mr-2" onclick="editRow(this)">Edit</button>
-                    <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
-                `;
-    newRowData[73] = actionButtons;
-
     if (isAddingNewRow) {
         // Initialize a full row with empty values
         const fullRowData = Array(keys.length).fill('');
+
+        // set sm id counter in index 0 (for edit mode)
         smIdCounter++;
         fullRowData[smIdIndex] = smIdCounter;
 
@@ -987,8 +949,9 @@ function saveChangesButton() {
             }
         });
 
-        if (last4Index !== -1) {
-            currentRow.find('td').eq(last4Index).text(newRowData[last4Index]);
+        if (last4Index !== -1 && fullSsnValue) {
+            const updatedLast4 = fullSsnValue.slice(-4);
+            currentRow.find('td').eq(last4Index).text(updatedLast4);
         }
     }
 
