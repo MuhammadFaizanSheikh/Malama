@@ -835,6 +835,7 @@ function validateInput(field, value) {
 }
 
 $(document).on('change', '#checkedIn', function () {
+    debugger;
     if ($(this).val() === 'Yes') {
         $('#checkedOut').prop('disabled', false);
     } else {
@@ -915,6 +916,8 @@ function saveChangesButton() {
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
     const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
+    const checkedInIndex = keys.indexOf('Checked In');
+    const checkedOutIndex = keys.indexOf('Checked Out');
 
     if (isAddingNewRow) {
         // Initialize a full row with empty values
@@ -928,6 +931,9 @@ function saveChangesButton() {
             const updatedLast4 = fullSsnValue.slice(-4);
             fullRowData[last4Index] = updatedLast4;
         }
+
+        fullRowData[checkedInIndex] = $('#checkedIn').val();
+        fullRowData[checkedOutIndex] = $('#checkedOut').val();
 
         // Fill in only the known fields using tableToKeysIndexMap
         tableToKeysIndexMap.forEach((keyIndex, modalIndex) => {
@@ -944,6 +950,9 @@ function saveChangesButton() {
             const updatedLast4 = fullSsnValue.slice(-4);
             updatedData['LAST 4'] = updatedLast4;
         }
+
+        updatedData['Checked In'] = $('#checkedIn').val();
+        updatedData['Checked Out'] = $('#checkedOut').val();
 
         keys.forEach((key, index) => {
             if (updatedData[key] !== undefined) {
