@@ -93,7 +93,9 @@ const tableToKeysIndexMap = [
     keys.indexOf("MMR Needed"),            // MMR
     keys.indexOf("Hep A Needed"),          // Hep A
     keys.indexOf("Tet/TDP Needed"),        // Tet/TDP
-    keys.indexOf("Varicella Needed")       // Varicella
+    keys.indexOf("Varicella Needed"),       // Varicella
+    keys.indexOf("Checked In"),       // Varicella
+    keys.indexOf("Checked Out")       // Varicella
 ];
 
 
@@ -126,6 +128,9 @@ const categories = {
     ],
     "Immunization Information": [
         "IMM Needed", "Hep B Needed", "FLU Needed", "MMR Needed", "Hep A Needed", "Tet/TDP Needed", "Varicella Needed"
+    ],
+    "Check In Out Information": [
+        "Checked In", "Checked Out"
     ]
 };
 
@@ -145,7 +150,7 @@ function editRow(button) {
         rowData[key] = currentRow.find('td').eq(tableColIndex).text().trim() || '';  // Get the value from the correct table column
     });
 
-    populateModal(rowData);  // Pass the mapped data to populateModal
+    populateModalForEdit(rowData);  // Pass the mapped data to populateModal
     $('#editModal').modal('show');  // Show the modal
 }
 
@@ -224,13 +229,15 @@ const dropdownOptionsMapping = {
 
 const modalContent = $('#modalBodyContent');
 
-function populateModal(data) {
+function populateModalForEdit(data) {
     modalContent.empty(); // Clear previous content
 
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
-        modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+        if (categoryName !== 'Check In Out Information') {
+            modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+        }
 
         let rowHtml = '<div class="row">';
         let inputCount = 0;
@@ -240,8 +247,7 @@ function populateModal(data) {
             let keyIndex = keys.indexOf(key);
             let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
-
-            if (keyIndex === 18) {
+            if (key === 'PANO Needed') {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `
             <div class="form-group col-lg-2">
@@ -260,7 +266,7 @@ function populateModal(data) {
             </div>`;
                 }
             }
-            else if (keyIndex === 48 || keyIndex === 51) {
+            else if (key === 'LIPID PANEL' || key === 'EKG') {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `
                                                     <div class="form-group col-lg-2">
@@ -277,7 +283,7 @@ function populateModal(data) {
                                                             </div>`;
                 }
             }
-            else if (keyIndex === 49) {
+            else if (key === 'Cholesterol / HDL Cholesterol') {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `<div class="form-group col-lg-2">
                                                                             <label>${key}</label>
@@ -291,7 +297,7 @@ function populateModal(data) {
                                                                                     </div>`;
                 }
             }
-            else if (keyIndex === 50) {
+            else if (key === 'Framingham') {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
@@ -348,6 +354,15 @@ function populateModal(data) {
                                         </select>
                                     </div>
                                 `;
+            }
+            else if (key === 'Checked In' || key === 'Checked Out') {
+                debugger;
+                if (key === 'Checked In') {
+                    $("#checkedIn").val(value).trigger("change");
+                }
+                else if (key === 'Checked Out') {
+                    $("#checkedOut").val(value);
+                }
             }
             // Default text field
             else {
@@ -446,7 +461,9 @@ function populateModalForAdd(data) {
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
-        modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+        if (categoryName !== 'Check In Out Information') {
+            modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+        }
 
         let rowHtml = '<div class="row">';
         let inputCount = 0;
@@ -835,7 +852,6 @@ function validateInput(field, value) {
 }
 
 $(document).on('change', '#checkedIn', function () {
-    debugger;
     if ($(this).val() === 'Yes') {
         $('#checkedOut').prop('disabled', false);
     } else {
@@ -879,8 +895,8 @@ function AdjustWidth() {
     }, 10);
 }
 
+let walkInSmCount = 0;
 function saveChangesButton() {
-    debugger;
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
 
@@ -932,9 +948,6 @@ function saveChangesButton() {
             fullRowData[last4Index] = updatedLast4;
         }
 
-        fullRowData[checkedInIndex] = $('#checkedIn').val();
-        fullRowData[checkedOutIndex] = $('#checkedOut').val();
-
         // Fill in only the known fields using tableToKeysIndexMap
         tableToKeysIndexMap.forEach((keyIndex, modalIndex) => {
             if (keyIndex !== -1) {
@@ -943,7 +956,11 @@ function saveChangesButton() {
             }
         });
 
+        fullRowData[checkedInIndex] = $('#checkedIn').val();
+        fullRowData[checkedOutIndex] = $('#checkedOut').val();
+
         $('#previewTable').DataTable().row.add(fullRowData).draw(false);
+        walkInSmCount++;
     }
     else {
         if (last4Index !== -1 && fullSsnValue) {
@@ -966,12 +983,22 @@ function saveChangesButton() {
 
     isAddingNewRow = false;
     AdjustWidth();
+    
+
     $('#editModal').modal('hide');
 
-    if (window.shouldRunAfterSave) {
+    if (window.isCheckInOutPage) {
+        RenderUpdatedEventSummaryTable();
         UpdateExcelFile();
     }
 }
+
+
+
+
+
+
+
 
 
 
@@ -1150,6 +1177,8 @@ function addRow() {
     isAddingNewRow = true;
     const emptyData = {};
     populateModalForAdd(emptyData);
+    $('#checkedIn').val('No');
+    $('#checkedOut').val('No').prop('disabled', true);
     $('#editModal').modal('show');
 }
 

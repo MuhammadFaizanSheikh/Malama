@@ -127,7 +127,6 @@
 
 <!-- Excel Preview Script -->
 <script>
-    window.shouldRunAfterSave = true;
     window.isCheckInOutPage = true;
 
     let smIdCounter = null;
@@ -227,10 +226,11 @@
                       
                 });
 
+                debugger;
+                RenderUpdatedEventSummaryTable();
                 document.getElementById('addRowButton').classList.remove('d-none');
 
             } catch (error) {
-                console.error("Error while processing Excel:", error);
             } finally {
                 $("#loader").addClass("d-none"); // Hide loader after processing
             }
@@ -238,6 +238,47 @@
 
         reader.readAsArrayBuffer(file);
     });
+
+    function RenderUpdatedEventSummaryTable() {
+        var previewTable = $("#previewTable");
+        var checkedInIndex = getColumnIndex(previewTable, "Checked In");
+        var checkedOutIndex = getColumnIndex(previewTable, "Checked Out");
+        debugger;
+
+        // Ensure columns were found
+        if (checkedInIndex === -1 || checkedOutIndex === -1) {
+            console.error("Checked In or Checked Out columns not found!");
+            return;
+        }
+
+        let totalSM = 0;
+        let checkedInCount = 0;
+        let checkedOutCount = 0;
+
+        // Loop through table body rows (excluding the header)
+        previewTable.find("tbody tr").each(function () {
+            totalSM++;
+
+            let cells = $(this).find("td");
+            let checkedInText = cells.eq(checkedInIndex).text().trim().toLowerCase();
+            let checkedOutText = cells.eq(checkedOutIndex).text().trim().toLowerCase();
+
+            if (checkedInText === "yes") {
+                checkedInCount++;
+            }
+
+            if (checkedOutText === "yes") {
+                checkedOutCount++;
+            }
+        });
+
+        // Update eventSummaryTable values
+        $("#totalSmColumn").text(totalSM);
+        $("#checkedInColumn").text(checkedInCount);
+        $("#checkedOutColumn").text(checkedOutCount);
+        $("#walkedInColumn").text(walkInSmCount);
+        $("#eventSummaryTable").show();
+    }
 
     function UpdateExcelFile() {
         const table = document.getElementById("previewTable");
