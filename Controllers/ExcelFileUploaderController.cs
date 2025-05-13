@@ -34,7 +34,9 @@ namespace ExcelFilesCompiler.Controllers
                 if (data.ValueKind != JsonValueKind.Array || data.GetArrayLength() == 0)
                     return BadRequest("Invalid or empty data.");
 
-                var records = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(data.GetRawText());
+                //var records = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(data.GetRawText());
+                var records = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(data.GetRawText());
+
 
                 if (records == null || records.Count == 0)
                     return BadRequest("No records to export.");
@@ -56,7 +58,18 @@ namespace ExcelFilesCompiler.Controllers
                     IRow row = sheet.CreateRow(i + 1);
                     for (int j = 0; j < headers.Count; j++)
                     {
-                        row.CreateCell(j).SetCellValue(records[i][headers[j]] ?? string.Empty);
+                        var valueElement = records[i][headers[j]];
+                        string cellValue = valueElement.ValueKind switch
+                        {
+                            JsonValueKind.String => valueElement.GetString(),
+                            JsonValueKind.Number => valueElement.ToString(),
+                            JsonValueKind.True => "true",
+                            JsonValueKind.False => "false",
+                            JsonValueKind.Null => string.Empty,
+                            _ => valueElement.ToString()
+                        };
+
+                        row.CreateCell(j).SetCellValue(cellValue ?? string.Empty);
                     }
                 }
 

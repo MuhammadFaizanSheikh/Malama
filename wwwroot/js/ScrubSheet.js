@@ -8,7 +8,7 @@
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
-    "Checked Out By", "Checked In Time", "Checked Out Time"
+    "Checked Out By", "Checked In Time", "Checked Out Time","Walk-In Service Member"
 ];
 
 const tableToKeysIndexMap = [
@@ -140,7 +140,6 @@ let currentRow;
 let isAddingNewRow = false;
 
 function editRow(button) {
-    debugger;
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
     const rowData = {};
 
@@ -356,7 +355,6 @@ function populateModalForEdit(data) {
                                 `;
             }
             else if (key === 'Checked In' || key === 'Checked Out') {
-                debugger;
                 if (key === 'Checked In') {
                     $("#checkedIn").val(value).trigger("change");
                 }
@@ -404,7 +402,6 @@ function populateModalForEdit(data) {
     const dobField = modalContent.find('input[name="DOB"]');
     if (dobField.length > 0) {
         dobField.on('change', function () {
-            debugger;
             const dobValue = $(this).val();
             if (dobValue) {
                 handleColumnsRelatedToDob(dobValue)
@@ -555,12 +552,14 @@ function populateModalForAdd(data) {
 
             // Default text field
             else {
-                inputHtml = `
+                if (key !== 'Checked In' && key !== 'Checked Out') {
+                    inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
                                     </div>
                                 `;
+                }
             }
 
             rowHtml += inputHtml;
@@ -666,7 +665,6 @@ function checkLabRequisitionField() {
 
 //****************************************************This can be needed in future*************************************************/
 function checkLabNeededField() {
-    debugger;
     const aboNeededValue = modalContent.find('select[name="ABO Needed"]').val();
     const g6pdValue = modalContent.find('select[name="G6PD"]').val();
     const sickleValue = modalContent.find('select[name="SICKLE"]').val();
@@ -895,7 +893,7 @@ function AdjustWidth() {
     }, 10);
 }
 
-let walkInSmCount = 0;
+/*let walkInSmCount = 0;*/
 function saveChangesButton() {
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
@@ -934,14 +932,14 @@ function saveChangesButton() {
     const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
     const checkedInIndex = keys.indexOf('Checked In');
     const checkedOutIndex = keys.indexOf('Checked Out');
-
+    const walkinSMIndex = keys.indexOf('Walk-In Service Member');
     if (isAddingNewRow) {
         // Initialize a full row with empty values
         const fullRowData = Array(keys.length).fill('');
 
         // set sm id counter in index 0 (for edit mode)
         smIdCounter++;
-        fullRowData[smIdIndex] = smIdCounter;
+        fullRowData[smIdIndex] = smIdCounter.toString();
 
         if (last4Index !== -1 && fullSsnValue) {
             const updatedLast4 = fullSsnValue.slice(-4);
@@ -958,9 +956,10 @@ function saveChangesButton() {
 
         fullRowData[checkedInIndex] = $('#checkedIn').val();
         fullRowData[checkedOutIndex] = $('#checkedOut').val();
+        fullRowData[walkinSMIndex] = 'Yes';
 
         $('#previewTable').DataTable().row.add(fullRowData).draw(false);
-        walkInSmCount++;
+        walkInServiceMemberCount++;
     }
     else {
         if (last4Index !== -1 && fullSsnValue) {
@@ -981,9 +980,9 @@ function saveChangesButton() {
         });
     }
 
-    isAddingNewRow = false;
     AdjustWidth();
-    
+    isAddingNewRow = false;
+
 
     $('#editModal').modal('hide');
 
@@ -991,6 +990,7 @@ function saveChangesButton() {
         RenderUpdatedEventSummaryTable();
         UpdateExcelFile();
     }
+
 }
 
 

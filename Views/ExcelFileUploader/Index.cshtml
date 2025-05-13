@@ -85,7 +85,7 @@
 
     <!-- Buttons -->
     <div class="d-flex justify-content-center my-3 button-container">
-        <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
+        <button id="addRowButton" class="btn btn-secondary d-none">Add Walk-In Service Member</button>
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         @* <button id="submitDataButton" class="btn btn-success" onclick="submitData()">Submit Data</button> *@
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
@@ -130,6 +130,7 @@
     window.isCheckInOutPage = true;
 
     let smIdCounter = null;
+    let walkInServiceMemberCount = 0;
 
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
@@ -152,7 +153,13 @@
                 const originalHeaders = json[0];
                 const validIndexes = originalHeaders
                     .map((header, index) => ({ header, index }))
-                    .filter(col => col.header && col.header.toString().trim() !== "");
+                    .filter(col =>
+                        col.header &&
+                        col.header.toString().trim() !== "" 
+                        // &&
+                        // col.header.toString().trim().toLowerCase() !== "walk-in service member"
+                    );
+
 
                 if (validIndexes.length === 0) return;
 
@@ -179,6 +186,14 @@
                     // Add an empty placeholder for the action column
                     rowData.push(null); // This is for the "Actions" column
                     formattedData.push(rowData);
+
+                    const walkInCol = validIndexes.find(col => col.header.trim().toLowerCase() === "walk-in service member");
+                    if (walkInCol) {
+                        const walkInValue = (json[i][walkInCol.index] ?? "").toString().trim().toLowerCase();
+                        if (walkInValue === "yes") {
+                            walkInServiceMemberCount++;
+                        }
+                    }
                 }
 
                 const lastRow = json[json.length - 1];
@@ -191,6 +206,10 @@
                 $("#previewTable").DataTable({
                     data: formattedData,
                     columns: [
+                        // ...validIndexes.map(col => ({
+                        //     title: col.header,
+                        //     visible: col.header.trim().toLowerCase() !== "walk-in service member" // hide this column
+                        // })),
                         ...validIndexes.map(col => ({ title: col.header })),
                         {
                             title: "Actions",
@@ -226,7 +245,6 @@
                       
                 });
 
-                debugger;
                 RenderUpdatedEventSummaryTable();
                 document.getElementById('addRowButton').classList.remove('d-none');
 
@@ -243,7 +261,6 @@
         var previewTable = $("#previewTable");
         var checkedInIndex = getColumnIndex(previewTable, "Checked In");
         var checkedOutIndex = getColumnIndex(previewTable, "Checked Out");
-        debugger;
 
         // Ensure columns were found
         if (checkedInIndex === -1 || checkedOutIndex === -1) {
@@ -276,7 +293,7 @@
         $("#totalSmColumn").text(totalSM);
         $("#checkedInColumn").text(checkedInCount);
         $("#checkedOutColumn").text(checkedOutCount);
-        $("#walkedInColumn").text(walkInSmCount);
+        $("#walkedInColumn").text(walkInServiceMemberCount);
         $("#eventSummaryTable").show();
     }
 
@@ -293,6 +310,7 @@
             }
         });
 
+        debugger;
         // Extract actual data from table rows
         const bodyRows = table.querySelectorAll("tbody tr");
         bodyRows.forEach(row => {
@@ -330,6 +348,96 @@
             }
         });
     }
+
+    // function UpdateExcelFile() {
+    //     const table = $('#previewTable').DataTable();
+    //     const data = [];
+
+    //     // Get column headers including hidden ones, excluding "Actions"
+    //     const headers = table.columns().header().toArray()
+    //         .map(th => th.innerText.trim())
+    //         .filter(header => header && header !== "Actions");
+
+    //     // Loop through all rows including hidden columns
+    //     // table.rows().every(function () {
+    //     //     const rowData = this.data();
+    //     //     const rowObject = {};
+
+    //     //     headers.forEach((header, i) => {
+    //     //         rowObject[header] = rowData[i];
+    //     //     });
+
+    //     //     data.push(rowObject);
+    //     // });
+    //     debugger;
+    //     // table.rows().every(function () {
+    //     //     const rowObject = {};
+    //     //     const cells = this.nodes().to$().find('td'); // Get actual DOM cells
+    //     //     headers.forEach((header, i) => {
+    //     //         // Use text input/textarea value if present, otherwise fallback to innerText
+    //     //         const input = $(cells[i]).find('input, textarea, select');
+    //     //         if (input.length > 0) {
+    //     //             //rowObject[header] = input.val()?.trim() ?? "";
+    //     //         } else {
+    //     //             rowObject[header] = $(cells[i]).text().trim();
+    //     //         }
+    //     //     });
+    //     //     data.push(rowObject);
+    //     // });
+
+    //     table.rows().every(function () {
+    //         const rowObject = {};
+    //         const rowNode = this.node(); // DOM node for the row
+    //         const cells = rowNode.querySelectorAll('td');
+
+    //         headers.forEach((header, i) => {
+    //             const cell = cells[i];
+    //             let value = "";
+
+    //             // Check for input/select/textarea
+    //             const input = cell.querySelector('input, textarea, select');
+    //             if (input) {
+    //                 value = input.value.trim();
+    //             } else {
+    //                 // Ignore buttons inside the cell
+    //                 const clonedCell = cell.cloneNode(true);
+    //                 const buttons = clonedCell.querySelectorAll('button, a');
+    //                 buttons.forEach(btn => btn.remove());
+    //                 value = clonedCell.innerText.trim();
+    //             }
+
+    //             rowObject[header] = value;
+    //         });
+
+    //         data.push(rowObject);
+    //     });
+
+
+
+    //     // Get filename
+    //     const fileInput = document.getElementById("excelFile");
+    //     const filename = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : "";
+
+    //     if (!filename) {
+    //         Swal.fire("Error", "Filename not found. Please upload a file first.", "error");
+    //         return;
+    //     }
+    //     // Send to server
+    //     $.ajax({
+    //         url: `/ExcelFileUploader/ExportToExcel?filename=${encodeURIComponent(filename)}`,
+    //         type: 'POST',
+    //         contentType: 'application/json',
+    //         data: JSON.stringify(data),
+    //         success: function (response) {
+    //             Swal.fire("Success", response, "success");
+    //         },
+    //         error: function (xhr) {
+    //             const error = xhr.responseText || "Failed to export data";
+    //             Swal.fire("Error", error, "error");
+    //         }
+    //     });
+    // }
+
 
 </script>
 

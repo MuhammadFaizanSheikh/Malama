@@ -137,7 +137,7 @@
 
 
     <div class="d-flex justify-content-center my-3 button-container">
-        <button id="addRowButton" class="btn btn-secondary d-none">Add Row</button>
+        <button id="addRowButton" class="btn btn-secondary d-none">Add Walk-In Service Member</button>
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
@@ -213,8 +213,10 @@
                 const aoa = [];
 
                 // Extract rows from table manually
-                for (let row of originalTable.rows) {
+                for (let rowIndex = 0; rowIndex < originalTable.rows.length; rowIndex++) {
+                    const row = originalTable.rows[rowIndex];
                     const rowData = [];
+
                     for (let i = 0; i < row.cells.length - 1; i++) { // skip last column
                         let cellText = row.cells[i].innerText || row.cells[i].textContent;
                         if (i === getBarcodeColumnIndex(originalTable)) {
@@ -223,6 +225,14 @@
                         }
                         rowData.push(cellText);
                     }
+
+                    // Add new column
+                    if (rowIndex === 0) {
+                        rowData.push("Walk-In Service Member"); // Header row
+                    } else {
+                        rowData.push("No"); // Data rows
+                    }
+
                     aoa.push(rowData);
                 }
 
