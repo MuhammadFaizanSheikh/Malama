@@ -8,7 +8,7 @@
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
-    "Checked Out By", "Checked In Time", "Checked Out Time","Walk-In Service Member"
+    "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
 ];
 
 const tableToKeysIndexMap = [
@@ -156,13 +156,13 @@ function editRow(button) {
 //for edit
 const calendarIndexes = [13];
 const dropdownIndexes = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-const readOnlyIndexes = [ 7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
+const readOnlyIndexes = [7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
 const multilineTextbox = [62];
 
 //for add
 const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
 const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
-const tableDataFieldsForAdd = [61, 64, 65, 66, 67,68,69,70,71];
+const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
 
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
@@ -478,7 +478,7 @@ function populateModalForAdd(data) {
                                 <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
                             </div>
                         `;
-            } 
+            }
             else if (calendarIndexes.includes(keys.indexOf(key))) {
                 let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
                 inputHtml = `
@@ -548,7 +548,7 @@ function populateModalForAdd(data) {
                                 `;
                 }
             }
-           
+
 
             // Default text field
             else {
@@ -929,16 +929,13 @@ function saveChangesButton() {
     //let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
-    const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
-    const checkedInIndex = keys.indexOf('Checked In');
-    const checkedOutIndex = keys.indexOf('Checked Out');
-    const walkinSMIndex = keys.indexOf('Walk-In Service Member');
     if (isAddingNewRow) {
         // Initialize a full row with empty values
         const fullRowData = Array(keys.length).fill('');
 
         // set sm id counter in index 0 (for edit mode)
         smIdCounter++;
+        const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
         fullRowData[smIdIndex] = smIdCounter.toString();
 
         if (last4Index !== -1 && fullSsnValue) {
@@ -954,9 +951,29 @@ function saveChangesButton() {
             }
         });
 
+        const checkedInIndex = keys.indexOf('Checked In');
+        const checkedOutIndex = keys.indexOf('Checked Out');
+
         fullRowData[checkedInIndex] = $('#checkedIn').val();
         fullRowData[checkedOutIndex] = $('#checkedOut').val();
+
+        const walkinSMIndex = keys.indexOf('Walk-In Service Member');
         fullRowData[walkinSMIndex] = 'Yes';
+
+        const table = $('#previewTable').DataTable();
+        const barcodeIndex = keys.indexOf('Barcode');
+        const barcodeValue = table.cell(0, barcodeIndex).data();
+
+        let finalBarcodeValue = '';
+
+        if (barcodeValue && barcodeValue.includes('-')) {
+            finalBarcodeValue = barcodeValue.split('-')[0] + '-' + smIdCounter.toString().padStart(5, '0');
+        } else {
+            finalBarcodeValue = barcodeValue + '-' + smIdCounter.toString().padStart(5, '0');
+        }
+
+        fullRowData[barcodeIndex] = finalBarcodeValue;
+
 
         $('#previewTable').DataTable().row.add(fullRowData).draw(false);
         walkInServiceMemberCount++;
