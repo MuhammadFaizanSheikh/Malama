@@ -512,12 +512,12 @@
                         fullRowData[barcodeIndex] = `${originalBarcode}-${smIdPadded}`; // Append formatted SM ID
                     }
 
-                    let actionButtons = `
-                                <button class="btn mr-2" onclick="editRow(this)">Edit</button>
-                                <button class="btn mr-2 btn-print">Print</button>
-                                <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
-                            `;
-                    fullRowData.push(actionButtons);
+                    // let actionButtons = `
+                    //             <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                    //             <button class="btn mr-2 btn-print">Print</button>
+                    //             <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
+                    //         `;
+                    // fullRowData.push(actionButtons);
 
                     let fullNameIndex = Object.keys(row).indexOf("FULL NAME");
                     if (row["FULL NAME"] === "" || row["FULL NAME"] === null) {
@@ -556,7 +556,14 @@
                             { title: 'Checked Out By' },
                             { title: 'Checked In Time' },
                             { title: 'Checked Out Time' },
-                            { title: 'Actions' }
+                              { title: 'Actions', data: null,
+                            orderable: false,
+                            render: function () {
+                                return `
+                        <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
+                            <button class="btn mr-2 btn-print">Print</button>
+                    `;
+                            }}
                         ]),
                         scrollY: 400,
                         scrollX: true,
