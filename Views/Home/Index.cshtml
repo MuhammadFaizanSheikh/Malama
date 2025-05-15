@@ -180,6 +180,11 @@
         <script>
             window.isCheckInOutPage = false;
 
+               $(window).on('resize', function () {
+    $('#previewTable').DataTable().columns.adjust().draw();
+});
+
+
             document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
             function clearPreview() {

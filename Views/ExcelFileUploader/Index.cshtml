@@ -132,6 +132,11 @@
     let smIdCounter = null;
     let walkInServiceMemberCount = 0;
 
+       $(window).on('resize', function () {
+    $('#previewTable').DataTable().columns.adjust().draw();
+});
+
+
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
         if (!file) return;
