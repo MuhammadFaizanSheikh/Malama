@@ -142,7 +142,7 @@ let isAddingNewRow = false;
 function editRow(button) {
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
     const rowData = {};
-
+    isAddingNewRow = false;
     // Correct mapping: use tableToKeysIndexMap to map the table column index to the keys array
     tableToKeysIndexMap.forEach((tableColIndex, keysIndex) => {
         const key = keys[tableColIndex];  // Get the correct key from the keys array
@@ -163,6 +163,7 @@ const multilineTextbox = [62];
 const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
 const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
 const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
+const customFields = [48, 49, 50, 51];
 
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
@@ -246,105 +247,134 @@ function populateModalForEdit(data) {
             let keyIndex = keys.indexOf(key);
             let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
+
             if (key === 'PANO Needed') {
                 if (value.trim().toLowerCase() === "n/a") {
                     inputHtml = `
-            <div class="form-group col-lg-2">
-                <label>${key}</label>
-                <select class="form-control" name="${key}" ${textColor}>
-                    <option value="NEEDED">NEEDED</option>
-                    <option value="N/A" selected>N/A</option>
-                </select>
-            </div>`;
+                    <div class="form-group col-lg-2">
+                        <label>${key}</label>
+                        <select class="form-control" name="${key}" ${textColor}>
+                            <option value="NEEDED">NEEDED</option>
+                            <option value="N/A" selected>N/A</option>
+                        </select>
+                    </div>`;
                 } else {
                     let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
                     inputHtml = `
-            <div class="form-group col-lg-2">
-                <label>${key}</label>
-                <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
-            </div>`;
+                    <div class="form-group col-lg-2">
+                        <label>${key}</label>
+                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                    </div>`;
                 }
             }
-            else if (key === 'LIPID PANEL' || key === 'EKG') {
-                if (value.trim().toLowerCase() === "n/a") {
-                    inputHtml = `
+            else if (customFields.includes(keys.indexOf(key))) {
+                if (!window.isCheckInOutPage) {
+
+                    if (key === 'LIPID PANEL' || key === 'EKG') {
+                        if (value.trim().toLowerCase() === "n/a") {
+                            inputHtml = `
                                                     <div class="form-group col-lg-2">
                                                                 <label>${key}</label>
                                                                             <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
                                                             </div>`;
 
-                } else {
-                    let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                    inputHtml = `
+                        } else {
+                            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                            inputHtml = `
                                                             <div class="form-group col-lg-2">
                                                                 <label>${key}</label>
                                                                 <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                                             </div>`;
-                }
-            }
-            else if (key === 'Cholesterol / HDL Cholesterol') {
-                if (value.trim().toLowerCase() === "n/a") {
-                    inputHtml = `<div class="form-group col-lg-2">
+                        }
+                    }
+                    else if (key === 'Cholesterol / HDL Cholesterol') {
+                        if (value.trim().toLowerCase() === "n/a") {
+                            inputHtml = `<div class="form-group col-lg-2">
                                                                             <label>${key}</label>
                                                                                         <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
                                                                         </div>`;
 
-                } else {
-                    inputHtml = `<div class="form-group col-lg-2">
+                        } else {
+                            inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
                                                                                                     <input type="text" class="form-control" name="${key}" value="${value.toLowerCase() === 'needed' ? '' : value}" ${readOnly} ${textColor} />
                                                                                     </div>`;
-                }
-            }
-            else if (key === 'Framingham') {
-                if (value.trim().toLowerCase() === "n/a") {
-                    inputHtml = `<div class="form-group col-lg-2">
+                        }
+                    }
+                    else if (key === 'Framingham') {
+                        if (value.trim().toLowerCase() === "n/a") {
+                            inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
                                                                                                                 <input type="text" class="form-control decimal-input" name="${key}" value="${value}" readonly ${textColor} />
                                                                                     </div>`;
 
-                } else {
-                    inputHtml = `<div class="form-group col-lg-2">
+                        } else {
+                            inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
                                                                                             <input type="number" class="form-control decimal-input" name="${key}"
                                                                                             value="${value.toLowerCase() === 'needed' ? '' : value}"
                                                                                             step="0.1" inputmode="decimal" ${readOnly} ${textColor} />
 
                                                                                     </div>`;
+                        }
+                    }
+                }
+                else {
+                    const dropdownOptions = [
+                        { value: "N/A", label: "N/A" },
+                        { value: "NEEDED", label: "NEEDED" }
+                    ];
+
+                    // Build dropdown options dynamically
+                    let optionsHtml = dropdownOptions.map(option =>
+                        `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                    ).join('');
+
+                    let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
+
+                    inputHtml = `
+                                        <div class="form-group col-lg-2">
+                                            <label>${key}</label>
+                                            <select class="form-control" name="${key}" ${disabled} ${textColor}>
+
+                                                ${optionsHtml}
+                                            </select>
+                                        </div>
+                                    `;
                 }
             }
             else if (multilineTextbox.includes(keys.indexOf(key))) {
-                inputHtml = `
+            inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
                                 <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
                             </div>
                         `;
-            }
+        }
             else if (calendarIndexes.includes(keys.indexOf(key))) {
-                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                inputHtml = `
+            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+            inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                     </div>
                                 `;
-            }
-            // Dropdown field
+        }
+        // Dropdown field
             else if (dropdownIndexes.includes(keys.indexOf(key))) {
-                const dropdownOptions = dropdownOptionsMapping[key] || [
-                    { value: "NEEDED", label: "NEEDED" },
-                    { value: "N/A", label: "N/A" }
-                ];
+            const dropdownOptions = dropdownOptionsMapping[key] || [
+                { value: "N/A", label: "N/A" },
+                { value: "NEEDED", label: "NEEDED" }
+            ];
 
-                // Build dropdown options dynamically
-                let optionsHtml = dropdownOptions.map(option =>
-                    `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                ).join('');
+            // Build dropdown options dynamically
+            let optionsHtml = dropdownOptions.map(option =>
+                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+            ).join('');
 
-                let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
+            let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
 
-                inputHtml = `
+            inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -353,103 +383,103 @@ function populateModalForEdit(data) {
                                         </select>
                                     </div>
                                 `;
+        }
+        else if (key === 'Checked In' || key === 'Checked Out') {
+            if (key === 'Checked In') {
+                $("#checkedIn").val(value).trigger("change");
             }
-            else if (key === 'Checked In' || key === 'Checked Out') {
-                if (key === 'Checked In') {
-                    $("#checkedIn").val(value).trigger("change");
-                }
-                else if (key === 'Checked Out') {
-                    $("#checkedOut").val(value);
-                }
+            else if (key === 'Checked Out') {
+                $("#checkedOut").val(value);
             }
-            // Default text field
-            else {
-                inputHtml = `
+        }
+        // Default text field
+        else {
+            inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
                                     </div>
                                 `;
-            }
-
-            rowHtml += inputHtml;
-            inputCount++;
-
-            // If we have 5 fields, close the row and start a new one
-            if (inputCount % fieldsPerRow === 0) {
-                rowHtml += '</div><div class="row">';
-            }
-        });
-
-        if (inputCount % fieldsPerRow !== 0) {
-            const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
-            for (let i = 0; i < emptyDivsNeeded; i++) {
-                rowHtml += '<div class="form-group col-lg-2"></div>';
-            }
         }
 
-        rowHtml += '</div>';
-        modalContent.append(rowHtml);
+        rowHtml += inputHtml;
+        inputCount++;
 
-        // Attach input validation listeners to all text fields
-        modalContent.find('input[type="text"]').on('input', function () {
-            const value = $(this).val();
-            validateInput(this, value);
-        });
+        // If we have 5 fields, close the row and start a new one
+        if (inputCount % fieldsPerRow === 0) {
+            rowHtml += '</div><div class="row">';
+        }
+    });
+
+    if (inputCount % fieldsPerRow !== 0) {
+        const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+        for (let i = 0; i < emptyDivsNeeded; i++) {
+            rowHtml += '<div class="form-group col-lg-2"></div>';
+        }
     }
 
-    // After modal is populated, bind the event listener to the DOB field
-    const dobField = modalContent.find('input[name="DOB"]');
-    if (dobField.length > 0) {
-        dobField.on('change', function () {
-            const dobValue = $(this).val();
-            if (dobValue) {
-                handleColumnsRelatedToDob(dobValue)
-                // const age = calculateAge(dobValue); // Calculate age based on DOB
-                // updateFieldsBasedOnAge(age); // Update other fields based on the age
-            }
-        });
+    rowHtml += '</div>';
+    modalContent.append(rowHtml);
+
+    // Attach input validation listeners to all text fields
+    modalContent.find('input[type="text"]').on('input', function () {
+        const value = $(this).val();
+        validateInput(this, value);
+    });
+}
+
+// After modal is populated, bind the event listener to the DOB field
+const dobField = modalContent.find('input[name="DOB"]');
+if (dobField.length > 0) {
+    dobField.on('change', function () {
+        const dobValue = $(this).val();
+        if (dobValue) {
+            handleColumnsRelatedToDob(dobValue)
+            // const age = calculateAge(dobValue); // Calculate age based on DOB
+            // updateFieldsBasedOnAge(age); // Update other fields based on the age
+        }
+    });
+}
+
+//****************************************************This can be needed in future*************************************************/
+// const aboField = modalContent.find('select[name="ABO"]');
+// const aboNeededField = modalContent.find('select[name="ABO Needed"]');
+
+// if (aboField.length > 0 && aboNeededField.length > 0) {
+//     aboField.on('change', function () {
+//         const aboValue = $(this).val();
+//         if (aboValue === "") { // If "ABO" is blank
+//             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
+//         } else {
+//             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
+//         }
+//     });
+// }
+
+const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
+const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
+
+fieldsToCheckQuest.forEach(field => {
+    const inputField = modalContent.find(`select[name="${field}"]`);
+    if (inputField.length > 0) {
+        inputField.on('change', checkLabRequisitionField);
     }
+});
 
-    //****************************************************This can be needed in future*************************************************/
-    // const aboField = modalContent.find('select[name="ABO"]');
-    // const aboNeededField = modalContent.find('select[name="ABO Needed"]');
+fieldsToCheckLab.forEach(field => {
+    const inputField = modalContent.find(`select[name="${field}"]`);
+    if (inputField.length > 0) {
+        inputField.on('change', checkLabNeededField);
+    }
+});
 
-    // if (aboField.length > 0 && aboNeededField.length > 0) {
-    //     aboField.on('change', function () {
-    //         const aboValue = $(this).val();
-    //         if (aboValue === "") { // If "ABO" is blank
-    //             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
-    //         } else {
-    //             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
-    //         }
-    //     });
-    // }
-
-    const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
-    const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
-    const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
-
-    fieldsToCheckQuest.forEach(field => {
-        const inputField = modalContent.find(`select[name="${field}"]`);
-        if (inputField.length > 0) {
-            inputField.on('change', checkLabRequisitionField);
-        }
-    });
-
-    fieldsToCheckLab.forEach(field => {
-        const inputField = modalContent.find(`select[name="${field}"]`);
-        if (inputField.length > 0) {
-            inputField.on('change', checkLabNeededField);
-        }
-    });
-
-    fieldsToCheckImmunization.forEach(field => {
-        const inputField = modalContent.find(`select[name="${field}"]`);
-        if (inputField.length > 0) {
-            inputField.on('change', checkIMMNeededField);
-        }
-    });
+fieldsToCheckImmunization.forEach(field => {
+    const inputField = modalContent.find(`select[name="${field}"]`);
+    if (inputField.length > 0) {
+        inputField.on('change', checkIMMNeededField);
+    }
+});
 }
 
 function populateModalForAdd(data) {
@@ -491,8 +521,8 @@ function populateModalForAdd(data) {
             // Dropdown field
             else if (dropdownIndexesForAdd.includes(keys.indexOf(key))) {
                 const dropdownOptions = dropdownOptionsMapping[key] || [
-                    { value: "NEEDED", label: "NEEDED" },
-                    { value: "N/A", label: "N/A" }
+                    { value: "N/A", label: "N/A" },
+                    { value: "NEEDED", label: "NEEDED" }
                 ];
 
                 // Build dropdown options dynamically
@@ -1235,19 +1265,44 @@ function handleColumnsRelatedToDob(dob) {
         over44Field.value = ageWithGrace >= 45 ? "YES" : "NO";
     }
 
-    if (!window.isCheckInOutPage) {
-        const nearVisionField = document.querySelector('select[name="NEAR VISION Needed"]');
-        if (nearVisionField) {
-            nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+    const nearVisionField = document.querySelector('[name="NEAR VISION Needed"]');
+    if (nearVisionField) {
+        nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+    }
+
+    const lipidNeededField = document.querySelector('[name="Lipid Needed"]');
+    const lipidPanelField = document.querySelector('[name="LIPID PANEL"]');
+    const cholesterolField = document.querySelector('[name="Cholesterol / HDL Cholesterol"]');
+    const ekgField = document.querySelector('[name="EKG"]');
+    const ekgNeededField = document.querySelector('[name="EKG NEEDED"]');
+    const framinghamField = document.querySelector('[name="Framingham"]');
+
+    debugger;
+
+    if (isAddingNewRow || window.isCheckInOutPage) {
+        const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
+
+        if (lipidNeededField) {
+            lipidNeededField.value = valueForAge;
         }
-
-        const lipidNeededField = document.querySelector('select[name="Lipid Needed"]');
-        const lipidPanelField = document.querySelector('input[name="LIPID PANEL"]');
-        const cholesterolField = document.querySelector('input[name="Cholesterol / HDL Cholesterol"]');
-        const ekgField = document.querySelector('input[name="EKG"]');
-        const ekgNeededField = document.querySelector('input[name="EKG NEEDED"]');
-        const framinghamField = document.querySelector('input[name="Framingham"]');
-
+        if (lipidPanelField) {
+            lipidPanelField.value = valueForAge;
+        }
+        if (cholesterolField) {
+            cholesterolField.value = valueForAge;
+        }
+        if (ekgField) {
+            ekgField.value = valueForAge;
+        }
+        if (ekgNeededField) {
+            ekgNeededField.value = valueForAge;
+        }
+        if (framinghamField) {
+            framinghamField.value = valueForAge; // Set empty value
+        }
+    }
+    else
+    {
         const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
 
         if (lipidNeededField) {
