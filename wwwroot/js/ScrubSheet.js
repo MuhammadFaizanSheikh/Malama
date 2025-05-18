@@ -156,7 +156,7 @@ function editRow(button) {
 
 //for edit
 const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
+const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const tableDataFieldsForEdit = [61];
 
 //for add
