@@ -7,7 +7,7 @@
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
-    "EventDate", "Event End Date", "EventID", "Vision_Win", "Dental_Win", "PHA_Win", "HIV_Win", "Hearing_WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
+    "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
     "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
 ];
 
@@ -31,11 +31,11 @@ const tableToKeysIndexMap = [
     keys.indexOf("Over 44"),        // Over 44
     keys.indexOf("EventDate"),      // EventDate
     keys.indexOf("Event End Date"), // Event End Date
-    keys.indexOf("Vision_Win"),     // Vision_Win
-    keys.indexOf("PHA_Win"),        // PHA_Win
-    keys.indexOf("Hearing_WIN"),    // Hearing_WIN
-    keys.indexOf("Dental_Win"),     // Dental_Win
-    keys.indexOf("HIV_Win"),        // HIV_Win
+    keys.indexOf("Vision Win"),     // Vision_Win
+    keys.indexOf("PHA Win"),        // PHA_Win
+    keys.indexOf("Hearing WIN"),    // Hearing_WIN
+    keys.indexOf("Dental Win"),     // Dental_Win
+    keys.indexOf("HIV Win"),        // HIV_Win
     keys.indexOf("Notes"),          // Notes
 
     // Dental Information
@@ -107,8 +107,8 @@ const categories = {
         "FULL NAME", "AGE", "UIC", "FULL SSN", "SEX", "MRC", "DOD ID", "MOS", "DOB", "RANK", "AGR", "OVER 40"
     ],
     "Taskforce Information": [
-        "TaskForce", "EventID", "Over 44", "EventDate", "Event End Date", "Vision_Win", "PHA_Win",
-        "Hearing_WIN", "Dental_Win", "HIV_Win", "Notes"
+        "TaskForce", "EventID", "Over 44", "EventDate", "Event End Date", "Vision Win", "PHA Win",
+        "Hearing WIN", "Dental Win", "HIV Win", "Notes"
     ],
     "Dental Information": [
         "Dental Due", "PANO Needed", "Dental Needed", "Dental Exam", "BWX Needed", "DRC"
@@ -135,7 +135,7 @@ const categories = {
 };
 
 
-
+let smIdEditing = 0;
 let currentRow;
 let isAddingNewRow = false;
 
@@ -149,21 +149,26 @@ function editRow(button) {
         rowData[key] = currentRow.find('td').eq(tableColIndex).text().trim() || '';  // Get the value from the correct table column
     });
 
+    smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
     populateModalForEdit(rowData);  // Pass the mapped data to populateModal
     $('#editModal').modal('show');  // Show the modal
 }
 
 //for edit
-const calendarIndexes = [13];
-const dropdownIndexes = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-const readOnlyIndexes = [7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
-const multilineTextbox = [62];
+const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
+const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 61, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
+const tableDataFieldsForEdit = [61];
 
 //for add
-const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 40, 45, 35, 43, 44, 54];
-const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 36, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
+const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34,36, 40, 45, 35, 43, 44, 54];
+const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
 const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
-const customFields = [48, 49, 50, 51];
+const customFieldsForAdd = [18, 48, 49, 50, 51];
+
+//for edit and add both
+const calendarIndexes = [13];
+const multilineTextbox = [62];
+
 
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
@@ -245,29 +250,35 @@ function populateModalForEdit(data) {
             const value = data[key] || '';
             let inputHtml = '';
             let keyIndex = keys.indexOf(key);
-            let readOnly = readOnlyIndexes.includes(keys.indexOf(key)) ? 'readonly' : '';
+            let readOnly = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
 
-            if (key === 'PANO Needed') {
-                if (value.trim().toLowerCase() === "n/a") {
-                    inputHtml = `
+
+            if (tableDataFieldsForEdit.includes(keys.indexOf(key)))
+            {
+                const table = $('#previewTable').DataTable();
+
+                // Collect distinct TaskForce values from column index 61
+                const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[61]).filter(Boolean))];
+
+                // Add default option first
+                let optionsHtml = `<option value="">---Select Taskforce---</option>`;
+
+                // Add dynamic options
+                optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
+
+                let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
+
+                inputHtml = `
                     <div class="form-group col-lg-2">
                         <label>${key}</label>
-                        <select class="form-control" name="${key}" ${textColor}>
-                            <option value="NEEDED">NEEDED</option>
-                            <option value="N/A" selected>N/A</option>
+                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                            ${optionsHtml}
                         </select>
-                    </div>`;
-                } else {
-                    let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                    inputHtml = `
-                    <div class="form-group col-lg-2">
-                        <label>${key}</label>
-                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
-                    </div>`;
-                }
+                    </div>
+                    `;
             }
-            else if (customFields.includes(keys.indexOf(key))) {
+            else if (customFieldsForAdd.includes(keys.indexOf(key))) {
                 if (!window.isCheckInOutPage) {
 
                     if (key === 'LIPID PANEL' || key === 'EKG') {
@@ -318,6 +329,25 @@ function populateModalForEdit(data) {
                                                                                     </div>`;
                         }
                     }
+                    if (key === 'PANO Needed') {
+                        if (value.trim().toLowerCase() === "n/a") {
+                            inputHtml = `
+                    <div class="form-group col-lg-2">
+                        <label>${key}</label>
+                        <select class="form-control" name="${key}" ${textColor}>
+                            <option value="NEEDED">NEEDED</option>
+                            <option value="N/A" selected>N/A</option>
+                        </select>
+                    </div>`;
+                        } else {
+                            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                            inputHtml = `
+                    <div class="form-group col-lg-2">
+                        <label>${key}</label>
+                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                    </div>`;
+                        }
+                    }
                 }
                 else {
                     const dropdownOptions = [
@@ -330,7 +360,7 @@ function populateModalForEdit(data) {
                         `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
                     ).join('');
 
-                    let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
+                    let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
 
                     inputHtml = `
                                         <div class="form-group col-lg-2">
@@ -361,7 +391,7 @@ function populateModalForEdit(data) {
                                 `;
         }
         // Dropdown field
-            else if (dropdownIndexes.includes(keys.indexOf(key))) {
+            else if (dropdownIndexesForEdit.includes(keys.indexOf(key))) {
             const dropdownOptions = dropdownOptionsMapping[key] || [
                 { value: "N/A", label: "N/A" },
                 { value: "NEEDED", label: "NEEDED" }
@@ -372,7 +402,7 @@ function populateModalForEdit(data) {
                 `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
             ).join('');
 
-            let disabled = readOnlyIndexes.includes(keys.indexOf(key)) ? 'disabled' : '';
+                let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
 
             inputHtml = `
                                     <div class="form-group col-lg-2">
@@ -801,7 +831,7 @@ $(document).on("input", ".decimal-input", function () {
 
 
 const validationRules = {
-    "FULL NAME": { type: "alphanumeric", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FULL NAME
+    "FULL NAME": { type: "alpha", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FULL NAME
     "FULL SSN": { type: "numeric", format: "xxx-xx-xxxx", maxLength: 11 }, // SSN field
     "DOD ID": { type: "numeric", maxLength: 10 },
     //"RANK": { type: "alphanumeric", uppercase: true, maxLength: 3 },
@@ -823,23 +853,27 @@ function validateInput(field, value) {
             $(field).val(value);
         }
 
-        if (inputName === "FULL NAME" && rules.allowSpecialCharacters) {
-            $(field).val(value);
-        }
+        //if (inputName === "FULL NAME" && rules.allowSpecialCharacters) {
+        //    $(field).val(value);
+        //}
 
-        if (rules.type === "alphanumeric" && inputName !== "FULL NAME") {
-            if (!/^[A-Z0-9]*$/.test(value)) {
-                $(field).val(value.replace(/[^A-Z0-9]/g, '')); // Remove non-alphanumeric characters
+        if (rules.type === "alpha") {
+            // Remove lowercase letters and digits
+            let cleanedValue = value.replace(/[a-z0-9]/g, '');
+
+            if (cleanedValue !== value) {
+                $(field).val(cleanedValue);
             }
 
-            // Restrict to max length for alphanumeric fields
-            if (rules.maxLength && value.length > rules.maxLength) {
-                $(field).val(value.slice(0, rules.maxLength)); // Trim to max length
+            // Restrict to max length
+            if (rules.maxLength && cleanedValue.length > rules.maxLength) {
+                $(field).val(cleanedValue.slice(0, rules.maxLength));
                 return false;
             } else {
                 $(field).removeClass('is-invalid');
             }
         }
+
 
         // Check for numeric fields (e.g., LAST 4, DOD ID, AGE, PULHES)
         if (rules.type === "numeric") {
@@ -959,6 +993,13 @@ function saveChangesButton() {
     //let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
+
+    debugger;
+    if (isDuplicateDodId(updatedData, isAddingNewRow, keys)) {
+        alert('This DOD ID already exists in this sheet.');
+        return;
+    }
+
     if (isAddingNewRow) {
         // Initialize a full row with empty values
         const fullRowData = Array(keys.length).fill('');
@@ -1014,6 +1055,7 @@ function saveChangesButton() {
         }
     }
     else {
+
         if (last4Index !== -1 && fullSsnValue) {
             const updatedLast4 = fullSsnValue.slice(-4);
             updatedData['LAST 4'] = updatedLast4;
@@ -1043,6 +1085,38 @@ function saveChangesButton() {
         UpdateExcelFile();
     }
 
+}
+
+function isDuplicateDodId(updatedData, isAddingNewRow, keys) {
+    const table = $('#previewTable').DataTable();
+    const dodIdToCheck = updatedData['DOD ID'];
+    const dodIdColumnIndex = keys.indexOf('DOD ID');
+    const smIdColumnIndex = keys.indexOf('SM ID');
+
+    let isDuplicate = false;
+
+    table.rows().every(function () {
+        const rowData = this.data(); // rowData is an array, not an object
+
+        const dodId = rowData[dodIdColumnIndex];
+        const smId = rowData[smIdColumnIndex];
+
+        if (isAddingNewRow) {
+            // For new rows, just compare DOD ID
+            if (dodId === dodIdToCheck) {
+                isDuplicate = true;
+                return false; // break loop
+            }
+        } else {
+            // For editing, skip same SM ID row
+            if (smId !== smIdEditing && dodId === dodIdToCheck) {
+                isDuplicate = true;
+                return false; // break loop
+            }
+        }
+    });
+
+    return isDuplicate;
 }
 
 

@@ -490,11 +490,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 "EventDate",
                 "Event End Date",
                 "EventID",
-                "Vision_Win",
-                "Dental_Win",
-                "PHA_Win",
-                "HIV_Win",
-                "Hearing_WIN",
+                "Vision Win",
+                "Dental Win",
+                "PHA Win",
+                "HIV Win",
+                "Hearing WIN",
                 "Barcode"
                 };
         }
@@ -571,11 +571,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 { "EventDate", "EventDate" },
                 { "Event End Date", "Event End Date" },
                 { "EventID", "EventID" },
-                { "Vision_Win", "Vision_Win" },
-                { "Dental_Win", "Dental_Win" },
-                { "PHA_Win", "PHA_Win" },
-                { "HIV_Win", "HIV_Win" },
-                { "Hearing_WIN", "Hearing_WIN" },
+                { "Vision Win", "Vision Win" },
+                { "Dental Win", "Dental Win" },
+                { "PHA Win", "PHA Win" },
+                { "HIV Win", "HIV Win" },
+                { "Hearing WIN", "Hearing WIN" },
                 { "Barcode", "Barcode" }
             };
         }
@@ -1143,20 +1143,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (!parentTable.Columns.Contains("EventID"))
                 parentTable.Columns.Add("EventID", typeof(string));
 
-            if (!parentTable.Columns.Contains("Vision_Win"))
-                parentTable.Columns.Add("Vision_Win", typeof(string));
+            if (!parentTable.Columns.Contains("Vision Win"))
+                parentTable.Columns.Add("Vision Win", typeof(string));
 
-            if (!parentTable.Columns.Contains("Dental_Win"))
-                parentTable.Columns.Add("Dental_Win", typeof(string));
+            if (!parentTable.Columns.Contains("Dental Win"))
+                parentTable.Columns.Add("Dental Win", typeof(string));
 
-            if (!parentTable.Columns.Contains("PHA_Win"))
-                parentTable.Columns.Add("PHA_Win", typeof(string));
+            if (!parentTable.Columns.Contains("PHA Win"))
+                parentTable.Columns.Add("PHA Win", typeof(string));
 
-            if (!parentTable.Columns.Contains("HIV_Win"))
-                parentTable.Columns.Add("HIV_Win", typeof(string));
+            if (!parentTable.Columns.Contains("HIV Win"))
+                parentTable.Columns.Add("HIV Win", typeof(string));
 
-            if (!parentTable.Columns.Contains("Hearing_WIN"))
-                parentTable.Columns.Add("Hearing_WIN", typeof(string));
+            if (!parentTable.Columns.Contains("Hearing WIN"))
+                parentTable.Columns.Add("Hearing WIN", typeof(string));
         }
 
         private void HandleVisionFile(DataRow parentRow, DateTime visionDate)
@@ -1593,49 +1593,49 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentRow["Event End Date"] = "";
             }
 
-            if (parentRow.Table.Columns.Contains("Vision_Win"))
+            if (parentRow.Table.Columns.Contains("Vision Win"))
             {
-                parentRow["Vision_Win"] = vision;
+                parentRow["Vision Win"] = vision;
             }
             else
             {
-                parentRow["Vision_Win"] = "";
+                parentRow["Vision Win"] = "";
             }
 
-            if (parentRow.Table.Columns.Contains("Dental_Win"))
+            if (parentRow.Table.Columns.Contains("Dental Win"))
             {
-                parentRow["Dental_Win"] = dental;
+                parentRow["Dental Win"] = dental;
             }
             else
             {
-                parentRow["Dental_Win"] = "";
+                parentRow["Dental Win"] = "";
             }
 
-            if (parentRow.Table.Columns.Contains("PHA_Win"))
+            if (parentRow.Table.Columns.Contains("PHA Win"))
             {
-                parentRow["PHA_Win"] = pha;
+                parentRow["PHA Win"] = pha;
             }
             else
             {
-                parentRow["PHA_Win"] = "";
+                parentRow["PHA Win"] = "";
             }
 
-            if (parentRow.Table.Columns.Contains("HIV_Win"))
+            if (parentRow.Table.Columns.Contains("HIV Win"))
             {
-                parentRow["HIV_Win"] = hiv;
+                parentRow["HIV Win"] = hiv;
             }
             else
             {
-                parentRow["HIV_Win"] = "";
+                parentRow["HIV Win"] = "";
             }
 
-            if (parentRow.Table.Columns.Contains("Hearing_WIN"))
+            if (parentRow.Table.Columns.Contains("Hearing WIN"))
             {
-                parentRow["Hearing_WIN"] = hearing;
+                parentRow["Hearing WIN"] = hearing;
             }
             else
             {
-                parentRow["Hearing_WIN"] = "";
+                parentRow["Hearing WIN"] = "";
             }
 
             if (parentRow.Table.Columns.Contains("EventID"))
