@@ -37,21 +37,21 @@
                     <input type="file" id="excelFile" class="form-control-file" accept=".xlsx,.xls" />
                 </div>
                 @* <div class="col-auto">
-                    <input type="text" id="filePathDisplay" class="form-control eve000000000121 48yu44u u N u40 k+nt-input" placeholder="No file selected" readonly />
+                <input type="text" id="filePathDisplay" class="form-control eve000000000121 48yu44u u N u40 k+nt-input" placeholder="No file selected" readonly />
                 </div> *@
             </div>
-         </div>
+        </div>
     </div>
 
     <table id="eventSummaryTable" class="display nowrap table table-bordered" style="display: none;">
         <thead>
-            <tr>
-                <th>Event Summary</th>
-                <th>Count</th>
+            <tr bgcolor="#7b83eb">
+                <th style="color: white">Event Summary</th>
+                <th style="color: white">Count</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
+            <tr bgcolor="ffffff">
                 <td>Total number of SM</td>
                 <td id="totalSmColumn">0</td>
             </tr>
@@ -59,7 +59,7 @@
                 <td>Number of SM Checked In</td>
                 <td id="checkedInColumn">0</td>
             </tr>
-            <tr>
+            <tr bgcolor="ffffff">
                 <td>Number of SM Checked Out</td>
                 <td id="checkedOutColumn">0</td>
             </tr>
@@ -132,10 +132,9 @@
     let smIdCounter = null;
     let walkInServiceMemberCount = 0;
 
-       $(window).on('resize', function () {
-    $('#previewTable').DataTable().columns.adjust().draw();
-});
-
+    $(window).on('resize', function () {
+        $('#previewTable').DataTable().columns.adjust().draw();
+    });
 
     $("#excelFile").on("change", function (e) {
         const file = e.target.files[0];
@@ -160,7 +159,7 @@
                     .map((header, index) => ({ header, index }))
                     .filter(col =>
                         col.header &&
-                        col.header.toString().trim() !== "" 
+                        col.header.toString().trim() !== ""
                         // &&
                         // col.header.toString().trim().toLowerCase() !== "walk-in service member"
                     );
@@ -180,6 +179,12 @@
                 headerRow += `<th>Actions</th>`;
                 headerRow += "</tr>";
                 $("#previewTable thead").append(headerRow);
+
+                $("#previewTable thead th").css({
+                    "background-color": "rgba(120, 130, 221, 1)",
+                    "color": "white" // optional: for better contrast
+                });
+
 
                 let formattedData = [];
                 for (let i = 1; i < json.length; i++) {
@@ -222,9 +227,9 @@
                             orderable: false,
                             render: function () {
                                 return `
-                    <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
-                        <button class="btn mr-2 btn-print">Print</button>
-                `;
+                            <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
+                                <button class="btn mr-2 btn-print">Print</button>
+                        `;
                             }
                         }
                     ],
@@ -247,7 +252,7 @@
                         }
                     }
 
-                      
+
                 });
 
                 RenderUpdatedEventSummaryTable();
@@ -353,101 +358,10 @@
             }
         });
     }
-
-    // function UpdateExcelFile() {
-    //     const table = $('#previewTable').DataTable();
-    //     const data = [];
-
-    //     // Get column headers including hidden ones, excluding "Actions"
-    //     const headers = table.columns().header().toArray()
-    //         .map(th => th.innerText.trim())
-    //         .filter(header => header && header !== "Actions");
-
-    //     // Loop through all rows including hidden columns
-    //     // table.rows().every(function () {
-    //     //     const rowData = this.data();
-    //     //     const rowObject = {};
-
-    //     //     headers.forEach((header, i) => {
-    //     //         rowObject[header] = rowData[i];
-    //     //     });
-
-    //     //     data.push(rowObject);
-    //     // });
-    //     debugger;
-    //     // table.rows().every(function () {
-    //     //     const rowObject = {};
-    //     //     const cells = this.nodes().to$().find('td'); // Get actual DOM cells
-    //     //     headers.forEach((header, i) => {
-    //     //         // Use text input/textarea value if present, otherwise fallback to innerText
-    //     //         const input = $(cells[i]).find('input, textarea, select');
-    //     //         if (input.length > 0) {
-    //     //             //rowObject[header] = input.val()?.trim() ?? "";
-    //     //         } else {
-    //     //             rowObject[header] = $(cells[i]).text().trim();
-    //     //         }
-    //     //     });
-    //     //     data.push(rowObject);
-    //     // });
-
-    //     table.rows().every(function () {
-    //         const rowObject = {};
-    //         const rowNode = this.node(); // DOM node for the row
-    //         const cells = rowNode.querySelectorAll('td');
-
-    //         headers.forEach((header, i) => {
-    //             const cell = cells[i];
-    //             let value = "";
-
-    //             // Check for input/select/textarea
-    //             const input = cell.querySelector('input, textarea, select');
-    //             if (input) {
-    //                 value = input.value.trim();
-    //             } else {
-    //                 // Ignore buttons inside the cell
-    //                 const clonedCell = cell.cloneNode(true);
-    //                 const buttons = clonedCell.querySelectorAll('button, a');
-    //                 buttons.forEach(btn => btn.remove());
-    //                 value = clonedCell.innerText.trim();
-    //             }
-
-    //             rowObject[header] = value;
-    //         });
-
-    //         data.push(rowObject);
-    //     });
-
-
-
-    //     // Get filename
-    //     const fileInput = document.getElementById("excelFile");
-    //     const filename = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : "";
-
-    //     if (!filename) {
-    //         Swal.fire("Error", "Filename not found. Please upload a file first.", "error");
-    //         return;
-    //     }
-    //     // Send to server
-    //     $.ajax({
-    //         url: `/ExcelFileUploader/ExportToExcel?filename=${encodeURIComponent(filename)}`,
-    //         type: 'POST',
-    //         contentType: 'application/json',
-    //         data: JSON.stringify(data),
-    //         success: function (response) {
-    //             Swal.fire("Success", response, "success");
-    //         },
-    //         error: function (xhr) {
-    //             const error = xhr.responseText || "Failed to export data";
-    //             Swal.fire("Error", error, "error");
-    //         }
-    //     });
-    // }
-
-
 </script>
 
 <!-- Styles -->
 <style>
-    
+
 </style>
 <script src="~/js/ScrubSheet.js"></script>

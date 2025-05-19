@@ -180,10 +180,10 @@
         <script>
             window.isCheckInOutPage = false;
 
-               $(window).on('resize', function () {
-    $('#previewTable').DataTable().columns.adjust().draw();
-});
 
+            $(window).on('resize', function () {
+                $('#previewTable').DataTable().columns.adjust().draw();
+            });
 
             document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
@@ -209,6 +209,7 @@
 
 
             document.getElementById('generateExcelButton').addEventListener('click', function () {
+                $('#previewTable').DataTable().search('').draw(); // clear search
                 const originalTable = document.getElementById('previewTable');
                 if (!originalTable) {
                     console.error('Table element not found.');
@@ -386,11 +387,11 @@
                 table.style.width = 'auto'; // Set width to auto for left alignment
                 const headerRow = document.createElement('tr');
                 headerRow.innerHTML = `
-                            <th style="text-align:left; padding-right: 200px;">Report</th>
-                            <th style="text-align:left; padding-right: 40px;">Row No</th>
-                            <th style="text-align:left; padding-right: 40px;">Column</th>
-                            <th style="text-align:left;">Error</th>
-                        `;
+                                                    <th style="text-align:left; padding-right: 200px;">Report</th>
+                                                    <th style="text-align:left; padding-right: 40px;">Row No</th>
+                                                    <th style="text-align:left; padding-right: 40px;">Column</th>
+                                                    <th style="text-align:left;">Error</th>
+                                                `;
                 table.appendChild(headerRow);
 
                 const hr = document.createElement('hr');
@@ -402,11 +403,11 @@
                 errors.forEach(error => {
                     const errorRow = document.createElement('tr');
                     errorRow.innerHTML = `
-                                <td>${error.FileName}</td>
-                                <td>${error.Row}</td>
-                                <td>${error.Column}</td>
-                                <td>${error.Error}</td>
-                            `;
+                                                        <td>${error.FileName}</td>
+                                                        <td>${error.Row}</td>
+                                                        <td>${error.Column}</td>
+                                                        <td>${error.Error}</td>
+                                                    `;
                     table.appendChild(errorRow);
                 });
 
@@ -475,16 +476,16 @@
                 let totalRows = filteredData.length; // Now counting only the unique rows
                 let taskforceInfoContainer = document.getElementById('taskforceInfoContainer');
                 let tableHtml = `
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Taskforce Name(s)</th>
-                                                <th>SM Count</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="taskforceBody"></tbody>
-                                    </table>
-                                `;
+                                                            <table>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Taskforce Name(s)</th>
+                                                                        <th>SM Count</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="taskforceBody"></tbody>
+                                                            </table>
+                                                        `;
 
                 if (!document.getElementById('taskforceBody')) {
                     taskforceInfoContainer.innerHTML = tableHtml;
@@ -493,9 +494,9 @@
                 let taskforceBody = document.getElementById('taskforceBody');
                 let newRow = document.createElement('tr');
                 newRow.innerHTML = `
-                                    <td>${firstTaskforceValue}</td>
-                                    <td>${totalRows}</td>
-                                `;
+                                                            <td>${firstTaskforceValue}</td>
+                                                            <td>${totalRows}</td>
+                                                        `;
                 taskforceBody.appendChild(newRow);
 
                 let formattedData = filteredData.map((row, index) => {
@@ -513,10 +514,10 @@
                     }
 
                     // let actionButtons = `
-                    //             <button class="btn mr-2" onclick="editRow(this)">Edit</button>
-                    //             <button class="btn mr-2 btn-print">Print</button>
-                    //             <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
-                    //         `;
+                    //                         <button class="btn mr-2" onclick="editRow(this)">Edit</button>
+                    //                         <button class="btn mr-2 btn-print">Print</button>
+                    //                         <button class="btn btn-danger d-none" onclick="cancelRow(this)">Cancel</button>
+                    //                     `;
                     // fullRowData.push(actionButtons);
 
                     let fullNameIndex = Object.keys(row).indexOf("FULL NAME");
@@ -538,7 +539,7 @@
                     headers.unshift('SM ID');
                     headers.push('Checked In', 'Checked Out', 'Checked In By', 'Checked Out By', 'Checked In Time', 'Checked Out Time');
                     headers.push('Actions');
-                    let headerRowHtml = headers.map(header => `<th>${header}</th>`).join('');
+                    let headerRowHtml = headers.map(header => `<th style="background-color: rgba(120, 130, 221, 1); color: white;">${header}</th>`).join('');
                     tableHead.innerHTML = `<tr>${headerRowHtml}</tr>`;
                 }
 
@@ -556,14 +557,16 @@
                             { title: 'Checked Out By' },
                             { title: 'Checked In Time' },
                             { title: 'Checked Out Time' },
-                              { title: 'Actions', data: null,
-                            orderable: false,
-                            render: function () {
-                                return `
-                        <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
-                            <button class="btn mr-2 btn-print">Print</button>
-                    `;
-                            }}
+                            {
+                                title: 'Actions', data: null,
+                                orderable: false,
+                                render: function () {
+                                    return `
+                                    <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
+                                        <button class="btn mr-2 btn-print">Print</button>
+                                `;
+                                }
+                            }
                         ]),
                         scrollY: 400,
                         scrollX: true,
@@ -608,7 +611,7 @@
                 });
             }
 
-            
+
             // function generateNewRowHtml(rowData) {
             //     let newRowHtml = '<tr>'; // Start a new row
 
