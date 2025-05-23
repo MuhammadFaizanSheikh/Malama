@@ -1187,7 +1187,7 @@ function isDuplicateDodId(updatedData, isAddingNewRow, keys) {
             }
         } else {
             // For editing, skip same SM ID row
-            if (smId !== smIdEditing && dodId === dodIdToCheck) {
+            if (smId != smIdEditing && dodId === dodIdToCheck) {
                 isDuplicate = true;
                 return false; // break loop
             }
