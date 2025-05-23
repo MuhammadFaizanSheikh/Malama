@@ -95,7 +95,9 @@ const tableToKeysIndexMap = [
     keys.indexOf("Tet/TDP Needed"),        // Tet/TDP
     keys.indexOf("Varicella Needed"),       // Varicella
     keys.indexOf("Checked In"),       // Varicella
-    keys.indexOf("Checked Out")       // Varicella
+    keys.indexOf("Checked Out"),
+    keys.indexOf("Checked In By"),
+    keys.indexOf("Checked Out By")
 ];
 
 
@@ -130,7 +132,7 @@ const categories = {
         "IMM Needed", "Hep B Needed", "FLU Needed", "MMR Needed", "Hep A Needed", "Tet/TDP Needed", "Varicella Needed"
     ],
     "Check In Out Information": [
-        "Checked In", "Checked Out"
+        "Checked In", "Checked Out", "Checked In By", "Checked Out By"
     ]
 };
 
@@ -160,7 +162,7 @@ const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71
 const tableDataFieldsForEdit = [61];
 
 //for add
-const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34,36, 40, 45, 35, 43, 44, 54];
+const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
 const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
 const customFieldsForAdd = [18, 48, 49, 50, 51];
@@ -254,8 +256,7 @@ function populateModalForEdit(data) {
             let textColor = 'style="color: black;"'; // Set text color to black
 
 
-            if (tableDataFieldsForEdit.includes(keys.indexOf(key)))
-            {
+            if (tableDataFieldsForEdit.includes(keys.indexOf(key))) {
                 const table = $('#previewTable').DataTable();
 
                 // Collect distinct TaskForce values from column index 61
@@ -374,37 +375,37 @@ function populateModalForEdit(data) {
                 }
             }
             else if (multilineTextbox.includes(keys.indexOf(key))) {
-            inputHtml = `
+                inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
                                 <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
                             </div>
                         `;
-        }
+            }
             else if (calendarIndexes.includes(keys.indexOf(key))) {
-            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-            inputHtml = `
+                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                     </div>
                                 `;
-        }
-        // Dropdown field
+            }
+            // Dropdown field
             else if (dropdownIndexesForEdit.includes(keys.indexOf(key))) {
-            const dropdownOptions = dropdownOptionsMapping[key] || [
-                { value: "N/A", label: "N/A" },
-                { value: "NEEDED", label: "NEEDED" }
-            ];
+                const dropdownOptions = dropdownOptionsMapping[key] || [
+                    { value: "N/A", label: "N/A" },
+                    { value: "NEEDED", label: "NEEDED" }
+                ];
 
-            // Build dropdown options dynamically
-            let optionsHtml = dropdownOptions.map(option =>
-                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-            ).join('');
+                // Build dropdown options dynamically
+                let optionsHtml = dropdownOptions.map(option =>
+                    `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                ).join('');
 
                 let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
 
-            inputHtml = `
+                inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -413,103 +414,109 @@ function populateModalForEdit(data) {
                                         </select>
                                     </div>
                                 `;
-        }
-        else if (key === 'Checked In' || key === 'Checked Out') {
-            if (key === 'Checked In') {
-                $("#checkedIn").val(value).trigger("change");
             }
-            else if (key === 'Checked Out') {
-                $("#checkedOut").val(value);
+            else if (key === 'Checked In' || key === 'Checked Out' || key === 'Checked In By' || key === 'Checked Out By') {
+                if (key === 'Checked In') {
+                    $("#checkedIn").val(value).trigger("change");
+                }
+                else if (key === 'Checked Out') {
+                    $("#checkedOut").val(value);
+                }
+                else if (key === 'Checked In By') {
+                    $("#checkedInBy").val(value);
+                }
+                else if (key === 'Checked Out By') {
+                    $("#checkedOutBy").val(value);
+                }
             }
-        }
-        // Default text field
-        else {
-            inputHtml = `
+            // Default text field
+            else {
+                inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
                                     </div>
                                 `;
+            }
+
+            rowHtml += inputHtml;
+            inputCount++;
+
+            // If we have 5 fields, close the row and start a new one
+            if (inputCount % fieldsPerRow === 0) {
+                rowHtml += '</div><div class="row">';
+            }
+        });
+
+        if (inputCount % fieldsPerRow !== 0) {
+            const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+            for (let i = 0; i < emptyDivsNeeded; i++) {
+                rowHtml += '<div class="form-group col-lg-2"></div>';
+            }
         }
 
-        rowHtml += inputHtml;
-        inputCount++;
+        rowHtml += '</div>';
+        modalContent.append(rowHtml);
 
-        // If we have 5 fields, close the row and start a new one
-        if (inputCount % fieldsPerRow === 0) {
-            rowHtml += '</div><div class="row">';
+        // Attach input validation listeners to all text fields
+        modalContent.find('input[type="text"]').on('input', function () {
+            const value = $(this).val();
+            validateInput(this, value);
+        });
+    }
+
+    // After modal is populated, bind the event listener to the DOB field
+    const dobField = modalContent.find('input[name="DOB"]');
+    if (dobField.length > 0) {
+        dobField.on('change', function () {
+            const dobValue = $(this).val();
+            if (dobValue) {
+                handleColumnsRelatedToDob(dobValue)
+                // const age = calculateAge(dobValue); // Calculate age based on DOB
+                // updateFieldsBasedOnAge(age); // Update other fields based on the age
+            }
+        });
+    }
+
+    //****************************************************This can be needed in future*************************************************/
+    // const aboField = modalContent.find('select[name="ABO"]');
+    // const aboNeededField = modalContent.find('select[name="ABO Needed"]');
+
+    // if (aboField.length > 0 && aboNeededField.length > 0) {
+    //     aboField.on('change', function () {
+    //         const aboValue = $(this).val();
+    //         if (aboValue === "") { // If "ABO" is blank
+    //             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
+    //         } else {
+    //             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
+    //         }
+    //     });
+    // }
+
+    const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
+    const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
+    const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
+
+    fieldsToCheckQuest.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkLabRequisitionField);
         }
     });
 
-    if (inputCount % fieldsPerRow !== 0) {
-        const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
-        for (let i = 0; i < emptyDivsNeeded; i++) {
-            rowHtml += '<div class="form-group col-lg-2"></div>';
-        }
-    }
-
-    rowHtml += '</div>';
-    modalContent.append(rowHtml);
-
-    // Attach input validation listeners to all text fields
-    modalContent.find('input[type="text"]').on('input', function () {
-        const value = $(this).val();
-        validateInput(this, value);
-    });
-}
-
-// After modal is populated, bind the event listener to the DOB field
-const dobField = modalContent.find('input[name="DOB"]');
-if (dobField.length > 0) {
-    dobField.on('change', function () {
-        const dobValue = $(this).val();
-        if (dobValue) {
-            handleColumnsRelatedToDob(dobValue)
-            // const age = calculateAge(dobValue); // Calculate age based on DOB
-            // updateFieldsBasedOnAge(age); // Update other fields based on the age
+    fieldsToCheckLab.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkLabNeededField);
         }
     });
-}
 
-//****************************************************This can be needed in future*************************************************/
-// const aboField = modalContent.find('select[name="ABO"]');
-// const aboNeededField = modalContent.find('select[name="ABO Needed"]');
-
-// if (aboField.length > 0 && aboNeededField.length > 0) {
-//     aboField.on('change', function () {
-//         const aboValue = $(this).val();
-//         if (aboValue === "") { // If "ABO" is blank
-//             aboNeededField.val("NEEDED").change(); // Set "ABO NEEDED" to "NEEDED"
-//         } else {
-//             aboNeededField.val("N/A").change(); // Optionally reset the field if "ABO" is not blank
-//         }
-//     });
-// }
-
-const fieldsToCheckQuest = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed'];
-const fieldsToCheckLab = ['ABO Needed', 'G6PD', 'SICKLE', 'Lipid Needed', 'HIV', 'DNA'];
-const fieldsToCheckImmunization = ['Hep B Needed', 'Hep A Needed', 'FLU Needed', 'Tet/TDP Needed', 'MMR Needed', 'Varicella Needed'];
-
-fieldsToCheckQuest.forEach(field => {
-    const inputField = modalContent.find(`select[name="${field}"]`);
-    if (inputField.length > 0) {
-        inputField.on('change', checkLabRequisitionField);
-    }
-});
-
-fieldsToCheckLab.forEach(field => {
-    const inputField = modalContent.find(`select[name="${field}"]`);
-    if (inputField.length > 0) {
-        inputField.on('change', checkLabNeededField);
-    }
-});
-
-fieldsToCheckImmunization.forEach(field => {
-    const inputField = modalContent.find(`select[name="${field}"]`);
-    if (inputField.length > 0) {
-        inputField.on('change', checkIMMNeededField);
-    }
-});
+    fieldsToCheckImmunization.forEach(field => {
+        const inputField = modalContent.find(`select[name="${field}"]`);
+        if (inputField.length > 0) {
+            inputField.on('change', checkIMMNeededField);
+        }
+    });
 }
 
 function populateModalForAdd(data) {
@@ -612,7 +619,7 @@ function populateModalForAdd(data) {
 
             // Default text field
             else {
-                if (key !== 'Checked In' && key !== 'Checked Out') {
+                if (key !== 'Checked In' && key !== 'Checked Out' && key !== 'Checked In By' && key !== 'Checked Out By') {
                     inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
@@ -963,6 +970,22 @@ function saveChangesButton() {
     const updatedData = {};
 
     const requiredFields = ['FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce'];
+
+    if (window.isCheckInOutPage) {
+        const checkedInDropdown = document.getElementById("checkedIn");
+
+        if (checkedInDropdown.value === "Yes") {
+            requiredFields.push('checkedInBy');
+            //$("#checkedInBy").removeClass('valid-class').addClass('highlight-error');
+        }
+
+        const checkedOutDropdown = document.getElementById("checkedOut");
+
+        if (checkedOutDropdown.value === "Yes") {
+            requiredFields.push('checkedOutBy');
+            //$("#checkedOutBy").removeClass('valid-class').addClass('highlight-error');
+        }
+    }
     let hasError = false;
 
     // Clear previous highlights
@@ -994,7 +1017,6 @@ function saveChangesButton() {
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
 
-    debugger;
     if (isDuplicateDodId(updatedData, isAddingNewRow, keys)) {
         alert('This DOD ID already exists in this sheet.');
         return;
@@ -1027,6 +1049,28 @@ function saveChangesButton() {
 
         fullRowData[checkedInIndex] = $('#checkedIn').val();
         fullRowData[checkedOutIndex] = $('#checkedOut').val();
+
+        const checkedInByIndex = keys.indexOf('Checked In By');
+        const checkedOutByIndex = keys.indexOf('Checked Out By');
+
+        fullRowData[checkedInByIndex] = $('#checkedInBy').val();
+        fullRowData[checkedOutByIndex] = $('#checkedOutBy').val();
+
+        const checkedInTimeIndex = keys.indexOf('Checked In Time');
+
+        if ($('#checkedIn').val() === "Yes") {
+            fullRowData[checkedInTimeIndex] = formatDateTime24(new Date());
+        } else {
+            fullRowData[checkedInTimeIndex] = "";
+        }
+
+        const checkedOutTimeIndex = keys.indexOf('Checked Out Time');
+
+        if ($('#checkedOut').val() === "Yes") {
+            fullRowData[checkedOutTimeIndex] = formatDateTime24(new Date());
+        } else {
+            fullRowData[checkedOutTimeIndex] = "";
+        }
 
         if (window.isCheckInOutPage) {
             const walkinSMIndex = keys.indexOf('Walk-In Service Member');
@@ -1064,14 +1108,34 @@ function saveChangesButton() {
         updatedData['Checked In'] = $('#checkedIn').val();
         updatedData['Checked Out'] = $('#checkedOut').val();
 
+        updatedData['Checked In By'] = $('#checkedInBy').val();
+        updatedData['Checked Out By'] = $('#checkedOutBy').val();
+
+        debugger;
+        if ($('#checkedIn').val() === "Yes") {
+            updatedData['Checked In Time'] = formatDateTime24(new Date());
+        }
+        else {
+            updatedData['Checked In Time'] = "";
+        }
+
+        if ($('#checkedOut').val() === "Yes") {
+            updatedData['Checked Out Time'] = formatDateTime24(new Date());
+
+        }
+        else {
+            updatedData['Checked Out Time'] = "";
+        }
+
         keys.forEach((key, index) => {
             if (updatedData[key] !== undefined) {
-                // Keep original value if empty
-                if (updatedData[key].trim() !== '') {
+                // Always update if key is 'Checked In By' or 'Checked Out By'
+                if (key === 'Checked In By' || key === 'Checked Out By' || key === 'Checked In Time' || key === 'Checked Out Time' || updatedData[key].trim() !== '') {
                     currentRow.find('td').eq(index).text(updatedData[key]);
                 }
             }
         });
+
     }
 
     AdjustWidth();
@@ -1085,6 +1149,20 @@ function saveChangesButton() {
         UpdateExcelFile();
     }
 
+}
+
+function formatDateTime24(date) {
+    const pad = (num) => num.toString().padStart(2, '0');
+
+    const month = pad(date.getMonth() + 1);  // Months are zero-based
+    const day = pad(date.getDate());
+    const year = date.getFullYear();
+
+    const hours = pad(date.getHours());       // 24-hour format by default
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+
+    return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
 function isDuplicateDodId(updatedData, isAddingNewRow, keys) {
@@ -1305,6 +1383,8 @@ function addRow() {
     populateModalForAdd(emptyData);
     $('#checkedIn').val('No');
     $('#checkedOut').val('No').prop('disabled', true);
+    $("#checkedInBy").val('');
+    $("#checkedOutBy").val('');
     $('#editModal').modal('show');
 }
 
@@ -1375,8 +1455,7 @@ function handleColumnsRelatedToDob(dob) {
             framinghamField.value = valueForAge; // Set empty value
         }
     }
-    else
-    {
+    else {
         const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
 
         if (lipidNeededField) {

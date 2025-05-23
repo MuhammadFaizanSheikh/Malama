@@ -107,17 +107,15 @@
                         <option value="">Select CheckIn</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                        <option value="All">All</option>
                     </select>
                 </div>
 
                 <div class="col-md-3">
                     <label for="filterCheckOut" class="form-label">Check-Out</label>
-                    <select id="filterCheckOut" class="form-control">
+                    <select id="filterCheckOut" class="form-control" disabled>
                         <option value="">Select CheckOut</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                        <option value="All">All</option>
                     </select>
                 </div>
 
@@ -127,7 +125,6 @@
                         <option value="">Select Walk-In SM</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                        <option value="All">All</option>
                     </select>
                 </div>
 
@@ -137,7 +134,6 @@
                         <option value="">Select Sex</option>
                         <option value="M">M</option>
                         <option value="F">F</option>
-                        <option value="All">All</option>
                     </select>
                 </div>
 
@@ -150,6 +146,14 @@
         </div>
     </div>
 
+    <div id="disclaimer" class="content" style="text-align: center; margin: 20px auto; max-width: 800px;">
+        <div class="text">
+            <strong>Note:</strong>
+            Please ensure to save the Scrubbed file in the "ExportedFiles" folder located on the C drive. If the 'ExportedFiles' folder does not exist, please create a new folder titled 'ExportedFiles' on the C drive.<br><br>
+
+            Any actions performed within this application, such as editing a Service Mamber record or adding a Walk-In Service Mamber record, along with any information related to Checked In or Checked Out status, will be reflected in the selected Scrubbed sheet located in the 'ExportedFiles' directory on the C drive.
+        </div>
+    </div>
 
 
     <!-- Preview Table -->
@@ -207,6 +211,16 @@
 
     $(window).on('resize', function () {
         $('#previewTable').DataTable().columns.adjust().draw();
+    });
+
+    document.getElementById('filterCheckIn').addEventListener('change', function () {
+        var checkOutDropdown = document.getElementById('filterCheckOut');
+        if (this.value === 'Yes') {
+            checkOutDropdown.removeAttribute('disabled');
+        } else {
+            checkOutDropdown.setAttribute('disabled', true);
+            checkOutDropdown.value = ''; // Optionally reset value
+        }
     });
 
     function validateFullName(input) {
@@ -310,8 +324,8 @@
                             orderable: false,
                             render: function () {
                                 return `
-                            <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
-                                <button class="btn mr-2 btn-print">Print</button>
+                                <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
+                                        <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
                         `;
                             }
                         }
@@ -342,6 +356,7 @@
                 document.getElementById('addRowButton').classList.remove('d-none');
                 const filterDiv = document.querySelector('.card.p-3.mb-4');
                 filterDiv.style.display = 'block';
+                document.getElementById("disclaimer").style.display = "none";
 
             } catch (error) {
             } finally {
@@ -466,39 +481,47 @@
         var checkOut = $('#filterCheckOut').val();
         var walkInSm = $('#filterWalkInSm').val();
         var previewTable = $('#previewTable').DataTable();
+
         // Clear previous searches
         previewTable.columns().search('');
 
         if (fullName) {
-            const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape special characters
-            const regex = '^' + escapedFullName + '$'; // match whole word
-            previewTable.column(1).search(regex, true, false, true); // regex = true, smart = false, caseInsensitive = true
+            const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = escapedFullName; // match anywhere
+            previewTable.column(1).search(regex, true, false, true);
         }
+
         if (last4Ssn) {
             previewTable.column(keys.indexOf('LAST 4')).search('^' + last4Ssn + '$', true, false);
         }
+
         if (dodId) {
             previewTable.column(keys.indexOf('DOD ID')).search('^' + dodId + '$', true, false);
         }
+
         if (dob) {
             previewTable.column(keys.indexOf('DOB')).search(formatDateToMMDDYYYY(dob));
         }
-        if (sex && sex !== 'All') {
+
+        if (sex) {
             previewTable.column(keys.indexOf('SEX')).search('^' + sex + '$', true, false);
         }
-        if (checkIn && checkIn !== 'All') {
+
+        if (checkIn) {
             previewTable.column(keys.indexOf('Checked In')).search('^' + checkIn + '$', true, false);
         }
-        if (checkOut && checkOut !== 'All') {
+
+        if (checkOut) {
             previewTable.column(keys.indexOf('Checked Out')).search('^' + checkOut + '$', true, false);
         }
-        if (walkInSm && walkInSm !== 'All') {
+
+        if (walkInSm) {
             previewTable.column(keys.indexOf('Walk-In Service Member')).search('^' + walkInSm + '$', true, false);
         }
 
-        // Redraw the table
         previewTable.draw();
     });
+
 
     $('#resetFiltersBtn').click(function () {
         resetAllFilters();
@@ -520,9 +543,6 @@
         previewTable.columns().search('');
         previewTable.search('').draw();
     }
-
-
-
 </script>
 
 <!-- Styles -->
