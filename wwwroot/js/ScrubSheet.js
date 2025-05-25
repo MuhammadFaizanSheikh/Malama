@@ -162,8 +162,8 @@ const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71
 const tableDataFieldsForEdit = [61];
 
 //for add
-const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
+const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
 const customFieldsForAdd = [18, 48, 49, 50, 51];
 
@@ -230,6 +230,10 @@ const dropdownOptionsMapping = {
     "hcg": [
         { value: "", label: "" },
         { value: "Needed", label: "Needed" },
+        { value: "N/A", label: "N/A" }
+    ],
+    "ABO Needed": [
+        { value: "NEEDED", label: "NEEDED" },
         { value: "N/A", label: "N/A" }
     ]
 };
@@ -517,6 +521,25 @@ function populateModalForEdit(data) {
             inputField.on('change', checkIMMNeededField);
         }
     });
+
+    const aboField = document.querySelector('[name="ABO"]');
+    //handleABOtoABONeededLogic(aboField.value);
+    if (aboField) {
+        aboField.addEventListener('change', function () {
+            handleABOtoABONeededLogic(this.value);
+        });
+    }
+
+    const fieldsToHide = [
+        "Lipid Panel",
+        "Cholesterol / HDL Cholesterol",
+        "Framingham"
+    ];
+
+    //temporary hide fields for checkincheckout page i.e for keuler application
+    if (window.isCheckInOutPage) {
+        hideFieldsByLabelText(fieldsToHide);
+    }
 }
 
 function populateModalForAdd(data) {
@@ -711,6 +734,68 @@ function populateModalForAdd(data) {
             inputField.on('change', checkIMMNeededField);
         }
     });
+
+    const aboField = document.querySelector('[name="ABO"]');
+    if (aboField) {
+        aboField.addEventListener('change', function () {
+            handleABOtoABONeededLogic(this.value);
+        });
+    }
+
+    const fieldsToHide = [
+        "Lipid Panel",
+        "Cholesterol / HDL Cholesterol",
+        "Framingham"
+    ];
+
+    //temporary hide fields for checkincheckout page i.e for keuler application
+    if (window.isCheckInOutPage) {
+        hideFieldsByLabelText(fieldsToHide);
+    }
+}
+
+
+
+
+function hideFieldsByLabelText(fieldLabelsToHide) {
+    fieldLabelsToHide.forEach(labelText => {
+        // Find all label elements
+        const labels = Array.from(document.querySelectorAll('label'));
+
+        labels.forEach(label => {
+            if (label.textContent.trim().toLowerCase() === labelText.toLowerCase()) {
+                // Try to hide the parent element (e.g., div, tr, etc.)
+                const container = label.closest('div, tr, .form-group, .field-container');
+                if (container) {
+                    container.style.display = 'none';
+                } else {
+                    // fallback: hide the label and next sibling (like input)
+                    label.style.display = 'none';
+                    if (label.nextElementSibling) {
+                        label.nextElementSibling.style.display = 'none';
+                    }
+                }
+            }
+        });
+    });
+}
+
+function handleABOtoABONeededLogic(aboValue) {
+    const aboNeeded = document.querySelector('[name="ABO Needed"]');
+
+    if (!aboNeeded) return;
+
+    if (aboValue === "") {
+        aboNeeded.value = "NEEDED";
+        aboNeeded.disabled = false; // make editable
+    } else {
+        aboNeeded.value = "N/A";
+        aboNeeded.disabled = true; // make readonly
+    }
+
+    // Trigger change event manually in case other handlers are listening
+    const event = new Event('change', { bubbles: true });
+    aboNeeded.dispatchEvent(event);
 }
 
 //****************************************************This can be needed in future*************************************************/
@@ -1016,6 +1101,7 @@ function saveChangesButton() {
     //let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
+    debugger;
 
     if (isDuplicateDodId(updatedData, isAddingNewRow, keys)) {
         alert('This DOD ID already exists in this sheet.');
@@ -1130,7 +1216,7 @@ function saveChangesButton() {
         keys.forEach((key, index) => {
             if (updatedData[key] !== undefined) {
                 // Always update if key is 'Checked In By' or 'Checked Out By'
-                if (key === 'Checked In By' || key === 'Checked Out By' || key === 'Checked In Time' || key === 'Checked Out Time' || updatedData[key].trim() !== '') {
+                if (key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || key === 'Checked In Time' || key === 'Checked Out Time' || updatedData[key].trim() !== '') {
                     currentRow.find('td').eq(index).text(updatedData[key]);
                 }
             }
