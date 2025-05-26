@@ -530,6 +530,13 @@ function populateModalForEdit(data) {
         });
     }
 
+    const nearVisionNeededField = document.querySelector('[name="NEAR VISION Needed"]');
+    if (nearVisionNeededField) {
+        nearVisionNeededField.addEventListener('change', function () {
+            handleNearVisionNeededToVisionNeededLogic(this.value);
+        });
+    }
+
     const fieldsToHide = [
         "Lipid Panel",
         "Cholesterol / HDL Cholesterol",
@@ -742,6 +749,13 @@ function populateModalForAdd(data) {
         });
     }
 
+    const nearVisionNeededField = document.querySelector('[name="NEAR VISION Needed"]');
+    if (nearVisionNeededField) {
+        nearVisionNeededField.addEventListener('change', function () {
+            handleNearVisionNeededToVisionNeededLogic(this.value);
+        });
+    }
+
     const fieldsToHide = [
         "Lipid Panel",
         "Cholesterol / HDL Cholesterol",
@@ -796,6 +810,24 @@ function handleABOtoABONeededLogic(aboValue) {
     // Trigger change event manually in case other handlers are listening
     const event = new Event('change', { bubbles: true });
     aboNeeded.dispatchEvent(event);
+}
+
+function handleNearVisionNeededToVisionNeededLogic(nearVisionNeededValue) {
+    const visionNeededField = document.querySelector('[name="VISION Needed"]');
+
+    if (!visionNeededField) return;
+
+    if (nearVisionNeededValue === "NEEDED") {
+        visionNeededField.value = "NEEDED";
+        visionNeededField.disabled = true; // make editable
+    } else {
+        visionNeededField.value = "N/A";
+        visionNeededField.disabled = false; // make readonly
+    }
+
+    // Trigger change event manually in case other handlers are listening
+    //const event = new Event('change', { bubbles: true });
+    //aboNeeded.dispatchEvent(event);
 }
 
 //****************************************************This can be needed in future*************************************************/
@@ -1508,6 +1540,7 @@ function handleColumnsRelatedToDob(dob) {
     const nearVisionField = document.querySelector('[name="NEAR VISION Needed"]');
     if (nearVisionField) {
         nearVisionField.value = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+        handleNearVisionNeededToVisionNeededLogic(nearVisionField.value);
     }
 
     const lipidNeededField = document.querySelector('[name="Lipid Needed"]');
