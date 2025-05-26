@@ -391,7 +391,7 @@ function populateModalForEdit(data) {
                 inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                     </div>
                                 `;
             }
@@ -581,7 +581,7 @@ function populateModalForAdd(data) {
                 inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                     </div>
                                 `;
             }
