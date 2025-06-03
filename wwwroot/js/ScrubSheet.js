@@ -160,12 +160,13 @@ function editRow(button) {
 const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
 const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const tableDataFieldsForEdit = [61];
+const customFieldsForEdit = [18, 48, 49, 50, 51];
+
 
 //for add
 const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
 const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
 const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
-const customFieldsForAdd = [18, 48, 49, 50, 51];
 
 //for edit and add both
 const calendarIndexes = [13];
@@ -283,7 +284,7 @@ function populateModalForEdit(data) {
                     </div>
                     `;
             }
-            else if (customFieldsForAdd.includes(keys.indexOf(key))) {
+            else if (customFieldsForEdit.includes(keys.indexOf(key))) {
                 if (!window.isCheckInOutPage) {
 
                     if (key === 'LIPID PANEL' || key === 'EKG') {
@@ -443,8 +444,16 @@ function populateModalForEdit(data) {
                                 `;
             }
 
-            rowHtml += inputHtml;
-            inputCount++;
+            if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
+                if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                    rowHtml += inputHtml;
+                    inputCount++;
+                }
+            }
+            else {
+                rowHtml += inputHtml;
+                inputCount++;
+            }
 
             // If we have 5 fields, close the row and start a new one
             if (inputCount % fieldsPerRow === 0) {
@@ -535,17 +544,6 @@ function populateModalForEdit(data) {
         nearVisionNeededField.addEventListener('change', function () {
             handleNearVisionNeededToVisionNeededLogic(this.value);
         });
-    }
-
-    const fieldsToHide = [
-        "Lipid Panel",
-        "Cholesterol / HDL Cholesterol",
-        "Framingham"
-    ];
-
-    //temporary hide fields for checkincheckout page i.e for keuler application
-    if (window.isCheckInOutPage) {
-        hideFieldsByLabelText(fieldsToHide);
     }
 }
 
@@ -659,8 +657,16 @@ function populateModalForAdd(data) {
                 }
             }
 
-            rowHtml += inputHtml;
-            inputCount++;
+            if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
+                if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                    rowHtml += inputHtml;
+                    inputCount++;
+                }
+            }
+            else {
+                rowHtml += inputHtml;
+                inputCount++;
+            }
 
             // If we have 5 fields, close the row and start a new one
             if (inputCount % fieldsPerRow === 0) {
@@ -755,43 +761,6 @@ function populateModalForAdd(data) {
             handleNearVisionNeededToVisionNeededLogic(this.value);
         });
     }
-
-    const fieldsToHide = [
-        "Lipid Panel",
-        "Cholesterol / HDL Cholesterol",
-        "Framingham"
-    ];
-
-    //temporary hide fields for checkincheckout page i.e for keuler application
-    if (window.isCheckInOutPage) {
-        hideFieldsByLabelText(fieldsToHide);
-    }
-}
-
-
-
-
-function hideFieldsByLabelText(fieldLabelsToHide) {
-    fieldLabelsToHide.forEach(labelText => {
-        // Find all label elements
-        const labels = Array.from(document.querySelectorAll('label'));
-
-        labels.forEach(label => {
-            if (label.textContent.trim().toLowerCase() === labelText.toLowerCase()) {
-                // Try to hide the parent element (e.g., div, tr, etc.)
-                const container = label.closest('div, tr, .form-group, .field-container');
-                if (container) {
-                    container.style.display = 'none';
-                } else {
-                    // fallback: hide the label and next sibling (like input)
-                    label.style.display = 'none';
-                    if (label.nextElementSibling) {
-                        label.nextElementSibling.style.display = 'none';
-                    }
-                }
-            }
-        });
-    });
 }
 
 function handleABOtoABONeededLogic(aboValue) {
