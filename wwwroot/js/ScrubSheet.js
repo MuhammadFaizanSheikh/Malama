@@ -5,7 +5,7 @@
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert", "Hearing Date", "HEARING Needed",
     "HRC", "Hearing Profile", "Lab Requisition", "Lab Needed", "ABO", "ABO Needed", "DNA", "Sickle Date",
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
-    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG", "EKG NEEDED", "hcg",
+    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "hcg",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
     "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
@@ -81,7 +81,7 @@ const tableToKeysIndexMap = [
     keys.indexOf("G6PD Status"),    // G6PD Status
     keys.indexOf("Lipid Needed"),   // Lipid Needed
     keys.indexOf("Cholesterol / HDL Cholesterol"), // Cholesterol / HDL Cholesterol
-    keys.indexOf("EKG"),            // EKG
+    keys.indexOf("EKG (Date)"),            // EKG
     keys.indexOf("LIPID PANEL"),    // LIPID PANEL
     keys.indexOf("Framingham"),     // Framingham
     keys.indexOf("EKG NEEDED"),     // EKG NEEDED
@@ -126,7 +126,7 @@ const categories = {
     ],
     "Lab Information": [
         "Sickle Date", "HIV NEXT TEST DATE", "ABO", "SICKLE", "HIV", "ABO Needed", "Lab Requisition", "Lab Needed", "DNA", "G6PD", "G6PD Date", "G6PD Status", "Lipid Needed", "Cholesterol / HDL Cholesterol"
-        , "EKG", "LIPID PANEL", "Framingham", "EKG NEEDED", "hcg"
+        , "EKG (Date)", "LIPID PANEL", "Framingham", "EKG NEEDED", "hcg"
     ],
     "Immunization Information": [
         "IMM Needed", "Hep B Needed", "FLU Needed", "MMR Needed", "Hep A Needed", "Tet/TDP Needed", "Varicella Needed"
@@ -287,7 +287,7 @@ function populateModalForEdit(data) {
             else if (customFieldsForEdit.includes(keys.indexOf(key))) {
                 if (!window.isCheckInOutPage) {
 
-                    if (key === 'LIPID PANEL' || key === 'EKG') {
+                    if (key === 'LIPID PANEL' || key === 'EKG (Date)') {
                         if (value.trim().toLowerCase() === "n/a") {
                             inputHtml = `
                                                     <div class="form-group col-lg-2">
@@ -1294,7 +1294,7 @@ function isDuplicateDodId(updatedData, isAddingNewRow, keys) {
 
 
 function isDateField(fieldName) {
-    const dateFields = ['DOB', 'PANO Needed', 'LIPID PANEL', 'EKG']; // Replace with actual date field names
+    const dateFields = ['DOB', 'PANO Needed', 'LIPID PANEL', 'EKG (Date)']; // Replace with actual date field names
     return dateFields.includes(fieldName);
 }
 
@@ -1515,7 +1515,7 @@ function handleColumnsRelatedToDob(dob) {
     const lipidNeededField = document.querySelector('[name="Lipid Needed"]');
     const lipidPanelField = document.querySelector('[name="LIPID PANEL"]');
     const cholesterolField = document.querySelector('[name="Cholesterol / HDL Cholesterol"]');
-    const ekgField = document.querySelector('[name="EKG"]');
+    const ekgField = document.querySelector('[name="EKG (Date)"]');
     const ekgNeededField = document.querySelector('[name="EKG NEEDED"]');
     const framinghamField = document.querySelector('[name="Framingham"]');
 
