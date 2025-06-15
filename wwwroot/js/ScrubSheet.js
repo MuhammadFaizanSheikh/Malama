@@ -153,6 +153,7 @@ function editRow(button) {
 
     smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
     populateModalForEdit(rowData);  // Pass the mapped data to populateModal
+    document.getElementById("editModalLabel").innerText = "Edit Service Member";
     $('#editModal').modal('show');  // Show the modal
 }
 
@@ -1306,13 +1307,13 @@ function isValidDateOnSavingEditModal(value) {
 const { jsPDF } = window.jspdf;
 
 // 📌 Print Single Row
-$(document).on("click", ".btn-print", function () {
+$(document).on("click", ".btn-print", async function () {
     var row = $(this).closest("tr");
     var rowData = getRowData(row);
-    generatePDF([rowData], true);  // Print mode
+    await generatePDF([rowData], true);  // Print mode
 });
 
-$("#btnDownloadPDF").click(function () {
+$("#btnDownloadPDF").click(async function () {
     var allRowsData = [];
 
     $("#previewTable tbody tr").each(function () {
@@ -1322,7 +1323,7 @@ $("#btnDownloadPDF").click(function () {
 
     if (allRowsData.length > 0) {
         allRowsData.sort((a, b) => a.fullName.localeCompare(b.fullName));
-        generatePDF(allRowsData, false); // Pass all rows and save PDF
+        await generatePDF(allRowsData, false); // Pass all rows and save PDF
     } else {
         alert("No data available for download.");
     }
@@ -1341,9 +1342,26 @@ function getRowData(row) {
     var panoNeededIndex = getColumnIndex(table, "PANO Needed");
     var visionNeededIndex = getColumnIndex(table, "VISION");
     var labNeededIndex = getColumnIndex(table, "Lab Needed");
-    var immNeededIndex = getColumnIndex(table, "IMM");
-    var hearingNeededIndex = getColumnIndex(table, "HEARING");
     var barcodeIndex = getColumnIndex(table, "Barcode");
+    var visionNeededIndex = getColumnIndex(table, "VISION Needed");
+    var checkedInDateTimeIndex = getColumnIndex(table, "Checked In Time");
+    var hearingNeededIndex = getColumnIndex(table, "HEARING Needed");
+    var phaNeededIndex = getColumnIndex(table, "PHA Needed");
+    var hivIndex = getColumnIndex(table, "HIV");
+    var dnaIndex = getColumnIndex(table, "DNA");
+    var g6pdIndex = getColumnIndex(table, "G6PD");
+    var aboNeededIndex = getColumnIndex(table, "ABO Needed");
+    var sickleIndex = getColumnIndex(table, "SICKLE");
+    var lipidNeededIndex = getColumnIndex(table, "Lipid Needed");
+    var ekgIndex = getColumnIndex(table, "EKG NEEDED");
+    var hcgIndex = getColumnIndex(table, "hcg");
+    var immNeededIndex = getColumnIndex(table, "IMM Needed");
+    var fluNeededIndex = getColumnIndex(table, "FLU Needed");
+    var tetTdpIndex = getColumnIndex(table, "Tet/TDP Needed");
+    var hepAIndex = getColumnIndex(table, "Hep A Needed");
+    var mmrIndex = getColumnIndex(table, "MMR Needed");
+    var hepBIndex = getColumnIndex(table, "Hep B Needed");
+    var varicellaIndex = getColumnIndex(table, "Varicella Needed");
 
     return {
         fullName: fullNameIndex !== -1 ? row.find("td").eq(fullNameIndex).text().trim() : "N/A",
@@ -1355,8 +1373,26 @@ function getRowData(row) {
         visionNeeded: visionNeededIndex !== -1 ? row.find("td").eq(visionNeededIndex).text().trim() : "N/A",
         labNeeded: labNeededIndex !== -1 ? row.find("td").eq(labNeededIndex).text().trim() : "N/A",
         immNeeded: immNeededIndex !== -1 ? row.find("td").eq(immNeededIndex).text().trim() : "N/A",
-        hearingNeeded: hearingNeededIndex !== -1 ? row.find("td").eq(hearingNeededIndex).text().trim() : "N/A",
         barcode: barcodeIndex !== -1 ? row.find("td").eq(barcodeIndex).text().trim() : "0",
+        visionNeeded: visionNeededIndex !== -1 ? row.find("td").eq(visionNeededIndex).text().trim() : "N/A",
+        checkedInDateTime: checkedInDateTimeIndex !== -1 ? row.find("td").eq(checkedInDateTimeIndex).text().trim() : "",
+        hearingNeeded: hearingNeededIndex !== -1 ? row.find("td").eq(hearingNeededIndex).text().trim() : "N/A",
+        phaNeeded: phaNeededIndex !== -1 ? row.find("td").eq(phaNeededIndex).text().trim() : "N/A",
+        hiv: hivIndex !== -1 ? row.find("td").eq(hivIndex).text().trim() : "N/A",
+        dna: dnaIndex !== -1 ? row.find("td").eq(dnaIndex).text().trim() : "N/A",
+        g6pd: g6pdIndex !== -1 ? row.find("td").eq(g6pdIndex).text().trim() : "N/A",
+        aboNeeded: aboNeededIndex !== -1 ? row.find("td").eq(aboNeededIndex).text().trim() : "N/A",
+        sickle: sickleIndex !== -1 ? row.find("td").eq(sickleIndex).text().trim() : "N/A",
+        lipidNeeded: lipidNeededIndex !== -1 ? row.find("td").eq(lipidNeededIndex).text().trim() : "N/A",
+        ekg: ekgIndex !== -1 ? row.find("td").eq(ekgIndex).text().trim() : "N/A",
+        hcg: hcgIndex !== -1 ? row.find("td").eq(hcgIndex).text().trim() : "N/A",
+        immNeeded: immNeededIndex !== -1 ? row.find("td").eq(immNeededIndex).text().trim() : "N/A",
+        fluNeeded: fluNeededIndex !== -1 ? row.find("td").eq(fluNeededIndex).text().trim() : "N/A",
+        tetTdp: tetTdpIndex !== -1 ? row.find("td").eq(tetTdpIndex).text().trim() : "N/A",
+        hepA: hepAIndex !== -1 ? row.find("td").eq(hepAIndex).text().trim() : "N/A",
+        mmr: mmrIndex !== -1 ? row.find("td").eq(mmrIndex).text().trim() : "N/A",
+        hepB: hepBIndex !== -1 ? row.find("td").eq(hepBIndex).text().trim() : "N/A",
+        varicella: varicellaIndex !== -1 ? row.find("td").eq(varicellaIndex).text().trim() : "N/A",
     };
 }
 
@@ -1370,7 +1406,7 @@ function getColumnIndex(table, columnName) {
     return index;
 }
 
-function generatePDF(dataList, isPrint) {
+function generatePDFOld(dataList, isPrint) {
     var doc = new jsPDF();
 
     dataList.forEach((data, index) => {
@@ -1460,6 +1496,9 @@ function generatePDF(dataList, isPrint) {
 }
 
 
+
+
+
 document.getElementById('addRowButton').addEventListener('click', function () {
     addRow();
 });
@@ -1472,6 +1511,7 @@ function addRow() {
     $('#checkedOut').val('No').prop('disabled', true);
     $("#checkedInBy").val('');
     $("#checkedOutBy").val('');
+    document.getElementById("editModalLabel").innerText = "Add Walk-In Service Member";
     $('#editModal').modal('show');
 }
 
@@ -1596,4 +1636,407 @@ function handleColumnsRelatedToDob(dob) {
         }
     }
 }
+
+////////////////////////////////////////////////////////////Routing Sheet Methods Start////////////////////////////////////////////////////////////////////
+async function generatePDF(dataArray = [], isPrintMode = false) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const dawsonLogoBase64 = await getImageBase64FromUrl("/images/Dawson-Logo.png");
+    const malamaLogoBase64 = await getImageBase64FromUrl("/images/Mālama-Circular.png");
+
+    /* dataArray.forEach((data, index) => {*/
+    for (const [index, data] of dataArray.entries()) {
+        if (index > 0) doc.addPage();  // New page for each row
+        //font information
+        let fontStyle = 'Times';
+        let mainHeadingFontSize = 24;
+        let headingFontSize = 14;
+        let fieldsFontSize = 12;
+
+        // x alignment
+        let generalInformationFirstColumnX = 25;
+        let generalInformationSecondColumnX = 115;
+        let headingFirstColumnX = 35;
+        let headingSecondColumnX = 115;
+        let lineStartX = 35;
+        let lineEndX = 175;
+        let fieldsFirstColumnX = 45;
+        let fieldsSecondColumnX = 115;
+        let y = 65;
+        let distanceInLines = 6;
+
+        const headerImgWidth = 30;
+        const headerImgHeight = 15;
+
+        // Add Dawson logo at top-left
+        doc.addImage(dawsonLogoBase64, 'PNG', 10, 10, headerImgWidth, headerImgHeight);
+
+        // Main Heading Start
+        doc.setFontSize(mainHeadingFontSize);
+        doc.setFont(fontStyle, "bold");
+
+        // Center text horizontally
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const titleText = "Event Service Checklist";
+        const textWidth = doc.getTextWidth(titleText);
+        const centerX = (pageWidth - textWidth) / 2;
+        const titleY = 22; // Vertically aligned with logo
+        doc.text(titleText, centerX, titleY);
+        // Main Heading End
+
+        // General Information Start
+        drawGeneralInformation(doc, fontStyle, data, generalInformationFirstColumnX, generalInformationSecondColumnX, headingFontSize);
+        // General Information End
+
+        // Vitals Start
+        y = drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, lineStartX, lineEndX, y, distanceInLines);
+        // Vitals End
+
+        // Vision Start
+        if ((data.visionNeeded || '').toLowerCase() === 'needed') {
+            y = drawVisionSection(doc, fontStyle, headingFontSize, headingFirstColumnX, headingSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        }
+        // Vision End
+
+        // Labs Start
+        if ((data.labNeeded || '').toLowerCase() === 'needed') {
+            debugger;
+            y = drawLabsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        }
+
+        // Labs End
+
+        // Immunizations Start
+
+        if ((data.immNeeded || '').toLowerCase() === 'needed') {
+            y = drawImmunizationSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        }
+        // Immunizations End
+
+        //Dental Services Start
+
+        if ((data.dentalNeeded || '').toLowerCase() === 'needed') {
+            y = drawDentalServicesSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+
+        }
+
+        //Dental Services End
+
+        //Audio Services Start
+        if ((data.hearingNeeded || '').toLowerCase() === 'needed') {
+            y = drawAudioServicesSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        }
+
+        //Audio Services End
+
+        //PHA Start
+        if ((data.phaNeeded || '').toLowerCase() === 'needed') {
+            y = drawPhaSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        }
+        //PHA End
+
+        y += 15;
+        //doc.setFontSize(fontSize);
+        doc.setFont(fontStyle, "bold");
+        doc.text("CHECKOUT ___________", fieldsSecondColumnX, y);
+        doc.setFont(fontStyle, "normal");
+        y += 8;
+        doc.setFontSize(10);
+        doc.text("Attend only the stations/services listed on this form. Also start on #1 on specific stations.", fieldsFirstColumnX, y);
+        y += 6;
+        doc.text("", 10, y);
+
+        y += 10;
+
+
+
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const imgWidth = 20;
+        const imgHeight = 20;
+
+        // Draw logo on bottom-left corner
+        doc.addImage(malamaLogoBase64, 'PNG', 10, pageHeight - imgHeight - 10, imgWidth, imgHeight);
+
+        // Generate barcode and add to center of footer
+        if (data.barcode) {
+            const barcodeBase64 = await generateBarcodeBase64(data.barcode);
+            const barcodeWidth = 100;
+            const barcodeHeight = 20;
+            const barcodeX = (doc.internal.pageSize.getWidth() - barcodeWidth) / 2;
+            const barcodeY = doc.internal.pageSize.getHeight() - barcodeHeight - 5; // 5 units above bottom
+
+            doc.addImage(barcodeBase64, 'PNG', barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+        }
+
+        doc.setFontSize(6);
+        doc.text("Ver. 1 061025", pageWidth - 40, pageHeight - 5);
+    };
+
+    if (isPrintMode) {
+        window.open(doc.output('bloburl'), '_blank'); // Open in new tab to print
+    } else {
+        doc.save('Service_Routing_Sheet.pdf');
+    }
+}
+
+function generateBarcodeBase64(text) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement("canvas");
+        JsBarcode(canvas, text, {
+            format: "CODE128",
+            displayValue: true,
+            height: 40,
+            width: 2,
+            margin: 0
+        });
+        resolve(canvas.toDataURL("image/png"));
+    });
+}
+
+function getImageBase64FromUrl(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous"; // Important for local or cross-origin images
+
+        img.onload = function () {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            const dataURL = canvas.toDataURL("image/png");
+            resolve(dataURL);
+        };
+
+        img.onerror = function (err) {
+            reject("Failed to load image: " + err);
+        };
+
+        img.src = url;
+    });
+}
+
+
+function drawCheckbox(doc, x, y, fontSize, label) {
+    const boxSize = 5;
+    doc.rect(x, y, boxSize, boxSize);
+    doc.text(label, x + boxSize + 3, y + boxSize);
+}
+
+function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize) {
+    let formattedDate = "";
+    let formattedTime = "";
+
+    if (data.checkedInDateTime) {
+        const datetime = new Date(data.checkedInDateTime);
+        if (!isNaN(datetime)) {
+            formattedDate = datetime.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+
+            formattedTime = datetime.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+    }
+
+    doc.setFontSize(fontSize);
+    doc.setFont(fontStyle, "normal");
+    doc.text(`Name: ${data.fullName || "N/A"}`, colX1, 45);
+    doc.text(`DoD ID/Last 4: ${data.dodId || "________"}/${data.last4 || "____"}`, colX2, 45);
+    doc.text(`Time In: ${formattedTime}`, colX1, 51);
+    doc.text(`Date of Service: ${formattedDate}`, colX2, 51);
+}
+
+function drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, lineStartX, lineEndX, y, distanceInLines) {
+    doc.setFont(fontStyle, "bold");
+    doc.text("Vitals __________", headingFirstColumnX, y);
+
+    y += distanceInLines;
+    doc.setFont(fontStyle, "normal");
+    doc.text("Height __________", fieldsFirstColumnX, y);
+
+    y += distanceInLines;
+    doc.text("Weight __________", fieldsFirstColumnX, y);
+
+    y += distanceInLines;
+    doc.text("Blood Pressure __________", fieldsFirstColumnX, y);
+
+    y += distanceInLines;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, y, lineEndX, y);
+    doc.setLineDashPattern([], 0);
+
+    y += distanceInLines;
+    return y;
+}
+
+
+function drawVisionSection(doc, fontStyle, headingFontSize, headingX1, headingX2, lineStartX, lineEndX, currentY, distanceInLines) {
+    doc.setFont(fontStyle, "bold");
+    doc.setFontSize(headingFontSize);
+
+    doc.text("Vision Screening ___________", headingX1, currentY);
+    doc.text("Optometrist ___________", headingX2, currentY);
+
+    currentY += distanceInLines;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, currentY, lineEndX, currentY);
+    doc.setLineDashPattern([], 0);
+    doc.setFont(fontStyle, "normal");
+    return currentY; // return updated Y position
+}
+
+function drawLabsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingX, fieldX1, fieldX2, lineStartX, lineEndX, currentY, distanceInLines) {
+    doc.setFont(fontStyle, "bold");
+    currentY += distanceInLines;
+
+    doc.setFontSize(headingFontSize);
+    doc.text("Labs __________", headingX, currentY);
+
+    doc.setFontSize(fieldsFontSize);
+    doc.setFont(fontStyle, "normal");
+
+    debugger;
+    // Step 1: Build array of only the needed items
+    const labs = [];
+    if ((data.hiv || '').toLowerCase() === 'needed') labs.push("HIV");
+    if ((data.dna || '').toLowerCase() === 'needed') labs.push("DNA");
+    if ((data.g6pd || '').toLowerCase() === 'needed') labs.push("G6PD");
+    if ((data.aboNeeded || '').toLowerCase() === 'needed') labs.push("ABO");
+    if ((data.sickle || '').toLowerCase() === 'needed') labs.push("Sickle Cell Test");
+    if ((data.hcg || '').toLowerCase() === 'needed') labs.push("Pregnancy");// it is pending because i am unable to find pregnancy column
+    if ((data.lipidNeeded || '').toLowerCase() === 'needed') labs.push("Lipid Panel");
+    if ((data.ekg || '').toLowerCase() === 'needed') labs.push("EKG");
+
+    currentY += distanceInLines;
+    // Step 2: Draw two per row
+    for (let i = 0; i < labs.length; i += 2) {
+        const label1 = labs[i];
+        const label2 = labs[i + 1]; // May be undefined
+
+        drawCheckbox(doc, fieldX1, currentY, fieldsFontSize, label1);
+        if (label2) drawCheckbox(doc, fieldX2, currentY, fieldsFontSize, label2);
+
+        currentY += distanceInLines;
+    }
+
+    // Final line
+    currentY += 8;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, currentY, lineEndX, currentY);
+    doc.setLineDashPattern([], 0);
+
+    return currentY;
+}
+
+function drawImmunizationSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingX, fieldX1, fieldX2, lineStartX, lineEndX, currentY, distanceInLines) {
+    currentY += distanceInLines;
+
+    doc.setFontSize(headingFontSize);
+    doc.setFont(fontStyle, "bold");
+    doc.text("Immunizations __________", headingX, currentY);
+
+    doc.setFontSize(fieldsFontSize);
+    doc.setFont(fontStyle, "normal");
+
+    const items = [];
+    if ((data.fluNeeded || '').toLowerCase() === 'needed') items.push("Influenza");
+    if ((data.tetTdp || '').toLowerCase() === 'needed') items.push("TDAP");
+    if ((data.hepA || '').toLowerCase() === 'needed') items.push("Hepatitis A");
+    if ((data.mmr || '').toLowerCase() === 'needed') items.push("MMR");
+    if ((data.hepB || '').toLowerCase() === 'needed') items.push("Hepatitis B");
+    if ((data.varicella || '').toLowerCase() === 'needed') items.push("VARICELLA");
+
+    // Draw 2 per row
+    for (let i = 0; i < items.length; i += 2) {
+        const label1 = items[i];
+        const label2 = items[i + 1];
+
+        currentY += distanceInLines;
+        drawCheckbox(doc, fieldX1, currentY, fieldsFontSize, label1);
+        if (label2) drawCheckbox(doc, fieldX2, currentY, fieldsFontSize, label2);
+    }
+
+    // Final dotted line
+    currentY += 8;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, currentY, lineEndX, currentY);
+    doc.setLineDashPattern([], 0);
+
+    return currentY;
+}
+
+function drawDentalServicesSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
+    y += distanceInLines;
+    doc.setFontSize(headingFontSize);
+    doc.setFont(fontStyle, "bold");
+    doc.text("Dental Services __________", headingFirstColumnX, y);
+    doc.setFontSize(fieldsFontSize);
+    doc.setFont(fontStyle, "normal");
+
+    y += distanceInLines;
+    doc.setFontSize(fieldsFontSize);
+    doc.text("Dental X-ray __________", fieldsFirstColumnX, y);
+    doc.text("Dental Treatment __________", fieldsSecondColumnX, y);
+    y += distanceInLines;
+
+    if ((data.panoNeeded || '').toLowerCase() === 'needed') {
+        doc.text("Panoramic X-Ray __________", fieldsFirstColumnX, y);
+        y += distanceInLines;
+    }
+    doc.text("Dental Exams __________", fieldsFirstColumnX, y);
+    y += distanceInLines;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, y, lineEndX, y);
+    doc.setLineDashPattern([], 0);
+
+    return y; // Return updated y to maintain flow in main method
+}
+
+function drawAudioServicesSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
+    y += distanceInLines;
+    doc.setFontSize(headingFontSize);
+    doc.setFont(fontStyle, "bold");
+    doc.text("Audio Services", headingFirstColumnX, y);
+    doc.setFontSize(fieldsFontSize);
+    doc.setFont(fontStyle, "normal");
+
+    y += distanceInLines;
+    doc.text("Hearing __________", fieldsFirstColumnX, y);
+    doc.text("Audiologist __________", fieldsSecondColumnX, y);
+
+    y += distanceInLines;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, y, lineEndX, y);
+    doc.setLineDashPattern([], 0);
+
+    return y;
+}
+
+function drawPhaSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
+    y += distanceInLines;
+    doc.setFontSize(headingFontSize);
+    doc.setFont(fontStyle, "bold");
+    doc.text("PHA", headingFirstColumnX, y);
+    doc.setFontSize(fieldsFontSize);
+    doc.setFont(fontStyle, "normal");
+
+    y += distanceInLines;
+    doc.text("Record Review __________", fieldsFirstColumnX, y);
+    doc.text("Provider __________", fieldsSecondColumnX, y);
+
+    y += distanceInLines;
+    doc.setLineDashPattern([1, 1], 0);
+    doc.line(lineStartX, y, lineEndX, y);
+    doc.setLineDashPattern([], 0);
+
+    return y;
+}
+
+////////////////////////////////////////////////////////////Routing Sheet Methods End////////////////////////////////////////////////////////////////////
 
