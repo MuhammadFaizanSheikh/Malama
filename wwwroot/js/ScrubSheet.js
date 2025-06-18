@@ -363,14 +363,14 @@ function populateModalForEdit(data) {
                         { value: "NEEDED", label: "NEEDED" }
                     ];
 
-                    // Build dropdown options dynamically
-                    let optionsHtml = dropdownOptions.map(option =>
-                        `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                    ).join('');
+                        // Build dropdown options dynamically
+                        let optionsHtml = dropdownOptions.map(option =>
+                            `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                        ).join('');
 
-                    let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
+                        let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
 
-                    inputHtml = `
+                        inputHtml = `
                                         <div class="form-group col-lg-2">
                                             <label>${key}</label>
                                             <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -1100,7 +1100,8 @@ function saveChangesButton() {
     debugger;
     const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
-    if (window.isCheckInOutPage) {
+    if (window.isCheckInOutPage)
+    {
         const checkedInDropdown = document.getElementById("checkedIn");
 
         if (checkedInDropdown.value === "Yes") {
@@ -1166,7 +1167,7 @@ function saveChangesButton() {
             fullRowData[last4Index] = updatedLast4;
         }
 
-
+        
 
 
         // Fill in only the known fields using tableToKeysIndexMap
@@ -1255,11 +1256,12 @@ function saveChangesButton() {
         updatedData['Checked In By'] = $('#checkedInBy').val();
         updatedData['Checked Out By'] = $('#checkedOutBy').val();
 
-        debugger;
+        debugger; 
         if ($('#checkedIn').val() === "Yes") {
             updatedData['Checked In Time'] = formatDateTime24(new Date());
         }
-        else {
+        else
+        {
             updatedData['Checked In Time'] = "";
         }
 
@@ -1652,7 +1654,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         // General Information End
 
         // Vitals Start
-        y = drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
+        y = drawVitalsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
         // Vitals End
 
         // Vision Start
@@ -1705,13 +1707,13 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         doc.setFont(fontStyle, "normal");
         y += 8;
         doc.setFontSize(10);
-        doc.text("Attend only the stations/services listed on this form. Also start on #1 on specific stations.", fieldsFirstColumnX, y);
+        doc.text("Attend only the stations/services listed on this form.", fieldsFirstColumnX, y);
         y += 6;
         doc.text("", 10, y);
 
         y += 10;
 
-
+        
 
         const pageHeight = doc.internal.pageSize.getHeight();
         const imgWidth = 40;
@@ -1815,17 +1817,19 @@ function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize) {
     doc.text(`Date of Service: ${formattedDate}`, colX2, 51);
 }
 
-function drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
+function drawVitalsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
     doc.setFont(fontStyle, "bold");
     doc.text("Vitals __________", headingFirstColumnX, y);
 
     y += distanceInLines;
     doc.setFont(fontStyle, "normal");
-    drawCheckbox(doc, fieldsFirstColumnX, y, fieldsFontSize, 'Height/Weight __________');
-    //doc.text("Height __________", fieldsFirstColumnX, y);
+    drawCheckbox(doc, fieldsFirstColumnX, y, fieldsFontSize, 'Height/Weight');
+   
 
-    drawCheckbox(doc, fieldsSecondColumnX, y, fieldsFontSize, 'Blood Pressure __________');
-    //doc.text("Blood Pressure __________", fieldsFirstColumnX, y);
+    if ((data.dentalNeeded || '').toLowerCase() === 'needed' || (data.phaNeeded || '').toLowerCase() === 'needed') {
+        drawCheckbox(doc, fieldsSecondColumnX, y, fieldsFontSize, 'Blood Pressure');
+    }
+    
 
     y += 8;
     doc.setLineDashPattern([1, 1], 0);
