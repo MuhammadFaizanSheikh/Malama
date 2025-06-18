@@ -177,6 +177,7 @@ const multilineTextbox = [62];
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
     "SEX": [
+        { value: "", label: "" },
         { value: "M", label: "M" },
         { value: "F", label: "F" }
     ],
@@ -230,9 +231,9 @@ const dropdownOptionsMapping = {
         { value: "O-", label: "O-" }
     ],
     "hcg": [
-        { value: "", label: "" },
-        { value: "Needed", label: "Needed" },
-        { value: "N/A", label: "N/A" }
+        /*  { value: "", label: "" },*/
+        { value: "N/A", label: "N/A" },
+        { value: "Needed", label: "Needed" }
     ],
     "ABO Needed": [
         { value: "NEEDED", label: "NEEDED" },
@@ -648,7 +649,27 @@ function populateModalForAdd(data) {
 
             // Default text field
             else {
-                if (key !== 'Checked In' && key !== 'Checked Out' && key !== 'Checked In By' && key !== 'Checked Out By') {
+                if (key === 'FULL NAME') {
+                    // You can optionally split value if it contains full name parts
+                    const [lastName = '', firstName = '', middleName = ''] = value.split(' ');
+
+                    inputHtml = `
+            <div class="form-group col-lg-2">
+                <label>LAST NAME</label>
+                <input type="text" class="form-control" name="LAST NAME" value="${lastName}" ${textColor} />
+            </div>
+            <div class="form-group col-lg-2">
+                <label>FIRST NAME</label>
+                <input type="text" class="form-control" name="FIRST NAME" value="${firstName}" ${textColor} />
+            </div>
+            <div class="form-group col-lg-2">
+                <label>MIDDLE NAME</label>
+                <input type="text" class="form-control" name="MIDDLE NAME" value="${middleName}" ${textColor} />
+            </div>
+        `;
+
+                    inputCount += 2; // Account for 3 fields added
+                } else if (key !== 'Checked In' && key !== 'Checked Out' && key !== 'Checked In By' && key !== 'Checked Out By') {
                     inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
@@ -761,6 +782,24 @@ function populateModalForAdd(data) {
         nearVisionNeededField.addEventListener('change', function () {
             handleNearVisionNeededToVisionNeededLogic(this.value);
         });
+    }
+
+    const sexField = modalContent.find('select[name="SEX"]');
+    const hcgField = modalContent.find('select[name="hcg"]');
+
+    if (sexField.length > 0 && hcgField.length > 0) {
+        sexField.on('change', function () {
+            const selectedSex = $(this).val();
+            if (selectedSex === 'M') {
+                hcgField.val('N/A');
+                hcgField.prop('disabled', true); // Make it readonly
+            } else {
+                hcgField.prop('disabled', false); // Re-enable for other values
+            }
+        });
+
+        // Trigger the logic initially in case SEX is pre-filled with F
+        sexField.trigger('change');
     }
 }
 
@@ -925,6 +964,9 @@ $(document).on("input", ".decimal-input", function () {
 
 
 const validationRules = {
+    "LAST NAME": { type: "alpha", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in LAST NAME,
+    "FIRST NAME": { type: "alpha", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FIRST NAME,
+    "MIDDLE NAME": { type: "alpha", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in MIDDLE NAME,
     "FULL NAME": { type: "alpha", allowSpecialCharacters: true, uppercase: true }, // Allow special characters in FULL NAME
     "FULL SSN": { type: "numeric", format: "xxx-xx-xxxx", maxLength: 11 }, // SSN field
     "DOD ID": { type: "numeric", maxLength: 10 },
@@ -1055,8 +1097,8 @@ function AdjustWidth() {
 function saveChangesButton() {
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-
-    const requiredFields = ['FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce'];
+    debugger;
+    const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
@@ -1124,6 +1166,9 @@ function saveChangesButton() {
             fullRowData[last4Index] = updatedLast4;
         }
 
+
+
+
         // Fill in only the known fields using tableToKeysIndexMap
         tableToKeysIndexMap.forEach((keyIndex, modalIndex) => {
             if (keyIndex !== -1) {
@@ -1131,6 +1176,17 @@ function saveChangesButton() {
                 fullRowData[keyIndex] = updatedData[fieldKey] || '';
             }
         });
+
+        //First name, last name and middle name handling for FULL NAME
+        const lastNameValue = (updatedData['LAST NAME'] || '').trim();
+        const firstNameValue = (updatedData['FIRST NAME'] || '').trim();
+        const middleNameValue = (updatedData['MIDDLE NAME'] || '').trim();
+        const fullNameIndex = keys.indexOf('FULL NAME');
+
+        // Filter out any empty parts and join with a space
+        const fullName = [lastNameValue, firstNameValue, middleNameValue].filter(Boolean).join(' ');
+
+        fullRowData[fullNameIndex] = fullName;
 
         const checkedInIndex = keys.indexOf('Checked In');
         const checkedOutIndex = keys.indexOf('Checked Out');
@@ -1406,99 +1462,6 @@ function getColumnIndex(table, columnName) {
     return index;
 }
 
-function generatePDFOld(dataList, isPrint) {
-    var doc = new jsPDF();
-
-    dataList.forEach((data, index) => {
-        if (index > 0) doc.addPage();  // New page for each row
-
-        let pageWidth = doc.internal.pageSize.getWidth();
-        let pageHeight = doc.internal.pageSize.getHeight();
-        let yOffset = 20;  // Starting Y position
-
-        // **Title in Center**
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        let title = "Service Routing Sheet";
-        let titleWidth = doc.getTextWidth(title);
-        doc.text(title, (pageWidth - titleWidth) / 2, yOffset);
-        yOffset += 10;
-
-        // **Name and DoD ID/Last 4**
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Name: ${data.fullName}`, 10, yOffset);
-        doc.text(`DoD ID/Last 4: ${data.dodId} / ${data.last4}`, 110, yOffset);
-        yOffset += 10;
-
-        // **Station Required (Center)**
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        let subHeading = "Station Required";
-        let subHeadingWidth = doc.getTextWidth(subHeading);
-        doc.text(subHeading, (pageWidth - subHeadingWidth) / 2, yOffset);
-        yOffset += 10;
-
-        // **Data Fields (Left-Aligned)**
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-
-        doc.text(`Dental X-ray: ${data.bwxNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Panorex X-ray: ${data.panoNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Dental Exam: ${data.dentalNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text("Dental Treatment: _______________", 10, yOffset);
-        yOffset += 8;
-        doc.text(`Vitals: NEEDED`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Vision: ${data.visionNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Labs: ${data.labNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Immunizations: ${data.immNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Audio: ${data.hearingNeeded}`, 10, yOffset);
-        yOffset += 8;
-        doc.text(`Audiologist: _______________`, 10, yOffset);
-        yOffset += 8;
-
-        // **Footer Text**
-        let footerText = "Malama only adds services on the Service Routing Sheet that SM needs to complete. The station requirements are generated from a preloaded roster or manual entry at the event and then printed when the SM checks in at the event.";
-        let footerYOffset = pageHeight - 40; // Move footer higher
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "italic");
-        doc.text(footerText, 10, footerYOffset, { maxWidth: pageWidth - 20 });
-
-        // **Barcode Generation**
-        let barcodeYOffset = footerYOffset - 30; // Adjust to fit above footer
-        let barcodeCanvas = document.createElement("canvas"); // Create a canvas for barcode
-        JsBarcode(barcodeCanvas, data.barcode, {
-            format: "CODE128",
-            displayValue: true,  // Show the DoD ID below the barcode
-            fontSize: 14,        // Adjust text size
-            textMargin: 5        // Space between barcode and text
-        });
-
-        let barcodeDataURL = barcodeCanvas.toDataURL("image/png");
-        doc.addImage(barcodeDataURL, "PNG", (pageWidth - 60) / 2, barcodeYOffset, 60, 20); // Centered
-
-    });
-
-    // **Print or Download**
-    if (isPrint) {
-        doc.autoPrint();
-        doc.output("dataurlnewwindow"); // Open print dialog
-    } else {
-        doc.save("Service_Routing_Sheet.pdf"); // Download PDF
-    }
-}
-
-
-
-
-
 document.getElementById('addRowButton').addEventListener('click', function () {
     addRow();
 });
@@ -1642,7 +1605,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const dawsonLogoBase64 = await getImageBase64FromUrl("/images/Dawson-Logo.png");
-    const malamaLogoBase64 = await getImageBase64FromUrl("/images/Mālama-Circular.png");
+    const malamaLogoBase64 = await getImageBase64FromUrl("/images/MALAMA-Horizontal-With-Tagline.png");
 
     /* dataArray.forEach((data, index) => {*/
     for (const [index, data] of dataArray.entries()) {
@@ -1689,7 +1652,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         // General Information End
 
         // Vitals Start
-        y = drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, lineStartX, lineEndX, y, distanceInLines);
+        y = drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
         // Vitals End
 
         // Vision Start
@@ -1751,7 +1714,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
 
 
         const pageHeight = doc.internal.pageSize.getHeight();
-        const imgWidth = 20;
+        const imgWidth = 40;
         const imgHeight = 20;
 
         // Draw logo on bottom-left corner
@@ -1852,21 +1815,19 @@ function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize) {
     doc.text(`Date of Service: ${formattedDate}`, colX2, 51);
 }
 
-function drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, lineStartX, lineEndX, y, distanceInLines) {
+function drawVitalsSection(doc, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
     doc.setFont(fontStyle, "bold");
     doc.text("Vitals __________", headingFirstColumnX, y);
 
     y += distanceInLines;
     doc.setFont(fontStyle, "normal");
-    doc.text("Height __________", fieldsFirstColumnX, y);
+    drawCheckbox(doc, fieldsFirstColumnX, y, fieldsFontSize, 'Height/Weight __________');
+    //doc.text("Height __________", fieldsFirstColumnX, y);
 
-    y += distanceInLines;
-    doc.text("Weight __________", fieldsFirstColumnX, y);
+    drawCheckbox(doc, fieldsSecondColumnX, y, fieldsFontSize, 'Blood Pressure __________');
+    //doc.text("Blood Pressure __________", fieldsFirstColumnX, y);
 
-    y += distanceInLines;
-    doc.text("Blood Pressure __________", fieldsFirstColumnX, y);
-
-    y += distanceInLines;
+    y += 8;
     doc.setLineDashPattern([1, 1], 0);
     doc.line(lineStartX, y, lineEndX, y);
     doc.setLineDashPattern([], 0);
@@ -1950,7 +1911,7 @@ function drawImmunizationSection(doc, data, fontStyle, headingFontSize, fieldsFo
     if ((data.hepA || '').toLowerCase() === 'needed') items.push("Hepatitis A");
     if ((data.mmr || '').toLowerCase() === 'needed') items.push("MMR");
     if ((data.hepB || '').toLowerCase() === 'needed') items.push("Hepatitis B");
-    if ((data.varicella || '').toLowerCase() === 'needed') items.push("VARICELLA");
+    if ((data.varicella || '').toLowerCase() === 'needed') items.push("Varicella");
 
     // Draw 2 per row
     for (let i = 0; i < items.length; i += 2) {
@@ -1981,15 +1942,15 @@ function drawDentalServicesSection(doc, data, fontStyle, headingFontSize, fields
 
     y += distanceInLines;
     doc.setFontSize(fieldsFontSize);
-    doc.text("Dental X-ray __________", fieldsFirstColumnX, y);
+    doc.text("Step 1 : Dental X-ray __________", fieldsFirstColumnX, y);
     doc.text("Dental Treatment __________", fieldsSecondColumnX, y);
     y += distanceInLines;
 
     if ((data.panoNeeded || '').toLowerCase() === 'needed') {
-        doc.text("Panoramic X-Ray __________", fieldsFirstColumnX, y);
+        doc.text("Panoramic X-Ray __________", fieldsFirstColumnX + 14, y);
         y += distanceInLines;
     }
-    doc.text("Dental Exams __________", fieldsFirstColumnX, y);
+    doc.text("Step 2 : Dental Exams __________", fieldsFirstColumnX, y);
     y += distanceInLines;
     doc.setLineDashPattern([1, 1], 0);
     doc.line(lineStartX, y, lineEndX, y);
