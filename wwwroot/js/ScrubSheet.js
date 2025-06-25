@@ -1,5 +1,5 @@
 ﻿const keys = [
-    "SM ID", "FULL NAME", "NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
+    "Actions", "SM ID", "FULL NAME", "NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
     "AGR", "UIC", "MRC", "DOB", "OVER 40", "Dental Due", "Dental Exam", "Dental Needed",
     "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA Needed", "PULHES", "Vision Date",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert", "Hearing Date", "HEARING Needed",
@@ -94,13 +94,16 @@ const tableToKeysIndexMap = [
     keys.indexOf("Hep A Needed"),          // Hep A
     keys.indexOf("Tet/TDP Needed"),        // Tet/TDP
     keys.indexOf("Varicella Needed"),       // Varicella
-    keys.indexOf("Checked In"),       // Varicella
+    keys.indexOf("Checked In"),
     keys.indexOf("Checked Out"),
     keys.indexOf("Checked In By"),
     keys.indexOf("Checked Out By")
 ];
 
-
+function getCellValue($cells, columnName) {
+    const index = keys.indexOf(columnName);
+    return index !== -1 ? $cells.eq(index).text() : '';
+}
 
 
 
@@ -158,20 +161,61 @@ function editRow(button) {
 }
 
 //for edit
-const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
-const tableDataFieldsForEdit = [61];
-const customFieldsForEdit = [18, 48, 49, 50, 51];
+//const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
+//const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
+//const tableDataFieldsForEdit = [61];
+//const customFieldsForEdit = [18, 48, 49, 50, 51];
+
+const readOnlyFieldsForEdit = [
+    "AGE", "MOS", "AGR", "MRC", "OVER 40", "EventID", "Over 44", "EventDate", "Event End Date",
+    "HIV Win", "Vision Win", "PHA Win", "Hearing WIN", "Dental Win",
+    "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
+    "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
+    "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
+];
+
+const dropdownFieldsForEdit = [
+    "SEX", "AGR", "MRC", "Dental Needed", "BWX Needed", "DRC", "PHA Needed",
+    "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
+    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "hcg", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
+];
+
+const tableDataFieldsForEdit = ["TaskForce"];
+
+const customFieldsForEdit = [
+    "PANO Needed", "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)"
+];
 
 
 //for add
-const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
-const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
-const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
+//const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
+//const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
+//const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
+
+const dropdownFieldsForAdd = [
+    "SEX", "Dental Needed", "PANO Needed", "BWX Needed", "DRC", "PHA Needed",
+    "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
+    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed",
+    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "hcg",
+    "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
+];
+
+const readOnlyFieldsForAdd = [
+    "AGE", "MOS", "AGR", "MRC", "OVER 40", "EventID", "Over 44", "EventDate", "Event End Date",
+    "HIV Win", "Vision Win", "PHA Win", "Hearing WIN", "Dental Win",
+    "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
+    "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
+    "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
+];
+
+const tableDataFieldsForAdd = [
+    "TaskForce", "EventDate", "Event End Date", "EventID",
+    "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN"
+];
 
 //for edit and add both
-const calendarIndexes = [13];
-const multilineTextbox = [62];
+const calendarFields = ["DOB"];
+const multilineTextbox = ["Notes"];
 
 
 // Define specific dropdown options for certain fields
@@ -252,41 +296,47 @@ function populateModalForEdit(data) {
         if (categoryName !== 'Check In Out Information') {
             modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
         }
-
         let rowHtml = '<div class="row">';
         let inputCount = 0;
         categoryKeys.forEach((key, index) => {
             const value = data[key] || '';
             let inputHtml = '';
             let keyIndex = keys.indexOf(key);
-            let readOnly = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'readonly' : '';
+            let readOnly = readOnlyFieldsForEdit.includes(key) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
 
 
-            if (tableDataFieldsForEdit.includes(keys.indexOf(key))) {
+            if (tableDataFieldsForEdit.includes(key)) {
                 const table = $('#previewTable').DataTable();
+                const headers = table.columns().header().toArray().map(th => $(th).text().trim());
+                const taskForceIndex = headers.indexOf("TaskForce");
 
-                // Collect distinct TaskForce values from column index 61
-                const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[61]).filter(Boolean))];
+                if (taskForceIndex === -1) return; // If column not found, exit early
+
+                // Collect distinct TaskForce values
+                const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
 
                 // Add default option first
                 let optionsHtml = `<option value="">---Select Taskforce---</option>`;
 
                 // Add dynamic options
-                optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
+                optionsHtml += taskForceValues
+                    .map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`)
+                    .join('');
 
-                let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
+                let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
 
                 inputHtml = `
-                    <div class="form-group col-lg-2">
-                        <label>${key}</label>
-                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                    `;
+                <div class="form-group col-lg-2">
+                    <label>${key}</label>
+                    <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `;
             }
-            else if (customFieldsForEdit.includes(keys.indexOf(key))) {
+
+            else if (customFieldsForEdit.includes(key)) {
                 if (!window.isCheckInOutPage) {
 
                     if (key === 'LIPID PANEL' || key === 'EKG (Date)') {
@@ -363,14 +413,14 @@ function populateModalForEdit(data) {
                         { value: "NEEDED", label: "NEEDED" }
                     ];
 
-                        // Build dropdown options dynamically
-                        let optionsHtml = dropdownOptions.map(option =>
-                            `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                        ).join('');
+                    // Build dropdown options dynamically
+                    let optionsHtml = dropdownOptions.map(option =>
+                        `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                    ).join('');
 
-                        let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
+                    let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
 
-                        inputHtml = `
+                    inputHtml = `
                                         <div class="form-group col-lg-2">
                                             <label>${key}</label>
                                             <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -381,7 +431,7 @@ function populateModalForEdit(data) {
                                     `;
                 }
             }
-            else if (multilineTextbox.includes(keys.indexOf(key))) {
+            else if (multilineTextbox.includes(key)) {
                 inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
@@ -389,7 +439,7 @@ function populateModalForEdit(data) {
                             </div>
                         `;
             }
-            else if (calendarIndexes.includes(keys.indexOf(key))) {
+            else if (calendarFields.includes(key)) {
                 let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
                 inputHtml = `
                                     <div class="form-group col-lg-2">
@@ -399,7 +449,7 @@ function populateModalForEdit(data) {
                                 `;
             }
             // Dropdown field
-            else if (dropdownIndexesForEdit.includes(keys.indexOf(key))) {
+            else if (dropdownFieldsForEdit.includes(key)) {
                 const dropdownOptions = dropdownOptionsMapping[key] || [
                     { value: "N/A", label: "N/A" },
                     { value: "NEEDED", label: "NEEDED" }
@@ -410,7 +460,7 @@ function populateModalForEdit(data) {
                     `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
                 ).join('');
 
-                let disabled = readOnlyIndexesForEdit.includes(keys.indexOf(key)) ? 'disabled' : '';
+                let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
 
                 inputHtml = `
                                     <div class="form-group col-lg-2">
@@ -565,10 +615,10 @@ function populateModalForAdd(data) {
             const value = data[key] || '';
             let inputHtml = '';
             let keyIndex = keys.indexOf(key);
-            let readOnly = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'readonly' : '';
+            let readOnly = readOnlyFieldsForAdd.includes(key) ? 'readonly' : '';
             let textColor = 'style="color: black;"'; // Set text color to black
 
-            if (multilineTextbox.includes(keys.indexOf(key))) {
+            if (multilineTextbox.includes(key)) {
                 inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
@@ -576,7 +626,7 @@ function populateModalForAdd(data) {
                             </div>
                         `;
             }
-            else if (calendarIndexes.includes(keys.indexOf(key))) {
+            else if (calendarFields.includes(key)) {
                 let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
                 inputHtml = `
                                     <div class="form-group col-lg-2">
@@ -586,7 +636,7 @@ function populateModalForAdd(data) {
                                 `;
             }
             // Dropdown field
-            else if (dropdownIndexesForAdd.includes(keys.indexOf(key))) {
+            else if (dropdownFieldsForAdd.includes(key)) {
                 const dropdownOptions = dropdownOptionsMapping[key] || [
                     { value: "N/A", label: "N/A" },
                     { value: "NEEDED", label: "NEEDED" }
@@ -597,7 +647,7 @@ function populateModalForAdd(data) {
                     `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
                 ).join('');
 
-                let disabled = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'disabled' : '';
+                let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
 
                 inputHtml = `
                                     <div class="form-group col-lg-2">
@@ -609,20 +659,23 @@ function populateModalForAdd(data) {
                                     </div>
                                 `;
             }
-            else if (tableDataFieldsForAdd.includes(keys.indexOf(key))) {
+            else if (tableDataFieldsForAdd.includes(key)) {
                 if (key === "TaskForce") {
                     const table = $('#previewTable').DataTable();
 
-                    // Collect distinct TaskForce values from column index 61
-                    const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[61]).filter(Boolean))];
+                    const taskForceIndex = keys.indexOf("TaskForce");
+                    if (taskForceIndex === -1) return;
 
-                    // Add default option first
+                    // Get all unique TaskForce values from all rows
+                    const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
+
+                    // Add default option
                     let optionsHtml = `<option value="">---Select Taskforce---</option>`;
 
-                    // Add dynamic options
+                    // Add each option dynamically
                     optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
 
-                    let disabled = readOnlyIndexesForAdd.includes(keys.indexOf(key)) ? 'disabled' : '';
+                    let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
 
                     inputHtml = `
                     <div class="form-group col-lg-2">
@@ -1095,13 +1148,13 @@ function AdjustWidth() {
 
 /*let walkInSmCount = 0;*/
 function saveChangesButton() {
+
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
     debugger;
     const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
-    if (window.isCheckInOutPage)
-    {
+    if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
 
         if (checkedInDropdown.value === "Yes") {
@@ -1167,7 +1220,7 @@ function saveChangesButton() {
             fullRowData[last4Index] = updatedLast4;
         }
 
-        
+
 
 
         // Fill in only the known fields using tableToKeysIndexMap
@@ -1256,12 +1309,10 @@ function saveChangesButton() {
         updatedData['Checked In By'] = $('#checkedInBy').val();
         updatedData['Checked Out By'] = $('#checkedOutBy').val();
 
-        debugger; 
         if ($('#checkedIn').val() === "Yes") {
             updatedData['Checked In Time'] = formatDateTime24(new Date());
         }
-        else
-        {
+        else {
             updatedData['Checked In Time'] = "";
         }
 
@@ -1292,6 +1343,8 @@ function saveChangesButton() {
 
     if (window.isCheckInOutPage) {
         RenderUpdatedEventSummaryTable();
+        debugger;
+
         UpdateExcelFile();
     }
 
@@ -1486,8 +1539,21 @@ function handleColumnsRelatedToDob(dob) {
     let today;
 
     if (window.isCheckInOutPage) {
-        var table = $('#previewTable').DataTable();
-        today = new Date(table.row(0).data()[64]);
+        debugger;
+        //var table = $('#previewTable').DataTable();
+        //today = new Date(table.row(0).data()[65]);
+        const table = $('#previewTable').DataTable();
+        const firstRowData = table.row(0).data();
+        if (!firstRowData) return;
+
+        // Get "EventDate" using keys instead of headers/index
+        const eventDateIndex = keys.indexOf("EventDate");
+        if (eventDateIndex === -1) return;
+
+        const eventDateValue = firstRowData[eventDateIndex];
+        if (!eventDateValue) return;
+
+        today = new Date(eventDateValue);
     }
     else {
         today = new Date(document.getElementById("calendarInput").value);
@@ -1713,7 +1779,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
 
         y += 10;
 
-        
+
 
         const pageHeight = doc.internal.pageSize.getHeight();
         const imgWidth = 40;
@@ -1824,12 +1890,12 @@ function drawVitalsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize
     y += distanceInLines;
     doc.setFont(fontStyle, "normal");
     drawCheckbox(doc, fieldsFirstColumnX, y, fieldsFontSize, 'Height/Weight');
-   
+
 
     if ((data.dentalNeeded || '').toLowerCase() === 'needed' || (data.phaNeeded || '').toLowerCase() === 'needed') {
         drawCheckbox(doc, fieldsSecondColumnX, y, fieldsFontSize, 'Blood Pressure');
     }
-    
+
 
     y += 8;
     doc.setLineDashPattern([1, 1], 0);

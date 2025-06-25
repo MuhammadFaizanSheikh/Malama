@@ -223,7 +223,7 @@
                     const row = originalTable.rows[rowIndex];
                     const rowData = [];
 
-                    for (let i = 0; i < row.cells.length - 1; i++) { // skip last column
+                    for (let i = 1; i < row.cells.length; i++) {// skip first column
                         let cellText = row.cells[i].innerText || row.cells[i].textContent;
                         if (i === getBarcodeColumnIndex(originalTable)) {
                             // Force barcode cell as exact string
@@ -434,6 +434,7 @@
             ];
 
             function displayPreview(data) {
+                debugger;
                 isPreviewDoneSuccessfully = false;
                 uploadCounter++; // Increment the upload counter for each upload session
 
@@ -504,9 +505,11 @@
                     smIdCounter++;
                     let smIdData = [smIdCounter];
                     let fullRowData = smIdData.concat(rowData);
+                    fullRowData.unshift(null);
                     fullRowData.push("No", "No", "", "", "", "");
 
-                    let barcodeIndex = Object.keys(row).indexOf("Barcode") + 1; // +1 because SM ID is added at index 0
+                    //let barcodeIndex = Object.keys(row).indexOf("Barcode"); // +1 because SM ID is added at index 0
+                    let barcodeIndex = keys.indexOf('Barcode');
                     if (barcodeIndex > 0) {
                         let originalBarcode = fullRowData[barcodeIndex]; // Get original barcode value
                         let smIdPadded = smIdCounter.toString().padStart(5, '0'); // Pad SM ID to 5 digits
@@ -520,7 +523,7 @@
                     //                     `;
                     // fullRowData.push(actionButtons);
 
-                    let fullNameIndex = Object.keys(row).indexOf("FULL NAME");
+                    let fullNameIndex = keys.indexOf('FULL NAME');// Object.keys(row).indexOf("FULL NAME");
                     if (row["FULL NAME"] === "" || row["FULL NAME"] === null) {
                         let globalRowIndex = $('#previewTable tbody tr').length + index + 1;
                         missingFullNameRows.push(globalRowIndex);
@@ -531,11 +534,11 @@
                 });
 
                 let tableHead = document.querySelector('#previewTable thead');
-                let fullNameColumnIndex = -1;
+                //let fullNameColumnIndex = -1;
 
                 if (tableHead.innerHTML === '') {
                     let headers = Object.keys(filteredData[0]);
-                    fullNameColumnIndex = headers.indexOf("FULL NAME") + 1;
+                    //fullNameColumnIndex = headers.indexOf("FULL NAME") + 1;
                     headers.unshift('SM ID');
                     headers.push('Checked In', 'Checked Out', 'Checked In By', 'Checked Out By', 'Checked In Time', 'Checked Out Time');
                     headers.push('Actions');
@@ -543,40 +546,48 @@
                     tableHead.innerHTML = `<tr>${headerRowHtml}</tr>`;
                 }
 
+                const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 2;
+                const sexIndexForSorting = keys.indexOf("SEX") - 2;
+
                 if ($.fn.DataTable.isDataTable('#previewTable')) {
                     $('#previewTable').DataTable().rows.add(formattedData).draw(false);
                 } else {
                     $('#previewTable').DataTable({
                         data: formattedData,
-                        columns: [{ title: 'SM ID' }].concat(
-                            Object.keys(filteredData[0]).map(header => ({ title: header }))
-                        ).concat([
-                            { title: 'Checked In' },
-                            { title: 'Checked Out' },
-                            { title: 'Checked In By' },
-                            { title: 'Checked Out By' },
-                            { title: 'Checked In Time' },
-                            { title: 'Checked Out Time' },
+                        columns: [
                             {
-                                title: 'Actions', data: null,
+                                title: 'Actions',
+                                data: null,
                                 orderable: false,
                                 render: function () {
                                     return `
-                                    <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
+                                        <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
                                         <button class="btn mr-2 btn-print">Print</button>
-                                `;
+                                    `;
                                 }
-                            }
-                        ]),
+                            },
+                            { title: 'SM ID', orderable: false },
+                            ...Object.keys(filteredData[0]).map((header, i) => ({
+                                title: header,
+                                orderable: (i === fullNameIndexForSorting || i === sexIndexForSorting) // Enable sorting for DT index 2 and 9
+                            })),
+                            { title: 'Checked In', orderable: false },
+                            { title: 'Checked Out', orderable: false },
+                            { title: 'Checked In By', orderable: false },
+                            { title: 'Checked Out By', orderable: false },
+                            { title: 'Checked In Time', orderable: false },
+                            { title: 'Checked Out Time', orderable: false }
+                        ],
+
                         scrollY: 400,
                         scrollX: true,
                         scrollCollapse: true,
                         paging: false,
                         autoWidth: false,
                         fixedColumns: {
-                            leftColumns: 6
+                            leftColumns: 7
                         },
-                        ordering: false,
+                        ordering: true,
                         order: [],
                         createdRow: function (row, data, dataIndex) {
                             let backgroundColor = colors[(uploadCounter - 1) % colors.length];
@@ -596,7 +607,7 @@
 
                 highlightMissingFullNameRows(missingFullNameRows);
                 document.getElementById('generateExcelButton').classList.remove('d-none');
-                document.getElementById('submitDataButton').classList.remove('d-none');
+                //document.getElementById('submitDataButton').classList.remove('d-none');
                 document.getElementById('btnDownloadPDF').classList.remove('d-none');
                 document.getElementById('addRowButton').classList.remove('d-none');
                 isPreviewDoneSuccessfully = true;
@@ -651,79 +662,79 @@
                 let tableRows = [];
                 $('#previewTable tbody tr').each(function () {
                     let row = {
-                        SmId: parseInt($(this).find('td:eq(0)').text()),
-                        FullName: $(this).find('td:eq(1)').text(),
-                        Name: $(this).find('td:eq(2)').text(),
-                        FullSsn: $(this).find('td:eq(3)').text(),
-                        Last4: $(this).find('td:eq(4)').text(),
-                        DodId: $(this).find('td:eq(5)').text(),
-                        Rank: $(this).find('td:eq(6)').text(),
-                        Age: parseInt($(this).find('td:eq(7)').text()),
-                        Sex: $(this).find('td:eq(8)').text(),
-                        Mos: $(this).find('td:eq(9)').text(),
-                        Agr: $(this).find('td:eq(10)').text(),
-                        Uic: $(this).find('td:eq(11)').text(),
-                        Mrc: $(this).find('td:eq(12)').text(),
-                        Dob: $(this).find('td:eq(13)').text(),
-                        Over40: $(this).find('td:eq(14)').text(),
-                        DentalDue: $(this).find('td:eq(15)').text(),
-                        DentalExam: $(this).find('td:eq(16)').text(),
-                        DentalNeeded: $(this).find('td:eq(17)').text(),
-                        PanoNeeded: $(this).find('td:eq(18)').text(),
-                        BwxNeeded: $(this).find('td:eq(19)').text(),
-                        Drc: $(this).find('td:eq(20)').text(),
-                        PhaDate: $(this).find('td:eq(21)').text(),
-                        PhaDue: $(this).find('td:eq(22)').text(),
-                        Pha: $(this).find('td:eq(23)').text(),
-                        Pulhes: $(this).find('td:eq(24)').text(),
-                        VisionDate: $(this).find('td:eq(25)').text(),
-                        Vision: $(this).find('td:eq(26)').text(),
-                        NearVision: $(this).find('td:eq(27)').text(),
-                        Vrc: $(this).find('td:eq(28)').text(),
-                        Vision2pg: $(this).find('td:eq(29)').text(),
-                        Vision1mi: $(this).find('td:eq(30)').text(),
-                        HearingDate: $(this).find('td:eq(31)').text(),
-                        Hearing: $(this).find('td:eq(32)').text(),
-                        Hrc: $(this).find('td:eq(33)').text(),
-                        HearingProfile: $(this).find('td:eq(34)').text(),
-                        Quest: $(this).find('td:eq(35)').text(),
-                        LabNeeded: $(this).find('td:eq(36)').text(),
-                        Abo: $(this).find('td:eq(37)').text(),
-                        AboNeeded: $(this).find('td:eq(38)').text(),
-                        Dna: $(this).find('td:eq(39)').text(),
-                        SickleDate: $(this).find('td:eq(40)').text(),
-                        Sickle: $(this).find('td:eq(41)').text(),
-                        G6pd: $(this).find('td:eq(42)').text(),
-                        G6pdDate: $(this).find('td:eq(43)').text(),
-                        G6pdStatus: $(this).find('td:eq(44)').text(),
-                        HivNextTestDate: $(this).find('td:eq(45)').text(),
-                        Hiv: $(this).find('td:eq(46)').text(),
-                        LipidNeeded: $(this).find('td:eq(47)').text(),
-                        LipidPanel: $(this).find('td:eq(48)').text(),
-                        CholesterolHdlCholesterol: $(this).find('td:eq(49)').text(),
-                        Framingham: $(this).find('td:eq(50)').text(),
-                        Ekg: $(this).find('td:eq(51)').text(),
-                        EkgNeeded: $(this).find('td:eq(52)').text(),
-                        Hcg: $(this).find('td:eq(53)').text(),
-                        Imm: $(this).find('td:eq(54)').text(),
-                        HepB: $(this).find('td:eq(55)').text(),
-                        HepA: $(this).find('td:eq(56)').text(),
-                        Flu: $(this).find('td:eq(57)').text(),
-                        TetTdp: $(this).find('td:eq(58)').text(),
-                        Mmr: $(this).find('td:eq(59)').text(),
-                        Varicella: $(this).find('td:eq(60)').text(),
-                        TaskForce: $(this).find('td:eq(61)').text(),
-                        Notes: $(this).find('td:eq(62)').text(),
-                        Over44: $(this).find('td:eq(63)').text(),
-                        EventDate: $(this).find('td:eq(64)').text(),
-                        EventEndDate: $(this).find('td:eq(65)').text(),
-                        EventId: $(this).find('td:eq(66)').text(),
-                        VisionWin: parseInt($(this).find('td:eq(67)').text()),    // Convert to integer
-                        DentalWin: parseInt($(this).find('td:eq(68)').text()),    // Convert to integer
-                        PhaWin: parseInt($(this).find('td:eq(69)').text()),        // Convert to integer
-                        HivWin: parseInt($(this).find('td:eq(70)').text()),        // Convert to integer
-                        HearingWin: parseInt($(this).find('td:eq(71)').text()),
-                        Barcode: $(this).find('td:eq(72)').text(),
+                        SmId: parseInt(getCellValue($cells, "SM ID")),
+                        FullName: getCellValue($cells, "FULL NAME"),
+                        Name: getCellValue($cells, "NAME"),
+                        FullSsn: getCellValue($cells, "FULL SSN"),
+                        Last4: getCellValue($cells, "LAST 4"),
+                        DodId: getCellValue($cells, "DOD ID"),
+                        Rank: getCellValue($cells, "RANK"),
+                        Age: parseInt(getCellValue($cells, "AGE")),
+                        Sex: getCellValue($cells, "SEX"),
+                        Mos: getCellValue($cells, "MOS"),
+                        Agr: getCellValue($cells, "AGR"),
+                        Uic: getCellValue($cells, "UIC"),
+                        Mrc: getCellValue($cells, "MRC"),
+                        Dob: getCellValue($cells, "DOB"),
+                        Over40: getCellValue($cells, "OVER 40"),
+                        DentalDue: getCellValue($cells, "Dental Due"),
+                        DentalExam: getCellValue($cells, "Dental Exam"),
+                        DentalNeeded: getCellValue($cells, "Dental Needed"),
+                        PanoNeeded: getCellValue($cells, "PANO Needed"),
+                        BwxNeeded: getCellValue($cells, "BWX Needed"),
+                        Drc: getCellValue($cells, "DRC"),
+                        PhaDate: getCellValue($cells, "PHA Date"),
+                        PhaDue: getCellValue($cells, "PHA Due"),
+                        Pha: getCellValue($cells, "PHA Needed"),
+                        Pulhes: getCellValue($cells, "PULHES"),
+                        VisionDate: getCellValue($cells, "Vision Date"),
+                        Vision: getCellValue($cells, "VISION Needed"),
+                        NearVision: getCellValue($cells, "NEAR VISION Needed"),
+                        Vrc: getCellValue($cells, "VRC"),
+                        Vision2pg: getCellValue($cells, "Vision 2PG"),
+                        Vision1mi: getCellValue($cells, "Vision Mask Insert"),
+                        HearingDate: getCellValue($cells, "Hearing Date"),
+                        Hearing: getCellValue($cells, "HEARING Needed"),
+                        Hrc: getCellValue($cells, "HRC"),
+                        HearingProfile: getCellValue($cells, "Hearing Profile"),
+                        Quest: getCellValue($cells, "Lab Requisition"),
+                        LabNeeded: getCellValue($cells, "Lab Needed"),
+                        Abo: getCellValue($cells, "ABO"),
+                        AboNeeded: getCellValue($cells, "ABO Needed"),
+                        Dna: getCellValue($cells, "DNA"),
+                        SickleDate: getCellValue($cells, "Sickle Date"),
+                        Sickle: getCellValue($cells, "SICKLE"),
+                        G6pd: getCellValue($cells, "G6PD"),
+                        G6pdDate: getCellValue($cells, "G6PD Date"),
+                        G6pdStatus: getCellValue($cells, "G6PD Status"),
+                        HivNextTestDate: getCellValue($cells, "HIV NEXT TEST DATE"),
+                        Hiv: getCellValue($cells, "HIV"),
+                        LipidNeeded: getCellValue($cells, "Lipid Needed"),
+                        LipidPanel: getCellValue($cells, "LIPID PANEL"),
+                        CholesterolHdlCholesterol: getCellValue($cells, "Cholesterol / HDL Cholesterol"),
+                        Framingham: getCellValue($cells, "Framingham"),
+                        Ekg: getCellValue($cells, "EKG (Date)"),
+                        EkgNeeded: getCellValue($cells, "EKG NEEDED"),
+                        Hcg: getCellValue($cells, "hcg"),
+                        Imm: getCellValue($cells, "IMM Needed"),
+                        HepB: getCellValue($cells, "Hep B Needed"),
+                        HepA: getCellValue($cells, "Hep A Needed"),
+                        Flu: getCellValue($cells, "FLU Needed"),
+                        TetTdp: getCellValue($cells, "Tet/TDP Needed"),
+                        Mmr: getCellValue($cells, "MMR Needed"),
+                        Varicella: getCellValue($cells, "Varicella Needed"),
+                        TaskForce: getCellValue($cells, "TaskForce"),
+                        Notes: getCellValue($cells, "Notes"),
+                        Over44: getCellValue($cells, "Over 44"),
+                        EventDate: getCellValue($cells, "EventDate"),
+                        EventEndDate: getCellValue($cells, "Event End Date"),
+                        EventId: getCellValue($cells, "EventID"),
+                        VisionWin: parseInt(getCellValue($cells, "Vision Win")),
+                        DentalWin: parseInt(getCellValue($cells, "Dental Win")),
+                        PhaWin: parseInt(getCellValue($cells, "PHA Win")),
+                        HivWin: parseInt(getCellValue($cells, "HIV Win")),
+                        HearingWin: parseInt(getCellValue($cells, "Hearing WIN")),
+                        Barcode: getCellValue($cells, "Barcode"),
                         isDeleted: false
                     };
 

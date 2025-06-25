@@ -272,8 +272,8 @@
                 $("#previewTable tbody").empty();
 
                 let headerRow = "<tr>";
-                validIndexes.forEach(col => headerRow += `<th>${col.header}</th>`);
                 headerRow += `<th>Actions</th>`;
+                validIndexes.forEach(col => headerRow += `<th>${col.header}</th>`);
                 headerRow += "</tr>";
                 $("#previewTable thead").append(headerRow);
 
@@ -282,7 +282,9 @@
                     "color": "white" // optional: for better contrast
                 });
 
+                // $("#previewTable thead th").addClass("custom-sort-header");
 
+                debugger;
                 let formattedData = [];
                 for (let i = 1; i < json.length; i++) {
                     let rowData = [];
@@ -291,7 +293,7 @@
                         rowData.push($('<div>').text(cellData).html());
                     });
                     // Add an empty placeholder for the action column
-                    rowData.push(null); // This is for the "Actions" column
+                    rowData.unshift(null); // This is for the "Actions" column
                     formattedData.push(rowData);
 
                     const walkInCol = validIndexes.find(col => col.header.trim().toLowerCase() === "walk-in service member");
@@ -309,37 +311,38 @@
                 const colors = ["#f9f9f9", "#eef9f9", "#f0f9ff", "#fff0f0"]; // or your actual color array
                 const uploadCounter = 1; // you can manage this as per your logic
                 const missingFullNameRows = []; // update this based on validation if needed
+                const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
+                const sexIndexForSorting = keys.indexOf("SEX") - 1;
 
                 $("#previewTable").DataTable({
                     data: formattedData,
                     columns: [
-                        // ...validIndexes.map(col => ({
-                        //     title: col.header,
-                        //     visible: col.header.trim().toLowerCase() !== "walk-in service member" // hide this column
-                        // })),
-                        ...validIndexes.map(col => ({ title: col.header })),
                         {
                             title: "Actions",
                             data: null,
                             orderable: false,
                             render: function () {
                                 return `
-                                <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
-                                        <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
+                            <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
+                            <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
                         `;
                             }
-                        }
+                        },
+                        // Adjust mapping to start from index 1 (because index 0 is Actions)
+                        ...validIndexes.map((col, i) => ({
+                            title: col.header,
+                            orderable: (i === fullNameIndexForSorting || i === sexIndexForSorting)
+                        }))
                     ],
-
                     scrollY: 400,
                     scrollX: true,
                     scrollCollapse: true,
                     paging: false,
                     autoWidth: false,
                     fixedColumns: {
-                        leftColumns: 6
+                        leftColumns: 7
                     },
-                    ordering: false,
+                    ordering: true,
                     order: [],
                     createdRow: function (row, data, dataIndex) {
                         let backgroundColor = colors[(uploadCounter - 1) % colors.length];
@@ -348,9 +351,8 @@
                             $(row).css('border', '2px solid red');
                         }
                     }
-
-
                 });
+
 
                 RenderUpdatedEventSummaryTable();
                 document.getElementById('addRowButton').classList.remove('d-none');
@@ -435,7 +437,8 @@
                 const cells = row.querySelectorAll("td");
 
                 headers.forEach((header, i) => {
-                    rowData[header] = cells[i]?.innerText.trim() ?? "";
+                    // Skip the first cell (which is "Actions"), so start from cells[1]
+                    rowData[header] = cells[i + 1]?.innerText.trim() ?? "";
                 });
 
                 data.push(rowData);
@@ -488,7 +491,7 @@
         if (fullName) {
             const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = escapedFullName; // match anywhere
-            previewTable.column(1).search(regex, true, false, true);
+            previewTable.column(keys.indexOf('FULL NAME')).search(regex, true, false, true);
         }
 
         if (last4Ssn) {
@@ -547,6 +550,7 @@
 
 <!-- Styles -->
 <style>
+
 
 </style>
 <script src="~/js/ScrubSheet.js"></script>
