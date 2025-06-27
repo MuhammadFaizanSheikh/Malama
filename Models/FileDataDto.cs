@@ -9,7 +9,7 @@ namespace ExcelToCsv.Models
         public long? Id { get; set; }
         public long? SmId { get; set; }
         public string? FullName { get; set; }
-        public string? Name { get; set; }
+        //public string? Name { get; set; }
         public string? FullSsn { get; set; }
         public string? Last4 { get; set; }
         public string? DodId { get; set; }
@@ -60,7 +60,7 @@ namespace ExcelToCsv.Models
         public string? Framingham { get; set; }
         public string? Ekg { get; set; }
         public string? EkgNeeded { get; set; }
-        public string? Hcg { get; set; }
+        public string? PregnancyTestNeeded { get; set; }
         public string? Imm { get; set; }
         public string? HepB { get; set; }
         public string? HepA { get; set; }

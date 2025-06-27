@@ -96,7 +96,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 SmId = dto.SmId,
                 FullName = dto.FullName,
-                Name = dto.Name,
+                //Name = dto.Name,
                 FullSsn = dto.FullSsn,
                 Last4 = dto.Last4,
                 DodId = dto.DodId,
@@ -147,7 +147,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 Framingham = dto.Framingham,
                 Ekg = dto.Ekg,
                 EkgNeeded = dto.EkgNeeded,
-                Hcg = dto.Hcg,
+                PregnancyTestNeeded = dto.PregnancyTestNeeded,
                 Imm = dto.Imm,
                 HepB = dto.HepB,
                 HepA = dto.HepA,

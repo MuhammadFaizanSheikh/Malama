@@ -657,10 +657,12 @@
 
 
             function submitData() {
+                 debugger;
                 $('#loader').removeClass('d-none');
                 // Get all data from the DataTable
                 let tableRows = [];
                 $('#previewTable tbody tr').each(function () {
+                    let $cells = $(this).find('td');
                     let row = {
                         SmId: parseInt(getCellValue($cells, "SM ID")),
                         FullName: getCellValue($cells, "FULL NAME"),
@@ -779,6 +781,7 @@
             }
 
             function submitDataToDatabase(tableRows, eventId) {
+                debugger;
                 const dataToSend = JSON.stringify({
                     Entities: tableRows,
                     EventId: eventId
