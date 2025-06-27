@@ -1,11 +1,11 @@
 ﻿const keys = [
-    "Actions", "SM ID", "FULL NAME", "NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
+    "Actions", "SM ID", "FULL NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
     "AGR", "UIC", "MRC", "DOB", "OVER 40", "Dental Due", "Dental Exam", "Dental Needed",
     "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA Needed", "PULHES", "Vision Date",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert", "Hearing Date", "HEARING Needed",
     "HRC", "Hearing Profile", "Lab Requisition", "Lab Needed", "ABO", "ABO Needed", "DNA", "Sickle Date",
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
-    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "hcg",
+    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
     "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
@@ -85,7 +85,7 @@ const tableToKeysIndexMap = [
     keys.indexOf("LIPID PANEL"),    // LIPID PANEL
     keys.indexOf("Framingham"),     // Framingham
     keys.indexOf("EKG NEEDED"),     // EKG NEEDED
-    keys.indexOf("hcg"),            // hcg
+    keys.indexOf("Pregnancy Test Needed"),            // Pregnancy Test Needed
     // Immunization information
     keys.indexOf("IMM Needed"),            // IMM
     keys.indexOf("Hep B Needed"),          // Hep B
@@ -129,7 +129,7 @@ const categories = {
     ],
     "Lab Information": [
         "Sickle Date", "HIV NEXT TEST DATE", "ABO", "SICKLE", "HIV", "ABO Needed", "Lab Requisition", "Lab Needed", "DNA", "G6PD", "G6PD Date", "G6PD Status", "Lipid Needed", "Cholesterol / HDL Cholesterol"
-        , "EKG (Date)", "LIPID PANEL", "Framingham", "EKG NEEDED", "hcg"
+        , "EKG (Date)", "LIPID PANEL", "Framingham", "EKG NEEDED", "Pregnancy Test Needed"
     ],
     "Immunization Information": [
         "IMM Needed", "Hep B Needed", "FLU Needed", "MMR Needed", "Hep A Needed", "Tet/TDP Needed", "Varicella Needed"
@@ -177,7 +177,7 @@ const readOnlyFieldsForEdit = [
 const dropdownFieldsForEdit = [
     "SEX", "AGR", "MRC", "Dental Needed", "BWX Needed", "DRC", "PHA Needed",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
-    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "hcg", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
+    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "Pregnancy Test Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
 ];
 
 const tableDataFieldsForEdit = ["TaskForce"];
@@ -196,7 +196,7 @@ const dropdownFieldsForAdd = [
     "SEX", "Dental Needed", "PANO Needed", "BWX Needed", "DRC", "PHA Needed",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
     "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed",
-    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "hcg",
+    "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
     "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
 ];
 
@@ -274,7 +274,7 @@ const dropdownOptionsMapping = {
         { value: "O+", label: "O+" },
         { value: "O-", label: "O-" }
     ],
-    "hcg": [
+    "Pregnancy Test Needed": [
         /*  { value: "", label: "" },*/
         { value: "N/A", label: "N/A" },
         { value: "Needed", label: "Needed" }
@@ -770,6 +770,20 @@ function populateModalForAdd(data) {
     checkLabNeededField();
     checkIMMNeededField();
 
+    // After modal is populated, bind the event listener to the Dental Needed field
+    const dentalNeededField = modalContent.find('select[name="Dental Needed"]');
+    debugger;
+    if (dentalNeededField.length > 0) {
+        dentalNeededField.on('change', function () {
+            debugger;
+            const dentalNeededValue = $(this).val();
+            if (dentalNeededValue) {
+                debugger;
+                handleBWXNeededLogicOnDentalNeeded(dentalNeededValue)
+            }
+        });
+    }
+
     // After modal is populated, bind the event listener to the DOB field
     const dobField = modalContent.find('input[name="DOB"]');
     if (dobField.length > 0) {
@@ -838,22 +852,39 @@ function populateModalForAdd(data) {
     }
 
     const sexField = modalContent.find('select[name="SEX"]');
-    const hcgField = modalContent.find('select[name="hcg"]');
+    const pregnancyTestNeededField = modalContent.find('select[name="Pregnancy Test Needed"]');
 
-    if (sexField.length > 0 && hcgField.length > 0) {
+    if (sexField.length > 0 && pregnancyTestNeededField.length > 0) {
         sexField.on('change', function () {
             const selectedSex = $(this).val();
             if (selectedSex === 'M') {
-                hcgField.val('N/A');
-                hcgField.prop('disabled', true); // Make it readonly
+                pregnancyTestNeededField.val('N/A');
+                pregnancyTestNeededField.prop('disabled', true); // Make it readonly
             } else {
-                hcgField.prop('disabled', false); // Re-enable for other values
+                pregnancyTestNeededField.prop('disabled', false); // Re-enable for other values
             }
         });
 
         // Trigger the logic initially in case SEX is pre-filled with F
         sexField.trigger('change');
     }
+}
+
+function handleBWXNeededLogicOnDentalNeeded(dentalNeededValue) {
+    debugger;
+    const bwxNeeded = document.querySelector('[name="BWX Needed"]');
+
+    if (!bwxNeeded) return;
+
+    if (dentalNeededValue === "NEEDED") {
+        bwxNeeded.value = "NEEDED";
+    } else {
+        bwxNeeded.value = "N/A";
+    }
+
+    // Trigger change event manually in case other handlers are listening
+    const event = new Event('change', { bubbles: true });
+    bwxNeeded.dispatchEvent(event);
 }
 
 function handleABOtoABONeededLogic(aboValue) {
@@ -1465,7 +1496,7 @@ function getRowData(row) {
     var sickleIndex = getColumnIndex(table, "SICKLE");
     var lipidNeededIndex = getColumnIndex(table, "Lipid Needed");
     var ekgIndex = getColumnIndex(table, "EKG NEEDED");
-    var hcgIndex = getColumnIndex(table, "hcg");
+    var pregnancyTestNeededIndex = getColumnIndex(table, "Pregnancy Test Needed");
     var immNeededIndex = getColumnIndex(table, "IMM Needed");
     var fluNeededIndex = getColumnIndex(table, "FLU Needed");
     var tetTdpIndex = getColumnIndex(table, "Tet/TDP Needed");
@@ -1496,7 +1527,7 @@ function getRowData(row) {
         sickle: sickleIndex !== -1 ? row.find("td").eq(sickleIndex).text().trim() : "N/A",
         lipidNeeded: lipidNeededIndex !== -1 ? row.find("td").eq(lipidNeededIndex).text().trim() : "N/A",
         ekg: ekgIndex !== -1 ? row.find("td").eq(ekgIndex).text().trim() : "N/A",
-        hcg: hcgIndex !== -1 ? row.find("td").eq(hcgIndex).text().trim() : "N/A",
+        pregnancyTestNeeded: pregnancyTestNeededIndex !== -1 ? row.find("td").eq(pregnancyTestNeededIndex).text().trim() : "N/A",
         immNeeded: immNeededIndex !== -1 ? row.find("td").eq(immNeededIndex).text().trim() : "N/A",
         fluNeeded: fluNeededIndex !== -1 ? row.find("td").eq(fluNeededIndex).text().trim() : "N/A",
         tetTdp: tetTdpIndex !== -1 ? row.find("td").eq(tetTdpIndex).text().trim() : "N/A",
@@ -1693,7 +1724,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         let lineEndX = 175;
         let fieldsFirstColumnX = 45;
         let fieldsSecondColumnX = 115;
-        let y = 65;
+        let y = 41;
         let distanceInLines = 6;
 
         const headerImgWidth = 30;
@@ -1716,7 +1747,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         // Main Heading End
 
         // General Information Start
-        drawGeneralInformation(doc, fontStyle, data, generalInformationFirstColumnX, generalInformationSecondColumnX, headingFontSize);
+        y = drawGeneralInformation(doc, fontStyle, data, generalInformationFirstColumnX, generalInformationSecondColumnX, headingFontSize, y, distanceInLines);
         // General Information End
 
         // Vitals Start
@@ -1854,7 +1885,7 @@ function drawCheckbox(doc, x, y, fontSize, label) {
     doc.text(label, x + boxSize + 3, y + boxSize);
 }
 
-function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize) {
+function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize, y, distanceInLines) {
     let formattedDate = "";
     let formattedTime = "";
 
@@ -1878,13 +1909,20 @@ function drawGeneralInformation(doc, fontStyle, data, colX1, colX2, fontSize) {
     doc.setFontSize(fontSize);
     doc.setFont(fontStyle, "normal");
     doc.text(`Name: ${data.fullName || "N/A"}`, colX1, 45);
-    doc.text(`DoD ID/Last 4: ${data.dodId || "________"}/${data.last4 || "____"}`, colX2, 45);
-    doc.text(`Time In: ${formattedTime}`, colX1, 51);
-    doc.text(`Date of Service: ${formattedDate}`, colX2, 51);
+    y += distanceInLines;
+    doc.text(`DoD ID/Last 4: ${data.dodId || "________"}/${data.last4 || "____"}`, colX1, 51);
+    y += distanceInLines;
+    doc.text(`Time In: ${formattedTime}`, colX1, 57);
+    y += distanceInLines;
+    doc.text(`Date of Service: ${formattedDate}`, colX1, 63);
+
+    return y;
 }
 
 function drawVitalsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines) {
     doc.setFont(fontStyle, "bold");
+    y += distanceInLines;
+    y += distanceInLines;
     doc.text("Vitals __________", headingFirstColumnX, y);
 
     y += distanceInLines;
@@ -1940,7 +1978,7 @@ function drawLabsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, 
     if ((data.g6pd || '').toLowerCase() === 'needed') labs.push("G6PD");
     if ((data.aboNeeded || '').toLowerCase() === 'needed') labs.push("ABO");
     if ((data.sickle || '').toLowerCase() === 'needed') labs.push("Sickle Cell Test");
-    if ((data.hcg || '').toLowerCase() === 'needed') labs.push("Pregnancy");// it is pending because i am unable to find pregnancy column
+    if ((data.pregnancyTestNeeded || '').toLowerCase() === 'needed') labs.push("Pregnancy");// it is pending because i am unable to find pregnancy column
     if ((data.lipidNeeded || '').toLowerCase() === 'needed') labs.push("Lipid Panel");
     if ((data.ekg || '').toLowerCase() === 'needed') labs.push("EKG");
 

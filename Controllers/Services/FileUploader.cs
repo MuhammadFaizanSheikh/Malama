@@ -425,7 +425,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                 //"SM ID",
                 "FULL NAME",
-                "NAME",
+                //"NAME",
                 "FULL SSN",
                 "LAST 4",
                 "DOD ID",
@@ -476,7 +476,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 "Framingham",
                 "EKG (Date)",
                 "EKG NEEDED",
-                "hcg",
+                 "Pregnancy Test Needed",
                 "IMM Needed",
                 "Hep B Needed",
                 "Hep A Needed",
@@ -504,7 +504,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return new Dictionary<string, string>
             {
                  //{ "SM ID", "SM ID" },
-                  { "ONLY_NAME", "NAME" },
+                  //{ "ONLY_NAME", "NAME" },
                 { "Name", "FULL NAME" },
                 { "FULL SSN", "FULL SSN" },
                 { "SSN", "LAST 4" },
@@ -557,7 +557,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 { "Framingham", "Framingham" },
                 { "EKG (Date)", "EKG (Date)" },
                 { "EKG NEEDED", "EKG NEEDED" },
-                { "hcg", "hcg" },
+                  { "Pregnancy Test Needed", "Pregnancy Test Needed" },
                 { "IMM Needed", "IMM Needed" },
                 { "Hep B Needed", "Hep B Needed" },
                 { "Hep A Needed", "Hep A Needed" },
@@ -921,7 +921,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             foreach (DataRow parentRow in parentTable.Rows)
             {
                 //parentRow["SM ID"] = rowNumber++;
-                parentRow["ONLY_NAME"] = string.Empty;
+                //parentRow["ONLY_NAME"] = string.Empty;
 
                 DataRow matchingChildRow = GetMatchingChildRow(parentTable, childTable, parentRow);
 
@@ -1041,8 +1041,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             //    parentTable.Columns.Add("SM ID", typeof(int));
 
             // Add "NAME" column if it doesn't already exist (initially blank)
-            if (!parentTable.Columns.Contains("ONLY_NAME"))
-                parentTable.Columns.Add("ONLY_NAME", typeof(string));
+            //if (!parentTable.Columns.Contains("ONLY_NAME"))
+            //    parentTable.Columns.Add("ONLY_NAME", typeof(string));
 
             if (!parentTable.Columns.Contains("FULL SSN"))
                 parentTable.Columns.Add("FULL SSN", typeof(string));
@@ -1104,8 +1104,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (!parentTable.Columns.Contains("EKG NEEDED"))
                 parentTable.Columns.Add("EKG NEEDED", typeof(string));
 
-            if (!parentTable.Columns.Contains("hcg"))
-                parentTable.Columns.Add("hcg", typeof(string));
+            if (!parentTable.Columns.Contains("Pregnancy Test Needed"))
+                parentTable.Columns.Add("Pregnancy Test Needed", typeof(string));
 
             if (!parentTable.Columns.Contains("IMM Needed"))
                 parentTable.Columns.Add("IMM Needed", typeof(string));
@@ -1381,19 +1381,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 string sex = parentRow["SEX"].ToString().Trim();
 
-                // Ensure "HCG" column exists
-                if (!parentRow.Table.Columns.Contains("HCG"))
+                // Ensure "Pregnancy Test Needed" column exists
+                if (!parentRow.Table.Columns.Contains("Pregnancy Test Needed"))
                 {
-                    parentRow.Table.Columns.Add("HCG", typeof(string));
+                    parentRow.Table.Columns.Add("Pregnancy Test Needed", typeof(string));
                 }
 
                 if (sex == "M")
                 {
-                    parentRow["HCG"] = "N/A";
+                    parentRow["Pregnancy Test Needed"] = "N/A";
                 }
                 else if (sex == "F")
                 {
-                    parentRow["HCG"] = "";
+                    parentRow["Pregnancy Test Needed"] = "";
                 }
             }
 
