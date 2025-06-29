@@ -1835,7 +1835,9 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
     };
 
     if (isPrintMode) {
-        window.open(doc.output('bloburl'), '_blank'); // Open in new tab to print
+        //window.open(doc.output('bloburl'), '_blank'); // Open in new tab to print
+        const pdfUrl = doc.output('bloburl');
+        window.open(pdfUrl, 'pdfPopupWindow', 'width=800,height=600,resizable=yes,scrollbars=yes');
     } else {
         doc.save('Service_Routing_Sheet.pdf');
     }
