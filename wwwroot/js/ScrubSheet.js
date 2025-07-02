@@ -1182,7 +1182,6 @@ function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-    debugger;
     const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
     if (window.isCheckInOutPage) {
@@ -1230,13 +1229,13 @@ function saveChangesButton() {
     //let newRowData = new Array(79).fill('');
     const fullSsnValue = updatedData['FULL SSN'];
     const last4Index = keys.indexOf('LAST 4');
-    debugger;
 
     if (isDuplicateDodId(updatedData, isAddingNewRow, keys)) {
         alert('This DOD ID already exists in this sheet.');
         return;
     }
 
+    let smIdToIdentifyRecordForPrint = null;
     if (isAddingNewRow) {
         // Initialize a full row with empty values
         const fullRowData = Array(keys.length).fill('');
@@ -1245,6 +1244,7 @@ function saveChangesButton() {
         smIdCounter++;
         const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
         fullRowData[smIdIndex] = smIdCounter.toString();
+        smIdToIdentifyRecordForPrint = smIdCounter.toString();
 
         if (last4Index !== -1 && fullSsnValue) {
             const updatedLast4 = fullSsnValue.slice(-4);
@@ -1355,30 +1355,64 @@ function saveChangesButton() {
             updatedData['Checked Out Time'] = "";
         }
 
+        //keys.forEach((key, index) => {
+        //    if (updatedData[key] !== undefined) {
+        //        // Always update if key is 'Checked In By' or 'Checked Out By'
+        //        if (key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || key === 'Checked In Time' || key === 'Checked Out Time' || updatedData[key].trim() !== '') {
+        //            currentRow.find('td').eq(index).text(updatedData[key]);
+        //        }
+        //    }
+        //});
+
         keys.forEach((key, index) => {
+            if (key === 'SM ID') {
+                smIdToIdentifyRecordForPrint = currentRow.find('td').eq(keys.indexOf('SM ID')).text().trim();
+            }
             if (updatedData[key] !== undefined) {
-                // Always update if key is 'Checked In By' or 'Checked Out By'
-                if (key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || key === 'Checked In Time' || key === 'Checked Out Time' || updatedData[key].trim() !== '') {
+                const currentCellValue = currentRow.find('td').eq(index).text().trim();
+
+                // Skip update if key is Checked In Time or Checked Out Time and already has a value
+                if (
+                    (key === 'Checked In Time' && currentCellValue !== '') || (key === 'Checked Out Time' && currentCellValue !== '')
+                ) {
+                    return; // Skip this iteration
+                }
+
+                // Always update for these keys or if value is non-empty
+                if (
+                    key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || updatedData[key].trim() !== ''
+                ) {
                     currentRow.find('td').eq(index).text(updatedData[key]);
                 }
             }
         });
+
 
     }
 
     AdjustWidth();
     isAddingNewRow = false;
 
-
+    let shouldPrint = confirm("Would you like to print Service Routing Sheet?");
     $('#editModal').modal('hide');
 
     if (window.isCheckInOutPage) {
         RenderUpdatedEventSummaryTable();
-        debugger;
 
         UpdateExcelFile();
     }
 
+    if (shouldPrint) {
+        $('#previewTable tbody tr').each(async function () {
+            const smId = $(this).find('td').eq(keys.indexOf('SM ID')).text().trim();
+            if (smId === smIdToIdentifyRecordForPrint) {
+                const row = $(this); // No need for .closest("tr")
+                const rowData = getRowData(row);
+                await generatePDF([rowData], true);
+                return false; // break the loop
+            }
+        });
+    }
 }
 
 function formatDateTime24(date) {
