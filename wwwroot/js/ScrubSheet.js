@@ -1178,7 +1178,7 @@ function AdjustWidth() {
 }
 
 /*let walkInSmCount = 0;*/
-function saveChangesButton() {
+async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
@@ -1234,6 +1234,8 @@ function saveChangesButton() {
         alert('This DOD ID already exists in this sheet.');
         return;
     }
+
+    const shouldPrint = await showYesNoModal("Would you like to print Service Routing Sheet?");
 
     let smIdToIdentifyRecordForPrint = null;
     if (isAddingNewRow) {
@@ -1393,7 +1395,6 @@ function saveChangesButton() {
     AdjustWidth();
     isAddingNewRow = false;
 
-    let shouldPrint = confirm("Would you like to print Service Routing Sheet?");
     $('#editModal').modal('hide');
 
     if (window.isCheckInOutPage) {
@@ -2145,3 +2146,36 @@ function drawPhaSection(doc, fontStyle, headingFontSize, fieldsFontSize, heading
 
 ////////////////////////////////////////////////////////////Routing Sheet Methods End////////////////////////////////////////////////////////////////////
 
+
+function showYesNoModal(message = "Are you sure?") {
+    return new Promise((resolve) => {
+        const modalElement = document.getElementById("yesNoModal");
+        const modal = new bootstrap.Modal(modalElement);
+
+        document.getElementById("yesNoModalMessage").textContent = message;
+
+        // Handle YES
+        const yesBtn = document.getElementById("yesBtn");
+        const newYesBtn = yesBtn.cloneNode(true);
+        newYesBtn.id = "yesBtn"; // restore ID
+        yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+
+        newYesBtn.addEventListener("click", () => {
+            resolve(true);
+            modal.hide();
+        });
+
+        // Handle NO
+        const noBtn = document.getElementById("noBtn");
+        const newNoBtn = noBtn.cloneNode(true);
+        newNoBtn.id = "noBtn"; // restore ID
+        noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+
+        newNoBtn.addEventListener("click", () => {
+            resolve(false);
+            modal.hide();
+        });
+
+        modal.show();
+    });
+}
