@@ -25,7 +25,7 @@
     <!-- Heading -->
     <div class="row mt-4">
         <div class="col-md-12 text-center">
-            <h1 style="color: rgba(80,90,201,1);">Malama</h1>
+            <h1 id="page-heading" style="color: rgba(80,90,201,1);">Malama</h1>
         </div>
     </div>
 
@@ -172,7 +172,7 @@
 
     <!-- Buttons -->
     <div class="d-flex justify-content-center my-3 button-container">
-        <button class="btn btn-secondary add-row-button">Add Walk-In Service Member</button>
+        <button class="btn btn-secondary add-row-button" style="display: none;">Add Walk-In Service Member</button>
         @* <button id="addRowButtonC" class="btn btn-secondary">Add Walk-In Service Member</button> *@
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
@@ -218,13 +218,18 @@
     window.userType = '@ViewBag.UserType';
     window.isCheckInOutPage = true;
 
+    if (window.type == '') {
+        $("#page-heading").text(window.type + " - Malama");
+    }
     document.addEventListener("DOMContentLoaded", function () {
         if (window.userType === "client") {
+             $("#page-heading").text("Malama (Client)");
             const uploadSection = document.getElementById('fileUploadContainer');
             if (uploadSection) {
                 uploadSection.style.display = 'none';
             }
         } else {
+             $("#page-heading").text("Malama (Admin)");
             const eventIdDropdown = document.getElementById('eventIdDropdown');
             if (eventIdDropdown) {
                 eventIdDropdown.style.display = 'none';
@@ -370,6 +375,7 @@
 
                 $('#eventSummaryTable').removeClass('d-none');
                 RenderUpdatedEventSummaryTable();
+                $('.add-row-button').show();
                 // document.getElementById('addRowButton').classList.remove('d-none');
                 document.getElementById('submitDataButton').classList.remove('d-none');
                 const filterDiv = document.querySelector('.card.p-3.mb-4');
@@ -502,64 +508,34 @@
         await fetchAndRenderEventData(selectedEventId);
     });
 
-    async function fetchAndRenderEventData(eventId) {
+    async function fetchAndRenderEventData(eventId, callback) {
         if (!eventId) return;
 
-        $('#loader').removeClass('d-none'); // Show loader
+        $('#loader').removeClass('d-none');
 
         try {
             const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventId)
             });
 
             const result = await response.json();
 
             if (result.success && result.data.length > 0) {
-                renderPreviewTable(result.data);
+                await renderPreviewTable(result.data); // ✅ wait for DataTable init
+                if (typeof callback === 'function') {
+                    await callback();
+                }
             } else {
                 Swal.fire('No Data', 'No records found for the selected Event ID.', 'info');
             }
         } catch (error) {
             Swal.fire('Error', 'Something went wrong while fetching data.', 'error');
         } finally {
-            $('#loader').addClass('d-none'); // Hide loader
+            $('#loader').addClass('d-none');
         }
     }
-
-
-
-    // $('#eventIdDropdown').on('change', function () {
-    //     const selectedEventId = $(this).val();
-    //     if (!selectedEventId) return;
-
-    //     $('#loader').removeClass('d-none'); // Show loader
-
-    //     $.ajax({
-    //         url: '/ExcelFileUploader/GetEventDataByEventId',
-    //         type: 'POST',
-    //         data: JSON.stringify(selectedEventId),
-    //         contentType: 'application/json',
-    //         success: function (response) {
-    //             if (response.success && response.data.length > 0) {
-    //                 renderPreviewTable(response.data);
-    //             } else {
-    //                 Swal.fire('No Data', 'No records found for the selected Event ID.', 'info');
-    //             }
-    //         },
-    //         error: function () {
-    //             Swal.fire('Error', 'Something went wrong while fetching data.', 'error');
-    //         },
-    //         complete: function () {
-    //             $('#loader').addClass('d-none');
-    //         }
-    //     });
-    // });
-
-
 
     function renderPreviewTable(data) {
         debugger;
@@ -660,12 +636,11 @@
         $('#eventSummaryTable').removeClass('d-none');
         const filterDiv = document.querySelector('.card.p-3.mb-4');
                 filterDiv.style.display = 'block';
+                $('.add-row-button').show();
         // document.getElementById('addRowButton').classList.remove('d-none');
 
         RenderUpdatedEventSummaryTable();
     }
-
-
 
     $('#searchStaffBtn').on('click', function () {
         var fullName = $('#filterFullName').val().trim().toLowerCase();

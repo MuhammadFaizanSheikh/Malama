@@ -137,7 +137,7 @@
 
 
     <div class="d-flex justify-content-center my-3 button-container">
-        <button class="btn btn-secondary add-row-button">Add Walk-In Service Member</button>
+        <button class="btn btn-secondary add-row-button" style="display: none;">Add Walk-In Service Member</button>
         @* <button id="addRowButton" class="btn btn-secondary">Add Walk-In Service Member</button> *@
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
@@ -592,6 +592,7 @@
                 document.getElementById('generateExcelButton').classList.remove('d-none');
                 document.getElementById('submitDataButton').classList.remove('d-none');
                 document.getElementById('btnDownloadPDF').classList.remove('d-none');
+                $('.add-row-button').show();
                 // document.getElementById('addRowButton').classList.remove('d-none');
                 isPreviewDoneSuccessfully = true;
             }

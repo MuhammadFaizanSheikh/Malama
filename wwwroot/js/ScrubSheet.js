@@ -1335,14 +1335,12 @@ async function saveChangesButton() {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                /*$('#eventIdDropdown').trigger('change');*/
 
-                //smIdToIdentifyRecordForPrint = result.data.data.smId;
-                //const selectedEventId = $('#eventIdDropdown').val();
-                //await fetchAndRenderEventData(selectedEventId, async () => {
-                //    await printSpecificRowIfNeeded(true, smIdToIdentifyRecordForPrint);
-                //}); 
-
+                smIdToIdentifyRecordForPrint = result.data.data.smId;
+                const selectedEventId = $('#eventIdDropdown').val();
+                await fetchAndRenderEventData(selectedEventId, async () => {
+                    await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
+                });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -1352,14 +1350,12 @@ async function saveChangesButton() {
             }
         } else {
             $('#previewTable').DataTable().row.add(fullRowData).draw(false);
+            await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
         }
-
 
         //if (window.isCheckInOutPage) {
         //    //walkInServiceMemberCount++;
         //}
-
-
     }
     else {
         if (last4Index !== -1 && fullSsnValue) {
@@ -1411,13 +1407,11 @@ async function saveChangesButton() {
                     showConfirmButton: false
                 });
 
-                //smIdToIdentifyRecordForPrint = dto.SmId;
-                //const selectedEventId = $('#eventIdDropdown').val();
-                //await fetchEventDataByEventId(selectedEventId);
-                //printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
-
-
-                /*$('#eventIdDropdown').trigger('change');*/
+                smIdToIdentifyRecordForPrint = dto.SmId;
+                const selectedEventId = $('#eventIdDropdown').val();
+                await fetchAndRenderEventData(selectedEventId, async () => {
+                    await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
+                });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -1450,6 +1444,8 @@ async function saveChangesButton() {
                     }
                 }
             });
+
+            await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
         }
     }
 
@@ -1463,35 +1459,26 @@ async function saveChangesButton() {
 
         //UpdateExcelFile();
     }
-
-    //if (shouldPrint) {
-    //    $('#previewTable tbody tr').each(async function () {
-    //        const smId = $(this).find('td').eq(keys.indexOf('SM ID')).text().trim();
-    //        if (smId === smIdToIdentifyRecordForPrint) {
-    //            const row = $(this); // No need for .closest("tr")
-    //            const rowData = getRowData(row);
-    //            await generatePDF([rowData], true);
-    //            return false; // break the loop
-    //        }
-    //    });
-    //}
 }
 
-//async function printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint) {
-//    if (!shouldPrint) return;
+async function printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint) {
+    if (!shouldPrint) return;
 
-//    const table = $('#previewTable').DataTable();
-//    table.rows().every(function () {
-//        const data = this.data(); // row data as array
-//        const smId = data[keys.indexOf('SM ID')];
-//        if (smId === smIdToIdentifyRecordForPrint) {
-//            const rowData = getRowData($(this.node()));
-//            await generatePDF([rowData], true);
-//            return false;
-//        }
-//    });
-//}
+    const table = $('#previewTable').DataTable();
+    const rows = table.rows().nodes().toArray(); // get all row DOM nodes
 
+    for (let row of rows) {
+        const $row = $(row);
+        const data = table.row($row).data(); // get data for this row
+        const smId = data[keys.indexOf('SM ID')];
+
+        if (smId == smIdToIdentifyRecordForPrint) {
+            const rowData = getRowData($row);
+            await generatePDF([rowData], true);
+            break; // stop looping after printing
+        }
+    }
+}
 
 function formatDateTime24(date) {
     const pad = (num) => num.toString().padStart(2, '0');
