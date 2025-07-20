@@ -6,7 +6,7 @@ namespace ExcelToCsv.Models
     public class FileDataDto : GenericProperties
     {
         [Key]
-        public long? Id { get; set; }
+        public long Id { get; set; }
         public long? SmId { get; set; }
         public string? FullName { get; set; }
         //public string? Name { get; set; }
@@ -74,10 +74,13 @@ namespace ExcelToCsv.Models
         public string? EventDate { get; set; }
         public string? EventEndDate { get; set; }
         public string? EventId { get; set; }
-        public string? CheckIn { get; set; } = "0";
-        public DateTime? CheckInDateTime { get; set; }
-        public string? CheckOut { get; set; } = "0";
-        public DateTime? CheckOutDateTime { get; set; }
+        public string? CheckIn { get; set; } = "No";
+        public string? CheckInBy { get; set; }
+        public DateTime? CheckInTime { get; set; }
+        public string? CheckOut { get; set; } = "No";
+        public string? CheckOutBy { get; set; } = "No";
+        public DateTime? CheckOutTime { get; set; }
+        public string? WalkInServiceMember { get; set; } = "No";
         public int? VisionWin { get; set; }
         public int? DentalWin { get; set; }
         public int? PhaWin { get; set; }

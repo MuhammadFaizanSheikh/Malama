@@ -1,9 +1,11 @@
-﻿using ExcelFilesCompiler.Interfaces;
+﻿using AutoMapper;
+using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelToCsv.Models;
+using MathNet.Numerics.LinearAlgebra.Factorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -11,12 +13,15 @@ using Newtonsoft.Json.Linq;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using Org.BouncyCastle.Utilities.Encoders;
 using SixLabors.ImageSharp.ColorSpaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.RegularExpressions;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
+using static NPOI.POIFS.Crypt.CryptoFunctions;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -27,11 +32,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private readonly IGenericRepository<FileDataDto> fileUploaderRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository, IUnitOfWork unitOfWork)
+        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository, IUnitOfWork unitOfWork,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             this.fileUploaderRepository = fileUploaderRepository;
+            _mapper = mapper;
         }
 
         public List<List<Dictionary<string, object>>> UploadAndPreview(List<IFormFile> files, IFormFile G6PDFile, DateTime parsedEventDate, DateTime? parsedLastEventDate, string eventId, int lastDentalExam, int vision, int dental, int pha, int hiv, int hearing)
@@ -73,113 +80,47 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId, string loggedinUserName)
         {
-            bool isRecordUpdate = false;
-
-            var dataAgainstEventId = fileUploaderRepository.FindByEventId(eventId);
-
-            if (dataAgainstEventId != null && dataAgainstEventId.Any())
+            try
             {
-                isRecordUpdate = true;
+                bool isRecordUpdate = false;
 
-                foreach (var item in dataAgainstEventId)
+                var dataAgainstEventId = fileUploaderRepository.FindByEventId(eventId);
+
+                if (dataAgainstEventId != null && dataAgainstEventId.Any())
                 {
-                    item.isDeleted = true;
-                    item.UpdatedBy = loggedinUserName;
-                    item.UpdatedOn = DateTime.Now;
+                    isRecordUpdate = true;
+
+                    foreach (var item in dataAgainstEventId)
+                    {
+                        item.isDeleted = true;
+                        item.UpdatedBy = loggedinUserName;
+                        item.UpdatedOn = DateTime.Now;
+                    }
+
+                    fileUploaderRepository.UpdateRange(dataAgainstEventId);
+                    fileUploaderRepository.Save();
                 }
 
-                fileUploaderRepository.UpdateRange(dataAgainstEventId);
+                var Records = data.Select(dto => MapAndEnrich(dto, loggedinUserName)).ToList();
+
+                fileUploaderRepository.AddRange(Records);
                 fileUploaderRepository.Save();
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = Messages.DataInsertSuccesfully
+                };
             }
-
-            var Records = data.Select(dto => new FileDataDto
+            catch (Exception ex)
             {
-                SmId = dto.SmId,
-                FullName = dto.FullName,
-                //Name = dto.Name,
-                FullSsn = dto.FullSsn,
-                Last4 = dto.Last4,
-                DodId = dto.DodId,
-                Rank = dto.Rank,
-                Age = dto.Age,
-                Sex = dto.Sex,
-                Mos = dto.Mos,
-                Agr = dto.Agr,
-                Uic = dto.Uic,
-                Mrc = dto.Mrc,
-                Dob = dto.Dob,
-                Over40 = dto.Over40,
-                DentalDue = dto.DentalDue,
-                DentalExam = dto.DentalExam,
-                DentalNeeded = dto.DentalNeeded,
-                PanoNeeded = dto.PanoNeeded,
-                BwxNeeded = dto.BwxNeeded,
-                Drc = dto.Drc,
-                PhaDate = dto.PhaDate,
-                PhaDue = dto.PhaDue,
-                Pha = dto.Pha,
-                Pulhes = dto.Pulhes,
-                VisionDate = dto.VisionDate,
-                Vision = dto.Vision,
-                NearVision = dto.NearVision,
-                Vrc = dto.Vrc,
-                Vision2pg = dto.Vision2pg,
-                Vision1mi = dto.Vision1mi,
-                HearingDate = dto.HearingDate,
-                Hearing = dto.Hearing,
-                Hrc = dto.Hrc,
-                HearingProfile = dto.HearingProfile,
-                Quest = dto.Quest,
-                LabNeeded = dto.LabNeeded,
-                Abo = dto.Abo,
-                AboNeeded = dto.AboNeeded,
-                Dna = dto.Dna,
-                SickleDate = dto.SickleDate,
-                Sickle = dto.Sickle,
-                G6pd = dto.G6pd,
-                G6pdDate = dto.G6pdDate,
-                G6pdStatus = dto.G6pdStatus,
-                HivNextTestDate = dto.HivNextTestDate,
-                Hiv = dto.Hiv,
-                LipidNeeded = dto.LipidNeeded,
-                LipidPanel = dto.LipidPanel,
-                CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol,
-                Framingham = dto.Framingham,
-                Ekg = dto.Ekg,
-                EkgNeeded = dto.EkgNeeded,
-                PregnancyTestNeeded = dto.PregnancyTestNeeded,
-                Imm = dto.Imm,
-                HepB = dto.HepB,
-                HepA = dto.HepA,
-                Flu = dto.Flu,
-                TetTdp = dto.TetTdp,
-                Mmr = dto.Mmr,
-                Varicella = dto.Varicella,
-                TaskForce = dto.TaskForce,
-                Notes = dto.Notes,
-                Over44 = dto.Over44,
-                EventDate = dto.EventDate,
-                EventEndDate = dto.EventEndDate,
-                EventId = dto.EventId,
-                VisionWin = dto.VisionWin,
-                DentalWin = dto.DentalWin,
-                PhaWin = dto.PhaWin,
-                HivWin = dto.HivWin,
-                HearingWin = dto.HearingWin,
-                isDeleted = false,
-                AddedBy = loggedinUserName,
-                AddedOn = DateTime.Now,
-                Barcode = dto.Barcode
-            }).ToList();
-
-            fileUploaderRepository.AddRange(Records);
-            fileUploaderRepository.Save();
-
-            return new ResponseDto
-            {
-                Success = true,
-                Message = Messages.DataInsertSuccesfully
-            };
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = Messages.DataInsertFailed,
+                    Data = null
+                };
+            }
         }
 
         public ResponseDto CheckForExistingDataAgainstEventId(string eventId)
@@ -229,6 +170,227 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
 
             return validationErrors;
+        }
+
+        public async Task<List<string>> GetDistinctEventIdsAsync()
+        {
+            try
+            {
+                var data = await fileUploaderRepository.FindForSearchingAsync(f => f.isDeleted != true);
+                return data
+                    .Select(x => x.EventId)
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Distinct()
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error fetching distinct EventIds from FileData.", ex);
+            }
+        }
+
+        public async Task<IEnumerable<FileDataDto>> GetEventDataByEventIdAsync(string eventId)
+        {
+            try
+            {
+                return await fileUploaderRepository.FindForSearchingAsync(f => f.EventId == eventId && f.isDeleted != true);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching FileData by EventId", ex);
+            }
+        }
+
+        public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto)
+        {
+            try
+            {
+                dto.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : dto.CheckInTime;
+                dto.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : dto.CheckOutTime;
+
+                var allRecords = await fileUploaderRepository.GetAllAsync(c =>
+      c.EventId == dto.EventId && c.isDeleted == false);
+
+                var lastRecord = allRecords
+                    .OrderByDescending(x => x.SmId)
+                    .FirstOrDefault();
+
+                long newSmId = 1;
+
+                if (lastRecord?.SmId != null)
+                {
+                    newSmId = lastRecord.SmId.Value + 1;
+                }
+
+                dto.SmId = newSmId;
+
+                await fileUploaderRepository.AddAsync(dto);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = Messages.DataInsertSuccesfully,
+                    Data = dto // You can return the saved DTO (with generated Id etc.)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = Messages.DataInsertFailed,
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto)
+        {
+            try
+            {
+                var existingRecord = await fileUploaderRepository.GetByIdAsync(dto.Id);
+
+                if (existingRecord == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Record not found.",
+                        Data = null
+                    };
+                }
+
+                // Normalize if needed
+                //dto.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : dto.CheckInTime;
+                //dto.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : dto.CheckOutTime;
+
+                var entity = MapAndEnrich(dto, "");
+
+                // Or manually:
+                // existingRecord.FullName = dto.FullName;
+                // existingRecord.Age = dto.Age;
+                // existingRecord.CheckInTime = dto.CheckInTime;
+                // ...
+
+                await fileUploaderRepository.UpdateAsync(entity);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = Messages.DataUpdatedSuccesfully,
+                    Data = existingRecord
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = Messages.DataUpdateFailed,
+                    Data = null
+                };
+            }
+        }
+
+        //public List<FileDataDto> MapDtoToEntity(List<FileDataDto> dtos, string loggedinUserName)
+        //{
+        //    return dtos.Select(dto => MapDtoToEntity(dto, loggedinUserName)).ToList();
+        //}
+
+        private FileDataDto MapAndEnrich(FileDataDto dto, string username)
+        {
+            var entity = _mapper.Map<FileDataDto>(dto);
+            entity.AddedBy = username;
+            entity.AddedOn = DateTime.Now;
+            entity.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : null;
+            entity.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : null;
+            return entity;
+        }
+
+        private void MapDtoToEntity(FileDataDto dto, string loggedinUserName, FileDataDto entity)
+        {
+            //entity.SmId = dto.SmId;
+            entity.FullName = dto.FullName;
+            entity.FullSsn = dto.FullSsn;
+            entity.Last4 = dto.Last4;
+            entity.DodId = dto.DodId;
+            entity.Rank = dto.Rank;
+            entity.Age = dto.Age;
+            entity.Sex = dto.Sex;
+            entity.Mos = dto.Mos;
+            entity.Agr = dto.Agr;
+            entity.Uic = dto.Uic;
+            entity.Mrc = dto.Mrc;
+            entity.Dob = dto.Dob;
+            entity.Over40 = dto.Over40;
+            entity.DentalDue = dto.DentalDue;
+            entity.DentalExam = dto.DentalExam;
+            entity.DentalNeeded = dto.DentalNeeded;
+            entity.PanoNeeded = dto.PanoNeeded;
+            entity.BwxNeeded = dto.BwxNeeded;
+            entity.Drc = dto.Drc;
+            entity.PhaDate = dto.PhaDate;
+            entity.PhaDue = dto.PhaDue;
+            entity.Pha = dto.Pha;
+            entity.Pulhes = dto.Pulhes;
+            entity.VisionDate = dto.VisionDate;
+            entity.Vision = dto.Vision;
+            entity.NearVision = dto.NearVision;
+            entity.Vrc = dto.Vrc;
+            entity.Vision2pg = dto.Vision2pg;
+            entity.Vision1mi = dto.Vision1mi;
+            entity.HearingDate = dto.HearingDate;
+            entity.Hearing = dto.Hearing;
+            entity.Hrc = dto.Hrc;
+            entity.HearingProfile = dto.HearingProfile;
+            entity.Quest = dto.Quest;
+            entity.LabNeeded = dto.LabNeeded;
+            entity.Abo = dto.Abo;
+            entity.AboNeeded = dto.AboNeeded;
+            entity.Dna = dto.Dna;
+            entity.SickleDate = dto.SickleDate;
+            entity.Sickle = dto.Sickle;
+            entity.G6pd = dto.G6pd;
+            entity.G6pdDate = dto.G6pdDate;
+            entity.G6pdStatus = dto.G6pdStatus;
+            entity.HivNextTestDate = dto.HivNextTestDate;
+            entity.Hiv = dto.Hiv;
+            entity.LipidNeeded = dto.LipidNeeded;
+            entity.LipidPanel = dto.LipidPanel;
+            entity.CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol;
+            entity.Framingham = dto.Framingham;
+            entity.Ekg = dto.Ekg;
+            entity.EkgNeeded = dto.EkgNeeded;
+            entity.PregnancyTestNeeded = dto.PregnancyTestNeeded;
+            entity.Imm = dto.Imm;
+            entity.HepB = dto.HepB;
+            entity.HepA = dto.HepA;
+            entity.Flu = dto.Flu;
+            entity.TetTdp = dto.TetTdp;
+            entity.Mmr = dto.Mmr;
+            entity.Varicella = dto.Varicella;
+            entity.TaskForce = dto.TaskForce;
+            entity.Notes = dto.Notes;
+            entity.Over44 = dto.Over44;
+            entity.EventDate = dto.EventDate;
+            entity.EventEndDate = dto.EventEndDate;
+            entity.EventId = dto.EventId;
+            entity.VisionWin = dto.VisionWin;
+            entity.DentalWin = dto.DentalWin;
+            entity.PhaWin = dto.PhaWin;
+            entity.HivWin = dto.HivWin;
+            entity.HearingWin = dto.HearingWin;
+            entity.isDeleted = false;
+            entity.AddedBy = loggedinUserName;
+            entity.AddedOn = DateTime.Now;
+            entity.Barcode = dto.Barcode;
+            entity.CheckIn = dto.CheckIn;
+            entity.CheckOut = dto.CheckOut;
+            entity.CheckInBy = dto.CheckInBy;
+            entity.CheckOutBy = dto.CheckOutBy;
+            entity.WalkInServiceMember = dto.WalkInServiceMember;
+            entity.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : dto.CheckInTime;
+            entity.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : dto.CheckOutTime;
         }
 
         private void ValidateMissingFields(string fileName, DataTable fileData, string[] selectedColumns, List<Dictionary<string, object>> validationErrors)

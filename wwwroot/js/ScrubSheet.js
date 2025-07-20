@@ -143,6 +143,7 @@ const categories = {
 let smIdEditing = 0;
 let currentRow;
 let isAddingNewRow = false;
+let primaryKeyForEdit = 0;
 
 function editRow(button) {
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
@@ -155,6 +156,7 @@ function editRow(button) {
     });
 
     smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
+    primaryKeyForEdit = currentRow.find('.row-id').val();
     populateModalForEdit(rowData);  // Pass the mapped data to populateModal
     document.getElementById("editModalLabel").innerText = "Edit Service Member";
     $('#editModal').modal('show');  // Show the modal
@@ -772,13 +774,10 @@ function populateModalForAdd(data) {
 
     // After modal is populated, bind the event listener to the Dental Needed field
     const dentalNeededField = modalContent.find('select[name="Dental Needed"]');
-    debugger;
     if (dentalNeededField.length > 0) {
         dentalNeededField.on('change', function () {
-            debugger;
             const dentalNeededValue = $(this).val();
             if (dentalNeededValue) {
-                debugger;
                 handleBWXNeededLogicOnDentalNeeded(dentalNeededValue)
             }
         });
@@ -871,7 +870,6 @@ function populateModalForAdd(data) {
 }
 
 function handleBWXNeededLogicOnDentalNeeded(dentalNeededValue) {
-    debugger;
     const bwxNeeded = document.querySelector('[name="BWX Needed"]');
 
     if (!bwxNeeded) return;
@@ -1236,7 +1234,6 @@ async function saveChangesButton() {
     }
 
     const shouldPrint = await showYesNoModal("Would you like to print Service Routing Sheet?");
-
     let smIdToIdentifyRecordForPrint = null;
     if (isAddingNewRow) {
         // Initialize a full row with empty values
@@ -1322,15 +1319,49 @@ async function saveChangesButton() {
 
         fullRowData[barcodeIndex] = finalBarcodeValue;
 
+        if (window.userType === "client") {
+            debugger;
+            const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
 
-        $('#previewTable').DataTable().row.add(fullRowData).draw(false);
+            const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
 
-        if (window.isCheckInOutPage) {
-            walkInServiceMemberCount++;
+            if (result.success) {
+                
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: result.data.message || 'Record inserted successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                /*$('#eventIdDropdown').trigger('change');*/
+
+                //smIdToIdentifyRecordForPrint = result.data.data.smId;
+                //const selectedEventId = $('#eventIdDropdown').val();
+                //await fetchAndRenderEventData(selectedEventId, async () => {
+                //    await printSpecificRowIfNeeded(true, smIdToIdentifyRecordForPrint);
+                //}); 
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: result.status === 500 ? 'Server Error' : 'Network Error',
+                    text: result.data?.message || result.error?.message || 'Something went wrong.'
+                });
+            }
+        } else {
+            $('#previewTable').DataTable().row.add(fullRowData).draw(false);
         }
+
+
+        //if (window.isCheckInOutPage) {
+        //    //walkInServiceMemberCount++;
+        //}
+
+
     }
     else {
-
         if (last4Index !== -1 && fullSsnValue) {
             const updatedLast4 = fullSsnValue.slice(-4);
             updatedData['LAST 4'] = updatedLast4;
@@ -1366,30 +1397,60 @@ async function saveChangesButton() {
         //    }
         //});
 
-        keys.forEach((key, index) => {
-            if (key === 'SM ID') {
-                smIdToIdentifyRecordForPrint = currentRow.find('td').eq(keys.indexOf('SM ID')).text().trim();
+        if (window.userType === "client") {
+            debugger;
+            const dto = prepareObjectToUpdateRecordInDatabase(updatedData, columnMappingsForInsertionAndFetching);
+            const result = await updateSingleRecordInDatabase('/ExcelFileUploader/UpdateSingleRecord', dto);
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: result.data.message || 'Record updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                //smIdToIdentifyRecordForPrint = dto.SmId;
+                //const selectedEventId = $('#eventIdDropdown').val();
+                //await fetchEventDataByEventId(selectedEventId);
+                //printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
+
+
+                /*$('#eventIdDropdown').trigger('change');*/
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: result.status === 500 ? 'Server Error' : 'Network Error',
+                    text: result.data?.message || result.error?.message || 'Something went wrong.'
+                });
             }
-            if (updatedData[key] !== undefined) {
-                const currentCellValue = currentRow.find('td').eq(index).text().trim();
 
-                // Skip update if key is Checked In Time or Checked Out Time and already has a value
-                if (
-                    (key === 'Checked In Time' && currentCellValue !== '') || (key === 'Checked Out Time' && currentCellValue !== '')
-                ) {
-                    return; // Skip this iteration
+        }
+        else {
+            keys.forEach((key, index) => {
+                if (key === 'SM ID') {
+                    smIdToIdentifyRecordForPrint = currentRow.find('td').eq(keys.indexOf('SM ID')).text().trim();
                 }
+                if (updatedData[key] !== undefined) {
+                    const currentCellValue = currentRow.find('td').eq(index).text().trim();
 
-                // Always update for these keys or if value is non-empty
-                if (
-                    key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || updatedData[key].trim() !== ''
-                ) {
-                    currentRow.find('td').eq(index).text(updatedData[key]);
+                    // Skip update if key is Checked In Time or Checked Out Time and already has a value
+                    if (
+                        (key === 'Checked In Time' && currentCellValue !== '') || (key === 'Checked Out Time' && currentCellValue !== '')
+                    ) {
+                        return; // Skip this iteration
+                    }
+
+                    // Always update for these keys or if value is non-empty
+                    if (
+                        key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || updatedData[key].trim() !== ''
+                    ) {
+                        currentRow.find('td').eq(index).text(updatedData[key]);
+                    }
                 }
-            }
-        });
-
-
+            });
+        }
     }
 
     AdjustWidth();
@@ -1397,24 +1458,40 @@ async function saveChangesButton() {
 
     $('#editModal').modal('hide');
 
-    if (window.isCheckInOutPage) {
+    if (window.isCheckInOutPage && window.userType !== "client") {
         RenderUpdatedEventSummaryTable();
 
-        UpdateExcelFile();
+        //UpdateExcelFile();
     }
 
-    if (shouldPrint) {
-        $('#previewTable tbody tr').each(async function () {
-            const smId = $(this).find('td').eq(keys.indexOf('SM ID')).text().trim();
-            if (smId === smIdToIdentifyRecordForPrint) {
-                const row = $(this); // No need for .closest("tr")
-                const rowData = getRowData(row);
-                await generatePDF([rowData], true);
-                return false; // break the loop
-            }
-        });
-    }
+    //if (shouldPrint) {
+    //    $('#previewTable tbody tr').each(async function () {
+    //        const smId = $(this).find('td').eq(keys.indexOf('SM ID')).text().trim();
+    //        if (smId === smIdToIdentifyRecordForPrint) {
+    //            const row = $(this); // No need for .closest("tr")
+    //            const rowData = getRowData(row);
+    //            await generatePDF([rowData], true);
+    //            return false; // break the loop
+    //        }
+    //    });
+    //}
 }
+
+//async function printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint) {
+//    if (!shouldPrint) return;
+
+//    const table = $('#previewTable').DataTable();
+//    table.rows().every(function () {
+//        const data = this.data(); // row data as array
+//        const smId = data[keys.indexOf('SM ID')];
+//        if (smId === smIdToIdentifyRecordForPrint) {
+//            const rowData = getRowData($(this.node()));
+//            await generatePDF([rowData], true);
+//            return false;
+//        }
+//    });
+//}
+
 
 function formatDateTime24(date) {
     const pad = (num) => num.toString().padStart(2, '0');
@@ -1583,7 +1660,11 @@ function getColumnIndex(table, columnName) {
     return index;
 }
 
-document.getElementById('addRowButton').addEventListener('click', function () {
+//document.getElementById('addRowButtonC').addEventListener('click', function () {
+//    addRow();
+//});
+
+$(document).on('click', '.add-row-button', function () {
     addRow();
 });
 
@@ -1605,7 +1686,6 @@ function handleColumnsRelatedToDob(dob) {
     let today;
 
     if (window.isCheckInOutPage) {
-        debugger;
         //var table = $('#previewTable').DataTable();
         //today = new Date(table.row(0).data()[65]);
         const table = $('#previewTable').DataTable();
@@ -1656,7 +1736,6 @@ function handleColumnsRelatedToDob(dob) {
     const ekgNeededField = document.querySelector('[name="EKG NEEDED"]');
     const framinghamField = document.querySelector('[name="Framingham"]');
 
-    debugger;
 
     if (isAddingNewRow || window.isCheckInOutPage) {
         const valueForAge = exactAge > 39.5 ? "NEEDED" : "N/A";
@@ -1797,7 +1876,6 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
 
         // Labs Start
         if ((data.labNeeded || '').toLowerCase() === 'needed') {
-            debugger;
             y = drawLabsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, headingFirstColumnX, fieldsFirstColumnX, fieldsSecondColumnX, lineStartX, lineEndX, y, distanceInLines);
         }
 
@@ -2007,7 +2085,6 @@ function drawLabsSection(doc, data, fontStyle, headingFontSize, fieldsFontSize, 
     doc.setFontSize(fieldsFontSize);
     doc.setFont(fontStyle, "normal");
 
-    debugger;
     // Step 1: Build array of only the needed items
     const labs = [];
     if ((data.hiv || '').toLowerCase() === 'needed') labs.push("HIV");
@@ -2179,3 +2256,245 @@ function showYesNoModal(message = "Are you sure?") {
         modal.show();
     });
 }
+
+const columnMappingsForInsertionAndFetching = [
+    { key: "SmId", label: "SM ID", type: "int" },
+    { key: "FullName", label: "FULL NAME", type: "string" },
+    { key: "FullSsn", label: "FULL SSN", type: "string" },
+    { key: "Last4", label: "LAST 4", type: "string" },
+    { key: "DodId", label: "DOD ID", type: "string" },
+    { key: "Rank", label: "RANK", type: "string" },
+    { key: "Age", label: "AGE", type: "int" },
+    { key: "Sex", label: "SEX", type: "string" },
+    { key: "Mos", label: "MOS", type: "string" },
+    { key: "Agr", label: "AGR", type: "string" },
+    { key: "Uic", label: "UIC", type: "string" },
+    { key: "Mrc", label: "MRC", type: "string" },
+    { key: "Dob", label: "DOB", type: "string" },
+    { key: "Over40", label: "OVER 40", type: "string" },
+    { key: "DentalDue", label: "Dental Due", type: "string" },
+    { key: "DentalExam", label: "Dental Exam", type: "string" },
+    { key: "DentalNeeded", label: "Dental Needed", type: "string" },
+    { key: "PanoNeeded", label: "PANO Needed", type: "string" },
+    { key: "BwxNeeded", label: "BWX Needed", type: "string" },
+    { key: "Drc", label: "DRC", type: "string" },
+    { key: "PhaDate", label: "PHA Date", type: "string" },
+    { key: "PhaDue", label: "PHA Due", type: "string" },
+    { key: "Pha", label: "PHA Needed", type: "string" },
+    { key: "Pulhes", label: "PULHES", type: "string" },
+    { key: "VisionDate", label: "Vision Date", type: "string" },
+    { key: "Vision", label: "VISION Needed", type: "string" },
+    { key: "NearVision", label: "NEAR VISION Needed", type: "string" },
+    { key: "Vrc", label: "VRC", type: "string" },
+    { key: "Vision2pg", label: "Vision 2PG", type: "string" },
+    { key: "Vision1mi", label: "Vision Mask Insert", type: "string" },
+    { key: "HearingDate", label: "Hearing Date", type: "string" },
+    { key: "Hearing", label: "HEARING Needed", type: "string" },
+    { key: "Hrc", label: "HRC", type: "string" },
+    { key: "HearingProfile", label: "Hearing Profile", type: "string" },
+    { key: "Quest", label: "Lab Requisition", type: "string" },
+    { key: "LabNeeded", label: "Lab Needed", type: "string" },
+    { key: "Abo", label: "ABO", type: "string" },
+    { key: "AboNeeded", label: "ABO Needed", type: "string" },
+    { key: "Dna", label: "DNA", type: "string" },
+    { key: "SickleDate", label: "Sickle Date", type: "string" },
+    { key: "Sickle", label: "SICKLE", type: "string" },
+    { key: "G6pd", label: "G6PD", type: "string" },
+    { key: "G6pdDate", label: "G6PD Date", type: "string" },
+    { key: "G6pdStatus", label: "G6PD Status", type: "string" },
+    { key: "HivNextTestDate", label: "HIV NEXT TEST DATE", type: "string" },
+    { key: "Hiv", label: "HIV", type: "string" },
+    { key: "LipidNeeded", label: "Lipid Needed", type: "string" },
+    { key: "LipidPanel", label: "LIPID PANEL", type: "string" },
+    { key: "CholesterolHdlCholesterol", label: "Cholesterol / HDL Cholesterol", type: "string" },
+    { key: "Framingham", label: "Framingham", type: "string" },
+    { key: "Ekg", label: "EKG (Date)", type: "string" },
+    { key: "EkgNeeded", label: "EKG NEEDED", type: "string" },
+    { key: "PregnancyTestNeeded", label: "Pregnancy Test Needed", type: "string" },
+    { key: "Imm", label: "IMM Needed", type: "string" },
+    { key: "HepB", label: "Hep B Needed", type: "string" },
+    { key: "HepA", label: "Hep A Needed", type: "string" },
+    { key: "Flu", label: "FLU Needed", type: "string" },
+    { key: "TetTdp", label: "Tet/TDP Needed", type: "string" },
+    { key: "Mmr", label: "MMR Needed", type: "string" },
+    { key: "Varicella", label: "Varicella Needed", type: "string" },
+    { key: "TaskForce", label: "TaskForce", type: "string" },
+    { key: "Notes", label: "Notes", type: "string" },
+    { key: "Over44", label: "Over 44", type: "string" },
+    { key: "EventDate", label: "EventDate", type: "string" },
+    { key: "EventEndDate", label: "Event End Date", type: "string" },
+    { key: "EventId", label: "EventID", type: "string" },
+    { key: "VisionWin", label: "Vision Win", type: "int" },
+    { key: "DentalWin", label: "Dental Win", type: "int" },
+    { key: "PhaWin", label: "PHA Win", type: "int" },
+    { key: "HivWin", label: "HIV Win", type: "int" },
+    { key: "HearingWin", label: "Hearing WIN", type: "int" },
+    { key: "Barcode", label: "Barcode", type: "string" },
+    { key: "CheckIn", label: "Checked In", type: "string" },
+    { key: "CheckOut", label: "Checked Out", type: "string" },
+    { key: "CheckInBy", label: "Checked In By", type: "string" },
+    { key: "CheckOutBy", label: "Checked Out By", type: "string" },
+    { key: "CheckInTime", label: "Checked In Time", type: "date" },
+    { key: "CheckOutTime", label: "Checked Out Time", type: "date" },
+    { key: "WalkInServiceMember", label: "Walk-In Service Member", type: "string" }
+];
+
+
+function submitData() {
+    $('#loader').removeClass('d-none');
+    let tableRows = [];
+
+    $('#previewTable tbody tr').each(function () {
+        let $cells = $(this).find('td');
+        let row = {};
+
+        columnMappingsForInsertionAndFetching.forEach(mapping => {
+            let value = getCellValue($cells, mapping.label);
+            switch (mapping.type) {
+                case "int":
+                    row[mapping.key] = parseInt(value) || 0;
+                    break;
+                case "float":
+                    row[mapping.key] = parseFloat(value) || 0.0;
+                    break;
+                case "date":
+                    // Handle empty string or invalid date
+                    if (!value) {
+                        row[mapping.key] = null;
+                    } else {
+                        let parsedDate = new Date(value);
+
+                        // If invalid date, fallback to null
+                        if (isNaN(parsedDate.getTime())) {
+                            row[mapping.key] = null;
+                        } else {
+                            // Format as ISO string (PostgreSQL-compatible)
+                            row[mapping.key] = parsedDate.toISOString(); // e.g., "2025-07-14T10:30:00.000Z"
+                        }
+                    }
+                    break;
+                default: // string or unknown
+                    row[mapping.key] = value;
+                    break;
+            }
+        });
+
+        row["isDeleted"] = false; // always false when inserting
+        tableRows.push(row);
+    });
+
+    let eventId = null;
+
+    if (window.isCheckInOutPage === true) {
+        const firstRow = $('#previewTable tbody tr:first');
+        const $cells = firstRow.find('td');
+        eventId = getCellValue($cells, "EventID");
+
+    }
+    else {
+        eventId = document.getElementById('eventId').value;
+    }
+
+    $.ajax({
+        url: '/Home/CheckForExistingDataAgainstEventId',
+        type: 'POST',
+        data: JSON.stringify(eventId),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function (response) {
+            if (response.success) {
+                submitDataToDatabase(tableRows, eventId);
+            } else {
+                Swal.fire({
+                    title: 'Data Exists!',
+                    text: 'Data already exists for this Event ID. Do you want to overwrite it?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, overwrite',
+                    cancelButtonText: 'No, cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitDataToDatabase(tableRows, eventId);
+                    } else {
+                        Swal.fire('Cancelled', 'No changes were made.', 'info');
+                    }
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            alert("Error: " + error);
+        },
+        complete: function () {
+            $('#loader').addClass('d-none');
+        }
+    });
+}
+
+function submitDataToDatabase(tableRows, eventId) {
+    const dataToSend = JSON.stringify({
+        Entities: tableRows,
+        EventId: eventId
+    });
+    console.log(dataToSend);
+    $.ajax({
+        url: '/Home/SubmitDataInDatabase',
+        type: 'POST',
+        data: dataToSend,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function (response) {
+            Swal.fire({
+                title: response.success ? "Success!" : "Error!",
+                text: response.message,
+                icon: response.success ? "success" : "error",
+                confirmButtonText: "OK"
+            }).then(() => {
+                if (response.success) {
+                    clearPreview();
+                }
+            });
+        },
+        error: function (xhr, status, error) {
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong: " + error,
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        },
+        complete: function () {
+            $('#loader').addClass('d-none');
+        }
+    });
+}
+
+
+function clearPreview() {
+    if ($.fn.DataTable.isDataTable('#previewTable')) {
+        $('#previewTable').DataTable().clear().destroy(); // Clear data and destroy the instance
+    }
+
+    const tableHead = document.querySelector('#previewTable thead');
+    const tableBody = document.querySelector('#previewTable tbody');
+
+    tableHead.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    if (window.isCheckInOutPage === false) {
+        document.getElementById('taskforceInfoContainer').innerHTML = '';
+        document.getElementById('fileValidationErrorContainer').innerHTML = '';
+        document.getElementById('generateExcelButton').classList.add('d-none');
+    }
+    else {
+        $('#eventSummaryTable').addClass('d-none');
+        $('.card.p-3.mb-4').addClass('d-none');
+        $('#excelFile').val('');
+    }
+
+    document.getElementById('submitDataButton').classList.add('d-none');
+    /*document.getElementById('addRowButton').classList.add('d-none');*/
+    smIdCounter = 0;
+    uploadCounter = 0;
+}
+
+

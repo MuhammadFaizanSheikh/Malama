@@ -66,7 +66,7 @@
         <div class="modal-content rounded-4 shadow-lg border-0">
 
             <!-- Custom Colored Header -->
-            <div class="modal-header custom-header text-dark rounded-top-4">
+            <div class="modal-header custom-header rounded-top-4">
                 <h5 class="modal-title w-100 text-center" id="yesNoModalTitle">
                     <i class="bi bi-question-circle-fill me-2"></i>
                     Confirmation
@@ -100,10 +100,13 @@
     }
 
     /* Custom header color */
-    .custom-header {
+    .custom-header,
+    .custom-header .modal-title {
         background-color: rgba(80, 90, 201, 1);
         border-bottom: none;
+        color: white !important; /* force override */
     }
+
 
     .custom-yes-btn {
         background-color: rgba(80, 90, 201, 1); /* button background */
@@ -126,5 +129,6 @@
     .modal.show .modal-dialog {
         transform: translateY(0);
     }
+
 
 </style>

@@ -17,7 +17,8 @@
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<link rel="stylesheet" href="~/css/site.css" />
+<link rel="stylesheet" href="~/css/site.css"/>
+
 
 <div class="container-fluid" style="max-width: 100%; padding-top: 0; margin-top: 0;">
     <!-- Header -->
@@ -29,19 +30,28 @@
     </div>
 
     <!-- File Input Section -->
-    <div class="d-flex justify-content-center mt-4">
+    <div id="fileUploadContainer" class="justify-content-center mt-4">
         <div class="form-group w-75">
             <div class="row justify-content-center align-items-center">
-                @* <label for="excelFile" class="col-auto col-form-label">Select Excel File:</label> *@
                 <div class="col-auto">
                     <input type="file" id="excelFile" class="form-control-file" accept=".xlsx,.xls" />
                 </div>
-                @* <div class="col-auto">
-                <input type="text" id="filePathDisplay" class="form-control eve000000000121 48yu44u u N u40 k+nt-input" placeholder="No file selected" readonly />
-                </div> *@
             </div>
         </div>
     </div>
+
+    <select id="eventIdDropdown" name="eventId" class="form-control">
+        <option value="">-- Select Event --</option>
+        @foreach (var item in ViewBag.EventIdList as List<SelectListItem>)
+        {
+            <option value="@item.Value">@item.Text</option>
+        }
+    </select>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-2">@ViewBag.ErrorMessage</div>
+    }
 
     <table id="eventSummaryTable" class="display nowrap table table-bordered" style="display: none;">
         <thead>
@@ -146,14 +156,14 @@
         </div>
     </div>
 
-    <div id="disclaimer" class="content" style="text-align: center; margin: 20px auto; max-width: 800px;">
-        <div class="text">
-            <strong>Note:</strong>
-            Please ensure to save the Scrubbed file in the "ExportedFiles" folder located on the C drive. If the 'ExportedFiles' folder does not exist, please create a new folder titled 'ExportedFiles' on the C drive.<br><br>
+    @* <div id="disclaimer" class="content" style="text-align: center; margin: 20px auto; max-width: 800px;">
+    <div class="text">
+    <strong>Note:</strong>
+    Please ensure to save the Scrubbed file in the "ExportedFiles" folder located on the C drive. If the 'ExportedFiles' folder does not exist, please create a new folder titled 'ExportedFiles' on the C drive.<br><br>
 
-            Any actions performed within this application, such as editing a Service Mamber record or adding a Walk-In Service Mamber record, along with any information related to Checked In or Checked Out status, will be reflected in the selected Scrubbed sheet located in the 'ExportedFiles' directory on the C drive.
-        </div>
+    Any actions performed within this application, such as editing a Service Mamber record or adding a Walk-In Service Mamber record, along with any information related to Checked In or Checked Out status, will be reflected in the selected Scrubbed sheet located in the 'ExportedFiles' directory on the C drive.
     </div>
+    </div> *@
 
 
     <!-- Preview Table -->
@@ -162,9 +172,10 @@
 
     <!-- Buttons -->
     <div class="d-flex justify-content-center my-3 button-container">
-        <button id="addRowButton" class="btn btn-secondary d-none">Add Walk-In Service Member</button>
+        <button class="btn btn-secondary add-row-button">Add Walk-In Service Member</button>
+        @* <button id="addRowButtonC" class="btn btn-secondary">Add Walk-In Service Member</button> *@
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
-        @* <button id="submitDataButton" class="btn btn-success" onclick="submitData()">Submit Data</button> *@
+        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
     </div>
 
@@ -204,10 +215,25 @@
 
 <!-- Excel Preview Script -->
 <script>
+    window.userType = '@ViewBag.UserType';
     window.isCheckInOutPage = true;
 
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.userType === "client") {
+            const uploadSection = document.getElementById('fileUploadContainer');
+            if (uploadSection) {
+                uploadSection.style.display = 'none';
+            }
+        } else {
+            const eventIdDropdown = document.getElementById('eventIdDropdown');
+            if (eventIdDropdown) {
+                eventIdDropdown.style.display = 'none';
+            }
+        }
+    });
+
     let smIdCounter = null;
-    let walkInServiceMemberCount = 0;
+    // let walkInServiceMemberCount = 0;
 
     $(window).on('resize', function () {
         $('#previewTable').DataTable().columns.adjust().draw();
@@ -284,7 +310,6 @@
 
                 // $("#previewTable thead th").addClass("custom-sort-header");
 
-                debugger;
                 let formattedData = [];
                 for (let i = 1; i < json.length; i++) {
                     let rowData = [];
@@ -296,21 +321,18 @@
                     rowData.unshift(null); // This is for the "Actions" column
                     formattedData.push(rowData);
 
-                    const walkInCol = validIndexes.find(col => col.header.trim().toLowerCase() === "walk-in service member");
-                    if (walkInCol) {
-                        const walkInValue = (json[i][walkInCol.index] ?? "").toString().trim().toLowerCase();
-                        if (walkInValue === "yes") {
-                            walkInServiceMemberCount++;
-                        }
-                    }
+                    // const walkInCol = validIndexes.find(col => col.header.trim().toLowerCase() === "walk-in service member");
+                    // if (walkInCol) {
+                    //     const walkInValue = (json[i][walkInCol.index] ?? "").toString().trim().toLowerCase();
+                    //     if (walkInValue === "yes") {
+                    //         walkInServiceMemberCount++;
+                    //     }
+                    // }
                 }
 
                 const lastRow = json[json.length - 1];
                 smIdCounter = lastRow[0] ?? null;
 
-                const colors = ["#f9f9f9", "#eef9f9", "#f0f9ff", "#fff0f0"]; // or your actual color array
-                const uploadCounter = 1; // you can manage this as per your logic
-                const missingFullNameRows = []; // update this based on validation if needed
                 const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
                 const sexIndexForSorting = keys.indexOf("SEX") - 1;
 
@@ -323,9 +345,9 @@
                             orderable: false,
                             render: function () {
                                 return `
-                            <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
-                            <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
-                        `;
+                                <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
+                                <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
+                            `;
                             }
                         },
                         // Adjust mapping to start from index 1 (because index 0 is Actions)
@@ -344,18 +366,12 @@
                     },
                     ordering: true,
                     order: [],
-                    createdRow: function (row, data, dataIndex) {
-                        let backgroundColor = colors[(uploadCounter - 1) % colors.length];
-                        $(row).find('td').css('background-color', backgroundColor);
-                        if (missingFullNameRows.includes(dataIndex + 1)) {
-                            $(row).css('border', '2px solid red');
-                        }
-                    }
                 });
 
-
+                $('#eventSummaryTable').removeClass('d-none');
                 RenderUpdatedEventSummaryTable();
-                document.getElementById('addRowButton').classList.remove('d-none');
+                // document.getElementById('addRowButton').classList.remove('d-none');
+                document.getElementById('submitDataButton').classList.remove('d-none');
                 const filterDiv = document.querySelector('.card.p-3.mb-4');
                 filterDiv.style.display = 'block';
                 document.getElementById("disclaimer").style.display = "none";
@@ -373,16 +389,18 @@
         var previewTable = $("#previewTable");
         var checkedInIndex = getColumnIndex(previewTable, "Checked In");
         var checkedOutIndex = getColumnIndex(previewTable, "Checked Out");
+        var walkInServiceMemberIndex = getColumnIndex(previewTable, "Walk-In Service Member");
 
         // Ensure columns were found
-        if (checkedInIndex === -1 || checkedOutIndex === -1) {
-            console.error("Checked In or Checked Out columns not found!");
+        if (checkedInIndex === -1 || checkedOutIndex === -1 || walkInServiceMemberIndex === -1) {
+            console.error("Checked In or Checked Out or Walk-In Service Member columns not found!");
             return;
         }
 
         let totalSM = 0;
         let checkedInCount = 0;
         let checkedOutCount = 0;
+        let walkInServiceMemberCount = 0;
 
         // Loop through table body rows (excluding the header)
         previewTable.find("tbody tr").each(function () {
@@ -391,6 +409,7 @@
             let cells = $(this).find("td");
             let checkedInText = cells.eq(checkedInIndex).text().trim().toLowerCase();
             let checkedOutText = cells.eq(checkedOutIndex).text().trim().toLowerCase();
+            let walkInServiceMemberText = cells.eq(walkInServiceMemberIndex).text().trim().toLowerCase();
 
             if (checkedInText === "yes") {
                 checkedInCount++;
@@ -399,79 +418,253 @@
             if (checkedOutText === "yes") {
                 checkedOutCount++;
             }
+
+            if (walkInServiceMemberText === "yes") {
+                walkInServiceMemberCount++;
+            }
         });
 
         // Update eventSummaryTable values
         $("#totalSmColumn").text(totalSM);
         $("#checkedInColumn").text(checkedInCount);
         $("#checkedOutColumn").text(checkedOutCount);
+        // $("#walkedInColumn").text(walkInServiceMemberCount);
         $("#walkedInColumn").text(walkInServiceMemberCount);
         $("#eventSummaryTable").show();
     }
 
-    function UpdateExcelFile() {
-        const previewTable = $('#previewTable').DataTable();
+    // function UpdateExcelFile() {
+    //     const previewTable = $('#previewTable').DataTable();
 
-        // Step 1: Clear all filters
-        previewTable.search('');
-        previewTable.columns().search('');
-        resetAllFilters();
-        // Step 2: Wait for redraw to complete before extracting data
-        previewTable.one('draw', function () {
-            const table = document.getElementById("previewTable");
-            const data = [];
+    //     // Step 1: Clear all filters
+    //     previewTable.search('');
+    //     previewTable.columns().search('');
+    //     resetAllFilters();
+    //     // Step 2: Wait for redraw to complete before extracting data
+    //     previewTable.one('draw', function () {
+    //         const table = document.getElementById("previewTable");
+    //         const data = [];
 
-            // Extract headers (excluding the last one, assuming it's "Actions")
-            const headers = [];
-            const headerCells = table.querySelectorAll("thead tr th");
-            headerCells.forEach((th, i) => {
-                if (th.innerText.trim() !== "Actions") {
-                    headers.push(th.innerText.trim());
-                }
-            });
+    //         // Extract headers (excluding the last one, assuming it's "Actions")
+    //         const headers = [];
+    //         const headerCells = table.querySelectorAll("thead tr th");
+    //         headerCells.forEach((th, i) => {
+    //             if (th.innerText.trim() !== "Actions") {
+    //                 headers.push(th.innerText.trim());
+    //             }
+    //         });
 
-            // Extract actual data from table rows
-            const bodyRows = table.querySelectorAll("tbody tr");
-            bodyRows.forEach(row => {
-                const rowData = {};
-                const cells = row.querySelectorAll("td");
+    //         // Extract actual data from table rows
+    //         const bodyRows = table.querySelectorAll("tbody tr");
+    //         bodyRows.forEach(row => {
+    //             const rowData = {};
+    //             const cells = row.querySelectorAll("td");
 
-                headers.forEach((header, i) => {
-                    // Skip the first cell (which is "Actions"), so start from cells[1]
-                    rowData[header] = cells[i + 1]?.innerText.trim() ?? "";
-                });
+    //             headers.forEach((header, i) => {
+    //                 // Skip the first cell (which is "Actions"), so start from cells[1]
+    //                 rowData[header] = cells[i + 1]?.innerText.trim() ?? "";
+    //             });
 
-                data.push(rowData);
-            });
+    //             data.push(rowData);
+    //         });
 
-            // Get filename from file input
-            const fileInput = document.getElementById("excelFile");
-            const filename = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : "";
+    //         // Get filename from file input
+    //         const fileInput = document.getElementById("excelFile");
+    //         const filename = fileInput && fileInput.files.length > 0 ? fileInput.files[0].name : "";
 
-            if (!filename) {
-                Swal.fire("Error", "Filename not found. Please upload a file first.", "error");
-                return;
-            }
+    //         if (!filename) {
+    //             Swal.fire("Error", "Filename not found. Please upload a file first.", "error");
+    //             return;
+    //         }
 
-            // Send to server
-            $.ajax({
-                url: `/ExcelFileUploader/ExportToExcel?filename=${encodeURIComponent(filename)}`,
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (response) {
-                    Swal.fire("Success", response, "success");
+    //         // Send to server
+    //         $.ajax({
+    //             url: `/ExcelFileUploader/ExportToExcel?filename=${encodeURIComponent(filename)}`,
+    //             type: 'POST',
+    //             contentType: 'application/json',
+    //             data: JSON.stringify(data),
+    //             success: function (response) {
+    //                 Swal.fire("Success", response, "success");
+    //             },
+    //             error: function (xhr) {
+    //                 const error = xhr.responseText || "Failed to export data";
+    //                 Swal.fire("Error", error, "error");
+    //             }
+    //         });
+    //     });
+
+    //     // Trigger redraw to reset filters and invoke draw handler
+    //     previewTable.draw();
+    // }
+
+    $('#eventIdDropdown').on('change', async function () {
+        const selectedEventId = $(this).val();
+        await fetchAndRenderEventData(selectedEventId);
+    });
+
+    async function fetchAndRenderEventData(eventId) {
+        if (!eventId) return;
+
+        $('#loader').removeClass('d-none'); // Show loader
+
+        try {
+            const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                error: function (xhr) {
-                    const error = xhr.responseText || "Failed to export data";
-                    Swal.fire("Error", error, "error");
-                }
+                body: JSON.stringify(eventId)
             });
+
+            const result = await response.json();
+
+            if (result.success && result.data.length > 0) {
+                renderPreviewTable(result.data);
+            } else {
+                Swal.fire('No Data', 'No records found for the selected Event ID.', 'info');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Something went wrong while fetching data.', 'error');
+        } finally {
+            $('#loader').addClass('d-none'); // Hide loader
+        }
+    }
+
+
+
+    // $('#eventIdDropdown').on('change', function () {
+    //     const selectedEventId = $(this).val();
+    //     if (!selectedEventId) return;
+
+    //     $('#loader').removeClass('d-none'); // Show loader
+
+    //     $.ajax({
+    //         url: '/ExcelFileUploader/GetEventDataByEventId',
+    //         type: 'POST',
+    //         data: JSON.stringify(selectedEventId),
+    //         contentType: 'application/json',
+    //         success: function (response) {
+    //             if (response.success && response.data.length > 0) {
+    //                 renderPreviewTable(response.data);
+    //             } else {
+    //                 Swal.fire('No Data', 'No records found for the selected Event ID.', 'info');
+    //             }
+    //         },
+    //         error: function () {
+    //             Swal.fire('Error', 'Something went wrong while fetching data.', 'error');
+    //         },
+    //         complete: function () {
+    //             $('#loader').addClass('d-none');
+    //         }
+    //     });
+    // });
+
+
+
+    function renderPreviewTable(data) {
+        debugger;
+        if ($.fn.DataTable.isDataTable("#previewTable")) {
+            $("#previewTable").DataTable().clear().destroy();
+        }
+
+        $("#previewTable thead").empty();
+        $("#previewTable tbody").empty();
+
+        // Generate headers dynamically from columnMappings
+        let headerRow = `<tr><th>Actions</th>`;
+        columnMappingsForInsertionAndFetching.forEach(mapping => {
+            headerRow += `<th>${mapping.label}</th>`;
+        });
+        headerRow += `</tr>`;
+        $("#previewTable thead").append(headerRow);
+
+        $("#previewTable thead th").css({
+            "background-color": "rgba(120, 130, 221, 1)",
+            "color": "white" // optional: for better contrast
         });
 
-        // Trigger redraw to reset filters and invoke draw handler
-        previewTable.draw();
+        debugger;
+        // Generate rows
+        let formattedData = data.map(row => {
+            const rowData = [null]; // placeholder for "Actions"
+            columnMappingsForInsertionAndFetching.forEach(mapping => {
+                let value = row[mapping.key] ?? "";
+
+                // Format date fields
+                if (mapping.type === "date" && value) {
+                    const parsedDate = new Date(value);
+                    if (!isNaN(parsedDate)) {
+                        value = parsedDate.toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: false
+                        }).replace(",", ""); // Remove comma between date and time
+                    }
+                }
+
+                rowData.push($('<div>').text(value).html()); // escape HTML
+            });
+
+            rowData.push(`<input type="hidden" class="row-id" value="${row.Id}" />`);
+            return rowData;
+        });
+
+
+        const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
+        const sexIndexForSorting = keys.indexOf("SEX") - 1;
+        const smIdIndexForSorting = keys.indexOf("SM ID");
+
+        // Initialize DataTable
+        $("#previewTable").DataTable({
+            data: formattedData,
+            columns: [
+                {
+                    title: "Actions",
+                    data: null,
+                    orderable: false,
+                    render: function () {
+                        return `
+                                   <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
+                                 <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
+                            `;
+                    }
+                },
+                ...columnMappingsForInsertionAndFetching.map((mapping, i) => ({
+                    title: mapping.label,
+                    orderable: (i === fullNameIndexForSorting || i === sexIndexForSorting)
+                }))
+            ],
+            createdRow: function (row, data, dataIndex) {
+                // Append the hidden ID input at the end of the row
+                const hiddenInput = $(data[data.length - 1]);
+                $(row).append(hiddenInput);
+            },
+            scrollY: 400,
+            scrollX: true,
+            scrollCollapse: true,
+            paging: false,
+            autoWidth: false,
+            fixedColumns: {
+                leftColumns: 7
+            },
+            ordering: true,
+            order: [[smIdIndexForSorting, 'asc']]
+        });
+
+        // Show relevant UI
+        debugger;
+        $('#eventSummaryTable').removeClass('d-none');
+        const filterDiv = document.querySelector('.card.p-3.mb-4');
+                filterDiv.style.display = 'block';
+        // document.getElementById('addRowButton').classList.remove('d-none');
+
+        RenderUpdatedEventSummaryTable();
     }
+
 
 
     $('#searchStaffBtn').on('click', function () {
@@ -546,6 +739,139 @@
         previewTable.columns().search('');
         previewTable.search('').draw();
     }
+
+    async function addSingleRecordInDatabase(url, data) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            return {
+                success: response.ok && result.success,
+                data: result,
+                status: response.status
+            };
+        } catch (error) {
+            console.error("AJAX call failed:", error);
+            return {
+                success: false,
+                error: error
+            };
+        }
+    }
+
+    async function updateSingleRecordInDatabase(url, dtoObject) {
+        try {
+            debugger;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dtoObject)
+            });
+
+            const data = await response.json();
+
+            return {
+                success: response.ok,
+                status: response.status,
+                data: data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                status: null,
+                error: error
+            };
+        }
+    }
+
+
+    function prepareObjectToAddRecordInDatabase(fullRowData, keys) {
+        const dto = {};
+
+        columnMappingsForInsertionAndFetching.forEach(mapping => {
+            const keyIndex = keys.indexOf(mapping.label);
+            if (keyIndex === -1) return;
+
+            let value = fullRowData[keyIndex];
+
+            switch (mapping.type) {
+                case "int":
+                    dto[mapping.key] = value !== "" && value != null ? parseInt(value) : 0;
+                    break;
+
+                case "float":
+                    dto[mapping.key] = value !== "" && value != null ? parseFloat(value) : 0.0;
+                    break;
+
+                case "date":
+                    if (!value) {
+                        dto[mapping.key] = null;
+                    } else {
+                        let parsedDate = new Date(value);
+                        dto[mapping.key] = isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString();
+                    }
+                    break;
+
+                default: // string or unknown
+                    dto[mapping.key] = value !== undefined && value !== null ? value.toString().trim() : null;
+                    break;
+            }
+        });
+
+        dto["isDeleted"] = false;
+
+        return dto;
+    }
+
+    function prepareObjectToUpdateRecordInDatabase(updatedData, columnMappings) {
+        debugger;
+        const keyByLabel = {};
+        const typeByLabel = {};
+
+        columnMappings.forEach(mapping => {
+            const labelUpper = mapping.label.toUpperCase();
+            keyByLabel[labelUpper] = mapping.key;
+            typeByLabel[labelUpper] = mapping.type;
+        });
+
+        const transformed = {};
+        for (const label in updatedData) {
+            const labelUpper = label.toUpperCase();
+            const dbKey = keyByLabel[labelUpper];
+            const fieldType = typeByLabel[labelUpper];
+
+            if (dbKey) {
+                let value = updatedData[label];
+
+                // Apply type conversion
+                if (fieldType === 'int') {
+                    value = value === '' || value == null ? null : parseInt(value);
+                } else if (fieldType === 'date') {
+                    value = value ? new Date(value).toISOString() : null;
+                } else if (fieldType === 'string') {
+                    value = value != null ? String(value) : null;
+                }
+
+                transformed[dbKey] = value;
+            }
+        }
+
+        transformed["Id"] = primaryKeyForEdit;//bind id for update record in database
+        transformed["SmId"] = smIdEditing
+
+        return transformed;
+    }
+
+
 </script>
 
 <!-- Styles -->

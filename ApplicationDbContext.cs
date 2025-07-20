@@ -28,10 +28,31 @@ namespace ExcelFilesCompiler
         public DbSet<EventStaffDetail> EventStaffDetail { get; set; }
 
 
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    base.OnModelCreating(modelBuilder);
+        //}
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Global override for PostgreSQL only
+            if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+                {
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                        {
+                            property.SetColumnType("timestamp without time zone");
+                        }
+                    }
+                }
+            }
         }
+
     }
 
 }

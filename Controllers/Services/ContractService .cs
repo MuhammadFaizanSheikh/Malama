@@ -165,7 +165,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return await repository.FindForSearchingAsync(c => true);
                 }
 
-                return await repository.FindForSearchingAsync(c => c.ContractName.Contains(contractName));
+                //return await repository.FindForSearchingAsync(c => c.ContractName.Contains(contractName));
+                return await repository.FindForSearchingAsync(
+    c => c.ContractName.ToLower().Contains(contractName.ToLower())
+);
+
             }
             catch (Exception ex)
             {

@@ -68,7 +68,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     UserName = model.Email,
                     Email = model.Email,
                     IsActive = true,
-                    TwoFactorEnabled = true,
+                    TwoFactorEnabled = false
+                    ,
                     IsEventUser = IsEventUser
                 };
 

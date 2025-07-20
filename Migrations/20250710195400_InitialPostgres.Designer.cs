@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250710195400_InitialPostgres")]
+    partial class InitialPostgres
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1315,19 +1318,13 @@ namespace Malama.Migrations
                     b.Property<string>("CheckIn")
                         .HasColumnType("text");
 
-                    b.Property<string>("CheckInBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CheckInTime")
+                    b.Property<DateTime?>("CheckInDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("CheckOut")
                         .HasColumnType("text");
 
-                    b.Property<string>("CheckOutBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CheckOutTime")
+                    b.Property<DateTime?>("CheckOutDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("CholesterolHdlCholesterol")
@@ -1532,9 +1529,6 @@ namespace Malama.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Vrc")
-                        .HasColumnType("text");
-
-                    b.Property<string>("WalkInServiceMember")
                         .HasColumnType("text");
 
                     b.Property<bool?>("isDeleted")

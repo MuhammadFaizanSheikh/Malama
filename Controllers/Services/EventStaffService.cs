@@ -470,7 +470,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return await _unitOfWork.EventStaff.FindForSearchingAsync(c => true);
                 }
 
-                return await _unitOfWork.EventStaff.FindForSearchingAsync(c => c.StaffID.Contains(staffId));
+                //return await _unitOfWork.EventStaff.FindForSearchingAsync(c => c.StaffID.Contains(staffId));
+                return await _unitOfWork.EventStaff.FindForSearchingAsync(
+            c => c.StaffID.ToLower().Contains(staffId.ToLower())
+        );
             }
             catch (Exception ex)
             {

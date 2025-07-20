@@ -137,7 +137,8 @@
 
 
     <div class="d-flex justify-content-center my-3 button-container">
-        <button id="addRowButton" class="btn btn-secondary d-none">Add Walk-In Service Member</button>
+        <button class="btn btn-secondary add-row-button">Add Walk-In Service Member</button>
+        @* <button id="addRowButton" class="btn btn-secondary">Add Walk-In Service Member</button> *@
         <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
         <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
         <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
@@ -187,25 +188,7 @@
 
             document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
-            function clearPreview() {
-                if ($.fn.DataTable.isDataTable('#previewTable')) {
-                    $('#previewTable').DataTable().clear().destroy(); // Clear data and destroy the instance
-                }
-
-                const tableHead = document.querySelector('#previewTable thead');
-                const tableBody = document.querySelector('#previewTable tbody');
-
-                tableHead.innerHTML = '';
-                tableBody.innerHTML = '';
-
-                document.getElementById('taskforceInfoContainer').innerHTML = '';
-                document.getElementById('fileValidationErrorContainer').innerHTML = '';
-                document.getElementById('generateExcelButton').classList.add('d-none');
-                document.getElementById('submitDataButton').classList.add('d-none');
-                document.getElementById('addRowButton').classList.add('d-none');
-                smIdCounter = 0;
-                uploadCounter = 0;
-            }
+            
 
 
             document.getElementById('generateExcelButton').addEventListener('click', function () {
@@ -609,7 +592,7 @@
                 document.getElementById('generateExcelButton').classList.remove('d-none');
                 document.getElementById('submitDataButton').classList.remove('d-none');
                 document.getElementById('btnDownloadPDF').classList.remove('d-none');
-                document.getElementById('addRowButton').classList.remove('d-none');
+                // document.getElementById('addRowButton').classList.remove('d-none');
                 isPreviewDoneSuccessfully = true;
             }
 
@@ -656,168 +639,7 @@
 
 
 
-            function submitData() {
-                 debugger;
-                $('#loader').removeClass('d-none');
-                // Get all data from the DataTable
-                let tableRows = [];
-                $('#previewTable tbody tr').each(function () {
-                    let $cells = $(this).find('td');
-                    let row = {
-                        SmId: parseInt(getCellValue($cells, "SM ID")),
-                        FullName: getCellValue($cells, "FULL NAME"),
-                        // Name: getCellValue($cells, "NAME"),
-                        FullSsn: getCellValue($cells, "FULL SSN"),
-                        Last4: getCellValue($cells, "LAST 4"),
-                        DodId: getCellValue($cells, "DOD ID"),
-                        Rank: getCellValue($cells, "RANK"),
-                        Age: parseInt(getCellValue($cells, "AGE")),
-                        Sex: getCellValue($cells, "SEX"),
-                        Mos: getCellValue($cells, "MOS"),
-                        Agr: getCellValue($cells, "AGR"),
-                        Uic: getCellValue($cells, "UIC"),
-                        Mrc: getCellValue($cells, "MRC"),
-                        Dob: getCellValue($cells, "DOB"),
-                        Over40: getCellValue($cells, "OVER 40"),
-                        DentalDue: getCellValue($cells, "Dental Due"),
-                        DentalExam: getCellValue($cells, "Dental Exam"),
-                        DentalNeeded: getCellValue($cells, "Dental Needed"),
-                        PanoNeeded: getCellValue($cells, "PANO Needed"),
-                        BwxNeeded: getCellValue($cells, "BWX Needed"),
-                        Drc: getCellValue($cells, "DRC"),
-                        PhaDate: getCellValue($cells, "PHA Date"),
-                        PhaDue: getCellValue($cells, "PHA Due"),
-                        Pha: getCellValue($cells, "PHA Needed"),
-                        Pulhes: getCellValue($cells, "PULHES"),
-                        VisionDate: getCellValue($cells, "Vision Date"),
-                        Vision: getCellValue($cells, "VISION Needed"),
-                        NearVision: getCellValue($cells, "NEAR VISION Needed"),
-                        Vrc: getCellValue($cells, "VRC"),
-                        Vision2pg: getCellValue($cells, "Vision 2PG"),
-                        Vision1mi: getCellValue($cells, "Vision Mask Insert"),
-                        HearingDate: getCellValue($cells, "Hearing Date"),
-                        Hearing: getCellValue($cells, "HEARING Needed"),
-                        Hrc: getCellValue($cells, "HRC"),
-                        HearingProfile: getCellValue($cells, "Hearing Profile"),
-                        Quest: getCellValue($cells, "Lab Requisition"),
-                        LabNeeded: getCellValue($cells, "Lab Needed"),
-                        Abo: getCellValue($cells, "ABO"),
-                        AboNeeded: getCellValue($cells, "ABO Needed"),
-                        Dna: getCellValue($cells, "DNA"),
-                        SickleDate: getCellValue($cells, "Sickle Date"),
-                        Sickle: getCellValue($cells, "SICKLE"),
-                        G6pd: getCellValue($cells, "G6PD"),
-                        G6pdDate: getCellValue($cells, "G6PD Date"),
-                        G6pdStatus: getCellValue($cells, "G6PD Status"),
-                        HivNextTestDate: getCellValue($cells, "HIV NEXT TEST DATE"),
-                        Hiv: getCellValue($cells, "HIV"),
-                        LipidNeeded: getCellValue($cells, "Lipid Needed"),
-                        LipidPanel: getCellValue($cells, "LIPID PANEL"),
-                        CholesterolHdlCholesterol: getCellValue($cells, "Cholesterol / HDL Cholesterol"),
-                        Framingham: getCellValue($cells, "Framingham"),
-                        Ekg: getCellValue($cells, "EKG (Date)"),
-                        EkgNeeded: getCellValue($cells, "EKG NEEDED"),
-                        PregnancyTestNeeded: getCellValue($cells, "Pregnancy Test Needed"),
-                        Imm: getCellValue($cells, "IMM Needed"),
-                        HepB: getCellValue($cells, "Hep B Needed"),
-                        HepA: getCellValue($cells, "Hep A Needed"),
-                        Flu: getCellValue($cells, "FLU Needed"),
-                        TetTdp: getCellValue($cells, "Tet/TDP Needed"),
-                        Mmr: getCellValue($cells, "MMR Needed"),
-                        Varicella: getCellValue($cells, "Varicella Needed"),
-                        TaskForce: getCellValue($cells, "TaskForce"),
-                        Notes: getCellValue($cells, "Notes"),
-                        Over44: getCellValue($cells, "Over 44"),
-                        EventDate: getCellValue($cells, "EventDate"),
-                        EventEndDate: getCellValue($cells, "Event End Date"),
-                        EventId: getCellValue($cells, "EventID"),
-                        VisionWin: parseInt(getCellValue($cells, "Vision Win")),
-                        DentalWin: parseInt(getCellValue($cells, "Dental Win")),
-                        PhaWin: parseInt(getCellValue($cells, "PHA Win")),
-                        HivWin: parseInt(getCellValue($cells, "HIV Win")),
-                        HearingWin: parseInt(getCellValue($cells, "Hearing WIN")),
-                        Barcode: getCellValue($cells, "Barcode"),
-                        isDeleted: false
-                    };
-
-                    tableRows.push(row);
-                });
-
-                const eventId = document.getElementById('eventId').value;
-                // First, check if data exists for the given eventId
-                $.ajax({
-                    url: '@Url.Action("CheckForExistingDataAgainstEventId", "Home")',
-                    type: 'POST',
-                    data: JSON.stringify(eventId),
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            submitDataToDatabase(tableRows, eventId);
-                        } else {
-                            Swal.fire({
-                                title: 'Data Exists!',
-                                text: 'Data already exists for this Event ID. Do you want to overwrite it?',
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'Yes, overwrite',
-                                cancelButtonText: 'No, cancel'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    submitDataToDatabase(tableRows, eventId);
-                                } else {
-                                    Swal.fire('Cancelled', 'No changes were made.', 'info');
-                                }
-                            });
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        alert("Error: " + error);
-                    },
-                    complete: function () {
-                        $('#loader').addClass('d-none');
-                    }
-                });
-            }
-
-            function submitDataToDatabase(tableRows, eventId) {
-                debugger;
-                const dataToSend = JSON.stringify({
-                    Entities: tableRows,
-                    EventId: eventId
-                });
-                console.log(dataToSend);
-                $.ajax({
-                    url: '@Url.Action("SubmitDataInDatabase", "Home")',
-                    type: 'POST',
-                    data: dataToSend,
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    success: function (response) {
-                        Swal.fire({
-                            title: response.success ? "Success!" : "Error!",
-                            text: response.message,
-                            icon: response.success ? "success" : "error",
-                            confirmButtonText: "OK"
-                        }).then(() => {
-                            if (response.success) {
-                                clearPreview();
-                            }
-                        });
-                    },
-                    error: function (xhr, status, error) {
-                        Swal.fire({
-                            title: "Error!",
-                            text: "Something went wrong: " + error,
-                            icon: "error",
-                            confirmButtonText: "OK"
-                        });
-                    },
-                    complete: function () {
-                        $('#loader').addClass('d-none');
-                    }
-                });
-            }
+            
 
             function getMergedData() {
                 let tableBody = document.querySelector('#previewTable tbody');

@@ -17,10 +17,16 @@
         <span>Report Processor</span>
     </a>
 
-    <a asp-controller="ExcelFileUploader" asp-action="Index" class="icon-box">
+    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
         <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
-        <span>Malama Check In Out</span>
+        <span>Malama Check In Out (Admin)</span>
     </a>
+
+    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
+        <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
+        <span>Malama Check In Out (Client)</span>
+    </a>
+
 
     <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
         <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
