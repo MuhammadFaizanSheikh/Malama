@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +13,18 @@ using System.Text.Json;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize(Roles = "DAWSON Admin - Staffing/Credentialing,DAWSON Admin - Event Coordinator")]
     public class ExcelFileUploaderController : Controller
     {
         private readonly IFileUploader _fileUploader;
         private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ExcelFileUploaderController(IFileUploader fileUploader, IConfiguration configuration)
+        public ExcelFileUploaderController(IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _fileUploader = fileUploader;
             _configuration = configuration;
+            _userManager = userManager;
         }
 
         //[HttpPost]
@@ -173,7 +177,8 @@ namespace ExcelFilesCompiler.Controllers
                     Data = ModelState
                 });
 
-            var response = await _fileUploader.AddSingleRecordAsync(dto);
+            var user = _userManager.GetUserAsync(User).Result;
+            var response = await _fileUploader.AddSingleRecordAsync(dto, user.UserName);
 
             if (response.Success)
                 return Ok(response);
@@ -192,7 +197,8 @@ namespace ExcelFilesCompiler.Controllers
                     Data = ModelState
                 });
 
-            var response = await _fileUploader.UpdateSingleRecordAsync(dto);
+            var user = _userManager.GetUserAsync(User).Result;
+            var response = await _fileUploader.UpdateSingleRecordAsync(dto, user.UserName);
 
             if (response.Success)
                 return Ok(response);

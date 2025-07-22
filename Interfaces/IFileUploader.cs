@@ -11,7 +11,7 @@ namespace ExcelFilesCompiler.Interfaces
         ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId, string loggedinUserName);
         Task<List<string>> GetDistinctEventIdsAsync();
         Task<IEnumerable<FileDataDto>> GetEventDataByEventIdAsync(string eventId);
-        Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto);
-        Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto);
+        Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName);
+        Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName);
     }
 }

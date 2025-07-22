@@ -1305,6 +1305,7 @@ async function saveChangesButton() {
             fullRowData[walkinSMIndex] = 'Yes';
         }
 
+        debugger;
         const table = $('#previewTable').DataTable();
         const barcodeIndex = keys.indexOf('Barcode');
         const barcodeValue = table.cell(0, barcodeIndex).data();

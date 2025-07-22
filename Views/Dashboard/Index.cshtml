@@ -12,20 +12,26 @@
             <span>Admin</span>
         </a>
     }
-    <a asp-controller="Home" asp-action="Index" class="icon-box">
+    <a asp-controller="Home" asp-action="Index" class="icon-box" style="display: none;">
         <img src="/images/Report Processor.jpg" alt="Report Processor" />
         <span>Report Processor</span>
     </a>
 
-    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
-        <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
-        <span>Malama Check In Out (Admin)</span>
-    </a>
+    @if (User.IsInRole("DAWSON Admin - Event Coordinator"))
+    {
+        <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
+            <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
+            <span>Malama Check In Out (Admin)</span>
+        </a>
+    }
 
-    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
-        <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
-        <span>Malama Check In Out (Client)</span>
-    </a>
+    @if (User.IsInRole("DAWSON Admin - Event Coordinator") || User.IsInRole("DAWSON Admin - Staffing/Credentialing"))
+    {
+        <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
+            <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
+            <span>Malama Check In Out (Client)</span>
+        </a>
+    }
 
 
     <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box" style="display: none;">
