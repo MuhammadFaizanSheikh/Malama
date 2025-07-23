@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    //[Authorize(Roles = "Project Manager & Program Manager,Super Admin")]
     public class AccountController : Controller
     {
         private readonly SignInManager<ApplicationUser> _signInManager;

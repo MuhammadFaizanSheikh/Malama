@@ -162,6 +162,12 @@
     "Category": "BasicRole"
   },
   {
+    "id": "dawsonAdminEventStaff",
+    "value": "DAWSON Admin - Event Staff",
+    "types": [],
+    "Category": "BasicRole"
+  },
+  {
     "id": "admin",
     "value": "Admin",
     "types": [],

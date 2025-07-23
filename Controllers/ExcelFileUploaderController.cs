@@ -13,7 +13,7 @@ using System.Text.Json;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize(Roles = "DAWSON Admin - Staffing/Credentialing,DAWSON Admin - Event Coordinator")]
+    [Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
     public class ExcelFileUploaderController : Controller
     {
         private readonly IFileUploader _fileUploader;
@@ -107,6 +107,26 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
+                if (userType == "admin")
+                {
+                    if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager"))
+                    {
+                        return RedirectToAction("AccessDenied", "Account");
+                    }
+                }
+                else if (userType == "client")
+                {
+                    if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager") && !User.IsInRole("DAWSON Admin - Event Staff"))
+                    {
+                        return RedirectToAction("AccessDenied", "Account");
+                    }
+                }
+                else
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+
+
                 var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
 
                 var dropdownList = eventIds.Select(e => new SelectListItem

@@ -9,7 +9,7 @@ using NPOI.SS.Formula.Functions;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize(Roles = "Super Admin")]
+    [Authorize(Roles = "Project Manager & Program Manager,Super Admin")]
     public class AccountRegistrationController : Controller
     {
         private readonly IAccountRegistrationService _registrationService;

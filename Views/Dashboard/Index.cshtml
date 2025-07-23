@@ -5,7 +5,7 @@
 @* <h1>Welcome to the Dashboard!</h1> *@
 
 <div class="dashboard-icons">
-    @if (User.IsInRole("Super Admin"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager"))
     {
         <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
             <img src="/images/Admin.jpg" alt="Admin" />
@@ -17,7 +17,7 @@
         <span>Report Processor</span>
     </a>
 
-    @if (User.IsInRole("DAWSON Admin - Event Coordinator"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
             <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
@@ -25,11 +25,11 @@
         </a>
     }
 
-    @if (User.IsInRole("DAWSON Admin - Event Coordinator") || User.IsInRole("DAWSON Admin - Staffing/Credentialing"))
+    @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager") || User.IsInRole("DAWSON Admin - Event Staff"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
-            <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
-            <span>Malama Check In Out (Client)</span>
+            <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
+            <span>Malama Check In Out (Staff)</span>
         </a>
     }
 
