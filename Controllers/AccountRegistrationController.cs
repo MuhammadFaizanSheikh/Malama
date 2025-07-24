@@ -19,6 +19,7 @@ namespace ExcelFilesCompiler.Controllers
             _registrationService = registrationService;
         }
 
+
         [HttpGet]
         public async Task<IActionResult> Register()
         {
@@ -29,9 +30,25 @@ namespace ExcelFilesCompiler.Controllers
                 return StatusCode(500, response.Message);
             }
 
-            ViewData["Roles"] = response.Data;
+            // Cast to List<SelectListItem>
+            var roles = response.Data as List<SelectListItem>;
+
+            if (roles == null)
+            {
+                return StatusCode(500, "Unexpected data format for roles.");
+            }
+
+            // Filter out "Super Admin" by Text (what is shown to the user)
+            var filteredRoles = roles
+                .Where(role => !string.Equals(role.Text, "Super Admin", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ViewData["Roles"] = filteredRoles;
+
             return View();
         }
+
+
 
 
         [HttpPost]
@@ -213,3 +230,9 @@ namespace ExcelFilesCompiler.Controllers
 
     }
 }
+
+public class RoleDto
+{
+    public string Text { get; set; }
+}
+
