@@ -287,6 +287,7 @@ const dropdownOptionsMapping = {
     ]
 };
 
+
 const modalContent = $('#modalBodyContent');
 
 function populateModalForEdit(data) {
