@@ -1,10 +1,12 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize]
     public class RolesController : ControllerBase
     {
         private readonly IRoleService _roleService;

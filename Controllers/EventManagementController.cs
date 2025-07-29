@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize]
     public class EventManagementController : Controller
     {
         private readonly IEventManagementService _eventManagementService;

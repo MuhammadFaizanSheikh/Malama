@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    //[Authorize(Roles = "Project Manager & Program Manager,Super Admin")]
     public class AccountController : Controller
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -33,6 +32,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> CheckUserExists(string email, string userId)
         {
             try
@@ -232,6 +232,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [Authorize]
         public IActionResult ChangePassword()
         {
             return View();
@@ -239,6 +240,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)

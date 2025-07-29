@@ -4,6 +4,7 @@ using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelToCsv.Models;
 using MathNet.Numerics.LinearAlgebra;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ using System.Text.RegularExpressions;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

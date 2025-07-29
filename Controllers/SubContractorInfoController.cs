@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.ComponentModel.Design;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize]
     public class SubContractorInfoController : Controller
     {
         private readonly ISubContractorService _subContractorService;

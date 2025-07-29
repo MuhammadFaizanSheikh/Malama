@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Models;
 using ExcelToCsv.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Org.BouncyCastle.Asn1;
 
 namespace ExcelFilesCompiler.Controllers
 {
+    [Authorize]
     public class EventStaffController : Controller
     {
         private readonly IEventStaffService _eventStaffService;
