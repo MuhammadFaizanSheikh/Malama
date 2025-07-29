@@ -5,37 +5,7 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.0.0/select2-bootstrap-5.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/jquery.validate.unobtrusive.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- DataTables CSS for Bootstrap 5 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
-<link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<!-- Include Flatpickr CSS -->
-<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-
-<!-- Include Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <style>
+<style>
         h2 {
             color: rgba(80, 90, 201, 1);
         }
@@ -196,15 +166,6 @@
                 box-shadow: none;
             }
 
-        /*     #eventStaffSelectedTable th:nth-child(10) {
-    display: none;
-} */
-
-           
-
-
-
-
         .read-only-style {
             background-color: #f8f9fa; /* Light gray background */
             pointer-events: none; /* Disable click and focus */
@@ -306,7 +267,8 @@
 
         */
     </style>
-</head>
+
+
 
 @if (TempData["ErrorMessage"] != null)
 {

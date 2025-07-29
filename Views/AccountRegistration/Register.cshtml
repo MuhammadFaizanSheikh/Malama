@@ -5,76 +5,63 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - Your Application Name</title>
+<style>
+    body {
+        background-color: rgba(80, 90, 201, 0.1);
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
 
-    <!-- Bootstrap CSS (CDN) -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    h2 {
+        color: rgba(80, 90, 201, 1);
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
-    <style>
-        body {
-            background-color: rgba(80, 90, 201, 0.1);
-            height: 100vh;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
+    .form-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .btn-theme {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white;
+        width: 100%;
+        padding: 10px;
+    }
+
+        .btn-theme:hover {
+            background-color: rgba(80, 90, 201, 0.8);
+            border-color: rgba(80, 90, 201, 0.8);
         }
 
-        h2 {
-            color: rgba(80, 90, 201, 1);
-            text-align: center;
-            margin-bottom: 20px;
+    #loadingIndicator {
+        display: none;
+    }
+
+    .form-control {
+        font-size: 16px;
+        height: 40px; /* Adjust height */
+    }
+
+        .form-control option {
+            font-size: 16px; /* Adjust font size inside dropdown */
         }
-
-        .form-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-        }
-
-        .btn-theme {
-            background-color: rgba(80, 90, 201, 1);
-            border-color: rgba(80, 90, 201, 1);
-            color: white;
-            width: 100%;
-            padding: 10px;
-        }
-
-            .btn-theme:hover {
-                background-color: rgba(80, 90, 201, 0.8);
-                border-color: rgba(80, 90, 201, 0.8);
-            }
-
-        #loadingIndicator {
-            display: none;
-        }
-
-        .form-control {
-            font-size: 16px;
-            height: 40px; /* Adjust height */
-        }
-
-            .form-control option {
-                font-size: 16px; /* Adjust font size inside dropdown */
-            }
-    </style>
-</head>
-<body>
-
+</style>
     <div class="form-container">
         <h2>Create User</h2>
 
@@ -329,7 +316,3 @@
 
 
     </script>
-
-
-</body>
-</html>

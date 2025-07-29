@@ -2,8 +2,6 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
-@* <h1>Welcome to the Dashboard!</h1> *@
-
 <div class="dashboard-icons">
     @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager"))
     {
@@ -34,22 +32,22 @@
     }
 
 
-    <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box" style="display: none;">
+    <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
         <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
         <span>Sub - Contractor Info</span>
     </a>
 
-    <a asp-controller="ContractDetails" asp-action="Index" class="icon-box" style="display: none;">
+    <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
         <img src="/images/ContractDetails.jpg" alt="Contract Details" />
         <span>Contract Details</span>
     </a>
 
-    <a asp-controller="EventManagement" asp-action="Index" class="icon-box" style="display: none;">
+    <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
         <img src="/images/Event Management.png" alt="Event Management" />
         <span>Event Management</span>
     </a>
 
-    <a asp-controller="EventStaff" asp-action="Index" class="icon-box" style="display: none;">
+    <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
         <img src="/images/Event Satff Icon.jpg" alt="Event Satff" />
         <span>Event Staff</span>
     </a>
