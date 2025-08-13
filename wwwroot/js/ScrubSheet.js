@@ -638,7 +638,7 @@ function populateModalForAdd(data) {
                 inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
-                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value} autocomplete="off"</textarea>
+                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
                             </div>
                         `;
             }
