@@ -1229,6 +1229,7 @@ async function saveChangesButton() {
         }
     }
     let hasError = false;
+    let firstInvalidField = null;
 
     // Clear previous highlights
     modalInputs.removeClass('highlight-error');
@@ -1246,12 +1247,21 @@ async function saveChangesButton() {
         // Highlight required fields if they are empty
         if (requiredFields.includes(key) && value.trim() === '') {
             $(this).removeClass('valid-class').addClass('highlight-error');
+            if (!hasError) {
+                firstInvalidField = this; // store first invalid field
+            }
             hasError = true;
         }
     });
 
     // If any required field is missing, do not proceed further
     if (hasError) {
+        if (firstInvalidField) {
+            $(firstInvalidField).focus()[0].scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
         return;
     }
 
