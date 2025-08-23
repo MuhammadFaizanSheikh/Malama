@@ -439,6 +439,9 @@
                     }
                 });
 
+                // Sort by FULL NAME before mapping
+                filteredData.sort((a, b) => (a["FULL NAME"] || "").localeCompare(b["FULL NAME"] || ""));
+
                 // Update totalRows to reflect unique entries only
                 let totalRows = filteredData.length; // Now counting only the unique rows
                 let taskforceInfoContainer = document.getElementById('taskforceInfoContainer');
