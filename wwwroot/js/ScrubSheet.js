@@ -332,7 +332,7 @@ const readOnlyFieldsForEdit = [
     ,"Vitals Status"
 ];
 
-const requiredFieldsForEdit = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
+const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
 const dropdownFieldsForEdit = [
     "SEX", "AGR", "MRC", "Dental Needed", "BWX Needed", "DRC", "PHA Needed",
@@ -779,7 +779,7 @@ function populateModalForEdit(data) {
                 let inputHtml = '';
                 let keyIndex = keys.indexOf(key);
                 let readOnly = readOnlyFieldsForEdit.includes(key) ? 'readonly' : '';
-                let required = requiredFieldsForEdit.includes(key) ? 'required' : '';
+                let required = requiredFields.includes(key) ? 'required' : '';
 
 
                 if (tableDataFieldsForEdit.includes(key)) {
@@ -1186,12 +1186,13 @@ function populateModalForAdd(data) {
                 let inputHtml = '';
                 let keyIndex = keys.indexOf(key);
                 let readOnly = readOnlyFieldsForAdd.includes(key) ? 'readonly' : '';
+                let required = requiredFields.includes(key) ? 'required' : '';
 
                 if (multilineTextbox.includes(key)) {
                     inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
-                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
+                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${required} ${textColor}>${value}</textarea>
                             </div>
                         `;
                 }
@@ -1200,7 +1201,7 @@ function populateModalForAdd(data) {
                     inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${required} ${textColor} />
                                     </div>
                                 `;
                 }
@@ -1221,7 +1222,7 @@ function populateModalForAdd(data) {
                     inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                                        <select class="form-control" name="${key}" ${disabled} ${required} ${textColor}>
 
                                             ${optionsHtml}
                                         </select>
@@ -1249,7 +1250,7 @@ function populateModalForAdd(data) {
                         inputHtml = `
                     <div class="form-group col-lg-2">
                         <label>${key}</label>
-                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                        <select class="form-control" name="${key}" ${disabled} ${required} ${textColor}>
                             ${optionsHtml}
                         </select>
                     </div>
@@ -1262,7 +1263,7 @@ function populateModalForAdd(data) {
                         inputHtml = `
                                      <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="text" class="form-control" name="${key}" value="${valueOfColumn}" ${readOnly} ${textColor} />
+                                        <input type="text" class="form-control" name="${key}" value="${valueOfColumn}" ${readOnly} ${required} ${textColor} />
                                     </div>
                                 `;
                     }
@@ -1295,7 +1296,7 @@ function populateModalForAdd(data) {
                         inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
+                                        <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${required} ${textColor} />
                                     </div>
                                 `;
                     }
@@ -1783,8 +1784,6 @@ async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-    /*const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];*/
-    //const requiredFields = [];
 
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
@@ -1827,15 +1826,6 @@ async function saveChangesButton() {
             }
             hasError = true;
         }
-
-        //// Highlight required fields if they are empty
-        //if (requiredFields.includes(key) && value.trim() === '') {
-        //    $(this).removeClass('valid-class').addClass('highlight-error');
-        //    if (!hasError) {
-        //        firstInvalidField = this; // store first invalid field
-        //    }
-        //    hasError = true;
-        //}
     });
 
     // If any required field is missing, do not proceed further
