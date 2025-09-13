@@ -1,4 +1,5 @@
-﻿const keys = [
+﻿//*************************************************this is the line where edit work was completed and tested********************************************************
+const keys = [
     "Actions", "SM ID", "FULL NAME", "FULL SSN", "LAST 4", "DOD ID", "RANK", "AGE", "SEX", "MOS",
     "AGR", "UIC", "MRC", "DOB", "OVER 40", "Dental Due", "Dental Exam", "Dental Needed",
     "PANO Needed", "BWX Needed", "DRC", "PHA Date", "PHA Due", "PHA Needed", "PULHES", "Vision Date",
@@ -7,7 +8,9 @@
     "SICKLE", "G6PD", "G6PD Date", "G6PD Status", "HIV NEXT TEST DATE", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
-    "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode", "Checked In", "Checked Out", "Checked In By",
+    "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode",
+    "Vitals Status", "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason", "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Barcode", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "PHA Status", "PHA Follow Up", "Hearing Status", "Audiologist Service Completed", "Vision Status", "Optometrist Service Completed", "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment", "Final Dental Class", "Dental Treatment Reason",
+    "Checked In", "Checked Out", "Checked In By",
     "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
 ];
 
@@ -15,7 +18,7 @@ const tableToKeysIndexMap = [
     keys.indexOf("FULL NAME"),      // FULL NAME 
     keys.indexOf("AGE"),            // AGE
     keys.indexOf("UIC"),            // UIC
-    keys.indexOf("FULL SSN"),         // LAST 4
+    keys.indexOf("FULL SSN"),         // LAST 4Final Dental Class
     keys.indexOf("SEX"),            // SEX
     keys.indexOf("MRC"),            // MRC
     keys.indexOf("DOD ID"),         // DOD ID
@@ -97,7 +100,49 @@ const tableToKeysIndexMap = [
     keys.indexOf("Checked In"),
     keys.indexOf("Checked Out"),
     keys.indexOf("Checked In By"),
-    keys.indexOf("Checked Out By")
+    keys.indexOf("Checked Out By"),
+    keys.indexOf("Vitals Status"),
+    keys.indexOf("Hep B Needed Status"),
+    keys.indexOf("Hep B Reason"),
+    keys.indexOf("FLU Needed Status"),
+    keys.indexOf("FLU Reason"),
+    keys.indexOf("MMR Status"),
+    keys.indexOf("MMR Reason"),
+    keys.indexOf("Hep A Needed Status"),
+    keys.indexOf("Hep A Reason"),
+    keys.indexOf("Tet/TDP Needed Status"),
+    keys.indexOf("Tet/TDP Reason"),
+    keys.indexOf("Varicella Needed Status"),
+    keys.indexOf("Varicella Reason"),
+    keys.indexOf("SICKLE Status"),
+    keys.indexOf("Sickle Reason"),
+    keys.indexOf("HIV Status"),
+    keys.indexOf("HIV Barcode"),
+    keys.indexOf("HIV Reason"),
+    keys.indexOf("ABO Status"),
+    keys.indexOf("ABO Reason"),
+    keys.indexOf("DNA Status"),
+    keys.indexOf("DNA Reason"),
+    keys.indexOf("G6PD Checkout Status"),
+    keys.indexOf("G6PD Reason"),
+    keys.indexOf("Lipid Status"),
+    keys.indexOf("Lipid Reason"),
+    keys.indexOf("EKG Needed Status"),
+    keys.indexOf("EKG Needed Reason"),
+    keys.indexOf("PHA Status"),
+    keys.indexOf("PHA Follow Up"),
+    keys.indexOf("Hearing Status"),
+    keys.indexOf("Audiologist Service Completed"),
+    keys.indexOf("Vision Status"),
+    keys.indexOf("Optometrist Service Completed"),
+    keys.indexOf("Dental X-Ray Status"),
+    keys.indexOf("Panoramic X-Ray"),
+    keys.indexOf("Dental Exam Status"),
+    keys.indexOf("Class (Dental Exam)"),
+    keys.indexOf("Dental Treatment"),
+    keys.indexOf("Final Dental Class"),
+    keys.indexOf("Dental Treatment Reason")
+
 ];
 
 function getCellValue($cells, columnName) {
@@ -136,7 +181,116 @@ const categories = {
     ],
     "Check In Out Information": [
         "Checked In", "Checked Out", "Checked In By", "Checked Out By"
-    ]
+    ],
+    "Check Out Section": {
+        "Vitals": [
+            [
+                {
+                    field: "Vitals Status",
+                    dependsOn: null,
+                    showWhen: null
+                }
+            ]
+        ],
+        "Immunizations": [
+            [
+                { field: "Hep B Needed Status", dependsOn: "Hep B Needed", showWhen: ["NEEDED"] },
+                { field: "Hep B Reason", dependsOn: "Hep B Needed Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "FLU Needed Status", dependsOn: "FLU Needed", showWhen: ["NEEDED"] },
+                { field: "FLU Reason", dependsOn: "FLU Needed Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "MMR Status", dependsOn: "MMR Needed", showWhen: ["NEEDED"] },
+                { field: "MMR Reason", dependsOn: "MMR Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "Hep A Needed Status", dependsOn: "Hep A Needed", showWhen: ["NEEDED"] },
+                { field: "Hep A Reason", dependsOn: "Hep A Needed Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "Tet/TDP Needed Status", dependsOn: "Tet/TDP Needed", showWhen: ["NEEDED"] },
+                { field: "Tet/TDP Reason", dependsOn: "Tet/TDP Needed Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "Varicella Needed Status", dependsOn: "Varicella Needed", showWhen: ["NEEDED"] },
+                { field: "Varicella Reason", dependsOn: "Varicella Needed Status", showWhen: ["Not Completed"] }
+            ]
+        ],
+        "Labs": [
+            [
+                { field: "SICKLE Status", dependsOn: "SICKLE", showWhen: ["NEEDED"] },
+                { field: "Sickle Reason", dependsOn: "SICKLE Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "HIV Status", dependsOn: "HIV", showWhen: ["NEEDED"] },
+                { field: "HIV Reason", dependsOn: "HIV Status", showWhen: ["Not Completed"] },
+                { field: "HIV Barcode", dependsOn: "HIV Status", showWhen: ["Completed"] }
+            ],
+            [
+                { field: "ABO Status", dependsOn: "ABO Needed", showWhen: ["NEEDED"] },
+                { field: "ABO Reason", dependsOn: "ABO Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "DNA Status", dependsOn: "DNA", showWhen: ["NEEDED"] },
+                { field: "DNA Reason", dependsOn: "DNA Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "G6PD Checkout Status", dependsOn: "G6PD", showWhen: ["NEEDED"] },
+                { field: "G6PD Reason", dependsOn: "G6PD Checkout Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "Lipid Status", dependsOn: "Lipid Needed", showWhen: ["NEEDED"] },
+                { field: "Lipid Reason", dependsOn: "Lipid Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "EKG Needed Status", dependsOn: "EKG NEEDED", showWhen: ["NEEDED"] },
+                { field: "EKG Needed Reason", dependsOn: "EKG Needed Status", showWhen: ["Not Completed"] }
+            ],
+            [
+                { field: "Pregnancy Test Status", dependsOn: "Pregnancy Test Needed", showWhen: ["NEEDED"] },
+                { field: "Pregnancy Test Reason", dependsOn: "Pregnancy Test Status", showWhen: ["Not Completed"] }
+            ]
+        ],
+        "PHA": [
+            [
+                { field: "PHA Status", dependsOn: "PHA Needed", showWhen: ["NEEDED"] },
+                { field: "PHA Follow Up", dependsOn: "PHA Status", showWhen: ["Completed"] }
+            ]
+        ],
+        "Audiologist": [
+            [
+                { field: "Hearing Status", dependsOn: "HEARING Needed", showWhen: ["NEEDED"] },
+                { field: "Audiologist Service Completed", dependsOn: "Hearing Status", showWhen: ["Completed"] }
+            ]
+        ],
+        "Vision": [
+            [
+                { field: "Vision Status", dependsOn: "VISION Needed", showWhen: ["NEEDED"] },
+                { field: "Optometrist Service Completed", dependsOn: "Vision Status", showWhen: ["Completed"] }
+            ]
+        ],
+        "Dental": [
+            [
+                { field: "Dental X-Ray Status", dependsOn: null, showWhen: null }
+            ],
+            [
+                { field: "Panoramic X-Ray", dependsOn: "PANO Needed", showWhen: ["NEEDED"] }
+            ],
+            [
+                { field: "Dental Exam Status", dependsOn: "Dental Needed", showWhen: ["NEEDED"] },
+                { field: "Class (Dental Exam)", dependsOn: "Dental Exam Status", showWhen: ["Completed"] },
+                { field: "Dental Treatment", dependsOn: "Class (Dental Exam)", showWhen: ["3"] },
+                { field: "Final Dental Class", dependsOn: "Dental Treatment", showWhen: ["Yes"] },
+                { field: "Dental Treatment Reason", dependsOn: "Dental Treatment", showWhen: ["No"] }
+            ]
+        ]
+
+    }
+
+
+
 };
 
 
@@ -174,12 +328,23 @@ const readOnlyFieldsForEdit = [
     "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
     "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
     "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
+    //Check out section fields
+    ,"Vitals Status"
 ];
+
+const requiredFieldsForEdit = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
 
 const dropdownFieldsForEdit = [
     "SEX", "AGR", "MRC", "Dental Needed", "BWX Needed", "DRC", "PHA Needed",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
-    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "Pregnancy Test Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
+    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "Pregnancy Test Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed",
+    "Vitals Status",
+    "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason",
+    "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "Pregnancy Test Status", "Pregnancy Test Reason",
+    "Hearing Status", "Audiologist Service Completed",
+    "Vision Status", "Optometrist Service Completed",
+    "PHA Status", "PHA Follow Up",
+    "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment", "Final Dental Class", "Dental Treatment Reason"
 ];
 
 const tableDataFieldsForEdit = ["TaskForce"];
@@ -199,7 +364,15 @@ const dropdownFieldsForAdd = [
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
     "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
-    "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
+    "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed",
+    "Vitals Status",
+    "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason",
+    "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "Pregnancy Test Status", "Pregnancy Test Reason",
+    "Hearing Status", "Audiologist Service Completed",
+    "Vision Status", "Optometrist Service Completed",
+    "PHA Status", "PHA Follow Up",
+    "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment", "Final Dental Class", "Dental Treatment Reason"
+
 ];
 
 const readOnlyFieldsForAdd = [
@@ -208,6 +381,8 @@ const readOnlyFieldsForAdd = [
     "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
     "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
     "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
+    //Check out section fields
+    , "Vitals Status"
 ];
 
 const tableDataFieldsForAdd = [
@@ -279,122 +454,418 @@ const dropdownOptionsMapping = {
         { value: "O-", label: "O-" }
     ],
     "Pregnancy Test Needed": [
-        /*  { value: "", label: "" },*/
         { value: "N/A", label: "N/A" },
         { value: "Needed", label: "Needed" }
     ],
     "ABO Needed": [
         { value: "NEEDED", label: "NEEDED" },
         { value: "N/A", label: "N/A" }
+    ],
+    "Vitals Status": [
+        { value: "Completed", label: "Completed" }
+    ],
+    "Hep B Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "FLU Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "MMR Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "Hep A Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "Tet/TDP Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "Varicella Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Refused", label: "Refused" },
+        { value: "Contraindication", label: "Contraindication" }
+    ],
+    "Sickle Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "HIV Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "ABO Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "DNA Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "G6PD Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "Lipid Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "EKG Needed Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
+    ],
+    "Pregnancy Test Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "Unable to draw", label: "Unable to draw" },
+        { value: "Proof of service", label: "Proof of service" },
+        { value: "Not due", label: "Not due" }
     ]
+   ,
+    "Dental Treatment Reason": [
+        { value: "", label: "" },
+        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
+        { value: "SM Refused", label: "SM Refused" },
+        { value: "Time limitation", label: "Time limitation" },
+        { value: "Procedure not offered", label: "Procedure not offered" },
+        { value: "Military excused", label: "Military excused" },
+        { value: "SM current receiving treatment", label: "SM current receiving treatment" }
+    ], "Dental Treatment": [
+        { value: "", label: "" },
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" }
+    ]
+    , "PHA Follow Up": [
+        { value: "", label: "" },
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" }
+    ]
+    , "Audiologist Service Completed": [
+        { value: "", label: "" },
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" }
+    ]
+    , "Optometrist Service Completed": [
+        { value: "", label: "" },
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" }
+    ]
+    , "Class (Dental Exam)": [
+        { value: "", label: "" },
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" }
+    ]
+    , "Final Dental Class": [
+        { value: "", label: "" },
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" }
+    ]
+
 };
+
+function applyRequired(modalContent) {
+    // Only consider visible dependent fields inside Check Out Section
+    modalContent.find('.dependent-field:visible').each(function () {
+        const container = $(this);
+        const input = container.find('input, select, textarea');
+
+        // Set required if visible
+        input.prop('required', true);
+    });
+
+    // Remove required from hidden fields
+    modalContent.find('.dependent-field:hidden').each(function () {
+        const container = $(this);
+        const input = container.find('input, select, textarea');
+        input.prop('required', false);
+    });
+}
+
+
+function applyDependencies(modalContent, data) {
+    function hideWithChildren(fieldName) {
+        modalContent.find(`.dependent-field[data-depends-on="${fieldName}"]`).each(function () {
+            const child = $(this);
+            child.hide();
+            child.find('input, select, textarea').val('');
+            hideWithChildren(child.data('field')); // recursively hide children
+        });
+    }
+
+    const checkedOutVal = $("#checkedOut").val();
+
+    modalContent.find('.dependent-field').each(function () {
+        const container = $(this);
+        const field = container.data('field');
+        const dependsOn = container.data('depends-on');
+        const showWhen = container.data('show-when');
+
+        if (container.closest('[data-subcategory]').length > 0 && checkedOutVal !== "Yes") {
+            container.hide();
+            container.find('input, select, textarea').val('');
+            hideWithChildren(field);
+            return;
+        }
+
+        if (!dependsOn) {
+            container.show();
+            return;
+        }
+
+        const dependsVal = data[dependsOn] || modalContent.find(`[name="${dependsOn}"]`).val();
+
+        if (showWhen.includes(dependsVal)) {
+            container.show();
+        } else {
+            container.hide();
+            container.find('input, select, textarea').val('');
+            hideWithChildren(field);
+        }
+    });
+
+    // 🔹 Hide sub-category headers if all fields are hidden
+    modalContent.find('.subcategory-header').each(function () {
+        const header = $(this);
+        const subCategory = header.text();
+        const allFields = modalContent.find(`.row[data-subcategory="${subCategory}"] .dependent-field`);
+        const anyVisible = allFields.filter(':visible').length > 0;
+
+        if (anyVisible) {
+            header.show();
+            header.next('hr').show(); // show the hr
+        } else {
+            header.hide();
+            header.next('hr').hide(); // hide the hr
+        }
+    });
+
+    applyRequired(modalContent);
+}
+
+$("#checkedOut").on("change", function () {
+    const val = $(this).val();
+    if (val === "Yes") {
+        // Set Vital Status explicitly
+        $('[name="Vitals Status"]').val("Completed");
+    } else {
+        // Clear Vital Status
+        $('[name="Vitals Status"]').val("");
+    }
+
+    // Re-evaluate dependencies and required
+    applyDependencies($("#modalBodyContent"), {});
+});
 
 
 const modalContent = $('#modalBodyContent');
 
 function populateModalForEdit(data) {
     modalContent.empty(); // Clear previous content
-
+    let textColor = 'style="color: black;"'; // Set text color to black
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
         if (categoryName !== 'Check In Out Information') {
             modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
         }
-        let rowHtml = '<div class="row">';
-        let inputCount = 0;
-        categoryKeys.forEach((key, index) => {
-            const value = data[key] || '';
-            let inputHtml = '';
-            let keyIndex = keys.indexOf(key);
-            let readOnly = readOnlyFieldsForEdit.includes(key) ? 'readonly' : '';
-            let textColor = 'style="color: black;"'; // Set text color to black
+  
+        if (categoryName === "Check Out Section") {
+            for (const [subCategory, rows] of Object.entries(categoryKeys)) {
+                // Sub-category heading
+                modalContent.append(`<h5 class="subcategory-header">${subCategory}</h5><hr/>`);
+
+                // Each row is an array of field objects
+                rows.forEach(rowFields => {
+                    let rowHtml = `<div class="row" data-subcategory="${subCategory}">`;
+
+                    rowFields.forEach(fieldObj => {
+                        const key = fieldObj.field;
+                        const value = data[key] || '';
+                        let inputHtml = '';
+                        let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
+                        
+                        if (dropdownFieldsForEdit.includes(key)) {
+                            const dropdownOptions = dropdownOptionsMapping[key] || [
+                                { value: "", label: "" },
+                                { value: "Completed", label: "Completed" },
+                                { value: "Not Completed", label: "Not Completed" }
+                            ];
+
+                            let optionsHtml = dropdownOptions.map(option =>
+                                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                            ).join('');
 
 
-            if (tableDataFieldsForEdit.includes(key)) {
-                const table = $('#previewTable').DataTable();
-                const headers = table.columns().header().toArray().map(th => $(th).text().trim());
-                const taskForceIndex = headers.indexOf("TaskForce");
+                            inputHtml = `
+                            <div class="col-md-3 dependent-field" 
+                                 data-field="${key}" 
+                                 data-depends-on="${fieldObj.dependsOn || ''}" 
+                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
+                              <div class="form-group">
+                                <label>${key}</label>
+                                <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                                  ${optionsHtml}
+                                </select>
+                              </div>
+                            </div>`;
+                        }
+                        else {
+                            // 🔹 Textbox logic (still uses rule engine)
+                            inputHtml = `
+                            <div class="col-md-3 dependent-field"
+                                 data-field="${key}"
+                                 data-depends-on="${fieldObj.dependsOn || ''}"
+                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
+                                <div class="form-group">
+                                    <label>${key}</label>
+                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} />
+                                </div>
+                            </div>
+                        `;
+                        }
 
-                if (taskForceIndex === -1) return; // If column not found, exit early
+                        rowHtml += inputHtml;
+                    });
 
-                // Collect distinct TaskForce values
-                const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
+                    rowHtml += `</div>`; // close row
+                    modalContent.append(rowHtml);
+                });
+            }
+        }
 
-                // Add default option first
-                let optionsHtml = `<option value="">---Select Taskforce---</option>`;
 
-                // Add dynamic options
-                optionsHtml += taskForceValues
-                    .map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`)
-                    .join('');
+        else {
+            let rowHtml = '<div class="row">';
+            let inputCount = 0;
+            categoryKeys.forEach((key, index) => {
+                const value = data[key] || '';
+                let inputHtml = '';
+                let keyIndex = keys.indexOf(key);
+                let readOnly = readOnlyFieldsForEdit.includes(key) ? 'readonly' : '';
+                let required = requiredFieldsForEdit.includes(key) ? 'required' : '';
 
-                let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
 
-                inputHtml = `
+                if (tableDataFieldsForEdit.includes(key)) {
+                    const table = $('#previewTable').DataTable();
+                    const headers = table.columns().header().toArray().map(th => $(th).text().trim());
+                    const taskForceIndex = headers.indexOf("TaskForce");
+
+                    if (taskForceIndex === -1) return; // If column not found, exit early
+
+                    // Collect distinct TaskForce values
+                    const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
+
+                    // Add default option first
+                    let optionsHtml = `<option value="">---Select Taskforce---</option>`;
+
+                    // Add dynamic options
+                    optionsHtml += taskForceValues
+                        .map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`)
+                        .join('');
+
+                    let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
+
+                    inputHtml = `
                 <div class="form-group col-lg-2">
                     <label>${key}</label>
-                    <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                    <select class="form-control" name="${key}" ${disabled} ${textColor} ${required}>
                         ${optionsHtml}
                     </select>
                 </div>
             `;
-            }
+                }
 
-            else if (customFieldsForEdit.includes(key)) {
-                if (!window.isCheckInOutPage) {
+                else if (customFieldsForEdit.includes(key)) {
+                    if (!window.isCheckInOutPage) {
 
-                    if (key === 'LIPID PANEL' || key === 'EKG (Date)') {
-                        if (value.trim().toLowerCase() === "n/a") {
-                            inputHtml = `
+                        if (key === 'LIPID PANEL' || key === 'EKG (Date)') {
+                            if (value.trim().toLowerCase() === "n/a") {
+                                inputHtml = `
                                                     <div class="form-group col-lg-2">
                                                                 <label>${key}</label>
-                                                                            <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                                            <input type="text" class="form-control" name="${key}" value="${value}" ${required} readonly ${textColor} />
                                                             </div>`;
 
-                        } else {
-                            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                            inputHtml = `
+                            } else {
+                                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                                inputHtml = `
                                                             <div class="form-group col-lg-2">
                                                                 <label>${key}</label>
-                                                                <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                                                                <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${required} ${readOnly} ${textColor} />
                                                             </div>`;
+                            }
                         }
-                    }
-                    else if (key === 'Cholesterol / HDL Cholesterol') {
-                        if (value.trim().toLowerCase() === "n/a") {
-                            inputHtml = `<div class="form-group col-lg-2">
+                        else if (key === 'Cholesterol / HDL Cholesterol') {
+                            if (value.trim().toLowerCase() === "n/a") {
+                                inputHtml = `<div class="form-group col-lg-2">
                                                                             <label>${key}</label>
-                                                                                        <input type="text" class="form-control" name="${key}" value="${value}" readonly ${textColor} />
+                                                                                        <input type="text" class="form-control" name="${key}" value="${value}" ${required} readonly ${textColor} />
                                                                         </div>`;
 
-                        } else {
-                            inputHtml = `<div class="form-group col-lg-2">
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
-                                                                                                    <input type="text" class="form-control" name="${key}" value="${value.toLowerCase() === 'needed' ? '' : value}" ${readOnly} ${textColor} />
+                                                                                                    <input type="text" class="form-control" name="${key}" value="${value.toLowerCase() === 'needed' ? '' : value}" ${readOnly} ${required} ${textColor} />
                                                                                     </div>`;
+                            }
                         }
-                    }
-                    else if (key === 'Framingham') {
-                        if (value.trim().toLowerCase() === "n/a") {
-                            inputHtml = `<div class="form-group col-lg-2">
+                        else if (key === 'Framingham') {
+                            if (value.trim().toLowerCase() === "n/a") {
+                                inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
-                                                                                                                <input type="text" class="form-control decimal-input" name="${key}" value="${value}" readonly ${textColor} />
+                                                                                                                <input type="text" class="form-control decimal-input" name="${key}" value="${value}" ${required} readonly ${textColor} />
                                                                                     </div>`;
 
-                        } else {
-                            inputHtml = `<div class="form-group col-lg-2">
+                            } else {
+                                inputHtml = `<div class="form-group col-lg-2">
                                                                                         <label>${key}</label>
                                                                                             <input type="number" class="form-control decimal-input" name="${key}"
                                                                                             value="${value.toLowerCase() === 'needed' ? '' : value}"
-                                                                                            step="0.1" inputmode="decimal" ${readOnly} ${textColor} />
+                                                                                            step="0.1" inputmode="decimal" ${readOnly} ${required} ${textColor} />
 
                                                                                     </div>`;
+                            }
                         }
-                    }
-                    if (key === 'PANO Needed') {
-                        if (value.trim().toLowerCase() === "n/a") {
-                            inputHtml = `
+                        if (key === 'PANO Needed') {
+                            if (value.trim().toLowerCase() === "n/a") {
+                                inputHtml = `
                     <div class="form-group col-lg-2">
                         <label>${key}</label>
                         <select class="form-control" name="${key}" ${textColor}>
@@ -402,18 +873,60 @@ function populateModalForEdit(data) {
                             <option value="N/A" selected>N/A</option>
                         </select>
                     </div>`;
-                        } else {
-                            let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                            inputHtml = `
+                            } else {
+                                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                                inputHtml = `
                     <div class="form-group col-lg-2">
                         <label>${key}</label>
-                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
+                        <input type="date" class="form-control" name="${key}" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${required} ${textColor} />
                     </div>`;
+                            }
                         }
                     }
+                    else {
+                        const dropdownOptions = [
+                            { value: "N/A", label: "N/A" },
+                            { value: "NEEDED", label: "NEEDED" }
+                        ];
+
+                        // Build dropdown options dynamically
+                        let optionsHtml = dropdownOptions.map(option =>
+                            `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                        ).join('');
+
+                        let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
+
+                        inputHtml = `
+                                        <div class="form-group col-lg-2">
+                                            <label>${key}</label>
+                                            <select class="form-control" name="${key}" ${disabled} ${required} ${textColor}>
+
+                                                ${optionsHtml}
+                                            </select>
+                                        </div>
+                                    `;
+                    }
                 }
-                else {
-                    const dropdownOptions = [
+                else if (multilineTextbox.includes(key)) {
+                    inputHtml = `
+                            <div class="form-group col-lg-12">
+                                <label>${key}</label>
+                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${required} ${textColor}>${value}</textarea>
+                            </div>
+                        `;
+                }
+                else if (calendarFields.includes(key)) {
+                    let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                    inputHtml = `
+                                    <div class="form-group col-lg-2">
+                                        <label>${key}</label>
+                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${required} ${textColor} />
+                                    </div>
+                                `;
+                }
+                // Dropdown field
+                else if (dropdownFieldsForEdit.includes(key)) {
+                    const dropdownOptions = dropdownOptionsMapping[key] || [
                         { value: "N/A", label: "N/A" },
                         { value: "NEEDED", label: "NEEDED" }
                     ];
@@ -426,114 +939,91 @@ function populateModalForEdit(data) {
                     let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
 
                     inputHtml = `
-                                        <div class="form-group col-lg-2">
-                                            <label>${key}</label>
-                                            <select class="form-control" name="${key}" ${disabled} ${textColor}>
-
-                                                ${optionsHtml}
-                                            </select>
-                                        </div>
-                                    `;
-                }
-            }
-            else if (multilineTextbox.includes(key)) {
-                inputHtml = `
-                            <div class="form-group col-lg-12">
-                                <label>${key}</label>
-                                <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
-                            </div>
-                        `;
-            }
-            else if (calendarFields.includes(key)) {
-                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
-                                    </div>
-                                `;
-            }
-            // Dropdown field
-            else if (dropdownFieldsForEdit.includes(key)) {
-                const dropdownOptions = dropdownOptionsMapping[key] || [
-                    { value: "N/A", label: "N/A" },
-                    { value: "NEEDED", label: "NEEDED" }
-                ];
-
-                // Build dropdown options dynamically
-                let optionsHtml = dropdownOptions.map(option =>
-                    `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                ).join('');
-
-                let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
-
-                inputHtml = `
-                                    <div class="form-group col-lg-2">
-                                        <label>${key}</label>
-                                        <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                                        <select class="form-control" name="${key}" ${disabled} ${required} ${textColor}>
 
                                             ${optionsHtml}
                                         </select>
                                     </div>
                                 `;
-            }
-            else if (key === 'Checked In' || key === 'Checked Out' || key === 'Checked In By' || key === 'Checked Out By') {
-                if (key === 'Checked In') {
-                    $("#checkedIn").val(value).trigger("change");
                 }
-                else if (key === 'Checked Out') {
-                    $("#checkedOut").val(value);
+                else if (key === 'Checked In' || key === 'Checked Out' || key === 'Checked In By' || key === 'Checked Out By') {
+                    if (key === 'Checked In') {
+                        $("#checkedIn").val(value).trigger("change");
+                    }
+                    else if (key === 'Checked Out') {
+                        $("#checkedOut").val(value);
+                    }
+                    else if (key === 'Checked In By') {
+                        $("#checkedInBy").val(value);
+                    }
+                    else if (key === 'Checked Out By') {
+                        $("#checkedOutBy").val(value);
+                    }
                 }
-                else if (key === 'Checked In By') {
-                    $("#checkedInBy").val(value);
-                }
-                else if (key === 'Checked Out By') {
-                    $("#checkedOutBy").val(value);
-                }
-            }
-            // Default text field
-            else {
-                inputHtml = `
+                // Default text field
+                else {
+                    inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
-                                        <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
+                                        <input type="text" class="form-control" name="${key}" value="${value}" ${required} ${readOnly} ${textColor} />
                                     </div>
                                 `;
-            }
+                }
 
-            if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
-                if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
+                    if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                        rowHtml += inputHtml;
+                        inputCount++;
+                    }
+                }
+                else {
                     rowHtml += inputHtml;
                     inputCount++;
                 }
-            }
-            else {
-                rowHtml += inputHtml;
-                inputCount++;
+
+                // If we have 5 fields, close the row and start a new one
+                if (inputCount % fieldsPerRow === 0) {
+                    rowHtml += '</div><div class="row">';
+                }
+            });
+
+            if (inputCount % fieldsPerRow !== 0) {
+                const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+                for (let i = 0; i < emptyDivsNeeded; i++) {
+                    rowHtml += '<div class="form-group col-lg-2"></div>';
+                }
             }
 
-            // If we have 5 fields, close the row and start a new one
-            if (inputCount % fieldsPerRow === 0) {
-                rowHtml += '</div><div class="row">';
-            }
-        });
+            rowHtml += '</div>';
+            modalContent.append(rowHtml);
 
-        if (inputCount % fieldsPerRow !== 0) {
-            const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
-            for (let i = 0; i < emptyDivsNeeded; i++) {
-                rowHtml += '<div class="form-group col-lg-2"></div>';
-            }
         }
-
-        rowHtml += '</div>';
-        modalContent.append(rowHtml);
-
         // Attach input validation listeners to all text fields
         modalContent.find('input[type="text"]').on('input', function () {
             const value = $(this).val();
             validateInput(this, value);
         });
     }
+
+    //Event listner for modal dropdown change to hide/show checkout sections controls
+    modalContent.on('change', 'select', function () {
+        applyDependencies(modalContent, {});
+    });
+
+    //apply rule engine on modal load
+    applyDependencies(modalContent, data);
+
+    //Event listner on Dropdown Check Out Section controls to apply dependencies based on rule engine
+    $("#modalBodyContent").on('change', '.dependent-field select', function () {
+        applyDependencies($("#modalBodyContent"), {});
+    });
+
+    //Event listner on Textbox Check Out Section controls to apply dependencies based on rule engine
+    $("#modalBodyContent").on('input', '.dependent-field input[type="text"]', function () {
+        applyDependencies($("#modalBodyContent"), {});
+    });
 
     // After modal is populated, bind the event listener to the DOB field
     const dobField = modalContent.find('input[name="DOB"]');
@@ -617,7 +1107,7 @@ function populateModalForEdit(data) {
 
 function populateModalForAdd(data) {
     modalContent.empty(); // Clear previous content
-
+    let textColor = 'style="color: black;"'; // Set text color to black
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
@@ -625,47 +1115,110 @@ function populateModalForAdd(data) {
             modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
         }
 
-        let rowHtml = '<div class="row">';
-        let inputCount = 0;
-        categoryKeys.forEach((key, index) => {
-            const value = data[key] || '';
-            let inputHtml = '';
-            let keyIndex = keys.indexOf(key);
-            let readOnly = readOnlyFieldsForAdd.includes(key) ? 'readonly' : '';
-            let textColor = 'style="color: black;"'; // Set text color to black
+        if (categoryName === "Check Out Section") {
+            for (const [subCategory, rows] of Object.entries(categoryKeys)) {
+                // Sub-category heading
+                modalContent.append(`<h5 class="subcategory-header">${subCategory}</h5><hr/>`);
 
-            if (multilineTextbox.includes(key)) {
-                inputHtml = `
+                // Each row is an array of field objects
+                rows.forEach(rowFields => {
+                    let rowHtml = `<div class="row" data-subcategory="${subCategory}">`;
+
+                    rowFields.forEach(fieldObj => {
+                        const key = fieldObj.field;
+                        const value = data[key] || '';
+                        let inputHtml = '';
+                        let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
+
+                        if (dropdownFieldsForAdd.includes(key)) {
+                            const dropdownOptions = dropdownOptionsMapping[key] || [
+                                { value: "", label: "" },
+                                { value: "Completed", label: "Completed" },
+                                { value: "Not Completed", label: "Not Completed" }
+                            ];
+
+                            let optionsHtml = dropdownOptions.map(option =>
+                                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                            ).join('');
+
+
+                            inputHtml = `
+                            <div class="col-md-3 dependent-field" 
+                                 data-field="${key}" 
+                                 data-depends-on="${fieldObj.dependsOn || ''}" 
+                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
+                              <div class="form-group">
+                                <label>${key}</label>
+                                <select class="form-control" name="${key}" ${disabled} ${textColor}>
+                                  ${optionsHtml}
+                                </select>
+                              </div>
+                            </div>`;
+                        }
+                        else {
+                            // 🔹 Textbox logic (still uses rule engine)
+                            inputHtml = `
+                            <div class="col-md-3 dependent-field"
+                                 data-field="${key}"
+                                 data-depends-on="${fieldObj.dependsOn || ''}"
+                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
+                                <div class="form-group">
+                                    <label>${key}</label>
+                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} />
+                                </div>
+                            </div>
+                        `;
+                        }
+
+                        rowHtml += inputHtml;
+                    });
+
+                    rowHtml += `</div>`; // close row
+                    modalContent.append(rowHtml);
+                });
+            }
+        }
+        else {
+            let rowHtml = '<div class="row">';
+            let inputCount = 0;
+            categoryKeys.forEach((key, index) => {
+                const value = data[key] || '';
+                let inputHtml = '';
+                let keyIndex = keys.indexOf(key);
+                let readOnly = readOnlyFieldsForAdd.includes(key) ? 'readonly' : '';
+
+                if (multilineTextbox.includes(key)) {
+                    inputHtml = `
                             <div class="form-group col-lg-12">
                                 <label>${key}</label>
                                 <textarea class="form-control" name="${key}" rows="4" ${readOnly} ${textColor}>${value}</textarea>
                             </div>
                         `;
-            }
-            else if (calendarFields.includes(key)) {
-                let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
-                inputHtml = `
+                }
+                else if (calendarFields.includes(key)) {
+                    let dateValue = isValidDate(value) ? formatDateToYYYYMMDD(value) : '';
+                    inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="date" class="form-control" name="${key}" min="1900-01-01" max="3000-12-31" value="${dateValue}" placeholder="mm/dd/yyyy" ${readOnly} ${textColor} />
                                     </div>
                                 `;
-            }
-            // Dropdown field
-            else if (dropdownFieldsForAdd.includes(key)) {
-                const dropdownOptions = dropdownOptionsMapping[key] || [
-                    { value: "N/A", label: "N/A" },
-                    { value: "NEEDED", label: "NEEDED" }
-                ];
+                }
+                // Dropdown field
+                else if (dropdownFieldsForAdd.includes(key)) {
+                    const dropdownOptions = dropdownOptionsMapping[key] || [
+                        { value: "N/A", label: "N/A" },
+                        { value: "NEEDED", label: "NEEDED" }
+                    ];
 
-                // Build dropdown options dynamically
-                let optionsHtml = dropdownOptions.map(option =>
-                    `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                ).join('');
+                    // Build dropdown options dynamically
+                    let optionsHtml = dropdownOptions.map(option =>
+                        `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
+                    ).join('');
 
-                let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
+                    let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
 
-                inputHtml = `
+                    inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -674,26 +1227,26 @@ function populateModalForAdd(data) {
                                         </select>
                                     </div>
                                 `;
-            }
-            else if (tableDataFieldsForAdd.includes(key)) {
-                if (key === "TaskForce") {
-                    const table = $('#previewTable').DataTable();
+                }
+                else if (tableDataFieldsForAdd.includes(key)) {
+                    if (key === "TaskForce") {
+                        const table = $('#previewTable').DataTable();
 
-                    const taskForceIndex = keys.indexOf("TaskForce");
-                    if (taskForceIndex === -1) return;
+                        const taskForceIndex = keys.indexOf("TaskForce");
+                        if (taskForceIndex === -1) return;
 
-                    // Get all unique TaskForce values from all rows
-                    const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
+                        // Get all unique TaskForce values from all rows
+                        const taskForceValues = [...new Set(table.rows().data().toArray().map(row => row[taskForceIndex]).filter(Boolean))];
 
-                    // Add default option
-                    let optionsHtml = `<option value="">---Select Taskforce---</option>`;
+                        // Add default option
+                        let optionsHtml = `<option value="">---Select Taskforce---</option>`;
 
-                    // Add each option dynamically
-                    optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
+                        // Add each option dynamically
+                        optionsHtml += taskForceValues.map(val => `<option value="${val}" ${value === val ? 'selected' : ''}>${val}</option>`).join('');
 
-                    let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
+                        let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
 
-                    inputHtml = `
+                        inputHtml = `
                     <div class="form-group col-lg-2">
                         <label>${key}</label>
                         <select class="form-control" name="${key}" ${disabled} ${textColor}>
@@ -701,28 +1254,28 @@ function populateModalForAdd(data) {
                         </select>
                     </div>
                     `;
-                }
-                else {
-                    var table = $('#previewTable').DataTable();
-                    var valueOfColumn = table.row(0).data()[keys.indexOf(key)];
+                    }
+                    else {
+                        var table = $('#previewTable').DataTable();
+                        var valueOfColumn = table.row(0).data()[keys.indexOf(key)];
 
-                    inputHtml = `
+                        inputHtml = `
                                      <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="text" class="form-control" name="${key}" value="${valueOfColumn}" ${readOnly} ${textColor} />
                                     </div>
                                 `;
+                    }
                 }
-            }
 
 
-            // Default text field
-            else {
-                if (key === 'FULL NAME') {
-                    // You can optionally split value if it contains full name parts
-                    const [lastName = '', firstName = '', middleName = ''] = value.split(' ');
+                // Default text field
+                else {
+                    if (key === 'FULL NAME') {
+                        // You can optionally split value if it contains full name parts
+                        const [lastName = '', firstName = '', middleName = ''] = value.split(' ');
 
-                    inputHtml = `
+                        inputHtml = `
             <div class="form-group col-lg-2">
                 <label>LAST NAME</label>
                 <input type="text" class="form-control" name="LAST NAME" value="${lastName}" ${textColor} />
@@ -737,50 +1290,69 @@ function populateModalForAdd(data) {
             </div>
         `;
 
-                    inputCount += 2; // Account for 3 fields added
-                } else if (key !== 'Checked In' && key !== 'Checked Out' && key !== 'Checked In By' && key !== 'Checked Out By') {
-                    inputHtml = `
+                        inputCount += 2; // Account for 3 fields added
+                    } else if (key !== 'Checked In' && key !== 'Checked Out' && key !== 'Checked In By' && key !== 'Checked Out By') {
+                        inputHtml = `
                                     <div class="form-group col-lg-2">
                                         <label>${key}</label>
                                         <input type="text" class="form-control" name="${key}" value="${value}" ${readOnly} ${textColor} />
                                     </div>
                                 `;
+                    }
                 }
-            }
 
-            if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
-                if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                if (window.isCheckInOutPage) {//temporary hide fields for checkincheckout page i.e for keuler application, for revert : Just remove if condition else will be working for all scenerios.(rowHtml += inputHtml;  inputCount++; )
+                    if (key !== 'LIPID PANEL' && key !== 'Cholesterol / HDL Cholesterol' && key !== 'Framingham') {
+                        rowHtml += inputHtml;
+                        inputCount++;
+                    }
+                }
+                else {
                     rowHtml += inputHtml;
                     inputCount++;
                 }
-            }
-            else {
-                rowHtml += inputHtml;
-                inputCount++;
+
+                // If we have 5 fields, close the row and start a new one
+                if (inputCount % fieldsPerRow === 0) {
+                    rowHtml += '</div><div class="row">';
+                }
+            });
+
+            if (inputCount % fieldsPerRow !== 0) {
+                const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
+                for (let i = 0; i < emptyDivsNeeded; i++) {
+                    rowHtml += '<div class="form-group col-lg-2"></div>';
+                }
             }
 
-            // If we have 5 fields, close the row and start a new one
-            if (inputCount % fieldsPerRow === 0) {
-                rowHtml += '</div><div class="row">';
-            }
-        });
+            rowHtml += '</div>';
+            modalContent.append(rowHtml);
 
-        if (inputCount % fieldsPerRow !== 0) {
-            const emptyDivsNeeded = fieldsPerRow - (inputCount % fieldsPerRow);
-            for (let i = 0; i < emptyDivsNeeded; i++) {
-                rowHtml += '<div class="form-group col-lg-2"></div>';
-            }
+            // Attach input validation listeners to all text fields
+            modalContent.find('input[type="text"]').on('input', function () {
+                const value = $(this).val();
+                validateInput(this, value);
+            });
         }
-
-        rowHtml += '</div>';
-        modalContent.append(rowHtml);
-
-        // Attach input validation listeners to all text fields
-        modalContent.find('input[type="text"]').on('input', function () {
-            const value = $(this).val();
-            validateInput(this, value);
-        });
     }
+
+    //Event listner for modal dropdown change to hide/show checkout sections controls
+    modalContent.on('change', 'select', function () {
+        applyDependencies(modalContent, {});
+    });
+
+    //apply rule engine on modal load
+    applyDependencies(modalContent, data);
+
+    //Event listner on Dropdown Check Out Section controls to apply dependencies based on rule engine
+    $("#modalBodyContent").on('change', '.dependent-field select', function () {
+        applyDependencies($("#modalBodyContent"), {});
+    });
+
+    //Event listner on Textbox Check Out Section controls to apply dependencies based on rule engine
+    $("#modalBodyContent").on('input', '.dependent-field input[type="text"]', function () {
+        applyDependencies($("#modalBodyContent"), {});
+    });
 
     checkLabRequisitionField();
     checkLabNeededField();
@@ -1211,21 +1783,24 @@ async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-    const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
+    /*const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];*/
+    //const requiredFields = [];
 
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
-
-        if (checkedInDropdown.value === "Yes") {
-            requiredFields.push('checkedInBy');
-            //$("#checkedInBy").removeClass('valid-class').addClass('highlight-error');
-        }
-
         const checkedOutDropdown = document.getElementById("checkedOut");
 
+        if (checkedInDropdown.value === "Yes") {
+            $("#checkedInBy").prop("required", true);
+        } else {
+            $("#checkedInBy").prop("required", false).val('');
+        }
+
+        // Checked Out handling
         if (checkedOutDropdown.value === "Yes") {
-            requiredFields.push('checkedOutBy');
-            //$("#checkedOutBy").removeClass('valid-class').addClass('highlight-error');
+            $("#checkedOutBy").prop("required", true);
+        } else {
+            $("#checkedOutBy").prop("required", false).val('');
         }
     }
     let hasError = false;
@@ -1244,14 +1819,23 @@ async function saveChangesButton() {
             updatedData[key] = value;
         }
 
-        // Highlight required fields if they are empty
-        if (requiredFields.includes(key) && value.trim() === '') {
+        // 🔹 Highlight required fields based on the required attribute
+        if ($(this).prop('required') && value.trim() === '') {
             $(this).removeClass('valid-class').addClass('highlight-error');
             if (!hasError) {
                 firstInvalidField = this; // store first invalid field
             }
             hasError = true;
         }
+
+        //// Highlight required fields if they are empty
+        //if (requiredFields.includes(key) && value.trim() === '') {
+        //    $(this).removeClass('valid-class').addClass('highlight-error');
+        //    if (!hasError) {
+        //        firstInvalidField = this; // store first invalid field
+        //    }
+        //    hasError = true;
+        //}
     });
 
     // If any required field is missing, do not proceed further
@@ -1346,7 +1930,6 @@ async function saveChangesButton() {
             fullRowData[walkinSMIndex] = 'Yes';
         }
 
-        debugger;
         const table = $('#previewTable').DataTable();
         const barcodeIndex = keys.indexOf('Barcode');
         const barcodeValue = table.cell(0, barcodeIndex).data();
@@ -1362,7 +1945,6 @@ async function saveChangesButton() {
         fullRowData[barcodeIndex] = finalBarcodeValue;
 
         if (window.userType === "client") {
-            debugger;
             const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
 
             const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
@@ -1436,7 +2018,6 @@ async function saveChangesButton() {
         //});
 
         if (window.userType === "client") {
-            debugger;
             const dto = prepareObjectToUpdateRecordInDatabase(updatedData, columnMappingsForInsertionAndFetching);
             const result = await updateSingleRecordInDatabase('/ExcelFileUploader/UpdateSingleRecord', dto);
 
@@ -2359,6 +2940,47 @@ const columnMappingsForInsertionAndFetching = [
     { key: "HivWin", label: "HIV Win", type: "int" },
     { key: "HearingWin", label: "Hearing WIN", type: "int" },
     { key: "Barcode", label: "Barcode", type: "string" },
+    { key: "VitalsStatus", label: "Vitals Status", type: "string" },
+    { key: "HepBNeededStatus", label: "Hep B Needed Status", type: "string" },
+    { key: "HepBReason", label: "Hep B Reason", type: "string" },
+    { key: "FluNeededStatus", label: "FLU Needed Status", type: "string" },
+    { key: "FluReason", label: "FLU Reason", type: "string" },
+    { key: "MmrStatus", label: "MMR Status", type: "string" },
+    { key: "MmrReason", label: "MMR Reason", type: "string" },
+    { key: "HepANeededStatus", label: "Hep A Needed Status", type: "string" },
+    { key: "HepAReason", label: "Hep A Reason", type: "string" },
+    { key: "TetTdpNeededStatus", label: "Tet/TDP Needed Status", type: "string" },
+    { key: "TetTdpReason", label: "Tet/TDP Reason", type: "string" },
+    { key: "VaricellaNeededStatus", label: "Varicella Needed Status", type: "string" },
+    { key: "VaricellaReason", label: "Varicella Reason", type: "string" },
+    { key: "SickleStatus", label: "SICKLE Status", type: "string" },
+    { key: "SickleReason", label: "Sickle Reason", type: "string" },
+    { key: "HivStatus", label: "HIV Status", type: "string" },
+    { key: "HivBarcode", label: "HIV Barcode", type: "string" },
+    { key: "HivReason", label: "HIV Reason", type: "string" },
+    { key: "AboStatus", label: "ABO Status", type: "string" },
+    { key: "AboReason", label: "ABO Reason", type: "string" },
+    { key: "DnaStatus", label: "DNA Status", type: "string" },
+    { key: "DnaReason", label: "DNA Reason", type: "string" },
+    { key: "G6pdCheckoutStatus", label: "G6PD Checkout Status", type: "string" },
+    { key: "G6pdReason", label: "G6PD Reason", type: "string" },
+    { key: "LipidStatus", label: "Lipid Status", type: "string" },
+    { key: "LipidReason", label: "Lipid Reason", type: "string" },
+    { key: "EkgNeededStatus", label: "EKG Needed Status", type: "string" },
+    { key: "EkgNeededReason", label: "EKG Needed Reason", type: "string" },
+    { key: "PhaStatus", label: "PHA Status", type: "string" },
+    { key: "PhaFollowUp", label: "PHA Follow Up", type: "string" },
+    { key: "HearingStatus", label: "Hearing Status", type: "string" },
+    { key: "AudiologistServiceCompleted", label: "Audiologist Service Completed", type: "string" },
+    { key: "VisionStatus", label: "Vision Status", type: "string" },
+    { key: "OptometristServiceCompleted", label: "Optometrist Service Completed", type: "string" },
+    { key: "DentalXrayStatus", label: "Dental X-Ray Status", type: "string" },
+    { key: "PanoramicXray", label: "Panoramic X-Ray", type: "string" },
+    { key: "DentalExamStatus", label: "Dental Exam Status", type: "string" },
+    { key: "ClassDentalExam", label: "Class (Dental Exam)", type: "string" },
+    { key: "DentalTreatment", label: "Dental Treatment", type: "string" },
+    { key: "FinalDentalClass", label: "Final Dental Class", type: "string" },
+    { key: "DentalTreatmentReason", label: "Dental Treatment Reason", type: "string" },
     { key: "CheckIn", label: "Checked In", type: "string" },
     { key: "CheckOut", label: "Checked Out", type: "string" },
     { key: "CheckInBy", label: "Checked In By", type: "string" },

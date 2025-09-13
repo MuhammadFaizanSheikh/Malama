@@ -522,7 +522,6 @@
     }
 
     function renderPreviewTable(data) {
-        debugger;
         if ($.fn.DataTable.isDataTable("#previewTable")) {
             $("#previewTable").DataTable().clear().destroy();
         }
@@ -543,7 +542,6 @@
             "color": "white" // optional: for better contrast
         });
 
-        debugger;
         // Generate rows
         let formattedData = data.map(row => {
             const rowData = [null]; // placeholder for "Actions"
@@ -616,7 +614,6 @@
         });
 
         // Show relevant UI
-        debugger;
         $('#eventSummaryTable').removeClass('d-none');
         const filterDiv = document.querySelector('.card.p-3.mb-4');
                 filterDiv.style.display = 'block';
@@ -727,7 +724,6 @@
 
     async function updateSingleRecordInDatabase(url, dtoObject) {
         try {
-            debugger;
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -792,7 +788,6 @@
     }
 
     function prepareObjectToUpdateRecordInDatabase(updatedData, columnMappings) {
-        debugger;
         const keyByLabel = {};
         const typeByLabel = {};
 

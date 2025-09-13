@@ -88,5 +88,52 @@ namespace ExcelToCsv.Models
         public int? HearingWin { get; set; }
         public bool? isDeleted { get; set; }
         public string? Barcode { get; set; }
+
+        //Check Out Section Fields
+        public string? VitalsStatus { get; set; }
+        public string? HepBNeededStatus { get; set; }
+        public string? HepBReason { get; set; }
+        public string? FluNeededStatus { get; set; }
+        public string? FluReason { get; set; }
+        public string? MmrStatus { get; set; }
+        public string? MmrReason { get; set; }
+        public string? HepANeededStatus { get; set; }
+        public string? HepAReason { get; set; }
+        public string? TetTdpNeededStatus { get; set; }
+        public string? TetTdpReason { get; set; }
+        public string? VaricellaNeededStatus { get; set; }
+        public string? VaricellaReason { get; set; }
+
+        public string? SickleStatus { get; set; }
+        public string? SickleReason { get; set; }
+        public string? HivStatus { get; set; }
+        public string? HivBarcode { get; set; }
+        public string? HivReason { get; set; }
+        public string? AboStatus { get; set; }
+        public string? AboReason { get; set; }
+        public string? DnaStatus { get; set; }
+        public string? DnaReason { get; set; }
+        public string? G6pdCheckoutStatus { get; set; }
+        public string? G6pdReason { get; set; }
+        public string? LipidStatus { get; set; }
+        public string? LipidReason { get; set; }
+        public string? EkgNeededStatus { get; set; }
+        public string? EkgNeededReason { get; set; }
+
+        public string? PhaStatus { get; set; }
+        public string? PhaFollowUp { get; set; }
+        public string? HearingStatus { get; set; }
+        public string? AudiologistServiceCompleted { get; set; }
+        public string? VisionStatus { get; set; }
+        public string? OptometristServiceCompleted { get; set; }
+
+        public string? DentalXrayStatus { get; set; }
+        public string? PanoramicXray { get; set; }
+        public string? DentalExamStatus { get; set; }
+        public string? ClassDentalExam { get; set; }
+        public string? DentalTreatment { get; set; }
+        public string? FinalDentalClass { get; set; }
+        public string? DentalTreatmentReason { get; set; }
+
     }
 }
