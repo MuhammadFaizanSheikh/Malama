@@ -1279,11 +1279,11 @@ function populateModalForAdd(data) {
                         inputHtml = `
             <div class="form-group col-lg-2">
                 <label>LAST NAME</label>
-                <input type="text" class="form-control" name="LAST NAME" value="${lastName}" ${textColor} />
+                <input type="text" class="form-control" name="LAST NAME" value="${lastName}" ${required} ${textColor} />
             </div>
             <div class="form-group col-lg-2">
                 <label>FIRST NAME</label>
-                <input type="text" class="form-control" name="FIRST NAME" value="${firstName}" ${textColor} />
+                <input type="text" class="form-control" name="FIRST NAME" value="${firstName}" ${required} ${textColor} />
             </div>
             <div class="form-group col-lg-2">
                 <label>MIDDLE NAME</label>
