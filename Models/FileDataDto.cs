@@ -135,7 +135,7 @@ namespace ExcelToCsv.Models
         public string? ClassDentalExam { get; set; }
         public string? DentalTreatment { get; set; }
         public string? FinalDentalClass { get; set; }
-        public string? DentalTreatmentClassReason { get; set; }
+        public string? FinalTreatmentClass3Reason { get; set; }
         public string? DentalTreatmentReason { get; set; }
         
 

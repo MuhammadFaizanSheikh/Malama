@@ -515,7 +515,7 @@
                     let headers = Object.keys(filteredData[0]);
                     //fullNameColumnIndex = headers.indexOf("FULL NAME") + 1;
                     headers.unshift('SM ID');
-                    headers.push('Checked Out Time', 'Vitals Status', 'Hep B Needed Status', 'Hep B Reason', 'FLU Needed Status', 'FLU Reason', 'MMR Status', 'MMR Reason', 'Hep A Needed Status', 'Hep A Reason', 'Tet/TDP Needed Status', 'Tet/TDP Reason', 'Varicella Needed Status', 'Varicella Reason', 'SICKLE Status', 'Sickle Reason', 'HIV Status', 'HIV Barcode', 'HIV Reason', 'ABO Status', 'ABO Reason', 'DNA Status', 'DNA Reason', 'G6PD Checkout Status', 'G6PD Reason', 'Lipid Status', 'Lipid Reason', 'EKG Needed Status', 'EKG Needed Reason', 'PHA Status', 'PHA Follow Up', 'Hearing Status', 'Audiologist Service Completed', 'Vision Status', 'Optometrist Service Completed', 'Dental X-Ray Status', 'Panoramic X-Ray', 'Dental Exam Status', 'Class (Dental Exam)', 'Dental Treatment', 'Final Dental Class', 'Dental Treatment Reason','Dental Treatment Class Reason','Checked In', 'Checked Out', 'Checked In By', 'Checked Out By', 'Checked In Time');
+                    headers.push('Checked Out Time', 'Vitals Status', 'Hep B Needed Status', 'Hep B Reason', 'FLU Needed Status', 'FLU Reason', 'MMR Status', 'MMR Reason', 'Hep A Needed Status', 'Hep A Reason', 'Tet/TDP Needed Status', 'Tet/TDP Reason', 'Varicella Needed Status', 'Varicella Reason', 'SICKLE Status', 'Sickle Reason', 'HIV Status', 'HIV Barcode', 'HIV Reason', 'ABO Status', 'ABO Reason', 'DNA Status', 'DNA Reason', 'G6PD Checkout Status', 'G6PD Reason', 'Lipid Status', 'Lipid Reason', 'EKG Needed Status', 'EKG Needed Reason', 'PHA Status', 'PHA Follow Up', 'Hearing Status', 'Audiologist Service Completed', 'Vision Status', 'Optometrist Service Completed', 'Dental X-Ray Status', 'Panoramic X-Ray', 'Dental Exam Status', 'Class (Dental Exam)', 'Dental Treatment', 'Final Dental Class', 'Dental Treatment Reason', 'Final Treatment Class 3 Reason', 'Checked In', 'Checked Out', 'Checked In By', 'Checked Out By', 'Checked In Time');
                     headers.push('Actions');
                     let headerRowHtml = headers.map(header => `<th style="background-color: rgba(120, 130, 221, 1); color: white;">${header}</th>`).join('');
                     tableHead.innerHTML = `<tr>${headerRowHtml}</tr>`;
@@ -586,7 +586,7 @@
                             { title: 'Class (Dental Exam)', orderable: false },
                             { title: 'Dental Treatment', orderable: false },
                             { title: 'Final Dental Class', orderable: false },
-                            { title: 'Dental Treatment Class Reason', orderable: false },
+                            { title: 'Final Treatment Class 3 Reason', orderable: false },
                             { title: 'Dental Treatment Reason', orderable: false },
 
                             { title: 'Checked In', orderable: false },
