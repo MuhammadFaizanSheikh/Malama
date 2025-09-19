@@ -133,7 +133,7 @@ namespace ExcelToCsv.Models
         public string? PanoramicXray { get; set; }
         public string? DentalExamStatus { get; set; }
         public string? ClassDentalExam { get; set; }
-        public string? DentalTreatment { get; set; }
+        public string? DentalTreatmentReceived { get; set; }
         public string? FinalDentalClass { get; set; }
         public string? FinalTreatmentClass3Reason { get; set; }
         public string? DentalTreatmentReason { get; set; }
