@@ -397,6 +397,11 @@ const tableDataFieldsForAdd = [
 const calendarFields = ["DOB"];
 const multilineTextbox = ["Notes"];
 
+const lengthConstraints = {
+    "HIV Barcode": { min: 9}
+};
+
+
 
 // Define specific dropdown options for certain fields
 const dropdownOptionsMapping = {
@@ -732,7 +737,8 @@ function populateModalForEdit(data) {
                         const value = data[key] || '';
                         let inputHtml = '';
                         let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
-                        
+                        let minLengthAttr = lengthConstraints[key]?.min ? `minlength="${lengthConstraints[key].min}"` : '';
+
                         if (dropdownFieldsForEdit.includes(key)) {
                             const dropdownOptions = dropdownOptionsMapping[key] || [
                                 { value: "", label: "" },
@@ -767,7 +773,7 @@ function populateModalForEdit(data) {
                                  data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
                                 <div class="form-group">
                                     <label>${key}</label>
-                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} />
+                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} ${minLengthAttr}/>
                                 </div>
                             </div>
                         `;
@@ -1141,6 +1147,7 @@ function populateModalForAdd(data) {
                         const value = data[key] || '';
                         let inputHtml = '';
                         let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
+                        let minLengthAttr = lengthConstraints[key]?.min ? `minlength="${lengthConstraints[key].min}"` : '';
 
                         if (dropdownFieldsForAdd.includes(key)) {
                             const dropdownOptions = dropdownOptionsMapping[key] || [
@@ -1176,7 +1183,7 @@ function populateModalForAdd(data) {
                                  data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
                                 <div class="form-group">
                                     <label>${key}</label>
-                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} />
+                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} ${minLengthAttr}/>
                                 </div>
                             </div>
                         `;
@@ -1341,12 +1348,14 @@ function populateModalForAdd(data) {
             rowHtml += '</div>';
             modalContent.append(rowHtml);
 
-            // Attach input validation listeners to all text fields
-            modalContent.find('input[type="text"]').on('input', function () {
-                const value = $(this).val();
-                validateInput(this, value);
-            });
         }
+
+
+        // Attach input validation listeners to all text fields
+        modalContent.find('input[type="text"]').on('input', function () {
+            const value = $(this).val();
+            validateInput(this, value);
+        });
     }
 
     //Event listner for modal dropdown change to hide/show checkout sections controls
@@ -1653,7 +1662,8 @@ const validationRules = {
     "DOD ID": { type: "numeric", maxLength: 10 },
     //"RANK": { type: "alphanumeric", uppercase: true, maxLength: 3 },
     //"MOS": { type: "alphanumeric", uppercase: true },
-    "UIC": { type: "alphanumeric", uppercase: true, maxLength: 6},
+    "UIC": { type: "alphanumeric", uppercase: true, maxLength: 6 },
+    "HIV Barcode": { type: "alphanumeric", uppercase: true, maxLength: 9 },
     //"PULHES": { type: "numeric", maxLength: 5 },
     //"HRC": { type: "alphanumeric", uppercase: true },
     //"EventID": { type: "alphanumeric", uppercase: true },
@@ -1663,7 +1673,7 @@ const validationRules = {
 function validateInput(field, value) {
     const inputName = $(field).attr('name');
     const rules = validationRules[inputName];
-
+    debugger;
     if (rules) {
         if (rules.uppercase) {
             value = value.toUpperCase();
@@ -1823,6 +1833,12 @@ async function saveChangesButton() {
     modalInputs.removeClass('highlight-error');
 
     modalInputs.each(function () {
+
+        if (!$(this).is(':visible')) {
+            $(this).removeClass('highlight-error valid-class').removeAttr('title');
+            return; // continue to next
+        }
+
         const key = $(this).attr('name');
         const value = $(this).val() || '';
 
@@ -1830,6 +1846,15 @@ async function saveChangesButton() {
             updatedData[key] = formatDateToMMDDYYYY(value);
         } else {
             updatedData[key] = value;
+        }
+
+        const min = $(this).attr('minlength');
+
+        if (min && value.length < parseInt(min)) {
+            $(this).removeClass('valid-class').addClass('highlight-error')
+                .attr('title', `${key} must be at least ${min} characters.`);
+            if (!hasError) firstInvalidField = this;
+            hasError = true;
         }
 
         // 🔹 Highlight required fields based on the required attribute
@@ -1840,6 +1865,8 @@ async function saveChangesButton() {
             }
             hasError = true;
         }
+
+        
     });
 
     // If any required field is missing, do not proceed further
@@ -1960,10 +1987,11 @@ async function saveChangesButton() {
                     icon: 'success',
                     title: 'Success',
                     text: result.data.message || 'Record inserted successfully',
-                    timer: 2000,
+                    timer: 200,
                     showConfirmButton: false
                 });
 
+                $('#editModal').modal('hide');
                 smIdToIdentifyRecordForPrint = result.data.data.smId;
                 const selectedEventId = $('#eventIdDropdown').val();
                 await fetchAndRenderEventData(selectedEventId, async () => {
@@ -2030,10 +2058,10 @@ async function saveChangesButton() {
                     icon: 'success',
                     title: 'Success',
                     text: result.data.message || 'Record updated successfully',
-                    timer: 2000,
+                    timer: 200,
                     showConfirmButton: false
                 });
-
+                $('#editModal').modal('hide');
                 smIdToIdentifyRecordForPrint = dto.SmId;
                 const selectedEventId = $('#eventIdDropdown').val();
                 await fetchAndRenderEventData(selectedEventId, async () => {
@@ -2079,7 +2107,7 @@ async function saveChangesButton() {
     AdjustWidth();
     isAddingNewRow = false;
 
-    $('#editModal').modal('hide');
+    /*$('#editModal').modal('hide');*/
 
     if (window.isCheckInOutPage && window.userType !== "client") {
         RenderUpdatedEventSummaryTable();
@@ -2455,8 +2483,8 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         let y = 41;
         let distanceInLines = 6;
 
-        const headerImgWidth = 30;
-        const headerImgHeight = 15;
+        const headerImgWidth = 25;
+        const headerImgHeight = 20;
 
         // Add Dawson logo at top-left
         doc.addImage(dawsonLogoBase64, 'PNG', 10, 10, headerImgWidth, headerImgHeight);
@@ -2540,7 +2568,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
 
 
         const pageHeight = doc.internal.pageSize.getHeight();
-        const imgWidth = 40;
+        const imgWidth = 60;
         const imgHeight = 20;
 
         // Draw logo on bottom-left corner
@@ -2549,7 +2577,7 @@ async function generatePDF(dataArray = [], isPrintMode = false) {
         // Generate barcode and add to center of footer
         if (data.barcode) {
             const barcodeBase64 = await generateBarcodeBase64(data.barcode);
-            const barcodeWidth = 100;
+            const barcodeWidth = 60;
             const barcodeHeight = 20;
             const barcodeX = (doc.internal.pageSize.getWidth() - barcodeWidth) / 2;
             const barcodeY = doc.internal.pageSize.getHeight() - barcodeHeight - 5; // 5 units above bottom
