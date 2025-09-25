@@ -22,6 +22,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 using static NPOI.POIFS.Crypt.CryptoFunctions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -183,22 +184,40 @@ namespace ExcelFilesCompiler.Controllers.Services
             return validationErrors;
         }
 
+        //public async Task<List<string>> GetDistinctEventIdsAsync()
+        //{
+        //    try
+        //    {
+        //        var data = await fileUploaderRepository.FindForSearchingAsync(f => f.isDeleted != true);
+        //        return data
+        //            .Select(x => x.EventId)
+        //            .Where(x => !string.IsNullOrEmpty(x))
+        //            .Distinct()
+        //            .ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("Error fetching distinct EventIds from FileData.", ex);
+        //    }
+        //}
+
         public async Task<List<string>> GetDistinctEventIdsAsync()
         {
             try
             {
-                var data = await fileUploaderRepository.FindForSearchingAsync(f => f.isDeleted != true);
-                return data
-                    .Select(x => x.EventId)
-                    .Where(x => !string.IsNullOrEmpty(x))
-                    .Distinct()
-                    .ToList();
+                return await fileUploaderRepository
+                    .GetWithInclude(f => f.isDeleted != true)   // filters at DB
+                    .Select(f => f.EventId)              // projection at DB
+                    .Where(id => !string.IsNullOrEmpty(id))
+                    .Distinct()                          // DB applies DISTINCT
+                    .ToListAsync();                      // executes SQL
             }
             catch (Exception ex)
             {
                 throw new Exception("Error fetching distinct EventIds from FileData.", ex);
             }
         }
+
 
         public async Task<IEnumerable<FileDataDto>> GetEventDataByEventIdAsync(string eventId)
         {
