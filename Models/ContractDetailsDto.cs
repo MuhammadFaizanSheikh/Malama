@@ -1,4 +1,4 @@
-﻿namespace ExcelFilesCompiler.Models
+﻿namespace Malama.Models
 {
     using System;
     using System.ComponentModel.DataAnnotations;

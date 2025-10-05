@@ -1,4 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -202,6 +202,19 @@ namespace ExcelFilesCompiler.Repositories.Services
                 throw new Exception("Error while querying the database.", ex);
             }
         }
+
+        public IQueryable<T> FindForSearching(Expression<Func<T, bool>> predicate)
+        {
+            try
+            {
+                return _dbSet.Where(predicate).AsNoTracking(); // ✅ returns IQueryable
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while querying the database.", ex);
+            }
+        }
+
         public async Task<T> FindAsync(Expression<Func<T, bool>> predicate)
         {
             try

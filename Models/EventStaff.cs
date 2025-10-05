@@ -1,10 +1,10 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ExcelToCsv.Models
+namespace Malama.Models
 {
     public class EventStaffViewModel
     {

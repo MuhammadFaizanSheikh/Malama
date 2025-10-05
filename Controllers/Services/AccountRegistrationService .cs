@@ -1,7 +1,6 @@
 ﻿using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Utilities;
-using ExcelToCsv.Models;
+using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;

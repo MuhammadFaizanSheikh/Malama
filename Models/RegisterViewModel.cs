@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace ExcelFilesCompiler.Models
+namespace Malama.Models
 {
     public class RegisterViewModel : IdentityUser
     {

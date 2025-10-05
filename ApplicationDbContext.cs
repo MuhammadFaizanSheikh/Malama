@@ -1,5 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
-using ExcelToCsv.Models;
+﻿using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +25,8 @@ namespace ExcelFilesCompiler
         public DbSet<EventServiceDetail> EventServiceDetail { get; set; }
         public DbSet<EventStartEndTimeDayWise> EventStartEndTimeDayWise { get; set; }
         public DbSet<EventStaffDetail> EventStaffDetail { get; set; }
+        public DbSet<ImmunizationStation> ImmunizationStation { get; set; }
+        public DbSet<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,5 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
-using ExcelToCsv.Models;
+﻿using Malama.Models;
 
 namespace ExcelFilesCompiler.Interfaces
 {

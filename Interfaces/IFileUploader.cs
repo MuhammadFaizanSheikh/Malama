@@ -1,5 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
-using ExcelToCsv.Models;
+﻿using Malama.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelFilesCompiler.Interfaces
@@ -10,8 +9,10 @@ namespace ExcelFilesCompiler.Interfaces
         ResponseDto CheckForExistingDataAgainstEventId(string eventId);
         ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId, string loggedinUserName);
         Task<List<string>> GetDistinctEventIdsAsync();
-        Task<IEnumerable<FileDataDto>> GetEventDataByEventIdAsync(string eventId);
+        IQueryable<FileDataDto> GetEventDataByEventId(string eventId);
+        IQueryable<FileDataDto> GetEventDataByEventIdForImmunization(string eventId);
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName);
+        Task<FileDataDto> GetByIdAsync(long id);
     }
 }

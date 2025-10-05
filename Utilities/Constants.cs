@@ -8,5 +8,11 @@
             public const string EventStaffRoles = "EventStaffRole";
             public const string EventManagementRoles = "EventManagementRole";
         }
+
+        public static class NeededOrNA
+        {
+            public const string Needed = "NEEDED";
+            public const string NotApplicable = "N/A";
+        }
     }
 }

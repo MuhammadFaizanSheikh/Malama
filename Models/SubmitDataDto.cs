@@ -1,6 +1,6 @@
-﻿using ExcelToCsv.Models;
+﻿using Malama.Models;
 
-namespace ExcelFilesCompiler.Models
+namespace Malama.Models
 {
     public class SubmitDataDto
     {

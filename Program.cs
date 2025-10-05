@@ -1,7 +1,7 @@
 using ExcelFilesCompiler;
 using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Models;
+using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using Microsoft.AspNetCore.Identity;
@@ -29,6 +29,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IEventStaffService, EventStaffService>();
 builder.Services.AddScoped<IEventManagementService, EventManagementService>();
+builder.Services.AddScoped<IImmunizationStationService, ImmunizationStationService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
@@ -99,6 +100,11 @@ builder.Services.AddAuthentication()
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 
 // Migrate the database and seed data
 using (var scope = app.Services.CreateScope())

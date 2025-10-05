@@ -22,7 +22,7 @@ namespace Malama.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.ApplicationRole", b =>
+            modelBuilder.Entity("Malama.Models.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -56,7 +56,7 @@ namespace Malama.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Malama.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -126,7 +126,7 @@ namespace Malama.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.ContractDetails", b =>
+            modelBuilder.Entity("Malama.Models.ContractDetails", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -302,7 +302,7 @@ namespace Malama.Migrations
                     b.ToTable("ContractDetails");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagement", b =>
+            modelBuilder.Entity("Malama.Models.EventManagement", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -712,7 +712,7 @@ namespace Malama.Migrations
                     b.ToTable("EventManagement");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagementStaffAvailability", b =>
+            modelBuilder.Entity("Malama.Models.EventManagementStaffAvailability", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -733,7 +733,7 @@ namespace Malama.Migrations
                     b.ToTable("EventManagementStaffAvailability");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagementTaskforces", b =>
+            modelBuilder.Entity("Malama.Models.EventManagementTaskforces", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -755,7 +755,7 @@ namespace Malama.Migrations
                     b.ToTable("EventManagementTaskforces");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventServiceDetail", b =>
+            modelBuilder.Entity("Malama.Models.EventServiceDetail", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -794,285 +794,7 @@ namespace Malama.Migrations
                     b.ToTable("EventServiceDetail");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("EventManagementId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("EventStaffId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("PreEventAvailability")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SelectedStation")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventManagementId");
-
-                    b.ToTable("EventStaffDetail");
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStartEndTimeDayWise", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<int>("EventDay")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan?>("EventEndTime")
-                        .HasColumnType("interval");
-
-                    b.Property<long>("EventManagementId")
-                        .HasColumnType("bigint");
-
-                    b.Property<TimeSpan?>("EventStartTime")
-                        .HasColumnType("interval");
-
-                    b.Property<int>("ServiceMemberPercentPerDay")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventManagementId");
-
-                    b.ToTable("EventStartEndTimeDayWise");
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventWiseStaffRole", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("EventStaffDetailId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventStaffDetailId");
-
-                    b.ToTable("EventWiseStaffRole");
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.ServiceTypeProvided", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("ServiceTypeProvidedName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<long>("SubContractorId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubContractorId");
-
-                    b.ToTable("ServiceTypeProvided");
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("CompanyId")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("CompanyMainAddress1")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("CompanyMainAddress2")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("CompanyMainCity")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainEmail")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainFirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainLastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainPhone")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
-
-                    b.Property<string>("CompanyMainState")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("CompanyMainZip")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<long>("ContractId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("EventEmail")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("EventFirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("EventLastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("EventPhone")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
-
-                    b.Property<string>("FinanceAddress1")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("FinanceAddress2")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("FinanceCity")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("FinanceEmail")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("FinanceFirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("FinanceLastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("FinancePhone")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
-
-                    b.Property<string>("FinanceState")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("FinanceZip")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("SmallBusinessType")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("SolicitationNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("TrainingEmail")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("TrainingFirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("TrainingLastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("TrainingPhone")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SubContractor");
-                });
-
-            modelBuilder.Entity("ExcelToCsv.Models.EventStaff", b =>
+            modelBuilder.Entity("Malama.Models.EventStaff", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1280,7 +1002,86 @@ namespace Malama.Migrations
                     b.ToTable("EventStaff");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.FileDataDto", b =>
+            modelBuilder.Entity("Malama.Models.EventStaffDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EventManagementId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EventStaffId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("PreEventAvailability")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SelectedStation")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventManagementId");
+
+                    b.ToTable("EventStaffDetail");
+                });
+
+            modelBuilder.Entity("Malama.Models.EventStartEndTimeDayWise", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("EventDay")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeSpan?>("EventEndTime")
+                        .HasColumnType("interval");
+
+                    b.Property<long>("EventManagementId")
+                        .HasColumnType("bigint");
+
+                    b.Property<TimeSpan?>("EventStartTime")
+                        .HasColumnType("interval");
+
+                    b.Property<int>("ServiceMemberPercentPerDay")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventManagementId");
+
+                    b.ToTable("EventStartEndTimeDayWise");
+                });
+
+            modelBuilder.Entity("Malama.Models.EventWiseStaffRole", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EventStaffDetailId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventStaffDetailId");
+
+                    b.ToTable("EventWiseStaffRole");
+                });
+
+            modelBuilder.Entity("Malama.Models.FileDataDto", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1673,7 +1474,305 @@ namespace Malama.Migrations
                     b.ToTable("FileData");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffAttributeDetails", b =>
+            modelBuilder.Entity("Malama.Models.ImmunizationStation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("BloodTransfusionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CancerOrImmuneSystemReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CompletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CompletedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("FileDataId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("FluExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("FluLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FluManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FluNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FluReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HadBloodTransfusionOrAntiviralInPastYear")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HadSeizureOrNervousSystemProblem")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HadSeriousReactionAfterVaccination")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HasAllergiesReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HasAllergiesToMedicationFoodVaccineOrLatex")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HasCancerOrImmuneSystemProblem")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HasLongTermHealthProblem")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("HepAExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("HepALotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepAManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepANeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepAReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("HepBExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("HepBLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepBManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepBNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepBReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImmuneSuppressionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IsPregnantOrCouldBePregnant")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IsSickToday")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IsSickTodayReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LongTermHealthProblemReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("MMRExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("MMRLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MMRManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MMRNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MMRReason")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PregnancyCheckboxSelected")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReceivedVaccineInPast4Weeks")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReceivedVaccineReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SeizureReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SeriousReactionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("TetTdpExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("TetTdpLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TetTdpManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TetTdpNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TetTdpReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TookImmuneSuppressingMedicationRecently")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("VaricellaExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("VaricellaLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VaricellaManufacturer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VaricellaNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VaricellaReason")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileDataId")
+                        .IsUnique();
+
+                    b.ToTable("ImmunizationStation");
+                });
+
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineInfo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Client")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("EventDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventLocation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("FinalDoses")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImmunizationType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StartingDoses")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Vaccine")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ImmunizationVaccineInfo");
+                });
+
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineLotEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("ImmunizationVaccineInfoId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("ImmunizationVaccineInfoId1")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImmunizationVaccineInfoId1");
+
+                    b.ToTable("ImmunizationVaccineLotEntry");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceTypeProvided", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ServiceTypeProvidedName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<long>("SubContractorId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubContractorId");
+
+                    b.ToTable("ServiceTypeProvided");
+                });
+
+            modelBuilder.Entity("Malama.Models.StaffAttributeDetails", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1696,7 +1795,7 @@ namespace Malama.Migrations
                     b.ToTable("StaffAttributeDetails");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffContractAffiliation", b =>
+            modelBuilder.Entity("Malama.Models.StaffContractAffiliation", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1720,7 +1819,7 @@ namespace Malama.Migrations
                     b.ToTable("StaffContractAffiliation");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffLicense", b =>
+            modelBuilder.Entity("Malama.Models.StaffLicense", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1743,7 +1842,7 @@ namespace Malama.Migrations
                     b.ToTable("StaffLicense");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffLicenseDetails", b =>
+            modelBuilder.Entity("Malama.Models.StaffLicenseDetails", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1782,7 +1881,183 @@ namespace Malama.Migrations
                     b.ToTable("StaffLicenseDetails");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.TravelHonor", b =>
+            modelBuilder.Entity("Malama.Models.SubContractor", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CompanyId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("CompanyMainAddress1")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CompanyMainAddress2")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CompanyMainCity")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainEmail")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainFirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainLastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainPhone")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("CompanyMainState")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CompanyMainZip")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<long>("ContractId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("EventEmail")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("EventFirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("EventLastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("EventPhone")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("FinanceAddress1")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("FinanceAddress2")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("FinanceCity")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FinanceEmail")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FinanceFirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FinanceLastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FinancePhone")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("FinanceState")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FinanceZip")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SmallBusinessType")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("SolicitationNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TrainingEmail")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TrainingFirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TrainingLastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TrainingPhone")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SubContractor");
+                });
+
+            modelBuilder.Entity("Malama.Models.TravelHonor", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1917,108 +2192,130 @@ namespace Malama.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagementStaffAvailability", b =>
+            modelBuilder.Entity("Malama.Models.EventManagementStaffAvailability", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventStaffDetail", null)
+                    b.HasOne("Malama.Models.EventStaffDetail", null)
                         .WithMany("AvailabilityDatesList")
                         .HasForeignKey("EventStaffDetailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagementTaskforces", b =>
+            modelBuilder.Entity("Malama.Models.EventManagementTaskforces", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
+                    b.HasOne("Malama.Models.EventManagement", null)
                         .WithMany("EventManagementTaskforcesList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventServiceDetail", b =>
+            modelBuilder.Entity("Malama.Models.EventServiceDetail", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
+                    b.HasOne("Malama.Models.EventManagement", null)
                         .WithMany("EventServiceDetailList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
+            modelBuilder.Entity("Malama.Models.EventStaffDetail", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
+                    b.HasOne("Malama.Models.EventManagement", null)
                         .WithMany("EventStaffDetailList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStartEndTimeDayWise", b =>
+            modelBuilder.Entity("Malama.Models.EventStartEndTimeDayWise", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventManagement", null)
+                    b.HasOne("Malama.Models.EventManagement", null)
                         .WithMany("EventStartEndTimeDayWiseList")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventWiseStaffRole", b =>
+            modelBuilder.Entity("Malama.Models.EventWiseStaffRole", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.EventStaffDetail", null)
+                    b.HasOne("Malama.Models.EventStaffDetail", null)
                         .WithMany("EventWiseStaffRoleList")
                         .HasForeignKey("EventStaffDetailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.ServiceTypeProvided", b =>
+            modelBuilder.Entity("Malama.Models.ImmunizationStation", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.SubContractor", null)
+                    b.HasOne("Malama.Models.FileDataDto", "FileData")
+                        .WithOne("ImmunizationRecord")
+                        .HasForeignKey("Malama.Models.ImmunizationStation", "FileDataId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileData");
+                });
+
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineLotEntry", b =>
+                {
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "ImmunizationVaccineInfo")
+                        .WithMany("Lots")
+                        .HasForeignKey("ImmunizationVaccineInfoId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImmunizationVaccineInfo");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceTypeProvided", b =>
+                {
+                    b.HasOne("Malama.Models.SubContractor", null)
                         .WithMany("ServiceTypeProvided")
                         .HasForeignKey("SubContractorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffAttributeDetails", b =>
+            modelBuilder.Entity("Malama.Models.StaffAttributeDetails", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.StaffLicense", null)
+                    b.HasOne("Malama.Models.StaffLicense", null)
                         .WithMany("StaffAttributeDetails")
                         .HasForeignKey("StaffLicenseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffContractAffiliation", b =>
+            modelBuilder.Entity("Malama.Models.StaffContractAffiliation", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.EventStaff", null)
+                    b.HasOne("Malama.Models.EventStaff", null)
                         .WithMany("StaffContractAffiliation")
                         .HasForeignKey("EventStaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffLicense", b =>
+            modelBuilder.Entity("Malama.Models.StaffLicense", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.EventStaff", null)
+                    b.HasOne("Malama.Models.EventStaff", null)
                         .WithMany("StaffLicense")
                         .HasForeignKey("EventStaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffLicenseDetails", b =>
+            modelBuilder.Entity("Malama.Models.StaffLicenseDetails", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.StaffLicense", null)
+                    b.HasOne("Malama.Models.StaffLicense", null)
                         .WithMany("StaffLicenseDetails")
                         .HasForeignKey("StaffLicenseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.TravelHonor", b =>
+            modelBuilder.Entity("Malama.Models.TravelHonor", b =>
                 {
-                    b.HasOne("ExcelToCsv.Models.EventStaff", null)
+                    b.HasOne("Malama.Models.EventStaff", null)
                         .WithMany("TravelHonorList")
                         .HasForeignKey("EventStaffId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2027,7 +2324,7 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationRole", null)
+                    b.HasOne("Malama.Models.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2036,7 +2333,7 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationUser", null)
+                    b.HasOne("Malama.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2045,7 +2342,7 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationUser", null)
+                    b.HasOne("Malama.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2054,13 +2351,13 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationRole", null)
+                    b.HasOne("Malama.Models.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationUser", null)
+                    b.HasOne("Malama.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2069,14 +2366,14 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ExcelFilesCompiler.Models.ApplicationUser", null)
+                    b.HasOne("Malama.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventManagement", b =>
+            modelBuilder.Entity("Malama.Models.EventManagement", b =>
                 {
                     b.Navigation("EventManagementTaskforcesList");
 
@@ -2087,19 +2384,7 @@ namespace Malama.Migrations
                     b.Navigation("EventStartEndTimeDayWiseList");
                 });
 
-            modelBuilder.Entity("ExcelFilesCompiler.Models.EventStaffDetail", b =>
-                {
-                    b.Navigation("AvailabilityDatesList");
-
-                    b.Navigation("EventWiseStaffRoleList");
-                });
-
-            modelBuilder.Entity("ExcelFilesCompiler.Models.SubContractor", b =>
-                {
-                    b.Navigation("ServiceTypeProvided");
-                });
-
-            modelBuilder.Entity("ExcelToCsv.Models.EventStaff", b =>
+            modelBuilder.Entity("Malama.Models.EventStaff", b =>
                 {
                     b.Navigation("StaffContractAffiliation");
 
@@ -2108,11 +2393,34 @@ namespace Malama.Migrations
                     b.Navigation("TravelHonorList");
                 });
 
-            modelBuilder.Entity("ExcelToCsv.Models.StaffLicense", b =>
+            modelBuilder.Entity("Malama.Models.EventStaffDetail", b =>
+                {
+                    b.Navigation("AvailabilityDatesList");
+
+                    b.Navigation("EventWiseStaffRoleList");
+                });
+
+            modelBuilder.Entity("Malama.Models.FileDataDto", b =>
+                {
+                    b.Navigation("ImmunizationRecord")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineInfo", b =>
+                {
+                    b.Navigation("Lots");
+                });
+
+            modelBuilder.Entity("Malama.Models.StaffLicense", b =>
                 {
                     b.Navigation("StaffAttributeDetails");
 
                     b.Navigation("StaffLicenseDetails");
+                });
+
+            modelBuilder.Entity("Malama.Models.SubContractor", b =>
+                {
+                    b.Navigation("ServiceTypeProvided");
                 });
 #pragma warning restore 612, 618
         }

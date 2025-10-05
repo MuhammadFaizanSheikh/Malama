@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ExcelFilesCompiler.Models
+namespace Malama.Models
 {
     public class ResetPasswordViewModel
     {

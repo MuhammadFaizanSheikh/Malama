@@ -1,0 +1,697 @@
+﻿@model Malama.Models.ImmunizationStation
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Add Immunization Screening";
+}
+
+<style>
+    h2 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+<h2 class="text-center mb-4">Add Screening for Contract</h2>
+
+<form asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.FileDataId)
+    <!-- Link to parent contract -->
+    @* <input type="hidden" asp-for="FileDataId" /> *@
+
+    <h3 class="mb-4">Personal Information</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Full Name:</span> @Model.FileData?.FullName</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOD ID:</span> @Model.FileData?.DodId</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.FileData?.Barcode</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOB:</span> @Model.FileData?.Dob?</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Age:</span> @Model.FileData?.Age</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Sex:</span> @Model.FileData?.Sex</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <h3 class="mb-4">Questionnaires :</h3>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">1. Are you sick today?</label>
+            <select asp-for="IsSickToday" class="form-select reason-toggle question-toggle" data-target="IsSickTodayReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="IsSickTodayReason" class="form-control mt-2 reason-textarea"
+                      id="IsSickTodayReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">2. Do you have allergies to medication, food, a vaccine component, or latex?</label>
+            <select asp-for="HasAllergiesToMedicationFoodVaccineOrLatex" class="form-select reason-toggle question-toggle" data-target="HasAllergiesReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="HasAllergiesReason" class="form-control mt-2 reason-textarea"
+                      id="HasAllergiesReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">3. Have you ever had a serious reaction after receiving a vaccination?</label>
+            <select asp-for="HadSeriousReactionAfterVaccination" class="form-select reason-toggle question-toggle" data-target="SeriousReactionReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="SeriousReactionReason" class="form-control mt-2 reason-textarea"
+                      id="SeriousReactionReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">4. Do you have a long-term health problem with heart disease, lung disease, asthma, kidney disease, metabolic disease (e.g. diabetes), anemia, or other blood disorder?</label>
+            <select asp-for="HasLongTermHealthProblem" class="form-select reason-toggle question-toggle" data-target="LongTermHealthProblemReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="LongTermHealthProblemReason" class="form-control mt-2 reason-textarea"
+                      id="LongTermHealthProblemReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">5. Do you have cancer, leukemia, HIV/AIDS, or any other immune system problem?</label>
+            <select asp-for="HasCancerOrImmuneSystemProblem" class="form-select reason-toggle question-toggle" data-target="CancerOrImmuneSystemReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="CancerOrImmuneSystemReason" class="form-control mt-2 reason-textarea"
+                      id="CancerOrImmuneSystemReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">6. In the past 3 months, have you taken medications that weaken your immune system, such as cortisone, prednisone, other steroids, or anticancer drugs, or have you had radiation treatments?</label>
+            <select asp-for="TookImmuneSuppressingMedicationRecently" class="form-select reason-toggle question-toggle" data-target="ImmuneSuppressionReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="ImmuneSuppressionReason" class="form-control mt-2 reason-textarea"
+                      id="ImmuneSuppressionReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">7. Have you had a seizure or a brain or other nervous system problem?</label>
+            <select asp-for="HadSeizureOrNervousSystemProblem" class="form-select reason-toggle question-toggle" data-target="SeizureReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="SeizureReason" class="form-control mt-2 reason-textarea"
+                      id="SeizureReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">8. During the past year, have you received a transfusion of blood or blood products, or been given immune (gamma) globulin or an antiviral drug?</label>
+            <select asp-for="HadBloodTransfusionOrAntiviralInPastYear" class="form-select reason-toggle question-toggle" data-target="BloodTransfusionReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="BloodTransfusionReason" class="form-control mt-2 reason-textarea"
+                      id="BloodTransfusionReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">9. For women: are you pregnant or is there a chance you could become pregnant during the next month?</label>
+            <select asp-for="IsPregnantOrCouldBePregnant" data-question="9" class="form-select pregnancy-toggle question-toggle" data-target="PregnancyCheckboxWrapper">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+
+            <div id="PregnancyCheckboxWrapper" style="display:none;" class="mt-2">
+                <input type="checkbox" asp-for="PregnancyCheckboxSelected" class="form-check-input pregnancy-checkbox" id="PregnancyCheckboxSelected" />
+                <label class="form-check-label" for="PregnancyCheckboxSelected">Pregnancy test completed</label>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">10. Have you received any vaccine in the past 4 weeks?</label>
+            <select asp-for="ReceivedVaccineInPast4Weeks" class="form-select reason-toggle question-toggle" data-target="ReceivedVaccineReason">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+                <option value="Yes with reason">Yes with reason</option>
+            </select>
+            <textarea asp-for="ReceivedVaccineReason" class="form-control mt-2 reason-textarea"
+                      id="ReceivedVaccineReason" placeholder="Please specify reason..." style="display:none;"></textarea>
+        </div>
+    </div>
+    <hr class="my-4" />
+    <h3 class="mb-4">Required Immunization(s) :</h3>
+    <div id="immunization-section">
+
+        @if (string.Equals(Model.FileData.HepB?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Hepatitis B -->
+            <div class="card-body vaccine-block" data-vaccine="HepB">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>HepB Needed Status</label>
+                        <select asp-for="HepBNeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="HepBReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="HepBManufacturer" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="HepBLotNo" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="HepBExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (string.Equals(Model.FileData.Flu?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Influenza -->
+            <div class="card-body vaccine-block" data-vaccine="Flu">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>Flu Needed Status</label>
+                        <select asp-for="FluNeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="FluReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="FluManufacturer" class="form-control">
+                            <option value="" selected>-- Select Manufacturer --</option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="FluLotNo" class="form-control">
+                            <option value="" selected>-- Select Lot No --</option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="FluExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+
+
+
+        @if (string.Equals(Model.FileData.Mmr?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- MMR -->
+            <div class="card-body vaccine-block" data-vaccine="MMR">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>MMR Needed Status</label>
+                        <select asp-for="MMRNeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="MMRReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="MMRManufacturer" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="MMRLotNo" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="MMRExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+
+
+
+        @if (string.Equals(Model.FileData.HepA?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Hepatitis A -->
+            <div class="card-body vaccine-block" data-vaccine="HepA">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>HepA Needed Status</label>
+                        <select asp-for="HepANeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="HepAReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="HepAManufacturer" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="HepALotNo" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="HepAExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (string.Equals(Model.FileData.TetTdp?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Tetanus / Tdap -->
+            <div class="card-body vaccine-block" data-vaccine="TetTdp">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>Tet/Tdap Needed Status</label>
+                        <select asp-for="TetTdpNeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="TetTdpReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="TetTdpManufacturer" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="TetTdpLotNo" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="TetTdpExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (string.Equals(Model.FileData.Varicella?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Varicella -->
+            <div class="card-body vaccine-block" data-vaccine="Varicella">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>Varicella Needed Status</label>
+                        <select asp-for="VaricellaNeeded" class="form-control vaccine-status">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-reason" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="VaricellaReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Manufacturer</label>
+                        <select asp-for="VaricellaManufacturer" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Lot No</label>
+                        <select asp-for="VaricellaLotNo" class="form-control">
+                            <option value=""></option>
+                            <option value="Test">Test</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 vaccine-completed" style="display:none;">
+                        <label>Expiration Date</label>
+                        <input asp-for="VaricellaExpirationDate" type="date" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        }
+
+
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="row mb-2">
+        <div class="col-md-2">
+            <label>Staff Name</label>
+            <input asp-for="CompletedBy" class="form-control" value="@User.Identity.Name" readonly />
+        </div>
+
+        <div class="col-md-2">
+            <label>Status</label>
+            <select asp-for="Status" class="form-control">
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+    </div>
+    <!-- Submit Buttons -->
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-success btn-lg me-3">
+            <i class="bi bi-check-circle"></i> Save
+        </button>
+        <a asp-action="Index" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</form>
+
+
+
+<script>
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle Yes/YesWithReason questions
+        document.querySelectorAll(".reason-toggle").forEach(function (dropdown) {
+            const targetId = dropdown.getAttribute("data-target");
+            const target = document.getElementById(targetId);
+
+            function toggleReason() {
+                if (!target) return;
+
+                if (dropdown.value === "Yes with reason") {
+                    target.style.display = "block";
+                    target.setAttribute("required", "required"); // make required
+                } else {
+                    target.style.display = "none";
+                    target.removeAttribute("required"); // remove required
+                    target.value = ""; // reset if hidden
+                }
+            }
+
+            // Init on page load
+            toggleReason();
+
+            // On change
+            dropdown.addEventListener("change", toggleReason);
+        });
+
+        // Pregnancy handling
+        document.querySelectorAll(".pregnancy-toggle").forEach(function (dropdown) {
+            const targetId = dropdown.getAttribute("data-target");
+            const wrapper = document.getElementById(targetId);
+            const checkbox = wrapper.querySelector("input[type='checkbox']");
+
+            function togglePregnancy() {
+                if (dropdown.value === "Yes") {
+                    wrapper.style.display = "block";
+                } else {
+                    wrapper.style.display = "none";
+                    checkbox.checked = false;
+                }
+            }
+
+            // Init on page load
+            togglePregnancy();
+
+            // On change
+            dropdown.addEventListener("change", togglePregnancy);
+        });
+
+        // Vaccine handling (already working fine)
+        document.querySelectorAll(".vaccine-block").forEach(function (block) {
+            const statusDropdown = block.querySelector(".vaccine-status");
+            const reasonDiv = block.querySelector(".vaccine-reason");
+            const completedDivs = block.querySelectorAll(".vaccine-completed");
+
+            function toggleFields() {
+                const value = statusDropdown.value;
+
+                // Reset all
+                reasonDiv.style.display = "none";
+
+                const reasonSelect = reasonDiv.querySelector("select");
+                if (reasonSelect) {
+                    //reasonSelect.value = "";                // ✅ clears selected value
+                    reasonSelect.removeAttribute("required");
+                }
+
+                completedDivs.forEach(div => {
+                    div.style.display = "none";
+                    const input = div.querySelector("select, input");
+                    input.removeAttribute("required");
+                    //input.value = "";
+                });
+
+                if (value === "Not Completed") {
+                    reasonDiv.style.display = "block";
+                    reasonDiv.querySelector("select").setAttribute("required", "required");
+
+                    completedDivs.forEach(div => {
+                        const input = div.querySelector("select, input");
+                        if (input) input.value = "";
+                    });
+                }
+
+                if (value === "Completed") {
+                    completedDivs.forEach(div => {
+                        div.style.display = "block";
+                        const input = div.querySelector("select, input");
+                        input.setAttribute("required", "required");
+                    });
+
+                    if (reasonSelect) reasonSelect.value = "";
+                }
+
+                updateOverallStatus();
+            }
+
+            // Init on page load
+            toggleFields();
+
+            // Listen to change
+            statusDropdown.addEventListener("change", toggleFields);
+        });
+
+        function updateOverallStatus() {
+            const allDropdowns = document.querySelectorAll(".vaccine-status");
+            const overallDropdown = document.getElementById("Status");
+
+            // Check if all vaccine status dropdowns are filled
+            const allFilled = Array.from(allDropdowns).every(d => d.value && d.value !== "");
+
+            if (allFilled) {
+                overallDropdown.value = "Completed";
+            } else {
+                overallDropdown.value = "Pending";
+            }
+        }
+
+        // Immunization visibility evaluation on load and on changes
+        function evaluateImmunizationVisibility() {
+            debugger;
+            const immunizationSection = document.getElementById("immunization-section");
+            const questionDropdowns = document.querySelectorAll(".question-toggle");
+            const statusDropdown = document.querySelector("select[name='Status']");
+            let hideImmunization = false;
+
+            questionDropdowns.forEach(function (dropdown) {
+                const qNumber = dropdown.getAttribute("data-question");
+                if (dropdown.value === "Yes") {
+                    if (qNumber === "9") {
+                        const pregnancyWrapper = document.getElementById(dropdown.getAttribute("data-target"));
+                        const checkbox = pregnancyWrapper.querySelector("input[type='checkbox']");
+                        if (!checkbox.checked) {
+                            hideImmunization = true;
+                        }
+                    } else {
+                        hideImmunization = true;
+                    }
+                }
+            });
+
+            if (hideImmunization) {
+                immunizationSection.style.display = "none";
+
+                // ✅ Clear all inputs in immunization section
+                const inputs = immunizationSection.querySelectorAll("input, select, textarea");
+                inputs.forEach(el => {
+                    if (el.tagName === "SELECT") {
+                        el.selectedIndex = 0; // reset to first option
+                    } else if (el.type === "checkbox" || el.type === "radio") {
+                        el.checked = false;
+                    } else {
+                        el.value = "";
+                    }
+                });
+
+                @* // ✅ Handle status separately
+                if (statusDropdown) {
+                    statusDropdown.value = "Pending";
+                    statusDropdown.disabled = true; // disable so user can't change
+                } *@
+            } else {
+                immunizationSection.style.display = "block";
+                @* if (statusDropdown) {
+                    statusDropdown.disabled = false;
+                    if (statusDropdown.value === "Not given") {
+                        statusDropdown.value = "Pending"; // reset if it was Not given
+                    }
+                } *@
+            }
+        }
+
+        // Init on load
+        evaluateImmunizationVisibility();
+
+        // Hook all question dropdowns and pregnancy checkbox
+        document.querySelectorAll(".question-toggle").forEach(d => {
+            d.addEventListener("change", evaluateImmunizationVisibility);
+        });
+        document.querySelectorAll(".pregnancy-checkbox").forEach(c => {
+            c.addEventListener("change", evaluateImmunizationVisibility);
+        });
+    });
+
+</script>
+
+

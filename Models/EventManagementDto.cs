@@ -1,6 +1,5 @@
-﻿namespace ExcelFilesCompiler.Models
+﻿namespace Malama.Models
 {
-    using ExcelToCsv.Models;
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;

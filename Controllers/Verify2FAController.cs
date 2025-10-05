@@ -1,4 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;

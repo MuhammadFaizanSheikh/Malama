@@ -1,5 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
-using ExcelToCsv.Models;
+﻿using Malama.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExcelFilesCompiler.Interfaces

@@ -1,4 +1,4 @@
-﻿namespace ExcelToCsv.Models
+﻿namespace Malama.Models
 {
     public class AppSetting
     {

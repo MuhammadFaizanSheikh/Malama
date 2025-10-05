@@ -1,3 +1,7 @@
+.page-heading {
+    color: rgba(80,90,201,1);
+}
+
 html {
     font-size: 14px;
 }
@@ -21,17 +25,24 @@ body {
     background-color: rgba(80,90,201,0.1);
 }
 
-/*.form-control, .btn {
-    background-color: rgba(80,90,201,1);
-    border-color: rgba(80,90,201,1);
+/* General brand button */
+.btn-general {
+    background-color: rgba(80, 90, 201, 1);
+    border-color: rgba(80, 90, 201, 1);
+    color: white; /* ensures text is visible */
+}
+
+.btn-general:hover {
+    background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+    border-color: rgba(60, 70, 180, 1);
     color: white;
 }
 
-select.form-control, .event-input {
-    background-color: #fff;
-    border-color: #ced4da;
-    color: black;
-}*/
+.btn-general:focus,
+.btn-general:active {
+    box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+    outline: none;
+}
 
 .button-container {
     gap: 15px;
@@ -69,11 +80,11 @@ select.form-control, .event-input {
     color: black;
 }
 
-#editModal select.form-control {
-    background-color: rgba(173, 182, 231, 1); /* Light blue for dropdowns as well */
-    border-color: rgba(80,90,201,1);
+/*#editModal select.form-control {
+    background-color: rgba(173, 182, 231, 1);*/ /* Light blue for dropdowns as well */
+    /*border-color: rgba(80,90,201,1);
     color: black;
-}
+}*/
 
 /* Button within modal */
 #editModal .btn {
@@ -115,3 +126,35 @@ table.dataTable thead > tr > th.sorting_desc::after {
     opacity: 1 !important;
     color: white !important;
 }
+
+/* Apply header styles to both normal and fixed headers */
+table.dataTable thead th,
+.DTFC_LeftHeadWrapper thead th,
+.DTFC_RightHeadWrapper thead th {
+    background-color: rgba(120, 130, 221, 1) !important;
+    color: white !important;
+}
+
+
+
+/* Table action buttons */
+.table-action-btn {
+    background-color: rgba(80, 90, 201, 1);
+    border-color: rgba(80, 90, 201, 1);
+    color: white; /* ensures visibility */
+}
+
+.table-action-btn:hover {
+    background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+    border-color: rgba(60, 70, 180, 1);
+    color: white;
+}
+
+.table-action-btn:focus,
+.table-action-btn:active {
+    box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+    outline: none;
+}
+/*Table's action button*/
+
+

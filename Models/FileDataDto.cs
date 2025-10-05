@@ -1,8 +1,9 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace ExcelToCsv.Models
+namespace Malama.Models
 {
     [Index(nameof(EventId), nameof(isDeleted))]
     public class FileDataDto : GenericProperties
@@ -137,7 +138,8 @@ namespace ExcelToCsv.Models
         public string? FinalDentalClass { get; set; }
         public string? FinalTreatmentClass3Reason { get; set; }
         public string? DentalTreatmentReason { get; set; }
-        
 
+        [ValidateNever]
+        public virtual ImmunizationStation ImmunizationRecord { get; set; }
     }
 }

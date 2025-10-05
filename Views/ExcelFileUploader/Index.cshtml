@@ -9,9 +9,10 @@
     <!-- Heading -->
     <div class="row mt-4">
         <div class="col-md-12 text-center">
-            <h1 id="page-heading" style="color: rgba(80,90,201,1);">Malama</h1>
+            <h1 id="page-heading" class="page-heading">Malama</h1>
         </div>
     </div>
+
 
     <!-- File Input Section -->
     <div id="fileUploadContainer" class="justify-content-center mt-4">
@@ -133,8 +134,8 @@
 
                 <!-- Search Button (Centered) -->
                 <div class="col-12 text-center mt-3">
-                    <button id="searchStaffBtn" type="button" class="btn btn-primary px-4">Search</button>
-                    <button id="resetFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
+                    <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                    <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
                 </div>
             </div>
         </div>
@@ -156,11 +157,11 @@
 
     <!-- Buttons -->
     <div class="d-flex justify-content-center my-3 button-container">
-        <button class="btn btn-secondary add-row-button" style="display: none;">Add Walk-In Service Member</button>
+        <button class="btn btn-general add-row-button" style="display: none;">Add Walk-In Service Member</button>
         @* <button id="addRowButtonC" class="btn btn-secondary">Add Walk-In Service Member</button> *@
-        <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
-        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
-        <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
+        <button id="generateExcelButton" class="btn btn-general d-none">Generate Excel</button>
+        <button id="submitDataButton" class="btn btn-general d-none" onclick="submitData()">Submit Data</button>
+        <button id="btnDownloadPDF" class="btn btn-general d-none">Download Routing Sheets</button>
     </div>
 
     <!-- Edit Modal -->
@@ -292,12 +293,6 @@
                 headerRow += "</tr>";
                 $("#previewTable thead").append(headerRow);
 
-                $("#previewTable thead th").css({
-                    "background-color": "rgba(120, 130, 221, 1)",
-                    "color": "white" // optional: for better contrast
-                });
-
-                // $("#previewTable thead th").addClass("custom-sort-header");
 
                 let formattedData = [];
                 for (let i = 1; i < json.length; i++) {
@@ -334,8 +329,8 @@
                             orderable: false,
                             render: function () {
                                 return `
-                                <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
-                                <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
+                                    <button class="btn table-action-btn mr-2" onclick="editRow(this)">Edit</button>
+                                    <button class="btn table-action-btn mr-2 btn-print">Print</button>
                             `;
                             }
                         },
@@ -537,10 +532,10 @@
         headerRow += `</tr>`;
         $("#previewTable thead").append(headerRow);
 
-        $("#previewTable thead th").css({
-            "background-color": "rgba(120, 130, 221, 1)",
-            "color": "white" // optional: for better contrast
-        });
+        // $("#previewTable thead th").css({
+        //     "background-color": "rgba(120, 130, 221, 1)",
+        //     "color": "white" // optional: for better contrast
+        // });
 
         // Generate rows
         let formattedData = data.map(row => {
@@ -586,8 +581,8 @@
                     orderable: false,
                     render: function () {
                         return `
-                                   <button class="btn btn-primary mr-2" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);" onclick="editRow(this)">Edit</button>
-                                 <button class="btn mr-2 btn-print" style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1); color: white;">Print</button>
+                                       <button class="btn table-action-btn mr-2" onclick="editRow(this)">Edit</button>
+                                        <button class="btn table-action-btn mr-2 btn-print">Print</button>
                             `;
                     }
                 },

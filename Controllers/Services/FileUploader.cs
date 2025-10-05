@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using ExcelFilesCompiler.UnitOfWork;
-using ExcelToCsv.Models;
+using Malama.Models;
 using MathNet.Numerics.LinearAlgebra.Factorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +22,7 @@ using System.Text.RegularExpressions;
 using static Microsoft.IO.RecyclableMemoryStreamManager;
 using static NPOI.POIFS.Crypt.CryptoFunctions;
 using Microsoft.EntityFrameworkCore;
+using ExcelFilesCompiler.Utilities;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -219,17 +219,36 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<IEnumerable<FileDataDto>> GetEventDataByEventIdAsync(string eventId)
+        public IQueryable<FileDataDto> GetEventDataByEventId(string eventId)
         {
             try
             {
-                return await fileUploaderRepository.FindForSearchingAsync(f => f.EventId == eventId && f.isDeleted != true);
+                return fileUploaderRepository.FindForSearching(f => f.EventId == eventId && f.isDeleted != true);
             }
             catch (Exception ex)
             {
                 throw new Exception("Error while fetching FileData by EventId", ex);
             }
         }
+
+        public IQueryable<FileDataDto> GetEventDataByEventIdForImmunization(string eventId)
+        {
+            try
+            {
+                //return fileUploaderRepository.FindForSearching(
+                //    f => f.EventId == eventId && f.isDeleted != true && f.Imm == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
+                //);
+
+                return fileUploaderRepository.GetWithInclude(
+                    f => f.EventId == eventId && f.isDeleted != true && f.Imm == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
+                ).Include(f => f.ImmunizationRecord);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching FileData by EventId", ex);
+            }
+        }
+
 
         public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName)
         {
@@ -337,6 +356,10 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<FileDataDto> GetByIdAsync(long id)
+        {
+            return await fileUploaderRepository.GetByIdAsync(id);
+        }
         private void ValidateMissingFields(string fileName, DataTable fileData, string[] selectedColumns, List<Dictionary<string, object>> validationErrors)
         {
             var dodIdTracker = new HashSet<string>(); // To track DOD ID values for duplicates
@@ -770,31 +793,31 @@ namespace ExcelFilesCompiler.Controllers.Services
                 parentRow["TaskForce"] = taskForceValue;
 
                 bool commonNeeded =
-                    (parentTable.Columns.Contains("ABO Needed") && parentRow["ABO Needed"]?.ToString().Trim() == "NEEDED") ||
-                    (parentTable.Columns.Contains("G6PD") && parentRow["G6PD"]?.ToString().Trim() == "NEEDED") ||
-                    (parentTable.Columns.Contains("SICKLE") && parentRow["SICKLE"]?.ToString().Trim() == "NEEDED") ||
-                    (parentTable.Columns.Contains("LIPID NEEDED") && parentRow["LIPID NEEDED"]?.ToString().Trim() == "NEEDED");
+                    (parentTable.Columns.Contains("ABO Needed") && parentRow["ABO Needed"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed) ||
+                    (parentTable.Columns.Contains("G6PD") && parentRow["G6PD"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed) ||
+                    (parentTable.Columns.Contains("SICKLE") && parentRow["SICKLE"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed) ||
+                    (parentTable.Columns.Contains("LIPID NEEDED") && parentRow["LIPID NEEDED"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed);
 
                 bool additionalLabNeeded =
-                    (parentTable.Columns.Contains("HIV") && parentRow["HIV"]?.ToString().Trim() == "NEEDED") ||
-                    (parentTable.Columns.Contains("DNA") && parentRow["DNA"]?.ToString().Trim() == "NEEDED");
+                    (parentTable.Columns.Contains("HIV") && parentRow["HIV"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed) ||
+                    (parentTable.Columns.Contains("DNA") && parentRow["DNA"]?.ToString().Trim() == AppConstants.NeededOrNA.Needed);
 
                 if (commonNeeded)
                 {
-                    parentRow["Lab Requisition"] = "NEEDED";
+                    parentRow["Lab Requisition"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Lab Requisition"] = "N/A";
+                    parentRow["Lab Requisition"] = AppConstants.NeededOrNA.NotApplicable;
                 }
 
                 if (commonNeeded || additionalLabNeeded)
                 {
-                    parentRow["Lab Needed"] = "NEEDED";
+                    parentRow["Lab Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Lab Needed"] = "N/A";
+                    parentRow["Lab Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
 
                 parentRow["Barcode"] = $"{paddedEventId}";
@@ -1269,11 +1292,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Date of Vision Screen") && DateTime.TryParse(parentRow["Date of Vision Screen"]?.ToString(), out DateTime visionScreenDate))
             {
-                parentRow["VISION Needed"] = visionDate >= visionScreenDate ? "NEEDED" : "N/A";
+                parentRow["VISION Needed"] = visionDate >= visionScreenDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["VISION Needed"] = "NEEDED";
+                parentRow["VISION Needed"] = AppConstants.NeededOrNA.Needed;
             }
         }
 
@@ -1281,25 +1304,25 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Date of Next Exam") && DateTime.TryParse(parentRow["Date of Next Exam"]?.ToString(), out DateTime dentalExamDate))
             {
-                parentRow["Dental Needed"] = dentalDate >= dentalExamDate ? "NEEDED" : "N/A";
-                parentRow["BWX Needed"] = dentalDate >= dentalExamDate ? "NEEDED" : "N/A";
+                parentRow["Dental Needed"] = dentalDate >= dentalExamDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
+                parentRow["BWX Needed"] = dentalDate >= dentalExamDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
                 parentRow["Dental Exam"] = dentalExamDate.AddDays(-lastDentalExamDate).ToString(DateFormat);
             }
             else
             {
-                parentRow["Dental Needed"] = "NEEDED";
-                parentRow["BWX Needed"] = "NEEDED";
+                parentRow["Dental Needed"] = AppConstants.NeededOrNA.Needed;
+                parentRow["BWX Needed"] = AppConstants.NeededOrNA.Needed;
                 parentRow["Dental Exam"] = "";
             }
 
             if (parentRow.Table.Columns.Contains("PANX"))
             {
                 string panxValue = parentRow["PANX"]?.ToString();
-                parentRow["PANO NEEDED"] = (panxValue == "N" || string.IsNullOrEmpty(panxValue) || panxValue.ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
+                parentRow["PANO NEEDED"] = (panxValue == "N" || string.IsNullOrEmpty(panxValue) || panxValue.ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["PANO NEEDED"] = "N/A";
+                parentRow["PANO NEEDED"] = AppConstants.NeededOrNA.NotApplicable;
             }
         }
 
@@ -1307,11 +1330,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Next PHA Date") && DateTime.TryParse(parentRow["Next PHA Date"]?.ToString(), out DateTime phaExamDate))
             {
-                parentRow["PHA Needed"] = phaDate >= phaExamDate ? "NEEDED" : "N/A";
+                parentRow["PHA Needed"] = phaDate >= phaExamDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["PHA Needed"] = "NEEDED";
+                parentRow["PHA Needed"] = AppConstants.NeededOrNA.Needed;
             }
 
             if (parentRow.Table.Columns.Contains("PULHES Code"))
@@ -1325,11 +1348,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Next Test Date") && DateTime.TryParse(parentRow["Next Test Date"]?.ToString(), out DateTime hivTestDate))
             {
-                parentRow["HIV"] = hivDate >= hivTestDate ? "NEEDED" : "N/A";
+                parentRow["HIV"] = hivDate >= hivTestDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["HIV"] = "NEEDED";
+                parentRow["HIV"] = AppConstants.NeededOrNA.Needed;
             }
         }
 
@@ -1337,11 +1360,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Audiogram Date") && DateTime.TryParse(parentRow["Audiogram Date"]?.ToString(), out DateTime hearingTestDate))
             {
-                parentRow["HEARING Needed"] = hearingDate >= hearingTestDate ? "NEEDED" : "N/A";
+                parentRow["HEARING Needed"] = hearingDate >= hearingTestDate ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["HEARING Needed"] = "NEEDED";
+                parentRow["HEARING Needed"] = AppConstants.NeededOrNA.Needed;
             }
         }
 
@@ -1368,7 +1391,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     parentRow.Table.Columns.Add("NEAR VISION Needed", typeof(string));
                 }
 
-                parentRow["NEAR VISION Needed"] = ageWithGrace >= 45 ? "NEEDED" : "N/A";
+                parentRow["NEAR VISION Needed"] = ageWithGrace >= 45 ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
 
 
                 if (!parentRow.Table.Columns.Contains("OVER 44"))
@@ -1381,81 +1404,81 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // Additional logic for exact age > 39.5
                 if (exactAge > 39.5)  // Check if exact age is greater than 39.5
                 {
-                    // Add columns if not already present and set "NEEDED"
+                    // Add columns if not already present and set AppConstants.NeededOrNA.Needed
                     if (!parentRow.Table.Columns.Contains("LIPID NEEDED"))
                     {
                         parentRow.Table.Columns.Add("LIPID NEEDED", typeof(string));
                     }
-                    parentRow["LIPID NEEDED"] = "NEEDED";
+                    parentRow["LIPID NEEDED"] = AppConstants.NeededOrNA.Needed;
 
                     if (!parentRow.Table.Columns.Contains("LIPID PANEL"))
                     {
                         parentRow.Table.Columns.Add("LIPID PANEL", typeof(string));
                     }
-                    parentRow["LIPID PANEL"] = "NEEDED";
+                    parentRow["LIPID PANEL"] = AppConstants.NeededOrNA.Needed;
 
                     if (!parentRow.Table.Columns.Contains("Cholesterol / HDL Cholesterol"))
                     {
                         parentRow.Table.Columns.Add("Cholesterol / HDL Cholesterol", typeof(string));
                     }
-                    parentRow["Cholesterol / HDL Cholesterol"] = "NEEDED";
+                    parentRow["Cholesterol / HDL Cholesterol"] = AppConstants.NeededOrNA.Needed;
 
                     if (!parentRow.Table.Columns.Contains("EKG (Date)"))
                     {
                         parentRow.Table.Columns.Add("EKG (Date)", typeof(string));
                     }
-                    parentRow["EKG (Date)"] = "NEEDED";
+                    parentRow["EKG (Date)"] = AppConstants.NeededOrNA.Needed;
 
                     if (!parentRow.Table.Columns.Contains("EKG NEEDED"))
                     {
                         parentRow.Table.Columns.Add("EKG NEEDED", typeof(string));
                     }
-                    parentRow["EKG NEEDED"] = "NEEDED";
+                    parentRow["EKG NEEDED"] = AppConstants.NeededOrNA.Needed;
 
                     if (!parentRow.Table.Columns.Contains("Framingham"))
                     {
                         parentRow.Table.Columns.Add("Framingham", typeof(string));
                     }
-                    parentRow["Framingham"] = "NEEDED";
+                    parentRow["Framingham"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    // Set columns to "N/A" if age is less than 39.5
+                    // Set columns to AppConstants.NeededOrNA.NotApplicable if age is less than 39.5
                     if (!parentRow.Table.Columns.Contains("LIPID NEEDED"))
                     {
                         parentRow.Table.Columns.Add("LIPID NEEDED", typeof(string));
                     }
-                    parentRow["LIPID NEEDED"] = "N/A";
+                    parentRow["LIPID NEEDED"] = AppConstants.NeededOrNA.NotApplicable;
 
                     if (!parentRow.Table.Columns.Contains("LIPID PANEL"))
                     {
                         parentRow.Table.Columns.Add("LIPID PANEL", typeof(string));
                     }
-                    parentRow["LIPID PANEL"] = "N/A";
+                    parentRow["LIPID PANEL"] = AppConstants.NeededOrNA.NotApplicable;
 
                     if (!parentRow.Table.Columns.Contains("Cholesterol / HDL Cholesterol"))
                     {
                         parentRow.Table.Columns.Add("Cholesterol / HDL Cholesterol", typeof(string));
                     }
-                    parentRow["Cholesterol / HDL Cholesterol"] = "N/A";
+                    parentRow["Cholesterol / HDL Cholesterol"] = AppConstants.NeededOrNA.NotApplicable;
 
                     if (!parentRow.Table.Columns.Contains("EKG (Date)"))
                     {
                         parentRow.Table.Columns.Add("EKG (Date)", typeof(string));
                     }
-                    parentRow["EKG (Date)"] = "N/A";
+                    parentRow["EKG (Date)"] = AppConstants.NeededOrNA.NotApplicable;
 
                     if (!parentRow.Table.Columns.Contains("EKG NEEDED"))
                     {
                         parentRow.Table.Columns.Add("EKG NEEDED", typeof(string));
                     }
-                    parentRow["EKG NEEDED"] = "N/A";
+                    parentRow["EKG NEEDED"] = AppConstants.NeededOrNA.NotApplicable;
 
                     if (!parentRow.Table.Columns.Contains("Framingham"))
                     {
                         parentRow.Table.Columns.Add("Framingham", typeof(string));
                     }
-                    parentRow["Framingham"] = "N/A";
+                    parentRow["Framingham"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
         }
@@ -1464,11 +1487,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Blood Type"))
             {
-                parentRow["ABO Needed"] = (string.IsNullOrEmpty(parentRow["Blood Type"]?.ToString()) || parentRow["Blood Type"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
+                parentRow["ABO Needed"] = (string.IsNullOrEmpty(parentRow["Blood Type"]?.ToString()) || parentRow["Blood Type"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["ABO Needed"] = "N/A"; // Default to "Yes" if the "Blood Type" column doesn't exist
+                parentRow["ABO Needed"] = AppConstants.NeededOrNA.NotApplicable; // Default to "Yes" if the "Blood Type" column doesn't exist
             }
         }
 
@@ -1476,11 +1499,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("MR2-DNA"))
             {
-                parentRow["DNA"] = parentRow["MR2-DNA"]?.ToString() == "N" ? "NEEDED" : "N/A";
+                parentRow["DNA"] = parentRow["MR2-DNA"]?.ToString() == "N" ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["DNA"] = "N/A";
+                parentRow["DNA"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
             if (parentRow.Table.Columns.Contains("SEX") && parentRow["SEX"] != null)
@@ -1495,7 +1518,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (sex == "M")
                 {
-                    parentRow["Pregnancy Test Needed"] = "N/A";
+                    parentRow["Pregnancy Test Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
                 else if (sex == "F")
                 {
@@ -1515,11 +1538,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (string.IsNullOrWhiteSpace(mr2ImmValue) || mr2ImmValue.Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("IPV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("MEN", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("TYV", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("YEL", StringComparison.OrdinalIgnoreCase) || mr2ImmValue.Trim().Equals("ANT", StringComparison.OrdinalIgnoreCase))
                 {
-                    parentRow["IMM Needed"] = "N/A";
+                    parentRow["IMM Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
                 else
                 {
-                    parentRow["IMM Needed"] = "NEEDED";
+                    parentRow["IMM Needed"] = AppConstants.NeededOrNA.Needed;
                 }
             }
 
@@ -1529,11 +1552,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("Sickle Cell Date"))
             {
-                parentRow["SICKLE"] = (string.IsNullOrWhiteSpace(parentRow["Sickle Cell Date"]?.ToString()) || parentRow["Sickle Cell Date"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
+                parentRow["SICKLE"] = (string.IsNullOrWhiteSpace(parentRow["Sickle Cell Date"]?.ToString()) || parentRow["Sickle Cell Date"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["SICKLE"] = "N/A"; // Default to "Needed" if the "Sickle Cell Date" column doesn't exist
+                parentRow["SICKLE"] = AppConstants.NeededOrNA.NotApplicable; // Default to "Needed" if the "Sickle Cell Date" column doesn't exist
             }
         }
 
@@ -1548,16 +1571,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     hb3Value.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(hb3Value, out DateTime hb3Date) && hb3Date < lastEventDate.Value))
                 {
-                    parentRow["Hep B Needed"] = "NEEDED";
+                    parentRow["Hep B Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Hep B Needed"] = "N/A";
+                    parentRow["Hep B Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["Hep B Needed"] = "N/A";
+                parentRow["Hep B Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
             if (parentRow.Table.Columns.Contains("HPA"))
@@ -1569,16 +1592,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     hpaValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(hpaValue, out DateTime hpaDate) && hpaDate < lastEventDate.Value))
                 {
-                    parentRow["Hep A Needed"] = "NEEDED";
+                    parentRow["Hep A Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Hep A Needed"] = "N/A";
+                    parentRow["Hep A Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["Hep A Needed"] = "N/A";
+                parentRow["Hep A Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
             if (parentRow.Table.Columns.Contains("INJ"))
@@ -1590,16 +1613,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     injValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(injValue, out DateTime injDate) && injDate < lastEventDate.Value))
                 {
-                    parentRow["FLU Needed"] = "NEEDED";
+                    parentRow["FLU Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["FLU Needed"] = "N/A";
+                    parentRow["FLU Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["FLU Needed"] = "N/A";
+                parentRow["FLU Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
             if (parentRow.Table.Columns.Contains("TDP"))
@@ -1611,16 +1634,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     tdpValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(tdpValue, out DateTime tdpDate) && tdpDate < lastEventDate.Value))
                 {
-                    parentRow["Tet/TDP Needed"] = "NEEDED";
+                    parentRow["Tet/TDP Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Tet/TDP Needed"] = "N/A";
+                    parentRow["Tet/TDP Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["Tet/TDP Needed"] = "N/A";
+                parentRow["Tet/TDP Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
 
@@ -1633,16 +1656,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     mmrValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(mmrValue, out DateTime mmrDate) && mmrDate < lastEventDate.Value))
                 {
-                    parentRow["MMR Needed"] = "NEEDED";
+                    parentRow["MMR Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["MMR Needed"] = "N/A";
+                    parentRow["MMR Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["MMR Needed"] = "N/A";
+                parentRow["MMR Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
 
@@ -1655,16 +1678,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     varValue.StartsWith("*") ||
                     (lastEventDate.HasValue && DateTime.TryParse(varValue, out DateTime varDate) && varDate < lastEventDate.Value))
                 {
-                    parentRow["Varicella Needed"] = "NEEDED";
+                    parentRow["Varicella Needed"] = AppConstants.NeededOrNA.Needed;
                 }
                 else
                 {
-                    parentRow["Varicella Needed"] = "N/A";
+                    parentRow["Varicella Needed"] = AppConstants.NeededOrNA.NotApplicable;
                 }
             }
             else
             {
-                parentRow["Varicella Needed"] = "N/A";
+                parentRow["Varicella Needed"] = AppConstants.NeededOrNA.NotApplicable;
             }
 
         }
@@ -1673,11 +1696,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             if (parentRow.Table.Columns.Contains("G6PD Status"))
             {
-                parentRow["G6PD"] = (string.IsNullOrWhiteSpace(parentRow["G6PD Status"]?.ToString()) || parentRow["G6PD Status"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? "NEEDED" : "N/A";
+                parentRow["G6PD"] = (string.IsNullOrWhiteSpace(parentRow["G6PD Status"]?.ToString()) || parentRow["G6PD Status"].ToString().Trim().Equals("Blank", StringComparison.OrdinalIgnoreCase)) ? AppConstants.NeededOrNA.Needed : AppConstants.NeededOrNA.NotApplicable;
             }
             else
             {
-                parentRow["G6PD"] = "N/A"; // Default to "NEEDED" if the "G6PD date" column doesn't exist
+                parentRow["G6PD"] = AppConstants.NeededOrNA.NotApplicable; // Default to AppConstants.NeededOrNA.Needed if the "G6PD date" column doesn't exist
             }
 
             if (parentRow.Table.Columns.Contains("EventDate"))

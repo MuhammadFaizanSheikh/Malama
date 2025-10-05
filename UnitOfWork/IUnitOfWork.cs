@@ -1,6 +1,5 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
-using ExcelToCsv.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExcelFilesCompiler.UnitOfWork
@@ -20,6 +19,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<EventStaffDetail> EventStaffDetail { get; }
         IGenericRepository<EventManagementTaskforces> EventManagementTaskforces { get; }
         IGenericRepository<EventManagementStaffAvailability> EventManagementStaffAvailability { get; }
+        IGenericRepository<ImmunizationStation> ImmunizationStation { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

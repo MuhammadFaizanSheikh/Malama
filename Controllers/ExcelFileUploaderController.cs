@@ -1,7 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Models;
-using ExcelToCsv.Models;
+using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -155,7 +155,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (string.IsNullOrEmpty(eventId))
                     return BadRequest("Event ID is required.");
 
-                var data = await _fileUploader.GetEventDataByEventIdAsync(eventId);
+                var data = _fileUploader.GetEventDataByEventId(eventId);
 
                 var result = new { success = true, data };
 
@@ -164,6 +164,46 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     PropertyNamingPolicy = null,
                     DictionaryKeyPolicy = null
+                };
+
+                var json = JsonSerializer.Serialize(result, options);
+
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                var error = new { success = false, message = "Error fetching preview data.", error = ex.Message };
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null,
+                    DictionaryKeyPolicy = null
+                };
+
+                var json = JsonSerializer.Serialize(error, options);
+
+                return Content(json, "application/json");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEventDataByEventIdForImmunization([FromBody] string eventId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(eventId))
+                    return BadRequest("Event ID is required.");
+
+                var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId);
+
+                var result = new { success = true, data };
+
+                // 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null,
+                    DictionaryKeyPolicy = null,
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles
                 };
 
                 var json = JsonSerializer.Serialize(result, options);

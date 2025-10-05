@@ -1,5 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
-using NPOI.SS.Formula.Functions;
+﻿using Malama.Models;
 using System.Linq.Expressions;
 
 namespace ExcelFilesCompiler.Repositories.Interfaces
@@ -19,6 +18,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         //Task<IEnumerable<T>> FindByColumnAsync<T>(string columnName, object value) where T : class;
         IEnumerable<T> FindByEventId(string eventId);
         Task<IEnumerable<T>> FindForSearchingAsync(Expression<Func<T, bool>> predicate);
+        IQueryable<T> FindForSearching(Expression<Func<T, bool>> predicate);
         Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task DeleteAgainstFieldAsync(object id, string idPropertyName);
         Task<T> FindAsync(Expression<Func<T, bool>> predicate);

@@ -1,4 +1,4 @@
-﻿using ExcelFilesCompiler.Models;
+﻿using Malama.Models;
 
 namespace ExcelFilesCompiler.Interfaces
 {

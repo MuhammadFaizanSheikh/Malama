@@ -2,13 +2,13 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
 }
 
-<link rel="stylesheet" href="~/css/site.css" />
+
 
 <div class="container-fluid" style="max-width: 100%; padding-top: 0; margin-top: 0;">
     <!-- Calendar Section -->
-    <div class="row my-3">
+    <div class="row mt-4">
         <div class="col-md-12 text-center">
-            <h1 style="color: rgba(80,90,201,1);">Malama</h1>
+            <h1 id="page-heading" class="page-heading">Malama</h1>
         </div>
     </div>
     <div class="row my-3">
@@ -96,10 +96,10 @@
     <form id="fileUploadForm" enctype="multipart/form-data">
         <input type="file" id="fileInput" name="files" multiple accept=".xls,.xlsx" style="display: none;">
         <div class="d-flex justify-content-center my-3">
-            <button type="button" class="btn btn-primary" id="uploadButton">Upload and Preview</button>
+            <button type="button" class="btn btn-general" id="uploadButton">Upload and Preview</button>
         </div>
         <div class="d-flex justify-content-center my-3">
-            <button type="button" class="btn btn-primary" onclick="clearPreview()" id="clearPreview">Clear Preview</button>
+            <button type="button" class="btn btn-general" onclick="clearPreview()" id="clearPreview">Clear Preview</button>
         </div>
     </form>
 
@@ -120,11 +120,11 @@
 
 
     <div class="d-flex justify-content-center my-3 button-container">
-        <button class="btn btn-secondary add-row-button" style="display: none;">Add Walk-In Service Member</button>
+        <button class="btn btn-general add-row-button" style="display: none;">Add Walk-In Service Member</button>
         @* <button id="addRowButton" class="btn btn-secondary">Add Walk-In Service Member</button> *@
-        <button id="generateExcelButton" class="btn btn-info d-none">Generate Excel</button>
-        <button id="submitDataButton" class="btn btn-success d-none" onclick="submitData()">Submit Data</button>
-        <button id="btnDownloadPDF" class="btn btn-success d-none">Download Routing Sheets</button>
+        <button id="generateExcelButton" class="btn btn-general d-none">Generate Excel</button>
+        <button id="submitDataButton" class="btn btn-general d-none" onclick="submitData()">Submit Data</button>
+        <button id="btnDownloadPDF" class="btn btn-general d-none">Download Routing Sheets</button>
 
 
         @await Html.PartialAsync("_EditModal")
@@ -536,8 +536,8 @@
                                 orderable: false,
                                 render: function () {
                                     return `
-                                        <button class="btn btn-primary mr-2" onclick="editRow(this)">Edit</button>
-                                        <button class="btn mr-2 btn-print">Print</button>
+                                                     <button class="btn table-action-btn mr-2" onclick="editRow(this)">Edit</button>
+                                                <button class="btn table-action-btn mr-2 btn-print">Print</button>
                                     `;
                                 }
                             },
@@ -698,77 +698,5 @@
 
         </script>
     </div>
-    <style>
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-
-
-        body {
-            background-color: rgba(80,90,201,0.1);
-        }
-
-        .form-control, .btn {
-            background-color: rgba(80,90,201,1); /* Theme color */
-            border-color: rgba(80,90,201,1);
-            color: white;
-        }
-
-        select.form-control, .event-input {
-            background-color: #fff;
-            border-color: #ced4da;
-            color: black;
-        }
-
-        .custom-select {
-            padding: 0.5em;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            appearance: none; /* Remove default arrow */
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><polygon points="0,4 8,12 16,4" style="fill:%23666;" /></svg>') no-repeat right 0.5em center; /* Custom arrow */
-            background-size: 1em;
-            width: 150px;
-        }
-
-        .custom-datetime {
-            padding: 0.5em;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-
-
-
-
-
-
-
-
-
-        #parentContainer {
-            display: flex;
-            flex-direction: column; /* Stacks children vertically */
-        }
-
-        #taskforceInfoContainer,
-        #fileValidationErrorContainer {
-            width: 100%; /* Makes sure both containers take the full width */
-            clear: both; /* Clears any floated elements */
-        }
-
-    </style>
-
+    <link rel="stylesheet" href="~/css/site.css" />
     <script src="~/js/ScrubSheet.js"></script>

@@ -1,8 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Models;
+using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
-using ExcelToCsv.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
