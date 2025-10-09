@@ -22,16 +22,17 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IFileUploader _fileUploader;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IImmunizationStationService _immunizationStationService;
+        private readonly IImmunizationVaccineInfoService _immunizationVaccineInfoService;
         private readonly ILogger<ImmunizationStationController> _logger;
+         
 
-        public ImmunizationVaccineInfoController(ILogger<ImmunizationStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IImmunizationStationService immunizationStationService)
+        public ImmunizationVaccineInfoController(ILogger<ImmunizationStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IImmunizationVaccineInfoService immunizationVaccineInfoService)
         {
             _logger = logger;
             _fileUploader = fileUploader;
             _configuration = configuration;
             _userManager = userManager;
-            _immunizationStationService = immunizationStationService;
+            _immunizationVaccineInfoService = immunizationVaccineInfoService;
         }
 
         [HttpGet]
@@ -58,116 +59,177 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        
+
         [HttpGet]
-        public async Task<IActionResult> GetImmunizationVaccineDateByEventId(string eventId)
+        public async Task<IActionResult> GetVaccineEntriesByEventId(string eventId)
         {
+            var model = new ImmunizationVaccineViewModel();
+
             try
             {
-                //if (string.IsNullOrEmpty(eventId))
-                //    return BadRequest("Event ID is required.");
-
-                var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId);
-
-                var summary = new Dictionary<string, int>
+                if (!string.IsNullOrEmpty(eventId))
                 {
-                    ["Total"] = data.Count(),
-                    ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.ImmunizationRecord.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.ImmunizationRecord.Status == "Not given")
-                };
+                    model.EventId = eventId;
+                    model.ListOfImmunizationVaccineInfo = await _immunizationVaccineInfoService
+                        .GetVaccineEntriesByEventIdAsync(eventId);
+                }
 
-                ViewBag.Summary = summary;
-
-                return View("Index", data);
-                //var result = new { success = true, data };
-
-                //// 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)
-                //var options = new JsonSerializerOptions
-                //{
-                //    PropertyNamingPolicy = null,
-                //    DictionaryKeyPolicy = null,
-                //    ReferenceHandler = ReferenceHandler.IgnoreCycles
-                //};
-
-                //var json = JsonSerializer.Serialize(result, options);
-
-                //return Content(json, "application/json");
+                return View("Index", model);
+            }
+            catch (ArgumentException argEx)
+            {
+                // Handles invalid argument, e.g., null or empty eventId
+                _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
+                TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
+                return View("Index", model);
+            }
+            catch (ApplicationException appEx)
+            {
+                // Handles exceptions thrown by service layer
+                _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
+                TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
+                return View("Index", model);
             }
             catch (Exception ex)
             {
-                var error = new { success = false, message = "Error fetching preview data.", error = ex.Message };
-
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = null,
-                    DictionaryKeyPolicy = null
-                };
-
-                var json = JsonSerializer.Serialize(error, options);
-
-                return Content(json, "application/json");
+                // Handles unexpected errors
+                _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
+                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+                return View("Index", model);
             }
         }
 
-        //public async Task<IActionResult> ImmunizationStation(long immunizationId, long fileDataId)
-        //{
-        //    try
-        //    {
-        //        ImmunizationStation model;
+        public IActionResult AddNewVaccine(string eventId)
+        {
+            var model = new ImmunizationVaccineViewModel
+            {
+                SingleImmunizationVaccineInfo = new ImmunizationVaccineInfo
+                {
+                    EventId = eventId
+                }
+            };
 
-        //        if (immunizationId > 0)
-        //        {
-        //            // Edit mode → get child record including parent
-        //            model = await _immunizationStationService.GetByIdWithParentAsync(immunizationId);
-        //        }
-        //        else
-        //        {
-        //            // Add mode → create empty child but attach parent
-        //            var parent = await _fileUploader.GetByIdAsync(fileDataId);
-        //            model = new ImmunizationStation
-        //            {
-        //                FileDataId = fileDataId,
-        //                FileData = parent
-        //            };
-        //        }
+            return View("Index", model);
+        }
 
-        //        return View(model);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // log if needed
-        //        throw;
-        //    }
-        //}
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> SaveImmunization(ImmunizationStation model)
-        //{
-        //    try
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return View(model);
-        //        }
 
-        //        if (model.Id == 0)
-        //        {
-        //            await _immunizationStationService.AddAsync(model);
-        //        }
-        //        else
-        //        {
-        //            await _immunizationStationService.UpdateAsync(model);
-        //        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveVaccineEntry(ImmunizationVaccineViewModel model, string action)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Re-display form with validation messages
+                return View("Index", model);
+            }
 
-        //        return RedirectToAction("GetEventData", new { eventId = model.FileData.EventId });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        //_logger.LogError(ex, "Error saving immunization");
-        //        throw;
-        //    }
-        //}
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = "Please login and try again.";
+                    return RedirectToAction("Index");
+                }
+
+                ResponseDto res;
+
+                // ✅ Add or Update
+                if (model.SingleImmunizationVaccineInfo.Id == 0)
+                {
+                    res = await _immunizationVaccineInfoService.AddInventoryAsync(
+                        model.SingleImmunizationVaccineInfo, user.UserName
+                    );
+                }
+                else
+                {
+                    res = await _immunizationVaccineInfoService.UpdateInventoryAsync(
+                        model.SingleImmunizationVaccineInfo, user.UserName
+                    );
+                }
+
+                // ✅ Handle response
+                if (res.Success)
+                {
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = res.Message;
+                }
+                else
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = res.Message;
+                }
+
+                // ✅ Redirect back to the table (event-based)
+                return RedirectToAction("GetVaccineEntriesByEventId",
+                    new { eventId = model.SingleImmunizationVaccineInfo.EventId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = $"An unexpected error occurred: {ex.Message}";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetImmunizationVaccineInfoById(long immunizationId)
+        {
+            try
+            {
+                if (immunizationId <= 0)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Request";
+                    TempData["ResponseMessage"] = "Invalid parameters provided.";
+                    return RedirectToAction("Index");
+                }
+
+                var response = await _immunizationVaccineInfoService.GetImmunizationVaccineInfoByIdAsync(immunizationId);
+
+                if (!response.Success || response.Data == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Found";
+                    TempData["ResponseMessage"] = response.Message ?? "Record not found.";
+                    return RedirectToAction("Index");
+                }
+
+                var vaccineInfo = response.Data as ImmunizationVaccineInfo;
+                if (vaccineInfo == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = "Invalid data type received from service.";
+                    return RedirectToAction("Index");
+                }
+
+                var model = new ImmunizationVaccineViewModel
+                {
+                    SingleImmunizationVaccineInfo = vaccineInfo
+                };
+
+                return View("Index",model);
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Error fetching ImmunizationVaccineInfo (Id: {ImmunizationId})", immunizationId);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = "An unexpected error occurred while fetching the record.";
+                return RedirectToAction("Index");
+            }
+        }
+
 
 
 

@@ -227,42 +227,6 @@
 </div>
 }
 <script>
-    // document.getElementById("searchStaffBtn").addEventListener("click", function () {
-    //     debugger;
-    //     // Get filter values
-    //     const barcode = document.getElementById("filterBarcode").value.toLowerCase();
-    //     const fullName = document.getElementById("filterFullName").value.toLowerCase();
-    //     const dodId = document.getElementById("filterDodId").value.toLowerCase();
-    //     const dobInput = document.getElementById("filterDob").value;
-    //     const dob = formatDateToMMDDYYYY(dobInput); // date input
-    //     const last4Ssn = document.getElementById("filterLast4Ssn").value.toLowerCase();
-    //     const status = document.getElementById("filterStatus").value.toLowerCase();
-
-    //     // Loop through all table rows
-    //     const rows = document.querySelectorAll("#contractsTable tbody tr");
-    //     rows.forEach(row => {
-    //         const rowStatus = row.cells[1].textContent.toLowerCase();
-    //         const rowSmId = row.cells[2].textContent.toLowerCase();
-    //         const rowFullName = row.cells[3].textContent.toLowerCase();
-    //         const rowLast4 = row.cells[4].textContent.toLowerCase();
-    //         const rowDodId = row.cells[5].textContent.toLowerCase();
-    //         const rowDob = row.cells[7].textContent.trim();
-    //         const rowBarcode = row.cells[8].textContent.toLowerCase();
-
-    //         // Check if row matches filters
-    //         let isMatch = true;
-    //         if (barcode && !rowBarcode.includes(barcode)) isMatch = false;
-    //         if (fullName && !rowFullName.includes(fullName)) isMatch = false;
-    //         if (dodId && !rowDodId.includes(dodId)) isMatch = false;
-    //         if (dob && rowDob !== dob) isMatch = false;
-    //         if (last4Ssn && !rowLast4.includes(last4Ssn)) isMatch = false;
-    //         if (status && rowStatus !== status) isMatch = false;
-
-    //         // Show/Hide row
-    //         row.style.display = isMatch ? "" : "none";
-    //     });
-    // });
-
     $('#searchStaffBtn').on('click', function () {
         var barcode = $('#filterBarcode').val().trim().toLowerCase();
         var fullName = $('#filterFullName').val().trim().toLowerCase();

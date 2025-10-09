@@ -30,6 +30,7 @@ builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IEventStaffService, EventStaffService>();
 builder.Services.AddScoped<IEventManagementService, EventManagementService>();
 builder.Services.AddScoped<IImmunizationStationService, ImmunizationStationService>();
+builder.Services.AddScoped<IImmunizationVaccineInfoService, ImmunizationVaccineInfoService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();

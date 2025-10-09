@@ -95,11 +95,11 @@
 </style>
 
 
-<h2 id="page-heading" >Immunization Station</h2>
+<h2 id="page-heading">Immunization Inventory</h2>
 
 @if (ViewBag.EventIdList != null)
 {
-<form method="get" asp-action="GetEventData">
+    <form method="get" asp-action="GetVaccineEntriesByEventId">
     <select id="eventIdDropdown" name="eventId" class="form-control" onchange="this.form.submit()">
         <option value="">-- Select Event --</option>
         @foreach (var item in ViewBag.EventIdList as List<SelectListItem>)
@@ -110,31 +110,39 @@
 </form>
 }
 
-@if (Model != null && Model.ListOfImmunizationVaccineInfo.Any())
+@if (TempData["ResponseStatus"] != null)
 {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: '@TempData["ResponseStatus"]',
+            title: '@TempData["ResponseTitle"]',
+            text: '@TempData["ResponseMessage"]'
+        });
+    </script>
+}
+
+@if (Model != null && Model.ListOfImmunizationVaccineInfo != null)
+{
+    <div id="vaccineTableDiv">
 <div class="card p-3 mb-4">
     <div class="container">
         <div class="row g-2">
             <!-- First Row -->
             <div class="col-md-3">
-                <label for="filterBarcode" class="form-label">Client</label>
-                    <input type="text" id="filterBarcode" class="form-control" placeholder="Client">
+                <label for="filterVaccine" class="form-label">Vaccine</label>
+                    <input type="text" id="filterVaccine" class="form-control" placeholder="Vaccine">
 
             </div>
             <div class="col-md-3">
-                <label for="filterFullName" class="form-label">Vaccine</label>
-                    <input type="text" id="filterFullName" class="form-control" placeholder="Vaccine">
+                <label for="filterManufacturer" class="form-label">Manufacturer</label>
+                    <input type="text" id="filterManufacturer" class="form-control" placeholder="Manufacturer">
 
             </div>
-            <div class="col-md-3">
-                <label for="filterDodId" class="form-label">Manufacturer</label>
-                    <input type="text" id="filterDodId" class="form-control" placeholder="Manufacturer">
-
-            </div>
-            <div class="col-md-3">
-                <label for="filterDob" class="form-label">Lot Number</label>
-                    <input type="date" id="filterDob" class="form-control" placeholder="Lot Number">
-            </div>
+            @* <div class="col-md-3">
+                <label for="filterLotNumber" class="form-label">Lot Number</label>
+                    <input type="text" id="filterLotNumber" class="form-control" placeholder="Lot Number">
+            </div> *@
             <!-- Search Button (Centered) -->
             <div class="col-12 text-center mt-3">
                 <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
@@ -150,12 +158,10 @@
     <thead>
         <tr>
             <th>Action</th>
-            <th>Client</th>
-            <th>Event Location</th>
             <th>Vaccine</th>
             <th>Manufacturer</th>
-            @* <th>Lot Number</th>
-            <th>Expiration</th> *@
+            <th>Lot Number</th>
+            <th>Expiration</th>
             <th>Starting Doses</th>
             <th>Final Doses</th>
         </tr>
@@ -165,14 +171,12 @@
         {
             <tr>
                 <td>
-                        <a asp-action="ImmunizationVaccineInfo" asp-route-immunizationId="@c.Id" asp-route-fileDataId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                        <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                 </td>
-                        <td>@c.Client</td>
-                        <td>@c.EventLocation</td>
                         <td>@c.Vaccine</td>
                         <td>@c.Manufacturer</td>
-                        @* <td>@c.LotNumber</td>
-                        <td>@c.Expiration</td> *@
+                            <td>@Html.Raw(c.LotNumber)</td>
+                            <td>@Html.Raw(c.Expiration)</td>
                         <td>@c.StartingDoses</td>
                         <td>@c.FinalDoses</td>
             </tr>
@@ -180,173 +184,231 @@
     </tbody>
 </table>
 </div>
-}
+    </div>
 
-@if (Model != null)
+    <div class="text-center mt-4 pb-4">
+        <a asp-action="AddNewVaccine" asp-route-eventId="@Model.EventId" class="btn btn-general" id="addInventoryBtn">Add Inventory</a>
+
+    </div>
+}
+<div id="vaccineFormDiv">
+@if (Model != null && Model.SingleImmunizationVaccineInfo != null)
 {
+    
 <form asp-action="SaveVaccineEntry" method="post">
     @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label">Event Id</label>
+                    <input asp-for="SingleImmunizationVaccineInfo.EventId" class="form-control" readonly placeholder="Event ID" required />
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.EventId" class="text-danger"></span>
+                </div>
+                 <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Event Date</label>
+                    <input asp-for="SingleImmunizationVaccineInfo.EventDate"
+       class="form-control"
+       type="date"
+       value="@(Model.SingleImmunizationVaccineInfo.EventDate != DateTime.MinValue 
+               ? Model.SingleImmunizationVaccineInfo.EventDate.ToString("yyyy-MM-dd") 
+               : string.Empty)"
+       required />
 
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.Client" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.Client" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.Client" class="text-danger"></span>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.EventId" class="form-control" readonly />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.EventId" class="text-danger"></span>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.EventLocation" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.EventLocation" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.EventLocation" class="text-danger"></span>
-        </div>
-    </div>
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.EventDate" class="text-danger"></span>
+                </div>
+            </div>
 
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.EventDate" type="date" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.EventDate" class="text-danger"></span>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.Vaccine" class="text-danger"></span>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.Manufacturer" class="text-danger"></span>
-        </div>
-    </div>
+            <div class="row">
+                 <div class="col-md-4 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-label">Immunization Type</label>
+                    <select asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-select" required>
+                        <option value="">Select Immunization Type</option>
+                        <option>HepB</option>
+                        <option>Flu</option>
+                        <option>MMR</option>
+                        <option>HepA</option>
+                        <option>Tet/Tdap</option>
+                        <option>Varicella</option>
+                    </select>
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.ImmunizationType" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-label"></label>
+                    <input asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-control" placeholder="Enter vaccine name" required />
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.Vaccine" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-label"></label>
+                    <input asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-control" placeholder="Enter manufacturer name" required />
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.Manufacturer" class="text-danger"></span>
+                </div>
+            </div>
 
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.StartingDoses" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.StartingDoses" type="number" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.StartingDoses" class="text-danger"></span>
-        </div>
-        <div class="col-md-4">
-            <label asp-for="SingleImmunizationVaccineInfo.FinalDoses" class="form-label"></label>
-            <input asp-for="SingleImmunizationVaccineInfo.FinalDoses" type="number" class="form-control" />
-            <span asp-validation-for="SingleImmunizationVaccineInfo.FinalDoses" class="text-danger"></span>
-        </div>
-    </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.StartingDoses" class="form-label"></label>
+                    <input asp-for="SingleImmunizationVaccineInfo.StartingDoses" type="number" class="form-control" placeholder="Enter starting doses" required />
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.StartingDoses" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.FinalDoses" class="form-label"></label>
+                    <input asp-for="SingleImmunizationVaccineInfo.FinalDoses" type="number" class="form-control" placeholder="Enter final doses" />
+                </div>
+            </div>
 
-    <h4>Lots</h4>
-    <div id="lotsContainer">
-        <!-- Existing lots will render here -->
-        @for (int i = 0; i < Model.SingleImmunizationVaccineInfo.Lots.Count; i++)
+            <h4>Lots</h4>
+<div id="lotsContainer">
+    @if (Model.SingleImmunizationVaccineInfo.Lots != null && Model.SingleImmunizationVaccineInfo.Lots.Any())
+    {
+        for (int i = 0; i < Model.SingleImmunizationVaccineInfo.Lots.Count; i++)
         {
             <div class="row mb-2 lot-row">
-                <div class="col-md-4">
-                    <label asp-for="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber" class="form-label"></label>
-                    <input asp-for="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber" class="form-control" />
-                    <span asp-validation-for="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber" class="text-danger"></span>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Lot Number</label>
+                    <input name="SingleImmunizationVaccineInfo.Lots[@i].LotNumber"
+                           value="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber"
+                           class="form-control" required placeholder="Enter lot number" />
                 </div>
-                <div class="col-md-4">
-                    <label asp-for="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration" class="form-label"></label>
-                    <input asp-for="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration" type="date" class="form-control" />
-                    <span asp-validation-for="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration" class="text-danger"></span>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Expiration</label>
+                    <input name="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
+                           value="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration.ToString("yyyy-MM-dd")"
+                           type="date" class="form-control" required />
                 </div>
             </div>
         }
-    </div>
+    }
+    else
+    {
+        <div class="row mb-2 lot-row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Lot Number</label>
+                <input name="SingleImmunizationVaccineInfo.Lots[0].LotNumber"
+                       class="form-control" placeholder="Enter lot number" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Expiration</label>
+                <input name="SingleImmunizationVaccineInfo.Lots[0].Expiration"
+                       type="date" class="form-control" required />
+            </div>
+        </div>
+    }
+</div>
 
-    <button type="button" id="addLotBtn" class="btn btn-secondary">Add another Lot</button>
-    <small class="text-muted d-block">Maximum 5 lots allowed.</small>
 
-    <div class="mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
-    </div>
+
+
+            <button type="button" id="addLotBtn" class="btn btn-general">Add another Lot</button>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Container</label>
+                <select  class="form-select">
+                        <option value="">Select Container</option>
+                        <option>Test1</option>
+                        <option>Test2</option>
+                    </select>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
+                    <i class="bi bi-check-circle"></i> Submit
+                </button>
+                <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
+                    <i class="bi bi-arrow-repeat"></i> Reset
+                </button>
+               @*  <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+                    <i class="bi bi-pencil"></i> Update
+                </button> *@
+                <a asp-action="GetVaccineEntriesByEventId" asp-route-eventId="@Model.SingleImmunizationVaccineInfo.EventId" class="btn btn-secondary" id="backToTableBtn">Back</a>
+
+            </div>
 </form>
+    
 }
+</div>
 <script>
-    $('#searchStaffBtn').on('click', function () {
-        var barcode = $('#filterBarcode').val().trim().toLowerCase();
-        var fullName = $('#filterFullName').val().trim().toLowerCase();
-        var dodId = $('#filterDodId').val().trim();
-        var dob = $('#filterDob').val();
-        var last4Ssn = $('#filterLast4Ssn').val().trim();
-        var status = $('#filterStatus').val().trim().toLowerCase();
+document.addEventListener("DOMContentLoaded", function() {
+    // Add Inventory button
+    var addInventoryBtn = document.getElementById("addInventoryBtn");
+    if (addInventoryBtn) {
+        addInventoryBtn.addEventListener("click", function() {
+            var eventDropdown = document.getElementById("eventIdDropdown");
+            var selectedEvent = eventDropdown ? eventDropdown.value : "";
+
+            var eventInput = document.querySelector("[name='SingleImmunizationVaccineInfo.EventId']");
+            if (eventInput) eventInput.value = selectedEvent;
+        });
+    }
+
+        var backBtn = document.getElementById("backToTableBtn");
+        if (backBtn) {
+            backBtn.addEventListener("click", function () {
+                var tableDiv = document.getElementById("vaccineTableDiv");
+                var formDiv = document.getElementById("vaccineFormDiv");
+                var inventoryBtn = document.getElementById("addInventoryBtn");
+
+                if (formDiv) formDiv.style.display = "none";   // hide form
+                if (tableDiv) tableDiv.style.display = "block"; // show table
+                if (inventoryBtn) inventoryBtn.style.display = "block"; // show add button
+            });
+        }
+
+
+    // Add Lot button
+
+   const addLotBtn = document.getElementById("addLotBtn");
+    if (!addLotBtn) return;
+
+    const maxLots = 5;
+
+    addLotBtn.addEventListener("click", function () {
+        const container = document.getElementById("lotsContainer");
+        const lotRows = container.querySelectorAll(".lot-row");
+        const nextIndex = lotRows.length; // ensures unique index
+
+        if (nextIndex >= maxLots) {
+            alert("Maximum 5 lots allowed.");
+            return;
+        }
+
+        const row = document.createElement("div");
+        row.className = "row mb-2 lot-row";
+        row.innerHTML = `
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Lot Number</label>
+                <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
+                       placeholder="Enter lot number" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Expiration</label>
+                <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
+                       type="date" class="form-control" required />
+            </div>
+        `;
+
+        container.appendChild(row);
+    });
+
+});
+
+$('#searchStaffBtn').on('click', function () {
+        var vaccine = $('#filterVaccine').val().trim().toLowerCase();
+        var manufacturer = $('#filterManufacturer').val().trim().toLowerCase();
 
         var contractsTable = $('#contractsTable').DataTable();
 
         // Clear previous searches
         contractsTable.columns().search('');
 
-        if (barcode) {
-            contractsTable.column(8).search(barcode, true, false, true);
+        if (vaccine) {
+            contractsTable.column(1).search(vaccine, true, false, true);
         }
 
-        if (fullName) {
-            const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            contractsTable.column(3).search(escapedFullName, true, false, true);
-        }
-
-        if (dodId) {
-            contractsTable.column(5).search('^' + dodId + '$', true, false);
-        }
-
-        if (dob) {
-            contractsTable.column(7).search(formatDateToMMDDYYYY(dob));
-        }
-
-        if (last4Ssn) {
-            contractsTable.column(4).search('^' + last4Ssn + '$', true, false);
-        }
-
-        if (status) {
-            contractsTable.column(1).search(status, true, false, true);
+        if (manufacturer) {
+            contractsTable.column(2).search(manufacturer, true, false, true);
         }
 
         contractsTable.draw();
-        // $('#contractsTable').DataTable().destroy();
-
-        // var contractsTable = $('#contractsTable').DataTable({
-        //     searching: false,   // no default search box
-        //     paging: false,       // keep pagination
-        //     info: false,         // keep "Showing 1 to N of X entries"
-        //     lengthChange: false,  // show "Show 10/25/50" dropdown (optional)
-        //         columnDefs: [
-        //         { className: "text-center", targets: "_all" }  // all columns centered
-        //     ],
-        //     ordering: false
-        // });
-
     });
-
-    function formatDateToMMDDYYYY(dateString) {
-        const [year, month, day] = dateString.split('-'); // Split the yyyy/mm/dd format
-        return `${month}/${day}/${year}`; // Return as mm/dd/yyyy
-    }
-
-    function resetAllFilters() {
-        
-
-        // Clear all input and select fields
-        $('#filterBarcode').val('');
-        $('#filterFullName').val('');
-        $('#filterDodId').val('');
-        $('#filterDob').val('');
-        $('#filterLast4Ssn').val('');
-        $('#filterStatus').val('');
-        var previewTable = $('#contractsTable').DataTable();
-        previewTable.columns().search('');
-        previewTable.search('').draw();
-        
-    }
-    // Reset button
-    document.getElementById("resetFiltersBtn").addEventListener("click", function () {
-        resetAllFilters();
-    });
-
-    function allowOnlyDigits(input) {
-        // Allow only digits
-        input.value = input.value.replace(/\D/g, '');
-    }
-
 </script>
+

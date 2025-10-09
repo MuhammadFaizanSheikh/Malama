@@ -111,7 +111,7 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(long id)
         {
             try
             {

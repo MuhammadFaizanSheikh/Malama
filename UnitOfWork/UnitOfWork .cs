@@ -22,6 +22,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<EventManagementTaskforces> EventManagementTaskforces { get; private set; }
         public IGenericRepository<EventManagementStaffAvailability> EventManagementStaffAvailability { get; private set; }
         public IGenericRepository<ImmunizationStation> ImmunizationStation { get; private set; }
+        public IGenericRepository<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; private set; }
+        public IGenericRepository<ImmunizationVaccineLotEntry> ImmunizationVaccineLotEntry { get; private set; }
 
 
 
@@ -42,6 +44,8 @@ namespace ExcelFilesCompiler.UnitOfWork
             EventManagementTaskforces = new GenericRepository<EventManagementTaskforces>(_context);
             EventManagementStaffAvailability = new GenericRepository<EventManagementStaffAvailability>(_context);
             ImmunizationStation = new GenericRepository<ImmunizationStation>(_context);
+            ImmunizationVaccineInfo = new GenericRepository<ImmunizationVaccineInfo>(_context);
+            ImmunizationVaccineLotEntry = new GenericRepository<ImmunizationVaccineLotEntry>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

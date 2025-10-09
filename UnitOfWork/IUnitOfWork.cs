@@ -20,6 +20,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<EventManagementTaskforces> EventManagementTaskforces { get; }
         IGenericRepository<EventManagementStaffAvailability> EventManagementStaffAvailability { get; }
         IGenericRepository<ImmunizationStation> ImmunizationStation { get; }
+        IGenericRepository<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; }
+        IGenericRepository<ImmunizationVaccineLotEntry> ImmunizationVaccineLotEntry { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

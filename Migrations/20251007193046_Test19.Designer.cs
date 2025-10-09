@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251007193046_Test19")]
+    partial class Test19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1729,7 +1732,10 @@ namespace Malama.Migrations
                     b.Property<DateTime>("Expiration")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long>("ImmunizationVaccineInfoId")
+                    b.Property<int>("ImmunizationVaccineInfoId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("ImmunizationVaccineInfoId1")
                         .HasColumnType("bigint");
 
                     b.Property<string>("LotNumber")
@@ -1739,7 +1745,7 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImmunizationVaccineInfoId");
+                    b.HasIndex("ImmunizationVaccineInfoId1");
 
                     b.ToTable("ImmunizationVaccineLotEntry");
                 });
@@ -2256,7 +2262,7 @@ namespace Malama.Migrations
                 {
                     b.HasOne("Malama.Models.ImmunizationVaccineInfo", "ImmunizationVaccineInfo")
                         .WithMany("Lots")
-                        .HasForeignKey("ImmunizationVaccineInfoId")
+                        .HasForeignKey("ImmunizationVaccineInfoId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

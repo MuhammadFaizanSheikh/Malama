@@ -10,8 +10,25 @@ namespace Malama.Models
 {
     public class ImmunizationVaccineViewModel
     {
-        public List<ImmunizationVaccineInfo>? ListOfImmunizationVaccineInfo { get; set; }
+        [ValidateNever]
+        public string EventId { get; set; }
+        public List<ImmunizationVaccineInfoForPreview>? ListOfImmunizationVaccineInfo { get; set; }
         public ImmunizationVaccineInfo SingleImmunizationVaccineInfo { get; set; }
+    }
+
+    public class ImmunizationVaccineInfoForPreview
+    {
+        public long Id { get; set; }
+
+        public string LotNumber { get; set; }
+        public string Expiration { get; set; }
+        public string Vaccine { get; set; }
+
+        public string Manufacturer { get; set; }
+
+        public int? StartingDoses { get; set; }
+
+        public int? FinalDoses { get; set; }  // optional
     }
 
     [Table("ImmunizationVaccineInfo")]
@@ -21,31 +38,36 @@ namespace Malama.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        public string Client { get; set; }
+        [Required(ErrorMessage = "Event ID is required")]
+        [StringLength(50, ErrorMessage = "Event ID cannot exceed 50 characters")]
+        public string EventId { get; set; }  // readonly in UI, but still validated
 
-        [Required]
-        public string EventId { get; set; }  // readonly in UI
-
-        public string EventLocation { get; set; }
-
-        [Required]
+        [Required(ErrorMessage = "Event Date is required")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime EventDate { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Immunization type is required")]
+        [StringLength(100, ErrorMessage = "Immunization type cannot exceed 100 characters")]
         public string ImmunizationType { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Vaccine name is required")]
+        [StringLength(100, ErrorMessage = "Vaccine name cannot exceed 100 characters")]
         public string Vaccine { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Manufacturer name is required")]
+        [StringLength(100, ErrorMessage = "Manufacturer name cannot exceed 100 characters")]
         public string Manufacturer { get; set; }
 
-        [Required]
-        public int StartingDoses { get; set; }
+        [Required(ErrorMessage = "Starting doses are required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Starting doses must be greater than 0")]
+        public int? StartingDoses { get; set; }
 
+        [Range(0, int.MaxValue, ErrorMessage = "Final doses cannot be negative")]
         public int? FinalDoses { get; set; }  // optional
 
-        [Required]
+        [Required(ErrorMessage = "At least one lot entry is required")]
+        [MinLength(1, ErrorMessage = "At least one lot entry must be provided")]
         public List<ImmunizationVaccineLotEntry> Lots { get; set; } = new List<ImmunizationVaccineLotEntry>();
     }
 
@@ -56,16 +78,19 @@ namespace Malama.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Lot number is required")]
+        [StringLength(50, ErrorMessage = "Lot number cannot exceed 50 characters")]
         public string LotNumber { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Expiration date is required")]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
+        [DataType(DataType.Date)]
         public DateTime Expiration { get; set; }
 
-        public int ImmunizationVaccineInfoId { get; set; }
+        public long ImmunizationVaccineInfoId { get; set; }
 
-        // ✅ Navigation property (optional in DTO, but useful for EF/entity mapping)
+        // ✅ Navigation property (useful for EF/entity mapping, optional in DTOs)
+        [ValidateNever]
         public ImmunizationVaccineInfo ImmunizationVaccineInfo { get; set; }
     }
-
 }

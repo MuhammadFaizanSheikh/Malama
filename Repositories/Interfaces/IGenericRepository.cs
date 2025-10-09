@@ -12,7 +12,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         void AddRange(IEnumerable<T> entities);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(long id);
         void Save();
         void UpdateRange(IEnumerable<T> entities);
         //Task<IEnumerable<T>> FindByColumnAsync<T>(string columnName, object value) where T : class;
