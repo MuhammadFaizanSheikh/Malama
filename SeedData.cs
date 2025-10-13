@@ -1,19 +1,29 @@
 ﻿using Malama.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Security.Policy;
 
 namespace ExcelFilesCompiler
 {
     public static class SeedData
     {
-        public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder, IWebHostEnvironment env)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider, WebApplicationBuilder builder, IWebHostEnvironment env)
+        {
+            // Create a scope to access scoped services like DbContext, RoleManager, etc.
+            using var scope = serviceProvider.CreateScope();
+            var scopedProvider = scope.ServiceProvider;
+
+            // Call individual seeders
+            await SeedRolesAndAdminAsync(scopedProvider, builder, env);
+            await SeedContainersAsync(scopedProvider, env);
+        }
+
+        public static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider, WebApplicationBuilder builder, IWebHostEnvironment env)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>(); // Ensure ApplicationRole is used
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            var rolesFilePath = Path.Combine(env.WebRootPath, "data", "roles.json");
+            var rolesFilePath = Path.Combine(env.ContentRootPath, "Data", "Seed", "roles.json");
 
             if (File.Exists(rolesFilePath))
             {
@@ -109,6 +119,41 @@ namespace ExcelFilesCompiler
                 }
             }
         }
+
+        public static async Task SeedContainersAsync(IServiceProvider serviceProvider, IWebHostEnvironment env)
+        {
+            var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+            // Skip if already seeded
+            if (await dbContext.ContainerType.AnyAsync())
+                return;
+
+            var filePath = Path.Combine(env.ContentRootPath, "Data", "Seed", "containers.json");
+
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"Seed file not found: {filePath}");
+                return;
+            }
+
+            var json = await File.ReadAllTextAsync(filePath);
+            var containers = JsonConvert.DeserializeObject<List<ContainerType>>(json);
+
+            if (containers != null && containers.Count > 0)
+            {
+                foreach (var container in containers)
+                {
+                    container.AddedBy = "SystemSeeder";
+                    container.AddedOn = DateTime.Now;
+                    container.UpdatedBy = null;
+                    container.UpdatedOn = null;
+                }
+
+                await dbContext.ContainerType.AddRangeAsync(containers);
+                await dbContext.SaveChangesAsync();
+            }
+        }
+
 
         //public static async Task Initialize(IServiceProvider serviceProvider, WebApplicationBuilder builder)
         //{

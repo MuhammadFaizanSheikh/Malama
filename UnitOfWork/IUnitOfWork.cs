@@ -22,6 +22,9 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<ImmunizationStation> ImmunizationStation { get; }
         IGenericRepository<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; }
         IGenericRepository<ImmunizationVaccineLotEntry> ImmunizationVaccineLotEntry { get; }
+        IGenericRepository<ContainerType> ContainerType { get; }
+        IGenericRepository<Container> Container { get; }
+        IGenericRepository<ContainerTemperatureReading> ContainerTemperatureReading { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

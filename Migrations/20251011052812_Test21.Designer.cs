@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251011052812_Test21")]
+    partial class Test21
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,7 +129,7 @@ namespace Malama.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Malama.Models.Container", b =>
+            modelBuilder.Entity("Malama.Models.ContainerDto", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -140,112 +143,7 @@ namespace Malama.Migrations
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("ConsecutiveNormalReadings")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ContainerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("ContainerTypeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("CurrentStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("EscalationIntervalMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("EventId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("InitialTemperature")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("MonitoringIntervalMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("NextExpectedReadingUtc")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("StartDateTimeUtc")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContainerTypeId");
-
-                    b.ToTable("Container");
-                });
-
-            modelBuilder.Entity("Malama.Models.ContainerTemperatureReading", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("AttemptNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("text");
-
-                    b.Property<long>("ContainerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsOutOfRange")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("ReadingTimeUtc")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<decimal>("Temperature")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContainerId");
-
-                    b.ToTable("ContainerTemperatureReading");
-                });
-
-            modelBuilder.Entity("Malama.Models.ContainerType", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("ContainerType")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -267,7 +165,7 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContainerType");
+                    b.ToTable("Container");
                 });
 
             modelBuilder.Entity("Malama.Models.ContractDetails", b =>
@@ -2329,28 +2227,6 @@ namespace Malama.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Malama.Models.Container", b =>
-                {
-                    b.HasOne("Malama.Models.ContainerType", "ContainerType")
-                        .WithMany()
-                        .HasForeignKey("ContainerTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ContainerType");
-                });
-
-            modelBuilder.Entity("Malama.Models.ContainerTemperatureReading", b =>
-                {
-                    b.HasOne("Malama.Models.Container", "Container")
-                        .WithMany()
-                        .HasForeignKey("ContainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Container");
                 });
 
             modelBuilder.Entity("Malama.Models.EventManagementStaffAvailability", b =>

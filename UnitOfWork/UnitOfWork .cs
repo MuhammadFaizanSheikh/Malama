@@ -24,6 +24,9 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<ImmunizationStation> ImmunizationStation { get; private set; }
         public IGenericRepository<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; private set; }
         public IGenericRepository<ImmunizationVaccineLotEntry> ImmunizationVaccineLotEntry { get; private set; }
+        public IGenericRepository<ContainerType> ContainerType { get; private set; }
+        public IGenericRepository<Container> Container { get; private set; }
+        public IGenericRepository<ContainerTemperatureReading> ContainerTemperatureReading { get; private set; }
 
 
 
@@ -46,6 +49,9 @@ namespace ExcelFilesCompiler.UnitOfWork
             ImmunizationStation = new GenericRepository<ImmunizationStation>(_context);
             ImmunizationVaccineInfo = new GenericRepository<ImmunizationVaccineInfo>(_context);
             ImmunizationVaccineLotEntry = new GenericRepository<ImmunizationVaccineLotEntry>(_context);
+            ContainerType = new GenericRepository<ContainerType>(_context);
+            Container = new GenericRepository<Container>(_context);
+            ContainerTemperatureReading = new GenericRepository<ContainerTemperatureReading>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

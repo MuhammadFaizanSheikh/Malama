@@ -228,6 +228,11 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
+        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
+
         public async Task<IEnumerable<T>> GetWithIncludeAsync(
       Expression<Func<T, bool>> predicate = null,
       params Expression<Func<T, object>>[] includes)

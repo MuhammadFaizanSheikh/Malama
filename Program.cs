@@ -31,6 +31,7 @@ builder.Services.AddScoped<IEventStaffService, EventStaffService>();
 builder.Services.AddScoped<IEventManagementService, EventManagementService>();
 builder.Services.AddScoped<IImmunizationStationService, ImmunizationStationService>();
 builder.Services.AddScoped<IImmunizationVaccineInfoService, ImmunizationVaccineInfoService>();
+builder.Services.AddScoped<IContainerMonitoringService, ContainerMonitoringService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
@@ -115,7 +116,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     var env = services.GetRequiredService<IWebHostEnvironment>();
 
-    await SeedData.Initialize(services, builder, env);
+    await SeedData.InitializeAsync(services, builder, env);
 }
 
 // Configure middleware

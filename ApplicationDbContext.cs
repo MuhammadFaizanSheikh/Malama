@@ -27,6 +27,9 @@ namespace ExcelFilesCompiler
         public DbSet<EventStaffDetail> EventStaffDetail { get; set; }
         public DbSet<ImmunizationStation> ImmunizationStation { get; set; }
         public DbSet<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; set; }
+        public DbSet<ContainerType> ContainerType { get; set; }
+        public DbSet<Container> Container { get; set; }
+        public DbSet<ContainerTemperatureReading> ContainerTemperatureReading { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

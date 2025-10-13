@@ -100,14 +100,14 @@
 @if (ViewBag.EventIdList != null)
 {
     <form method="get" asp-action="GetVaccineEntriesByEventId">
-    <select id="eventIdDropdown" name="eventId" class="form-control" onchange="this.form.submit()">
-        <option value="">-- Select Event --</option>
-        @foreach (var item in ViewBag.EventIdList as List<SelectListItem>)
-        {
-            <option value="@item.Value" selected="@item.Selected">@item.Text</option>
-        }
-    </select>
-</form>
+        <select id="eventIdDropdown" name="eventId" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Select Event --</option>
+            @foreach (var item in ViewBag.EventIdList as List<SelectListItem>)
+            {
+                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+            }
+        </select>
+    </form>
 }
 
 @if (TempData["ResponseStatus"] != null)
@@ -125,65 +125,65 @@
 @if (Model != null && Model.ListOfImmunizationVaccineInfo != null)
 {
     <div id="vaccineTableDiv">
-<div class="card p-3 mb-4">
-    <div class="container">
-        <div class="row g-2">
-            <!-- First Row -->
-            <div class="col-md-3">
-                <label for="filterVaccine" class="form-label">Vaccine</label>
-                    <input type="text" id="filterVaccine" class="form-control" placeholder="Vaccine">
+        <div class="card p-3 mb-4">
+            <div class="container">
+                <div class="row g-2">
+                    <!-- First Row -->
+                    <div class="col-md-3">
+                        <label for="filterVaccine" class="form-label">Vaccine</label>
+                        <input type="text" id="filterVaccine" class="form-control" placeholder="Vaccine">
 
-            </div>
-            <div class="col-md-3">
-                <label for="filterManufacturer" class="form-label">Manufacturer</label>
-                    <input type="text" id="filterManufacturer" class="form-control" placeholder="Manufacturer">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterManufacturer" class="form-label">Manufacturer</label>
+                        <input type="text" id="filterManufacturer" class="form-control" placeholder="Manufacturer">
 
-            </div>
-            @* <div class="col-md-3">
+                    </div>
+                    @* <div class="col-md-3">
                 <label for="filterLotNumber" class="form-label">Lot Number</label>
-                    <input type="text" id="filterLotNumber" class="form-control" placeholder="Lot Number">
-            </div> *@
-            <!-- Search Button (Centered) -->
-            <div class="col-12 text-center mt-3">
-                <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
-                <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                <input type="text" id="filterLotNumber" class="form-control" placeholder="Lot Number">
+                </div> *@
+                    <!-- Search Button (Centered) -->
+                    <div class="col-12 text-center mt-3">
+                        <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                        <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
- 
 
-<div id="datatableWrapper" class="datatable-wrapper">
-    <table id="contractsTable" class="display">
-    <thead>
-        <tr>
-            <th>Action</th>
-            <th>Vaccine</th>
-            <th>Manufacturer</th>
-            <th>Lot Number</th>
-            <th>Expiration</th>
-            <th>Starting Doses</th>
-            <th>Final Doses</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model.ListOfImmunizationVaccineInfo)
-        {
-            <tr>
-                <td>
-                        <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
-                </td>
-                        <td>@c.Vaccine</td>
-                        <td>@c.Manufacturer</td>
+
+        <div id="datatableWrapper" class="datatable-wrapper">
+            <table id="contractsTable" class="display">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Vaccine</th>
+                        <th>Manufacturer</th>
+                        <th>Lot Number</th>
+                        <th>Expiration</th>
+                        <th>Starting Doses</th>
+                        <th>Final Doses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.ListOfImmunizationVaccineInfo)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            </td>
+                            <td>@c.Vaccine</td>
+                            <td>@c.Manufacturer</td>
                             <td>@Html.Raw(c.LotNumber)</td>
                             <td>@Html.Raw(c.Expiration)</td>
-                        <td>@c.StartingDoses</td>
-                        <td>@c.FinalDoses</td>
-            </tr>
-        }
-    </tbody>
-</table>
-</div>
+                            <td>@c.StartingDoses</td>
+                            <td>@c.FinalDoses</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="text-center mt-4 pb-4">
@@ -192,34 +192,34 @@
     </div>
 }
 <div id="vaccineFormDiv">
-@if (Model != null && Model.SingleImmunizationVaccineInfo != null)
-{
-    
-<form asp-action="SaveVaccineEntry" method="post">
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
+    @if (Model != null && Model.SingleImmunizationVaccineInfo != null)
+    {
+
+        <form asp-action="SaveVaccineEntry" method="post">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label">Event Id</label>
                     <input asp-for="SingleImmunizationVaccineInfo.EventId" class="form-control" readonly placeholder="Event ID" required />
                     <span asp-validation-for="SingleImmunizationVaccineInfo.EventId" class="text-danger"></span>
                 </div>
-                 <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Event Date</label>
                     <input asp-for="SingleImmunizationVaccineInfo.EventDate"
-       class="form-control"
-       type="date"
-       value="@(Model.SingleImmunizationVaccineInfo.EventDate != DateTime.MinValue 
-               ? Model.SingleImmunizationVaccineInfo.EventDate.ToString("yyyy-MM-dd") 
+                           class="form-control"
+                           type="date"
+                           value="@(Model.SingleImmunizationVaccineInfo.EventDate != DateTime.MinValue
+               ? Model.SingleImmunizationVaccineInfo.EventDate.ToString("yyyy-MM-dd")
                : string.Empty)"
-       required />
+                           required />
 
                     <span asp-validation-for="SingleImmunizationVaccineInfo.EventDate" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="row">
-                 <div class="col-md-4 mb-3">
+                <div class="col-md-4 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-label">Immunization Type</label>
                     <select asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-select" required>
                         <option value="">Select Immunization Type</option>
@@ -257,43 +257,43 @@
             </div>
 
             <h4>Lots</h4>
-<div id="lotsContainer">
-    @if (Model.SingleImmunizationVaccineInfo.Lots != null && Model.SingleImmunizationVaccineInfo.Lots.Any())
-    {
-        for (int i = 0; i < Model.SingleImmunizationVaccineInfo.Lots.Count; i++)
-        {
-            <div class="row mb-2 lot-row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Lot Number</label>
-                    <input name="SingleImmunizationVaccineInfo.Lots[@i].LotNumber"
-                           value="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber"
-                           class="form-control" required placeholder="Enter lot number" />
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Expiration</label>
-                    <input name="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
-                           value="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration.ToString("yyyy-MM-dd")"
-                           type="date" class="form-control" required />
-                </div>
+            <div id="lotsContainer">
+                @if (Model.SingleImmunizationVaccineInfo.Lots != null && Model.SingleImmunizationVaccineInfo.Lots.Any())
+                {
+                    for (int i = 0; i < Model.SingleImmunizationVaccineInfo.Lots.Count; i++)
+                    {
+                        <div class="row mb-2 lot-row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Lot Number</label>
+                                <input name="SingleImmunizationVaccineInfo.Lots[@i].LotNumber"
+                                       value="@Model.SingleImmunizationVaccineInfo.Lots[i].LotNumber"
+                                       class="form-control" required placeholder="Enter lot number" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Expiration</label>
+                                <input name="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
+                                       value="@Model.SingleImmunizationVaccineInfo.Lots[i].Expiration.ToString("yyyy-MM-dd")"
+                                       type="date" class="form-control" required />
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="row mb-2 lot-row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Lot Number</label>
+                            <input name="SingleImmunizationVaccineInfo.Lots[0].LotNumber"
+                                   class="form-control" placeholder="Enter lot number" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Expiration</label>
+                            <input name="SingleImmunizationVaccineInfo.Lots[0].Expiration"
+                                   type="date" class="form-control" required />
+                        </div>
+                    </div>
+                }
             </div>
-        }
-    }
-    else
-    {
-        <div class="row mb-2 lot-row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Lot Number</label>
-                <input name="SingleImmunizationVaccineInfo.Lots[0].LotNumber"
-                       class="form-control" placeholder="Enter lot number" required />
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Expiration</label>
-                <input name="SingleImmunizationVaccineInfo.Lots[0].Expiration"
-                       type="date" class="form-control" required />
-            </div>
-        </div>
-    }
-</div>
 
 
 
@@ -302,11 +302,11 @@
 
             <div class="col-md-6 mb-3">
                 <label class="form-label">Container</label>
-                <select  class="form-select">
-                        <option value="">Select Container</option>
-                        <option>Test1</option>
-                        <option>Test2</option>
-                    </select>
+                <select class="form-select">
+                    <option value="">Select Container</option>
+                    <option>Test1</option>
+                    <option>Test2</option>
+                </select>
             </div>
 
             <div class="d-flex justify-content-end mt-4">
@@ -316,29 +316,29 @@
                 <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
                     <i class="bi bi-arrow-repeat"></i> Reset
                 </button>
-               @*  <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
-                    <i class="bi bi-pencil"></i> Update
-                </button> *@
+                @*  <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
+            <i class="bi bi-pencil"></i> Update
+            </button> *@
                 <a asp-action="GetVaccineEntriesByEventId" asp-route-eventId="@Model.SingleImmunizationVaccineInfo.EventId" class="btn btn-secondary" id="backToTableBtn">Back</a>
 
             </div>
-</form>
-    
-}
+        </form>
+
+    }
 </div>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Add Inventory button
-    var addInventoryBtn = document.getElementById("addInventoryBtn");
-    if (addInventoryBtn) {
-        addInventoryBtn.addEventListener("click", function() {
-            var eventDropdown = document.getElementById("eventIdDropdown");
-            var selectedEvent = eventDropdown ? eventDropdown.value : "";
+    document.addEventListener("DOMContentLoaded", function () {
+        // Add Inventory button
+        var addInventoryBtn = document.getElementById("addInventoryBtn");
+        if (addInventoryBtn) {
+            addInventoryBtn.addEventListener("click", function () {
+                var eventDropdown = document.getElementById("eventIdDropdown");
+                var selectedEvent = eventDropdown ? eventDropdown.value : "";
 
-            var eventInput = document.querySelector("[name='SingleImmunizationVaccineInfo.EventId']");
-            if (eventInput) eventInput.value = selectedEvent;
-        });
-    }
+                var eventInput = document.querySelector("[name='SingleImmunizationVaccineInfo.EventId']");
+                if (eventInput) eventInput.value = selectedEvent;
+            });
+        }
 
         var backBtn = document.getElementById("backToTableBtn");
         if (backBtn) {
@@ -354,44 +354,44 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
 
-    // Add Lot button
+        // Add Lot button
 
-   const addLotBtn = document.getElementById("addLotBtn");
-    if (!addLotBtn) return;
+        const addLotBtn = document.getElementById("addLotBtn");
+        if (!addLotBtn) return;
 
-    const maxLots = 5;
+        const maxLots = 5;
 
-    addLotBtn.addEventListener("click", function () {
-        const container = document.getElementById("lotsContainer");
-        const lotRows = container.querySelectorAll(".lot-row");
-        const nextIndex = lotRows.length; // ensures unique index
+        addLotBtn.addEventListener("click", function () {
+            const container = document.getElementById("lotsContainer");
+            const lotRows = container.querySelectorAll(".lot-row");
+            const nextIndex = lotRows.length; // ensures unique index
 
-        if (nextIndex >= maxLots) {
-            alert("Maximum 5 lots allowed.");
-            return;
-        }
+            if (nextIndex >= maxLots) {
+                alert("Maximum 5 lots allowed.");
+                return;
+            }
 
-        const row = document.createElement("div");
-        row.className = "row mb-2 lot-row";
-        row.innerHTML = `
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Lot Number</label>
-                <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
-                       placeholder="Enter lot number" class="form-control" required />
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Expiration</label>
-                <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
-                       type="date" class="form-control" required />
-            </div>
-        `;
+            const row = document.createElement("div");
+            row.className = "row mb-2 lot-row";
+            row.innerHTML = `
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Lot Number</label>
+                    <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
+                           placeholder="Enter lot number" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Expiration</label>
+                    <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
+                           type="date" class="form-control" required />
+                </div>
+            `;
 
-        container.appendChild(row);
+            container.appendChild(row);
+        });
+
     });
 
-});
-
-$('#searchStaffBtn').on('click', function () {
+    $('#searchStaffBtn').on('click', function () {
         var vaccine = $('#filterVaccine').val().trim().toLowerCase();
         var manufacturer = $('#filterManufacturer').val().trim().toLowerCase();
 

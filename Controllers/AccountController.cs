@@ -64,7 +64,7 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            return RedirectToAction("Index", "Dashboard");
+            //return RedirectToAction("Index", "Dashboard");
 
             try
             {

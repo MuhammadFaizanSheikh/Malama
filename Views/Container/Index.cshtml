@@ -1,0 +1,259 @@
+﻿@model IEnumerable<Malama.Models.Container>
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+    ViewData["Title"] = "Immunization Inventory";
+    var selectedEventId = ViewBag.SelectedEventId;
+    var eventList = ViewBag.EventIdList as List<SelectListItem>;
+}
+
+<style>
+    #page-heading {
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white; /* ensures text is visible */
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    h2, h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Aligns the text in the middle of the cell */
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table tbody tr {
+            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+        }
+
+            table tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            }
+
+        table td button,
+        table td a {
+            display: inline-block; /* Makes the buttons appear side by side */
+            margin-right: 5px; /* Optional: Adds space between the buttons */
+        }
+
+        table td .button-container {
+            display: flex;
+            justify-content: center; /* Aligns buttons horizontally in the center */
+        }
+
+            table td .button-container a {
+                margin-right: 5px; /* Optional: Adds space between the buttons */
+            }
+
+        table thead th {
+            background-color: rgba(120, 130, 221, 1); /* Header background color */
+            color: white; /* Header text color */
+            text-align: center; /* Center-align header text */
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+<h2 id="page-heading">Containers Temperature Screen</h2>
+
+@if (Model == null)
+{
+<form method="get" asp-action="GetContainersAgainstEventId" id="eventForm">
+    <select id="eventDropdown" name="eventId" class="form-select" onchange="document.getElementById('eventForm').submit();">
+        <option value="">-- Select Event --</option>
+        @if (eventList != null)
+        {
+            foreach (var evt in eventList)
+            {
+                <option value="@evt.Value" selected="@(selectedEventId == evt.Text ? "selected" : null)">
+                    @evt.Value
+                </option>
+            }
+        }
+    </select>
+</form>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error:</strong> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ResponseStatus"] != null)
+{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: @Html.Raw(Json.Serialize(TempData.Peek("ResponseStatus"))),
+            title: @Html.Raw(Json.Serialize(TempData.Peek("ResponseTitle") ?? "")),
+            text: @Html.Raw(Json.Serialize(TempData.Peek("ResponseMessage") ?? "")),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    </script>
+}
+
+<hr />
+
+<!-- Preview Table (shown only if event selected) -->
+@if (Model != null)
+{
+    <div class="card p-3 mb-4">
+        <div class="container">
+            <div class="row g-2">
+                <!-- First Row -->
+                <div class="col-md-3">
+                    <label for="filterContainerName" class="form-label">Container Name</label>
+                    <input type="text" id="filterContainerName" class="form-control" placeholder="Container Name">
+
+                </div>
+                <div class="col-md-3">
+                    <label for="filterContainerType" class="form-label">Container Type</label>
+                    <input type="text" id="filterContainerType" class="form-control" placeholder="Container Type">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterContainerStartDate" class="form-label">Container Start Date</label>
+                    <input type="date" id="filterContainerStartDate" class="form-control">
+                </div>
+                <div class="col-12 text-center mt-3">
+                    <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                    <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="contractsTable"  class="display">
+        <thead>
+            <tr>
+                <th>Actions</th>
+                <th>Container Name</th>
+                <th>Type</th>
+                <th>Container Start Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Monitor" asp-route-id="@item.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Monitor</a>
+                    </td>
+                    <td>@item.ContainerName</td>
+                    <td>
+                        @($"{item.ContainerType?.Name} (Temp {item.ContainerType?.TemperatureFromRange ?? 0}{item.ContainerType?.TemperatureUnit ?? ""} to {item.ContainerType?.TemperatureToRange ?? 0}{item.ContainerType?.TemperatureUnit ?? ""})")
+                    </td>
+
+                    <td>@item.StartDateTimeUtc.ToString("MM/dd/yyyy")</td>
+                    
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-center mt-4 pb-4">
+        <a asp-action="Add" asp-route-eventId="@selectedEventId" class="btn btn-general" id="addContainerBtn">Add New Container</a>
+    </div>
+
+}
+else if (!string.IsNullOrEmpty(selectedEventId))
+{
+    <p>No containers found for this event.</p>
+}
+
+<script>
+        $('#searchStaffBtn').on('click', function () {
+        var containerName = $('#filterContainerName').val().trim().toLowerCase();
+        var containerType = $('#filterContainerType').val().trim().toLowerCase();
+        var containerStartDate = $('#filterContainerStartDate').val();
+
+        var contractsTable = $('#contractsTable').DataTable();
+
+        // Clear previous searches
+        contractsTable.columns().search('');
+
+        // 🔹 Column indexes (adjust if order changes)
+        // 0 = Actions, 1 = Container Name, 2 = Type, 3 = Start Date
+
+        if (containerName) {
+            const escapedContainerName = containerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            contractsTable.column(1).search(escapedContainerName, true, false, true);
+        }
+
+        if (containerType) {
+            const escapedContainerType = containerType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            contractsTable.column(2).search(escapedContainerType, true, false, true);
+        }
+
+        if (containerStartDate) {
+            // Convert yyyy-MM-dd to MM/dd/yyyy for matching table display
+            const formattedDate = formatDateToMMDDYYYY(containerStartDate);
+            contractsTable.column(3).search(formattedDate, true, false, true);
+        }
+
+        contractsTable.draw();
+    });
+
+
+    $('#resetFiltersBtn').on('click', function () {
+        $('#filterContainerName').val('');
+        $('#filterContainerType').val('');
+        $('#filterContainerStartDate').val('');
+
+        var contractsTable = $('#contractsTable').DataTable();
+        contractsTable.columns().search('');
+        contractsTable.search('').draw();
+    });
+
+
+    function formatDateToMMDDYYYY(dateString) {
+        const [year, month, day] = dateString.split('-'); // Split the yyyy/mm/dd format
+        return `${month}/${day}/${year}`; // Return as mm/dd/yyyy
+    }
+
+</script>
