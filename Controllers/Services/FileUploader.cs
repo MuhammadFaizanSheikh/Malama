@@ -714,7 +714,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return new Dictionary<string, (string[] Headers, string[] SelectedColumns, string stoppingKeyword)>
             {
                 { "G6PDReport.xlsx", (new string[] { "Name","Rank","IMR Exclusion","SSN","DOD ID","Age","ACO/MOS","UIC","Location","CMP","G6PD Date","G6PD Status" }, new string[] { "DOD ID", "Name","SSN","G6PD Date","G6PD Status" }, "") },
-                { "Taskforce_Roster.xlsx", (new string[] { "Name","Rank","SSN","Gender","MOS","MPC","UIC","DOB","Type" }, new string[] { "Name", "SSN", "DOB" }, "") },
+                { "Taskforce_Roster.xlsx", (new string[] { "Name","Rank","SSN","Sex","MOS","MPC","UIC","DOB","Type" }, new string[] { "Name", "SSN", "DOB" }, "") },
                 { "ImmunizationProfileReport.xlsx", (new string[] { "Name","Rank","SSN","CMP","UIC","AOC/MOS","HB3","HPA","MMR","TDP","TDA","VAR" }, new string[] { "Name", "SSN", "HB3","HPA","INJ", "MMR","TDP","TDA","VAR" }, "Immunization Profile Report") },
                 { "Pha_Report.xlsx", (new string[] { "Cbt Dfrmnt","Name","Rank","IMR Exclusion","SSN","Age","AOC/MOS","UIC","Location","CMP","PHA Date","Next PHA Date","PHA Completion Status","PULHES Code" }, new string[] { "Name", "SSN", "PHA Date","Next PHA Date","PULHES Code" }, "") },
                 { "DentalReadinessReport.xlsx", (new string[] { "Cbt","Dfrmnt","DRC","Reason","Date of Next Exam","Panx","Name","DOD ID","Rank","IMR Exclusion","AOC/MOS","UIC","Station","CMP" }, new string[] { "DOD ID", "DRC","Reason","Date of Next Exam","Panx" }, "" ) },
@@ -733,7 +733,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return new Dictionary<string, (string[] Headers, string[] SelectedColumns, string stoppingKeyword)>
             {
                 { "G6PDReport.xlsx", (new string[] { "Name","Rank","IMR Exclusion","SSN","DOD ID","Age","ACO/MOS","UIC","Location","CMP","G6PD Date","G6PD Status" }, new string[] { "DOD ID", "Name","SSN" }, "") },
-                { "Taskforce_Roster.xlsx", (new string[] { "Name","Rank","SSN","Gender","MOS","MPC","UIC","DOB","Type" }, new string[] { "Name", "SSN", "DOB", "Rank", "Gender" }, "") },
+                { "Taskforce_Roster.xlsx", (new string[] { "Name","Rank","SSN", "Sex", "MOS","MPC","UIC","DOB","Type" }, new string[] { "Name", "SSN", "DOB", "Rank", "Sex" }, "") },
                 { "ImmunizationProfileReport.xlsx", (new string[] { "Name","Rank","SSN","CMP","UIC","AOC/MOS","HB3","HPA","MMR","TDP","TDA","VAR" }, new string[] { "Name", "SSN" }, "Immunization Profile Report") },
                 { "Pha_Report.xlsx", (new string[] { "Cbt Dfrmnt","Name","Rank","IMR Exclusion","SSN","Age","AOC/MOS","UIC","Location","CMP","PHA Date","Next PHA Date","PHA Completion Status","PULHES Code" }, new string[] { "Name","SSN"  }, "") },
                 { "DentalReadinessReport.xlsx", (new string[] { "Cbt","Dfrmnt","DRC","Reason","Date of Next Exam","Panx","Name","DOD ID","Rank","IMR Exclusion","AOC/MOS","UIC","Station","CMP" }, new string[] { "DOD ID", "DRC", "Name" }, "" ) },
