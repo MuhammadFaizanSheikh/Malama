@@ -46,7 +46,7 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 ViewBag.EventIdList = new List<SelectListItem>();
-                ViewBag.ErrorMessage = "Failed to load Event IDs: " + ex.Message;
+                TempData["ErrorMessage"] = "Failed to load Event IDs: " + ex.Message;
                 return View();
             }
         }
@@ -58,35 +58,30 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                //ViewBag.ContainerTypes = await _service.GetAllContainerTypesAsync();
-
                 if (!string.IsNullOrEmpty(eventId))
                 {
                     containers = await _service.GetContainersByEventIdAsync(eventId);
                 }
 
                 // Keep selected event ID for maintaining state in view
-                ViewBag.SelectedEventId = eventId;
+                ViewBag.EventId = eventId;
 
                 return View("Index", containers);
             }
             catch (ArgumentException argEx)
             {
-                // Handles invalid argument, e.g., null or empty eventId
                 _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
                 TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
                 return View("Index", containers);
             }
             catch (ApplicationException appEx)
             {
-                // Handles exceptions thrown by service layer
                 _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
                 TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
                 return View("Index", containers);
             }
             catch (Exception ex)
             {
-                // Handles unexpected errors
                 _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
                 TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
                 return View("Index", containers);
@@ -106,14 +101,12 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 ViewBag.ContainerTypes = await _service.GetAllContainerTypesAsync();
-
                 ViewBag.EventId = eventId;
 
                 var model = new CreateContainerDto
                 {
                     EventId = eventId,
-                    StartDate = DateTime.Now.Date,
-                    StartTime = DateTime.Now.TimeOfDay
+                    StartDate = DateTime.Now.Date
                 };
 
                 return View(model);
@@ -131,79 +124,47 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                // Repopulate dropdowns for view reload (in case validation fails)
-                ViewBag.ContainerTypes = await _service.GetAllContainerTypesAsync();
-
-                // 1️⃣ Validate Container Type
-                var containerType = (await _service.GetAllContainerTypesAsync())
-                    .FirstOrDefault(ct => ct.Id == dto.ContainerTypeId);
-
-                if (containerType == null)
-                {
-                    ModelState.AddModelError(nameof(dto.ContainerTypeId), "Invalid container type selected.");
-                }
-                else
-                {
-                    // 2️⃣ Validate temperature range & comment requirement
-                    bool isOutOfRange = dto.InitialTemperature < containerType.TemperatureFromRange ||
-                                        dto.InitialTemperature > containerType.TemperatureToRange;
-
-                    if (isOutOfRange && string.IsNullOrWhiteSpace(dto.Comment))
-                    {
-                        ModelState.AddModelError(nameof(dto.Comment), "Comment is required when temperature is out of range.");
-                    }
-                }
-
-                // 3️⃣ If validation fails, return same view with model
-                if (!ModelState.IsValid)
-                {
-                    // Combine all validation messages into one string
-                    var allErrors = string.Join(" | ", ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage));
-
-                    TempData["ErrorMessage"] = allErrors;
-
-                    // Refill dropdowns etc. if needed
-                    ViewBag.ContainerTypes = await _service.GetAllContainerTypesAsync();
-                    return View(dto);
-                }
-
+                // Populate dropdown for view reload (always)
+                var containerTypes = await _service.GetAllContainerTypesAsync();
+                ViewBag.ContainerTypes = containerTypes;
+                ViewBag.EventId = dto.EventId;
 
                 var user = await _userManager.GetUserAsync(User);
-
                 if (user == null)
                 {
                     TempData["ErrorMessage"] = "Please login and try again.";
                     return RedirectToAction("Index");
                 }
 
-                await _service.AddContainerAsync(dto, user.UserName);
+                // Let service handle validation and creation
+                var result = await _service.AddContainerAsync(dto, user.UserName);
 
-
-                List<Container> containers = new();
-                if (!string.IsNullOrEmpty(dto.EventId))
+                if (!result.Success)
                 {
-                    containers = await _service.GetContainersByEventIdAsync(dto.EventId);
+                    TempData["ErrorMessage"] = result.Message;
+                    return View(dto);
                 }
 
-                ViewBag.SelectedEventId = dto.EventId;
+
+                // Load event containers if needed
+                var containers = string.IsNullOrEmpty(dto.EventId)
+                    ? new List<Container>()
+                    : await _service.GetContainersByEventIdAsync(dto.EventId);
+
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Container saved successfully!";
-                return View("Index", containers);
 
-                //return RedirectToAction("Index", new { eventId = dto.EventId });
+                return View("Index", containers);
             }
             catch (ArgumentException ex)
             {
-                ModelState.AddModelError(string.Empty, $"Validation error: {ex.Message}");
+                TempData["ErrorMessage"] = ex.Message;
                 return View(dto);
             }
             catch (Exception ex)
             {
-                // You can log this exception if you have logging enabled
-                ModelState.AddModelError(string.Empty, "An unexpected error occurred while adding the container.");
+                TempData["ErrorMessage"] = "Unexpected error occurred while adding container.";
                 return View(dto);
             }
         }
@@ -221,7 +182,6 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Load previous readings for display
                 var readings = await _service.GetReadingsForContainer(container.Id);
                 ViewBag.Readings = readings;
 
@@ -229,7 +189,6 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                // Log exception here if you have a logger, e.g. _logger.LogError(ex, "Error loading container monitor page");
                 TempData["ErrorMessage"] = "An unexpected error occurred while loading the monitor page.";
                 return RedirectToAction("Index");
             }
@@ -241,36 +200,6 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                //var container = await _service.GetContainerByIdAsync(id);
-                //if (container == null)
-                //{
-                //    TempData["ErrorMessage"] = "Container not found.";
-                //    return RedirectToAction("Index");
-                //}
-
-                //var containerType = container.ContainerType ?? (await _service.GetContainerByIdAsync(id))?.ContainerType;
-                //if (containerType == null)
-                //{
-                //    ModelState.AddModelError("", "Container type not found.");
-                //}
-
-                //if (containerType != null)
-                //{
-                //    bool isOutOfRange = dto.Temperature < containerType.TemperatureFromRange ||
-                //                        dto.Temperature > containerType.TemperatureToRange;
-
-                //    if (isOutOfRange && string.IsNullOrWhiteSpace(dto.Comment))
-                //    {
-                //        TempData["ErrorMessage"] = "Comment is required when reading is abnormal.";
-                //    }
-                //}
-
-                //if (!ModelState.IsValid)
-                //{
-                //    ViewBag.Readings = await _service.GetReadingsForContainer(id);
-                //    return View(container);
-                //}
-
                 dto.ContainerId = id;
                 var user = await _userManager.GetUserAsync(User);
 
@@ -279,19 +208,20 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ErrorMessage"] = "Please login and try again.";
                     return RedirectToAction("Index");
                 }
-                await _service.AddReadingAsync(dto, user.UserName);
 
-                return RedirectToAction("Monitor", await _service.GetContainerByIdAsync(id));
+                var result = await _service.AddReadingAsync(dto, user.UserName);
+
+                if (!result.Success)
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                    return RedirectToAction("Monitor", new { id });
+                }
+
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction("Monitor", new { id });
             }
-            catch (ArgumentException ex)
+            catch (Exception)
             {
-                // specific known validation-level exception
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                // Log the error (example: _logger.LogError(ex, "Error adding reading for container {id}", id));
                 TempData["ErrorMessage"] = "An unexpected error occurred while saving the reading.";
                 return RedirectToAction("Index");
             }

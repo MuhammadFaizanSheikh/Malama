@@ -10,6 +10,7 @@ using System.Diagnostics.Contracts;
 using System.ComponentModel;
 using Container = Malama.Models.Container;
 using Microsoft.AspNetCore.Identity;
+using Azure;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -64,78 +65,144 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<Container> AddContainerAsync(CreateContainerDto dto, string addedBy)
+        public async Task<ResponseDto> AddContainerAsync(CreateContainerDto dto, string addedBy)
         {
             try
             {
-                var containerType = await _unitOfWork.ContainerType.FindAsync(c => c.Id == dto.ContainerTypeId)
-                    ?? throw new ArgumentException("Invalid container type.");
+                var containerType = await _unitOfWork.ContainerType.FindAsync(c => c.Id == dto.ContainerTypeId);
+                if (containerType == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid container type selected."
+                    };
+                }
 
+                var existingContainer = await _unitOfWork.Container.FindAsync(c =>
+            c.ContainerName.ToLower() == dto.ContainerName.ToLower().Trim() &&
+            c.EventId == dto.EventId
+        );
+
+                if (existingContainer != null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = $"A container with the name '{dto.ContainerName}' already exists for this event."
+                    };
+                }
+
+                bool isOutOfRange = dto.InitialTemperature < containerType.TemperatureFromRange ||
+                                    dto.InitialTemperature > containerType.TemperatureToRange;
+
+                if (isOutOfRange && string.IsNullOrWhiteSpace(dto.Comment))
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Comment is required when temperature is out of range."
+                    };
+                }
+
+                // 3️⃣ Build entity
                 var container = new Container
                 {
                     EventId = dto.EventId,
                     ContainerName = dto.ContainerName,
                     ContainerTypeId = dto.ContainerTypeId,
-                    StartDateTimeUtc = dto.StartDate.Date + dto.StartTime,
+                    StartDateTimeUtc = DateTime.Now,
                     InitialTemperature = dto.InitialTemperature,
-                    CurrentStatus = "Normal",
+                    Comment = dto.Comment,
+                    AddedBy = addedBy,
+                    AddedOn = DateTime.Now,
                     MonitoringIntervalMinutes = 120,
                     EscalationIntervalMinutes = 15,
-                    ConsecutiveNormalReadings = 0,
-                    AddedBy = addedBy,
-                    AddedOn = DateTime.Now
+                    ConsecutiveNormalReadings = isOutOfRange ? 0 : 1,
+                    CurrentStatus = isOutOfRange ? "OutOfRange" : "Normal",
+                    NextExpectedReadingUtc = DateTime.Now.AddMinutes(isOutOfRange ? 15 : 120)
                 };
 
-                // Determine initial status and schedule
-                bool isOutOfRange = dto.InitialTemperature < containerType.TemperatureFromRange ||
-                                    dto.InitialTemperature > containerType.TemperatureToRange;
-
-                container.CurrentStatus = isOutOfRange ? "OutOfRange" : "Normal";
-                container.NextExpectedReadingUtc = DateTime.Now.AddMinutes(
-                    isOutOfRange ? container.EscalationIntervalMinutes : container.MonitoringIntervalMinutes
-                );
-
-                // 1️⃣ Save to DB
+                // 4️⃣ Save
                 await _unitOfWork.Container.AddAsync(container);
                 await _unitOfWork.SaveAsync();
 
-                return container;
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Container added successfully.",
+                };
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                // Re-throw validation-type exceptions (controller handles message)
-                throw;
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
             }
             catch (Exception ex)
             {
-                // Optionally log exception before rethrowing
-                throw new Exception("Error occurred while adding a new container.", ex);
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while adding the container.",
+                    Data = null
+                };
             }
         }
 
 
-        public async Task<ContainerTemperatureReading> AddReadingAsync(CreateReadingDto dto, string performedBy)
+
+
+        public async Task<ResponseDto> AddReadingAsync(CreateReadingDto dto, string performedBy)
         {
             try
             {
-                //var container = _unitOfWork.Container.GetWithInclude(x => x.Id == dto.ContainerId, x => x.ContainerType).FirstOrDefault();
+                var container = await _unitOfWork.Container.GetByIdAsync(dto.ContainerId);
+                if (container == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid container ID."
+                    };
+                }
 
-                //if (container == null || container.ContainerType == null)
-                //{
-                //    throw new ArgumentException("Invalid container ID.");
-                //}
+                if (!dto.Temperature.HasValue)
+                {
+                    // Only update FinalTemp if it actually changed
+                    if (container.FinalTemp != dto.IsFinalReading)
+                    {
+                        container.FinalTemp = dto.IsFinalReading;
+                        await _unitOfWork.Container.UpdateAsync(container);
+                        await _unitOfWork.SaveAsync();
+                    }
 
-                var container = await _unitOfWork.Container.GetByIdAsync(dto.ContainerId)
-                    ?? throw new ArgumentException("Invalid container ID.");
+                    return new ResponseDto
+                    {
+                        Success = true,
+                        Message = "Final reading updated successfully (no temperature provided)."
+                    };
+                }
 
-                var containerType = await _unitOfWork.ContainerType.GetByIdAsync(container.ContainerTypeId)
-                    ?? throw new ArgumentException("Invalid container type.");
+                // Return null because no new reading record should be added
+
+                var containerType = await _unitOfWork.ContainerType.GetByIdAsync(container.ContainerTypeId);
+                if (containerType == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid container type."
+                    };
+                }
 
                 var reading = new ContainerTemperatureReading
                 {
                     ContainerId = dto.ContainerId,
                     ReadingTimeUtc = DateTime.Now,
-                    Temperature = dto.Temperature,
+                    Temperature = dto.Temperature.Value,
                     Comment = dto.Comment,
                     AddedBy = performedBy
                 };
@@ -169,19 +236,32 @@ namespace ExcelFilesCompiler.Controllers.Services
                         : DateTime.Now.AddMinutes(container.EscalationIntervalMinutes);
                 }
 
+                container.FinalTemp = dto.IsFinalReading;
                 await _unitOfWork.ContainerTemperatureReading.AddAsync(reading);
                 await _unitOfWork.SaveAsync();
 
-                return reading;
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Reading added successfully.",
+                    Data = reading
+                };
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                throw; // Let controller handle validation-style exceptions
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
             }
             catch (Exception ex)
             {
-                // Optionally log this: _logger.LogError(ex, "Error adding container reading for container ID {id}", dto.ContainerId);
-                throw new Exception($"An error occurred while saving the reading for container ID {dto.ContainerId}.", ex);
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = $"An unexpected error occurred while saving the reading: {ex.Message}"
+                };
             }
         }
 

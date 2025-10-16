@@ -96,7 +96,7 @@
 
 
 <h2 id="page-heading">Add New Container</h2>
-
+<h2 id="page-heading">Event ID : @selectedEventId</h2>
 
 @if (TempData["ErrorMessage"] != null)
 {
@@ -109,7 +109,7 @@
 <form asp-action="Add" method="post" class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
 
-    <input type="hidden" name="EventId" value="@ViewBag.EventId" />
+    <input type="hidden" name="EventId" value="@selectedEventId" />
     <!-- Container Name -->
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -144,11 +144,11 @@
             <input asp-for="StartDate" type="date" class="form-control" readonly required />
             <span asp-validation-for="StartDate" class="text-danger"></span>
         </div>
-        <div class="col-md-6 mb-3">
+       @*  <div class="col-md-6 mb-3">
             <label asp-for="StartTime" class="form-label">Container Start Time</label>
             <input asp-for="StartTime" type="time" class="form-control" required />
             <span asp-validation-for="StartTime" class="text-danger"></span>
-        </div>
+        </div> *@
     </div>
 
     <!-- Initial Temperature -->
@@ -186,8 +186,9 @@
 </form>
 
 <script>
+        onContainerTypeChange();
+
         function onContainerTypeChange() {
-        debugger;
         const sel = document.getElementById('containerTypeSelect');
         const option = sel.options[sel.selectedIndex];
         const min = option ? option.getAttribute('data-min') : null;

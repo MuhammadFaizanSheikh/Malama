@@ -9,7 +9,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<Container>> GetContainersByEventIdAsync(string eventId);
 
         Task<List<ContainerTemperatureReading>> GetReadingsForContainer(long containerId);
-        Task<Container> AddContainerAsync(CreateContainerDto dto, string addedBy);
-        Task<ContainerTemperatureReading> AddReadingAsync(CreateReadingDto dto, string performedBy);
+        Task<ResponseDto> AddContainerAsync(CreateContainerDto dto, string addedBy);
+        Task<ResponseDto> AddReadingAsync(CreateReadingDto dto, string performedBy);
     }
 }

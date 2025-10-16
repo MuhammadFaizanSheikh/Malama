@@ -3,7 +3,7 @@
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
     ViewData["Title"] = "Immunization Inventory";
-    var selectedEventId = ViewBag.SelectedEventId;
+    var selectedEventId = ViewBag.EventId;
     var eventList = ViewBag.EventIdList as List<SelectListItem>;
 }
 
@@ -138,11 +138,11 @@
     </script>
 }
 
-<hr />
-
 <!-- Preview Table (shown only if event selected) -->
 @if (Model != null)
 {
+    <h2 id="page-heading">Event ID : @selectedEventId</h2>
+
     <div class="card p-3 mb-4">
         <div class="container">
             <div class="row g-2">
@@ -175,6 +175,7 @@
                 <th>Container Name</th>
                 <th>Type</th>
                 <th>Container Start Date</th>
+                <th>Container Start Time</th>
             </tr>
         </thead>
         <tbody>
@@ -188,9 +189,8 @@
                     <td>
                         @($"{item.ContainerType?.Name} (Temp {item.ContainerType?.TemperatureFromRange ?? 0}{item.ContainerType?.TemperatureUnit ?? ""} to {item.ContainerType?.TemperatureToRange ?? 0}{item.ContainerType?.TemperatureUnit ?? ""})")
                     </td>
-
                     <td>@item.StartDateTimeUtc.ToString("MM/dd/yyyy")</td>
-                    
+                    <td>@item.StartDateTimeUtc.ToString("hh:mm tt")</td>
                 </tr>
             }
         </tbody>

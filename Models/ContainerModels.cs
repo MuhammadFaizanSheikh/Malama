@@ -55,6 +55,8 @@ namespace Malama.Models
 
         // consecutive normal readings counter (used to resume 2-hour cadence)
         public int ConsecutiveNormalReadings { get; set; } = 0;
+        public bool FinalTemp { get; set; }
+        public string? Comment { get; set; }
     }
 
     [Table("ContainerTemperatureReading")]
