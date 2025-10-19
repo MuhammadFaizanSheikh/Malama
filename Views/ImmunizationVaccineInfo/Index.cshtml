@@ -110,14 +110,21 @@
     </form>
 }
 
-@if (TempData["ResponseStatus"] != null)
+@if (TempData["ResponseMessage"] != null)
 {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        Swal.fire({
-            icon: '@TempData["ResponseStatus"]',
-            title: '@TempData["ResponseTitle"]',
-            text: '@TempData["ResponseMessage"]'
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
         });
     </script>
 }
@@ -158,12 +165,16 @@
                 <thead>
                     <tr>
                         <th>Action</th>
+                        <th>ImmunizationType</th>
                         <th>Vaccine</th>
                         <th>Manufacturer</th>
                         <th>Lot Number</th>
                         <th>Expiration</th>
                         <th>Starting Doses</th>
                         <th>Final Doses</th>
+                        <th>Container Name</th>
+                        <th>Inventory Added By</th>
+                        <th>Inventory Added at</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,12 +184,16 @@
                             <td>
                                 <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                             </td>
+                            <td>@c.ImmunizationType</td>
                             <td>@c.Vaccine</td>
                             <td>@c.Manufacturer</td>
                             <td>@Html.Raw(c.LotNumber)</td>
                             <td>@Html.Raw(c.Expiration)</td>
                             <td>@c.StartingDoses</td>
                             <td>@c.FinalDoses</td>
+                            <td>@c.ContainerName</td>
+                            <td>@c.AddedBy</td>
+                            <td>@c.AddedOn.ToString("MM/dd/yyyy hh:mm tt")</td>
                         </tr>
                     }
                 </tbody>
@@ -200,12 +215,12 @@
             @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label">Event Id</label>
+                    <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label">Event ID</label>
                     <input asp-for="SingleImmunizationVaccineInfo.EventId" class="form-control" readonly placeholder="Event ID" required />
                     <span asp-validation-for="SingleImmunizationVaccineInfo.EventId" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Event Date</label>
+                    <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Immunization Entry Date</label>
                     <input asp-for="SingleImmunizationVaccineInfo.EventDate"
                            class="form-control"
                            type="date"
@@ -219,9 +234,9 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-label">Immunization Type</label>
-                    <select asp-for="SingleImmunizationVaccineInfo.ImmunizationType" class="form-select" required>
+                    <select asp-for="SingleImmunizationVaccineInfo.ImmunizationType" id="immunizationType" class="form-select" required>
                         <option value="">Select Immunization Type</option>
                         <option>HepB</option>
                         <option>Flu</option>
@@ -232,26 +247,38 @@
                     </select>
                     <span asp-validation-for="SingleImmunizationVaccineInfo.ImmunizationType" class="text-danger"></span>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-label"></label>
-                    <input asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-control" placeholder="Enter vaccine name" required />
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.Vaccine" class="form-label">Vaccine</label>
+                    <select asp-for="SingleImmunizationVaccineInfo.Vaccine" id="vaccine" class="form-control" required></select>
                     <span asp-validation-for="SingleImmunizationVaccineInfo.Vaccine" class="text-danger"></span>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-label"></label>
-                    <input asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-control" placeholder="Enter manufacturer name" required />
-                    <span asp-validation-for="SingleImmunizationVaccineInfo.Manufacturer" class="text-danger"></span>
-                </div>
+                
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.StartingDoses" class="form-label"></label>
+                    <label asp-for="SingleImmunizationVaccineInfo.Manufacturer" class="form-label">Manufacturer</label>
+                    <select asp-for="SingleImmunizationVaccineInfo.Manufacturer" id="manufacturer" class="form-control" readonly required></select>
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.Manufacturer" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="ContainerId">Select Container</label>
+                    <select asp-for="SingleImmunizationVaccineInfo.ContainerId" asp-items="ViewBag.ContainerList" class="form-control" required>
+                        <option value="">Select Container</option>
+                    </select>
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.ContainerId" class="text-danger"></span>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleImmunizationVaccineInfo.StartingDoses" class="form-label">Starting Doses</label>
                     <input asp-for="SingleImmunizationVaccineInfo.StartingDoses" type="number" class="form-control" placeholder="Enter starting doses" required />
                     <span asp-validation-for="SingleImmunizationVaccineInfo.StartingDoses" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.FinalDoses" class="form-label"></label>
+                    <label asp-for="SingleImmunizationVaccineInfo.FinalDoses" class="form-label">Final Doses</label>
                     <input asp-for="SingleImmunizationVaccineInfo.FinalDoses" type="number" class="form-control" placeholder="Enter final doses" />
                 </div>
             </div>
@@ -300,14 +327,7 @@
 
             <button type="button" id="addLotBtn" class="btn btn-general">Add another Lot</button>
 
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Container</label>
-                <select class="form-select">
-                    <option value="">Select Container</option>
-                    <option>Test1</option>
-                    <option>Test2</option>
-                </select>
-            </div>
+            
 
             <div class="d-flex justify-content-end mt-4">
                 <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
@@ -319,14 +339,14 @@
                 @*  <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
             <i class="bi bi-pencil"></i> Update
             </button> *@
-                <a asp-action="GetVaccineEntriesByEventId" asp-route-eventId="@Model.SingleImmunizationVaccineInfo.EventId" class="btn btn-secondary" id="backToTableBtn">Back</a>
+                <a asp-action="GetVaccineEntriesByEventId" asp-route-eventId="@Model.SingleImmunizationVaccineInfo.EventId" class="btn btn-secondary btn-lg me-3" id="backToTableBtn">Back</a>
 
             </div>
         </form>
 
     }
 </div>
-<script>
+@* <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Add Inventory button
         var addInventoryBtn = document.getElementById("addInventoryBtn");
@@ -407,6 +427,242 @@
         if (manufacturer) {
             contractsTable.column(2).search(manufacturer, true, false, true);
         }
+
+        contractsTable.draw();
+    });
+
+    const vaccineData = {
+        "HepA": [
+            { name: "Havrix", manufacturer: "GlaxoSmithKline" },
+            { name: "Vaqta", manufacturer: "Merck" }
+        ],
+        "HepB": [
+            { name: "Engerix-B", manufacturer: "GlaxoSmithKline" },
+            { name: "Recombivax HB", manufacturer: "Merck" },
+            { name: "Heplisav-B", manufacturer: "Dynavax Technologies" }
+        ],
+        "Flu": [
+            { name: "Afluria", manufacturer: "Seqirus" },
+            { name: "Fluad", manufacturer: "Seqirus" },
+            { name: "Fluarix", manufacturer: "GlaxoSmithKline" },
+            { name: "Flublok", manufacturer: "Sanofi" },
+            { name: "Flucelvax", manufacturer: "Seqirus" },
+            { name: "FluLaval", manufacturer: "GlaxoSmithKline" },
+            { name: "FluMist", manufacturer: "Medimmune" },
+            { name: "Fluzone", manufacturer: "Sanofi" },
+            { name: "Fluzone High-Dose", manufacturer: "Sanofi" }
+        ],
+        "MMR": [
+            { name: "M-M-R II", manufacturer: "Merck" },
+            { name: "Priorix", manufacturer: "GlaxoSmithKline" }
+        ],
+        "Tet/Tdap": [
+            { name: "Boostrix", manufacturer: "GlaxoSmithKline" },
+            { name: "Adacel", manufacturer: "Sanofi" }
+        ],
+        "Varicella": [
+            { name: "Varivax", manufacturer: "Merck" }
+        ]
+    };
+
+    const immunizationSelect = document.getElementById('immunizationType');
+    const vaccineSelect = document.getElementById('vaccine');
+    const manufacturerSelect = document.getElementById('manufacturer');
+
+    // Handle Immunization Type change
+    immunizationSelect.addEventListener('change', function () {
+        const selectedType = this.value;
+
+        // Reset dropdowns
+        vaccineSelect.innerHTML = '<option value="">Select Vaccine</option>';
+
+        // Populate vaccines
+        if (selectedType && vaccineData[selectedType]) {
+            vaccineData[selectedType].forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = v.name;
+                vaccineSelect.appendChild(opt);
+            });
+        }
+    });
+
+    // Handle Vaccine change
+    vaccineSelect.addEventListener('change', function () {
+        const selectedType = immunizationSelect.value;
+        const selectedVaccine = this.value;
+
+        manufacturerSelect.innerHTML = '<option value="">Select Manufacturer</option>';
+
+        if (selectedType && selectedVaccine && vaccineData[selectedType]) {
+            const selectedObj = vaccineData[selectedType].find(v => v.name === selectedVaccine);
+            if (selectedObj) {
+                const opt = document.createElement('option');
+                opt.value = selectedObj.manufacturer;
+                opt.textContent = selectedObj.manufacturer;
+                manufacturerSelect.appendChild(opt);
+                manufacturerSelect.value = selectedObj.manufacturer;
+            }
+        }
+    });
+</script>
+ *@
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // --- Add Inventory button ---
+        const addInventoryBtn = document.getElementById("addInventoryBtn");
+        if (addInventoryBtn) {
+            addInventoryBtn.addEventListener("click", function () {
+                const eventDropdown = document.getElementById("eventIdDropdown");
+                const selectedEvent = eventDropdown ? eventDropdown.value : "";
+
+                const eventInput = document.querySelector("[name='SingleImmunizationVaccineInfo.EventId']");
+                if (eventInput) eventInput.value = selectedEvent;
+            });
+        }
+
+        // --- Back button ---
+        const backBtn = document.getElementById("backToTableBtn");
+        if (backBtn) {
+            backBtn.addEventListener("click", function () {
+                const tableDiv = document.getElementById("vaccineTableDiv");
+                const formDiv = document.getElementById("vaccineFormDiv");
+                const inventoryBtn = document.getElementById("addInventoryBtn");
+
+                if (formDiv) formDiv.style.display = "none";
+                if (tableDiv) tableDiv.style.display = "block";
+                if (inventoryBtn) inventoryBtn.style.display = "block";
+            });
+        }
+
+        // --- Add Lot button ---
+        const addLotBtn = document.getElementById("addLotBtn");
+        const maxLots = 5;
+        if (addLotBtn) {
+            addLotBtn.addEventListener("click", function () {
+                const container = document.getElementById("lotsContainer");
+                const lotRows = container.querySelectorAll(".lot-row");
+                const nextIndex = lotRows.length;
+
+                if (nextIndex >= maxLots) {
+                    alert("Maximum 5 lots allowed.");
+                    return;
+                }
+
+                const row = document.createElement("div");
+                row.className = "row mb-2 lot-row";
+                row.innerHTML = `
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Lot Number</label>
+                        <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
+                               placeholder="Enter lot number" class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Expiration</label>
+                        <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
+                               type="date" class="form-control" required />
+                    </div>`;
+                container.appendChild(row);
+            });
+        }
+
+        // --- Vaccine Data ---
+        const vaccineData = {
+            "HepA": [
+                { name: "Havrix", manufacturer: "GlaxoSmithKline" },
+                { name: "Vaqta", manufacturer: "Merck" }
+            ],
+            "HepB": [
+                { name: "Engerix-B", manufacturer: "GlaxoSmithKline" },
+                { name: "Recombivax HB", manufacturer: "Merck" },
+                { name: "Heplisav-B", manufacturer: "Dynavax Technologies" }
+            ],
+            "Flu": [
+                { name: "Afluria", manufacturer: "Seqirus" },
+                { name: "Fluad", manufacturer: "Seqirus" },
+                { name: "Fluarix", manufacturer: "GlaxoSmithKline" },
+                { name: "Flublok", manufacturer: "Sanofi" },
+                { name: "Flucelvax", manufacturer: "Seqirus" },
+                { name: "FluLaval", manufacturer: "GlaxoSmithKline" },
+                { name: "FluMist", manufacturer: "Medimmune" },
+                { name: "Fluzone", manufacturer: "Sanofi" },
+                { name: "Fluzone High-Dose", manufacturer: "Sanofi" }
+            ],
+            "MMR": [
+                { name: "M-M-R II", manufacturer: "Merck" },
+                { name: "Priorix", manufacturer: "GlaxoSmithKline" }
+            ],
+            "Tet/Tdap": [
+                { name: "Boostrix", manufacturer: "GlaxoSmithKline" },
+                { name: "Adacel", manufacturer: "Sanofi" }
+            ],
+            "Varicella": [
+                { name: "Varivax", manufacturer: "Merck" }
+            ]
+        };
+
+        const immunizationSelect = document.getElementById('immunizationType');
+        const vaccineSelect = document.getElementById('vaccine');
+        const manufacturerSelect = document.getElementById('manufacturer');
+
+        // --- Helper Functions ---
+        function populateVaccines(type, selectedVaccine = '') {
+            vaccineSelect.innerHTML = '<option value="">Select Vaccine</option>';
+
+            if (type && vaccineData[type]) {
+                vaccineData[type].forEach(v => {
+                    const opt = new Option(v.name, v.name);
+                    vaccineSelect.appendChild(opt);
+                });
+                if (selectedVaccine) {
+                    vaccineSelect.value = selectedVaccine;
+                    populateManufacturer(type, selectedVaccine);
+                }
+            }
+        }
+
+        function populateManufacturer(type, vaccine) {
+            const selectedObj = vaccineData[type]?.find(v => v.name === vaccine);
+            if (selectedObj) {
+                const opt = new Option(selectedObj.manufacturer, selectedObj.manufacturer);
+                manufacturerSelect.appendChild(opt);
+                manufacturerSelect.value = selectedObj.manufacturer;
+            }
+        }
+
+        // --- Events ---
+        immunizationSelect.addEventListener('change', function () {
+            populateVaccines(this.value);
+        });
+
+        vaccineSelect.addEventListener('change', function () {
+            populateManufacturer(immunizationSelect.value, this.value);
+        });
+
+        // --- Prefill for Edit Mode ---
+        const selectedType = @Html.Raw(Json.Serialize(Model?.SingleImmunizationVaccineInfo?.ImmunizationType ?? ""));
+        const selectedVaccine = @Html.Raw(Json.Serialize(Model?.SingleImmunizationVaccineInfo?.Vaccine ?? ""));
+
+
+        if (selectedType) {
+            immunizationSelect.value = selectedType;
+            populateVaccines(selectedType, selectedVaccine);
+        }
+
+    }); // END DOMContentLoaded
+
+    // --- Search button (outside) ---
+    $('#searchStaffBtn').on('click', function () {
+        const vaccine = $('#filterVaccine').val().trim().toLowerCase();
+        const manufacturer = $('#filterManufacturer').val().trim().toLowerCase();
+        const contractsTable = $('#contractsTable').DataTable();
+
+        contractsTable.columns().search('');
+
+        if (vaccine) contractsTable.column(1).search(vaccine, true, false, true);
+        if (manufacturer) contractsTable.column(2).search(manufacturer, true, false, true);
 
         contractsTable.draw();
     });

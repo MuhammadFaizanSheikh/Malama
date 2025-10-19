@@ -22,13 +22,17 @@ namespace Malama.Models
 
         public string LotNumber { get; set; }
         public string Expiration { get; set; }
+        public string ImmunizationType { get; set; }
         public string Vaccine { get; set; }
+        public string ContainerName { get; set; }
 
         public string Manufacturer { get; set; }
 
         public int? StartingDoses { get; set; }
 
         public int? FinalDoses { get; set; }  // optional
+        public string? AddedBy { get; set; }
+        public DateTime AddedOn { get; set; }
     }
 
     [Table("ImmunizationVaccineInfo")]
@@ -37,6 +41,12 @@ namespace Malama.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+
+        [Required(ErrorMessage = "Container selection is required")]
+        [ForeignKey("Container")]
+        public long ContainerId { get; set; }   // FK column in ImmunizationVaccineInfo table
+
+        public Container? Container { get; set; }
 
         [Required(ErrorMessage = "Event ID is required")]
         [StringLength(50, ErrorMessage = "Event ID cannot exceed 50 characters")]
@@ -69,6 +79,8 @@ namespace Malama.Models
         [Required(ErrorMessage = "At least one lot entry is required")]
         [MinLength(1, ErrorMessage = "At least one lot entry must be provided")]
         public List<ImmunizationVaccineLotEntry> Lots { get; set; } = new List<ImmunizationVaccineLotEntry>();
+
+        
     }
 
     [Table("ImmunizationVaccineLotEntry")]

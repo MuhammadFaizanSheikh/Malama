@@ -132,18 +132,25 @@
         <label class="form-label mb-0">Initial Temp:</label>
         <input readonly value="@($"{Model.InitialTemperature} {Model.ContainerType?.TemperatureUnit}")" class="form-control" />
     </div>
-    <div class="flex-fill" style="min-width: 120px;">
-        <label class="form-label mb-0">Comment:</label>
-        <input readonly value="@($"{Model.Comment}")" class="form-control" />
-    </div>
+    
 
+</div>
+<div class="flex-fill mb-4" style="min-width: 120px;">
+    <label class="form-label mb-0">Comment:</label>
+    <textarea readonly rows="3" class="form-control">@Model.Comment</textarea>
 </div>
 
 
 
-<div class="mb-5">
+<div class="mb-5 mt-4">
     <table class="display">
-        <thead><tr><th>Time</th><th>Temp</th><th>Comment</th></tr></thead>
+        <thead>
+            <tr>
+                <th style="width: 33%;">Time</th>
+                <th style="width: 33%;">Temp</th>
+                <th style="width: 34%;">Comment</th>
+            </tr>
+        </thead>
         <tbody>
             @foreach (var r in readings)
             {
@@ -177,9 +184,9 @@
                     min="-100"
                     max="100" required />
                 </div>
-                <div class="col-md-4" id="monitorCommentDiv" style="display:none;">
+                <div class="col-md-4" id="monitorCommentDiv">
                     <label class="form-label">Comment (required if Out of Range)</label>
-                <input name="Comment" id="monitorComment" class="form-control" />
+                    <textarea name="Comment" id="monitorComment" rows="3" class="form-control"></textarea>
             </div>
             }
             else
@@ -232,16 +239,16 @@
         if (!isNaN(val)) {
             if (val < minTemp || val > maxTemp) {
                 // Show comment and make it required
-                commentDiv.style.display = 'block';
+                // commentDiv.style.display = 'block';
                 commentInput.required = true;
             } else {
                 // Hide comment and remove required
-                commentDiv.style.display = 'none';
+                // commentDiv.style.display = 'none';
                 commentInput.required = false;
-                commentInput.value = '';
+                // commentInput.value = '';
             }
         } else {
-            commentDiv.style.display = 'none';
+            // commentDiv.style.display = 'none';
             commentInput.required = false;
         }
     }

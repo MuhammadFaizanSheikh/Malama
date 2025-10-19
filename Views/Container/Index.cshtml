@@ -124,7 +124,7 @@
     </div>
 }
 
-@if (TempData["ResponseStatus"] != null)
+@* @if (TempData["ResponseStatus"] != null)
 {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -134,6 +134,25 @@
             text: @Html.Raw(Json.Serialize(TempData.Peek("ResponseMessage") ?? "")),
             timer: 2500,
             showConfirmButton: false
+        });
+    </script>
+} *@
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
         });
     </script>
 }

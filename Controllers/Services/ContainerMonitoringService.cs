@@ -40,6 +40,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .ToListAsync(); // <-- Materialize query
         }
 
+        public async Task<List<Container>> GetOnlyContainersByEventIdAsync(string eventId)
+        {
+            return await _unitOfWork.Container.FindForSearching(f => f.EventId == eventId).ToListAsync();
+        }
+
 
         public async Task<Container?> GetContainerByIdAsync(long id)
         {

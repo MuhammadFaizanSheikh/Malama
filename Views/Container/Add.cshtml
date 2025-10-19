@@ -162,10 +162,10 @@
             <span asp-validation-for="InitialTemperature" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6 mb-3" id="commentDiv" style="display:none;">
+        <div class="col-md-6 mb-3" id="commentDiv">
             <label asp-for="Comment" class="form-label">Comment</label>
-            <input asp-for="Comment" id="commentInput" class="form-control"
-                   placeholder="Enter comment if temperature is out of range" />
+            <textarea asp-for="Comment" id="commentInput" class="form-control"
+                      rows="3" placeholder="Enter comment if temperature is out of range"></textarea>
             <span asp-validation-for="Comment" class="text-danger"></span>
         </div>
     </div>
@@ -208,10 +208,10 @@
 
         if (!isNaN(val) && min != null && max != null) {
             const outOfRange = val < min || val > max;
-        commentDiv.style.display = outOfRange ? 'block' : 'none';
+        // commentDiv.style.display = outOfRange ? 'block' : 'none';
         commentInput.required = outOfRange;
-        if (!outOfRange) commentInput.value = ''; // clear old comment
-        }
+        // if (!outOfRange) commentInput.value = ''; // clear old comment
+        // }
     }
 
 </script>

@@ -166,13 +166,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var roles = await _roleManager.Roles.ToListAsync();
                 var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
-                var attributeList = new List<string>();
 
                 List<CombinedEventStaffRolesNameAndLicense> model = new List<CombinedEventStaffRolesNameAndLicense>();
 
                 foreach (var staff in eventStaffList)
                 {
                     var roleLicenseMapping = new Dictionary<string, List<string>>();
+                    var attributeList = new List<string>();
 
                     foreach (var staffLicense in staff.StaffLicense)
                     {
@@ -207,7 +207,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     // Generate formatted strings
                     var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                     var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
-                    var attributesString = string.Join(", ", attributeList.OrderBy(a => a));
+                    var attributesString = string.Join(", ", attributeList
+                            .Select(a => a.Trim())
+                            .Where(a => !string.IsNullOrWhiteSpace(a))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)   // ✅ remove duplicates (case-insensitive)
+                            .OrderBy(a => a));
 
                     int completedEventCount = groupedResult.ContainsKey(staff.Id) ? groupedResult[staff.Id] : 0;
 

@@ -281,7 +281,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                             var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
                             var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
-                            var attributesString = string.Join(", ", attributeList.OrderBy(a => a));
+                            var attributesString = string.Join(", ", attributeList
+                            .Select(a => a.Trim())
+                            .Where(a => !string.IsNullOrWhiteSpace(a))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)   // ✅ remove duplicates (case-insensitive)
+                            .OrderBy(a => a));
 
                             eventStaffDetailAndAdditionalRoles.EventStaffRolesNameAndLicense = new CombinedEventStaffRolesNameAndLicense
                             {

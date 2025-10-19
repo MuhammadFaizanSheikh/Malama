@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Diagnostics.Contracts;
@@ -100,18 +101,47 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        public IActionResult AddNewVaccine(string eventId)
+        public async Task<IActionResult> AddNewVaccine(string eventId)
         {
-            var model = new ImmunizationVaccineViewModel
+            try
             {
-                SingleImmunizationVaccineInfo = new ImmunizationVaccineInfo
+                var model = new ImmunizationVaccineViewModel
                 {
-                    EventId = eventId
-                }
-            };
+                    SingleImmunizationVaccineInfo = new ImmunizationVaccineInfo
+                    {
+                        EventId = eventId
+                    }
+                };
 
-            return View("Index", model);
+                // ✅ Get Containers for this Event
+                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(eventId);
+
+                if (containerResponse.Success && containerResponse.Data is List<Container> containers)
+                {
+                    ViewBag.ContainerList = containers.Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.ContainerName
+                    }).ToList();
+                }
+                else
+                {
+                    ViewBag.ContainerList = new List<SelectListItem>();
+                }
+
+                return View("Index", model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = "An unexpected error occurred while loading containers.";
+
+                return RedirectToAction("Index");
+            }
         }
+
+
 
 
 
@@ -216,6 +246,21 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     SingleImmunizationVaccineInfo = vaccineInfo
                 };
+
+                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+
+                if (containerResponse.Success && containerResponse.Data is List<Container> containers)
+                {
+                    ViewBag.ContainerList = containers.Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.ContainerName
+                    }).ToList();
+                }
+                else
+                {
+                    ViewBag.ContainerList = new List<SelectListItem>();
+                }
 
                 return View("Index",model);
             }

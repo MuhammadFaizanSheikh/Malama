@@ -11,12 +11,14 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
+        private readonly IContainerMonitoringService _containerMonitoringService;
 
-        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader)
+        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader, IContainerMonitoringService containerMonitoringService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
+            _containerMonitoringService = containerMonitoringService;
         }
 
         public async Task<List<ImmunizationVaccineInfoForPreview>> GetVaccineEntriesByEventIdAsync(string eventId)
@@ -26,7 +28,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (string.IsNullOrEmpty(eventId))
                     throw new ArgumentException("EventId cannot be null or empty.", nameof(eventId));
 
-                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventId == eventId).Include(x => x.Lots);
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventId == eventId).Include(x => x.Lots).Include(x => x.Container);
 
                 return records.Select(x => new ImmunizationVaccineInfoForPreview
                 {
@@ -37,7 +39,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     FinalDoses = x.FinalDoses,
                     LotNumber = string.Join("<br>", x.Lots.Select(l => l.LotNumber)),
                     Expiration = string.Join("<br>",
-                x.Lots.Select(l => l.Expiration.ToString("MM-dd-yyyy")))
+                x.Lots.Select(l => l.Expiration.ToString("MM-dd-yyyy"))),
+                    ImmunizationType = x.ImmunizationType,
+                    AddedBy = x.AddedBy,
+                    AddedOn = x.AddedOn,
+                    ContainerName = x.Container == null ? string.Empty : x.Container.ContainerName
                 }).ToList();
             }
             catch (ArgumentException argEx)
@@ -72,27 +78,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        //public async Task<ResponseDto> UpdateInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName)
-        //{
-        //    var responseDto = new ResponseDto();
-
-        //    try
-        //    {
-        //        immunizationVaccine.UpdatedBy = loggedinUserName;
-        //        immunizationVaccine.UpdatedOn = DateTime.Now;
-        //        await _unitOfWork.ImmunizationVaccineInfo.UpdateAsync(immunizationVaccine);
-        //        responseDto.Success = true;
-        //        responseDto.Message = "Immunization vaccine inventory updated successfully!";
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        responseDto.Success = false;
-        //        responseDto.Message = $"An error occurred while updating Immunization vaccine inventory: {ex.Message}";
-        //    }
-
-        //    return responseDto;
-        //}
-
         public async Task<ResponseDto> UpdateInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
@@ -119,6 +104,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 existingRecord.FinalDoses = immunizationVaccine.FinalDoses;
                 existingRecord.UpdatedBy = loggedinUserName;
                 existingRecord.UpdatedOn = DateTime.Now;
+                existingRecord.ContainerId = immunizationVaccine.ContainerId;
                 await _unitOfWork.ImmunizationVaccineInfo.UpdateAsync(existingRecord);
                 // 3️⃣ Sync child collection (Lots)
                 // Remove deleted ones
@@ -180,6 +166,42 @@ namespace ExcelFilesCompiler.Controllers.Services
             return response;
         }
 
+        public async Task<ResponseDto> GetContainersByEventIdAsync(string eventId)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    response.Success = false;
+                    response.Message = "Event ID cannot be null or empty.";
+                    return response;
+                }
+
+                var containers = await _containerMonitoringService.GetOnlyContainersByEventIdAsync(eventId);
+
+                if (containers == null || !containers.Any())
+                {
+                    response.Success = false;
+                    response.Message = "No containers found for this event.";
+                    return response;
+                }
+
+                response.Success = true;
+                response.Message = "Containers fetched successfully.";
+                response.Data = containers;
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Error fetching containers for EventId {eventId}", eventId);
+                response.Success = false;
+                response.Message = $"An unexpected error occurred while fetching containers: {ex.Message}";
+                response.Data = null;
+            }
+
+            return response;
+        }
 
     }
 }
