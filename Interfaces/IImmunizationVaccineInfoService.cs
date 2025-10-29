@@ -9,5 +9,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> UpdateInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName);
         Task<ResponseDto> GetImmunizationVaccineInfoByIdAsync(long immunizationId);
         Task<ResponseDto> GetContainersByEventIdAsync(string eventId);
+        Task<ResponseDto> GetManufacturerByEventIdAsync(string eventId);
     }
 }

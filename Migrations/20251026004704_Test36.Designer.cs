@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026004704_Test36")]
+    partial class Test36
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1632,17 +1635,17 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedOn")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<string>("BloodTransfusionReason")
                         .HasColumnType("text");
 
                     b.Property<string>("CancerOrImmuneSystemReason")
                         .HasColumnType("text");
+
+                    b.Property<string>("CompletedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CompletedOn")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<long>("FileDataId")
                         .HasColumnType("bigint");
@@ -1879,12 +1882,6 @@ namespace Malama.Migrations
                     b.Property<string>("TookImmuneSuppressingMedicationRecently")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("VaricellaBodyPart")
                         .HasColumnType("text");

@@ -1,4 +1,5 @@
-﻿using ExcelFilesCompiler.Controllers.Services;
+﻿using Azure;
+using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -39,16 +40,30 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
+                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
 
-                var dropdownList = eventIds.Select(e => new SelectListItem
+                //var dropdownList = eventIds.Select(e => new SelectListItem
+                //{
+                //    Value = e,
+                //    Text = e
+                //}).ToList();
+
+                //ViewBag.EventIdList = dropdownList;
+                string eventId = HttpContext.Session.GetString("GlobalEventId");
+
+                var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId).ToList();
+
+                var summary = new Dictionary<string, int>
                 {
-                    Value = e,
-                    Text = e
-                }).ToList();
+                    ["Total"] = data.Count(),
+                    ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord?.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.ImmunizationRecord?.Status == "Completed"),
+                    ["NotGiven"] = data.Count(x => x.ImmunizationRecord?.Status == "Not given")
+                };
 
-                ViewBag.EventIdList = dropdownList;
-                return View();
+                ViewBag.Summary = summary;
+                ViewBag.EventId = eventId;
+                return View("Index", data);
             }
             catch (Exception ex)
             {
@@ -58,56 +73,40 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetEventData(string eventId)
-        {
-            try
-            {
-                //if (string.IsNullOrEmpty(eventId))
-                //    return BadRequest("Event ID is required.");
+        //[HttpGet]
+        //public async Task<IActionResult> GetEventData(string eventId)
+        //{
+        //    try
+        //    {
+        //        var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId);
 
-                var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId);
+        //        var summary = new Dictionary<string, int>
+        //        {
+        //            ["Total"] = data.Count(),
+        //            ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord.Status == "Pending"),
+        //            ["Completed"] = data.Count(x => x.ImmunizationRecord.Status == "Completed"),
+        //            ["NotGiven"] = data.Count(x => x.ImmunizationRecord.Status == "Not given")
+        //        };
 
-                var summary = new Dictionary<string, int>
-                {
-                    ["Total"] = data.Count(),
-                    ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.ImmunizationRecord.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.ImmunizationRecord.Status == "Not given")
-                };
+        //        ViewBag.Summary = summary;
+        //        ViewBag.EventId = eventId;
+        //        return View("Index",data);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var error = new { success = false, message = "Error fetching preview data.", error = ex.Message };
 
-                ViewBag.Summary = summary;
+        //        var options = new JsonSerializerOptions
+        //        {
+        //            PropertyNamingPolicy = null,
+        //            DictionaryKeyPolicy = null
+        //        };
 
-                return View("Index",data);
-                //var result = new { success = true, data };
+        //        var json = JsonSerializer.Serialize(error, options);
 
-                //// 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)
-                //var options = new JsonSerializerOptions
-                //{
-                //    PropertyNamingPolicy = null,
-                //    DictionaryKeyPolicy = null,
-                //    ReferenceHandler = ReferenceHandler.IgnoreCycles
-                //};
-
-                //var json = JsonSerializer.Serialize(result, options);
-
-                //return Content(json, "application/json");
-            }
-            catch (Exception ex)
-            {
-                var error = new { success = false, message = "Error fetching preview data.", error = ex.Message };
-
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = null,
-                    DictionaryKeyPolicy = null
-                };
-
-                var json = JsonSerializer.Serialize(error, options);
-
-                return Content(json, "application/json");
-            }
-        }
+        //        return Content(json, "application/json");
+        //    }
+        //}
 
         public async Task<IActionResult> ImmunizationStation(long immunizationId, long fileDataId)
         {
@@ -131,6 +130,20 @@ namespace ExcelFilesCompiler.Controllers
                     };
                 }
 
+                string eventId = model.FileData?.EventId;
+                ViewBag.EventId = eventId;
+
+                var immunizationData = await _immunizationStationService.GetImmunizationManufacturer(eventId);
+
+                if (immunizationData.Success && immunizationData.Data != null)
+                {
+                    ViewBag.ImmunizationData = immunizationData.Data; // 👈 send to Razor
+                }
+                else
+                {
+                    ViewBag.ImmunizationData = new List<object>(); // empty list to avoid null
+                }
+
                 return View(model);
             }
             catch (Exception ex)
@@ -148,20 +161,39 @@ namespace ExcelFilesCompiler.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    var allErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                    // Combine into a single string (or take the first message)
+                    var message = string.Join(" | ", allErrors);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = message;
                     return View(model);
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "Please login and try again.";
+                    return RedirectToAction("Index");
                 }
 
                 if (model.Id == 0)
                 {
-                    await _immunizationStationService.AddAsync(model);
+                    await _immunizationStationService.AddAsync(model, user.UserName);
                 }
                 else
                 {
-                    await _immunizationStationService.UpdateAsync(model);
+                    await _immunizationStationService.UpdateAsync(model, user.UserName);
                 }
 
                 //return RedirectToAction("Index");
-                return RedirectToAction("GetEventData", new { eventId = eventIdForRedirection });
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {

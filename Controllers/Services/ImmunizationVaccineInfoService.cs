@@ -25,10 +25,10 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                if (string.IsNullOrEmpty(eventId))
-                    throw new ArgumentException("EventId cannot be null or empty.", nameof(eventId));
+                //if (string.IsNullOrEmpty(eventId))
+                //    throw new ArgumentException("EventId cannot be null or empty.", nameof(eventId));
 
-                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventId == eventId).Include(x => x.Lots).Include(x => x.Container);
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventId == eventId).Include(x => x.Lots).ThenInclude(l => l.Container);
 
                 return records.Select(x => new ImmunizationVaccineInfoForPreview
                 {
@@ -43,7 +43,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ImmunizationType = x.ImmunizationType,
                     AddedBy = x.AddedBy,
                     AddedOn = x.AddedOn,
-                    ContainerName = x.Container == null ? string.Empty : x.Container.ContainerName
+                    ContainerName = string.Join(", ",x.Lots.Where(l => l.Container != null).Select(l => l.Container.ContainerName)) ?? string.Empty
                 }).ToList();
             }
             catch (ArgumentException argEx)
@@ -104,13 +104,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 existingRecord.FinalDoses = immunizationVaccine.FinalDoses;
                 existingRecord.UpdatedBy = loggedinUserName;
                 existingRecord.UpdatedOn = DateTime.Now;
-                existingRecord.ContainerId = immunizationVaccine.ContainerId;
+                existingRecord.Dose = immunizationVaccine.Dose;
+                existingRecord.Unit = immunizationVaccine.Unit;
                 await _unitOfWork.ImmunizationVaccineInfo.UpdateAsync(existingRecord);
-                // 3️⃣ Sync child collection (Lots)
-                // Remove deleted ones
-                var lotsToRemove = existingRecord.Lots
-                    .Where(existing => !immunizationVaccine.Lots.Any(newLot => newLot.Id == existing.Id))
-                    .ToList();
 
                 await _unitOfWork.ImmunizationVaccineLotEntry.DeleteAgainstFieldAsync(immunizationVaccine.Id, "ImmunizationVaccineInfoId");
 
@@ -197,6 +193,60 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // _logger.LogError(ex, "Error fetching containers for EventId {eventId}", eventId);
                 response.Success = false;
                 response.Message = $"An unexpected error occurred while fetching containers: {ex.Message}";
+                response.Data = null;
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseDto> GetManufacturerByEventIdAsync(string eventId)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    response.Success = false;
+                    response.Message = "Event ID cannot be null or empty.";
+                    return response;
+                }
+
+                var vaccineInfo = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(x => x.EventId == eventId, x => x.Lots);
+                
+                if (vaccineInfo == null || !vaccineInfo.Any())
+                {
+                    response.Success = false;
+                    response.Message = "No immunization found.";
+                    return response;
+                }
+
+                var immunizationData = vaccineInfo.Select(v => new
+                {
+                    v.Id,
+                    v.EventId,
+                    v.ImmunizationType,
+                    v.Vaccine,
+                    v.Manufacturer,
+                    v.Dose,
+                    v.Unit,
+                    Lots = v.Lots.Select(l => new
+                    {
+                        l.Id,
+                        l.LotNumber,
+                        l.Expiration,
+                    }).ToList()
+                }).ToList();
+
+                response.Success = true;
+                response.Message = "Immunization found.";
+                response.Data = immunizationData;
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Error fetching containers for EventId {eventId}", eventId);
+                response.Success = false;
+                response.Message = $"An unexpected error occurred while fetching immunizations: {ex.Message}";
                 response.Data = null;
             }
 

@@ -11,12 +11,14 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
+        private readonly IImmunizationVaccineInfoService _immunizationVaccineInfoService;
 
-        public ImmunizationStationService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader)
+        public ImmunizationStationService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader, IImmunizationVaccineInfoService immunizationVaccineInfoService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
+            _immunizationVaccineInfoService = immunizationVaccineInfoService;
         }
 
         public async Task<ImmunizationStation?> GetByIdAsync(long id)
@@ -37,24 +39,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             return await _unitOfWork.ImmunizationStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
         }
 
-        public async Task AddAsync(ImmunizationStation model)
+        public async Task<ResponseDto> GetImmunizationManufacturer(string eventId)
         {
-            // Ensure parent exists
-            //var parent = await _fileUploader.GetByIdAsync(model.FileDataId);
-            //if (parent == null)
-            //{
-            //    throw new Exception($"Parent FileData with Id={model.FileDataId} not found.");
-            //}
+            return await _immunizationVaccineInfoService.GetManufacturerByEventIdAsync(eventId);
+        }
 
-            //model.FileData = parent;
-            model.CompletedOn = DateTime.SpecifyKind(model.CompletedOn ?? DateTime.Now, DateTimeKind.Unspecified);
+        public async Task AddAsync(ImmunizationStation model, string userName)
+        {
+            model.AddedOn = DateTime.Now;
+            model.AddedBy = userName;
 
 
             await _unitOfWork.ImmunizationStation.AddAsync(model);
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task UpdateAsync(ImmunizationStation model)
+        public async Task UpdateAsync(ImmunizationStation model, string userName)
         {
             var existing = await _unitOfWork.ImmunizationStation
                 .GetWithInclude(x => x.Id == model.Id, x => x.FileData)
@@ -66,15 +66,15 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
 
             // map all fields from model → existing
-            MapToEntity(model, existing);
+            MapToEntity(model, existing, userName);
 
             await _unitOfWork.ImmunizationStation.UpdateAsync(existing);
             await _unitOfWork.SaveAsync();
         }
 
-        private void MapToEntity(ImmunizationStation source, ImmunizationStation target)
+        private void MapToEntity(ImmunizationStation source, ImmunizationStation target, string userName)
         {
-            // Questions
+            // ========== Questions ==========
             target.IsSickToday = source.IsSickToday;
             target.IsSickTodayReason = source.IsSickTodayReason;
             target.HasAllergiesToMedicationFoodVaccineOrLatex = source.HasAllergiesToMedicationFoodVaccineOrLatex;
@@ -96,48 +96,90 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.ReceivedVaccineInPast4Weeks = source.ReceivedVaccineInPast4Weeks;
             target.ReceivedVaccineReason = source.ReceivedVaccineReason;
 
-            // Vaccines
+            // ========== Hepatitis B ==========
             target.HepBNeeded = source.HepBNeeded;
             target.HepBReason = source.HepBReason;
             target.HepBManufacturer = source.HepBManufacturer;
             target.HepBLotNo = source.HepBLotNo;
             target.HepBExpirationDate = source.HepBExpirationDate;
+            target.HepBType = source.HepBType;
+            target.HepBBodyPart = source.HepBBodyPart;
+            target.HepBBodyPartOther = source.HepBBodyPartOther;
+            target.HepBSite = source.HepBSite;
+            target.HepBStaffName = source.HepBStaffName;
+            target.HepBGivenDateTime = source.HepBGivenDateTime;
 
+            // ========== Influenza ==========
             target.FluNeeded = source.FluNeeded;
             target.FluReason = source.FluReason;
             target.FluManufacturer = source.FluManufacturer;
             target.FluLotNo = source.FluLotNo;
             target.FluExpirationDate = source.FluExpirationDate;
+            target.FluType = source.FluType;
+            target.FluBodyPart = source.FluBodyPart;
+            target.FluBodyPartOther = source.FluBodyPartOther;
+            target.FluSite = source.FluSite;
+            target.FluStaffName = source.FluStaffName;
+            target.FluGivenDateTime = source.FluGivenDateTime;
 
+            // ========== MMR ==========
             target.MMRNeeded = source.MMRNeeded;
             target.MMRReason = source.MMRReason;
             target.MMRManufacturer = source.MMRManufacturer;
             target.MMRLotNo = source.MMRLotNo;
             target.MMRExpirationDate = source.MMRExpirationDate;
+            target.MMRType = source.MMRType;
+            target.MMRBodyPart = source.MMRBodyPart;
+            target.MMRBodyPartOther = source.MMRBodyPartOther;
+            target.MMRSite = source.MMRSite;
+            target.MMRStaffName = source.MMRStaffName;
+            target.MMRGivenDateTime = source.MMRGivenDateTime;
 
+            // ========== Hepatitis A ==========
             target.HepANeeded = source.HepANeeded;
             target.HepAReason = source.HepAReason;
             target.HepAManufacturer = source.HepAManufacturer;
             target.HepALotNo = source.HepALotNo;
             target.HepAExpirationDate = source.HepAExpirationDate;
+            target.HepAType = source.HepAType;
+            target.HepABodyPart = source.HepABodyPart;
+            target.HepABodyPartOther = source.HepABodyPartOther;
+            target.HepASite = source.HepASite;
+            target.HepAStaffName = source.HepAStaffName;
+            target.HepAGivenDateTime = source.HepAGivenDateTime;
 
+            // ========== Tetanus / Tdap ==========
             target.TetTdpNeeded = source.TetTdpNeeded;
             target.TetTdpReason = source.TetTdpReason;
             target.TetTdpManufacturer = source.TetTdpManufacturer;
             target.TetTdpLotNo = source.TetTdpLotNo;
             target.TetTdpExpirationDate = source.TetTdpExpirationDate;
+            target.TetTdpType = source.TetTdpType;
+            target.TetTdpBodyPart = source.TetTdpBodyPart;
+            target.TetTdpBodyPartOther = source.TetTdpBodyPartOther;
+            target.TetTdpSite = source.TetTdpSite;
+            target.TetTdpStaffName = source.TetTdpStaffName;
+            target.TetTdpGivenDateTime = source.TetTdpGivenDateTime;
 
+            // ========== Varicella ==========
             target.VaricellaNeeded = source.VaricellaNeeded;
             target.VaricellaReason = source.VaricellaReason;
             target.VaricellaManufacturer = source.VaricellaManufacturer;
             target.VaricellaLotNo = source.VaricellaLotNo;
             target.VaricellaExpirationDate = source.VaricellaExpirationDate;
+            target.VaricellaType = source.VaricellaType;
+            target.VaricellaBodyPart = source.VaricellaBodyPart;
+            target.VaricellaBodyPartOther = source.VaricellaBodyPartOther;
+            target.VaricellaSite = source.VaricellaSite;
+            target.VaricellaStaffName = source.VaricellaStaffName;
+            target.VaricellaGivenDateTime = source.VaricellaGivenDateTime;
 
-            // Metadata
+            // ========== Metadata ==========
             target.Status = source.Status;
-            target.CompletedOn = DateTime.SpecifyKind(source.CompletedOn ?? DateTime.Now, DateTimeKind.Unspecified);
-            target.CompletedBy = source.CompletedBy;
+            target.UpdatedOn = DateTime.Now;
+            target.UpdatedBy = userName;
         }
+
 
     }
 }

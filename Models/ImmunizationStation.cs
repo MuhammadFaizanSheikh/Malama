@@ -3,6 +3,7 @@ using ExcelFilesCompiler;
 using Malama.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Malama.Models
 {
@@ -11,7 +12,7 @@ namespace Malama.Models
         public List<FileDataDto> FileDataList { get; set; } = new();
         public ImmunizationSummary Summary { get; set; } = new();
     }
-    public class ImmunizationStation
+    public class ImmunizationStation : GenericProperties
     {
         public long Id { get; set; }
 
@@ -68,6 +69,12 @@ namespace Malama.Models
         public string? HepBManufacturer { get; set; }
         public string? HepBLotNo { get; set; }
         public DateTime? HepBExpirationDate { get; set; }
+        public string? HepBType { get; set; }
+        public string? HepBBodyPart { get; set; }
+        public string? HepBBodyPartOther { get; set; }
+        public string? HepBSite { get; set; }
+        public string? HepBStaffName { get; set; }
+        public DateTime? HepBGivenDateTime { get; set; }
 
         // Influenza
         public string? FluNeeded { get; set; }
@@ -75,6 +82,12 @@ namespace Malama.Models
         public string? FluManufacturer { get; set; }
         public string? FluLotNo { get; set; }
         public DateTime? FluExpirationDate { get; set; }
+        public string? FluType { get; set; }
+        public string? FluBodyPart { get; set; }
+        public string? FluBodyPartOther { get; set; }
+        public string? FluSite { get; set; }
+        public string? FluStaffName { get; set; }
+        public DateTime? FluGivenDateTime { get; set; }
 
         // MMR
         public string? MMRNeeded { get; set; }
@@ -82,6 +95,12 @@ namespace Malama.Models
         public string? MMRManufacturer { get; set; }
         public string? MMRLotNo { get; set; }
         public DateTime? MMRExpirationDate { get; set; }
+        public string? MMRType { get; set; }  // IM or SQ
+        public string? MMRBodyPart { get; set; }  // Depends on Type
+        public string? MMRBodyPartOther { get; set; }
+        public string? MMRSite { get; set; }  // Left / Right
+        public string? MMRStaffName { get; set; }
+        public DateTime? MMRGivenDateTime { get; set; }
 
         // Hepatitis A
         public string? HepANeeded { get; set; }
@@ -89,6 +108,12 @@ namespace Malama.Models
         public string? HepAManufacturer { get; set; }
         public string? HepALotNo { get; set; }
         public DateTime? HepAExpirationDate { get; set; }
+        public string? HepAType { get; set; }  // IM or SQ
+        public string? HepABodyPart { get; set; }  // Depends on Type
+        public string? HepABodyPartOther { get; set; }
+        public string? HepASite { get; set; }  // Left / Right
+        public string? HepAStaffName { get; set; }
+        public DateTime? HepAGivenDateTime { get; set; }
 
         // Tetanus / Tdap
         public string? TetTdpNeeded { get; set; }
@@ -96,6 +121,12 @@ namespace Malama.Models
         public string? TetTdpManufacturer { get; set; }
         public string? TetTdpLotNo { get; set; }
         public DateTime? TetTdpExpirationDate { get; set; }
+        public string? TetTdpType { get; set; }
+        public string? TetTdpBodyPart { get; set; }
+        public string? TetTdpBodyPartOther { get; set; }
+        public string? TetTdpSite { get; set; }
+        public string? TetTdpStaffName { get; set; }
+        public DateTime? TetTdpGivenDateTime { get; set; }
 
         // Varicella
         public string? VaricellaNeeded { get; set; }
@@ -103,11 +134,14 @@ namespace Malama.Models
         public string? VaricellaManufacturer { get; set; }
         public string? VaricellaLotNo { get; set; }
         public DateTime? VaricellaExpirationDate { get; set; }
+        public string? VaricellaType { get; set; }
+        public string? VaricellaBodyPart { get; set; }
+        public string? VaricellaBodyPartOther { get; set; }
+        public string? VaricellaSite { get; set; }
+        public string? VaricellaStaffName { get; set; }
+        public DateTime? VaricellaGivenDateTime { get; set; }
 
         // Overall Status (optional, if you want workflow tracking)
         public string Status { get; set; }
-
-        public DateTime? CompletedOn { get; set; }
-        public string? CompletedBy { get; set; }
     }
 }

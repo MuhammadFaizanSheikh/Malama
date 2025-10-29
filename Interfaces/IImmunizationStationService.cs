@@ -6,7 +6,8 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<ImmunizationStation?> GetByIdAsync(long id);
         Task<ImmunizationStation> GetByIdWithParentAsync(long id); // NEW
-        Task AddAsync(ImmunizationStation model);
-        Task UpdateAsync(ImmunizationStation model);
+        Task AddAsync(ImmunizationStation model, string userName);
+        Task UpdateAsync(ImmunizationStation model, string userName);
+        Task<ResponseDto> GetImmunizationManufacturer(string eventId);
     }
 }

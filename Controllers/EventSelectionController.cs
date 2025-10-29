@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,8 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
+                HttpContext.Session.Remove("GlobalEventId");
+
                 if (selectedEventId == 0)
                 {
                     ViewBag.ErrorMessage = "Please select a valid event.";
@@ -131,6 +134,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 ViewBag.Message = "Role successfully assigned!";
+                HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);//Setting eventId so that staff user can access data on station forms
                 return RedirectToAction("Index", "Dashboard");
             }
             catch (Exception ex)

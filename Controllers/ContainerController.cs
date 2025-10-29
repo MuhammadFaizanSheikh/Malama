@@ -30,63 +30,69 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            try
-            {
-                var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
-
-                var dropdownList = eventIds.Select(e => new SelectListItem
-                {
-                    Value = e,
-                    Text = e
-                }).ToList();
-
-                ViewBag.EventIdList = dropdownList;
-                return View();
-            }
-            catch (Exception ex)
-            {
-                ViewBag.EventIdList = new List<SelectListItem>();
-                TempData["ErrorMessage"] = "Failed to load Event IDs: " + ex.Message;
-                return View();
-            }
-        }
-
-        [HttpGet("Index")]
-        public async Task<IActionResult> GetContainersAgainstEventId(string eventId)
-        {
             List<Container> containers = new List<Container>();
 
             try
             {
-                if (!string.IsNullOrEmpty(eventId))
-                {
-                    containers = await _service.GetContainersByEventIdAsync(eventId);
-                }
+                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
 
-                // Keep selected event ID for maintaining state in view
+                //var dropdownList = eventIds.Select(e => new SelectListItem
+                //{
+                //    Value = e,
+                //    Text = e
+                //}).ToList();
+
+                //ViewBag.EventIdList = dropdownList;
+
+                string eventId = HttpContext.Session.GetString("GlobalEventId");
+                containers = await _service.GetContainersByEventIdAsync(eventId);
                 ViewBag.EventId = eventId;
-
-                return View("Index", containers);
-            }
-            catch (ArgumentException argEx)
-            {
-                _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
-                TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
-                return View("Index", containers);
-            }
-            catch (ApplicationException appEx)
-            {
-                _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
-                TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
                 return View("Index", containers);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
-                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+                ViewBag.EventIdList = new List<SelectListItem>();
+                TempData["ErrorMessage"] = "Failed to load data: " + ex.Message;
                 return View("Index", containers);
             }
         }
+
+        //[HttpGet("Index")]
+        //public async Task<IActionResult> GetContainersAgainstEventId(string eventId)
+        //{
+        //    List<Container> containers = new List<Container>();
+
+        //    try
+        //    {
+        //        if (!string.IsNullOrEmpty(eventId))
+        //        {
+        //            containers = await _service.GetContainersByEventIdAsync(eventId);
+        //        }
+
+        //        // Keep selected event ID for maintaining state in view
+        //        ViewBag.EventId = eventId;
+
+        //        return View("Index", containers);
+        //    }
+        //    catch (ArgumentException argEx)
+        //    {
+        //        _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
+        //        return View("Index", containers);
+        //    }
+        //    catch (ApplicationException appEx)
+        //    {
+        //        _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
+        //        return View("Index", containers);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+        //        return View("Index", containers);
+        //    }
+        //}
 
         [HttpGet("Add")]
         public async Task<IActionResult> Add(string eventId)

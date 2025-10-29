@@ -3,6 +3,7 @@
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
     ViewData["Title"] = "Immunization";
+    var selectedEventId = ViewBag.EventId;
 }
 
 <style>
@@ -96,8 +97,10 @@
 
 
 <h2 id="page-heading" >Immunization Station</h2>
+<h2 id="page-heading">Event ID : @selectedEventId</h2>
 
-@if (ViewBag.EventIdList != null)
+
+@* @if (ViewBag.EventIdList != null)
 {
 <form method="get" asp-action="GetEventData">
     <select id="eventIdDropdown" name="eventId" class="form-control" onchange="this.form.submit()">
@@ -108,9 +111,9 @@
         }
     </select>
 </form>
-}
+} *@
 
-@if (Model != null && Model.Any())
+@if (Model != null)
 {
 @if (ViewBag.Summary != null)
 {
@@ -216,8 +219,8 @@
                     <td>@c.Sex</td>
                     <td>@c.Dob</td>
                     <td>@c.Barcode</td>
-                    <td>@c.ImmunizationRecord?.CompletedBy</td>
-                    <td>@c.ImmunizationRecord?.CompletedOn</td>
+                    <td>@c.ImmunizationRecord?.AddedBy</td>
+                    <td>@c.ImmunizationRecord?.AddedOn</td>
                @*  <td>@c.ContractEndDate.ToShortDateString()</td> *@
                 
             </tr>
@@ -302,9 +305,9 @@
         
     }
     // Reset button
-    document.getElementById("resetFiltersBtn").addEventListener("click", function () {
+    @* document.getElementById("resetFiltersBtn").addEventListener("click", function () {
         resetAllFilters();
-    });
+    }); *@
 
     function allowOnlyDigits(input) {
         // Allow only digits

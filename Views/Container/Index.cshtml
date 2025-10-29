@@ -4,7 +4,6 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
     ViewData["Title"] = "Immunization Inventory";
     var selectedEventId = ViewBag.EventId;
-    var eventList = ViewBag.EventIdList as List<SelectListItem>;
 }
 
 <style>
@@ -98,7 +97,7 @@
 
 <h2 id="page-heading">Containers Temperature Screen</h2>
 
-@if (Model == null)
+@* @if (Model == null)
 {
 <form method="get" asp-action="GetContainersAgainstEventId" id="eventForm">
     <select id="eventDropdown" name="eventId" class="form-select" onchange="document.getElementById('eventForm').submit();">
@@ -114,7 +113,7 @@
         }
     </select>
 </form>
-}
+} *@
 
 @if (TempData["ErrorMessage"] != null)
 {
@@ -123,20 +122,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-
-@* @if (TempData["ResponseStatus"] != null)
-{
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        Swal.fire({
-            icon: @Html.Raw(Json.Serialize(TempData.Peek("ResponseStatus"))),
-            title: @Html.Raw(Json.Serialize(TempData.Peek("ResponseTitle") ?? "")),
-            text: @Html.Raw(Json.Serialize(TempData.Peek("ResponseMessage") ?? "")),
-            timer: 2500,
-            showConfirmButton: false
-        });
-    </script>
-} *@
 
 @if (TempData["ResponseMessage"] != null)
 {

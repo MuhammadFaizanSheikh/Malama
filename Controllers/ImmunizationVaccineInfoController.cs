@@ -14,6 +14,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -39,67 +40,74 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var model = new ImmunizationVaccineViewModel();
+
             try
             {
-                var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
+                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
 
-                var dropdownList = eventIds.Select(e => new SelectListItem
-                {
-                    Value = e,
-                    Text = e
-                }).ToList();
+                //var dropdownList = eventIds.Select(e => new SelectListItem
+                //{
+                //    Value = e,
+                //    Text = e
+                //}).ToList();
 
-                ViewBag.EventIdList = dropdownList;
-                return View();
+                //ViewBag.EventIdList = dropdownList;
+                string eventId = HttpContext.Session.GetString("GlobalEventId");
+                model.EventId = eventId;
+                model.ListOfImmunizationVaccineInfo = await _immunizationVaccineInfoService
+                    .GetVaccineEntriesByEventIdAsync(eventId);
+
+                return View("Index", model);
             }
             catch (Exception ex)
             {
                 ViewBag.EventIdList = new List<SelectListItem>();
                 ViewBag.ErrorMessage = "Failed to load Event IDs: " + ex.Message;
-                return View();
+                return View("Index", model);
             }
         }
 
         
 
-        [HttpGet]
-        public async Task<IActionResult> GetVaccineEntriesByEventId(string eventId)
-        {
-            var model = new ImmunizationVaccineViewModel();
+        //[HttpGet]
+        //public async Task<IActionResult> GetVaccineEntriesByEventId(string eventId)
+        //{
+        //    var model = new ImmunizationVaccineViewModel();
 
-            try
-            {
-                if (!string.IsNullOrEmpty(eventId))
-                {
-                    model.EventId = eventId;
-                    model.ListOfImmunizationVaccineInfo = await _immunizationVaccineInfoService
-                        .GetVaccineEntriesByEventIdAsync(eventId);
-                }
+        //    try
+        //    {
+        //        if (!string.IsNullOrEmpty(eventId))
+        //        {
+        //            model.EventId = eventId;
+        //            model.ListOfImmunizationVaccineInfo = await _immunizationVaccineInfoService
+        //                .GetVaccineEntriesByEventIdAsync(eventId);
+        //        }
 
-                return View("Index", model);
-            }
-            catch (ArgumentException argEx)
-            {
-                // Handles invalid argument, e.g., null or empty eventId
-                _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
-                TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
-                return View("Index", model);
-            }
-            catch (ApplicationException appEx)
-            {
-                // Handles exceptions thrown by service layer
-                _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
-                TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
-                return View("Index", model);
-            }
-            catch (Exception ex)
-            {
-                // Handles unexpected errors
-                _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
-                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
-                return View("Index", model);
-            }
-        }
+        //        return View("Index", model);
+        //    }
+        //    catch (ArgumentException argEx)
+        //    {
+        //        // Handles invalid argument, e.g., null or empty eventId
+        //        _logger.LogWarning(argEx, "Invalid EventId provided: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "Invalid Event selected. Please try again.";
+        //        return View("Index", model);
+        //    }
+        //    catch (ApplicationException appEx)
+        //    {
+        //        // Handles exceptions thrown by service layer
+        //        _logger.LogError(appEx, "Error fetching data for EventId: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "Unable to fetch vaccine records at this time.";
+        //        return View("Index", model);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Handles unexpected errors
+        //        _logger.LogError(ex, "Unexpected error in GetEventData for EventId: {EventId}", eventId);
+        //        TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
+        //        return View("Index", model);
+        //    }
+        //}
 
         public async Task<IActionResult> AddNewVaccine(string eventId)
         {
@@ -109,7 +117,8 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     SingleImmunizationVaccineInfo = new ImmunizationVaccineInfo
                     {
-                        EventId = eventId
+                        EventId = eventId,
+                        Lots = new List<ImmunizationVaccineLotEntry>()
                     }
                 };
 
@@ -129,6 +138,7 @@ namespace ExcelFilesCompiler.Controllers
                     ViewBag.ContainerList = new List<SelectListItem>();
                 }
 
+                model.EventId = eventId;
                 return View("Index", model);
             }
             catch (Exception ex)
@@ -151,7 +161,17 @@ namespace ExcelFilesCompiler.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Re-display form with validation messages
+                var allErrors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+                // Combine into a single string (or take the first message)
+                var message = string.Join(" | ", allErrors);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Invalid Data";
+                TempData["ResponseMessage"] = message;
                 return View("Index", model);
             }
 
@@ -198,8 +218,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 // ✅ Redirect back to the table (event-based)
-                return RedirectToAction("GetVaccineEntriesByEventId",
-                    new { eventId = model.SingleImmunizationVaccineInfo.EventId });
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -244,7 +263,8 @@ namespace ExcelFilesCompiler.Controllers
 
                 var model = new ImmunizationVaccineViewModel
                 {
-                    SingleImmunizationVaccineInfo = vaccineInfo
+                    SingleImmunizationVaccineInfo = vaccineInfo,
+                    EventId = vaccineInfo.EventId
                 };
 
                 var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);

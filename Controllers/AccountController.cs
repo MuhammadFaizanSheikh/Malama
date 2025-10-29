@@ -68,6 +68,8 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
+                HttpContext.Session.Remove("GlobalEventId");//Remove eventID session for normal user because when staff user logout and then normal user signin on same browser then it should be removed.
+
                 if (!ModelState.IsValid)
                 {
                     return View(model);
@@ -78,6 +80,15 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (result.Succeeded)
                 {
+                    //this section was added because two factor authentication was removed, event user redirection to event selection is in Verify2FAController, so to handle event user need to add below code here.
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+
+                    if (user.IsEventUser)
+                    {
+                        return RedirectToAction("Index", "EventSelection");
+                    }
+                    ///till here
+
                     return RedirectToAction("Index", "Dashboard");
                 }
                 else if (result.RequiresTwoFactor)
