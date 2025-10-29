@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
+    //[Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
     public class ExcelFileUploaderController : Controller
     {
         private readonly IFileUploader _fileUploader;
@@ -116,10 +116,10 @@ namespace ExcelFilesCompiler.Controllers
                 }
                 else if (userType == "client")
                 {
-                    if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager") && !User.IsInRole("DAWSON Admin - Event Staff"))
-                    {
-                        return RedirectToAction("AccessDenied", "Account");
-                    }
+                    //if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager") && !User.IsInRole("DAWSON Admin - Event Staff"))
+                    //{
+                    //    return RedirectToAction("AccessDenied", "Account");
+                    //}
                 }
                 else
                 {
@@ -127,31 +127,32 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
 
-                var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
+                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
 
-                var dropdownList = eventIds.Select(e => new SelectListItem
-                {
-                    Value = e,
-                    Text = e
-                }).ToList();
+                //var dropdownList = eventIds.Select(e => new SelectListItem
+                //{
+                //    Value = e,
+                //    Text = e
+                //}).ToList();
 
-                ViewBag.EventIdList = dropdownList;
+                //ViewBag.EventIdList = dropdownList;
                 ViewBag.UserType = userType;
                 return View();
             }
             catch (Exception ex)
             {
-                ViewBag.EventIdList = new List<SelectListItem>();
+                //ViewBag.EventIdList = new List<SelectListItem>();
                 ViewBag.ErrorMessage = "Failed to load Event IDs: " + ex.Message;
                 return View();
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetEventDataByEventId([FromBody] string eventId)
+        public async Task<IActionResult> GetEventDataByEventId()
         {
             try
             {
+                string eventId = HttpContext.Session.GetString("GlobalEventId");
                 if (string.IsNullOrEmpty(eventId))
                     return BadRequest("Event ID is required.");
 

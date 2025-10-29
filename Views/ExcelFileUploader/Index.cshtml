@@ -25,13 +25,13 @@
         </div>
     </div>
 
-    <select id="eventIdDropdown" name="eventId" class="form-control">
+    @* <select id="eventIdDropdown" name="eventId" class="form-control">
         <option value="">-- Select Event --</option>
         @foreach (var item in ViewBag.EventIdList as List<SelectListItem>)
         {
             <option value="@item.Value">@item.Text</option>
         }
-    </select>
+    </select> *@
 
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
     {
@@ -206,13 +206,14 @@
     if (window.type == '') {
         $("#page-heading").text(window.type + " - Malama");
     }
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", async function () {
         if (window.userType === "client") {
              $("#page-heading").text("Malama (Staff)");
             const uploadSection = document.getElementById('fileUploadContainer');
             if (uploadSection) {
                 uploadSection.style.display = 'none';
             }
+            await fetchAndRenderEventData();
         } else {
              $("#page-heading").text("Malama (Admin)");
             const eventIdDropdown = document.getElementById('eventIdDropdown');
@@ -482,21 +483,19 @@
     //     previewTable.draw();
     // }
 
-    $('#eventIdDropdown').on('change', async function () {
-        const selectedEventId = $(this).val();
-        await fetchAndRenderEventData(selectedEventId);
-    });
+    // $('#eventIdDropdown').on('change', async function () {
+    //     const selectedEventId = $(this).val();
+    //     await fetchAndRenderEventData(selectedEventId);
+    // });
 
-    async function fetchAndRenderEventData(eventId, callback) {
-        if (!eventId) return;
+    async function fetchAndRenderEventData(callback) {
 
         $('#loader').removeClass('d-none');
 
         try {
             const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(eventId)
+                headers: { 'Content-Type': 'application/json' }
             });
 
             const result = await response.json();

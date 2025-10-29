@@ -671,10 +671,21 @@
 
         contractsTable.columns().search('');
 
-        if (vaccine) contractsTable.column(1).search(vaccine, true, false, true);
-        if (manufacturer) contractsTable.column(2).search(manufacturer, true, false, true);
+        if (vaccine) contractsTable.column(2).search(vaccine, true, false, true);
+        if (manufacturer) contractsTable.column(3).search(manufacturer, true, false, true);
 
         contractsTable.draw();
     });
+
+    $('#resetFiltersBtn').on('click', function () {
+    // Clear filter input fields
+    $('#filterVaccine').val('');
+    $('#filterManufacturer').val('');
+
+    // Reset DataTable searches
+    const contractsTable = $('#contractsTable').DataTable();
+    contractsTable.search('').columns().search('').draw();
+});
+
 </script>
 

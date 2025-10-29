@@ -23,13 +23,18 @@
         </a>
     }
 
-    @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager") || User.IsInRole("DAWSON Admin - Event Staff"))
+   @*  @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager") || User.IsInRole("DAWSON Admin - Event Staff"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
             <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
             <span>Malama Check In Out (Staff)</span>
         </a>
-    }
+    } *@
+
+    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
+        <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
+        <span>Malama Check In Out (Staff)</span>
+    </a>
 
     <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
         <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
