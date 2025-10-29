@@ -354,7 +354,8 @@
                     <!-- Given Date/Time -->
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="HepBGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="HepBGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.HepBGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -454,7 +455,8 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="FluGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="FluGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.FluGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -554,7 +556,8 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="MMRGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="MMRGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.MMRGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -654,7 +657,8 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="HepAGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="HepAGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.HepAGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -753,7 +757,8 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="TetTdpGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="TetTdpGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.TetTdpGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -854,7 +859,8 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Given Date/Time</label>
-                        <input asp-for="VaricellaGivenDateTime" type="datetime-local" class="form-control" />
+                        <input asp-for="VaricellaGivenDateTime" class="form-control givendatetime-input" type="text"
+                        value="@(Model.VaricellaGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"/>
                     </div>
                 </div>
             </div>
@@ -959,52 +965,73 @@
                     if (input) input.value = "";
                 });
             }
+            debugger;
+            const isEditMode = Array.from(block.querySelectorAll("[data-selected]"))
+            .some(el => el.getAttribute("data-selected")?.trim() !== "");
 
             // ✅ COMPLETED
             if (value === "Completed") {
                 completedDivs.forEach(div => {
+                debugger;
+                // Skip "Body Part (Other)"
                 if (div.classList.contains("bodypart-other")) return;
 
-                    div.style.display = "block";
-                    const input = div.querySelector("select, input");
-                    input?.setAttribute("required", "required");
-                });
+                const input = div.querySelector("select, input");
+                const isGivenDateTimeDiv = !!div.querySelector(".givendatetime-input");
 
-                if (reasonSelect) reasonSelect.value = "";
-
-                // Populate manufacturer dropdown
-                const normalizedType = normalizeName(vaccineType);
-                const manufacturers = [...new Set(
-                    immunizationData
-                        .filter(x => normalizeName(x.ImmunizationType) === normalizedType)
-                        .map(x => x.Manufacturer)
-                )];
-
-                manufacturerSelect.innerHTML = '<option value="">-- Select Manufacturer --</option>';
-                manufacturers.forEach(m => {
-                    const opt = document.createElement("option");
-                    opt.value = m;
-                    opt.textContent = m;
-                    manufacturerSelect.appendChild(opt);
-                });
-
-                // 🔹 EDIT MODE: prefill saved data
-                const selectedManufacturer = manufacturerSelect.getAttribute("data-selected");
-                const selectedLot = lotSelect.getAttribute("data-selected");
-
-                if (selectedManufacturer) {
-                    manufacturerSelect.value = selectedManufacturer;
-                    manufacturerSelect.dispatchEvent(new Event("change"));
-
-                    // After manufacturer loads → select lot
-                    if (selectedLot) {
-                        setTimeout(() => {
-                            lotSelect.value = selectedLot;
-                            lotSelect.dispatchEvent(new Event("change"));
-                        }, 100);
+                // 🟩 Expiration field: show only in Edit mode
+                if (isGivenDateTimeDiv) {
+                    if (isEditMode) {
+                        div.style.display = "block";
+                        input?.setAttribute("required", "required");
+                            input?.setAttribute("readonly", "readonly");
+                    } else {
+                        div.style.display = "none";
+                        input?.removeAttribute("required");
                     }
+                    return; // ✅ stop here for expiration div
+                }
+
+                // 🟩 All other completed fields
+                div.style.display = "block";
+                input?.setAttribute("required", "required");
+                });
+
+            if (reasonSelect) reasonSelect.value = "";
+
+            // Populate manufacturer dropdown
+            const normalizedType = normalizeName(vaccineType);
+            const manufacturers = [...new Set(
+                immunizationData
+                    .filter(x => normalizeName(x.ImmunizationType) === normalizedType)
+                    .map(x => x.Manufacturer)
+            )];
+
+            manufacturerSelect.innerHTML = '<option value="">-- Select Manufacturer --</option>';
+            manufacturers.forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m;
+                opt.textContent = m;
+                manufacturerSelect.appendChild(opt);
+            });
+
+            // 🔹 EDIT MODE: prefill saved data
+            const selectedManufacturer = manufacturerSelect.getAttribute("data-selected");
+            const selectedLot = lotSelect.getAttribute("data-selected");
+
+            if (selectedManufacturer) {
+                manufacturerSelect.value = selectedManufacturer;
+                manufacturerSelect.dispatchEvent(new Event("change"));
+
+                // After manufacturer loads → select lot
+                if (selectedLot) {
+                    setTimeout(() => {
+                        lotSelect.value = selectedLot;
+                        lotSelect.dispatchEvent(new Event("change"));
+                    }, 100);
                 }
             }
+        }
 
             updateOverallStatus();
         }
@@ -1106,7 +1133,6 @@
     const otherInput = bodyPartOther ? bodyPartOther.querySelector("input") : null;
 
     if (!typeDropdown || !bodyPartDropdown) return;
-    debugger;
     // ✅ Capture values before repopulating anything
     const savedType = typeDropdown.value?.trim() || "";
     const savedBodyPart = bodyPartDropdown.getAttribute("data-selected")?.trim() || "";

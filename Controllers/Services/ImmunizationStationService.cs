@@ -48,6 +48,12 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             model.AddedOn = DateTime.Now;
             model.AddedBy = userName;
+            model.FluGivenDateTime = DateTime.Now;
+            model.HepBGivenDateTime = DateTime.Now;
+            model.HepAGivenDateTime = DateTime.Now;
+            model.MMRGivenDateTime = DateTime.Now;
+            model.TetTdpGivenDateTime = DateTime.Now;
+            model.VaricellaGivenDateTime = DateTime.Now;
 
 
             await _unitOfWork.ImmunizationStation.AddAsync(model);
@@ -107,7 +113,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.HepBBodyPartOther = source.HepBBodyPartOther;
             target.HepBSite = source.HepBSite;
             target.HepBStaffName = source.HepBStaffName;
-            target.HepBGivenDateTime = source.HepBGivenDateTime;
 
             // ========== Influenza ==========
             target.FluNeeded = source.FluNeeded;
@@ -120,7 +125,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.FluBodyPartOther = source.FluBodyPartOther;
             target.FluSite = source.FluSite;
             target.FluStaffName = source.FluStaffName;
-            target.FluGivenDateTime = source.FluGivenDateTime;
 
             // ========== MMR ==========
             target.MMRNeeded = source.MMRNeeded;
@@ -133,7 +137,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.MMRBodyPartOther = source.MMRBodyPartOther;
             target.MMRSite = source.MMRSite;
             target.MMRStaffName = source.MMRStaffName;
-            target.MMRGivenDateTime = source.MMRGivenDateTime;
 
             // ========== Hepatitis A ==========
             target.HepANeeded = source.HepANeeded;
@@ -146,7 +149,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.HepABodyPartOther = source.HepABodyPartOther;
             target.HepASite = source.HepASite;
             target.HepAStaffName = source.HepAStaffName;
-            target.HepAGivenDateTime = source.HepAGivenDateTime;
 
             // ========== Tetanus / Tdap ==========
             target.TetTdpNeeded = source.TetTdpNeeded;
@@ -159,7 +161,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.TetTdpBodyPartOther = source.TetTdpBodyPartOther;
             target.TetTdpSite = source.TetTdpSite;
             target.TetTdpStaffName = source.TetTdpStaffName;
-            target.TetTdpGivenDateTime = source.TetTdpGivenDateTime;
 
             // ========== Varicella ==========
             target.VaricellaNeeded = source.VaricellaNeeded;
@@ -172,7 +173,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.VaricellaBodyPartOther = source.VaricellaBodyPartOther;
             target.VaricellaSite = source.VaricellaSite;
             target.VaricellaStaffName = source.VaricellaStaffName;
-            target.VaricellaGivenDateTime = source.VaricellaGivenDateTime;
 
             // ========== Metadata ==========
             target.Status = source.Status;
