@@ -172,7 +172,23 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
-                    return View(model);
+
+                    model = await _immunizationStationService.GetByIdWithParentAsync(model.Id);
+                    string eventId = model.FileData?.EventId;
+                    ViewBag.EventId = eventId;
+
+                    var immunizationData = await _immunizationStationService.GetImmunizationManufacturer(eventId);
+
+                    if (immunizationData.Success && immunizationData.Data != null)
+                    {
+                        ViewBag.ImmunizationData = immunizationData.Data; // 👈 send to Razor
+                    }
+                    else
+                    {
+                        ViewBag.ImmunizationData = new List<object>(); // empty list to avoid null
+                    }
+
+                    return View("ImmunizationStation", model);
                 }
 
                 var user = await _userManager.GetUserAsync(User);

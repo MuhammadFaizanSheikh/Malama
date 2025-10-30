@@ -160,6 +160,8 @@
 
     <hr class="my-4" />
 
+    
+
     <h3 class="mb-4">Questionnaires :</h3>
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -241,7 +243,7 @@
             </select>
 
             <div id="PregnancyCheckboxWrapper" style="display:none;" class="mt-2">
-                <input type="checkbox" asp-for="PregnancyCheckboxSelected" class="form-check-input pregnancy-checkbox" id="PregnancyCheckboxSelected" />
+                <input type="checkbox" asp-for="PregnancyCheckboxSelected" class="form-check-input pregnancy-checkbox" id="PregnancyCheckboxSelected"/>
                 <label class="form-check-label" for="PregnancyCheckboxSelected">Pregnancy test completed</label>
             </div>
         </div>
@@ -904,7 +906,64 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    const immunizationData = @Html.Raw(jsonData);
+        const immunizationData = @Html.Raw(jsonData);
+        debugger;
+    updateQuestionnaireReadonlyState();
+
+    function updateQuestionnaireReadonlyState() {
+        const anySelected = Array.from(document.querySelectorAll(".vaccine-status"))
+        .some(sel => sel.value === "Completed" || sel.value === "Not Completed");
+
+        const questionFields = document.querySelectorAll(".question-toggle, .pregnancy-checkbox");
+
+        questionFields.forEach(el => {
+        if (anySelected) {
+            // --- Preserve state ---
+            if (el.type === "checkbox") {
+                // Keep it visually as-is
+                el.readOnly = true;
+
+                // Block click/toggle but not form post
+                el.addEventListener("mousedown", preventCheckboxToggle);
+                el.addEventListener("keydown", preventCheckboxToggle);
+
+                // Make it look readonly
+                el.style.pointerEvents = "none";
+                el.style.opacity = "0.8";
+                el.style.accentColor = "#999"; // subtle gray tint
+            } else {
+                // For dropdowns etc.
+                el.classList.add("readonly-select");
+                el.setAttribute("tabindex", "-1");
+                el.style.pointerEvents = "none";
+                el.style.backgroundColor = "#f8f9fa";
+                el.style.opacity = "0.8";
+            }
+        } else {
+            // --- Re-enable everything ---
+            if (el.type === "checkbox") {
+                el.readOnly = false;
+                el.removeEventListener("mousedown", preventCheckboxToggle);
+                el.removeEventListener("keydown", preventCheckboxToggle);
+                el.style.pointerEvents = "";
+                el.style.opacity = "";
+                el.style.accentColor = "";
+            } else {
+                el.classList.remove("readonly-select");
+                el.removeAttribute("tabindex");
+                el.style.pointerEvents = "";
+                el.style.backgroundColor = "";
+                el.style.opacity = "";
+            }
+        }
+        });
+    }
+
+function preventCheckboxToggle(e) {
+    e.preventDefault();
+}
+
+
 
     // 🟢 PREGNANCY HANDLING
     document.querySelectorAll(".pregnancy-toggle").forEach(function (dropdown) {
@@ -940,6 +999,8 @@
         const normalizeName = name => (name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
 
         function toggleFields() {
+
+            updateQuestionnaireReadonlyState();
             const value = statusDropdown.value;
             const vaccineType = block.getAttribute("data-vaccine");
 
@@ -965,7 +1026,7 @@
                     if (input) input.value = "";
                 });
             }
-            debugger;
+
             const isEditMode = Array.from(block.querySelectorAll("[data-selected]"))
             .some(el => el.getAttribute("data-selected")?.trim() !== "");
 

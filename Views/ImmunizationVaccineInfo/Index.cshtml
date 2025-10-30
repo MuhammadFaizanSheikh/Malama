@@ -589,6 +589,7 @@
 
         // --- When vaccine selected ---
         function handleVaccineSelection() {
+            debugger;
             const type = immunizationSelect.value;
             const vaccineName = this.value;
 
@@ -624,7 +625,7 @@
                         class="form-control" required>
                     <option value="">Select Dose</option>
                     ${matchingVaccines.map(v =>
-                    `<option value="${v.dose}">${v.dose} ${v.unit}</option>`
+                    `<option value="${v.dose}">${v.dose}</option>`
                 ).join('')}
                 </select>
             `;

@@ -172,6 +172,23 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Invalid Data";
                 TempData["ResponseMessage"] = message;
+
+                model.EventId = model.SingleImmunizationVaccineInfo.EventId;
+                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+
+                if (containerResponse.Success && containerResponse.Data is List<Container> containers)
+                {
+                    ViewBag.ContainerList = containers.Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.ContainerName
+                    }).ToList();
+                }
+                else
+                {
+                    ViewBag.ContainerList = new List<SelectListItem>();
+                }
+
                 return View("Index", model);
             }
 
@@ -215,6 +232,24 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = res.Message;
+
+                    model.EventId = model.SingleImmunizationVaccineInfo.EventId;
+                    var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+
+                    if (containerResponse.Success && containerResponse.Data is List<Container> containers)
+                    {
+                        ViewBag.ContainerList = containers.Select(c => new SelectListItem
+                        {
+                            Value = c.Id.ToString(),
+                            Text = c.ContainerName
+                        }).ToList();
+                    }
+                    else
+                    {
+                        ViewBag.ContainerList = new List<SelectListItem>();
+                    }
+
+                    return View("Index", model);
                 }
 
                 // ✅ Redirect back to the table (event-based)

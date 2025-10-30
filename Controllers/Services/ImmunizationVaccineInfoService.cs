@@ -3,6 +3,8 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HSSF.Record;
+using NPOI.SS.Formula.Functions;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -62,6 +64,15 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f => f.EventId == immunizationVaccine.EventId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
+
+                if (records != null && records.Any())
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
+                    return responseDto;
+                }
+
                 immunizationVaccine.AddedBy = loggedinUserName;
                 immunizationVaccine.AddedOn = DateTime.Now;
                 await _unitOfWork.ImmunizationVaccineInfo.AddAsync(immunizationVaccine);
@@ -84,8 +95,21 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // 1️⃣ Get existing record from DB (including its children)
-                
+                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f =>
+                f.EventId == immunizationVaccine.EventId &&
+                f.ImmunizationType == immunizationVaccine.ImmunizationType &&
+                f.Vaccine == immunizationVaccine.Vaccine &&
+                f.Dose == immunizationVaccine.Dose &&
+                f.Id != immunizationVaccine.Id // 👈 Exclude the record being updated
+                );
+
+                if (records != null && records.Any())
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
+                    return responseDto;
+                }
+
                 var existingRecord = await _unitOfWork.ImmunizationVaccineInfo.GetByIdAsync(immunizationVaccine.Id);
                 
                 if (existingRecord == null)
