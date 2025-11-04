@@ -126,6 +126,24 @@
     "Category": "EventManagementRole"
   },
   {
+    "id": "immRN",
+    "value": "Imm RN",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "immStaff",
+    "value": "Imm Staff",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "checkinOutStaff",
+    "value": "Check in/out Staff",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
     "id": "projectManagerProgramManager",
     "value": "Project Manager & Program Manager",
     "types": [],

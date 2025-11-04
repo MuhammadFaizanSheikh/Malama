@@ -2007,7 +2007,7 @@
                                 <th>Last Name</th>
                                 <th>First Name</th>
                                 <th>Attributes</th>
-                                <th>Roles</th>
+                                <th>Qualifications</th>
                                 <th>License(s)</th>
                                 <th>State</th>
                                 <th>City</th>
@@ -2036,13 +2036,15 @@
                     <table id="eventStaffSelectedTable" class="table table-bordered table-striped">
                         <thead class="table-dark">
                             <tr>
-                                <th>Select Station</th>
-                                <th>Select Role</th>
+                                <th>Select Primay Station</th>
+                                <th>Select Primary Role</th>
+                                <th>Select Secondary Station</th>
+                                <th>Select Secondary Role</th>
                                 <th>Staff ID</th>
                                 <th>Last Name</th>
                                 <th>First Name</th>
                                 <th>Attributes</th>
-                                <th>Roles</th>
+                                <th>Qualifications</th>
                                 <th>License(s)</th>
                                 <th>State</th>
                                 <th>City</th>
@@ -2708,7 +2710,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         var $dropdown = $("#filterRoles");
 
         $dropdown.empty();
-        $dropdown.append('<option value="">Select Role</option>'); // Default option
+        $dropdown.append('<option value="">Select Primary Role</option>'); // Default option
 
         filteredRoles.forEach(function (role) {
             $dropdown.append(`<option value="${role.name}">${role.name}</option>`);
@@ -2844,11 +2846,18 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     return data;
                 }
             },
+                    { "data": "secondarystation" },
+                    { 
+                "data": "secondaryadditionalroles",
+                "render": function(data, type, row) {
+                    return data;
+                }
+            },
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
                      { "data": "attributes" },
-                     { "data": "roles" },
+                     { "data": "qualifications" },
                     { "data": "licenseStateAndTypes" },
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
@@ -2899,7 +2908,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }
 
             let roleDropdownId = `roleSelect_${eventStaffData.id}`;
-                    let stationDropdownId = `stationSelect_${eventStaffData.id}`;
+            let stationDropdownId = `stationSelect_${eventStaffData.id}`;
+
+            let secondaryroleDropdownId = `secondaryRoleSelect_${eventStaffData.id}`;
+            let secondarystationDropdownId = `secondaryStationSelect_${eventStaffData.id}`;
 
             let eventStartDate = $('#EventStartDate').val();
             let eventEndDate = $('#EventEndDate').val();
@@ -2981,7 +2993,19 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
             }).join("");
 
+            let secondaryRoleOptions = filteredRoles.map(role => {
+                let isSelected = false;
+
+                // Handle edit mode: Check if this role is in eventWiseStaffRoleList
+                if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffSecondaryRoleList) {
+                    isSelected = staffData.eventStaffDetail.eventWiseStaffSecondaryRoleList.some(r => r.roleId === role.id);
+                }
+
+                return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
+            }).join("");
+
             let selectedStation = staffData.eventStaffDetail?.selectedStation || "";
+            let selectedSecondaryStation = staffData.eventStaffDetail?.selectedSecondaryStationList || "";
 
 
             let stationDropdown = `
@@ -2989,11 +3013,22 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedStation"
                     class="form-select text-center station-dropdown"
                     style="width: 230px;">
-                <option value="" disabled ${selectedStation === "" ? "selected" : ""}>Select Station</option>
+                <option value="" disabled ${selectedStation === "" ? "selected" : ""}>Select Primary Station</option>
                 ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
                     `<option value="${service}" ${service === selectedStation ? "selected" : ""}>${service}</option>`
                 ).join("")}
             </select>`;
+
+            let secondarystationDropdown = `
+      <select id="${secondarystationDropdownId}"
+              name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryStationList"
+              class="form-select text-center secondary-station-dropdown"
+              style="width: 230px;"
+              multiple>
+          ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
+                `<option value="${service}" ${selectedSecondaryStation.includes(service) ? "selected" : ""}>${service}</option>`
+            ).join("")}
+      </select>`;
 
             $(document).on('change', `#${stationDropdownId}`, function () {
                 debugger;
@@ -3006,6 +3041,12 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     ${roleOptions}
                 </select>`;
 
+                let secondaryroleDropdown = `
+                    <select id="${secondaryroleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryRoles"
+                        class="form-control secondary-role-multi-select" multiple>
+                        ${secondaryRoleOptions}
+                </select>`;
+
             // Add row to DataTable
             selectedTable.row.add({
                 staffID: `${eventStaffData.staffID} 
@@ -3015,7 +3056,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 staffLastName: eventStaffData.staffLastName,
                 staffFirstName: eventStaffData.staffFirstName,
                 attributes: eventStaffData.attributes,
-                roles: eventStaffData.roles,
+                qualifications: eventStaffData.roles,
                 licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
                 primaryState: eventStaffData.primaryState,
                 primaryCity: eventStaffData.primaryCity,
@@ -3025,14 +3066,19 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
                 availability: availabilityCheckboxes,  // Add checkboxes for availability
                 preEventAvailability: preEventAvailabilityCheckbox, // Fix: Ensure it is checked in edit mode
+                station: stationDropdown,
                 additionalroles: roleDropdown,
-                        station: stationDropdown,
+                secondarystation: secondarystationDropdown,
+                secondaryadditionalroles: secondaryroleDropdown, 
                 action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
                           data-staffid="${eventStaffData.id}">Remove</button>`
             }).draw();
 
             // Initialize select2 for the new dropdown
             $(`#${roleDropdownId}`).select2();
+            $(`#${secondaryroleDropdownId}`).select2();
+            $(`#${secondarystationDropdownId}`).select2();
+            
         }
 
         function updateStaffRequirementTable() {
@@ -3053,14 +3099,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 let $row = $(this);
 
                 let selectedStation = $row.find('select.station-dropdown').val()?.trim();
-                let rolesColumnIndex = getColumnIndexByName('#eventStaffSelectedTable', 'Roles');
+                let rolesColumnIndex = getColumnIndexByName('#eventStaffSelectedTable', 'Qualifications');
                 let rolesColumnValue = $row.find(`td:eq(${rolesColumnIndex})`).text()?.trim();
 
                 if (!selectedStation || !rolesColumnValue) return;
 
                 let selectedRoles = rolesColumnValue.split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
 
-                let roleIndex = getColumnIndexByName('#StaffRequirementTable', 'Role');
+                let roleIndex = getColumnIndexByName('#StaffRequirementTable', 'Qualifications');
                 let stationIndex = getColumnIndexByName('#StaffRequirementTable', 'Event Service');
 
                 staffRequirementTable.rows().every(function () {
@@ -3230,7 +3276,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
 
 
-                let finalTableHtml = '<thead><tr><th name="Role">Role</th><th name="Event Service">Event Service</th>';
+                let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
             let dayIndex = 1;
             const checkedRows = [];
 
@@ -4679,7 +4725,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         var EventStaffDetailAndAdditionalRoleslist = combinedData.eventStaffDetailAndAdditionalRoleslist;
-
+                        debugger;
                         if (EventStaffDetailAndAdditionalRoleslist) {
                             // var stringdata = JSON.stringify(EventStaffDetailAndAdditionalRoleslist);
                             // console.log(stringdata);

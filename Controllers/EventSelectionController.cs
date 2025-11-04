@@ -1,6 +1,7 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -113,11 +114,16 @@ namespace ExcelFilesCompiler.Controllers
                     .Select(ewsr => ewsr.RoleId)
                     .ToList();
 
-                var allRoles = await _roleManager.Roles.ToListAsync();
-                var eventRoleNames = allRoles
-                    .Where(r => eventRolesIds.Contains(r.Id))
-                    .Select(r => r.Name)
+                var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
+                    .Where(esd => esd.EventStaffId == eventStaff.Id)
+                    .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
+                    .Select(ewsr => ewsr.RoleId)
                     .ToList();
+
+                var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
+
+                var allRoles = await _roleManager.Roles.ToListAsync();
+                var eventRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
 
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
@@ -156,31 +162,70 @@ namespace ExcelFilesCompiler.Controllers
             return View("Index", eventViewModels);
         }
 
+        //private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames)
+        //{
+        //    try
+        //    {
+        //        var identityRoles = await _userManager.GetRolesAsync(user);
+        //        var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+        //        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+        //        identity.AddClaim(new Claim("EventId", selectedEventId.ToString()));
+
+        //        foreach (var role in identityRoles.Concat(eventRoleNames))
+        //        {
+        //            identity.AddClaim(new Claim(ClaimTypes.Role, role));
+        //        }
+
+        //        var principal = new ClaimsPrincipal(identity);
+        //        await _signInManager.SignOutAsync();
+        //        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return false;
+        //    }
+        //}
+
         private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames)
         {
             try
             {
-                var identityRoles = await _userManager.GetRolesAsync(user);
+                // ✅ 1. Create a fresh identity for this session
                 var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+
+                // ✅ 2. Add core claims
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+                identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName ?? ""));
                 identity.AddClaim(new Claim("EventId", selectedEventId.ToString()));
 
-                foreach (var role in identityRoles.Concat(eventRoleNames))
+                // ✅ 3. Add only event-specific roles as claims
+                foreach (var role in eventRoleNames.Distinct())
                 {
                     identity.AddClaim(new Claim(ClaimTypes.Role, role));
                 }
 
+                // ✅ 4. Build principal
                 var principal = new ClaimsPrincipal(identity);
+
+                // ✅ 5. Replace the existing authentication cookie with new claims
                 await _signInManager.SignOutAsync();
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.Context.SignInAsync(
+                    IdentityConstants.ApplicationScheme,
+                    principal,
+                    new AuthenticationProperties { IsPersistent = false }
+                );
 
                 return true;
             }
             catch (Exception ex)
             {
+                // You can log ex.Message here for debugging
                 return false;
             }
         }
+
 
 
     }

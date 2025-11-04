@@ -206,7 +206,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventManagementTaskforcesList,
                     x => x.EventStaffDetailList
                         ).Include(x => x.EventStaffDetailList)
-                        .ThenInclude(l => l.EventWiseStaffRoleList) // Now second-level include works!
+                        .ThenInclude(l => l.EventWiseStaffRoleList)
+                        .Include(x => x.EventStaffDetailList)
+                        .ThenInclude(l => l.EventWiseStaffSecondaryRoleList)// Now second-level include works!
                         .Include(x => x.EventStaffDetailList)
                         .ThenInclude(l => l.AvailabilityDatesList)
                     .FirstOrDefaultAsync();
@@ -233,6 +235,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     foreach (var eventStaffDetails in firstEventManagement.EventStaffDetailList)
                     {
+                        if ( !string.IsNullOrEmpty(eventStaffDetails.SelectedSecondaryStation))
+                        {
+                            eventStaffDetails.SelectedSecondaryStationList = eventStaffDetails.SelectedSecondaryStation.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                        }
+
                         EventStaffDetailAndAdditionalRoles eventStaffDetailAndAdditionalRoles = new EventStaffDetailAndAdditionalRoles();
                         //var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
                         var eventStaffDetail = await _unitOfWork.EventStaff.GetWithInclude(
@@ -342,6 +349,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventStaffDetailList
                 ).Include(x => x.EventStaffDetailList)
                  .ThenInclude(l => l.EventWiseStaffRoleList)
+                 .Include(x => x.EventStaffDetailList)
+                 .ThenInclude(l => l.EventWiseStaffSecondaryRoleList)
                  .FirstOrDefaultAsync();
 
                 if (eventManagement == null)

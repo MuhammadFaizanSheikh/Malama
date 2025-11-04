@@ -89,10 +89,18 @@ namespace ExcelFilesCompiler.Controllers
                             .Select(roleId => new EventWiseStaffRole { RoleId = roleId })
                             .ToList();
 
+                        staffDetail.EventWiseStaffSecondaryRoleList = staffDetail.SelectedSecondaryRoles
+                            .Select(roleId => new EventWiseStaffSecondaryRole { RoleId = roleId })
+                            .ToList();
+
                         staffDetail.AvailabilityDatesList = (staffDetail.AvailabilityDates ?? new List<DateTime>())
                         .Select(availabilityDate => new EventManagementStaffAvailability { AvailabilityDate = availabilityDate })
                         .ToList();
 
+                        if (staffDetail.SelectedSecondaryStationList != null && staffDetail.SelectedSecondaryStationList.Count > 0)
+                        {
+                            staffDetail.SelectedSecondaryStation = string.Join(",", staffDetail.SelectedSecondaryStationList);
+                        }
                     }
 
                     if (action == "Add")
