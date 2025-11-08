@@ -70,8 +70,9 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (selectedEventId == 0)
                 {
-                    ViewBag.ErrorMessage = "Please select a valid event.";
-                    return await ReturnIndexView();
+                    //ViewBag.ErrorMessage = "Please select a valid event.";
+                    //return await ReturnIndexView();
+                    return RedirectToAction("Index", "Dashboard");
                 }
 
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -102,11 +103,11 @@ namespace ExcelFilesCompiler.Controllers
 
                 bool isUserInEvent = eventManagement.EventStaffDetailList.Any(esd => esd.EventStaffId == eventStaff.Id);
 
-                if (!isUserInEvent)
-                {
-                    ViewBag.ErrorMessage = "You are not assigned to the selected event.";
-                    return await ReturnIndexView();
-                }
+                //if (!isUserInEvent)
+                //{
+                //    ViewBag.ErrorMessage = "You are not assigned to the selected event.";
+                //    return await ReturnIndexView();
+                //}
 
                 var eventRolesIds = eventManagement.EventStaffDetailList
                     .Where(esd => esd.EventStaffId == eventStaff.Id)
@@ -131,7 +132,7 @@ namespace ExcelFilesCompiler.Controllers
                     return Unauthorized();
                 }
 
-                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventRoleNames);
+                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventRoleNames, eventManagement.EventID);
 
                 if (!isClaimsUpdated)
                 {
@@ -188,7 +189,7 @@ namespace ExcelFilesCompiler.Controllers
         //    }
         //}
 
-        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames)
+        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID)
         {
             try
             {
@@ -198,7 +199,8 @@ namespace ExcelFilesCompiler.Controllers
                 // ✅ 2. Add core claims
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
                 identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName ?? ""));
-                identity.AddClaim(new Claim("EventId", selectedEventId.ToString()));
+                identity.AddClaim(new Claim("EventIdLong", selectedEventId.ToString()));
+                identity.AddClaim(new Claim("EventIdString", eventID.ToString()));
 
                 // ✅ 3. Add only event-specific roles as claims
                 foreach (var role in eventRoleNames.Distinct())

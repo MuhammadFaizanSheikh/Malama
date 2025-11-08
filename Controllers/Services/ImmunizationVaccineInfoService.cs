@@ -73,6 +73,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
+                if (immunizationVaccine.FinalDoses > immunizationVaccine.StartingDoses)
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "Final dose cannot be greater than starting dose!";
+                    return responseDto;
+                }
+
                 immunizationVaccine.AddedBy = loggedinUserName;
                 immunizationVaccine.AddedOn = DateTime.Now;
                 await _unitOfWork.ImmunizationVaccineInfo.AddAsync(immunizationVaccine);
@@ -107,6 +114,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     responseDto.Success = false;
                     responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
+                    return responseDto;
+                }
+
+                if (immunizationVaccine.FinalDoses > immunizationVaccine.StartingDoses)
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "Final dose cannot be greater than starting dose!";
                     return responseDto;
                 }
 

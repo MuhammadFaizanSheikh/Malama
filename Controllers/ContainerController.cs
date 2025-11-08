@@ -224,7 +224,8 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 TempData["SuccessMessage"] = result.Message;
-                return RedirectToAction("Monitor", new { id });
+                //return RedirectToAction("Monitor", new { id });
+                return RedirectToAction("Index");
             }
             catch (Exception)
             {
