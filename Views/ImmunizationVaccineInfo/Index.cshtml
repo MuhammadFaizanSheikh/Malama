@@ -300,7 +300,6 @@
 
             <h4>Lots</h4>
             <div id="lotsContainer">
-
                 @{
                     var lots = Model.SingleImmunizationVaccineInfo.Lots;
                     if (lots == null || !lots.Any())
@@ -360,13 +359,13 @@
                                   data-valmsg-for="SingleImmunizationVaccineInfo.Lots[@i].ContainerId"
                                   data-valmsg-replace="true"></span>
                         </div>
+
+                        <!-- Remove Button -->
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-lot-btn">Remove</button>
+                        </div>
                     </div>
                 }
-
-
-
-
-
             </div>
 
             <button type="button" id="addLotBtn" class="btn btn-general">Add another Lot</button>
@@ -389,18 +388,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        // --- Add Inventory button ---
-        // const addInventoryBtn = document.getElementById("addInventoryBtn");
-        // if (addInventoryBtn) {
-        //     addInventoryBtn.addEventListener("click", function () {
-        //         const eventDropdown = document.getElementById("eventIdDropdown");
-        //         debugger;
-        //         const selectedEvent = eventDropdown ? eventDropdown.value : "";
-
-        //         const eventInput = document.querySelector("[name='SingleImmunizationVaccineInfo.EventId']");
-        //         if (eventInput) eventInput.value = selectedEvent;
-        //     });
-        // }
+        
 
         // --- Back button ---
         const backBtn = document.getElementById("backToTableBtn");
@@ -418,11 +406,21 @@
 
         // --- Add Lot button ---
         const addLotBtn = document.getElementById("addLotBtn");
+        const lotsContainer = document.getElementById("lotsContainer");
         const maxLots = 5;
+
+        // Convert server-side container list into JS array
+        const containerList = @Html.Raw(Json.Serialize(ViewBag.ContainerList ?? new List<SelectListItem>()));
+
+        function generateContainerOptions() {
+            debugger;
+            return containerList.map(c => `<option value="${c.value}">${c.text}</option>`).join("");
+        }
+
+        // Add new lot
         if (addLotBtn) {
             addLotBtn.addEventListener("click", function () {
-                const container = document.getElementById("lotsContainer");
-                const lotRows = container.querySelectorAll(".lot-row");
+                const lotRows = lotsContainer.querySelectorAll(".lot-row");
                 const nextIndex = lotRows.length;
 
                 if (nextIndex >= maxLots) {
@@ -432,34 +430,54 @@
 
                 const row = document.createElement("div");
                 row.className = "row mb-3 lot-row align-items-end";
-
                 row.innerHTML = `
-                <div class="col-md-3">
-                    <label class="form-label">Lot Number</label>
-                    <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
-                           class="form-control" placeholder="Enter lot number" required />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Expiration</label>
-                    <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
-                           type="date" class="form-control" required />
-                </div>
-    @if (ViewBag.ContainerList != null && (ViewBag.ContainerList as List<SelectListItem>).Any())
-    {
-                <div class="col-md-3">
-                <label class="form-label">Select Container</label>
+                    <div class="col-md-3">
+                        <label class="form-label">Lot Number</label>
+                        <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].LotNumber"
+                               class="form-control" placeholder="Enter lot number" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Expiration</label>
+                        <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
+                               type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Select Container</label>
                         <select name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].ContainerId"
-                        class="form-control" required>
-                    <option value="">Select Container</option>
-                            @foreach (var container in ViewBag.ContainerList as List<SelectListItem>)
-                            {
-                                <option value="@container.Value">@container.Text</option>
-                            }
-                </select>
-            </div>
-    }
-            `;
-                container.appendChild(row);
+                                class="form-control" required>
+                            <option value="">Select Container</option>
+                            ${generateContainerOptions()}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-lot-btn">Remove</button>
+                    </div>
+                `;
+                lotsContainer.appendChild(row);
+            });
+        }
+
+        // Remove lot (delegated listener)
+        lotsContainer.addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-lot-btn")) {
+                const rows = lotsContainer.querySelectorAll(".lot-row");
+                if (rows.length <= 1) {
+                    alert("At least one lot entry is required.");
+                    return;
+                }
+                e.target.closest(".lot-row").remove();
+                reindexLotRows();
+            }
+        });
+
+        // Reindex after removal
+        function reindexLotRows() {
+            const rows = lotsContainer.querySelectorAll(".lot-row");
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll("input, select");
+                inputs.forEach(input => {
+                    input.name = input.name.replace(/Lots\[\d+\]/, `Lots[${index}]`);
+                });
             });
         }
 
