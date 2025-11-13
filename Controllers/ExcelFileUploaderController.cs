@@ -154,22 +154,29 @@ namespace ExcelFilesCompiler.Controllers
             {
                 string eventId = HttpContext.Session.GetString("GlobalEventId");
                 if (string.IsNullOrEmpty(eventId))
-                    return BadRequest("Event ID is required.");
+                {
+                    var noIdResponse = new { success = false, message = "No EventID selected." };
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = null,
+                        DictionaryKeyPolicy = null
+                    };
+                    var json = JsonSerializer.Serialize(noIdResponse, options);
+                    return Content(json, "application/json");
+                }
 
                 var data = _fileUploader.GetEventDataByEventId(eventId);
 
                 var result = new { success = true, data };
 
-                // 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)
-                var options = new JsonSerializerOptions
+                var optionsSuccess = new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = null,
                     DictionaryKeyPolicy = null
                 };
 
-                var json = JsonSerializer.Serialize(result, options);
-
-                return Content(json, "application/json");
+                var jsonSuccess = JsonSerializer.Serialize(result, optionsSuccess);
+                return Content(jsonSuccess, "application/json");
             }
             catch (Exception ex)
             {
@@ -186,6 +193,7 @@ namespace ExcelFilesCompiler.Controllers
                 return Content(json, "application/json");
             }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> GetEventDataByEventIdForImmunization([FromBody] string eventId)

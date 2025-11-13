@@ -207,6 +207,7 @@
         $("#page-heading").text(window.type + " - Malama");
     }
     document.addEventListener("DOMContentLoaded", async function () {
+        debugger;
         if (window.userType === "client") {
              $("#page-heading").text("Malama (Staff)");
             const uploadSection = document.getElementById('fileUploadContainer');
@@ -489,7 +490,6 @@
     // });
 
     async function fetchAndRenderEventData(callback) {
-
         $('#loader').removeClass('d-none');
 
         try {
@@ -500,8 +500,13 @@
 
             const result = await response.json();
 
-            if (result.success && result.data.length > 0) {
-                await renderPreviewTable(result.data); // ✅ wait for DataTable init
+            if (!result.success) {
+                Swal.fire('Error', result.message || 'Unknown error occurred.', 'error');
+                return;
+            }
+
+            if (result.data && result.data.length > 0) {
+                await renderPreviewTable(result.data);
                 if (typeof callback === 'function') {
                     await callback();
                 }
@@ -514,6 +519,7 @@
             $('#loader').addClass('d-none');
         }
     }
+
 
     function renderPreviewTable(data) {
         if ($.fn.DataTable.isDataTable("#previewTable")) {
