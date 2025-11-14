@@ -322,11 +322,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
+                dto.AddedBy = existingRecord.AddedBy;
+                dto.AddedOn = existingRecord.AddedOn;
                 dto.Barcode = existingRecord.Barcode;
                 dto.UpdatedBy = userName;
                 dto.UpdatedOn = DateTime.Now;
                 dto.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : null;
                 dto.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : null;
+                dto.WalkInServiceMember = existingRecord.WalkInServiceMember;
 
                 //var entity = MapAndEnrich(dto, "");
 

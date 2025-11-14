@@ -217,10 +217,10 @@
             await fetchAndRenderEventData();
         } else {
              $("#page-heading").text("Malama (Admin)");
-            const eventIdDropdown = document.getElementById('eventIdDropdown');
-            if (eventIdDropdown) {
-                eventIdDropdown.style.display = 'none';
-            }
+            // const eventIdDropdown = document.getElementById('eventIdDropdown');
+            // if (eventIdDropdown) {
+            //     eventIdDropdown.style.display = 'none';
+            // }
         }
     });
 
@@ -317,7 +317,9 @@
                 }
 
                 const lastRow = json[json.length - 1];
-                smIdCounter = lastRow[0] ?? null;
+                debugger;
+                // smIdCounter = lastRow[0] ?? null;
+                smIdCounter = lastRow[keys.indexOf("SM ID") - 1] ?? null;
 
                 const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
                 const sexIndexForSorting = keys.indexOf("SEX") - 1;
@@ -493,6 +495,7 @@
         $('#loader').removeClass('d-none');
 
         try {
+            debugger;
             const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
@@ -612,6 +615,16 @@
             ordering: true,
             order: [[smIdIndexForSorting, 'asc']]
         });
+
+        debugger;
+        const table = $('#previewTable').DataTable();
+        const smIdIndex = keys.indexOf("SM ID");
+        const rowCount = table.rows().count();
+
+        if (rowCount > 0 && smIdIndex >= 0) {
+            const lastRowData = table.row(':last', { order: 'applied' }).data();
+            smIdCounter = lastRowData[smIdIndex];
+        }
 
         // Show relevant UI
         $('#eventSummaryTable').removeClass('d-none');
@@ -750,6 +763,7 @@
 
 
     function prepareObjectToAddRecordInDatabase(fullRowData, keys) {
+        debugger;
         const dto = {};
 
         columnMappingsForInsertionAndFetching.forEach(mapping => {
@@ -820,7 +834,8 @@
         }
 
         transformed["Id"] = primaryKeyForEdit;//bind id for update record in database
-        transformed["SmId"] = smIdEditing
+        transformed["SmId"] = smIdEditing;
+        transformed["isDeleted"] = false
 
         return transformed;
     }

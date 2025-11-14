@@ -9,7 +9,6 @@ const keys = [
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode",
-    "Vitals Status", "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason", "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Barcode", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "PHA Status", "PHA Follow Up", "Hearing Status", "Audiologist Service Completed", "Vision Status", "Optometrist Service Completed", "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment Received", "Final Dental Class", "Final Treatment Class 3 Reason", "Dental Treatment Reason",
     "Checked In", "Checked Out", "Checked In By",
     "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
 ];
@@ -100,51 +99,7 @@ const tableToKeysIndexMap = [
     keys.indexOf("Checked In"),
     keys.indexOf("Checked Out"),
     keys.indexOf("Checked In By"),
-    keys.indexOf("Checked Out By"),
-    keys.indexOf("Vitals Status"),
-    keys.indexOf("Hep B Needed Status"),
-    keys.indexOf("Hep B Reason"),
-    keys.indexOf("FLU Needed Status"),
-    keys.indexOf("FLU Reason"),
-    keys.indexOf("MMR Status"),
-    keys.indexOf("MMR Reason"),
-    keys.indexOf("Hep A Needed Status"),
-    keys.indexOf("Hep A Reason"),
-    keys.indexOf("Tet/TDP Needed Status"),
-    keys.indexOf("Tet/TDP Reason"),
-    keys.indexOf("Varicella Needed Status"),
-    keys.indexOf("Varicella Reason"),
-    keys.indexOf("SICKLE Status"),
-    keys.indexOf("Sickle Reason"),
-    keys.indexOf("HIV Status"),
-    keys.indexOf("HIV Barcode"),
-    keys.indexOf("HIV Reason"),
-    keys.indexOf("ABO Status"),
-    keys.indexOf("ABO Reason"),
-    keys.indexOf("DNA Status"),
-    keys.indexOf("DNA Reason"),
-    keys.indexOf("G6PD Checkout Status"),
-    keys.indexOf("G6PD Reason"),
-    keys.indexOf("Lipid Status"),
-    keys.indexOf("Lipid Reason"),
-    keys.indexOf("EKG Needed Status"),
-    keys.indexOf("EKG Needed Reason"),
-    keys.indexOf("PHA Status"),
-    keys.indexOf("PHA Follow Up"),
-    keys.indexOf("Hearing Status"),
-    keys.indexOf("Audiologist Service Completed"),
-    keys.indexOf("Vision Status"),
-    keys.indexOf("Optometrist Service Completed"),
-    keys.indexOf("Dental X-Ray Status"),
-    keys.indexOf("Panoramic X-Ray"),
-    keys.indexOf("Dental Exam Status"),
-    keys.indexOf("Class (Dental Exam)"),
-    keys.indexOf("Dental Treatment Received"),
-    keys.indexOf("Final Dental Class"),
-    keys.indexOf("Final Treatment Class 3 Reason"),
-    keys.indexOf("Dental Treatment Reason")
-    
-
+    keys.indexOf("Checked Out By")
 ];
 
 function getCellValue($cells, columnName) {
@@ -183,117 +138,7 @@ const categories = {
     ],
     "Check In Out Information": [
         "Checked In", "Checked Out", "Checked In By", "Checked Out By"
-    ],
-    "Check Out Section": {
-        "Vitals": [
-            [
-                {
-                    field: "Vitals Status",
-                    dependsOn: null,
-                    showWhen: null
-                }
-            ]
-        ],
-        "Immunizations": [
-            [
-                { field: "Hep B Needed Status", dependsOn: "Hep B Needed", showWhen: ["NEEDED"] },
-                { field: "Hep B Reason", dependsOn: "Hep B Needed Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "FLU Needed Status", dependsOn: "FLU Needed", showWhen: ["NEEDED"] },
-                { field: "FLU Reason", dependsOn: "FLU Needed Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "MMR Status", dependsOn: "MMR Needed", showWhen: ["NEEDED"] },
-                { field: "MMR Reason", dependsOn: "MMR Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "Hep A Needed Status", dependsOn: "Hep A Needed", showWhen: ["NEEDED"] },
-                { field: "Hep A Reason", dependsOn: "Hep A Needed Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "Tet/TDP Needed Status", dependsOn: "Tet/TDP Needed", showWhen: ["NEEDED"] },
-                { field: "Tet/TDP Reason", dependsOn: "Tet/TDP Needed Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "Varicella Needed Status", dependsOn: "Varicella Needed", showWhen: ["NEEDED"] },
-                { field: "Varicella Reason", dependsOn: "Varicella Needed Status", showWhen: ["Not Completed"] }
-            ]
-        ],
-        "Labs": [
-            [
-                { field: "SICKLE Status", dependsOn: "SICKLE", showWhen: ["NEEDED"] },
-                { field: "Sickle Reason", dependsOn: "SICKLE Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "HIV Status", dependsOn: "HIV", showWhen: ["NEEDED"] },
-                { field: "HIV Reason", dependsOn: "HIV Status", showWhen: ["Not Completed"] },
-                { field: "HIV Barcode", dependsOn: "HIV Status", showWhen: ["Completed"] }
-            ],
-            [
-                { field: "ABO Status", dependsOn: "ABO Needed", showWhen: ["NEEDED"] },
-                { field: "ABO Reason", dependsOn: "ABO Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "DNA Status", dependsOn: "DNA", showWhen: ["NEEDED"] },
-                { field: "DNA Reason", dependsOn: "DNA Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "G6PD Checkout Status", dependsOn: "G6PD", showWhen: ["NEEDED"] },
-                { field: "G6PD Reason", dependsOn: "G6PD Checkout Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "Lipid Status", dependsOn: "Lipid Needed", showWhen: ["NEEDED"] },
-                { field: "Lipid Reason", dependsOn: "Lipid Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "EKG Needed Status", dependsOn: "EKG NEEDED", showWhen: ["NEEDED"] },
-                { field: "EKG Needed Reason", dependsOn: "EKG Needed Status", showWhen: ["Not Completed"] }
-            ],
-            [
-                { field: "Pregnancy Test Status", dependsOn: "Pregnancy Test Needed", showWhen: ["NEEDED"] },
-                { field: "Pregnancy Test Reason", dependsOn: "Pregnancy Test Status", showWhen: ["Not Completed"] }
-            ]
-        ],
-        "PHA": [
-            [
-                { field: "PHA Status", dependsOn: "PHA Needed", showWhen: ["NEEDED"] },
-                { field: "PHA Follow Up", dependsOn: "PHA Status", showWhen: ["Completed"] }
-            ]
-        ],
-        "Audiologist": [
-            [
-                { field: "Hearing Status", dependsOn: "HEARING Needed", showWhen: ["NEEDED"] },
-                { field: "Audiologist Service Completed", dependsOn: "Hearing Status", showWhen: ["Completed"] }
-            ]
-        ],
-        "Vision": [
-            [
-                { field: "Vision Status", dependsOn: "VISION Needed", showWhen: ["NEEDED"] },
-                { field: "Optometrist Service Completed", dependsOn: "Vision Status", showWhen: ["Completed"] }
-            ]
-        ],
-        "Dental": [
-            [
-                { field: "Dental X-Ray Status", dependsOn: null, showWhen: null }
-            ],
-            [
-                { field: "Panoramic X-Ray", dependsOn: "PANO Needed", showWhen: ["NEEDED"] }
-            ],
-            [
-                { field: "Dental Exam Status", dependsOn: "Dental Needed", showWhen: ["NEEDED"] },
-                { field: "Class (Dental Exam)", dependsOn: "Dental Exam Status", showWhen: ["Completed"] },
-                { field: "Dental Treatment Received", dependsOn: "Class (Dental Exam)", showWhen: ["3"] },
-                { field: "Final Dental Class", dependsOn: "Dental Treatment Received", showWhen: ["Yes"] },
-                { field: "Dental Treatment Reason", dependsOn: "Dental Treatment Received", showWhen: ["No"] },
-                { field: "Final Treatment Class 3 Reason", dependsOn: "Final Dental Class", showWhen: ["3"] }
-            ]
-        ]
-
-    }
-
-
-
+    ]
 };
 
 
@@ -331,8 +176,6 @@ const readOnlyFieldsForEdit = [
     "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
     "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
     "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
-    //Check out section fields
-    //,"Vitals Status"
 ];
 
 const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
@@ -340,14 +183,7 @@ const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD
 const dropdownFieldsForEdit = [
     "SEX", "AGR", "MRC", "Dental Needed", "BWX Needed", "DRC", "PHA Needed",
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
-    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "Pregnancy Test Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed",
-    "Vitals Status",
-    "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason",
-    "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "Pregnancy Test Status", "Pregnancy Test Reason",
-    "Hearing Status", "Audiologist Service Completed",
-    "Vision Status", "Optometrist Service Completed",
-    "PHA Status", "PHA Follow Up",
-    "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment Received", "Final Dental Class", "Dental Treatment Reason", "Final Treatment Class 3 Reason"
+    "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed", "EKG NEEDED", "Pregnancy Test Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
 ];
 
 const tableDataFieldsForEdit = ["TaskForce"];
@@ -367,15 +203,7 @@ const dropdownFieldsForAdd = [
     "VISION Needed", "NEAR VISION Needed", "VRC", "Vision 2PG", "Vision Mask Insert",
     "HEARING Needed", "ABO", "ABO Needed", "DNA", "SICKLE", "G6PD", "HIV", "Lipid Needed",
     "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)", "EKG NEEDED", "Pregnancy Test Needed",
-    "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed",
-    "Vitals Status",
-    "Hep B Needed Status", "Hep B Reason", "FLU Needed Status", "FLU Reason", "MMR Status", "MMR Reason", "Hep A Needed Status", "Hep A Reason", "Tet/TDP Needed Status", "Tet/TDP Reason", "Varicella Needed Status", "Varicella Reason",
-    "SICKLE Status", "Sickle Reason", "HIV Status", "HIV Reason", "ABO Status", "ABO Reason", "DNA Status", "DNA Reason", "G6PD Checkout Status", "G6PD Reason", "Lipid Status", "Lipid Reason", "EKG Needed Status", "EKG Needed Reason", "Pregnancy Test Status", "Pregnancy Test Reason",
-    "Hearing Status", "Audiologist Service Completed",
-    "Vision Status", "Optometrist Service Completed",
-    "PHA Status", "PHA Follow Up",
-    "Dental X-Ray Status", "Panoramic X-Ray", "Dental Exam Status", "Class (Dental Exam)", "Dental Treatment Received", "Final Dental Class", "Dental Treatment Reason", "Final Treatment Class 3 Reason"
-
+    "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed"
 ];
 
 const readOnlyFieldsForAdd = [
@@ -384,8 +212,6 @@ const readOnlyFieldsForAdd = [
     "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
     "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
     "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
-    //Check out section fields
-    //, "Vitals Status"
 ];
 
 const tableDataFieldsForAdd = [
@@ -468,248 +294,8 @@ const dropdownOptionsMapping = {
     "ABO Needed": [
         { value: "NEEDED", label: "NEEDED" },
         { value: "N/A", label: "N/A" }
-    ],
-    "Vitals Status": [
-        { value: "", label: "" },
-        { value: "Completed", label: "Completed" }
-    ],
-    "Hep B Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "FLU Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "MMR Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "Hep A Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "Tet/TDP Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "Varicella Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Refused", label: "Refused" },
-        { value: "Contraindication", label: "Contraindication" }
-    ],
-    "Sickle Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "HIV Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "ABO Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "DNA Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "G6PD Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "Lipid Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "EKG Needed Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
-    ],
-    "Pregnancy Test Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "Unable to draw", label: "Unable to draw" },
-        { value: "Proof of service", label: "Proof of service" },
-        { value: "Not due", label: "Not due" }
     ]
-   ,
-    "Dental Treatment Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "SM Refused", label: "SM Refused" },
-        { value: "Time limitation", label: "Time limitation" },
-        { value: "Procedure not offered", label: "Procedure not offered" },
-        { value: "Military excused", label: "Military excused" },
-        { value: "SM current receiving treatment", label: "SM current receiving treatment" }
-    ], "Dental Treatment Received": [
-        { value: "", label: "" },
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" }
-    ]
-    , "PHA Follow Up": [
-        { value: "", label: "" },
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" }
-    ]
-    , "Audiologist Service Completed": [
-        { value: "", label: "" },
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" }
-    ]
-    , "Optometrist Service Completed": [
-        { value: "", label: "" },
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" }
-    ]
-    , "Class (Dental Exam)": [
-        { value: "", label: "" },
-        { value: "1", label: "1" },
-        { value: "2", label: "2" },
-        { value: "3", label: "3" }
-    ]
-    , "Final Dental Class": [
-        { value: "", label: "" },
-        { value: "1", label: "1" },
-        { value: "2", label: "2" },
-        { value: "3", label: "3" }
-    ], "Final Treatment Class 3 Reason": [
-        { value: "", label: "" },
-        { value: "Insufficient Supplies", label: "Insufficient Supplies" },
-        { value: "SM Refused", label: "SM Refused" },
-        { value: "Time limitation", label: "Time limitation" },
-        { value: "Procedure not offered", label: "Procedure not offered" },
-        { value: "Military excused", label: "Military excused" },
-        { value: "SM current receiving treatment", label: "SM current receiving treatment" }
-    ]
-
 };
-
-function applyRequired(modalContent) {
-    // Only consider visible dependent fields inside Check Out Section
-    modalContent.find('.dependent-field:visible').each(function () {
-        const container = $(this);
-        const input = container.find('input, select, textarea');
-
-        // Set required if visible
-        input.prop('required', true);
-    });
-
-    // Remove required from hidden fields
-    modalContent.find('.dependent-field:hidden').each(function () {
-        const container = $(this);
-        const input = container.find('input, select, textarea');
-        input.prop('required', false);
-    });
-}
-
-
-function applyDependencies(modalContent, data) {
-    function hideWithChildren(fieldName) {
-        modalContent.find(`.dependent-field[data-depends-on="${fieldName}"]`).each(function () {
-            const child = $(this);
-            child.hide();
-            child.find('input, select, textarea').val('');
-            hideWithChildren(child.data('field')); // recursively hide children
-        });
-    }
-
-    const checkedOutVal = $("#checkedOut").val();
-
-    modalContent.find('.dependent-field').each(function () {
-        const container = $(this);
-        const field = container.data('field');
-        const dependsOn = container.data('depends-on');
-        const showWhen = container.data('show-when');
-
-        if (container.closest('[data-subcategory]').length > 0 && checkedOutVal !== "Yes") {
-            container.hide();
-            container.find('input, select, textarea').val('');
-            hideWithChildren(field);
-            return;
-        }
-
-        if (!dependsOn) {
-            container.show();
-            return;
-        }
-
-        const dependsVal = data[dependsOn] || modalContent.find(`[name="${dependsOn}"]`).val();
-
-        if (showWhen.includes(dependsVal)) {
-            container.show();
-        } else {
-            container.hide();
-            container.find('input, select, textarea').val('');
-            hideWithChildren(field);
-        }
-    });
-
-    // 🔹 Hide sub-category headers if all fields are hidden
-    modalContent.find('.subcategory-header').each(function () {
-        const header = $(this);
-        const subCategory = header.text();
-        const allFields = modalContent.find(`.row[data-subcategory="${subCategory}"] .dependent-field`);
-        const anyVisible = allFields.filter(':visible').length > 0;
-
-        if (anyVisible) {
-            header.show();
-            header.next('hr').show(); // show the hr
-        } else {
-            header.hide();
-            header.next('hr').hide(); // hide the hr
-        }
-    });
-
-    applyRequired(modalContent);
-}
-
-$("#checkedOut").on("change", function () {
-    const val = $(this).val();
-    //if (val === "Yes") {
-    //    // Set Vital Status explicitly
-    //    $('[name="Vitals Status"]').val("Completed");
-    //} else {
-    //    // Clear Vital Status
-    //    $('[name="Vitals Status"]').val("");
-    //}
-
-    // Re-evaluate dependencies and required
-    applyDependencies($("#modalBodyContent"), {});
-});
-
 
 const modalContent = $('#modalBodyContent');
 
@@ -723,73 +309,6 @@ function populateModalForEdit(data) {
             modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
         }
   
-        if (categoryName === "Check Out Section") {
-            for (const [subCategory, rows] of Object.entries(categoryKeys)) {
-                // Sub-category heading
-                modalContent.append(`<h5 class="subcategory-header">${subCategory}</h5><hr/>`);
-
-                // Each row is an array of field objects
-                rows.forEach(rowFields => {
-                    let rowHtml = `<div class="row" data-subcategory="${subCategory}">`;
-
-                    rowFields.forEach(fieldObj => {
-                        const key = fieldObj.field;
-                        const value = data[key] || '';
-                        let inputHtml = '';
-                        let disabled = readOnlyFieldsForEdit.includes(key) ? 'disabled' : '';
-                        let minLengthAttr = lengthConstraints[key]?.min ? `minlength="${lengthConstraints[key].min}"` : '';
-
-                        if (dropdownFieldsForEdit.includes(key)) {
-                            const dropdownOptions = dropdownOptionsMapping[key] || [
-                                { value: "", label: "" },
-                                { value: "Completed", label: "Completed" },
-                                { value: "Not Completed", label: "Not Completed" }
-                            ];
-
-                            let optionsHtml = dropdownOptions.map(option =>
-                                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                            ).join('');
-
-
-                            inputHtml = `
-                            <div class="col-md-3 dependent-field" 
-                                 data-field="${key}" 
-                                 data-depends-on="${fieldObj.dependsOn || ''}" 
-                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
-                              <div class="form-group">
-                                <label>${key}</label>
-                                <select class="form-control" name="${key}" ${disabled} ${textColor}>
-                                  ${optionsHtml}
-                                </select>
-                              </div>
-                            </div>`;
-                        }
-                        else {
-                            // 🔹 Textbox logic (still uses rule engine)
-                            inputHtml = `
-                            <div class="col-md-3 dependent-field"
-                                 data-field="${key}"
-                                 data-depends-on="${fieldObj.dependsOn || ''}"
-                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
-                                <div class="form-group">
-                                    <label>${key}</label>
-                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} ${minLengthAttr}/>
-                                </div>
-                            </div>
-                        `;
-                        }
-
-                        rowHtml += inputHtml;
-                    });
-
-                    rowHtml += `</div>`; // close row
-                    modalContent.append(rowHtml);
-                });
-            }
-        }
-
-
-        else {
             let rowHtml = '<div class="row">';
             let inputCount = 0;
             categoryKeys.forEach((key, index) => {
@@ -1017,31 +536,12 @@ function populateModalForEdit(data) {
             rowHtml += '</div>';
             modalContent.append(rowHtml);
 
-        }
         // Attach input validation listeners to all text fields
         modalContent.find('input[type="text"]').on('input', function () {
             const value = $(this).val();
             validateInput(this, value);
         });
     }
-
-    //Event listner for modal dropdown change to hide/show checkout sections controls
-    modalContent.on('change', 'select', function () {
-        applyDependencies(modalContent, {});
-    });
-
-    //apply rule engine on modal load
-    applyDependencies(modalContent, data);
-
-    //Event listner on Dropdown Check Out Section controls to apply dependencies based on rule engine
-    $("#modalBodyContent").on('change', '.dependent-field select', function () {
-        applyDependencies($("#modalBodyContent"), {});
-    });
-
-    //Event listner on Textbox Check Out Section controls to apply dependencies based on rule engine
-    $("#modalBodyContent").on('input', '.dependent-field input[type="text"]', function () {
-        applyDependencies($("#modalBodyContent"), {});
-    });
 
     // After modal is populated, bind the event listener to the DOB field
     const dobField = modalContent.find('input[name="DOB"]');
@@ -1133,71 +633,6 @@ function populateModalForAdd(data) {
             modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
         }
 
-        if (categoryName === "Check Out Section") {
-            for (const [subCategory, rows] of Object.entries(categoryKeys)) {
-                // Sub-category heading
-                modalContent.append(`<h5 class="subcategory-header">${subCategory}</h5><hr/>`);
-
-                // Each row is an array of field objects
-                rows.forEach(rowFields => {
-                    let rowHtml = `<div class="row" data-subcategory="${subCategory}">`;
-
-                    rowFields.forEach(fieldObj => {
-                        const key = fieldObj.field;
-                        const value = data[key] || '';
-                        let inputHtml = '';
-                        let disabled = readOnlyFieldsForAdd.includes(key) ? 'disabled' : '';
-                        let minLengthAttr = lengthConstraints[key]?.min ? `minlength="${lengthConstraints[key].min}"` : '';
-
-                        if (dropdownFieldsForAdd.includes(key)) {
-                            const dropdownOptions = dropdownOptionsMapping[key] || [
-                                { value: "", label: "" },
-                                { value: "Completed", label: "Completed" },
-                                { value: "Not Completed", label: "Not Completed" }
-                            ];
-
-                            let optionsHtml = dropdownOptions.map(option =>
-                                `<option value="${option.value}" ${value === option.value ? 'selected' : ''}>${option.label}</option>`
-                            ).join('');
-
-
-                            inputHtml = `
-                            <div class="col-md-3 dependent-field" 
-                                 data-field="${key}" 
-                                 data-depends-on="${fieldObj.dependsOn || ''}" 
-                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
-                              <div class="form-group">
-                                <label>${key}</label>
-                                <select class="form-control" name="${key}" ${disabled} ${textColor}>
-                                  ${optionsHtml}
-                                </select>
-                              </div>
-                            </div>`;
-                        }
-                        else {
-                            // 🔹 Textbox logic (still uses rule engine)
-                            inputHtml = `
-                            <div class="col-md-3 dependent-field"
-                                 data-field="${key}"
-                                 data-depends-on="${fieldObj.dependsOn || ''}"
-                                 data-show-when='${JSON.stringify(fieldObj.showWhen || [])}'>
-                                <div class="form-group">
-                                    <label>${key}</label>
-                                    <input type="text" class="form-control" name="${key}" value="${value}" ${disabled} ${textColor} ${minLengthAttr}/>
-                                </div>
-                            </div>
-                        `;
-                        }
-
-                        rowHtml += inputHtml;
-                    });
-
-                    rowHtml += `</div>`; // close row
-                    modalContent.append(rowHtml);
-                });
-            }
-        }
-        else {
             let rowHtml = '<div class="row">';
             let inputCount = 0;
             categoryKeys.forEach((key, index) => {
@@ -1348,33 +783,12 @@ function populateModalForAdd(data) {
             rowHtml += '</div>';
             modalContent.append(rowHtml);
 
-        }
-
-
         // Attach input validation listeners to all text fields
         modalContent.find('input[type="text"]').on('input', function () {
             const value = $(this).val();
             validateInput(this, value);
         });
     }
-
-    //Event listner for modal dropdown change to hide/show checkout sections controls
-    modalContent.on('change', 'select', function () {
-        applyDependencies(modalContent, {});
-    });
-
-    //apply rule engine on modal load
-    applyDependencies(modalContent, data);
-
-    //Event listner on Dropdown Check Out Section controls to apply dependencies based on rule engine
-    $("#modalBodyContent").on('change', '.dependent-field select', function () {
-        applyDependencies($("#modalBodyContent"), {});
-    });
-
-    //Event listner on Textbox Check Out Section controls to apply dependencies based on rule engine
-    $("#modalBodyContent").on('input', '.dependent-field input[type="text"]', function () {
-        applyDependencies($("#modalBodyContent"), {});
-    });
 
     checkLabRequisitionField();
     checkLabNeededField();
@@ -1673,7 +1087,7 @@ const validationRules = {
 function validateInput(field, value) {
     const inputName = $(field).attr('name');
     const rules = validationRules[inputName];
-    debugger;
+
     if (rules) {
         if (rules.uppercase) {
             value = value.toUpperCase();
@@ -1763,8 +1177,6 @@ $(document).on('change', '#checkedIn', function () {
     } else {
         $('#checkedOut').prop('disabled', true).val('No'); // Reset value to No when disabled
     }
-
-    applyDependencies($("#modalBodyContent"), {});
 });
 
 function isValidDate(dateString) {
@@ -1896,6 +1308,7 @@ async function saveChangesButton() {
         const fullRowData = Array(keys.length).fill('');
 
         // set sm id counter in index 0 (for edit mode)
+        debugger;
         smIdCounter++;
         const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
         fullRowData[smIdIndex] = smIdCounter.toString();
@@ -1976,6 +1389,7 @@ async function saveChangesButton() {
         fullRowData[barcodeIndex] = finalBarcodeValue;
 
         if (window.userType === "client") {
+            debugger;
             const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
 
             const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
@@ -1993,8 +1407,7 @@ async function saveChangesButton() {
 
                 $('#editModal').modal('hide');
                 smIdToIdentifyRecordForPrint = result.data.data.smId;
-                const selectedEventId = $('#eventIdDropdown').val();
-                await fetchAndRenderEventData(selectedEventId, async () => {
+                await fetchAndRenderEventData(async () => {
                     await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
                 });
             } else {
@@ -2005,6 +1418,7 @@ async function saveChangesButton() {
                 });
             }
         } else {
+            $('#editModal').modal('hide');
             $('#previewTable').DataTable().row.add(fullRowData).draw(false);
             await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
         }
@@ -2048,7 +1462,6 @@ async function saveChangesButton() {
         //        }
         //    }
         //});
-
         if (window.userType === "client") {
             const dto = prepareObjectToUpdateRecordInDatabase(updatedData, columnMappingsForInsertionAndFetching);
             const result = await updateSingleRecordInDatabase('/ExcelFileUploader/UpdateSingleRecord', dto);
@@ -2063,8 +1476,7 @@ async function saveChangesButton() {
                 });
                 $('#editModal').modal('hide');
                 smIdToIdentifyRecordForPrint = dto.SmId;
-                const selectedEventId = $('#eventIdDropdown').val();
-                await fetchAndRenderEventData(selectedEventId, async () => {
+                await fetchAndRenderEventData(async () => {
                     await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
                 });
             } else {
@@ -2100,6 +1512,7 @@ async function saveChangesButton() {
                 }
             });
 
+            $('#editModal').modal('hide');
             await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
         }
     }
@@ -2118,7 +1531,7 @@ async function saveChangesButton() {
 
 async function printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint) {
     if (!shouldPrint) return;
-
+    debugger;
     const table = $('#previewTable').DataTable();
     const rows = table.rows().nodes().toArray(); // get all row DOM nodes
 
@@ -2972,48 +2385,6 @@ const columnMappingsForInsertionAndFetching = [
     { key: "HivWin", label: "HIV Win", type: "int" },
     { key: "HearingWin", label: "Hearing WIN", type: "int" },
     { key: "Barcode", label: "Barcode", type: "string" },
-    { key: "VitalsStatus", label: "Vitals Status", type: "string" },
-    { key: "HepBNeededStatus", label: "Hep B Needed Status", type: "string" },
-    { key: "HepBReason", label: "Hep B Reason", type: "string" },
-    { key: "FluNeededStatus", label: "FLU Needed Status", type: "string" },
-    { key: "FluReason", label: "FLU Reason", type: "string" },
-    { key: "MmrStatus", label: "MMR Status", type: "string" },
-    { key: "MmrReason", label: "MMR Reason", type: "string" },
-    { key: "HepANeededStatus", label: "Hep A Needed Status", type: "string" },
-    { key: "HepAReason", label: "Hep A Reason", type: "string" },
-    { key: "TetTdpNeededStatus", label: "Tet/TDP Needed Status", type: "string" },
-    { key: "TetTdpReason", label: "Tet/TDP Reason", type: "string" },
-    { key: "VaricellaNeededStatus", label: "Varicella Needed Status", type: "string" },
-    { key: "VaricellaReason", label: "Varicella Reason", type: "string" },
-    { key: "SickleStatus", label: "SICKLE Status", type: "string" },
-    { key: "SickleReason", label: "Sickle Reason", type: "string" },
-    { key: "HivStatus", label: "HIV Status", type: "string" },
-    { key: "HivBarcode", label: "HIV Barcode", type: "string" },
-    { key: "HivReason", label: "HIV Reason", type: "string" },
-    { key: "AboStatus", label: "ABO Status", type: "string" },
-    { key: "AboReason", label: "ABO Reason", type: "string" },
-    { key: "DnaStatus", label: "DNA Status", type: "string" },
-    { key: "DnaReason", label: "DNA Reason", type: "string" },
-    { key: "G6pdCheckoutStatus", label: "G6PD Checkout Status", type: "string" },
-    { key: "G6pdReason", label: "G6PD Reason", type: "string" },
-    { key: "LipidStatus", label: "Lipid Status", type: "string" },
-    { key: "LipidReason", label: "Lipid Reason", type: "string" },
-    { key: "EkgNeededStatus", label: "EKG Needed Status", type: "string" },
-    { key: "EkgNeededReason", label: "EKG Needed Reason", type: "string" },
-    { key: "PhaStatus", label: "PHA Status", type: "string" },
-    { key: "PhaFollowUp", label: "PHA Follow Up", type: "string" },
-    { key: "HearingStatus", label: "Hearing Status", type: "string" },
-    { key: "AudiologistServiceCompleted", label: "Audiologist Service Completed", type: "string" },
-    { key: "VisionStatus", label: "Vision Status", type: "string" },
-    { key: "OptometristServiceCompleted", label: "Optometrist Service Completed", type: "string" },
-    { key: "DentalXrayStatus", label: "Dental X-Ray Status", type: "string" },
-    { key: "PanoramicXray", label: "Panoramic X-Ray", type: "string" },
-    { key: "DentalExamStatus", label: "Dental Exam Status", type: "string" },
-    { key: "ClassDentalExam", label: "Class (Dental Exam)", type: "string" },
-    { key: "DentalTreatmentReceived", label: "Dental Treatment Received", type: "string" },
-    { key: "FinalDentalClass", label: "Final Dental Class", type: "string" },
-    { key: "FinalTreatmentClass3Reason", label: "Final Treatment Class 3 Reason", type: "string" },
-    { key: "DentalTreatmentReason", label: "Dental Treatment Reason", type: "string" }, 
     { key: "CheckIn", label: "Checked In", type: "string" },
     { key: "CheckOut", label: "Checked Out", type: "string" },
     { key: "CheckInBy", label: "Checked In By", type: "string" },
