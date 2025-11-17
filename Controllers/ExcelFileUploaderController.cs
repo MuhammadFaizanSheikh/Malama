@@ -239,41 +239,76 @@ namespace ExcelFilesCompiler.Controllers
         public async Task<IActionResult> InsertSingleRecord([FromBody] FileDataDto dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new ResponseDto
                 {
                     Success = false,
                     Message = "Invalid model state.",
                     Data = ModelState
                 });
+            }
 
-            var user = _userManager.GetUserAsync(User).Result;
-            var response = await _fileUploader.AddSingleRecordAsync(dto, user.UserName);
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var response = await _fileUploader.AddSingleRecordAsync(dto, user.UserName);
 
-            if (response.Success)
-                return Ok(response);
-            else
-                return StatusCode(500, response);
+                if (response.Success)
+                    return Ok(response);
+                else
+                    return StatusCode(500, response);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log exception with your logger
+                // _logger.LogError(ex, "Error inserting record");
+
+                return StatusCode(500, new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while inserting the record.",
+                    Data = ex.Message
+                });
+            }
         }
+
 
         [HttpPut]
         public async Task<IActionResult> UpdateSingleRecord([FromBody] FileDataDto dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new ResponseDto
                 {
                     Success = false,
                     Message = "Invalid model state.",
                     Data = ModelState
                 });
+            }
 
-            var user = _userManager.GetUserAsync(User).Result;
-            var response = await _fileUploader.UpdateSingleRecordAsync(dto, user.UserName);
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var response = await _fileUploader.UpdateSingleRecordAsync(dto, user.UserName);
 
-            if (response.Success)
-                return Ok(response);
-            else
-                return StatusCode(500, response);
+                if (response.Success)
+                    return Ok(response);
+                else
+                    return StatusCode(500, response);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here if you have a logger, e.g., _logger.LogError(ex, "Error updating record");
+
+                return StatusCode(500, new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating the record.",
+                    Data = ex.Message
+                });
+            }
         }
+
 
     }
 }

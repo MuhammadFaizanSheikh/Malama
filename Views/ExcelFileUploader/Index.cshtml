@@ -525,116 +525,125 @@
 
 
     function renderPreviewTable(data) {
-        if ($.fn.DataTable.isDataTable("#previewTable")) {
-            $("#previewTable").DataTable().clear().destroy();
-        }
 
-        $("#previewTable thead").empty();
-        $("#previewTable tbody").empty();
+    // ===== 1. MERGE DB COLUMNS + PREVIEW-ONLY COLUMNS =====
+    const previewMappings = [
+        ...columnMappingsForInsertionAndFetching,
+        ...statusPreviewColumns
+    ];
 
-        // Generate headers dynamically from columnMappings
-        let headerRow = `<tr><th>Actions</th>`;
-        columnMappingsForInsertionAndFetching.forEach(mapping => {
-            headerRow += `<th>${mapping.label}</th>`;
-        });
-        headerRow += `</tr>`;
-        $("#previewTable thead").append(headerRow);
-
-        // $("#previewTable thead th").css({
-        //     "background-color": "rgba(120, 130, 221, 1)",
-        //     "color": "white" // optional: for better contrast
-        // });
-
-        // Generate rows
-        let formattedData = data.map(row => {
-            const rowData = [null]; // placeholder for "Actions"
-            columnMappingsForInsertionAndFetching.forEach(mapping => {
-                let value = row[mapping.key] ?? "";
-
-                // Format date fields
-                if (mapping.type === "date" && value) {
-                    const parsedDate = new Date(value);
-                    if (!isNaN(parsedDate)) {
-                        value = parsedDate.toLocaleString("en-US", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                            hour12: false
-                        }).replace(",", ""); // Remove comma between date and time
-                    }
-                }
-
-                rowData.push($('<div>').text(value).html()); // escape HTML
-            });
-
-            rowData.push(`<input type="hidden" class="row-id" value="${row.Id}" />`);
-            return rowData;
-        });
-
-
-        const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
-        const sexIndexForSorting = keys.indexOf("SEX") - 1;
-        const smIdIndexForSorting = keys.indexOf("SM ID");
-
-        // Initialize DataTable
-        $("#previewTable").DataTable({
-            data: formattedData,
-            columns: [
-                {
-                    title: "Actions",
-                    data: null,
-                    orderable: false,
-                    render: function () {
-                        return `
-                                       <button class="btn table-action-btn mr-2" onclick="editRow(this)">Edit</button>
-                                        <button class="btn table-action-btn mr-2 btn-print">Print</button>
-                            `;
-                    }
-                },
-                ...columnMappingsForInsertionAndFetching.map((mapping, i) => ({
-                    title: mapping.label,
-                    orderable: (i === fullNameIndexForSorting || i === sexIndexForSorting)
-                }))
-            ],
-            createdRow: function (row, data, dataIndex) {
-                // Append the hidden ID input at the end of the row
-                const hiddenInput = $(data[data.length - 1]);
-                $(row).append(hiddenInput);
-            },
-            scrollY: 400,
-            scrollX: true,
-            scrollCollapse: true,
-            paging: false,
-            autoWidth: false,
-            fixedColumns: {
-                leftColumns: 7
-            },
-            ordering: true,
-            order: [[smIdIndexForSorting, 'asc']]
-        });
-
-        debugger;
-        const table = $('#previewTable').DataTable();
-        const smIdIndex = keys.indexOf("SM ID");
-        const rowCount = table.rows().count();
-
-        if (rowCount > 0 && smIdIndex >= 0) {
-            const lastRowData = table.row(':last', { order: 'applied' }).data();
-            smIdCounter = lastRowData[smIdIndex];
-        }
-
-        // Show relevant UI
-        $('#eventSummaryTable').removeClass('d-none');
-        const filterDiv = document.querySelector('.card.p-3.mb-4');
-                filterDiv.style.display = 'block';
-                $('.add-row-button').show();
-        // document.getElementById('addRowButton').classList.remove('d-none');
-
-        RenderUpdatedEventSummaryTable();
+    // ===== 2. RESET EXISTING DATATABLE =====
+    if ($.fn.DataTable.isDataTable("#previewTable")) {
+        $("#previewTable").DataTable().clear().destroy();
     }
+
+    $("#previewTable thead").empty();
+    $("#previewTable tbody").empty();
+
+    // ===== 3. BUILD TABLE HEADER =====
+    let headerRow = `<tr><th>Actions</th>`;
+    previewMappings.forEach(m => {
+        headerRow += `<th>${m.label}</th>`;
+    });
+    headerRow += `</tr>`;
+    $("#previewTable thead").append(headerRow);
+
+    // ===== 4. TRANSFORM DATA INTO ROWS =====
+    let formattedData = data.map(row => {
+        const rowData = [null]; // placeholder for actions col
+
+        previewMappings.forEach(mapping => {
+            let value;
+
+            // Support nested custom getter (child objects, derived fields)
+            if (typeof mapping.getValue === "function") {
+                value = mapping.getValue(row);
+            } else {
+                value = row[mapping.key] ?? "";
+            }
+
+            // Format dates
+            if (mapping.type === "date" && value) {
+                const parsedDate = new Date(value);
+                if (!isNaN(parsedDate)) {
+                    value = parsedDate.toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false
+                    }).replace(",", "");
+                }
+            }
+
+            rowData.push($('<div>').text(value).html()); // HTML escape
+        });
+
+        // Hidden ID
+        rowData.push(`<input type="hidden" class="row-id" value="${row.Id}" />`);
+
+        return rowData;
+    });
+
+    // ===== 5. CALCULATE SORT INDEX =====
+    const fullNameIndexForSorting = keys.indexOf("FULL NAME") -1;
+    const sexIndexForSorting = keys.indexOf("SEX") -1;
+    const smIdIndexForSorting = keys.indexOf("SM ID");
+
+    // ===== 6. INITIALIZE DATATABLE =====
+    $("#previewTable").DataTable({
+        data: formattedData,
+        columns: [
+            {
+                title: "Actions",
+                data: null,
+                orderable: false,
+                render: function () {
+                    return `
+                        <button class="btn table-action-btn mr-2" onclick="editRow(this)">Edit</button>
+                        <button class="btn table-action-btn mr-2 btn-print">Print</button>
+                    `;
+                }
+            },
+            ...previewMappings.map((mapping, index) => ({
+                title: mapping.label,
+                orderable: (index === fullNameIndexForSorting || index === sexIndexForSorting)
+            }))
+        ],
+        createdRow: function (row, data) {
+            $(row).append($(data[data.length - 1]));
+        },
+        scrollY: 400,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: false,
+        autoWidth: false,
+        fixedColumns: { leftColumns: 7 },
+        ordering: true,
+        order: [[smIdIndexForSorting, 'asc']]
+    });
+
+    // ===== 7. SM ID COUNTER UPDATE =====
+    const table = $('#previewTable').DataTable();
+    const smIdIndex = smIdIndexForSorting;
+    const rowCount = table.rows().count();
+
+    if (rowCount > 0 && smIdIndex >= 0) {
+        const lastRowData = table.row(':last', { order: 'applied' }).data();
+        smIdCounter = lastRowData[smIdIndex];
+    }
+
+    // ===== 8. SHOW UI =====
+    $('#eventSummaryTable').removeClass('d-none');
+    document.querySelector('.card.p-3.mb-4').style.display = 'block';
+    $('.add-row-button').show();
+
+    RenderUpdatedEventSummaryTable();
+}
+
+
 
     $('#searchStaffBtn').on('click', function () {
         var fullName = $('#filterFullName').val().trim().toLowerCase();

@@ -88,8 +88,10 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Cookie.SameSite = SameSiteMode.None; // Set to None for cross-origin
+    options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(365); // or any duration you want
+    options.SlidingExpiration = true; // refreshes the cookie on activity
 });
 
 // Authentication

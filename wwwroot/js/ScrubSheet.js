@@ -10,7 +10,8 @@ const keys = [
     "IMM Needed", "Hep B Needed", "Hep A Needed", "FLU Needed", "Tet/TDP Needed", "MMR Needed", "Varicella Needed", "TaskForce", "Notes", "Over 44",
     "EventDate", "Event End Date", "EventID", "Vision Win", "Dental Win", "PHA Win", "HIV Win", "Hearing WIN", "Barcode",
     "Checked In", "Checked Out", "Checked In By",
-    "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member"
+    "Checked Out By", "Checked In Time", "Checked Out Time", "Walk-In Service Member",
+    "IMM Needed Status", "Labs Needed Status", "PHA Needed Status", "Audiologist Needed Status", "Vision Needed Status","Dental Needed Status"
 ];
 
 const tableToKeysIndexMap = [
@@ -99,7 +100,16 @@ const tableToKeysIndexMap = [
     keys.indexOf("Checked In"),
     keys.indexOf("Checked Out"),
     keys.indexOf("Checked In By"),
-    keys.indexOf("Checked Out By")
+    keys.indexOf("Checked Out By"),
+
+    /*Status fields*/
+    keys.indexOf("IMM Needed Status"),
+    keys.indexOf("Labs Needed Status"),
+    keys.indexOf("PHA Needed Status"),
+    keys.indexOf("Audiologist Needed Status"),
+    keys.indexOf("Vision Needed Status"),
+    keys.indexOf("Dental Needed Status")
+
 ];
 
 function getCellValue($cells, columnName) {
@@ -138,7 +148,16 @@ const categories = {
     ],
     "Check In Out Information": [
         "Checked In", "Checked Out", "Checked In By", "Checked Out By"
+    ],
+    "Status": [
+        { name: "IMM Needed Status", dependsOn: "IMM Needed" },
+        { name: "Labs Needed Status", dependsOn: "Lab Needed" },
+        { name: "PHA Needed Status", dependsOn: "PHA Needed" },
+        { name: "Audiologist Needed Status", dependsOn: "HEARING Needed" },
+        { name: "Vision Needed Status", dependsOn: "VISION Needed" },
+        { name: "Dental Needed Status", dependsOn: "Dental Needed" }
     ]
+
 };
 
 
@@ -175,7 +194,8 @@ const readOnlyFieldsForEdit = [
     "HIV Win", "Vision Win", "PHA Win", "Hearing WIN", "Dental Win",
     "Dental Due", "Dental Exam", "PHA Date", "PULHES", "PHA Due", "Vision Date",
     "Hearing Date", "HRC", "Hearing Profile", "Lab Requisition", "Sickle Date",
-    "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed"
+    "HIV NEXT TEST DATE", "Quest", "G6PD Date", "G6PD Status", "IMM Needed",
+    "IMM Needed Status", "Labs Needed Status", "PHA Needed Status", "Audiologist Needed Status", "Vision Needed Status", "Dental Needed Status"
 ];
 
 const requiredFields = ['LAST NAME', 'FIRST NAME', 'FULL NAME', 'FULL SSN', 'DOD ID', 'DOB', 'TaskForce', 'SEX'];
@@ -299,16 +319,96 @@ const dropdownOptionsMapping = {
 
 const modalContent = $('#modalBodyContent');
 
+function toggleStatusSection() {
+    const checkedOutVal = $("#checkedOut").val();
+
+    if (checkedOutVal && checkedOutVal.toString().trim().toLowerCase() === "yes") {
+        $("#status-section-heading").show();
+        $("#status-section-div").show();
+    } else {
+        $("#status-section-heading").hide();
+        $("#status-section-div").hide();
+    }
+}
+
+// Bind to change event
+$("#checkedOut").on("change", function () {
+    toggleStatusSection();
+});
+
+
 function populateModalForEdit(data) {
     modalContent.empty(); // Clear previous content
     let textColor = 'style="color: black;"'; // Set text color to black
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
-        if (categoryName !== 'Check In Out Information') {
-            modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+
+        if (categoryName === "Status") {
+            if (window.isCheckInOutPage = true && window.userType === "client") {
+
+                // Create container for Status section
+                const statusContainer = $(`
+            <div id="statusContainer">
+                <h5 class="category-header">Status</h5>
+                <hr/>
+                <div class="row" id="statusSection"></div>
+            </div>
+        `);
+                modalContent.append(statusContainer);
+
+                function renderStatusFields() {
+                    const statusSection = $('#statusSection');
+                    statusSection.empty(); // Clear previous fields
+
+                    const checkedOutVal = $("#checkedOut").val();
+                    if (checkedOutVal !== "Yes") {
+                        statusContainer.hide();
+                        return;
+                    } else {
+                        statusContainer.show();
+                    }
+
+                    let inputCount = 0;
+                    for (const statusFieldObj of categories["Status"]) {
+                        const statusField = statusFieldObj.name;
+                        const controllingField = statusFieldObj.dependsOn;
+
+                        const controllingValue = data?.[controllingField];
+                        if (controllingValue && controllingValue.toUpperCase() === "NEEDED") {
+                            const valueToShow = data?.[statusField] || "";
+                            const inputHtml = `
+                        <div class="form-group col-lg-2">
+                            <label>${statusField}</label>
+                            <input type="text" class="form-control" name="${statusField}" value="${valueToShow}" readonly style="color:black;" />
+                        </div>
+                    `;
+                            statusSection.append(inputHtml);
+                            inputCount++;
+
+                            if (inputCount % 5 === 0) statusSection.append('</div><div class="row">');
+                        }
+                    }
+
+                    if (inputCount % 5 !== 0) {
+                        const emptyDivsNeeded = 5 - (inputCount % 5);
+                        for (let i = 0; i < emptyDivsNeeded; i++) {
+                            statusSection.append('<div class="form-group col-lg-2"></div>');
+                        }
+                    }
+                }
+
+                renderStatusFields();
+                $("#checkedOut").on("change", renderStatusFields);
+            }
         }
-  
+
+
+        else {
+            if (categoryName !== 'Check In Out Information') {
+                modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+            }
+
             let rowHtml = '<div class="row">';
             let inputCount = 0;
             categoryKeys.forEach((key, index) => {
@@ -536,11 +636,12 @@ function populateModalForEdit(data) {
             rowHtml += '</div>';
             modalContent.append(rowHtml);
 
-        // Attach input validation listeners to all text fields
-        modalContent.find('input[type="text"]').on('input', function () {
-            const value = $(this).val();
-            validateInput(this, value);
-        });
+            // Attach input validation listeners to all text fields
+            modalContent.find('input[type="text"]').on('input', function () {
+                const value = $(this).val();
+                validateInput(this, value);
+            });
+        }
     }
 
     // After modal is populated, bind the event listener to the DOB field
@@ -629,9 +730,72 @@ function populateModalForAdd(data) {
     const fieldsPerRow = 5; // Set to 5 fields per row now
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
-        if (categoryName !== 'Check In Out Information') {
-            modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+        if (categoryName === "Status") {
+            if (window.isCheckInOutPage = true && window.userType === "client") {
+
+                // Container for Status section
+                const statusContainer = $(`
+            <div id="statusContainer">
+                <h5 class="category-header">Status</h5>
+                <hr/>
+                <div class="row" id="statusSection"></div>
+            </div>
+        `);
+                modalContent.append(statusContainer);
+
+                function renderStatusFields() {
+                    const statusSection = $('#statusSection');
+                    statusSection.empty();
+
+                    const checkedOutVal = $("#checkedOut").val();
+                    if (checkedOutVal !== "Yes") {
+                        statusContainer.hide();
+                        return;
+                    } else {
+                        statusContainer.show();
+                    }
+
+                    let inputCount = 0;
+                    for (const statusFieldObj of categories["Status"]) {
+                        const statusField = statusFieldObj.name;
+                        const controllingField = statusFieldObj.dependsOn;
+
+                        // Get value from control (Add mode) instead of data object
+                        const controllingValue = $(`[name="${controllingField}"]`).val();
+                        if (controllingValue && controllingValue.toUpperCase() === "NEEDED") {
+                            const valueToShow = "Pending"; // Always Pending in Add mode
+                            const inputHtml = `
+                        <div class="form-group col-lg-2">
+                            <label>${statusField}</label>
+                            <input type="text" class="form-control" name="${statusField}" value="${valueToShow}" readonly style="color:black;" />
+                        </div>
+                    `;
+                            statusSection.append(inputHtml);
+                            inputCount++;
+
+                            if (inputCount % 5 === 0) statusSection.append('</div><div class="row">');
+                        }
+                    }
+
+                    if (inputCount % 5 !== 0) {
+                        const emptyDivsNeeded = 5 - (inputCount % 5);
+                        for (let i = 0; i < emptyDivsNeeded; i++) {
+                            statusSection.append('<div class="form-group col-lg-2"></div>');
+                        }
+                    }
+                }
+
+                renderStatusFields();
+                $("#checkedOut").on("change", renderStatusFields);
+            }
         }
+
+
+
+        else {
+            if (categoryName !== 'Check In Out Information') {
+                modalContent.append(`<h5 class="category-header">${categoryName}</h5><hr/>`);
+            }
 
             let rowHtml = '<div class="row">';
             let inputCount = 0;
@@ -783,11 +947,12 @@ function populateModalForAdd(data) {
             rowHtml += '</div>';
             modalContent.append(rowHtml);
 
-        // Attach input validation listeners to all text fields
-        modalContent.find('input[type="text"]').on('input', function () {
-            const value = $(this).val();
-            validateInput(this, value);
-        });
+            // Attach input validation listeners to all text fields
+            modalContent.find('input[type="text"]').on('input', function () {
+                const value = $(this).val();
+                validateInput(this, value);
+            });
+        }
     }
 
     checkLabRequisitionField();
@@ -2393,6 +2558,34 @@ const columnMappingsForInsertionAndFetching = [
     { key: "CheckOutTime", label: "Checked Out Time", type: "date" },
     { key: "WalkInServiceMember", label: "Walk-In Service Member", type: "string" }
 ];
+
+const statusPreviewColumns = [
+    {
+        label: "IMM Needed Status",
+        getValue: (row) => row.ImmunizationRecord?.Status ?? "Pending"
+    },
+    {
+        label: "Labs Needed Status",
+        getValue: (row) => row.LabRecord?.Status ?? "Pending"
+    },
+    {
+        label: "PHA Needed Status",
+        getValue: (row) => row.PhaRecord?.Status ?? "Pending"
+    },
+    {
+        label: "Audiologist Needed Status",
+        getValue: (row) => row.AudiologistRecord?.Status ?? "Pending"
+    },
+    {
+        label: "Vision Needed Status",
+        getValue: (row) => row.VisionRecord?.Status ?? "Pending"
+    },
+    {
+        label: "Dental Needed Status",
+        getValue: (row) => row.DentalRecord?.Status ?? "Pending"
+    }
+];
+
 
 
 function submitData() {

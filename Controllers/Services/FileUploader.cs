@@ -223,7 +223,9 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                return fileUploaderRepository.FindForSearching(f => f.EventId == eventId && f.isDeleted != true);
+                return fileUploaderRepository.GetWithInclude(f => f.EventId == eventId && f.isDeleted != true,x => x.ImmunizationRecord);
+
+                //return fileUploaderRepository.FindForSearching(f => f.EventId == eventId && f.isDeleted != true);
             }
             catch (Exception ex)
             {
