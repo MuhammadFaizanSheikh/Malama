@@ -285,7 +285,10 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea asp-for="HepBReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="HepBManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.HepBManufacturer">
@@ -394,7 +397,10 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea asp-for="FluReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="FluManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.FluManufacturer">
@@ -498,7 +504,10 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea asp-for="MMRReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="MMRManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.MMRManufacturer">
@@ -601,7 +610,10 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea asp-for="HepAReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="HepAManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.HepAManufacturer">
@@ -703,7 +715,10 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea asp-for="TetTdpReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="TetTdpManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.TetTdpManufacturer">
@@ -809,7 +824,7 @@
                     </div>
                     <div class="col-md-4 vaccine-excused-comments" style="display:none;">
                         <label>Comments / Authorization</label>
-                        <textarea class="form-control excused-textarea" rows="3"></textarea>
+                        <textarea asp-for="VaricellaReasonExcusedComments" class="form-control excused-textarea" rows="3"></textarea>
                     </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
@@ -923,268 +938,311 @@
     document.addEventListener("DOMContentLoaded", function () {
         const immunizationData = @Html.Raw(jsonData);
         debugger;
-    updateQuestionnaireReadonlyState();
+        updateQuestionnaireReadonlyState();
 
-    function updateQuestionnaireReadonlyState() {
-        const anySelected = Array.from(document.querySelectorAll(".vaccine-status"))
-        .some(sel => sel.value === "Completed" || sel.value === "Not Completed");
+        function updateQuestionnaireReadonlyState() {
+            const anySelected = Array.from(document.querySelectorAll(".vaccine-status"))
+                .some(sel => sel.value === "Completed" || sel.value === "Not Completed");
 
-        const questionFields = document.querySelectorAll(".question-toggle, .pregnancy-checkbox");
+            const questionFields = document.querySelectorAll(".question-toggle, .pregnancy-checkbox");
 
-        questionFields.forEach(el => {
-        if (anySelected) {
-            // --- Preserve state ---
-            if (el.type === "checkbox") {
-                // Keep it visually as-is
-                el.readOnly = true;
+            questionFields.forEach(el => {
+                if (anySelected) {
+                    // --- Preserve state ---
+                    if (el.type === "checkbox") {
+                        // Keep it visually as-is
+                        el.readOnly = true;
 
-                // Block click/toggle but not form post
-                el.addEventListener("mousedown", preventCheckboxToggle);
-                el.addEventListener("keydown", preventCheckboxToggle);
+                        // Block click/toggle but not form post
+                        el.addEventListener("mousedown", preventCheckboxToggle);
+                        el.addEventListener("keydown", preventCheckboxToggle);
 
-                // Make it look readonly
-                el.style.pointerEvents = "none";
-                el.style.opacity = "0.8";
-                el.style.accentColor = "#999"; // subtle gray tint
-            } else {
-                // For dropdowns etc.
-                el.classList.add("readonly-select");
-                el.setAttribute("tabindex", "-1");
-                el.style.pointerEvents = "none";
-                el.style.backgroundColor = "#f8f9fa";
-                el.style.opacity = "0.8";
-            }
-        } else {
-            // --- Re-enable everything ---
-            if (el.type === "checkbox") {
-                el.readOnly = false;
-                el.removeEventListener("mousedown", preventCheckboxToggle);
-                el.removeEventListener("keydown", preventCheckboxToggle);
-                el.style.pointerEvents = "";
-                el.style.opacity = "";
-                el.style.accentColor = "";
-            } else {
-                el.classList.remove("readonly-select");
-                el.removeAttribute("tabindex");
-                el.style.pointerEvents = "";
-                el.style.backgroundColor = "";
-                el.style.opacity = "";
-            }
-        }
-        });
-    }
-
-function preventCheckboxToggle(e) {
-    e.preventDefault();
-}
-
-
-
-    // 🟢 PREGNANCY HANDLING
-    document.querySelectorAll(".pregnancy-toggle").forEach(function (dropdown) {
-        const targetId = dropdown.getAttribute("data-target");
-        const wrapper = document.getElementById(targetId);
-        const checkbox = wrapper?.querySelector("input[type='checkbox']");
-
-        function togglePregnancy() {
-            if (dropdown.value === "Yes") {
-                wrapper.style.display = "block";
-            } else {
-                wrapper.style.display = "none";
-                if (checkbox) checkbox.checked = false;
-            }
-        }
-
-        togglePregnancy(); // initialize on load
-        dropdown.addEventListener("change", togglePregnancy);
-    });
-
-    // 🟢 IMMUNIZATION HANDLING
-    document.querySelectorAll(".vaccine-block").forEach(function (block) {
-        const statusDropdown = block.querySelector(".vaccine-status");
-        const reasonDiv = block.querySelector(".vaccine-reason");
-        const completedDivs = block.querySelectorAll(".vaccine-completed");
-
-        const manufacturerSelect = block.querySelector(".manufacturer-dropdown");
-        const lotSelect = block.querySelector(".lot-dropdown");
-        const expirationInput = block.querySelector(".expiration-input");
-        const doseInput = block.querySelector(".dose-input");
-        const unitInput = block.querySelector(".unit-input");
-
-        const normalizeName = name => (name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-
-        function toggleFields() {
-
-            updateQuestionnaireReadonlyState();
-            const value = statusDropdown.value;
-            const vaccineType = block.getAttribute("data-vaccine");
-
-            // Reset
-            reasonDiv.style.display = "none";
-            const reasonSelect = reasonDiv.querySelector("select");
-            if (reasonSelect) reasonSelect.removeAttribute("required");
-
-            completedDivs.forEach(div => {
-                div.style.display = "none";
-                const input = div.querySelector("select, input");
-                input?.removeAttribute("required");
+                        // Make it look readonly
+                        el.style.pointerEvents = "none";
+                        el.style.opacity = "0.8";
+                        el.style.accentColor = "#999"; // subtle gray tint
+                    } else {
+                        // For dropdowns etc.
+                        el.classList.add("readonly-select");
+                        el.setAttribute("tabindex", "-1");
+                        el.style.pointerEvents = "none";
+                        el.style.backgroundColor = "#f8f9fa";
+                        el.style.opacity = "0.8";
+                    }
+                } else {
+                    // --- Re-enable everything ---
+                    if (el.type === "checkbox") {
+                        el.readOnly = false;
+                        el.removeEventListener("mousedown", preventCheckboxToggle);
+                        el.removeEventListener("keydown", preventCheckboxToggle);
+                        el.style.pointerEvents = "";
+                        el.style.opacity = "";
+                        el.style.accentColor = "";
+                    } else {
+                        el.classList.remove("readonly-select");
+                        el.removeAttribute("tabindex");
+                        el.style.pointerEvents = "";
+                        el.style.backgroundColor = "";
+                        el.style.opacity = "";
+                    }
+                }
             });
+        }
 
-            // 🟥 NOT COMPLETED
-            if (value === "Not Completed") {
+        function preventCheckboxToggle(e) {
+            e.preventDefault();
+        }
 
-                reasonDiv.style.display = "block";
-                const rSelect = reasonDiv.querySelector("select");
-                if (rSelect) rSelect.setAttribute("required", "required");
-                completedDivs.forEach(div => {
-                    const input = div.querySelector("select, input");
-                    if (input) input.value = "";
+
+
+        // 🟢 PREGNANCY HANDLING
+        document.querySelectorAll(".pregnancy-toggle").forEach(function (dropdown) {
+            const targetId = dropdown.getAttribute("data-target");
+            const wrapper = document.getElementById(targetId);
+            const checkbox = wrapper?.querySelector("input[type='checkbox']");
+
+            function togglePregnancy() {
+                if (dropdown.value === "Yes") {
+                    wrapper.style.display = "block";
+                } else {
+                    wrapper.style.display = "none";
+                    if (checkbox) checkbox.checked = false;
+                }
+            }
+
+            togglePregnancy(); // initialize on load
+            dropdown.addEventListener("change", togglePregnancy);
+        });
+
+        // 🟢 IMMUNIZATION HANDLING
+        document.querySelectorAll(".vaccine-block").forEach(function (block) {
+            const statusDropdown = block.querySelector(".vaccine-status");
+            const reasonDiv = block.querySelector(".vaccine-reason");
+            const completedDivs = block.querySelectorAll(".vaccine-completed");
+
+            const manufacturerSelect = block.querySelector(".manufacturer-dropdown");
+            const lotSelect = block.querySelector(".lot-dropdown");
+            const expirationInput = block.querySelector(".expiration-input");
+            const doseInput = block.querySelector(".dose-input");
+            const unitInput = block.querySelector(".unit-input");
+
+            const reasonSelect = reasonDiv.querySelector("select");
+
+            // ⭐ NEW — Excused elements
+            const excusedDiv = block.querySelector(".vaccine-excused-comments");
+            const excusedTextarea = excusedDiv?.querySelector(".excused-textarea");
+
+            if (reasonSelect && excusedDiv && excusedTextarea) {
+                reasonSelect.addEventListener("change", function () {
+                    if (this.value === "Excused" && statusDropdown.value === "Not Completed") {
+                        excusedDiv.style.display = "block";
+                        excusedTextarea.setAttribute("required", "required");
+                    } else {
+                        excusedDiv.style.display = "none";
+                        excusedTextarea.removeAttribute("required");
+                        excusedTextarea.value = "";
+                    }
                 });
             }
 
-            const isEditMode = Array.from(block.querySelectorAll("[data-selected]"))
-            .some(el => el.getAttribute("data-selected")?.trim() !== "");
 
-            // ✅ COMPLETED
-            if (value === "Completed") {
+
+            const normalizeName = name => (name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+            function toggleFields() {
+                updateQuestionnaireReadonlyState();
+                const value = statusDropdown.value;
+                const vaccineType = block.getAttribute("data-vaccine");
+
+                // Determine edit mode early
+                const isEditMode = Array.from(block.querySelectorAll("[data-selected]"))
+                    .some(el => el.getAttribute("data-selected")?.trim() !== "");
+
+                // Reset reason & completion
+                reasonDiv.style.display = "none";
+                if (reasonSelect) reasonSelect.removeAttribute("required");
+
                 completedDivs.forEach(div => {
-                debugger;
-                // Skip "Body Part (Other)"
-                if (div.classList.contains("bodypart-other")) return;
+                    div.style.display = "none";
+                    const input = div.querySelector("select, input");
+                    input?.removeAttribute("required");
+                });
 
-                const input = div.querySelector("select, input");
-                const isGivenDateTimeDiv = !!div.querySelector(".givendatetime-input");
 
-                // 🟩 Expiration field: show only in Edit mode
-                if (isGivenDateTimeDiv) {
-                    if (isEditMode) {
+                // Reset Excused section except in edit mode where Excused is selected
+
+                // 🟥 NOT COMPLETED
+                if (value === "Not Completed") {
+                    reasonDiv.style.display = "block";
+                    if (reasonSelect) reasonSelect.setAttribute("required", "required");
+
+                    completedDivs.forEach(div => {
+                        const input = div.querySelector("select, input");
+                        if (input) input.value = "";
+                    });
+
+                    // Show Excused section if already selected in edit mode
+                    if (reasonSelect?.value === "Excused") {
+                        excusedDiv.style.display = "block";
+                        excusedTextarea.setAttribute("required", "required");
+                    }
+
+                    return; // stop further processing
+                }
+
+                // Reset Excused section for all other statuses
+                if (excusedDiv && excusedTextarea) {
+                    if (value === "Not Completed" && reasonSelect?.value === "Excused") {
+                        excusedDiv.style.display = "block";
+                        excusedTextarea.setAttribute("required", "required");
+                    } else {
+                        excusedDiv.style.display = "none";
+                        excusedTextarea.removeAttribute("required");
+                        excusedTextarea.value = "";
+                    }
+                }
+
+
+                // ✅ COMPLETED
+                if (value === "Completed") {
+                    completedDivs.forEach(div => {
+                        // Skip "Body Part (Other)"
+                        if (div.classList.contains("bodypart-other")) return;
+
+                        const input = div.querySelector("select, input");
+                        const isGivenDateTimeDiv = !!div.querySelector(".givendatetime-input");
+
+                        // Expiration field: show only in edit mode
+                        if (isGivenDateTimeDiv) {
+                            if (isEditMode) {
+                                div.style.display = "block";
+                                input?.setAttribute("required", "required");
+                                input?.setAttribute("readonly", "readonly");
+                            } else {
+                                div.style.display = "none";
+                                input?.removeAttribute("required");
+                            }
+                            return; // stop here for expiration div
+                        }
+
+                        // All other completed fields
                         div.style.display = "block";
                         input?.setAttribute("required", "required");
-                            input?.setAttribute("readonly", "readonly");
-                    } else {
-                        div.style.display = "none";
-                        input?.removeAttribute("required");
+                    });
+
+                    if (reasonSelect) reasonSelect.value = "";
+
+                    // Populate manufacturer dropdown
+                    const normalizedType = normalizeName(vaccineType);
+                    const manufacturers = [...new Set(
+                        immunizationData
+                            .filter(x => normalizeName(x.ImmunizationType) === normalizedType)
+                            .map(x => x.Manufacturer)
+                    )];
+
+                    manufacturerSelect.innerHTML = '<option value="">-- Select Manufacturer --</option>';
+                    manufacturers.forEach(m => {
+                        const opt = document.createElement("option");
+                        opt.value = m;
+                        opt.textContent = m;
+                        manufacturerSelect.appendChild(opt);
+                    });
+
+                    // 🔹 EDIT MODE: prefill saved data
+                    const selectedManufacturer = manufacturerSelect.getAttribute("data-selected");
+                    const selectedLot = lotSelect.getAttribute("data-selected");
+
+                    if (selectedManufacturer) {
+                        manufacturerSelect.value = selectedManufacturer;
+                        manufacturerSelect.dispatchEvent(new Event("change"));
+
+                        // After manufacturer loads → select lot
+                        if (selectedLot) {
+                            setTimeout(() => {
+                                lotSelect.value = selectedLot;
+                                lotSelect.dispatchEvent(new Event("change"));
+                            }, 100);
+                        }
                     }
-                    return; // ✅ stop here for expiration div
                 }
 
-                // 🟩 All other completed fields
-                div.style.display = "block";
-                input?.setAttribute("required", "required");
-                });
-
-            if (reasonSelect) reasonSelect.value = "";
-
-            // Populate manufacturer dropdown
-            const normalizedType = normalizeName(vaccineType);
-            const manufacturers = [...new Set(
-                immunizationData
-                    .filter(x => normalizeName(x.ImmunizationType) === normalizedType)
-                    .map(x => x.Manufacturer)
-            )];
-
-            manufacturerSelect.innerHTML = '<option value="">-- Select Manufacturer --</option>';
-            manufacturers.forEach(m => {
-                const opt = document.createElement("option");
-                opt.value = m;
-                opt.textContent = m;
-                manufacturerSelect.appendChild(opt);
-            });
-
-            // 🔹 EDIT MODE: prefill saved data
-            const selectedManufacturer = manufacturerSelect.getAttribute("data-selected");
-            const selectedLot = lotSelect.getAttribute("data-selected");
-
-            if (selectedManufacturer) {
-                manufacturerSelect.value = selectedManufacturer;
-                manufacturerSelect.dispatchEvent(new Event("change"));
-
-                // After manufacturer loads → select lot
-                if (selectedLot) {
-                    setTimeout(() => {
-                        lotSelect.value = selectedLot;
-                        lotSelect.dispatchEvent(new Event("change"));
-                    }, 100);
-                }
+                updateOverallStatus();
             }
-        }
 
-            updateOverallStatus();
-        }
 
-        // 🔹 Manufacturer change → set Dose/Unit + populate Lots
-        if (manufacturerSelect && lotSelect) {
-            manufacturerSelect.addEventListener("change", function () {
-                const vaccineType = block.getAttribute("data-vaccine");
-                const selectedManufacturer = manufacturerSelect.value;
-                const normalizedType = normalizeName(vaccineType);
+            // 🔹 Manufacturer change → set Dose/Unit + populate Lots
+            if (manufacturerSelect && lotSelect) {
+                manufacturerSelect.addEventListener("change", function () {
+                    const vaccineType = block.getAttribute("data-vaccine");
+                    const selectedManufacturer = manufacturerSelect.value;
+                    const normalizedType = normalizeName(vaccineType);
 
-                lotSelect.innerHTML = '<option value="">-- Select Lot No --</option>';
-                expirationInput.value = "";
-                doseInput.value = "";
-                unitInput.value = "";
-
-                if (!selectedManufacturer) return;
-
-                // All matching records for this vaccine+manufacturer
-                const matches = immunizationData.filter(
-                    x => normalizeName(x.ImmunizationType) === normalizedType &&
-                         x.Manufacturer === selectedManufacturer
-                );
-
-                // ✅ Dose/Unit come from manufacturer-level data
-                if (matches.length > 0) {
-                    doseInput.value = matches[0].Dose || "";
-                    unitInput.value = matches[0].Unit || "";
-                }
-
-                // ✅ Populate Lot dropdown
-                const lots = matches.flatMap(x => x.Lots);
-                lots.forEach(l => {
-                    const opt = document.createElement("option");
-                    opt.value = l.LotNumber;
-                    opt.textContent = l.LotNumber;
-                    lotSelect.appendChild(opt);
-                });
-
-                // For edit mode: if already has data-selected
-                const savedLot = lotSelect.getAttribute("data-selected");
-                if (savedLot) {
-                    lotSelect.value = savedLot;
-                    lotSelect.dispatchEvent(new Event("change"));
-                }
-            });
-        }
-
-        // 🔹 Lot change → set Expiration
-        if (lotSelect) {
-            lotSelect.addEventListener("change", function () {
-                const vaccineType = block.getAttribute("data-vaccine");
-                const selectedManufacturer = manufacturerSelect.value;
-                const selectedLot = lotSelect.value;
-                const normalizedType = normalizeName(vaccineType);
-
-                if (!selectedLot) {
+                    lotSelect.innerHTML = '<option value="">-- Select Lot No --</option>';
                     expirationInput.value = "";
-                    return;
-                }
+                    doseInput.value = "";
+                    unitInput.value = "";
 
-                const selectedLotObj = immunizationData
-                    .filter(x => normalizeName(x.ImmunizationType) === normalizedType &&
-                                 x.Manufacturer === selectedManufacturer)
-                    .flatMap(x => x.Lots)
-                    .find(l => l.LotNumber === selectedLot);
+                    if (!selectedManufacturer) return;
 
-                if (selectedLotObj) {
-                    expirationInput.value = selectedLotObj.Expiration?.split("T")[0] || "";
-                }
-            });
-        }
+                    // All matching records for this vaccine+manufacturer
+                    const matches = immunizationData.filter(
+                        x => normalizeName(x.ImmunizationType) === normalizedType &&
+                            x.Manufacturer === selectedManufacturer
+                    );
 
-        // 🟢 Initialize on load
-        toggleFields();
-        statusDropdown.addEventListener("change", toggleFields);
-    });
+                    // ✅ Dose/Unit come from manufacturer-level data
+                    if (matches.length > 0) {
+                        doseInput.value = matches[0].Dose || "";
+                        unitInput.value = matches[0].Unit || "";
+                    }
+
+                    // ✅ Populate Lot dropdown
+                    const lots = matches.flatMap(x => x.Lots);
+                    lots.forEach(l => {
+                        const opt = document.createElement("option");
+                        opt.value = l.LotNumber;
+                        opt.textContent = l.LotNumber;
+                        lotSelect.appendChild(opt);
+                    });
+
+                    // For edit mode: if already has data-selected
+                    const savedLot = lotSelect.getAttribute("data-selected");
+                    if (savedLot) {
+                        lotSelect.value = savedLot;
+                        lotSelect.dispatchEvent(new Event("change"));
+                    }
+                });
+            }
+
+            // 🔹 Lot change → set Expiration
+            if (lotSelect) {
+                lotSelect.addEventListener("change", function () {
+                    const vaccineType = block.getAttribute("data-vaccine");
+                    const selectedManufacturer = manufacturerSelect.value;
+                    const selectedLot = lotSelect.value;
+                    const normalizedType = normalizeName(vaccineType);
+
+                    if (!selectedLot) {
+                        expirationInput.value = "";
+                        return;
+                    }
+
+                    const selectedLotObj = immunizationData
+                        .filter(x => normalizeName(x.ImmunizationType) === normalizedType &&
+                            x.Manufacturer === selectedManufacturer)
+                        .flatMap(x => x.Lots)
+                        .find(l => l.LotNumber === selectedLot);
+
+                    if (selectedLotObj) {
+                        expirationInput.value = selectedLotObj.Expiration?.split("T")[0] || "";
+                    }
+                });
+            }
+
+            // 🟢 Initialize on load
+            toggleFields();
+            statusDropdown.addEventListener("change", toggleFields);
+        });
 
 
 
@@ -1202,74 +1260,74 @@ function preventCheckboxToggle(e) {
             }
         }
 
-    document.querySelectorAll(".vaccine-block").forEach(function (block) {
-    const typeDropdown = block.querySelector(".type-dropdown");
-    const bodyPartDropdown = block.querySelector(".bodypart-dropdown");
-    const bodyPartOther = block.querySelector(".bodypart-other");
-    const otherInput = bodyPartOther ? bodyPartOther.querySelector("input") : null;
+        document.querySelectorAll(".vaccine-block").forEach(function (block) {
+            const typeDropdown = block.querySelector(".type-dropdown");
+            const bodyPartDropdown = block.querySelector(".bodypart-dropdown");
+            const bodyPartOther = block.querySelector(".bodypart-other");
+            const otherInput = bodyPartOther ? bodyPartOther.querySelector("input") : null;
 
-    if (!typeDropdown || !bodyPartDropdown) return;
-    // ✅ Capture values before repopulating anything
-    const savedType = typeDropdown.value?.trim() || "";
-    const savedBodyPart = bodyPartDropdown.getAttribute("data-selected")?.trim() || "";
-    const savedOther = otherInput?.value?.trim() || "";
+            if (!typeDropdown || !bodyPartDropdown) return;
+            // ✅ Capture values before repopulating anything
+            const savedType = typeDropdown.value?.trim() || "";
+            const savedBodyPart = bodyPartDropdown.getAttribute("data-selected")?.trim() || "";
+            const savedOther = otherInput?.value?.trim() || "";
 
-    // Populate body part dropdown based on type
-    function populateBodyParts(type) {
-        bodyPartDropdown.innerHTML = `<option value="">Select Body Part</option>`;
-        if (type === "IM") {
-            bodyPartDropdown.innerHTML += `
-                <option value="Deltoid">Deltoid</option>
-                <option value="Other">Other</option>`;
-        } else if (type === "SQ") {
-            bodyPartDropdown.innerHTML += `
-                <option value="Upper Tricep">Upper Tricep</option>
-                <option value="Other">Other</option>`;
-        }
-    }
-
-    // ✅ Restore previous selections for edit mode
-    if (savedType) {
-        populateBodyParts(savedType);
-        typeDropdown.value = savedType;
-
-        // Restore saved body part selection
-        if (savedBodyPart) {
-            bodyPartDropdown.value = savedBodyPart;
-
-            // Show 'Other' textbox if needed
-            if (savedBodyPart === "Other" && bodyPartOther) {
-                bodyPartOther.style.display = "block";
-                if (savedOther) otherInput.value = savedOther;
+            // Populate body part dropdown based on type
+            function populateBodyParts(type) {
+                bodyPartDropdown.innerHTML = `<option value="">Select Body Part</option>`;
+                if (type === "IM") {
+                    bodyPartDropdown.innerHTML += `
+                    <option value="Deltoid">Deltoid</option>
+                    <option value="Other">Other</option>`;
+                } else if (type === "SQ") {
+                    bodyPartDropdown.innerHTML += `
+                    <option value="Upper Tricep">Upper Tricep</option>
+                    <option value="Other">Other</option>`;
+                }
             }
-        }
-    }
 
-    // ✅ Handle new selections (add/edit)
-    typeDropdown.addEventListener("change", function () {
-        populateBodyParts(this.value);
-        bodyPartDropdown.value = "";
-        if (bodyPartOther) {
-            bodyPartOther.style.display = "none";
-            if (otherInput) otherInput.value = "";
-        }
-    });
+            // ✅ Restore previous selections for edit mode
+            if (savedType) {
+                populateBodyParts(savedType);
+                typeDropdown.value = savedType;
 
-    bodyPartDropdown.addEventListener("change", function () {
-        if (!bodyPartOther) return;
-        if (this.value === "Other") {
-            bodyPartOther.style.display = "block";
-            if (otherInput) otherInput.required = true; // ✅ this is the key
-        } else {
-            bodyPartOther.style.display = "none";
-            if (otherInput) {
-                otherInput.required = false;
-                otherInput.value = "";
+                // Restore saved body part selection
+                if (savedBodyPart) {
+                    bodyPartDropdown.value = savedBodyPart;
+
+                    // Show 'Other' textbox if needed
+                    if (savedBodyPart === "Other" && bodyPartOther) {
+                        bodyPartOther.style.display = "block";
+                        if (savedOther) otherInput.value = savedOther;
+                    }
+                }
             }
-        }
+
+            // ✅ Handle new selections (add/edit)
+            typeDropdown.addEventListener("change", function () {
+                populateBodyParts(this.value);
+                bodyPartDropdown.value = "";
+                if (bodyPartOther) {
+                    bodyPartOther.style.display = "none";
+                    if (otherInput) otherInput.value = "";
+                }
+            });
+
+            bodyPartDropdown.addEventListener("change", function () {
+                if (!bodyPartOther) return;
+                if (this.value === "Other") {
+                    bodyPartOther.style.display = "block";
+                    if (otherInput) otherInput.required = true; // ✅ this is the key
+                } else {
+                    bodyPartOther.style.display = "none";
+                    if (otherInput) {
+                        otherInput.required = false;
+                        otherInput.value = "";
+                    }
+                }
+            });
+        });
     });
-});
-});
 
 </script>
 

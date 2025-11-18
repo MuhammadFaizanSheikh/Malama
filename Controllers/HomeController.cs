@@ -103,6 +103,16 @@ namespace ExcelFilesCompiler.Controllers
                 if (request != null && !string.IsNullOrEmpty(request.EventId) &&  request.Entities != null && request.Entities.Count > 0)
                 {
                     var user = _userManager.GetUserAsync(User).Result;
+
+                    if (user == null)
+                    {
+                        return StatusCode(401, new ResponseDto
+                        {
+                            Success = false,
+                            Message = "Please login and try again.",
+                        });
+                    }
+
                     var result = fileUploader.AddRecordsBulk(request.Entities, request.EventId, user.UserName);
                     
                     if (!result.Success)

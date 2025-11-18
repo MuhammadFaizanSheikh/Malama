@@ -66,6 +66,7 @@ namespace Malama.Models
         // Hepatitis B
         public string? HepBNeeded { get; set; }             // "Yes", "No", "YesWithReason"
         public string? HepBReason { get; set; }
+        public string? HepBReasonExcusedComments { get; set; }
         public string? HepBManufacturer { get; set; }
         public string? HepBLotNo { get; set; }
         public DateTime? HepBExpirationDate { get; set; }
@@ -79,6 +80,7 @@ namespace Malama.Models
         // Influenza
         public string? FluNeeded { get; set; }
         public string? FluReason { get; set; }
+        public string? FluReasonExcusedComments { get; set; }
         public string? FluManufacturer { get; set; }
         public string? FluLotNo { get; set; }
         public DateTime? FluExpirationDate { get; set; }
@@ -92,6 +94,7 @@ namespace Malama.Models
         // MMR
         public string? MMRNeeded { get; set; }
         public string? MMRReason { get; set; }
+        public string? MMRReasonExcusedComments { get; set; }
         public string? MMRManufacturer { get; set; }
         public string? MMRLotNo { get; set; }
         public DateTime? MMRExpirationDate { get; set; }
@@ -105,6 +108,7 @@ namespace Malama.Models
         // Hepatitis A
         public string? HepANeeded { get; set; }
         public string? HepAReason { get; set; }
+        public string? HepAReasonExcusedComments { get; set; }
         public string? HepAManufacturer { get; set; }
         public string? HepALotNo { get; set; }
         public DateTime? HepAExpirationDate { get; set; }
@@ -118,6 +122,7 @@ namespace Malama.Models
         // Tetanus / Tdap
         public string? TetTdpNeeded { get; set; }
         public string? TetTdpReason { get; set; }
+        public string? TetTdpReasonExcusedComments { get; set; }
         public string? TetTdpManufacturer { get; set; }
         public string? TetTdpLotNo { get; set; }
         public DateTime? TetTdpExpirationDate { get; set; }
@@ -131,6 +136,7 @@ namespace Malama.Models
         // Varicella
         public string? VaricellaNeeded { get; set; }
         public string? VaricellaReason { get; set; }
+        public string? VaricellaReasonExcusedComments { get; set; }
         public string? VaricellaManufacturer { get; set; }
         public string? VaricellaLotNo { get; set; }
         public DateTime? VaricellaExpirationDate { get; set; }

@@ -251,6 +251,16 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    return StatusCode(401, new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Please login and try again.",
+                    });
+                }
+
                 var response = await _fileUploader.AddSingleRecordAsync(dto, user.UserName);
 
                 if (response.Success)
@@ -289,6 +299,16 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    return StatusCode(401, new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Please login and try again.",
+                    });
+                }
+
                 var response = await _fileUploader.UpdateSingleRecordAsync(dto, user.UserName);
 
                 if (response.Success)

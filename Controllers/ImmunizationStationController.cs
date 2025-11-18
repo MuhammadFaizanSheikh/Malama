@@ -68,7 +68,9 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 ViewBag.EventIdList = new List<SelectListItem>();
-                ViewBag.ErrorMessage = "Failed to load Event IDs: " + ex.Message;
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = ex.Message;
                 return View();
             }
         }
@@ -195,17 +197,26 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user == null)
                 {
-                    TempData["ErrorMessage"] = "Please login and try again.";
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Unauthorized";
+                    TempData["ResponseMessage"] = "Please login and try again.";
                     return RedirectToAction("Index");
                 }
+
 
                 if (model.Id == 0)
                 {
                     await _immunizationStationService.AddAsync(model, user.UserName);
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = "Immunization record added successfully.";
                 }
                 else
                 {
                     await _immunizationStationService.UpdateAsync(model, user.UserName);
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = "Immunization record updated successfully.";
                 }
 
                 //return RedirectToAction("Index");
@@ -213,8 +224,12 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Error saving immunization");
-                throw;
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = ex.Message;
+
+                // Optional: redirect back to the form so user can try again
+                return View("ImmunizationStation", model);
             }
         }
 

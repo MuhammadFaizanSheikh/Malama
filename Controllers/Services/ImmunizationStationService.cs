@@ -105,6 +105,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== Hepatitis B ==========
             target.HepBNeeded = source.HepBNeeded;
             target.HepBReason = source.HepBReason;
+            target.HepBReasonExcusedComments = source.HepBReasonExcusedComments;
             target.HepBManufacturer = source.HepBManufacturer;
             target.HepBLotNo = source.HepBLotNo;
             target.HepBExpirationDate = source.HepBExpirationDate;
@@ -117,6 +118,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== Influenza ==========
             target.FluNeeded = source.FluNeeded;
             target.FluReason = source.FluReason;
+            target.FluReasonExcusedComments = source.FluReasonExcusedComments;
             target.FluManufacturer = source.FluManufacturer;
             target.FluLotNo = source.FluLotNo;
             target.FluExpirationDate = source.FluExpirationDate;
@@ -129,6 +131,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== MMR ==========
             target.MMRNeeded = source.MMRNeeded;
             target.MMRReason = source.MMRReason;
+            target.MMRReasonExcusedComments = source.MMRReasonExcusedComments;
             target.MMRManufacturer = source.MMRManufacturer;
             target.MMRLotNo = source.MMRLotNo;
             target.MMRExpirationDate = source.MMRExpirationDate;
@@ -141,6 +144,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== Hepatitis A ==========
             target.HepANeeded = source.HepANeeded;
             target.HepAReason = source.HepAReason;
+            target.HepAReasonExcusedComments = source.HepAReasonExcusedComments;
             target.HepAManufacturer = source.HepAManufacturer;
             target.HepALotNo = source.HepALotNo;
             target.HepAExpirationDate = source.HepAExpirationDate;
@@ -153,6 +157,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== Tetanus / Tdap ==========
             target.TetTdpNeeded = source.TetTdpNeeded;
             target.TetTdpReason = source.TetTdpReason;
+            target.TetTdpReasonExcusedComments = source.TetTdpReasonExcusedComments;
             target.TetTdpManufacturer = source.TetTdpManufacturer;
             target.TetTdpLotNo = source.TetTdpLotNo;
             target.TetTdpExpirationDate = source.TetTdpExpirationDate;
@@ -165,6 +170,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             // ========== Varicella ==========
             target.VaricellaNeeded = source.VaricellaNeeded;
             target.VaricellaReason = source.VaricellaReason;
+            target.VaricellaReasonExcusedComments = source.VaricellaReasonExcusedComments;
             target.VaricellaManufacturer = source.VaricellaManufacturer;
             target.VaricellaLotNo = source.VaricellaLotNo;
             target.VaricellaExpirationDate = source.VaricellaExpirationDate;
