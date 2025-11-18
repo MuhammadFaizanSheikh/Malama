@@ -210,6 +210,8 @@
         debugger;
         if (window.userType === "client") {
              $("#page-heading").text("Malama (Staff)");
+            $("#btnProfile").show();
+
             const uploadSection = document.getElementById('fileUploadContainer');
             if (uploadSection) {
                 uploadSection.style.display = 'none';
@@ -217,6 +219,7 @@
             await fetchAndRenderEventData();
         } else {
              $("#page-heading").text("Malama (Admin)");
+            $("#btnProfile").hide();
             // const eventIdDropdown = document.getElementById('eventIdDropdown');
             // if (eventIdDropdown) {
             //     eventIdDropdown.style.display = 'none';
@@ -849,6 +852,16 @@
         return transformed;
     }
 
+    $(document).on("click", "#btnProfile", function () {
+        generateProfilePDF();
+    });
+
+    function generateProfilePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const pdfUrl = doc.output('bloburl');
+        window.open(pdfUrl, 'pdfPopupWindow', 'width=800,height=600,resizable=yes,scrollbars=yes');
+    }
 
 </script>
 

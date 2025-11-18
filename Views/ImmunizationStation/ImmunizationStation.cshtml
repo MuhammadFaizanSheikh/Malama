@@ -281,6 +281,8 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
 
@@ -388,6 +390,8 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
 
@@ -490,6 +494,8 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
 
@@ -591,6 +597,8 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
 
@@ -691,6 +699,8 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
 
@@ -793,9 +803,14 @@
                             <option value="Insufficient Supplies">Insufficient Supplies</option>
                             <option value="Refused">Refused</option>
                             <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    <div class="col-md-4 vaccine-excused-comments" style="display:none;">
+                        <label>Comments / Authorization</label>
+                        <textarea class="form-control excused-textarea" rows="3"></textarea>
+                    </div>
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Manufacturer</label>
                         <select asp-for="VaricellaManufacturer" class="form-control manufacturer-dropdown" data-selected="@Model.VaricellaManufacturer">
