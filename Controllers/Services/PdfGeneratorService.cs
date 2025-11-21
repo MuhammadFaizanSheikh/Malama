@@ -195,16 +195,17 @@ namespace ExcelFilesCompiler.Controllers.Services
                 AddRow("Event ID", eventInfo);
 
                 document.Add(table);
-                document.Add(new Chunk(line));
-                document.Add(new Paragraph("\n") { SpacingAfter = 2f });
+                //document.Add(new Chunk(line));
+                //document.Add(new Paragraph("\n") { SpacingAfter = -10f });
 
                 // 🔹 Immunization Section
                 if (dto.Imm == "NEEDED")
                 {
-                    var immFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 12);
+                    var immFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 14);
                     document.Add(new Paragraph("Immunization", immFont) { SpacingAfter = 2f });
+                    line = new LineSeparator(1f, 100f, BaseColor.BLACK, Element.ALIGN_CENTER, 12);
                     document.Add(new Chunk(line));
-                    document.Add(new Paragraph("\n") { SpacingAfter = 2f });
+                    document.Add(new Paragraph("\n") { SpacingAfter = -10f });
 
                     void AddImmRow(string vaccineName, string status, string reason = null, string comment = null, DateTime? givenDateTime = null)
                     {
