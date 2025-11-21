@@ -3,6 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HSSF.Record;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -48,13 +49,8 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             model.AddedOn = DateTime.Now;
             model.AddedBy = userName;
-            model.FluGivenDateTime = DateTime.Now;
-            model.HepBGivenDateTime = DateTime.Now;
-            model.HepAGivenDateTime = DateTime.Now;
-            model.MMRGivenDateTime = DateTime.Now;
-            model.TetTdpGivenDateTime = DateTime.Now;
-            model.VaricellaGivenDateTime = DateTime.Now;
 
+            SetGivenDateTimes(model);
 
             await _unitOfWork.ImmunizationStation.AddAsync(model);
             await _unitOfWork.SaveAsync();
@@ -73,6 +69,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             // map all fields from model → existing
             MapToEntity(model, existing, userName);
+            SetGivenDateTimes(existing);
 
             await _unitOfWork.ImmunizationStation.UpdateAsync(existing);
             await _unitOfWork.SaveAsync();
@@ -186,6 +183,16 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.UpdatedBy = userName;
         }
 
+        public void SetGivenDateTimes(ImmunizationStation model)
+        {
+            if (model == null) return;
 
+            model.FluGivenDateTime = model.FluNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.HepBGivenDateTime = model.HepBNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.HepAGivenDateTime = model.HepANeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.MMRGivenDateTime = model.MMRNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.TetTdpGivenDateTime = model.TetTdpNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.VaricellaGivenDateTime = model.VaricellaNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        }
     }
 }

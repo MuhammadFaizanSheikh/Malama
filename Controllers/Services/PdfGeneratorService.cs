@@ -152,12 +152,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 );
 
                 // 🔹 Line Separator
-                var line = new LineSeparator(1f, 100f, BaseColor.BLACK, Element.ALIGN_CENTER, -2);
-                //document.Add(new Chunk(line));
-                //document.Add(Chunk.NEWLINE);
+                var line = new LineSeparator(1f, 100f, BaseColor.BLACK, Element.ALIGN_CENTER, -10);
 
-                // 🔹 Add spacing below headings to avoid overlap with table
-                document.Add(new Paragraph("\n\n\n")); // adjust spacing as needed
+                // 🔹 Add spacing below headings
+                document.Add(new Paragraph("\n") { SpacingAfter = 2f });
 
                 // 🔹 Personal Info Table
                 var table = new PdfPTable(2) { WidthPercentage = 80, HorizontalAlignment = Element.ALIGN_LEFT };
@@ -165,134 +163,136 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 void AddRow(string label, string value)
                 {
-                    table.AddCell(new PdfPCell(new Phrase(label, mainFont)) { Border = Rectangle.NO_BORDER });
-                    table.AddCell(new PdfPCell(new Phrase(value ?? "", mainFont)) { Border = Rectangle.NO_BORDER });
+                    table.AddCell(new PdfPCell(new Phrase(label, mainFont))
+                    {
+                        Border = Rectangle.NO_BORDER,
+                        PaddingTop = 2f,
+                        PaddingBottom = 2f
+                    });
+                    table.AddCell(new PdfPCell(new Phrase(value ?? "", mainFont))
+                    {
+                        Border = Rectangle.NO_BORDER,
+                        PaddingTop = 2f,
+                        PaddingBottom = 2f
+                    });
                 }
 
                 document.Add(new Chunk(line));
-                document.Add(Chunk.NEWLINE);
 
                 AddRow("Name", dto.FullName);
                 AddRow("DoD ID / Last 4", $"{dto.DodId}/{dto.Last4}");
-                AddRow("Event ID", dto.EventId.ToString());
+
+                string startDate = "";
+                string endDate = "";
+
+                if (!string.IsNullOrEmpty(dto.EventDate) && DateTime.TryParse(dto.EventDate, out var parsedStart))
+                    startDate = parsedStart.ToString("MM/dd/yyyy");
+
+                if (!string.IsNullOrEmpty(dto.EventEndDate) && DateTime.TryParse(dto.EventEndDate, out var parsedEnd))
+                    endDate = parsedEnd.ToString("MM/dd/yyyy");
+
+                string eventInfo = $"ASPAG001 ({startDate} - {endDate})";
+                AddRow("Event ID", eventInfo);
 
                 document.Add(table);
+                document.Add(new Chunk(line));
+                document.Add(new Paragraph("\n") { SpacingAfter = 2f });
 
-                // 🔹 Line Separator
-                //document.Add(new Chunk(line));
-                //document.Add(Chunk.NEWLINE);
-
-                // 🔹 Conditional Immunization Section
-                if (dto.ImmunizationRecord != null)
+                // 🔹 Immunization Section
+                if (dto.Imm == "NEEDED")
                 {
                     var immFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 12);
-                    document.Add(new Paragraph("Immunization", immFont));
+                    document.Add(new Paragraph("Immunization", immFont) { SpacingAfter = 2f });
                     document.Add(new Chunk(line));
-                    document.Add(Chunk.NEWLINE);
+                    document.Add(new Paragraph("\n") { SpacingAfter = 2f });
 
-                    void AddImmRow(string vaccineName, string status, string reason = null, string comment = null)
+                    void AddImmRow(string vaccineName, string status, string reason = null, string comment = null, DateTime? givenDateTime = null)
                     {
-                        // Table with 2 columns
                         var table = new PdfPTable(2) { WidthPercentage = 100 };
-                        table.SetWidths(new float[] { 60f, 40f }); // adjust widths as needed
+                        table.SetWidths(new float[] { 60f, 40f });
 
-                        // Status in left cell
+                        // Status cell
                         table.AddCell(new PdfPCell(new Phrase($"{vaccineName} Needed Status : {status}", mainFont))
                         {
-                            Border = Rectangle.NO_BORDER
+                            Border = Rectangle.NO_BORDER,
+                            PaddingTop = 2f,
+                            PaddingBottom = 2f
                         });
 
-                        // Reason in right cell
-                        table.AddCell(new PdfPCell(new Phrase(reason != null && status == "Not Completed" ? $"Reason : {reason}" : "", mainFont))
+                        string rightText = "";
+                        if (status == "Not Completed" && !string.IsNullOrEmpty(reason))
+                            rightText = $"Reason : {reason}";
+                        else if (status == "Completed" && givenDateTime.HasValue)
+                            rightText = $"Given Date/Time : {givenDateTime.Value.ToString("MM/dd/yyyy hh:mm tt")}";
+
+                        table.AddCell(new PdfPCell(new Phrase(rightText, mainFont))
                         {
-                            Border = Rectangle.NO_BORDER
+                            Border = Rectangle.NO_BORDER,
+                            PaddingTop = 2f,
+                            PaddingBottom = 2f
                         });
 
                         document.Add(table);
 
-                        // Comment row if reason is Excused
+                        // Comment row if Excused
                         if (reason == "Excused" && !string.IsNullOrEmpty(comment))
                         {
                             var commentTable = new PdfPTable(2) { WidthPercentage = 100 };
                             commentTable.SetWidths(new float[] { 60f, 40f });
-
-                            // Empty left cell
                             commentTable.AddCell(new PdfPCell(new Phrase("")) { Border = Rectangle.NO_BORDER });
-
-                            // Comment in right cell
-                            commentTable.AddCell(new PdfPCell(new Phrase($"Comment : {comment}", mainFont)) { Border = Rectangle.NO_BORDER });
-
+                            commentTable.AddCell(new PdfPCell(new Phrase($"Comment : {comment}", mainFont))
+                            {
+                                Border = Rectangle.NO_BORDER,
+                                PaddingTop = 2f,
+                                PaddingBottom = 2f
+                            });
                             document.Add(commentTable);
                         }
-
-                        document.Add(Chunk.NEWLINE);
                     }
 
+                    // Overall Immunization Status
+                    string overallStatus = dto.ImmunizationRecord != null ? dto.ImmunizationRecord.Status : "Pending";
+                    AddImmRow("Immunization", overallStatus);
 
-
-                    AddImmRow(
-                            "Immunization",
-                            dto.ImmunizationRecord.Status
-                        );
-
-                    if (dto.HepB == "NEEDED")
+                    
+                    // Individual vaccines only if record exists
+                    if (dto.ImmunizationRecord != null)
                     {
-                        AddImmRow(
-                            "HepB",
-                            dto.ImmunizationRecord.HepBNeeded,
-                            dto.ImmunizationRecord.HepBNeeded == "Not Completed" ? dto.ImmunizationRecord.HepBReason : null,
-                            dto.ImmunizationRecord.HepBReason == "Excused" ? dto.ImmunizationRecord.HepBReasonExcusedComments : null
-                        );
-                    }
+                        if (dto.HepB == "NEEDED")
+                            AddImmRow("HepB", dto.ImmunizationRecord.HepBNeeded,
+                                dto.ImmunizationRecord.HepBNeeded == "Not Completed" ? dto.ImmunizationRecord.HepBReason : null,
+                                dto.ImmunizationRecord.HepBReason == "Excused" ? dto.ImmunizationRecord.HepBReasonExcusedComments : null,
+                                dto.ImmunizationRecord.HepBGivenDateTime);
 
-                    if (dto.Flu == "NEEDED")
-                    {
-                        AddImmRow(
-                            "Flu",
-                            dto.ImmunizationRecord.FluNeeded,
-                            dto.ImmunizationRecord.FluNeeded == "Not Completed" ? dto.ImmunizationRecord.FluReason : null,
-                            dto.ImmunizationRecord.FluReason == "Excused" ? dto.ImmunizationRecord.FluReasonExcusedComments : null
-                        );
-                    }
+                        if (dto.Flu == "NEEDED")
+                            AddImmRow("Flu", dto.ImmunizationRecord.FluNeeded,
+                                dto.ImmunizationRecord.FluNeeded == "Not Completed" ? dto.ImmunizationRecord.FluReason : null,
+                                dto.ImmunizationRecord.FluReason == "Excused" ? dto.ImmunizationRecord.FluReasonExcusedComments : null,
+                                dto.ImmunizationRecord.FluGivenDateTime);
 
-                    if (dto.Mmr == "NEEDED")
-                    {
-                        AddImmRow(
-                            "MMR",
-                            dto.ImmunizationRecord.MMRNeeded,
-                            dto.ImmunizationRecord.MMRNeeded == "Not Completed" ? dto.ImmunizationRecord.MMRReason : null,
-                            dto.ImmunizationRecord.MMRReason == "Excused" ? dto.ImmunizationRecord.MMRReasonExcusedComments : null
-                        );
-                    }
+                        if (dto.Mmr == "NEEDED")
+                            AddImmRow("MMR", dto.ImmunizationRecord.MMRNeeded,
+                                dto.ImmunizationRecord.MMRNeeded == "Not Completed" ? dto.ImmunizationRecord.MMRReason : null,
+                                dto.ImmunizationRecord.MMRReason == "Excused" ? dto.ImmunizationRecord.MMRReasonExcusedComments : null,
+                                dto.ImmunizationRecord.MMRGivenDateTime);
 
-                    if (dto.HepA == "NEEDED")
-                    {
-                        AddImmRow(
-                            "HepA",
-                            dto.ImmunizationRecord.HepANeeded,
-                            dto.ImmunizationRecord.HepANeeded == "Not Completed" ? dto.ImmunizationRecord.HepAReason : null,
-                            dto.ImmunizationRecord.HepAReason == "Excused" ? dto.ImmunizationRecord.HepAReasonExcusedComments : null
-                        );
-                    }
+                        if (dto.HepA == "NEEDED")
+                            AddImmRow("HepA", dto.ImmunizationRecord.HepANeeded,
+                                dto.ImmunizationRecord.HepANeeded == "Not Completed" ? dto.ImmunizationRecord.HepAReason : null,
+                                dto.ImmunizationRecord.HepAReason == "Excused" ? dto.ImmunizationRecord.HepAReasonExcusedComments : null,
+                                dto.ImmunizationRecord.HepAGivenDateTime);
 
-                    if (dto.TetTdp == "NEEDED")
-                    {
-                        AddImmRow(
-                            "Tet/Tdp",
-                            dto.ImmunizationRecord.TetTdpNeeded,
-                            dto.ImmunizationRecord.TetTdpNeeded == "Not Completed" ? dto.ImmunizationRecord.TetTdpReason : null,
-                            dto.ImmunizationRecord.TetTdpReason == "Excused" ? dto.ImmunizationRecord.TetTdpReasonExcusedComments : null
-                        );
-                    }
+                        if (dto.TetTdp == "NEEDED")
+                            AddImmRow("Tet/Tdp", dto.ImmunizationRecord.TetTdpNeeded,
+                                dto.ImmunizationRecord.TetTdpNeeded == "Not Completed" ? dto.ImmunizationRecord.TetTdpReason : null,
+                                dto.ImmunizationRecord.TetTdpReason == "Excused" ? dto.ImmunizationRecord.TetTdpReasonExcusedComments : null,
+                                dto.ImmunizationRecord.TetTdpGivenDateTime);
 
-                    if (dto.Varicella == "NEEDED")
-                    {
-                        AddImmRow(
-                            "Varicella",
-                            dto.ImmunizationRecord.VaricellaNeeded,
-                            dto.ImmunizationRecord.VaricellaNeeded == "Not Completed" ? dto.ImmunizationRecord.VaricellaReason : null,
-                            dto.ImmunizationRecord.VaricellaReason == "Excused" ? dto.ImmunizationRecord.VaricellaReasonExcusedComments : null
-                        );
+                        if (dto.Varicella == "NEEDED")
+                            AddImmRow("Varicella", dto.ImmunizationRecord.VaricellaNeeded,
+                                dto.ImmunizationRecord.VaricellaNeeded == "Not Completed" ? dto.ImmunizationRecord.VaricellaReason : null,
+                                dto.ImmunizationRecord.VaricellaReason == "Excused" ? dto.ImmunizationRecord.VaricellaReasonExcusedComments : null,
+                                dto.ImmunizationRecord.VaricellaGivenDateTime);
                     }
                 }
 
@@ -304,6 +304,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("PDF generation failed: " + ex.Message);
             }
         }
+
 
 
 
