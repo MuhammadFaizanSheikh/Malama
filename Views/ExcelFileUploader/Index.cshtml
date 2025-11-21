@@ -852,16 +852,69 @@
         return transformed;
     }
 
-    $(document).on("click", "#btnProfile", function () {
-        generateProfilePDF();
+    // $(document).on("click", "#btnProfile", function () {
+    //     generateProfilePDF();
+    // });
+
+    // function generateProfilePDF() {
+    //     const { jsPDF } = window.jspdf;
+    //     const doc = new jsPDF();
+    //     const pdfUrl = doc.output('bloburl');
+    //     window.open(pdfUrl, 'pdfPopupWindow', 'width=800,height=600,resizable=yes,scrollbars=yes');
+    // }
+
+    $('#btnProfile').click(function () {
+
+    // --- Validate primaryKeyForEdit BEFORE AJAX call ---
+    if (!primaryKeyForEdit || primaryKeyForEdit === "" || primaryKeyForEdit === null) {
+        alert("Invalid profile. Please save the record first.");
+        return;
+    }
+
+    // --- Prevent Double Click ---
+    $('#btnProfile').prop('disabled', true);
+
+    // --- Show Loader ---
+    $('#loader').removeClass('d-none');
+
+    // --- Open a new tab/window synchronously ---
+    const pdfWindow = window.open('', '_blank');
+
+    $.ajax({
+        url: `/ExcelFileUploader/GetDataAgainstIdAndGeneratePdf/${primaryKeyForEdit}`,
+        method: 'GET',
+        xhrFields: {
+            responseType: 'blob' // Important for binary PDF
+        },
+        success: function (data) {
+
+            // Hide Loader
+            $('#loader').addClass('d-none');
+            $('#btnProfile').prop('disabled', false);
+
+            // Create blob URL and assign to the new tab
+            const blob = new Blob([data], { type: 'application/pdf' });
+            const pdfUrl = window.URL.createObjectURL(blob);
+            pdfWindow.location.href = pdfUrl; // Load PDF in the new tab
+
+        },
+        error: function (err) {
+
+            // Hide Loader
+            $('#loader').addClass('d-none');
+            $('#btnProfile').prop('disabled', false);
+
+            // Close the new tab if error
+            if (pdfWindow) pdfWindow.close();
+
+            alert("Error generating PDF: " + err.responseText);
+        }
     });
 
-    function generateProfilePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const pdfUrl = doc.output('bloburl');
-        window.open(pdfUrl, 'pdfPopupWindow', 'width=800,height=600,resizable=yes,scrollbars=yes');
-    }
+});
+
+
+
 
 </script>
 

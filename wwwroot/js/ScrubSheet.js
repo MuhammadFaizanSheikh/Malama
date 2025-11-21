@@ -177,6 +177,7 @@ function editRow(button) {
     });
 
     smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
+    debugger;
     primaryKeyForEdit = currentRow.find('.row-id').val();
     populateModalForEdit(rowData);  // Pass the mapped data to populateModal
     document.getElementById("editModalLabel").innerText = "Edit Service Member";
@@ -361,13 +362,13 @@ function populateModalForEdit(data) {
                     const statusSection = $('#statusSection');
                     statusSection.empty(); // Clear previous fields
 
-                    const checkedOutVal = $("#checkedOut").val();
-                    if (checkedOutVal !== "Yes") {
-                        statusContainer.hide();
-                        return;
-                    } else {
-                        statusContainer.show();
-                    }
+                    //const checkedOutVal = $("#checkedOut").val();
+                    //if (checkedOutVal !== "Yes") {
+                    //    statusContainer.hide();
+                    //    return;
+                    //} else {
+                    //    statusContainer.show();
+                    //}
 
                     let inputCount = 0;
                     for (const statusFieldObj of categories["Status"]) {
@@ -747,13 +748,13 @@ function populateModalForAdd(data) {
                     const statusSection = $('#statusSection');
                     statusSection.empty();
 
-                    const checkedOutVal = $("#checkedOut").val();
-                    if (checkedOutVal !== "Yes") {
-                        statusContainer.hide();
-                        return;
-                    } else {
-                        statusContainer.show();
-                    }
+                    //const checkedOutVal = $("#checkedOut").val();
+                    //if (checkedOutVal !== "Yes") {
+                    //    statusContainer.hide();
+                    //    return;
+                    //} else {
+                    //    statusContainer.show();
+                    //}
 
                     let inputCount = 0;
                     for (const statusFieldObj of categories["Status"]) {
@@ -1782,10 +1783,23 @@ const { jsPDF } = window.jspdf;
 
 // 📌 Print Single Row
 $(document).on("click", ".btn-print", async function () {
-    var row = $(this).closest("tr");
-    var rowData = getRowData(row);
-    await generatePDF([rowData], true);  // Print mode
+    var $btn = $(this);
+    $btn.prop("disabled", true); // Disable button
+    $('#loader').removeClass('d-none'); // Show loader if you have one
+
+    try {
+        var row = $btn.closest("tr");
+        var rowData = getRowData(row);
+        await generatePDF([rowData], true);  // Print mode
+    } catch (err) {
+        console.error("Error generating PDF:", err);
+        alert("Failed to generate PDF. Please try again.");
+    } finally {
+        $btn.prop("disabled", false); // Re-enable button
+        $('#loader').addClass('d-none'); // Hide loader
+    }
 });
+
 
 $("#btnDownloadPDF").click(async function () {
     var allRowsData = [];

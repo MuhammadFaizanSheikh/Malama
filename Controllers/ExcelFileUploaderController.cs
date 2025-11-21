@@ -17,14 +17,16 @@ namespace ExcelFilesCompiler.Controllers
     public class ExcelFileUploaderController : Controller
     {
         private readonly IFileUploader _fileUploader;
+        private readonly IPdfGeneratorService _pdfGenerator;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public ExcelFileUploaderController(IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager)
+        public ExcelFileUploaderController(IFileUploader fileUploader, IPdfGeneratorService pdfGenerator, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _fileUploader = fileUploader;
             _configuration = configuration;
             _userManager = userManager;
+            _pdfGenerator = pdfGenerator;
         }
 
         //[HttpPost]
@@ -232,6 +234,28 @@ namespace ExcelFilesCompiler.Controllers
                 var json = JsonSerializer.Serialize(error, options);
 
                 return Content(json, "application/json");
+            }
+        }
+
+        public async Task<IActionResult> GetDataAgainstIdAndGeneratePdf(long id)
+        {
+            try
+            {
+                // 1. Get parent + child table data
+                var eventDto = _fileUploader.GetByIdWithInclude(id);
+                if (eventDto == null)
+                    return NotFound("Event not found.");
+
+                // 2. Generate PDF
+                var pdfBytes = await _pdfGenerator.GenerateEventSummaryPdfAsync(eventDto);
+
+                var fileName = $"EventSummary_{id}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                // Log error here
+                return StatusCode(500, $"Error generating PDF: {ex.Message}");
             }
         }
 

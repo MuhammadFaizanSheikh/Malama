@@ -14,5 +14,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName);
         Task<FileDataDto> GetByIdAsync(long id);
+        FileDataDto GetByIdWithInclude(long id);
     }
 }

@@ -36,6 +36,7 @@ builder.Services.AddScoped<IContainerMonitoringService, ContainerMonitoringServi
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSession(options =>

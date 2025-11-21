@@ -237,10 +237,6 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                //return fileUploaderRepository.FindForSearching(
-                //    f => f.EventId == eventId && f.isDeleted != true && f.Imm == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
-                //);
-
                 return fileUploaderRepository.GetWithInclude(
                     f => f.EventId == eventId && f.isDeleted != true && f.Imm == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
                 ).Include(f => f.ImmunizationRecord);
@@ -365,6 +361,30 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             return await fileUploaderRepository.GetByIdAsync(id);
         }
+
+        public FileDataDto GetByIdWithInclude(long id)
+        {
+            try
+            {
+                var query = fileUploaderRepository.GetWithInclude(
+                    f => f.Id == id,
+                    x => x.ImmunizationRecord
+                );
+                //More child tables will be handle here
+
+                var entity = query.FirstOrDefault();
+
+                if (entity == null)
+                    return null;
+
+                return _mapper.Map<FileDataDto>(entity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed fetching event data: " + ex.Message);
+            }
+        }
+
         private void ValidateMissingFields(string fileName, DataTable fileData, string[] selectedColumns, List<Dictionary<string, object>> validationErrors)
         {
             var dodIdTracker = new HashSet<string>(); // To track DOD ID values for duplicates
