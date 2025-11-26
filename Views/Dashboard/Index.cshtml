@@ -28,18 +28,14 @@
             <span>Malama Check In Out (Admin)</span>
         </a>
 
-   @*  @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager") || User.IsInRole("DAWSON Admin - Event Staff"))
+
+    @if (User.IsInRole("Check in/out Staff"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
             <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
             <span>Malama Check In Out (Staff)</span>
         </a>
-    } *@
-
-    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
-        <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
-        <span>Malama Check In Out (Staff)</span>
-    </a>
+    }
 
     <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
         <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
@@ -76,10 +72,13 @@
         <span>Case Management</span>
     </a>
 
-    <a asp-controller="DentalExams" asp-action="Index" class="icon-box">
-        <img src="/images/Dental Exams.jpg" alt="Dental Exams" />
-        <span>Dental Exams</span>
-    </a>
+    @if (User.IsInRole("Dental Lead") && User.HasClaim("Attribute", "Exam"))
+    {
+        <a asp-controller="DentalExams" asp-action="Index" class="icon-box">
+            <img src="/images/Dental Exams.jpg" alt="Dental Exams" />
+            <span>Dental Exams</span>
+        </a>
+    }
 
     <a asp-controller="DentalTreatment" asp-action="Index" class="icon-box">
         <img src="/images/Dental Treatment.jpg" alt="Dental Treatment" />
@@ -101,20 +100,38 @@
         <span>Hearing</span>
     </a>
 
-    <a asp-controller="ImmunizationStation" asp-action="Index" class="icon-box">
-        <img src="/images/Immunizations.jpg" alt="Immunizations" />
-        <span>Immunizations</span>
-    </a>
+    @{
+        bool showImmunizationRelatedForms =
+        (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert")) ||
+        (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Imms")) ||
+        (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
+    }
 
-    <a asp-controller="ImmunizationVaccineInfo" asp-action="Index" class="icon-box">
-        <img src="/images/Vaccine Info.png" alt="Vaccine Info" />
-        <span>Vaccine Info</span>
-    </a>
+    @if (showImmunizationRelatedForms)
+    {
+        <a asp-controller="ImmunizationStation" asp-action="Index" class="icon-box">
+            <img src="/images/Immunizations.jpg" alt="Immunizations" />
+            <span>Immunizations</span>
+        </a>
+    }
 
-    <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
-        <img src="/images/Monitor Container Temperature.png" alt="Vaccine information icon" />
-        <span>Monitor Container Temperature</span>
-    </a>
+    @if (showImmunizationRelatedForms)
+    {
+        <a asp-controller="ImmunizationVaccineInfo" asp-action="Index" class="icon-box">
+            <img src="/images/Vaccine Info.png" alt="Vaccine Info" />
+            <span>Vaccine Info</span>
+        </a>
+    }
+
+    @if (showImmunizationRelatedForms)
+    @if ((User.IsInRole("Imm RN") || (User.IsInRole("Imm Staff"))) &&
+                User.HasClaim("Attribute", "Cold Chain Cert"))
+    {
+        <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
+            <img src="/images/Monitor Container Temperature.png" alt="Vaccine information icon" />
+            <span>Monitor Container Temperature</span>
+        </a>
+    }
 
 
     <a asp-controller="Labs" asp-action="Index" class="icon-box">

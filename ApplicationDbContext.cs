@@ -30,6 +30,7 @@ namespace ExcelFilesCompiler
         public DbSet<ContainerType> ContainerType { get; set; }
         public DbSet<Container> Container { get; set; }
         public DbSet<ContainerTemperatureReading> ContainerTemperatureReading { get; set; }
+        public DbSet<ContainerNotification> ContainerNotification { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

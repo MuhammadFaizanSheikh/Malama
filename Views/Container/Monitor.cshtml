@@ -216,9 +216,16 @@
 
 
         <div class="d-flex justify-content-end mt-4">
-            <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action">
+            @{
+                bool canSubmit =
+                (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert")) ||
+                (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
+            }
+
+            <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" @(canSubmit ? "" : "disabled")>
                 <i class="bi bi-check-circle"></i> Submit
             </button>
+
             <a asp-action="Index" class="btn btn-secondary btn-lg">
                 <i class="bi bi-arrow-left"></i> Back
             </a>

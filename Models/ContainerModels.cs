@@ -81,4 +81,24 @@ namespace Malama.Models
         // attempt number since the last in-range reading (1,2,...)
         public int AttemptNumber { get; set; }
     }
+
+    [Table("ContainerNotification")]
+    public class ContainerNotification : GenericProperties
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+
+        [ForeignKey("Container")]
+        public long ContainerId { get; set; }
+        public Container? Container { get; set; }
+
+        //public string UserId { get; set; } = string.Empty; // Who will receive the alert
+
+        public DateTime DueAt { get; set; }
+
+        public bool IsAcknowledged { get; set; } = false; // User confirmed alert
+        public DateTime? AcknowledgedAt { get; set; }
+    }
+
 }

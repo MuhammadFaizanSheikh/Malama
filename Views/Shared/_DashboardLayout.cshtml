@@ -200,6 +200,72 @@
     <script src="~/js/xlsx.full.min.js"></script>
     <script src="~/js/JsBarcode.all.min.js"></script>
     <script src="~/js/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.10/signalr.min.js"></script>
+
+    <script>
+        console.log("Temperature alert scripts loaded");
+
+        // Build SignalR connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/temperatureHub")       // Match your hub URL
+            .withAutomaticReconnect()         // Auto-reconnect if disconnected
+            .build();
+
+        // Queue to hold incoming alerts
+        const alertQueue = [];
+
+        // Flag to indicate if an alert is currently showing
+        let alertShowing = false;
+
+        // Listen for SignalR alerts
+        connection.on("TemperatureAlert", function (alert) {
+            // Add alert to queue
+            alertQueue.push(alert);
+
+            // Show next alert if none is currently showing
+            if (!alertShowing) {
+                showNextAlert();
+            }
+        });
+
+        // Function to show alerts sequentially
+        function showNextAlert() {
+            if (alertQueue.length === 0) {
+                alertShowing = false;
+                return;
+            }
+
+            alertShowing = true;
+            const alert = alertQueue.shift();
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Temperature Reading Required',
+                html: `
+                        <b>Container:</b> ${alert.containerName}<br>
+                        <b>Due at:</b> ${alert.dueAt}
+                    `,
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Notify server that user acknowledged
+                    fetch('/Container/AcknowledgeNotification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(alert.notificationId) // Send notification ID
+                    }).catch(err => console.error('Ack failed', err));
+                }
+
+                // Show next alert in queue
+                showNextAlert();
+            });
+        }
+
+        // Start the SignalR connection
+        connection.start()
+            .then(() => console.log("SignalR connected"))
+            .catch(err => console.error("SignalR connection error:", err));
+    </script>
 
 </body>
 </html>

@@ -270,5 +270,28 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task AcknowledgeNotificationAsync(long notificationId)
+        {
+            try
+            {
+                var notification = await _unitOfWork.ContainerNotification
+                    .FindAsync(n => n.Id == notificationId);
+
+                if (notification != null && !notification.IsAcknowledged)
+                {
+                    notification.IsAcknowledged = true;
+                    notification.AcknowledgedAt = DateTime.Now;
+                    await _unitOfWork.SaveAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (use your preferred logging approach)
+                // Example: _logger.LogError(ex, $"Failed to acknowledge notification {notificationId}");
+                throw new ApplicationException($"Error acknowledging notification {notificationId}", ex);
+            }
+        }
+
+
     }
 }

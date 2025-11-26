@@ -88,7 +88,7 @@ namespace ExcelFilesCompiler.Controllers
                 try
                 {
                     eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
-                    eventStaff = await _eventStaffService.GetEventStaffByColumn(userId);
+                    eventStaff = await _eventStaffService.GetEventStaffWithAttributesByUserId(userId);
                 }
                 catch (KeyNotFoundException ex)
                 {
@@ -109,30 +109,51 @@ namespace ExcelFilesCompiler.Controllers
                 //    return await ReturnIndexView();
                 //}
 
-                var eventRolesIds = eventManagement.EventStaffDetailList
+                bool isEventAssignedToStaff = false;
+                List<string?> eventWiseRoleNames = new List<string?>();
+                List<string> staffAttributes = new List<string>();
+
+                if (isUserInEvent)
+                {
+                    isEventAssignedToStaff = true;
+
+                    if (eventStaff.StaffLicense != null)
+                    {
+                        foreach (var license in eventStaff.StaffLicense)
+                        {
+                            foreach (var attribute in license.StaffAttributeDetails)
+                            {
+                                staffAttributes.Add(attribute.Attribute);
+                            }
+                        }
+                    }
+
+                    var eventRolesIds = eventManagement.EventStaffDetailList
                     .Where(esd => esd.EventStaffId == eventStaff.Id)
                     .SelectMany(esd => esd.EventWiseStaffRoleList)
                     .Select(ewsr => ewsr.RoleId)
                     .ToList();
 
-                var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
-                    .Where(esd => esd.EventStaffId == eventStaff.Id)
-                    .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
-                    .Select(ewsr => ewsr.RoleId)
-                    .ToList();
+                    var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
+                        .Where(esd => esd.EventStaffId == eventStaff.Id)
+                        .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
+                        .Select(ewsr => ewsr.RoleId)
+                        .ToList();
 
-                var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
+                    var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
 
-                var allRoles = await _roleManager.Roles.ToListAsync();
-                var eventRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
+                    var allRoles = await _roleManager.Roles.ToListAsync();
+                    eventWiseRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
+                }
 
                 var user = await _userManager.GetUserAsync(User);
+
                 if (user == null)
                 {
                     return Unauthorized();
                 }
 
-                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventRoleNames, eventManagement.EventID);
+                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventWiseRoleNames, eventManagement.EventID, isEventAssignedToStaff, staffAttributes);
 
                 if (!isClaimsUpdated)
                 {
@@ -146,7 +167,7 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again later.";
+                ViewBag.ErrorMessage = ex.Message;
                 return await ReturnIndexView();
             }
         }
@@ -189,7 +210,7 @@ namespace ExcelFilesCompiler.Controllers
         //    }
         //}
 
-        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID)
+        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID, bool isEventAssignedToStaff, List<string> staffAttributes)
         {
             try
             {
@@ -201,11 +222,17 @@ namespace ExcelFilesCompiler.Controllers
                 identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName ?? ""));
                 identity.AddClaim(new Claim("EventIdLong", selectedEventId.ToString()));
                 identity.AddClaim(new Claim("EventIdString", eventID.ToString()));
+                identity.AddClaim(new Claim("IsEventAssignedToStaff", isEventAssignedToStaff.ToString()));
 
                 // ✅ 3. Add only event-specific roles as claims
                 foreach (var role in eventRoleNames.Distinct())
                 {
                     identity.AddClaim(new Claim(ClaimTypes.Role, role));
+                }
+
+                foreach (var attribute in staffAttributes.Distinct())
+                {
+                    identity.AddClaim(new Claim("Attribute", attribute));
                 }
 
                 // ✅ 4. Build principal

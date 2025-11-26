@@ -11,7 +11,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<string> GetNextStaffId();
         Task<IEnumerable<EventStaff>> GetEventStaffForSearchingByStaffId(string staffId);
         Task<EventStaff> GetEventStaffWithoutIncludeById(long id);
-        Task<EventStaff> GetEventStaffByColumn(string userId);
+        Task<EventStaff> GetEventStaffWithAttributesByUserId(string userId);
         Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses();
         Task<bool> CheckSSNExistsAsync(string ssn);
     }

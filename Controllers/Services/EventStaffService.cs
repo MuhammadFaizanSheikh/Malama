@@ -485,11 +485,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<EventStaff> GetEventStaffByColumn(string userId)
+        public async Task<EventStaff> GetEventStaffWithAttributesByUserId(string userId)
         {
             try
             {
-                var eventStaff = await _unitOfWork.EventStaff.FindAsync(es => es.UserId == userId);
+                //var eventStaff = _unitOfWork.EventStaff.GetWithInclude(
+                //x => x.UserId == userId,
+                //x => x.StaffLicense,
+                //x => x.StaffLicense.Select(sl => sl.StaffAttributeDetails)
+                //).FirstOrDefault();
+
+                var eventStaff = _unitOfWork.EventStaff.GetWithInclude()
+                .Include(es => es.StaffLicense)
+                    .ThenInclude(sl => sl.StaffAttributeDetails)
+                .FirstOrDefault(es => es.UserId == userId);
+
+
                 if (eventStaff == null)
                 {
                     throw new KeyNotFoundException($"EventStaff with UserId {userId} not found.");
@@ -502,7 +513,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("An error occurred while retrieving event staff details.", ex);
+                throw new ApplicationException("An error occurred while retrieving event staff and its attributes.", ex);
             }
         }
 
@@ -537,10 +548,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
-                var existingRoleNames = await _userManager.GetRolesAsync(user);
+                //var existingRoleNames = await _userManager.GetRolesAsync(user);
                 userUpdateDto.Id = eventStaff.UserId;
                 userUpdateDto.Email = eventStaff.UserEmail;
-                userUpdateDto.Password = eventStaff.UserPassword;
+                //userUpdateDto.Password = user.PasswordHash;// eventStaff.UserPassword;
                 userUpdateDto.SelectedRoles = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
 
                 return await _registrationService.UpdateUserAsync(userUpdateDto);

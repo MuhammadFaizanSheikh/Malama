@@ -234,5 +234,21 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AcknowledgeNotification([FromBody] long notificationId)
+        {
+            try
+            {
+                await _service.AcknowledgeNotificationAsync(notificationId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // Optionally log the exception here as well
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
     }
 }

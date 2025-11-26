@@ -921,9 +921,17 @@
     </div>
     <!-- Submit Buttons -->
     <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-success btn-lg me-3">
+        @{
+            bool canSave =
+            (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "ColdChain")) ||
+            (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Imms")) ||
+            (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
+        }
+
+        <button type="submit" class="btn btn-success btn-lg me-3" @(canSave ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
         </button>
+
         <a asp-action="Index" class="btn btn-secondary btn-lg">
             <i class="bi bi-arrow-left"></i> Back
         </a>

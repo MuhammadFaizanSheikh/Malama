@@ -242,8 +242,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto { Success = false, Message = "User not found." };
                 }
 
-                var originalEmail = user.Email;
-                var originalPasswordHash = user.PasswordHash;
+                //var originalEmail = user.Email;
+                //var originalPasswordHash = user.PasswordHash;
                 var originalRoles = await _userManager.GetRolesAsync(user);
 
                 user.Email = updatedUser.Email;
