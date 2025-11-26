@@ -2048,6 +2048,7 @@
                                 <th>License(s)</th>
                                 <th>State</th>
                                 <th>City</th>
+                                <th>Profile Button Access</th>
                                 <th>ZipCode</th>
                                 <th>Id</th>
                                 <th>Event Count</th>
@@ -2861,6 +2862,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "licenseStateAndTypes" },
                     { "data": "primaryState" },
                     { "data": "primaryCity" },
+                    { "data": "profileButtonAccess" },
                     { "data": "primaryZip" },
                     { "data": "id", "visible": false },
                     { "data": "countOfStaffEnrolledInEvent" },
@@ -2969,6 +2971,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     value="true" ${isPreEventChecked}>
             `;
 
+            let isProfileButtonAccesChecked = staffData.eventStaffDetail?.profileButtonAccess ? "checked" : "";
+            let profileButtonAccesCheckbox = `
+                    <input type="checkbox" class="form-check-input" id="profileButtonAccessChk_${eventStaffData.id}"
+                        name="SingleEventManagement.EventStaffDetailList[${rowIndex}].ProfileButtonAccess"
+                            value="true" ${isProfileButtonAccesChecked}>
+                `;
+
             // Filter roles based on CAC status
             let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole");
             filteredRoles = filteredRoles.filter(role => {
@@ -3060,6 +3069,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
                 primaryState: eventStaffData.primaryState,
                 primaryCity: eventStaffData.primaryCity,
+                profileButtonAccess: profileButtonAccesCheckbox,
                 primaryZip: eventStaffData.primaryZip,
                 status: eventStaffData.status,
                 id: eventStaffData.id, 
@@ -3198,6 +3208,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                 // Update pre-event checkbox
                 $(this).find('input[name*="PreEventAvailability"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
+
+                $(this).find('input[name*="ProfileButtonAccess"]').each(function () {
                     updateNameAttribute(this, index);
                 });
 

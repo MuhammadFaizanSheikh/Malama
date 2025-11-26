@@ -373,7 +373,8 @@
             <div class="d-flex justify-content-end mt-4">
                 @{
                     // Check if user has required role and attribute
-                    bool canSubmit = User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert");
+                    bool canSubmit = (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Imms")) ||
+                    (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "ColdChain"));
                 }
 
                 <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add" @(canSubmit ? "" : "disabled")>

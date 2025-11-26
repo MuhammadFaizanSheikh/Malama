@@ -117,6 +117,28 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     isEventAssignedToStaff = true;
 
+                    var staffDetails = eventManagement.EventStaffDetailList
+                    .FirstOrDefault(esd => esd.EventStaffId == eventStaff.Id);
+
+
+                    // Primary Roles
+                    var eventRolesIds = staffDetails?.EventWiseStaffRoleList
+                        .Select(r => r.RoleId)
+                        .ToList() ?? new List<string>();
+
+                    // Secondary Roles
+                    var eventSecondaryRolesIds = staffDetails?.EventWiseStaffSecondaryRoleList
+                        .Select(r => r.RoleId)
+                        .ToList() ?? new List<string>();
+
+
+
+                    if (staffDetails?.ProfileButtonAccess == true)
+                    {
+                        staffAttributes.Add("CanAccessProfile");
+                    }
+
+
                     if (eventStaff.StaffLicense != null)
                     {
                         foreach (var license in eventStaff.StaffLicense)
@@ -128,17 +150,20 @@ namespace ExcelFilesCompiler.Controllers
                         }
                     }
 
-                    var eventRolesIds = eventManagement.EventStaffDetailList
-                    .Where(esd => esd.EventStaffId == eventStaff.Id)
-                    .SelectMany(esd => esd.EventWiseStaffRoleList)
-                    .Select(ewsr => ewsr.RoleId)
-                    .ToList();
+                    
 
-                    var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
-                        .Where(esd => esd.EventStaffId == eventStaff.Id)
-                        .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
-                        .Select(ewsr => ewsr.RoleId)
-                        .ToList();
+
+                    //var eventRolesIds = eventManagement.EventStaffDetailList
+                    //.Where(esd => esd.EventStaffId == eventStaff.Id)
+                    //.SelectMany(esd => esd.EventWiseStaffRoleList)
+                    //.Select(ewsr => ewsr.RoleId)
+                    //.ToList();
+
+                    //var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
+                    //    .Where(esd => esd.EventStaffId == eventStaff.Id)
+                    //    .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
+                    //    .Select(ewsr => ewsr.RoleId)
+                    //    .ToList();
 
                     var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
 

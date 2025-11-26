@@ -102,6 +102,7 @@
 
     @{
         bool showImmunizationRelatedForms =
+        (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Imms")) ||
         (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert")) ||
         (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Imms")) ||
         (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
@@ -124,8 +125,6 @@
     }
 
     @if (showImmunizationRelatedForms)
-    @if ((User.IsInRole("Imm RN") || (User.IsInRole("Imm Staff"))) &&
-                User.HasClaim("Attribute", "Cold Chain Cert"))
     {
         <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
             <img src="/images/Monitor Container Temperature.png" alt="Vaccine information icon" />

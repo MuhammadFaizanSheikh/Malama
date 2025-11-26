@@ -405,6 +405,7 @@
         public List<DateTime>? AvailabilityDates { get; set; } // List of selected dates
         public List<EventManagementStaffAvailability> AvailabilityDatesList { get; set; } = new List<EventManagementStaffAvailability>();
         public bool PreEventAvailability { get; set; } // Pre-Event checkbox
+        public bool ProfileButtonAccess { get; set; }
         public string? SelectedStation { get; set; } // Pre-Event checkbox
         [NotMapped]
         public List<string>? SelectedSecondaryStationList { get; set; } = new List<string>();

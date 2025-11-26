@@ -11,7 +11,10 @@
                 <!-- Dynamic content will be injected here -->
             </div>
             <div class="modal-footer d-flex flex-wrap align-items-center justify-content-end w-100 gap-2">
-                <button type="button" id="btnProfile" class="btn text-white me-2">Profile</button>
+                @if (User.HasClaim("Attribute", "CanAccessProfile"))
+                {
+                    <button type="button" id="btnProfile" class="btn text-white me-2">Profile</button>
+                }
 
                 <label class="me-1 mb-0">Checked-In by</label>
                 <input type="text" id="checkedInBy" name="checkedInBy" class="form-control form-control-sm me-3" style="width: 200px;">

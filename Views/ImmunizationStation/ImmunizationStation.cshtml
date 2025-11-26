@@ -923,6 +923,7 @@
     <div class="d-flex justify-content-end mt-4">
         @{
             bool canSave =
+            (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Imms")) ||
             (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "ColdChain")) ||
             (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Imms")) ||
             (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
