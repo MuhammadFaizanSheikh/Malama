@@ -54,13 +54,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         Email = eventStaff.UserEmail,
                         Password = eventStaff.UserPassword,
-                        SelectedRoles = eventStaff.StaffLicense?.Select(l => l.RoleId).ToList() ?? new List<string>()
+                        SelectedRoles = new List<string>()
                     };
 
-                    if (!rvm.SelectedRoles.Any())
-                    {
-                        return new ResponseDto { Success = false, Message = "Role not selected." };
-                    }
+                    //if (!rvm.SelectedRoles.Any())
+                    //{
+                    //    return new ResponseDto { Success = false, Message = "Role not selected." };
+                    //}
 
                     responseDto = await _registrationService.RegisterUserAsync(rvm, true);
 
@@ -122,11 +122,11 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var eventStaffList = await _unitOfWork.EventStaff.GetWithInclude()
-                    .Include(x => x.StaffLicense)
+                    .Include(x => x.StaffQualification)
                         .ThenInclude(l => l.StaffLicenseDetails)
                     .Include(x => x.StaffContractAffiliation)
                     .Include(x => x.TravelHonorList)
-                    .Include(x => x.StaffLicense)
+                    .Include(x => x.StaffQualification)
                         .ThenInclude(l => l.StaffAttributeDetails)
                     .ToListAsync();
 
@@ -174,10 +174,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var roleLicenseMapping = new Dictionary<string, List<string>>();
                     var attributeList = new List<string>();
 
-                    foreach (var staffLicense in staff.StaffLicense)
+                    foreach (var staffLicense in staff.StaffQualification)
                     {
                         // Fetch Role Name from RoleManager using RoleId
-                        if (roleDictionary.TryGetValue(staffLicense.RoleId, out string roleName))
+                        if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
                         {
                             if (!roleLicenseMapping.ContainsKey(roleName))
                             {
@@ -252,12 +252,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
                     x => x.Id == id,
-                    x => x.StaffLicense,
+                    x => x.StaffQualification,
                     x => x.StaffContractAffiliation,
                     x => x.TravelHonorList
                 )
-                    .Include(x => x.StaffLicense)
-                        .ThenInclude(l => l.StaffLicenseDetails).Include(x => x.StaffLicense).ThenInclude(l => l.StaffAttributeDetails) // Now second-level include works!
+                    .Include(x => x.StaffQualification)
+                        .ThenInclude(l => l.StaffLicenseDetails).Include(x => x.StaffQualification).ThenInclude(l => l.StaffAttributeDetails) // Now second-level include works!
                     .FirstOrDefaultAsync();
 
 
@@ -383,14 +383,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventStaff.UserId = existingEvent.UserId;
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
 
-                await _unitOfWork.StaffLicense.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+                await _unitOfWork.StaffQualification.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
-                foreach (var license in eventStaff.StaffLicense)
+                foreach (var license in eventStaff.StaffQualification)
                 {
                     license.EventStaffId = eventStaff.Id;
                 }
 
-                _unitOfWork.StaffLicense.AddRange(eventStaff.StaffLicense);
+                _unitOfWork.StaffQualification.AddRange(eventStaff.StaffQualification);
 
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
 
@@ -496,7 +496,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 //).FirstOrDefault();
 
                 var eventStaff = _unitOfWork.EventStaff.GetWithInclude()
-                .Include(es => es.StaffLicense)
+                .Include(es => es.StaffQualification)
                     .ThenInclude(sl => sl.StaffAttributeDetails)
                 .FirstOrDefault(es => es.UserId == userId);
 
@@ -552,7 +552,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 userUpdateDto.Id = eventStaff.UserId;
                 userUpdateDto.Email = eventStaff.UserEmail;
                 //userUpdateDto.Password = user.PasswordHash;// eventStaff.UserPassword;
-                userUpdateDto.SelectedRoles = eventStaff.StaffLicense.Select(l => l.RoleId).ToList();
+                userUpdateDto.SelectedRoles = eventStaff.StaffQualification.Select(l => l.QualificationName).ToList();
 
                 return await _registrationService.UpdateUserAsync(userUpdateDto);
             }

@@ -191,7 +191,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (!string.IsNullOrEmpty(dto.EventEndDate) && DateTime.TryParse(dto.EventEndDate, out var parsedEnd))
                     endDate = parsedEnd.ToString("MM/dd/yyyy");
 
-                string eventInfo = $"ASPAG001 ({startDate} - {endDate})";
+                string eventInfo = $"{dto.EventId} ({startDate} - {endDate})";
                 AddRow("Event ID", eventInfo);
 
                 document.Add(table);

@@ -139,9 +139,9 @@ namespace ExcelFilesCompiler.Controllers
                     }
 
 
-                    if (eventStaff.StaffLicense != null)
+                    if (eventStaff.StaffQualification != null)
                     {
-                        foreach (var license in eventStaff.StaffLicense)
+                        foreach (var license in eventStaff.StaffQualification)
                         {
                             foreach (var attribute in license.StaffAttributeDetails)
                             {

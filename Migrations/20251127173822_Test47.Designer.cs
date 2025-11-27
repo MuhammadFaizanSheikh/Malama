@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127173822_Test47")]
+    partial class Test47
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2016,7 +2019,10 @@ namespace Malama.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<long>("StaffQualificationId")
+                    b.Property<long>("StaffLicenseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StaffQualificationId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -2079,7 +2085,10 @@ namespace Malama.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<long>("StaffQualificationId")
+                    b.Property<long>("StaffLicenseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StaffQualificationId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -2562,9 +2571,7 @@ namespace Malama.Migrations
                 {
                     b.HasOne("Malama.Models.StaffQualification", null)
                         .WithMany("StaffAttributeDetails")
-                        .HasForeignKey("StaffQualificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StaffQualificationId");
                 });
 
             modelBuilder.Entity("Malama.Models.StaffContractAffiliation", b =>
@@ -2580,9 +2587,7 @@ namespace Malama.Migrations
                 {
                     b.HasOne("Malama.Models.StaffQualification", null)
                         .WithMany("StaffLicenseDetails")
-                        .HasForeignKey("StaffQualificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StaffQualificationId");
                 });
 
             modelBuilder.Entity("Malama.Models.StaffQualification", b =>

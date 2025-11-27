@@ -244,8 +244,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         //var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
                         var eventStaffDetail = await _unitOfWork.EventStaff.GetWithInclude(
                         x => x.Id == eventStaffDetails.EventStaffId,
-                        x => x.StaffLicense).Include(x => x.StaffLicense).ThenInclude(l => l.StaffLicenseDetails)
-                        .Include(x => x.StaffLicense)
+                        x => x.StaffQualification).Include(x => x.StaffQualification).ThenInclude(l => l.StaffLicenseDetails)
+                        .Include(x => x.StaffQualification)
                         .ThenInclude(l => l.StaffAttributeDetails).FirstOrDefaultAsync();
 
 
@@ -256,10 +256,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                             var roleLicenseMapping = new Dictionary<string, List<string>>();
                             var attributeList = new List<string>();
 
-                            foreach (var staffLicense in eventStaffDetail.StaffLicense)
+                            foreach (var staffLicense in eventStaffDetail.StaffQualification)
                             {
                                 // Fetch Role Name from RoleManager using RoleId
-                                if (roleDictionary.TryGetValue(staffLicense.RoleId, out string roleName))
+                                if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
                                 {
                                     if (!roleLicenseMapping.ContainsKey(roleName))
                                     {

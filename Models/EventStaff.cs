@@ -230,7 +230,7 @@ namespace Malama.Models
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "StaffInfoEnteredBy cannot be only white spaces.")]
         public string StaffInfoEnteredBy { get; set; }
 
-        public List<StaffLicense> StaffLicense { get; set; } = new List<StaffLicense>();
+        public List<StaffQualification> StaffQualification { get; set; } = new List<StaffQualification>();
 
         //[Required(ErrorMessage = "StaffContractAffiliation is required.")]
         //[NotMapped]
@@ -295,8 +295,8 @@ namespace Malama.Models
 
     //}
 
-    [Table("StaffLicense")]
-    public class StaffLicense
+    [Table("StaffQualification")]
+    public class StaffQualification
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -309,7 +309,7 @@ namespace Malama.Models
 
         [Required]
         [StringLength(50)]
-        public string RoleId { get; set; }
+        public string QualificationName { get; set; }
 
         [NotMapped]
         public List<string> StaffAttributeTemp { get; set; } = new List<string>();
@@ -326,9 +326,9 @@ namespace Malama.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        [ForeignKey("StaffLicense")]
+        [ForeignKey("StaffQualification")]
 
-        public long StaffLicenseId { get; set; }
+        public long StaffQualificationId { get; set; }
 
         [Required]
         [StringLength(50)]
@@ -342,9 +342,9 @@ namespace Malama.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; } // Primary key, auto-incremented
 
-        [ForeignKey("StaffLicense")]
+        [ForeignKey("StaffQualification")]
 
-        public long StaffLicenseId { get; set; }
+        public long StaffQualificationId { get; set; }
 
         //public StaffLicense? StaffLicense { get; set; }
 

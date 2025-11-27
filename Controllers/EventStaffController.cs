@@ -133,11 +133,11 @@ namespace ExcelFilesCompiler.Controllers
                         return RedirectToAction("Index");
                     }
 
-                    if (eventStaffDto.SingleEventStaff.StaffLicense != null)
+                    if (eventStaffDto.SingleEventStaff.StaffQualification != null)
                     {
                         var attributeDetails = new List<StaffAttributeDetails>();
 
-                        foreach (var role in eventStaffDto.SingleEventStaff.StaffLicense)
+                        foreach (var role in eventStaffDto.SingleEventStaff.StaffQualification)
                         {
                             if (role.StaffAttributeTemp != null && role.StaffAttributeTemp.Count > 0)
                             {

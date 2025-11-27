@@ -9,7 +9,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<ContractDetails> ContractDetails { get; }
         IGenericRepository<SubContractor> SubContractors { get; }
         IGenericRepository<EventStaff> EventStaff { get; }
-        IGenericRepository<StaffLicense> StaffLicense { get; }
+        IGenericRepository<StaffQualification> StaffQualification { get; }
         IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; }
         IGenericRepository<TravelHonor> TravelHonor { get; }
         IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; }

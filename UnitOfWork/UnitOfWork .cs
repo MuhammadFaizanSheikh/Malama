@@ -11,7 +11,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<ContractDetails> ContractDetails { get; private set; }
         public IGenericRepository<SubContractor> SubContractors { get; private set; }
         public IGenericRepository<EventStaff> EventStaff { get; private set; }
-        public IGenericRepository<StaffLicense> StaffLicense { get; private set; }
+        public IGenericRepository<StaffQualification> StaffQualification { get; private set; }
         public IGenericRepository<StaffContractAffiliation> StaffContractAffiliation { get; private set; }
         public IGenericRepository<TravelHonor> TravelHonor { get; private set; }
         public IGenericRepository<ServiceTypeProvided> ServiceTypeProvided { get; private set; }
@@ -37,7 +37,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             ContractDetails = new GenericRepository<ContractDetails>(_context);
             SubContractors = new GenericRepository<SubContractor>(_context);
             EventStaff = new GenericRepository<EventStaff>(_context);
-            StaffLicense = new GenericRepository<StaffLicense>(_context);
+            StaffQualification = new GenericRepository<StaffQualification>(_context);
             StaffContractAffiliation = new GenericRepository<StaffContractAffiliation>(_context);
             TravelHonor = new GenericRepository<TravelHonor>(_context);
             ServiceTypeProvided = new GenericRepository<ServiceTypeProvided>(_context);

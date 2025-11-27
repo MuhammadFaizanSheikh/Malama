@@ -428,8 +428,8 @@
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="StaffRoles" class="form-label">Select Staff Qualifications</label>
-                    <div id="StaffRoles"></div>
+                    <label for="StaffQualification" class="form-label">Select Staff Qualifications</label>
+                <div id="StaffQualification"></div>
                     <p id="roleError" style="color: red; display: none;"></p>
                 </div>
                 <div class="col-md-6">
@@ -757,40 +757,163 @@
     let roleLicenseIndexMap = {}; // Stores license indices per role
 
     // Handle role checkbox click event
+    // $(document).on("change", ".role-checkbox", function () {
+    //     let roleCheckbox = $(this);
+    //     let roleId = roleCheckbox.attr("id");
+    //     let roleName = roleCheckbox.val();
+
+    //     // Skip Admin roles
+    //     let requiredLicense = true;
+
+    //     if (roleName === "Admin" || roleName === "Admin (CAC'd)") {
+    //         requiredLicense = false;
+    //     }
+
+    //     const roleAttributes = {
+    //         "Nurse Practitioner": ["Behavioral Health", "EKG Reading"],
+    //         "Physician Assistant": ["Behavioral Health", "EKG Reading"],
+    //         "Registered Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+    //         "Licensed Vocational Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+    //         "Licensed Practical Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+    //         "Medical Assistant": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+    //         "Audiologist": [],
+    //         "Audio tech": [],
+    //         "Dentist": ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
+    //         "Dental Assistant": ["Exam Assist", "Treatment Assist", "X-ray"],
+    //         "Registered Dental Hygienist": [],
+    //         "Medical Doctor": ["Behavioral Health", "EKG Reading"],
+    //         "Optometrist": [],
+    //         "Phlebotomist": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+    //         "Admin(CAC'd)": ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
+    //         "Admin": []
+    //     };
+
+    //     const attributes = roleAttributes[roleName] || [];
+
+    //     if (roleCheckbox.is(":checked")) {
+    //         if (!(roleId in roleIndexMap)) {
+    //             roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
+    //         }
+
+    //         if (!(roleId in roleLicenseIndexMap)) {
+    //             roleLicenseIndexMap[roleId] = 0;
+    //         }
+
+    //         let role = rolesData.find(r => r.id === roleId);
+    //         if (role) {
+    //             let roleIndex = roleIndexMap[roleId];
+    //             let licenseIndex = roleLicenseIndexMap[roleId]++;
+
+    //             // ✅ Use generateAttributeDropdown with attributes
+    //             let attributeDropdown = generateAttributeDropdown(roleId, roleIndex, attributes);
+    //             let licenseFields = generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, role.types);
+
+    //             roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
+
+    //             attachValidation(roleIndex, licenseIndex);
+
+    //             $('.attribute-multiselect').select2({
+    //                 placeholder: "Select Attribute(s)",
+    //                 width: '100%'
+    //             });
+    //         }
+    //     } else {
+    //         $(`.license-container[data-role-id='${roleId}']`).remove();
+    //         $(`.attribute-multiselect-container[data-role-id='${roleId}']`).remove();
+    //         roleCheckbox.closest(".form-check").next(".add-row-button").remove();
+
+    //         delete roleIndexMap[roleId];
+    //         delete roleLicenseIndexMap[roleId];
+
+    //         resetRoleIndexes();
+    //     }
+    // });
+
+    const roleAttributes = {
+        "Nurse Practitioner": {
+            attributes: ["Behavioral Health", "EKG Reading"],
+            types: ["APRN", "ARNP", "NP"]
+        },
+        "Physician Assistant": {
+            attributes: ["Behavioral Health", "EKG Reading"],
+            types: ["PA-C", "PA"]
+        },
+        "Registered Nurse": {
+            attributes: ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            types: ["RN"]
+        },
+        "Licensed Vocational Nurse": {
+            attributes: ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            types: ["LVN"]
+        },
+        "Licensed Practical Nurse": {
+            attributes: ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            types: ["LPN"]
+        },
+        "Medical Assistant": {
+            attributes: ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            types: ["CMA", "RMA", "CCMA", "CMAA"]
+        },
+        "Audiologist": {
+            attributes: [],
+            types: ["Au.D", "CCC-A", "F-AAA", "ABA"]
+        },
+        "Audio tech": {
+            attributes: [],
+            types: ["CAOHC"]
+        },
+        "Dentist": {
+            attributes: ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
+            types: ["DDS", "DMD"]
+        },
+        "Dental Assistant": {
+            attributes: ["Exam Assist", "Treatment Assist", "X-ray"],
+            types: ["CDA", "RDA", "RHS"]
+        },
+        "Registered Dental Hygienist": {
+            attributes: [],
+            types: ["RDH"]
+        },
+        "Medical Doctor": {
+            attributes: ["Behavioral Health", "EKG Reading"],
+            types: ["MD,DO"]   // you didn't provide MD types — keep empty
+        },
+        "Optometrist": {
+            attributes: [],
+            types: ["O.D."]
+        },
+        "Phlebotomist": {
+            attributes: ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
+            types: ["LPT", "CPT1", "CPT2"]
+        },
+        "Admin (CAC'd)": {
+            attributes: ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
+            types: []  // empty from your list
+        },
+        "Admin": {
+            attributes: [],
+            types: []  // empty from your list
+        }
+    };
+
+
     $(document).on("change", ".role-checkbox", function () {
         let roleCheckbox = $(this);
         let roleId = roleCheckbox.attr("id");
         let roleName = roleCheckbox.val();
 
-        // Skip Admin roles
+        // Skip Admin roles for license requirements
         let requiredLicense = true;
-
         if (roleName === "Admin" || roleName === "Admin (CAC'd)") {
             requiredLicense = false;
         }
 
-        const roleAttributes = {
-            "Nurse Practitioner": ["Behavioral Health", "EKG Reading"],
-            "Physician Assistant": ["Behavioral Health", "EKG Reading"],
-            "Registered Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-            "Licensed Vocational Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-            "Licensed Practical Nurse": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-            "Medical Assistant": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-            "Audiologist": [],
-            "Audio tech": [],
-            "Dentist": ["Exam", "Treatment", "Oral Surgery", "Endo", "General"],
-            "Dental Assistant": ["Exam Assist", "Treatment Assist", "X-ray"],
-            "Registered Dental Hygienist": [],
-            "Medical Doctor": ["Behavioral Health", "EKG Reading"],
-            "Optometrist": [],
-            "Phlebotomist": ["Phlebotomy", "EKG", "Imms", "Cold Chain Cert"],
-            "Admin(CAC'd)": ["CAC", "Data Entry", "DOEHRS Entry", "Record Review"],
-            "Admin": []
-        };
+        // Get attributes for this role
+        const attributes = roleAttributes[roleName]?.attributes || [];
 
-        const attributes = roleAttributes[roleName] || [];
 
         if (roleCheckbox.is(":checked")) {
+            // Track role index
             if (!(roleId in roleIndexMap)) {
                 roleIndexMap[roleId] = Object.keys(roleIndexMap).length;
             }
@@ -799,14 +922,15 @@
                 roleLicenseIndexMap[roleId] = 0;
             }
 
+            // Find role from rolesData
             let role = rolesData.find(r => r.id === roleId);
             if (role) {
                 let roleIndex = roleIndexMap[roleId];
                 let licenseIndex = roleLicenseIndexMap[roleId]++;
 
-                // ✅ Use generateAttributeDropdown with attributes
+                // Generate UI
                 let attributeDropdown = generateAttributeDropdown(roleId, roleIndex, attributes);
-                let licenseFields = generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, role.types);
+                let licenseFields = generateLicenseFields(requiredLicense, roleId, roleName, roleIndex, licenseIndex, role.types);
 
                 roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
 
@@ -818,6 +942,7 @@
                 });
             }
         } else {
+            // Remove UI when unchecked
             $(`.license-container[data-role-id='${roleId}']`).remove();
             $(`.attribute-multiselect-container[data-role-id='${roleId}']`).remove();
             roleCheckbox.closest(".form-check").next(".add-row-button").remove();
@@ -833,12 +958,15 @@
 
 
 
+
     // Handle Add Another License button click
     $(document).on("click", ".add-row-button", function () {
         let licenseContainer = $(this).prev(".license-container");
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
         // let roleId = roleCheckbox.attr("id");
+        debugger;
         let roleId = licenseContainer.data("role-id");
+        let roleName = licenseContainer.data("role-name");
 
 
         if (!roleId || !(roleId in roleIndexMap)) {
@@ -851,7 +979,7 @@
         let role = rolesData.find(r => r.id === roleId);
         let licenseTypes = role ? role.types : [];
 
-        let newRow = generateLicenseFields(true, roleId, roleIndex, licenseIndex, licenseTypes);
+        let newRow = generateLicenseFields(true, roleId, roleName, roleIndex, licenseIndex, licenseTypes);
 
         licenseContainer.append($(newRow).find(".license-row"));
 
@@ -947,12 +1075,89 @@
 
 
     // Function to generate license fields with correct indexes
-    function generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, licenseTypesString) {
-        let licenseTypes = licenseTypesString.split(","); // Convert string to array
+    // function generateLicenseFields(requiredLicense, roleId, roleIndex, licenseIndex, licenseTypesString) {
+    //     let licenseTypes = licenseTypesString.split(","); // Convert string to array
 
-        // Use only one declaration for licenseTypeOptions
+    //     // Use only one declaration for licenseTypeOptions
+    //     let licenseTypeOptions = licenseTypes
+    //         .map(type => `<option value="${type.trim()}">${type.trim()}</option>`)
+    //         .join("");
+
+    //     let stateOptions = statesList
+    //         .map(state => `<option value="${state.Name}">${state.Name}</option>`)
+    //         .join("");
+
+    //     let licenseControls = '';
+    //     if (requiredLicense === false)
+    //     {
+    //         licenseControls = `
+    //                     <div class="license-container" data-role-id="${roleId}">
+    //                         <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
+    //                     </div>`;
+    //     }
+    //     else
+    //     {
+    //         licenseControls = `
+    //                 <div class="license-container" data-role-id="${roleId}">
+    //                     <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
+
+    //                     <div class="license-row d-flex align-items-end mt-2">
+    //                         <div class="col-md-2">
+    //                             <label for="licenseNumber${roleIndex}_${licenseIndex}">License No</label>
+    //                                     <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
+    //                         </div>
+    //                         <div class="col-md-2">
+    //                             <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
+    //                                         <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
+    //                             <option value="">Select State</option>
+    //                             ${stateOptions}
+    //                         </select>
+    //                         </div>
+    //                         <div class="col-md-2">
+    //                             <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
+    //                                     <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
+    //                                 <option value="">Select Type</option>
+    //                                 ${licenseTypeOptions}
+    //                             </select>
+    //                         </div>
+    //                         <div class="col-md-2">
+    //                             <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
+    //                                     <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
+    //                         </div>
+    //                         <div class="col-md-2">
+    //                             <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
+    //                                     <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+    //                         </div>
+    //                         <div class="col-md-1">
+    //                             <button type="button" class="btn btn-danger remove-row">Remove</button>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //                             <button type="button" class="add-row-button mt-2">
+    //     <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+    //     <span class="button-text">Add Another License</span>
+    // </button>`
+
+
+    //     };
+
+    //     return licenseControls;
+    // }
+
+    function generateLicenseFields(requiredLicense, roleId, roleName, roleIndex, licenseIndex, licenseTypesInput) {
+        // Convert to array if it's a string, else use as is
+        let licenseTypes = [];
+        if (Array.isArray(licenseTypesInput)) {
+            licenseTypes = licenseTypesInput;
+        } else if (typeof licenseTypesInput === 'string') {
+            licenseTypes = licenseTypesInput.split(",");
+        }
+
+        // Trim each type
+        licenseTypes = licenseTypes.map(t => t.trim());
+
         let licenseTypeOptions = licenseTypes
-            .map(type => `<option value="${type.trim()}">${type.trim()}</option>`)
+            .map(type => `<option value="${type}">${type}</option>`)
             .join("");
 
         let stateOptions = statesList
@@ -960,61 +1165,58 @@
             .join("");
 
         let licenseControls = '';
-        if (requiredLicense === false)
-        {
-            licenseControls = `
-                        <div class="license-container" data-role-id="${roleId}">
-                            <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
-                        </div>`;
-        }
-        else
-        {
-            licenseControls = `
-                    <div class="license-container" data-role-id="${roleId}">
-                        <input type="hidden" name="SingleEventStaff.StaffLicense[${roleIndex}].RoleId" value="${roleId}" />
 
-                        <div class="license-row d-flex align-items-end mt-2">
-                            <div class="col-md-2">
-                                <label for="licenseNumber${roleIndex}_${licenseIndex}">License No</label>
-                                        <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
-                            </div>
-                            <div class="col-md-2">
-                                <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
-                                            <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
+        if (requiredLicense === false) {
+            licenseControls = `
+                <div class="license-container" data-role-id="${roleId}" data-role-name="${roleName}">
+                            <input type="hidden" name="SingleEventStaff.StaffQualification[${roleIndex}].QualificationName" value="${roleName}" />
+                </div>`;
+        } else {
+            licenseControls = `
+                <div class="license-container" data-role-id="${roleId}" data-role-name="${roleName}">
+                                <input type="hidden" name="SingleEventStaff.StaffQualification[${roleIndex}].QualificationName" value="${roleName}" />
+
+                    <div class="license-row d-flex align-items-end mt-2">
+                        <div class="col-md-2">
+                            <label for="licenseNumber${roleIndex}_${licenseIndex}">License No</label>
+                                <input id="licenseNumber${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseNumber" maxlength="14" class="form-control" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label for="licenseState${roleIndex}_${licenseIndex}">State</label>
+                                <select id="licenseState${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseState" class="form-control" required>
                                 <option value="">Select State</option>
                                 ${stateOptions}
                             </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
-                                        <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
-                                    <option value="">Select Type</option>
-                                    ${licenseTypeOptions}
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
-                                        <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
-                            </div>
-                            <div class="col-md-2">
-                                <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
-                                        <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
-                            </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-danger remove-row">Remove</button>
-                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="licenseType${roleIndex}_${licenseIndex}">Type</label>
+                            <select id="licenseType${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseType" class="form-control" required>
+                                <option value="">Select Type</option>
+                                ${licenseTypeOptions}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
+                            <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
+                                <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-danger remove-row">Remove</button>
                         </div>
                     </div>
-                                <button type="button" class="add-row-button mt-2">
-        <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
-        <span class="button-text">Add Another License</span>
-    </button>`
-
-
-        };
+                </div>
+                <button type="button" class="add-row-button mt-2">
+                    <img src="/images/PlusIcon.png" alt="Add Row" class="plus-icon" />
+                    <span class="button-text">Add Another License</span>
+                </button>`;
+        }
 
         return licenseControls;
     }
+
 
     function attachValidation(roleIndex, licenseIndex) {
         const activeInput = document.getElementById(`licenseActive${roleIndex}_${licenseIndex}`);
@@ -1044,7 +1246,7 @@
         return `
             <div class="mb-2 attribute-multiselect-container" data-role-id="${roleId}">
                 <label><strong>Select Attribute(s)</strong></label>
-                                        <select class="form-select attribute-multiselect multi-select" name="SingleEventStaff.StaffLicense[${roleIndex}].StaffAttributeTemp" multiple data-role-id="${roleId}" required>
+                                            <select class="form-select attribute-multiselect multi-select" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffAttributeTemp" multiple data-role-id="${roleId}" required>
                     ${options}
                 </select>
             </div>
@@ -1750,7 +1952,7 @@
                     $('#hiddenId').val(eventStaff.id);
                     $('#hiddenUserId').val(eventStaff.userId);
 
-                    fetchRolesByCategory();// load roles from server
+                    fetchRolesByCategory();//
                     const affiliationContainer = document.querySelector('.form-container-Affiliation');
                     affiliationContainer.innerHTML = '';
                     manageAffiliationRows(staffContractAffiliation);
@@ -1789,7 +1991,7 @@
                     //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
                     // console.log(JSON.stringify(eventStaff.staffLicense))
-                    bindLicenseOnEditMode(eventStaff.staffLicense); // // bind roles and license with data from server
+                    bindLicenseOnEditMode(eventStaff.staffQualification); // // bind roles and license with data from server
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
                     $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
@@ -2268,47 +2470,95 @@
         toggleAdminRoles();
     });
 
+    // function fetchRolesByCategory() {
+    //     roleIndexMap = {}; // Stores role indices
+    //     roleLicenseIndexMap = {};
+    //     $('#StaffRoles').empty();
+
+    //     $.ajax({
+    //         url: '/Roles/GetRolesByCategory',
+    //         type: "GET",
+    //         data: { category: "EventStaffRole" }, // Pass category if required
+    //         success: function (roles) {
+    //             let staffRolesContainer = $("#StaffRoles");
+    //             staffRolesContainer.empty(); // Clear existing roles before appending new ones
+
+    //             if (!roles || roles.length === 0) {
+    //                 staffRolesContainer.append('<p class="text-muted">No roles available</p>');
+    //                 return;
+    //             }
+    //             roles.sort((a, b) => a.name.localeCompare(b.name));
+    //             rolesData = roles;
+    //             roles.forEach(role => {
+    //                 let roleElement = `
+    //                 <div class="form-check me-3 role-item" data-role="${role.name}">
+    //                     <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.name}">
+    //                     <label class="form-check-label" for="${role.id}">${role.name}</label>
+    //                 </div>`;
+
+    //                 staffRolesContainer.append(roleElement);
+    //             });
+
+    //             $(".role-item[data-role=\"Admin (CAC'd)\"]").hide();
+    //             toggleAdminRoles();
+    //         },
+    //         error: function (xhr, status, error) {
+    //             console.error("Error fetching roles:", error);
+    //             $("#StaffRoles").html('<p class="text-danger">Failed to load roles.</p>');
+    //         }
+    //     });
+    // }
+
     function fetchRolesByCategory() {
-        roleIndexMap = {}; // Stores role indices
+        roleIndexMap = {};
         roleLicenseIndexMap = {};
-        $('#StaffRoles').empty();
+        $('#StaffQualification').empty();
 
-        $.ajax({
-            url: '/Roles/GetRolesByCategory',
-            type: "GET",
-            data: { category: "EventStaffRole" }, // Pass category if required
-            success: function (roles) {
-                let staffRolesContainer = $("#StaffRoles");
-                staffRolesContainer.empty(); // Clear existing roles before appending new ones
+        const staffRolesContainer = $("#StaffQualification");
+        staffRolesContainer.empty();
 
-                if (!roles || roles.length === 0) {
-                    staffRolesContainer.append('<p class="text-muted">No roles available</p>');
-                    return;
-                }
-                roles.sort((a, b) => a.name.localeCompare(b.name));
-                rolesData = roles;
-                roles.forEach(role => {
-                    let roleElement = `
-                    <div class="form-check me-3 role-item" data-role="${role.name}">
-                        <input class="role-checkbox" type="checkbox" id="${role.id}" value="${role.name}">
-                        <label class="form-check-label" for="${role.id}">${role.name}</label>
-                    </div>`;
+        // Create rolesData from roleAttributes to mimic backend structure
+        rolesData = Object.keys(roleAttributes).map(roleName => ({
+            id: roleName.replace(/\s+/g, '_'),
+            name: roleName,
+            attributes: roleAttributes[roleName].attributes,
+            types: roleAttributes[roleName].types
+        }));
 
-                    staffRolesContainer.append(roleElement);
-                });
 
-                $(".role-item[data-role=\"Admin (CAC'd)\"]").hide();
-                toggleAdminRoles();
-            },
-            error: function (xhr, status, error) {
-                console.error("Error fetching roles:", error);
-                $("#StaffRoles").html('<p class="text-danger">Failed to load roles.</p>');
-            }
+        const roles = Object.keys(roleAttributes);
+
+        if (!roles || roles.length === 0) {
+            staffRolesContainer.append('<p class="text-muted">No roles available</p>');
+            return;
+        }
+
+        // Sort roles alphabetically
+        roles.sort((a, b) => a.localeCompare(b));
+
+        roles.forEach(roleName => {
+            const roleId = roleName.replace(/\s+/g, '_');
+
+            const roleElement = `
+                <div class="form-check me-3 role-item" data-role="${roleName}">
+                    <input class="role-checkbox" type="checkbox" id="${roleId}" value="${roleName}">
+                    <label class="form-check-label" for="${roleId}">${roleName}</label>
+                </div>
+            `;
+
+            staffRolesContainer.append(roleElement);
         });
+
+        // Hide Admin (CAC'd) if needed
+        $(".role-item[data-role=\"Admin (CAC'd)\"]").hide();
+
+        // Existing toggle logic
+        toggleAdminRoles();
     }
 
     function toggleAdminRoles() {
         let selectedStatus = $("#CACApplicationProcessStatus").val();
+        debugger;
 
         console.log("Selected Status:", selectedStatus); // Debugging
 
