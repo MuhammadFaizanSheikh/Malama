@@ -309,6 +309,10 @@ namespace Malama.Models
 
         [Required]
         [StringLength(50)]
+        public string QualificationId { get; set; }//this is being used to bind data on UI, inshort for UI handling
+
+        [Required]
+        [StringLength(50)]
         public string QualificationName { get; set; }
 
         [NotMapped]
