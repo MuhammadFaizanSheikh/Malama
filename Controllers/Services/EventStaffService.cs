@@ -177,17 +177,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                     foreach (var staffLicense in staff.StaffQualification)
                     {
                         // Fetch Role Name from RoleManager using RoleId
-                        if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
-                        {
-                            if (!roleLicenseMapping.ContainsKey(roleName))
-                            {
-                                roleLicenseMapping[roleName] = new List<string>();
-                            }
+                        //if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
+                        //{
+                        //if (!roleLicenseMapping.ContainsKey(roleName))
+                        //{
+                        //    roleLicenseMapping[roleName] = new List<string>();
+                        //}
 
-                            // Extract LicenseState & LicenseType from StaffLicenseDetails
-                            foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
+                        string qualificationName = staffLicense.QualificationName;
+                        roleLicenseMapping[qualificationName] = new List<string>();
+
+                        // Extract LicenseState & LicenseType from StaffLicenseDetails
+                        foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
                             {
-                                roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
+                                roleLicenseMapping[qualificationName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
                             }
 
                             if (staffLicense.StaffAttributeDetails != null)
@@ -201,7 +204,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 }
 
                             }
-                        }
+                        //}
                     }
 
                     // Generate formatted strings

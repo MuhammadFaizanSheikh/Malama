@@ -232,6 +232,126 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        //public async Task<ResponseDto> UpdateUserAsync(UserUpdateDto updatedUser)
+        //{
+        //    try
+        //    {
+        //        var user = await _userManager.FindByIdAsync(updatedUser.Id);
+        //        if (user == null)
+        //        {
+        //            return new ResponseDto { Success = false, Message = "User not found." };
+        //        }
+
+        //        //var originalEmail = user.Email;
+        //        //var originalPasswordHash = user.PasswordHash;
+        //        var originalRoles = await _userManager.GetRolesAsync(user);
+
+        //        user.Email = updatedUser.Email;
+        //        user.UserName = updatedUser.Email;
+
+        //        if (!string.IsNullOrEmpty(updatedUser.Password))
+        //        {
+        //            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, updatedUser.Password);
+        //        }
+
+        //        var updateResult = await _userManager.UpdateAsync(user);
+        //        if (!updateResult.Succeeded)
+        //        {
+        //            return new ResponseDto
+        //            {
+        //                Success = false,
+        //                Message = "Failed to update user details.",
+        //                Data = updateResult.Errors.Select(e => e.Description).ToList()
+        //            };
+        //        }
+
+        //        var newRoleNames = new List<string>();
+
+        //        try
+        //        {
+        //            var allRoles = await _roleManager.Roles.ToListAsync();
+        //            var roleIds = updatedUser.SelectedRoles;
+        //            newRoleNames = allRoles
+        //                .Where(r => roleIds.Contains(r.Id))
+        //                .Select(r => r.Name)
+        //                .ToList();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return new ResponseDto
+        //            {
+        //                Success = false,
+        //                Message = "Failed to fetch roles.",
+        //                Data = ex.Message
+        //            };
+        //        }
+
+        //        var rolesToRemove = originalRoles.Except(newRoleNames).ToList();
+        //        if (rolesToRemove.Any())
+        //        {
+        //            try
+        //            {
+        //                var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+        //                if (!removeResult.Succeeded)
+        //                {
+        //                    throw new Exception("Failed to remove roles: " +
+        //                        string.Join(", ", removeResult.Errors.Select(e => e.Description)));
+        //                }
+        //            }
+        //            catch (Exception removeEx)
+        //            {
+        //                return new ResponseDto
+        //                {
+        //                    Success = false,
+        //                    Message = "User update failed due to role removal issue. Changes rolled back.",
+        //                    Data = removeEx.Message
+        //                };
+        //            }
+        //        }
+
+        //        var rolesToAdd = newRoleNames.Except(originalRoles).ToList();
+        //        if (rolesToAdd.Any())
+        //        {
+        //            try
+        //            {
+        //                var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+        //                if (!addResult.Succeeded)
+        //                {
+        //                    throw new Exception("Failed to add roles: " +
+        //                        string.Join(", ", addResult.Errors.Select(e => e.Description)));
+        //                }
+        //            }
+        //            catch (Exception addEx)
+        //            {
+        //                await _userManager.AddToRolesAsync(user, rolesToRemove);
+
+        //                return new ResponseDto
+        //                {
+        //                    Success = false,
+        //                    Message = "User update failed due to role addition issue. Changes rolled back.",
+        //                    Data = addEx.Message
+        //                };
+        //            }
+        //        }
+
+        //        return new ResponseDto
+        //        {
+        //            Success = true,
+        //            Message = "User updated successfully.",
+        //            Data = updatedUser.SelectedRoles
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ResponseDto
+        //        {
+        //            Success = false,
+        //            Message = "An internal server error occurred.",
+        //            Data = ex.Message
+        //        };
+        //    }
+        //}
+
         public async Task<ResponseDto> UpdateUserAsync(UserUpdateDto updatedUser)
         {
             try
@@ -242,10 +362,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto { Success = false, Message = "User not found." };
                 }
 
-                //var originalEmail = user.Email;
-                //var originalPasswordHash = user.PasswordHash;
+                // Get original roles
                 var originalRoles = await _userManager.GetRolesAsync(user);
 
+                // Update basic user info
                 user.Email = updatedUser.Email;
                 user.UserName = updatedUser.Email;
 
@@ -265,71 +385,44 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
-                var newRoleNames = new List<string>();
+                // Map SelectedRoles (role IDs) to role names
+                var allRoles = await _roleManager.Roles.ToListAsync();
+                var newRoleNames = allRoles
+                    .Where(r => updatedUser.SelectedRoles.Contains(r.Id))
+                    .Select(r => r.Name)
+                    .ToList();
 
-                try
-                {
-                    var allRoles = await _roleManager.Roles.ToListAsync();
-                    var roleIds = updatedUser.SelectedRoles;
-                    newRoleNames = allRoles
-                        .Where(r => roleIds.Contains(r.Id) && r.Category == AppConstants.RolesCategory.EventStaffRoles)
-                        .Select(r => r.Name)
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    return new ResponseDto
-                    {
-                        Success = false,
-                        Message = "Failed to fetch roles.",
-                        Data = ex.Message
-                    };
-                }
-
+                // Remove roles that are no longer selected
                 var rolesToRemove = originalRoles.Except(newRoleNames).ToList();
                 if (rolesToRemove.Any())
                 {
-                    try
-                    {
-                        var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
-                        if (!removeResult.Succeeded)
-                        {
-                            throw new Exception("Failed to remove roles: " +
-                                string.Join(", ", removeResult.Errors.Select(e => e.Description)));
-                        }
-                    }
-                    catch (Exception removeEx)
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                    if (!removeResult.Succeeded)
                     {
                         return new ResponseDto
                         {
                             Success = false,
-                            Message = "User update failed due to role removal issue. Changes rolled back.",
-                            Data = removeEx.Message
+                            Message = "Failed to remove roles.",
+                            Data = removeResult.Errors.Select(e => e.Description).ToList()
                         };
                     }
                 }
 
+                // Add new roles
                 var rolesToAdd = newRoleNames.Except(originalRoles).ToList();
                 if (rolesToAdd.Any())
                 {
-                    try
+                    var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+                    if (!addResult.Succeeded)
                     {
-                        var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
-                        if (!addResult.Succeeded)
-                        {
-                            throw new Exception("Failed to add roles: " +
-                                string.Join(", ", addResult.Errors.Select(e => e.Description)));
-                        }
-                    }
-                    catch (Exception addEx)
-                    {
+                        // Rollback role removal
                         await _userManager.AddToRolesAsync(user, rolesToRemove);
 
                         return new ResponseDto
                         {
                             Success = false,
-                            Message = "User update failed due to role addition issue. Changes rolled back.",
-                            Data = addEx.Message
+                            Message = "Failed to add roles. Changes rolled back.",
+                            Data = addResult.Errors.Select(e => e.Description).ToList()
                         };
                     }
                 }
@@ -351,6 +444,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 };
             }
         }
+
 
     }
 }

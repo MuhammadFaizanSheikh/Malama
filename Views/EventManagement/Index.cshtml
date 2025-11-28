@@ -5,6 +5,8 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
+<script src="~/js/Common/Objects.js"></script>
+
 <style>
         h2 {
             color: rgba(80, 90, 201, 1);
@@ -2094,6 +2096,26 @@
 
         fetchRolesByCategory("");
 
+        const Qualifications = [
+    "Nurse Practitioner",
+    "Physician Assistant",
+    "Registered Nurse",
+    "Licensed Vocational Nurse",
+    "Licensed Practical Nurse",
+    "Medical Assistant",
+    "Audiologist",
+    "Audio tech",
+    "Dentist",
+    "Dental Assistant",
+    "Registered Dental Hygienist",
+    "Medical Doctor",
+    "Optometrist",
+    "Phlebotomist",
+    "Admin (CAC'd)",
+    "Admin"
+];
+
+
         function resetFormFields() {
             tableInitialized = false;
             isEditMode = false;
@@ -2702,42 +2724,49 @@
 
 
 function populateFilterRolesAndLicenseTypeDropdown() {
-        if (!rolesData || rolesData.length === 0) {
-            console.warn("No roles available to populate dropdown.");
-            return;
-        }
-
-        var filteredRoles = rolesData.filter(role => role.category === "EventStaffRole");
-        var $dropdown = $("#filterRoles");
-
-        $dropdown.empty();
-        $dropdown.append('<option value="">Select Primary Role</option>'); // Default option
-
-        filteredRoles.forEach(function (role) {
-            $dropdown.append(`<option value="${role.name}">${role.name}</option>`);
-        });
-
-        console.log("Dropdown populated with EventStaffRole roles:", filteredRoles);
-
-        var licenseTypesSet = new Set(); // Using Set to ensure unique values
-
-        filteredRoles.forEach(function (role) {
-            if (role.types) {
-                let typesArray = role.types.split(',').map(type => type.trim()); // Split and trim
-                typesArray.forEach(type => licenseTypesSet.add(type)); // Add unique types
-            }
-        });
-
-        var $licenseDropdown = $("#filterLicenseTypes");
-        $licenseDropdown.empty();
-        $licenseDropdown.append('<option value="">Select License Type</option>');
-
-        licenseTypesSet.forEach(function (type) {
-            $licenseDropdown.append(`<option value="${type}">${type}</option>`);
-        });
-
-        console.log("Dropdown populated with unique license types:", Array.from(licenseTypesSet));
+    if (!qualificationsAttributesAndTypes) {
+        console.warn("No qualifications available to populate dropdown.");
+        return;
     }
+
+    // Convert the object into an array of objects
+    const qualificationsArray = Object.keys(qualificationsAttributesAndTypes).map(name => ({
+        name: name,
+        attributes: qualificationsAttributesAndTypes[name].attributes,
+        types: qualificationsAttributesAndTypes[name].types
+    }));
+
+    var $dropdown = $("#filterRoles");
+
+    $dropdown.empty();
+    $dropdown.append('<option value="">Select Primary Role</option>'); // Default option
+
+    qualificationsArray.forEach(function (role) {
+        $dropdown.append(`<option value="${role.name}">${role.name}</option>`);
+    });
+
+    console.log("Dropdown populated with roles:", qualificationsArray);
+
+    var licenseTypesSet = new Set(); // Using Set to ensure unique values
+
+    qualificationsArray.forEach(function (role) {
+        if (role.types) {
+            role.types.forEach(type => licenseTypesSet.add(type));
+        }
+    });
+
+    var $licenseDropdown = $("#filterLicenseTypes");
+    $licenseDropdown.empty();
+    $licenseDropdown.append('<option value="">Select License Type</option>');
+
+    licenseTypesSet.forEach(function (type) {
+        $licenseDropdown.append(`<option value="${type}">${type}</option>`);
+    });
+
+    console.log("Dropdown populated with unique license types:", Array.from(licenseTypesSet));
+}
+
+
 
         function initializeEventStaffTable() {
             if ($.fn.DataTable.isDataTable('#eventStaffSelectionTable')) {
