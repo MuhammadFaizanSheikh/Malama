@@ -100,5 +100,138 @@
     "value": "DAWSON Admin - Event Staff",
     "types": [],
     "Category": "BasicRole"
+  },
+
+  {
+    "id": "vitalsStaff",
+    "value": "Vitals Staff",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "deDentist",
+    "value": "DE- Dentist",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "deDentalXRayTech",
+    "value": "DE-Dental X-Ray Tech",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "deDentalAssistant",
+    "value": "DE-Dental Assistant",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "deDentalLead",
+    "value": "DE-Dental Lead",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "deDentalDirector",
+    "value": "DE-Dental Director",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "dtTreatmentCoordinator",
+    "value": "DT-Treatment Coordinator",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "dtDentist",
+    "value": "DT-Dentist",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "dtDentalAssistant",
+    "value": "DT-Dental Assistant",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "dtSterilizationTech",
+    "value": "DT-Sterilization Tech",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "dtDentalDirector",
+    "value": "DT-Dental Director",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "panorexXRay",
+    "value": "Panorex X-ray",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "phaRecordReview",
+    "value": "PHA-Record Review",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "phaProvider",
+    "value": "PHA Provider",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "audioTech",
+    "value": "Audio Tech",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "audiologist",
+    "value": "Audiologist",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "visionTech",
+    "value": "Vision Tech",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "optometrist",
+    "value": "Optometrist",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "labStaff",
+    "value": "Lab Staff",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+  {
+    "id": "labAdmin",
+    "value": "Lab Admin",
+    "types": [],
+    "Category": "EventManagementRole"
+  },
+
+  {
+    "id": "ekgStaff",
+    "value": "EKG Staff",
+    "types": [],
+    "Category": "EventManagementRole"
   }
 ]
