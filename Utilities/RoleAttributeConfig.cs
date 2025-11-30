@@ -5,6 +5,10 @@
         public static readonly Dictionary<string, List<(string Role, string Attribute)>> RoleAttributeCombinations
         = new()
         {
+            ["Profile_View"] = new List<(string Role, string Attribute)>
+        {
+            (null, "CanAccessProfile")   // Attribute-only permission
+        },
             // Admin page
             ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
         {
