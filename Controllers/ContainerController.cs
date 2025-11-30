@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ namespace ExcelFilesCompiler.Controllers
             _service = service;
         }
 
+        [RoleAttributeAuthorizeFromConfig("Container_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -94,6 +96,7 @@ namespace ExcelFilesCompiler.Controllers
         //    }
         //}
 
+        [RoleAttributeAuthorizeFromConfig("Container_View")]
         [HttpGet("Add")]
         public async Task<IActionResult> Add(string eventId)
         {
@@ -124,6 +127,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("Container_Save")]
         [HttpPost("Add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(CreateContainerDto dto)
@@ -175,7 +179,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-
+        [RoleAttributeAuthorizeFromConfig("Container_View")]
         [HttpGet("Monitor/{id}")]
         public async Task<IActionResult> Monitor(long id)
         {

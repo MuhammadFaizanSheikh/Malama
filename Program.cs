@@ -14,6 +14,8 @@ using System.Configuration;
 using ExcelFilesCompiler.UnitOfWork;
 using Microsoft.AspNetCore.SignalR;
 using Malama.Controllers.Services.ContainerTempMonitoringServices;
+using Malama.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -105,7 +107,16 @@ builder.Services.AddAuthentication()
         options.LoginPath = "/Account/Login";
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RoleAttributePolicy", policy =>
+    {
+        policy.Requirements.Add(new RoleAttributeRequirement(Array.Empty<(string Role, string Attribute)>()));
+    });
+});
+
+builder.Services.AddSingleton<IAuthorizationHandler, RoleAttributeHandler>();
+
 
 builder.Services.AddSignalR();
 

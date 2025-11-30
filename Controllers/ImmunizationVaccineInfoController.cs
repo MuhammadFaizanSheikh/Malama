@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,7 @@ namespace ExcelFilesCompiler.Controllers
             _immunizationVaccineInfoService = immunizationVaccineInfoService;
         }
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -68,7 +70,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        
+
 
         //[HttpGet]
         //public async Task<IActionResult> GetVaccineEntriesByEventId(string eventId)
@@ -109,6 +111,7 @@ namespace ExcelFilesCompiler.Controllers
         //    }
         //}
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_View")]
         public async Task<IActionResult> AddNewVaccine(string eventId)
         {
             try
@@ -154,7 +157,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
 
-
+        [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_Save")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveVaccineEntry(ImmunizationVaccineViewModel model, string action)
@@ -264,6 +267,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_View")]
         [HttpGet]
         public async Task<IActionResult> GetImmunizationVaccineInfoById(long immunizationId)
         {

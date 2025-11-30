@@ -1,6 +1,7 @@
 ﻿using Azure;
 using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -35,6 +36,7 @@ namespace ExcelFilesCompiler.Controllers
             _immunizationStationService = immunizationStationService;
         }
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -110,6 +112,7 @@ namespace ExcelFilesCompiler.Controllers
         //    }
         //}
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
         public async Task<IActionResult> ImmunizationStation(long immunizationId, long fileDataId)
         {
             try
@@ -155,6 +158,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_Save")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveImmunization(ImmunizationStation model, string eventIdForRedirection)
