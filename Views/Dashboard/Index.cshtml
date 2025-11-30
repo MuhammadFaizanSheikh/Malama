@@ -29,7 +29,7 @@
         </a>
 
 
-    @if (User.IsInRole("Check in/out Staff"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
             <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
@@ -62,7 +62,7 @@
 
 
 
-    @if (User.IsInRole("Audiologist"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Audiologist_View"))
     {
         <a asp-controller="Audiologist" asp-action="Index" class="icon-box">
             <img src="/images/Audiologist.jpg" alt="Audiologist" />
@@ -71,27 +71,12 @@
     }
 
 
-    <a asp-controller="CaseManagement" asp-action="Index" class="icon-box">
+    <a asp-controller="CaseManagement" asp-action="Index" class="icon-box" style="display:none;">
         <img src="/images/Case Management.jpg" alt="Case Management" />
         <span>Case Management</span>
     </a>
 
-    @{
-        bool showDentalExamsLink =
-        (User.IsInRole("DE- Dentist") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DE-Dental X-Ray Tech") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DE-Dental Assistant") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DE-Dental Lead") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DE-Dental Director") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DT-Treatment Coordinator") && User.HasClaim("Attribute", "Treatment")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "General")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "Oral Surgery")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "Endo")) ||
-        (User.IsInRole("DT-Dental Assistant") && User.HasClaim("Attribute", "Treatment")) ||
-        (User.IsInRole("DT-Dental Director") && User.HasClaim("Attribute", "Treatment"));
-    }
-
-    @if (showDentalExamsLink)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalExams_View"))
     {
         <a asp-controller="DentalExams" asp-action="Index" class="icon-box">
             <img src="/images/Dental Exams.jpg" alt="Dental Exams" />
@@ -99,20 +84,7 @@
         </a>
     }
 
-
-    @{
-        bool showDentalTreatmentLink =
-        (User.IsInRole("DE-Dental X-Ray Tech") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DE-Dental Director") && User.HasClaim("Attribute", "Exam")) ||
-        (User.IsInRole("DT-Treatment Coordinator") && User.HasClaim("Attribute", "Treatment")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "General")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "Oral Surgery")) ||
-        (User.IsInRole("DT-Dentist") && User.HasClaim("Attribute", "Endo")) ||
-        (User.IsInRole("DT-Dental Assistant") && User.HasClaim("Attribute", "Treatment")) ||
-        (User.IsInRole("DT-Dental Director") && User.HasClaim("Attribute", "Treatment"));
-    }
-
-    @if (showDentalTreatmentLink)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalTreatment_View"))
     {
         <a asp-controller="DentalTreatment" asp-action="Index" class="icon-box">
             <img src="/images/Dental Treatment.jpg" alt="Dental Treatment" />
@@ -120,7 +92,7 @@
         </a>
     }
 
-    @if (showDentalExamsLink)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
     {
         <a asp-controller="DentalXRay" asp-action="Index" class="icon-box">
             <img src="/images/Dental X-Ray.jpg" alt="Dental X-Ray" />
@@ -128,7 +100,7 @@
         </a>
     }
 
-    @if (User.IsInRole("EKG Staff"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EKG_View"))
     {
         <a asp-controller="EKG" asp-action="Index" class="icon-box">
             <img src="/images/EKG.jpg" alt="EKG" />
@@ -136,7 +108,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Audio Tech") || User.IsInRole("Audiologist"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Hearing_View"))
     {
         <a asp-controller="Hearing" asp-action="Index" class="icon-box">
             <img src="/images/Hearing.jpg" alt="Hearing" />
@@ -145,15 +117,7 @@
     }
 
 
-    @{
-        bool showImmunizationRelatedForms =
-        (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Imms")) ||
-        (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert")) ||
-        (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Imms")) ||
-        (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
-    }
-
-    @if (showImmunizationRelatedForms)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
     {
         <a asp-controller="ImmunizationStation" asp-action="Index" class="icon-box">
             <img src="/images/Immunizations.jpg" alt="Immunizations" />
@@ -161,7 +125,7 @@
         </a>
     }
 
-    @if (showImmunizationRelatedForms)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationVaccineInfo_View"))
     {
         <a asp-controller="ImmunizationVaccineInfo" asp-action="Index" class="icon-box">
             <img src="/images/Vaccine Info.png" alt="Vaccine Info" />
@@ -169,7 +133,7 @@
         </a>
     }
 
-    @if (showImmunizationRelatedForms)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
     {
         <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
             <img src="/images/Monitor Container Temperature.png" alt="Vaccine information icon" />
@@ -178,7 +142,7 @@
     }
 
 
-    @if (User.IsInRole("Lab Staff") || User.IsInRole("Lab Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Labs_View"))
     {
         <a asp-controller="Labs" asp-action="Index" class="icon-box">
             <img src="/images/Labs.jpg" alt="Labs" />
@@ -187,7 +151,7 @@
     }
 
 
-    @if (User.IsInRole("Optometrist"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Optometrist_View"))
     {
         <a asp-controller="Optometrist" asp-action="Index" class="icon-box">
             <img src="/images/Optometrist.jpg" alt="Optometrist" />
@@ -195,14 +159,7 @@
         </a>
     }
 
-
-    @{
-        bool showPanoramicDentalXRayLink =
-        showDentalExamsLink &&
-        (User.IsInRole("Panorex X-ray") && User.HasClaim("Attribute", "Panorex X-ray"));
-    }
-
-    @if (showPanoramicDentalXRayLink)
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PanoramicDentalXRay_View"))
     {
         <a asp-controller="PanoramicDentalXRay" asp-action="Index" class="icon-box">
             <img src="/images/Panoramic Dental X-Ray.jpg" alt="Panoramic Dental X-Ray" />
@@ -211,7 +168,7 @@
     }
 
 
-    @if (User.IsInRole("PHA-Record Review") || User.IsInRole("PHA Provider"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "RecordsReview_View"))
     {
         <a asp-controller="RecordsReview" asp-action="Index" class="icon-box">
             <img src="/images/Records Review.jpg" alt="Records Review" />
@@ -221,12 +178,12 @@
 
 
 
-    <a asp-controller="SelfAssessment" asp-action="Index" class="icon-box">
+    <a asp-controller="SelfAssessment" asp-action="Index" class="icon-box" style="display:none;">
         <img src="/images/Self-Assessment.jpg" alt="Self-Assessment" />
         <span>Self-Assessment</span>
     </a>
 
-    @if (User.IsInRole("Vitals Staff") || User.IsInRole("Vision Tech") || User.IsInRole("Optometrist"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VisionScreening_View"))
     {
         <a asp-controller="VisionScreening" asp-action="Index" class="icon-box">
             <img src="/images/Vision Screening.jpg" alt="Vision Screening" />
@@ -235,7 +192,7 @@
     }
 
 
-    @if (User.IsInRole("Vitals Staff"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Vitals_View"))
     {
         <a asp-controller="Vitals" asp-action="Index" class="icon-box">
             <img src="/images/Vitals.jpg" alt="Vitals" />

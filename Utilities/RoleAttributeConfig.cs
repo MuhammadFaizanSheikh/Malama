@@ -13,7 +13,7 @@
         },
 
             // Malama Check In Out
-            ["ExcelFileUploader_View"] = new List<(string Role, string Attribute)>
+            ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null)
         },
@@ -85,21 +85,18 @@
             // Immunization forms
             ["ImmunizationStation_View"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Imms"),
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
             ("Imm Staff", "Cold Chain Cert")
         },
             ["ImmunizationVaccineInfo_View"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Imms"),
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
             ("Imm Staff", "Cold Chain Cert")
         },
             ["Container_View"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Imms"),
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
             ("Imm Staff", "Cold Chain Cert")
@@ -121,10 +118,21 @@
             // Panoramic Dental X-Ray
             ["PanoramicDentalXRay_View"] = new List<(string Role, string Attribute)>
         {
+            ("DE- Dentist", "Exam"),
+            ("DE-Dental X-Ray Tech", "Exam"),
+            ("DE-Dental Assistant", "Exam"),
+            ("DE-Dental Lead", "Exam"),
+            ("DE-Dental Director", "Exam"),
+            ("DT-Treatment Coordinator", "Treatment"),
+            ("DT-Dentist", "General"),
+            ("DT-Dentist", "Oral Surgery"),
+            ("DT-Dentist", "Endo"),
+            ("DT-Dental Assistant", "Treatment"),
+            ("DT-Dental Director", "Treatment"),
             ("Panorex X-ray", "Panorex X-ray")
         },
 
-            // Records Review
+            // es Review
             ["RecordsReview_View"] = new List<(string Role, string Attribute)>
         {
             ("PHA-Record Review", null),
@@ -146,7 +154,6 @@
         },
             ["ImmunizationStation_Save"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Imms"),
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
             ("Imm Staff", "Cold Chain Cert")
@@ -154,7 +161,6 @@
 
             ["ImmunizationVaccineInfo_Save"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Imms"),
             ("Imm RN", "Cold Chain Cert")
         },
 

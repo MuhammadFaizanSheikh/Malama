@@ -1,4 +1,5 @@
-﻿@model Malama.Models.Container
+﻿@using Malama.Utilities
+@model Malama.Models.Container
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     var readings = ViewBag.Readings as IEnumerable<ContainerTemperatureReading> ?? new List<ContainerTemperatureReading>();
@@ -216,13 +217,9 @@
 
 
         <div class="d-flex justify-content-end mt-4">
-            @{
-                bool canSubmit =
-                (User.IsInRole("Imm RN") && User.HasClaim("Attribute", "Cold Chain Cert")) ||
-                (User.IsInRole("Imm Staff") && User.HasClaim("Attribute", "Cold Chain Cert"));
-            }
+           
 
-            <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" @(canSubmit ? "" : "disabled")>
+            <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" @(DashboardAuthorizationHelper.HasAccess(User, "Container_Save") ? "" : "disabled")>
                 <i class="bi bi-check-circle"></i> Submit
             </button>
 
