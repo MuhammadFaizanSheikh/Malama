@@ -251,27 +251,27 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                         if (eventStaffDetail != null)
                         {
-                            var roles = await _roleManager.Roles.ToListAsync();
-                            var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
                             var roleLicenseMapping = new Dictionary<string, List<string>>();
                             var attributeList = new List<string>();
 
                             foreach (var staffLicense in eventStaffDetail.StaffQualification)
                             {
-                                // Fetch Role Name from RoleManager using RoleId
-                                if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
+                                var roleName = staffLicense.QualificationName?.Trim();
+
+                                if (!string.IsNullOrWhiteSpace(roleName))
                                 {
                                     if (!roleLicenseMapping.ContainsKey(roleName))
                                     {
                                         roleLicenseMapping[roleName] = new List<string>();
                                     }
 
-                                    // Extract LicenseState & LicenseType from StaffLicenseDetails
+                                    // Add LicenseState & LicenseType
                                     foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
                                     {
                                         roleLicenseMapping[roleName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
                                     }
 
+                                    // Add Attributes
                                     if (staffLicense.StaffAttributeDetails != null)
                                     {
                                         foreach (var attrDetail in staffLicense.StaffAttributeDetails)
@@ -281,18 +281,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                                                 attributeList.Add(attrDetail.Attribute.Trim());
                                             }
                                         }
-
                                     }
                                 }
                             }
 
-                            var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
-                            var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
-                            var attributesString = string.Join(", ", attributeList
-                            .Select(a => a.Trim())
-                            .Where(a => !string.IsNullOrWhiteSpace(a))
-                            .Distinct(StringComparer.OrdinalIgnoreCase)   // ✅ remove duplicates (case-insensitive)
-                            .OrderBy(a => a));
+                            // Prepare output strings
+                            var rolesString = string.Join(", ", roleLicenseMapping.Keys);
+
+                            var licensesString = string.Join("<br/>",
+                                roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))
+                            );
+
+                            var attributesString = string.Join(", ",
+                                attributeList
+                                    .Where(a => !string.IsNullOrWhiteSpace(a))
+                                    .Select(a => a.Trim())
+                                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                                    .OrderBy(a => a)
+                            );
 
                             eventStaffDetailAndAdditionalRoles.EventStaffRolesNameAndLicense = new CombinedEventStaffRolesNameAndLicense
                             {
@@ -309,6 +315,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 Status = eventStaffDetail.StaffStatus,
                                 Attributes = attributesString
                             };
+
                             eventStaffDetailAndAdditionalRoles.EventStaffDetail = eventStaffDetails;
                             EventStaffDetailAndAdditionalRoleslist.Add(eventStaffDetailAndAdditionalRoles);
                         }

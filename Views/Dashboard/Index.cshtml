@@ -10,10 +10,14 @@
             <span>Admin</span>
         </a>
     }
-    <a asp-controller="Home" asp-action="Index" class="icon-box">
-        <img src="/images/Report Processor.jpg" alt="Report Processor" />
-        <span>Report Processor</span>
-    </a>
+
+     @if (User.IsInRole("Super Admin"))
+     {
+        <a asp-controller="Home" asp-action="Index" class="icon-box">
+            <img src="/images/Report Processor.jpg" alt="Report Processor" />
+            <span>Report Processor</span>
+        </a>
+     }
 
     @* @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager"))
     {
@@ -23,10 +27,13 @@
         </a>
     } *@
 
-    <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
+    @if (User.IsInRole("Super Admin"))
+    {
+        <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
             <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
             <span>Malama Check In Out (Admin)</span>
         </a>
+    }
 
 
     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
@@ -37,25 +44,37 @@
         </a>
     }
 
-    <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
-        <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
-        <span>Sub - Contractor Info</span>
-    </a>
+    @if (User.IsInRole("Super Admin"))
+    {
+        <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
+            <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
+            <span>Sub - Contractor Info</span>
+        </a>
+    }
 
-    <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
-        <img src="/images/ContractDetails.jpg" alt="Contract Details" />
-        <span>Contract Details</span>
-    </a>
+    @if (User.IsInRole("Super Admin"))
+    {
+        <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
+            <img src="/images/ContractDetails.jpg" alt="Contract Details" />
+            <span>Contract Details</span>
+        </a>
+    }
 
-    <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
-        <img src="/images/Event Management.png" alt="Event Management" />
-        <span>Event Management</span>
-    </a>
+    @if (User.IsInRole("Super Admin"))
+    {
+        <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
+            <img src="/images/Event Management.png" alt="Event Management" />
+            <span>Event Management</span>
+        </a>
+    }
 
-    <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
-        <img src="/images/Event Satff Icon.jpg" alt="Event Satff" />
-        <span>Event Staff</span>
-    </a>
+    @if (User.IsInRole("Super Admin"))
+    {
+        <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
+            <img src="/images/Event Satff Icon.jpg" alt="Event Satff" />
+            <span>Event Staff</span>
+        </a>
+    }
 
 
 
