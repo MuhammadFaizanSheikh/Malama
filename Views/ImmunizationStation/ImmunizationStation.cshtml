@@ -922,7 +922,7 @@
     </div>
     <!-- Submit Buttons -->
     <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "Immunization_Save") ? "" : "disabled")>
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_Save") ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
         </button>
 
