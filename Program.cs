@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR;
 using Malama.Controllers.Services.ContainerTempMonitoringServices;
 using Malama.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -119,6 +120,21 @@ builder.Services.AddSingleton<IAuthorizationHandler, RoleAttributeHandler>();
 
 
 builder.Services.AddSignalR();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.File(
+        path: "Logs/log-.txt",
+        rollingInterval: RollingInterval.Day,       // One file per day
+        fileSizeLimitBytes: 5 * 1024 * 1024,         // 5 MB
+        rollOnFileSizeLimit: true,                   // Create new file when limit reached
+        retainedFileCountLimit: null,                  // Keep last 10 files (optional)
+        shared: true,
+        flushToDiskInterval: TimeSpan.FromSeconds(1)
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 
