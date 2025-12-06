@@ -133,7 +133,7 @@
 
 @if (Model != null && Model.ListOfImmunizationVaccineInfo != null)
 {
-    <h2 id="page-heading">Event ID : @Model.EventId</h2>
+    @* <h2 id="page-heading">Event ID : @Model.EventId</h2> *@
     <div id="vaccineTableDiv">
         <div class="card p-3 mb-4">
             <div class="container">
@@ -222,7 +222,7 @@
 <div id="vaccineFormDiv">
     @if (Model != null && Model.SingleImmunizationVaccineInfo != null)
     {
-        <h2 id="page-heading">Event ID : @Model.EventId</h2>
+        @* <h2 id="page-heading">Event ID : @Model.EventId</h2> *@
         <form asp-action="SaveVaccineEntry" method="post">
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)

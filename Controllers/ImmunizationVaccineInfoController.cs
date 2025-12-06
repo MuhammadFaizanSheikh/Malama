@@ -19,7 +19,6 @@ using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    //[Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
     public class ImmunizationVaccineInfoController : Controller
     {
         private readonly IFileUploader _fileUploader;

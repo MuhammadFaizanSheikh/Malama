@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    //[Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
     public class ContainerController : Controller
     {
         private readonly IFileUploader _fileUploader;

@@ -1,4 +1,7 @@
 ﻿@using System.Security.Claims
+@using Malama.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -99,41 +102,58 @@
 </head>
 <body>
     <!-- Sidebar -->
+    @{
+        var user = await UserManager.GetUserAsync(User);
+        bool isEventUser = user?.IsEventUser ?? false;
+        var isEventAssignedClaim = User.Claims.FirstOrDefault(c => c.Type == "IsEventAssignedToStaff")?.Value;
+        bool isEventAssigned = string.Equals(isEventAssignedClaim, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
     <nav id="sidebar">
         <div class="sidebar-header">
             Menu
         </div>
+
         <ul class="nav flex-column">
+
+            <!-- Dashboard -->
             <li class="nav-item">
                 <a class="nav-link" href="/Dashboard/Index">
                     Dashboard
                 </a>
             </li>
-            @* @if (User.IsInRole("Admin"))
+
+            <!-- Show Select Event only if session is null -->
+            @if (isEventUser)
             {
-            <li class="nav-item">
-            <a class="nav-link" asp-controller="AccountRegistration" asp-action="Register">Register User</a>
-            </li>
+                @if (!isEventAssigned)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="EventSelection" asp-action="Index">
+                            Select Event
+                        </a>
+                    </li>
+                }
             }
-            <li class="nav-item">
-            <a class="nav-link" asp-controller="Home" asp-action="Index">
-            File Uploader
-            </a>
-            </li> *@
+
+            <!-- Change Password -->
             <li class="nav-item">
                 <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
                     Change Password
                 </a>
             </li>
+
+            <!-- Logout -->
             <li class="nav-item">
                 <form asp-action="Logout" asp-controller="Account" method="post" style="display:inline;">
-                    <button type="submit" class="nav-link" style="border: none; background: none; padding: 0;">
-                        <i></i> Logout
+                    <button type="submit" class="nav-link" style="border:none; background:none; padding:0;">
+                        Logout
                     </button>
                 </form>
             </li>
         </ul>
     </nav>
+
 
     <!-- Main Content -->
     <main>
