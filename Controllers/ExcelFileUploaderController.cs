@@ -1,6 +1,8 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -103,30 +105,18 @@ namespace ExcelFilesCompiler.Controllers
         //}
 
 
-
+        [CheckInOutAuthorize]
         [HttpGet]
         public async Task<IActionResult> Index(string userType)
         {
             try
             {
-                if (userType == "admin")
-                {
-                    if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager"))
-                    {
-                        return RedirectToAction("AccessDenied", "Account");
-                    }
-                }
-                else if (userType == "client")
-                {
-                    //if (!User.IsInRole("Super Admin") && !User.IsInRole("Project Manager & Program Manager") && !User.IsInRole("DAWSON Admin - Event Staff"))
-                    //{
-                    //    return RedirectToAction("AccessDenied", "Account");
-                    //}
-                }
-                else
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
+                //var authResult = DashboardAuthorizationHelper.CheckCheckInOutAccess(User, userType);
+
+                //if (!authResult)
+                //{
+                //    return RedirectToAction("AccessDenied", "Account");
+                //}
 
 
                 //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
@@ -149,6 +139,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("CheckInOutStaff_View")]
         [HttpPost]
         public async Task<IActionResult> GetEventDataByEventId()
         {
@@ -196,7 +187,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-
+        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
         [HttpPost]
         public async Task<IActionResult> GetEventDataByEventIdForImmunization([FromBody] string eventId)
         {
@@ -237,6 +228,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("Profile_View")]
         public async Task<IActionResult> GetDataAgainstIdAndGeneratePdf(long id)
         {
             try
@@ -259,6 +251,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("CheckInOutStaff_Save")]
         [HttpPost]
         public async Task<IActionResult> InsertSingleRecord([FromBody] FileDataDto dto)
         {
@@ -306,7 +299,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-
+        [RoleAttributeAuthorizeFromConfig("CheckInOutStaff_Save")]
         [HttpPut]
         public async Task<IActionResult> UpdateSingleRecord([FromBody] FileDataDto dto)
         {

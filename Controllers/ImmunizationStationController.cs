@@ -18,7 +18,6 @@ using System.Text.Json.Serialization;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    //[Authorize(Roles = "DAWSON Admin - Event Staff,Project Manager & Program Manager,Super Admin")]
     public class ImmunizationStationController : Controller
     {
         private readonly IFileUploader _fileUploader;

@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,7 @@ using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize]
+    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class ContractDetailsController : Controller
     {
         private readonly IContractService _contractService;

@@ -206,6 +206,7 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpPost("Monitor/{id}")]
         [ValidateAntiForgeryToken]
+        [RoleAttributeAuthorizeFromConfig("Container_Save")]
         public async Task<IActionResult> Monitor(long id, CreateReadingDto dto)
         {
             try

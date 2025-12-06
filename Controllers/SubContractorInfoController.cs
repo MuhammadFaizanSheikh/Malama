@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,7 @@ using System.ComponentModel.Design;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize]
+    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class SubContractorInfoController : Controller
     {
         private readonly ISubContractorService _subContractorService;

@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NPOI.SS.Formula.Functions;
+using Malama.Attributes;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize(Roles = "Project Manager & Program Manager,Super Admin")]
+    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class AccountRegistrationController : Controller
     {
         private readonly IAccountRegistrationService _registrationService;

@@ -3,7 +3,7 @@
 }
 
 <div class="dashboard-icons">
-    @if (User.IsInRole("Super Admin") || User.IsInRole("Project Manager & Program Manager"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
     {
         <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
             <img src="/images/Admin.jpg" alt="Admin" />
@@ -11,7 +11,7 @@
         </a>
     }
 
-     @if (User.IsInRole("Super Admin"))
+     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
      {
         <a asp-controller="Home" asp-action="Index" class="icon-box">
             <img src="/images/Report Processor.jpg" alt="Report Processor" />
@@ -27,7 +27,7 @@
         </a>
     } *@
 
-    @if (User.IsInRole("Super Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_Admin_View"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
             <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
@@ -36,7 +36,7 @@
     }
 
 
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_Client_View"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
             <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
@@ -44,7 +44,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Super Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
     {
         <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
             <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
@@ -52,7 +52,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Super Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
     {
         <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
             <img src="/images/ContractDetails.jpg" alt="Contract Details" />
@@ -60,7 +60,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Super Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
     {
         <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
             <img src="/images/Event Management.png" alt="Event Management" />
@@ -68,7 +68,7 @@
         </a>
     }
 
-    @if (User.IsInRole("Super Admin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
     {
         <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
             <img src="/images/Event Satff Icon.jpg" alt="Event Satff" />

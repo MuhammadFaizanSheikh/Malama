@@ -34,6 +34,23 @@ namespace Malama.Utilities
             return false;
         }
 
+        public static bool CheckCheckInOutAccess(ClaimsPrincipal user, string userType)
+        {
+            if (userType == "admin")
+            {
+                return HasAccess(user, "CheckInOutStaff_Admin_View");
+            }
+            else if (userType == "client")
+            {
+                return HasAccess(user, "CheckInOutStaff_Client_View");
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
     }
 
 }

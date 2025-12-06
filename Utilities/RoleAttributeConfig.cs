@@ -5,23 +5,32 @@
         public static readonly Dictionary<string, List<(string Role, string Attribute)>> RoleAttributeCombinations
         = new()
         {
+            ["SuperAdmin"] = new List<(string Role, string Attribute)>
+        {
+            ("Super Admin", null)
+        },
             ["Profile_View"] = new List<(string Role, string Attribute)>
         {
-            (null, "CanAccessProfile")   // Attribute-only permission
+            ("Check in/out Staff", "CanAccessProfile")
         },
-            // Admin page
             ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
             ("Project Manager & Program Manager", null)
         },
-
-            // Malama Check In Out
             ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Check in/out Staff", null),
+            ("Super Admin", null)
+        },
+            ["CheckInOutStaff_Client_View"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null)
         },
-
+            ["CheckInOutStaff_Admin_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Super Admin", null)
+        },
             // Audiologist
             ["Audiologist_View"] = new List<(string Role, string Attribute)>
         {
@@ -172,6 +181,12 @@
         {
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Cold Chain Cert")
+        },
+            
+            ["CheckInOutStaff_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Check in/out Staff", null),
+            ("Super Admin", null)
         }
 
         };

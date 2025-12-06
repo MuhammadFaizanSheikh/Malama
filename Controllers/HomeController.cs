@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using Malama.Attributes;
 using Malama.Models;
 using MathNet.Numerics.LinearAlgebra;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,7 @@ using System.Text.RegularExpressions;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [Authorize]
+    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
