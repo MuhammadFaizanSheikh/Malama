@@ -107,13 +107,6 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 bool isUserInEvent = eventManagement.EventStaffDetailList.Any(esd => esd.EventStaffId == eventStaff.Id);
-
-                //if (!isUserInEvent)
-                //{
-                //    ViewBag.ErrorMessage = "You are not assigned to the selected event.";
-                //    return await ReturnIndexView();
-                //}
-
                 bool isEventAssignedToStaff = false;
                 List<string?> eventWiseRoleNames = new List<string?>();
                 List<string> staffAttributes = new List<string>();
@@ -136,13 +129,10 @@ namespace ExcelFilesCompiler.Controllers
                         .Select(r => r.RoleId)
                         .ToList() ?? new List<string>();
 
-
-
                     if (staffDetails?.ProfileButtonAccess == true)
                     {
                         staffAttributes.Add("CanAccessProfile");
                     }
-
 
                     if (eventStaff.StaffQualification != null)
                     {
@@ -155,28 +145,25 @@ namespace ExcelFilesCompiler.Controllers
                         }
                     }
 
-                    
-
-
-                    //var eventRolesIds = eventManagement.EventStaffDetailList
-                    //.Where(esd => esd.EventStaffId == eventStaff.Id)
-                    //.SelectMany(esd => esd.EventWiseStaffRoleList)
-                    //.Select(ewsr => ewsr.RoleId)
-                    //.ToList();
-
-                    //var eventSecondaryRolesIds = eventManagement.EventStaffDetailList
-                    //    .Where(esd => esd.EventStaffId == eventStaff.Id)
-                    //    .SelectMany(esd => esd.EventWiseStaffSecondaryRoleList)
-                    //    .Select(ewsr => ewsr.RoleId)
-                    //    .ToList();
-
                     var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
 
                     var allRoles = await _roleManager.Roles.ToListAsync();
                     eventWiseRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
                 }
 
-                
+                var today = DateTime.Today;
+
+                bool isEventManager = eventWiseRoleNames.Contains("Event Manager");
+
+                if (!isEventManager)
+                {
+                    if (today < eventManagement.EventStartDate.Date || today > eventManagement.EventEndDate.Date)
+                    {
+                        ViewBag.ErrorMessage = "The selected event is not active today.";
+                        return await ReturnIndexView();
+                    }
+                }
+
 
                 bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventWiseRoleNames, eventManagement.EventID, isEventAssignedToStaff, staffAttributes);
 
