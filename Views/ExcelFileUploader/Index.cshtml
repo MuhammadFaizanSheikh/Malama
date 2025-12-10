@@ -9,7 +9,7 @@
     <!-- Heading -->
     <div class="row mt-4">
         <div class="col-md-12 text-center">
-            <h1 id="page-heading" class="page-heading">Malama</h1>
+            <h1 id="page-heading" class="page-heading">Malama Check In/Out Station</h1>
         </div>
     </div>
 
@@ -203,13 +203,13 @@
     window.userType = '@ViewBag.UserType';
     window.isCheckInOutPage = true;
 
-    if (window.type == '') {
-        $("#page-heading").text(window.type + " - Malama");
-    }
+    // if (window.type == '') {
+    //     $("#page-heading").text(window.type + " - Malama");
+    // }
     document.addEventListener("DOMContentLoaded", async function () {
         debugger;
         if (window.userType === "client") {
-             $("#page-heading").text("Malama (Staff)");
+             // $("#page-heading").text("Malama (Staff)");
             $("#btnProfile").show();
 
             const uploadSection = document.getElementById('fileUploadContainer');
@@ -218,7 +218,7 @@
             }
             await fetchAndRenderEventData();
         } else {
-             $("#page-heading").text("Malama (Admin)");
+             // $("#page-heading").text("Malama (Admin)");
             $("#btnProfile").hide();
             // const eventIdDropdown = document.getElementById('eventIdDropdown');
             // if (eventIdDropdown) {
