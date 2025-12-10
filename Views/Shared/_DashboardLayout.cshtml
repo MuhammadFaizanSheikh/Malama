@@ -105,8 +105,8 @@
     @{
         var user = await UserManager.GetUserAsync(User);
         bool isEventUser = user?.IsEventUser ?? false;
-        var isEventAssignedClaim = User.Claims.FirstOrDefault(c => c.Type == "IsEventAssignedToStaff")?.Value;
-        bool isEventAssigned = string.Equals(isEventAssignedClaim, "true", StringComparison.OrdinalIgnoreCase);
+        // var isEventAssignedClaim = User.Claims.FirstOrDefault(c => c.Type == "IsEventAssignedToStaff")?.Value;
+        // bool isEventAssigned = string.Equals(isEventAssignedClaim, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     <nav id="sidebar">
@@ -126,14 +126,11 @@
             <!-- Show Select Event only if session is null -->
             @if (isEventUser)
             {
-                @if (!isEventAssigned)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="EventSelection" asp-action="Index">
-                            Select Event
-                        </a>
-                    </li>
-                }
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="EventSelection" asp-action="Index">
+                        Select Event
+                    </a>
+                </li>
             }
 
             <!-- Change Password -->

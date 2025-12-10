@@ -67,11 +67,16 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 HttpContext.Session.Remove("GlobalEventId");
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    return Unauthorized();
+                }
 
                 if (selectedEventId == 0)
                 {
-                    //ViewBag.ErrorMessage = "Please select a valid event.";
-                    //return await ReturnIndexView();
+                    await UpdateUserClaimsAsync(user, selectedEventId: 0, eventRoleNames: Enumerable.Empty<string>(), eventID: "", isEventAssignedToStaff: false, staffAttributes: new List<string>());
                     return RedirectToAction("Index", "Dashboard");
                 }
 
@@ -171,12 +176,7 @@ namespace ExcelFilesCompiler.Controllers
                     eventWiseRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
                 }
 
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    return Unauthorized();
-                }
+                
 
                 bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventWiseRoleNames, eventManagement.EventID, isEventAssignedToStaff, staffAttributes);
 

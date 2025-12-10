@@ -134,7 +134,6 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 
-builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 
 var app = builder.Build();
