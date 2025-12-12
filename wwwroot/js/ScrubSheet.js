@@ -177,7 +177,6 @@ function editRow(button) {
     });
 
     smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
-    debugger;
     primaryKeyForEdit = currentRow.find('.row-id').val();
     populateModalForEdit(rowData);  // Pass the mapped data to populateModal
     document.getElementById("editModalLabel").innerText = "Edit Service Member";
@@ -342,11 +341,11 @@ function populateModalForEdit(data) {
     modalContent.empty(); // Clear previous content
     let textColor = 'style="color: black;"'; // Set text color to black
     const fieldsPerRow = 5; // Set to 5 fields per row now
-
+    
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
 
         if (categoryName === "Status") {
-            if (window.isCheckInOutPage = true && window.userType === "client") {
+            if (window.isCheckInOutPage === true && window.userType === "client") {
 
                 // Create container for Status section
                 const statusContainer = $(`
@@ -732,7 +731,7 @@ function populateModalForAdd(data) {
 
     for (const [categoryName, categoryKeys] of Object.entries(categories)) {
         if (categoryName === "Status") {
-            if (window.isCheckInOutPage = true && window.userType === "client") {
+            if (window.isCheckInOutPage === true && window.userType === "client") {
 
                 // Container for Status section
                 const statusContainer = $(`
@@ -1386,7 +1385,7 @@ async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-    debugger;
+
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
         const checkedOutDropdown = document.getElementById("checkedOut");
@@ -1474,7 +1473,6 @@ async function saveChangesButton() {
         const fullRowData = Array(keys.length).fill('');
 
         // set sm id counter in index 0 (for edit mode)
-        debugger;
         smIdCounter++;
         const smIdIndex = keys.indexOf('SM ID');// Find index of FULL SSN column
         fullRowData[smIdIndex] = smIdCounter.toString();
@@ -1555,7 +1553,6 @@ async function saveChangesButton() {
         fullRowData[barcodeIndex] = finalBarcodeValue;
 
         if (window.userType === "client") {
-            debugger;
             const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
 
             const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
@@ -1697,7 +1694,6 @@ async function saveChangesButton() {
 
 async function printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint) {
     if (!shouldPrint) return;
-    debugger;
     const table = $('#previewTable').DataTable();
     const rows = table.rows().nodes().toArray(); // get all row DOM nodes
 
@@ -2760,5 +2756,3 @@ function clearPreview() {
     smIdCounter = 0;
     uploadCounter = 0;
 }
-
-
