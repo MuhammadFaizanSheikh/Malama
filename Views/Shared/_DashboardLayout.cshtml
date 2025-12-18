@@ -98,6 +98,26 @@
             background-color: #f4f5f7;
             min-height: 100vh;
         }
+
+        .sidebar-logo {
+            max-width: 140px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #sidebar .sidebar-header {
+            background-color: transparent;
+        }
+
+        .main-logo {
+            max-width: 250px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+
     </style>
 </head>
 <body>
@@ -111,8 +131,11 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            Menu
+            <a href="/Dashboard/Index" class="logo-link">
+                <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="sidebar-logo" />
+            </a>
         </div>
+
 
         <ul class="nav flex-column">
 
@@ -166,11 +189,14 @@
                 }
             </div>
             <div>
+                <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="main-logo" />
+            </div>
+            <div>
                 @{
                     var roleClaims = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(r => r.Value);
                     var rolesDisplay = string.Join(", ", roleClaims);
                 }
-                <span class="text-muted">
+                <span class="text-muted" >
                     @User.Identity.Name
                     @if (!string.IsNullOrEmpty(rolesDisplay))
                     {

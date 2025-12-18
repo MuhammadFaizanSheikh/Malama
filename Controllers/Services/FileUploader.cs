@@ -875,13 +875,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             using (var stream = file.OpenReadStream())
             {
-                IWorkbook workbook = new XSSFWorkbook(stream);
+                IWorkbook workbook = new XSSFWorkbook(stream); // For .xlsx; use HSSFWorkbook for .xls
                 ISheet sheet = workbook.GetSheetAt(0); // Get the first sheet
+
+                var evaluator = workbook.GetCreationHelper().CreateFormulaEvaluator(); // Formula evaluator
 
                 IRow headerRow = null;
                 bool headerFound = false;
                 int headerRowIndex = 0;
 
+                // Find header row
                 for (int i = 0; i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
@@ -889,16 +892,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         for (int j = 0; j < row.LastCellNum; j++)
                         {
-                            string cellValue = row.GetCell(j)?.ToString();
+                            ICell cell = row.GetCell(j);
+                            string cellValue = GetCellValue(cell, evaluator);
 
-                            if (isG6PD)
+                            if (isG6PD && string.IsNullOrWhiteSpace(taskForceValue))
                             {
-                                if (string.IsNullOrWhiteSpace(taskForceValue))
+                                if (!string.IsNullOrEmpty(cellValue) && NormalizeWhiteSpace(cellValue).Contains("G6PD Report by Taskforce:"))
                                 {
-                                    if (!string.IsNullOrEmpty(cellValue) && NormalizeWhiteSpace(cellValue).Contains("G6PD Report by Taskforce:"))
-                                    {
-                                        taskForceValue = ExtractTaskForceValue(cellValue);
-                                    }
+                                    taskForceValue = ExtractTaskForceValue(cellValue);
                                 }
                             }
 
@@ -918,12 +919,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (headerRow == null)
                     throw new Exception("Header row not found!");
 
-                if (isG6PD)
+                if (isG6PD && totalRecordValueInG6pdFile == 0)
                 {
-                    if (totalRecordValueInG6pdFile == 0)
-                    {
-                        totalRecordValueInG6pdFile = GetTotalAssignedRecordFromG6pdFile(sheet);
-                    }
+                    totalRecordValueInG6pdFile = GetTotalAssignedRecordFromG6pdFile(sheet);
                 }
 
                 // Add selected columns to the DataTable
@@ -936,37 +934,33 @@ namespace ExcelFilesCompiler.Controllers.Services
                 for (int i = headerRowIndex + 1; i <= sheet.LastRowNum; i++)
                 {
                     IRow row = sheet.GetRow(i);
-                    if (row == null || IsStopRow(row, stopKeyword)) break; // Stop if blank or stop keyword
+                    if (row == null || IsStopRow(row, stopKeyword)) break;
 
                     DataRow dataRow = dataTable.NewRow();
 
                     for (int j = 0; j < row.LastCellNum; j++)
                     {
-                        ICell cell = row.GetCell(j); // Get cell safely
-                        if (cell == null) continue; // Skip if cell is null
+                        ICell cell = row.GetCell(j);
+                        string headerValue = GetCellValue(headerRow.GetCell(j), evaluator);
 
-                        string headerValue = headerRow.GetCell(j)?.ToString();
                         if (selectedColumns.Contains(headerValue))
                         {
-                            // Check if the current header is in the list of date headers
+                            string cellValue = GetCellValue(cell, evaluator);
+
                             if (dateHeaderNames.Contains(headerValue))
                             {
-                                // Handle date formatting for date columns stored as string
-                                string cellValue = cell.ToString();
                                 if (DateTime.TryParse(cellValue, out DateTime parsedDate))
                                 {
-                                    dataRow[headerValue] = parsedDate.ToString(DateFormat); // Format as MM/dd/yyyy
+                                    dataRow[headerValue] = parsedDate.ToString(DateFormat);
                                 }
                                 else
                                 {
-                                    // If parsing fails, store the original value or handle it differently
                                     dataRow[headerValue] = cellValue;
                                 }
                             }
                             else
                             {
-                                // Otherwise, handle as a normal string value
-                                dataRow[headerValue] = cell?.ToString();
+                                dataRow[headerValue] = cellValue;
                             }
                         }
                     }
@@ -976,6 +970,42 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
 
             return dataTable;
+        }
+
+        private string GetCellValue(ICell cell, IFormulaEvaluator evaluator)
+        {
+            if (cell == null) return string.Empty;
+
+            switch (cell.CellType)
+            {
+                case CellType.String:
+                    return cell.StringCellValue?.Trim() ?? string.Empty;
+
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                        return cell.DateCellValue.ToString(); // You can format as needed
+                    return cell.NumericCellValue.ToString();
+
+                case CellType.Boolean:
+                    return cell.BooleanCellValue.ToString();
+
+                case CellType.Formula:
+                    var value = evaluator.Evaluate(cell);
+                    if (value == null) return string.Empty;
+
+                    return value.CellType switch
+                    {
+                        CellType.String => value.StringValue,
+                        CellType.Numeric => value.NumberValue.ToString(),
+                        CellType.Boolean => value.BooleanValue.ToString(),
+                        _ => string.Empty,
+                    };
+
+                case CellType.Blank:
+                case CellType.Error:
+                default:
+                    return string.Empty;
+            }
         }
 
         private bool IsPossibleDate(string value)

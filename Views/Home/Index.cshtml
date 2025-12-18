@@ -99,7 +99,7 @@
             <button type="button" class="btn btn-general" id="uploadButton">Upload and Preview</button>
         </div>
         <div class="d-flex justify-content-center my-3">
-            <button type="button" class="btn btn-general" onclick="clearPreview()" id="clearPreview">Clear Preview</button>
+            <button type="button" class="btn btn-general"  id="clearPreview">Clear Preview</button>
         </div>
     </form>
 
@@ -169,7 +169,16 @@
                 $('#previewTable').DataTable().columns.adjust().draw();
             });
 
-            document.getElementById('clearPreview').addEventListener('click', clearPreview);
+            document.addEventListener('DOMContentLoaded', function () {
+                const clearBtn = document.getElementById('clearPreview');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', clearPreview);
+                }
+            });
+
+
+
+            // document.getElementById('clearPreview').addEventListener('click', clearPreview);
 
             
 
