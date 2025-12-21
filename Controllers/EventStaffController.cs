@@ -171,20 +171,29 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Please login and try again";
+                    //return RedirectToAction("Index");
                     return RedirectToAction("Index");
                 }
 
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
                 TempData["ResponseMessage"] = res.Message;
-                return RedirectToAction("Index");
+
+                if (res.Success)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
             }
             catch (Exception ex)
             {
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
-                return RedirectToAction("Index", eventStaffDto);
+                return RedirectToAction("Index");
             }
         }
 

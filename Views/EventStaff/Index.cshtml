@@ -338,7 +338,7 @@
                 </div>
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.StartDate" class="form-label">Start Date</label>
-                    <input asp-for="SingleEventStaff.StartDate" id="StartDate" type="date" class="form-control" required />
+                <input asp-for="SingleEventStaff.StartDate" id="StartDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                 </div>
             </div>
 
@@ -386,7 +386,7 @@
                 <!-- DOB Section -->
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.StaffDOB" class="form-label">Staff DOB</label>
-                    <input asp-for="SingleEventStaff.StaffDOB" id="StaffDOB" type="date" class="form-control" required />
+                <input asp-for="SingleEventStaff.StaffDOB" id="StaffDOB" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                 </div>
             </div>
 
@@ -423,7 +423,7 @@
                         </div>
                         <div class="col-md-6">
                             <label asp-for="SingleEventStaff.CacExpiryDate" class="form-label">CAC Expiry Date</label>
-                            <input asp-for="SingleEventStaff.CacExpiryDate" type="date" class="form-control" id="StaffCACExpiryDate" />
+                        <input asp-for="SingleEventStaff.CacExpiryDate" id="StaffCACExpiryDate" type="text" class="form-control" placeholder="MM/DD/YYYY" />
                         </div>
                     </div>
                 </div>
@@ -461,18 +461,18 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.CredentialingProcessDate" class="form-label">Credentialing Process Date</label>
-                    <input asp-for="SingleEventStaff.CredentialingProcessDate" id="CredentialingProcessDate" type="date" class="form-control" required />
+                <input asp-for="SingleEventStaff.CredentialingProcessDate" id="CredentialingProcessDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                 </div>
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.HistoricalCredentialingDate" class="form-label">Historical Credentialing Date</label>
-                    <input asp-for="SingleEventStaff.HistoricalCredentialingDate" id="HistoricalCredentialingDate" type="date" class="form-control" />
+                <input asp-for="SingleEventStaff.HistoricalCredentialingDate" id="HistoricalCredentialingDate" type="text" class="form-control" placeholder="MM/DD/YYYY" />
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" class="form-label">DAWSON Internal Credentialing Complete Date</label>
-                    <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" id="DAWSONInternalCredentialingCompleteDate" type="date" class="form-control" required />
+                <input asp-for="SingleEventStaff.DAWSONInternalCredentialingCompleteDate" id="DAWSONInternalCredentialingCompleteDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Onboarding/Training Complete</label>
@@ -503,7 +503,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <label asp-for="SingleEventStaff.BLSCertDate" class="col-form-label" style="width: 150px;">BLS Cert. Date</label>
                         <div class="d-flex flex-grow-1 position-relative">
-                            <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="date" class="form-control" />
+                        <input asp-for="SingleEventStaff.BLSCertDate" id="BLSCertDate" type="text" class="form-control" placeholder="MM/DD/YYYY" />
                             <input asp-for="SingleEventStaff.BLSCertNumber" id="BLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
                             <span id="BLSCertError" class="text-danger position-absolute small d-none" style="bottom: -18px; left: 0;"></span>
                         </div>
@@ -514,7 +514,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <label asp-for="SingleEventStaff.ACLSCertDate" class="col-form-label" style="width: 150px;">ACLS Cert. Date</label>
                         <div class="d-flex flex-grow-1 position-relative">
-                            <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="date" class="form-control" />
+                        <input asp-for="SingleEventStaff.ACLSCertDate" id="ACLSCertDate" type="text" class="form-control" placeholder="MM/DD/YYYY" />
                             <input asp-for="SingleEventStaff.ACLSCertNumber" id="ACLSCertNumber" maxLength="100" class="form-control" placeholder="Cert Number" />
                             <span id="ACLSCertError" class="text-danger position-absolute small d-none" style="bottom: -18px; left: 0;"></span>
                         </div>
@@ -675,6 +675,14 @@
 </html> *@
 <script>
 
+    let startDatePicker;
+    let staffDOBPicker;
+    let StaffCACExpiryDatePicker;
+    let credentialingProcessPicker;
+    let historicalCredentialingPicker;
+    let dawsonPicker;
+    let blsPicker;
+    let aclsPicker;
 
     $(document).ready(function () {
 
@@ -714,7 +722,14 @@
         // $('#staffCellNumber').val('123-123-1234');
         // $('#staffPhone2').val('123-123-1234');
 
-
+        startDatePicker = flatpickr("#StartDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        staffDOBPicker = flatpickr("#StaffDOB", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        StaffCACExpiryDatePicker = flatpickr("#StaffCACExpiryDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        credentialingProcessPicker = flatpickr("#CredentialingProcessDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        historicalCredentialingPicker = flatpickr("#HistoricalCredentialingDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        dawsonPicker = flatpickr("#DAWSONInternalCredentialingCompleteDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        blsPicker = flatpickr("#BLSCertDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        aclsPicker = flatpickr("#ACLSCertDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
 
 
         $("#generatePasswordBtn").click(function () {
@@ -771,7 +786,6 @@
         }
 
         // Get attributes for this role
-        debugger;
         const attributes = qualificationsAttributesAndTypes[roleName]?.attributes || [];
 
 
@@ -795,8 +809,19 @@
                 let attributeDropdown = generateAttributeDropdown(roleId, roleIndex, attributes);
                 let licenseFields = generateLicenseFields(requiredLicense, roleId, roleName, roleIndex, licenseIndex, role.types);
 
-                roleCheckbox.closest(".form-check").after(attributeDropdown + licenseFields);
+                let $insertedElements = $(attributeDropdown + licenseFields);
+                roleCheckbox.closest(".form-check").after($insertedElements);
 
+                // ✅ Initialize Flatpickr ONLY on newly added date fields
+                $insertedElements.find('.license-active-date:not(.flatpickr-input)').flatpickr({
+                    altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+                });
+
+                $insertedElements.find('.license-expiry-date:not(.flatpickr-input)').flatpickr({
+                    altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+                });
+
+                // Existing logic (unchanged)
                 attachValidation(roleIndex, licenseIndex);
 
                 $('.attribute-multiselect').select2({
@@ -827,7 +852,6 @@
         let licenseContainer = $(this).prev(".license-container");
         let roleCheckbox = licenseContainer.prev(".form-check").find(".role-checkbox");
         // let roleId = roleCheckbox.attr("id");
-        debugger;
         let roleId = licenseContainer.data("role-id");
         let roleName = licenseContainer.data("role-name");
 
@@ -843,8 +867,17 @@
         let licenseTypes = role ? role.types : [];
 
         let newRow = generateLicenseFields(true, roleId, roleName, roleIndex, licenseIndex, licenseTypes);
+        let $newElements = $(newRow).find(".license-row");
+        licenseContainer.append($newElements);
 
-        licenseContainer.append($(newRow).find(".license-row"));
+        // 3️⃣ Initialize Flatpickr ONLY on newly added inputs
+        $newElements.find('.license-active-date:not(.flatpickr-input)').flatpickr({
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+        });
+
+        $newElements.find('.license-expiry-date:not(.flatpickr-input)').flatpickr({
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+        });
 
         attachValidation(roleIndex, licenseIndex);
 
@@ -992,11 +1025,23 @@
                         </div>
                         <div class="col-md-2">
                             <label for="licenseActive${roleIndex}_${licenseIndex}">Active Date</label>
-                            <input id="licenseActive${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseActiveDate" type="date" class="form-control" required />
+                            <input
+                                id="licenseActive${roleIndex}_${licenseIndex}"
+                                name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseActiveDate"
+                                type="text"
+                                class="form-control license-active-date"
+                                placeholder="MM/DD/YYYY"
+                                required />
                         </div>
                         <div class="col-md-2">
                             <label for="licenseExpiry${roleIndex}_${licenseIndex}">Expiry Date</label>
-                                <input id="licenseExpiry${roleIndex}_${licenseIndex}" name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseExpiryDate" type="date" class="form-control" required />
+                            <input
+                                id="licenseExpiry${roleIndex}_${licenseIndex}"
+                                name="SingleEventStaff.StaffQualification[${roleIndex}].StaffLicenseDetails[${licenseIndex}].LicenseExpiryDate"
+                                type="text"
+                                class="form-control license-expiry-date"
+                                placeholder="MM/DD/YYYY"
+                                required />
                         </div>
                         <div class="col-md-1">
                             <button type="button" class="btn btn-danger remove-row">Remove</button>
@@ -1750,36 +1795,33 @@
                     $('#UserPassword').val(eventStaff.userPassword).prop('readonly', true).addClass('read-only-style');
 
                     $('#StaffID').val(eventStaff.staffID);
-                    let eventStartDate = getDateOnlyGlobal(eventStaff.startDate);
-                    $('#StartDate').val(eventStartDate);
+
+                    startDatePicker.setDate(getDateOnlyGlobal(eventStaff.startDate));
 
                     $('#StaffStatus').val(eventStaff.staffStatus);
                     $('#StaffLastName').val(eventStaff.staffLastName);
                     $('#StaffFirstName').val(eventStaff.staffFirstName);
                     $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
                     $('#StaffSSN').val(eventStaff.staffSSN);
-                    $('#StaffDOB').val(getDateOnlyGlobal(eventStaff.staffDOB));
+
+                    staffDOBPicker.setDate(getDateOnlyGlobal(eventStaff.staffDOB));
 
                     if (eventStaff.eventOnCallStaff === 'true') {
                         $('#eventOnCallYes').prop('checked', true).trigger('change');
-                        //$('#eventOnCallSelectContainer').show();
-                        //$('#EventOnCallStaffEvent').attr('required', 'required');
 
                     } else {
                         $('#eventOnCallNo').prop('checked', true).trigger('change');
-                        //$('#eventOnCallSelectContainer').hide();
-                        //$('#EventOnCallStaffEvent').removeAttr('required');
                     }
-
-                    //$('#EventOnCallStaffEvent').val(eventStaff.eventOnCallStaffEvent);
 
                     // console.log(JSON.stringify(eventStaff.staffLicense))
                     bindLicenseOnEditMode(eventStaff.staffQualification); // // bind roles and license with data from server
+
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
-                    $('#CredentialingProcessDate').val(getDateOnlyGlobal(eventStaff.credentialingProcessDate));
-                    $('#HistoricalCredentialingDate').val(getDateOnlyGlobal(eventStaff.historicalCredentialingDate));
-                    $('#DAWSONInternalCredentialingCompleteDate').val(getDateOnlyGlobal(eventStaff.dawsonInternalCredentialingCompleteDate));
+
+                    credentialingProcessPicker.setDate(getDateOnlyGlobal(eventStaff.credentialingProcessDate), true);
+                    historicalCredentialingPicker.setDate(getDateOnlyGlobal(eventStaff.historicalCredentialingDate), true);
+                    dawsonPicker.setDate(getDateOnlyGlobal(eventStaff.dawsonInternalCredentialingCompleteDate), true);
                     $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
                     $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
 
@@ -1793,9 +1835,9 @@
                     }
 
                     $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
-                    $('#BLSCertDate').val(getDateOnlyGlobal(eventStaff.blsCertDate));
+                    blsPicker.setDate(getDateOnlyGlobal(eventStaff.blsCertDate), true);
                     $('#BLSCertNumber').val(eventStaff.blsCertNumber);
-                    $('#ACLSCertDate').val(getDateOnlyGlobal(eventStaff.aclsCertDate));
+                    aclsPicker.setDate(getDateOnlyGlobal(eventStaff.aclsCertDate), true);
                     $('#ACLSCertNumber').val(eventStaff.aclsCertNumber);
                     $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
                     $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
@@ -1805,10 +1847,9 @@
                         $('#staffDoDContainer').show();
                         $('#StaffDoDID').val(eventStaff.staffDoDID);
                         $('#StaffDoDID').attr('required', 'required');
-                        $('#StaffCACExpiryDate').val(getDateOnlyGlobal(eventStaff.cacExpiryDate));
+
+                        StaffCACExpiryDatePicker.setDate(getDateOnlyGlobal(eventStaff.cacExpiryDate));
                         $('#StaffCACExpiryDate').attr('required', 'required');
-
-
                     } else {
                         $('#staffCACNo').prop('checked', true).trigger('change');
                         $('#staffDoDContainer').hide();
@@ -1942,55 +1983,60 @@
     }
 
     function bindLicenseOnEditMode(staffLicenses) {
-    staffLicenses.forEach((staffLicense) => {
-        // Use QualificationId now (stored in database)
-        let roleId = staffLicense.qualificationId; 
-        let roleName = staffLicense.qualificationName; 
+        staffLicenses.forEach((staffLicense) => {
+            const roleId = staffLicense.qualificationId;
+            const roleName = staffLicense.qualificationName;
 
-        // Wait for the checkbox to exist
-        waitForCheckbox(roleId, function (roleCheckbox) {
-            // Check the box and trigger change to generate first license row
-            roleCheckbox.prop("checked", true).trigger("change");
+            waitForCheckbox(roleId, function (roleCheckbox) {
+                roleCheckbox.prop("checked", true).trigger("change");
+                const roleIndex = roleIndexMap[roleId];
+                const $licenseContainer = $(`.license-container[data-role-id='${roleId}']`);
 
-            // Get roleIndex assigned in change event
-            let roleIndex = roleIndexMap[roleId];
-
-            // Wait for first row to render before adding more rows
-            setTimeout(() => {
-                // Generate additional license rows if needed
                 staffLicense.staffLicenseDetails.forEach((license, licenseIndex) => {
-                    if (licenseIndex > 0) {
-                        $(`.license-container[data-role-id='${roleId}']`).next(".add-row-button").click();
-                    }
-                });
+                    let $newRow;
 
-                // Wait for rows to render before setting values
-                setTimeout(() => {
-                    staffLicense.staffLicenseDetails.forEach((license, licenseIndex) => {
-                        $(`#licenseNumber${roleIndex}_${licenseIndex}`).val(license.licenseNumber);
-                        $(`#licenseState${roleIndex}_${licenseIndex}`).val(license.licenseState);
-                        $(`#licenseType${roleIndex}_${licenseIndex}`).val(license.licenseType);
-                        $(`#licenseActive${roleIndex}_${licenseIndex}`).val(license.licenseActiveDate.split("T")[0]);
-                        $(`#licenseExpiry${roleIndex}_${licenseIndex}`).val(license.licenseExpiryDate.split("T")[0]);
+                    if (licenseIndex === 0) {
+                        $newRow = $licenseContainer.find('.license-row').eq(0);
+                    } else {
+                        $licenseContainer.next(".add-row-button").click();
+                        $newRow = $licenseContainer.find('.license-row').last();
+                    }
+
+                    // 1️⃣ Initialize Flatpickr and set the date in same step
+                    const $activeInput = $newRow.find('.license-active-date');
+                    const $expiryInput = $newRow.find('.license-expiry-date');
+
+                    $activeInput.flatpickr({
+                        altInput: true,
+                        altFormat: 'm/d/Y',
+                        dateFormat: 'Y-m-d',
+                        allowInput: true,
+                        defaultDate: getDateOnlyGlobal(license.licenseActiveDate)
                     });
 
-                    // Set attributes
-                    let attributeValues = staffLicense.staffAttributeDetails.map(attr => attr.attribute);
-                    let attributeSelect = $(`select[name='SingleEventStaff.StaffQualification[${roleIndex}].StaffAttributeTemp']`);
-                    if (attributeSelect.length && attributeValues.length > 0) {
-                        attributeSelect.val(attributeValues).trigger("change");
-                    }
-                }, 100);
-            }, 100);
+                    $expiryInput.flatpickr({
+                        altInput: true,
+                        altFormat: 'm/d/Y',
+                        dateFormat: 'Y-m-d',
+                        allowInput: true,
+                        defaultDate: getDateOnlyGlobal(license.licenseExpiryDate)
+                    });
+
+                    // 2️⃣ Set other fields
+                    $newRow.find(`#licenseNumber${roleIndex}_${licenseIndex}`).val(license.licenseNumber);
+                    $newRow.find(`#licenseState${roleIndex}_${licenseIndex}`).val(license.licenseState);
+                    $newRow.find(`#licenseType${roleIndex}_${licenseIndex}`).val(license.licenseType);
+                });
+
+                // 3️⃣ Set attributes
+                const attributeValues = staffLicense.staffAttributeDetails.map(attr => attr.attribute);
+                const $attributeSelect = $(`select[name='SingleEventStaff.StaffQualification[${roleIndex}].StaffAttributeTemp']`);
+                if ($attributeSelect.length && attributeValues.length > 0) {
+                    $attributeSelect.val(attributeValues).trigger("change");
+                }
+            });
         });
-    });
-}
-
-
-    // }
-
-
-
+    }
 
     function populateForm(data) {
 
@@ -2029,7 +2075,6 @@
     }
 
     function togglePasswordVisibility(inputId, iconId) {
-        debugger;
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId); // Now directly using passed ID
 
@@ -2151,6 +2196,8 @@
         document.getElementById('carDynamicControlsContainer').innerHTML = '';
         document.getElementById('hotelDynamicControlsContainer').innerHTML = '';
         controlCount = -1;
+        $('#hiddenId').val(0);
+        $('#hiddenUserId').val(0);
         $('.card-body').show();
         $('#datatableWrapper').hide();
         $('#submitBtn').show();
@@ -2258,7 +2305,6 @@
 
     function toggleAdminRoles() {
         let selectedStatus = $("#CACApplicationProcessStatus").val();
-        debugger;
 
         console.log("Selected Status:", selectedStatus); // Debugging
 
@@ -2325,7 +2371,6 @@
     let emailValid = false; // Flag to track email validation
 
     $("#UserEmail").blur(function () {
-        debugger;
         var email = $(this).val().trim();
         var userId = $("#hiddenUserId").val(); // Get user ID
 
@@ -2372,7 +2417,6 @@
     let ssnValid = false; // Flag to track SSN validation
 
     $("#StaffSSN").blur(function () {
-        debugger;
         var ssn = $(this).val().trim();
         if (ssn === "" || ssn.length < 11) return; // Ignore empty or incomplete input
 
