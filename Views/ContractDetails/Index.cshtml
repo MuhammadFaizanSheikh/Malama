@@ -5,6 +5,8 @@
     ViewData["Title"] = "Contract Details";
 }
 
+<script src="~/js/Common/Methods.js"></script>
+
 <style>
     h2 {
         color: rgba(80, 90, 201, 1);
@@ -650,13 +652,11 @@
                         $('#ContractStatus').val(contract.contractStatus);
 
 
-                        let contractStartDate = new Date(contract.contractStartDate);
-                        let formattedStartDate = contractStartDate.toLocaleDateString('en-CA');
-                        $('#ContractStartDate').val(formattedStartDate);
+                        let contractStartDate = getDateOnlyGlobal(contract.contractStartDate);
+                        $('#ContractStartDate').val(contractStartDate);
 
-                        let contractEndDate = new Date(contract.contractEndDate);
-                        let formattedEndDate = contractEndDate.toLocaleDateString('en-CA');
-                        $('#ContractEndDate').val(formattedEndDate);
+                        let contractEndDate = getDateOnlyGlobal(contract.contractEndDate);
+                        $('#ContractEndDate').val(contractEndDate);
 
 
                         //KO

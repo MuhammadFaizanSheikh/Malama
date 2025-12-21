@@ -44,9 +44,9 @@ function SetSession() {
 
 
 
-$(document).ready(function () {
-    SetSession();
-})
+//$(document).ready(function () {
+//    SetSession();
+//})
 
 
 
@@ -229,10 +229,9 @@ function downloadZipFile() {
         return false;
     }
 
-    var currentDate = new Date();
-    var formattedDate = currentDate.toISOString().slice(0, 19).replace(/[-T:/]/g, ''); // Format the date
+    var formattedDate = getCurrentDateTimeNumericLocal(); // Local-time numeric timestamp
+    var fileName = 'zip_' + formattedDate; // e.g., zip_20251219103045
 
-    var fileName = 'zip_' + formattedDate; // Concatenate 'zip_' with the formatted date
     var link = document.createElement('a');
     link.href = '/Home/DownloadZipFile?fileName=' + fileName;
     link.style.display = 'none';

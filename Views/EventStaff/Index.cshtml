@@ -6,6 +6,7 @@
 }
 
 <script src="~/js/Common/Objects.js"></script>
+<script src="~/js/Common/Methods.js"></script>
 
  <style>
         h1 {
@@ -1022,15 +1023,18 @@
         }
 
         function validateDates() {
-            const activeDate = activeInput.value;
-            const expiryDate = expiryInput.value;
+            const activeDate = getDateOnlyGlobal(activeInput.value);   // YYYY-MM-DD
+            const expiryDate = getDateOnlyGlobal(expiryInput.value);   // YYYY-MM-DD
 
-            if (activeDate && expiryDate && new Date(expiryDate) < new Date(activeDate)) {
-                alert("Active date should be smaller than expiry date");
-                expiryInput.value = ""; // Clear expiry date
+            if (activeDate && expiryDate) {
+                if (expiryDate < activeDate) {  // string comparison works for YYYY-MM-DD
+                    alert("Active date should be smaller than expiry date");
+                    expiryInput.value = ""; // Clear expiry date
+                }
             }
         }
     }
+
 
 
     function generateAttributeDropdown(roleId, roleIndex, attributes) {
@@ -1746,15 +1750,15 @@
                     $('#UserPassword').val(eventStaff.userPassword).prop('readonly', true).addClass('read-only-style');
 
                     $('#StaffID').val(eventStaff.staffID);
-                    let eventStartDate = new Date(eventStaff.startDate);
-                    let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
-                    $('#StartDate').val(formattedStartDate);
+                    let eventStartDate = getDateOnlyGlobal(eventStaff.startDate);
+                    $('#StartDate').val(eventStartDate);
+
                     $('#StaffStatus').val(eventStaff.staffStatus);
                     $('#StaffLastName').val(eventStaff.staffLastName);
                     $('#StaffFirstName').val(eventStaff.staffFirstName);
                     $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
                     $('#StaffSSN').val(eventStaff.staffSSN);
-                    $('#StaffDOB').val(new Date(eventStaff.staffDOB).toLocaleDateString('en-CA'));
+                    $('#StaffDOB').val(getDateOnlyGlobal(eventStaff.staffDOB));
 
                     if (eventStaff.eventOnCallStaff === 'true') {
                         $('#eventOnCallYes').prop('checked', true).trigger('change');
@@ -1773,9 +1777,9 @@
                     bindLicenseOnEditMode(eventStaff.staffQualification); // // bind roles and license with data from server
                     $('#npi').val(eventStaff.npi);
                     $('#dae').val(eventStaff.dae);
-                    $('#CredentialingProcessDate').val(new Date(eventStaff.credentialingProcessDate).toLocaleDateString('en-CA'));
-                    $('#HistoricalCredentialingDate').val(new Date(eventStaff.historicalCredentialingDate).toLocaleDateString('en-CA'));
-                    $('#DAWSONInternalCredentialingCompleteDate').val(new Date(eventStaff.dawsonInternalCredentialingCompleteDate).toLocaleDateString('en-CA'));
+                    $('#CredentialingProcessDate').val(getDateOnlyGlobal(eventStaff.credentialingProcessDate));
+                    $('#HistoricalCredentialingDate').val(getDateOnlyGlobal(eventStaff.historicalCredentialingDate));
+                    $('#DAWSONInternalCredentialingCompleteDate').val(getDateOnlyGlobal(eventStaff.dawsonInternalCredentialingCompleteDate));
                     $('#OnboardingTrainingCompleteYes').prop('checked', eventStaff.onboardingTrainingComplete === 'true');
                     $('#OnboardingTrainingCompleteNo').prop('checked', eventStaff.onboardingTrainingComplete === 'false');
 
@@ -1789,9 +1793,9 @@
                     }
 
                     $('#BackgroundCheckConcerns').val(eventStaff.backgroundCheckConcerns);
-                    $('#BLSCertDate').val(new Date(eventStaff.blsCertDate).toLocaleDateString('en-CA'));
+                    $('#BLSCertDate').val(getDateOnlyGlobal(eventStaff.blsCertDate));
                     $('#BLSCertNumber').val(eventStaff.blsCertNumber);
-                    $('#ACLSCertDate').val(new Date(eventStaff.aclsCertDate).toLocaleDateString('en-CA'));
+                    $('#ACLSCertDate').val(getDateOnlyGlobal(eventStaff.aclsCertDate));
                     $('#ACLSCertNumber').val(eventStaff.aclsCertNumber);
                     $('#CACApplicationProcessStatus').val(eventStaff.cacApplicationProcessStatus);
                     $('#EmployerSubeventStaffor').val(eventStaff.employerSubeventStaffor);
@@ -1801,7 +1805,7 @@
                         $('#staffDoDContainer').show();
                         $('#StaffDoDID').val(eventStaff.staffDoDID);
                         $('#StaffDoDID').attr('required', 'required');
-                        $('#StaffCACExpiryDate').val(new Date(eventStaff.cacExpiryDate).toLocaleDateString('en-CA'));
+                        $('#StaffCACExpiryDate').val(getDateOnlyGlobal(eventStaff.cacExpiryDate));
                         $('#StaffCACExpiryDate').attr('required', 'required');
 
 
@@ -2018,35 +2022,11 @@
         controlCount = totalRows - 1;
     }
 
-
-    function formatDateField(dateValue) {
-        if (!dateValue) {
-            return '';
-        }
-
-        var date = new Date(dateValue); // Convert the value to Date object
-        if (isNaN(date.getTime())) {
-            return ''; // Return empty if the date is invalid
-        }
-
-        // Format the date as mm/dd/yyyy
-        var formattedDate = (date.getMonth() + 1).toString().padStart(2, '0') + '/' +
-            date.getDate().toString().padStart(2, '0') + '/' +
-            date.getFullYear();
-
-        return formattedDate;
-    }
-
-
     function setStaffIdTextbox(staffId) {
         // var prefix = $('#EmployerSubcontractor').find("option:selected").text().substring(0, 2).toUpperCase();
         var fullStaffId = 'ES' + staffId;
         $('#StaffID').val(fullStaffId);
     }
-
-
-
-
 
     function togglePasswordVisibility(inputId, iconId) {
         debugger;

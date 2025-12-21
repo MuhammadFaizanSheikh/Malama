@@ -2,6 +2,8 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
+<script src="~/js/Common/Methods.js"></script>
+
 <link rel="stylesheet" href="~/css/site.css" />
 
 <div class="container-fluid" style="max-width: 100%; padding-top: 0; margin-top: 0;">
@@ -528,7 +530,7 @@
 
 
     function renderPreviewTable(data) {
-
+        debugger;
     // ===== 1. MERGE DB COLUMNS + PREVIEW-ONLY COLUMNS =====
     const previewMappings = [
         ...columnMappingsForInsertionAndFetching,
@@ -566,20 +568,13 @@
             }
 
             // Format dates
-            if (mapping.type === "date" && value) {
-                const parsedDate = new Date(value);
-                if (!isNaN(parsedDate)) {
-                    value = parsedDate.toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: false
-                    }).replace(",", "");
+                if (mapping.type === "date" && value) {
+                    // Extract date-only part safely
+                    const dateOnly = getDateOnlyGlobal(value);
+
+                    // Convert to MM/DD/YYYY for display
+                    value = formatDateToMMDDYYYYGlobal(dateOnly);
                 }
-            }
 
             rowData.push($('<div>').text(value).html()); // HTML escape
         });
@@ -797,8 +792,8 @@
                     if (!value) {
                         dto[mapping.key] = null;
                     } else {
-                        let parsedDate = new Date(value);
-                        dto[mapping.key] = isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString();
+                        const dateOnly = getDateOnlyGlobal(value); // YYYY-MM-DD
+                        dto[mapping.key] = dateOnly; // store as string in DB
                     }
                     break;
 
@@ -836,7 +831,7 @@
                 if (fieldType === 'int') {
                     value = value === '' || value == null ? null : parseInt(value);
                 } else if (fieldType === 'date') {
-                    value = value ? new Date(value).toISOString() : null;
+                    value = value ? getDateOnlyGlobal(value) : null;
                 } else if (fieldType === 'string') {
                     value = value != null ? String(value) : null;
                 }

@@ -6,6 +6,7 @@
 }
 
 <script src="~/js/Common/Objects.js"></script>
+<script src="~/js/Common/Methods.js"></script>
 
 <style>
         h2 {
@@ -2346,7 +2347,6 @@
 
         // Modify function when adding a new row
         function addTaskForceRow(value = "") {
-            debugger;
             let taskForceValue = value ? value : "";
             let newInput = `
         <div class="taskforce-row mt-2" style="display: flex; align-items: center;" data-index="${taskForceIndex}">
@@ -2507,13 +2507,11 @@
                         $('#contractComponentLabel').text(contract.contractComponent);
                         $('#contractTypeLabel').text(contract.contractType);
 
-                        let contractStartDate = new Date(contract.contractStartDate);
-                        let formattedcontractStartDate = contractStartDate.toLocaleDateString('en-US');
-                        $('#contractStartDateLabel').text(formattedcontractStartDate);
+                        let contractStartDate = getDateOnlyGlobal(contract.contractStartDate);
+                            $('#contractStartDateLabel').text(formatDateToMMDDYYYYGlobal(contractStartDate));
 
-                        let contractEndDate = new Date(contract.contractEndDate);
-                        let formattedcontractEndDate = contractEndDate.toLocaleDateString('en-US');
-                        $('#contractEndDateLabel').text(formattedcontractEndDate);
+                        let contractEndDate = getDateOnlyGlobal(contract.contractEndDate);
+                            $('#contractEndDateLabel').text(formatDateToMMDDYYYYGlobal(contractEndDate));
 
                         $('#dawsonProjectManagerLabel').text(
                             `${contract.dawsonProjectManagerFirstName} ${contract.dawsonProjectManagerLastName}`
@@ -2534,7 +2532,6 @@
         let tableInitialized = false;
 
         $("#progressBar span").click(function () {
-            debugger;
             var target = $(this).data("target");
             var section = currentSectionForProgressBar;
 
@@ -2580,7 +2577,6 @@
         });
 
         $(".next").click(function () {
-            debugger;
             const section = $(this).data("section");
 
             if (section == 1 && !validateServiceMemberPercentages()) {
@@ -2608,7 +2604,6 @@
 
 
         $(".back").click(function () {
-            debugger;
             const section = $(this).data("section");
 
             if (section !== 7) {
@@ -2904,7 +2899,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
-            debugger;
             let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
             let selectedTable = $('#eventStaffSelectedTable').DataTable();
 
@@ -2933,44 +2927,47 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return;
             }
 
-            let startDate = new Date(eventStartDate);
-            let endDate = new Date(eventEndDate);
-
-            if (startDate > endDate) {
+            // Validate range using string comparison (YYYY-MM-DD format is safe)
+            if (eventStartDate > eventEndDate) {
                 alert("Event Start Date cannot be after Event End Date");
                 return;
             }
 
-            let selectedDates = (staffData.eventStaffDetail?.availabilityDatesList || []).map(item => {
-                let dt = new Date(item.availabilityDate); // Access the availabilityDate property
-                return (dt.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                    dt.getDate().toString().padStart(2, '0') + '/' +
-                    dt.getFullYear(); // Convert to MM/DD/YYYY
-            });
+            // Extract selected dates from backend DateTime as YYYY-MM-DD strings
+            let selectedDates = (staffData.eventStaffDetail?.availabilityDatesList || []).map(item => getDateOnlyGlobal(item.availabilityDate));
 
-            // Generate checkboxes for each date in the range
+            // Helper function to increment a date string by 1 day
+            function nextDate(dateStr) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const tempDate = new Date(Date.UTC(y, m - 1, d)); // Use UTC to avoid local shifts
+                tempDate.setUTCDate(tempDate.getUTCDate() + 1);
+                return tempDate.toISOString().split('T')[0]; // Back to YYYY-MM-DD
+            }
+
+            let currentDate = eventStartDate;
             let availabilityCheckboxes = "";
-            let currentDate = new Date(startDate);
-
-            while (currentDate <= endDate) {
-                let formattedDate = (currentDate.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                    currentDate.getDate().toString().padStart(2, '0') + '/' +
-                    currentDate.getFullYear(); // Format: MM/DD/YYYY
-
-                let isChecked = selectedDates.includes(formattedDate) ? "checked" : "";
-
+            
+            while (currentDate <= eventEndDate) {
+                // Display format for UI
+                let formattedDate = formatDateToMMDDYYYYGlobal(currentDate); // MM/DD/YYYY
+            
+                // Compare in YYYY-MM-DD format
+                let isChecked = selectedDates.includes(currentDate) ? "checked" : "";
+            
                 availabilityCheckboxes += `
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="chk_${eventStaffData.id}_${formattedDate}"
-                        name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
-                        value="${formattedDate}" ${isChecked}>
+                    <input class="form-check-input" type="checkbox"
+                           id="chk_${eventStaffData.id}_${formattedDate}"
+                           name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+                           value="${formattedDate}" ${isChecked}>
                     <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
                         ${formattedDate}
                     </label>
                 </div>`;
-                currentDate.setDate(currentDate.getDate() + 1);
+            
+                // Increment currentDate safely in UTC
+                currentDate = nextDate(currentDate);
             }
-
 
             // Handle Pre-Event Availability Checkbox for Edit Mode
             let isPreEventChecked = staffData.eventStaffDetail?.preEventAvailability ? "checked" : "";
@@ -3049,7 +3046,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
       </select>`;
 
             $(document).on('change', `#${stationDropdownId}`, function () {
-                debugger;
                 updateStaffRequirementTable();
             });
 
@@ -3065,7 +3061,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         ${secondaryRoleOptions}
                 </select>`;
 
-            debugger;
             // Add row to DataTable
             selectedTable.row.add({
                 staffID: `${eventStaffData.staffID} 
@@ -3458,7 +3453,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             let roleDropdownChanging = false;
 
             $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
-                debugger;
                 if (roleDropdownChanging) return;
 
                 roleDropdownChanging = true;
@@ -3971,7 +3965,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         $('#addContractBtn').click(function () {
-            debugger;
             resetFormFields();
             addTaskForceRow();
             $('.card-body').show();
@@ -4521,13 +4514,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $("#contractComponentLabel").text(combinedData.contractDetails.contractComponent);
                         $("#contractTypeLabel").text(combinedData.contractDetails.contractType);
 
-                        let contractStartDate = new Date(combinedData.contractDetails.contractStartDate);
-                        let formattedcontractStartDate = contractStartDate.toLocaleDateString('en-US');
-                        $('#contractStartDateLabel').text(formattedcontractStartDate);
+                        let contractStartDate = getDateOnlyGlobal(combinedData.contractDetails.contractStartDate);
+                        $('#contractStartDateLabel').text(formatDateToMMDDYYYYGlobal(contractStartDate));
 
-                        let contractEndDate = new Date(combinedData.contractDetails.contractEndDate);
-                        let formattedcontractEndDate = contractEndDate.toLocaleDateString('en-US');
-                        $('#contractEndDateLabel').text(formattedcontractEndDate);
+                        let contractEndDate = getDateOnlyGlobal(combinedData.contractDetails.contractEndDate);
+                        $('#contractEndDateLabel').text(formatDateToMMDDYYYYGlobal(contractEndDate));
 
                         var DawsonProjectManagerLastName = combinedData.contractDetails.dawsonProjectManagerLastName;
                         var DawsonProjectManagerFirstName = combinedData.contractDetails.dawsonProjectManagerFirstName;
@@ -4541,27 +4532,20 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
                         $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
 
-                        //Daywise time setting pending;
-
                         if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
-                            let eventStartDate = new Date(combinedData.eventManagement.eventStartDate);
-                            let formattedStartDate = eventStartDate.toLocaleDateString('en-CA');
-                            $('#EventStartDate').val(formattedStartDate);
 
-                            let eventEndDate = new Date(combinedData.eventManagement.eventEndDate);
-                            let formattedEndDate = eventEndDate.toLocaleDateString('en-CA');
-                            $('#EventEndDate').val(formattedEndDate);
+                            let eventStartDate = getDateOnlyGlobal(combinedData.eventManagement.eventStartDate);
+                            $('#EventStartDate').val(eventStartDate);
 
+                            let eventEndDate = getDateOnlyGlobal(combinedData.eventManagement.eventEndDate);
+                            $('#EventEndDate').val(eventEndDate);
 
-                            // let eventStartDate = new Date(combinedData.eventManagement.eventStartDate).toISOString().split('T')[0];
-                            // let eventEndDate = new Date(combinedData.eventManagement.eventEndDate).toISOString().split('T')[0];
-
-                            // $('#EventStartDate').val(eventStartDate);
-                            // $('#EventEndDate').val(eventEndDate);
-
-                            generateControlsForDateRange(eventStartDate, eventEndDate, combinedData.eventManagement.eventStartEndTimeDayWiseList);
+                            generateControlsForDateRange(
+                                eventStartDate,
+                                eventEndDate,
+                                combinedData.eventManagement.eventStartEndTimeDayWiseList
+                            );
                         }
-
 
                         if (combinedData.eventManagement.deploy === 'Deploying') {
                             $('#Deploying').prop('checked', true).trigger('change');
@@ -4570,9 +4554,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         if (combinedData.eventManagement.mobDate) {
-                            let eventMobDate = new Date(combinedData.eventManagement.mobDate);
-                            let formattedeventMobDate = eventMobDate.toLocaleDateString('en-CA');
-                            $('#EventMobDate').val(formattedeventMobDate);
+                            let eventMobDate = getDateOnlyGlobal(combinedData.eventManagement.mobDate);
+                            $('#EventMobDate').val(eventMobDate);
                         }
 
                         $('#RegardingSites').val(combinedData.eventManagement.regardingSites);
@@ -4627,23 +4610,20 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#ShippingInstruction').val(combinedData.eventManagement.shippingPocInstruction);
 
                         if (combinedData.eventManagement.shippingPocPickupDate) {
-                            let shippingPocPickupDate = new Date(combinedData.eventManagement.shippingPocPickupDate);
-                            let formattedshippingPocPickupDate = shippingPocPickupDate.toLocaleDateString('en-CA');
-                            $('#PickupDate').val(formattedshippingPocPickupDate);
+                            let shippingPocPickupDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocPickupDate);
+                            $('#PickupDate').val(shippingPocPickupDate);
                         }
 
                         $('#PickupTime').val(combinedData.eventManagement.shippingPocPickupTime);
 
                         if (combinedData.eventManagement.shippingPocDeliveryFromDate) {
-                            let shippingPocDeliveryFromDate = new Date(combinedData.eventManagement.shippingPocDeliveryFromDate);
-                            let formattedshippingPocDeliveryFromDate = shippingPocDeliveryFromDate.toLocaleDateString('en-CA');
-                            $('#DeliveryFromDate').val(formattedshippingPocDeliveryFromDate);
+                            let shippingPocDeliveryFromDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryFromDate);
+                            $('#DeliveryFromDate').val(shippingPocDeliveryFromDate);
                         }
 
                         if (combinedData.eventManagement.shippingPocDeliveryToDate) {
-                            let shippingPocDeliveryToDate = new Date(combinedData.eventManagement.shippingPocDeliveryToDate);
-                            let formattedshippingPocDeliveryToDate = shippingPocDeliveryToDate.toLocaleDateString('en-CA');
-                            $('#DeliveryToDate').val(formattedshippingPocDeliveryToDate);
+                            let shippingPocDeliveryToDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryToDate);
+                            $('#DeliveryToDate').val(shippingPocDeliveryToDate);
                         }
 
 
@@ -4682,9 +4662,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         if (combinedData.eventManagement.shippingPocEventSetupDate) {
-                            let shippingPocEventSetupDate = new Date(combinedData.eventManagement.shippingPocEventSetupDate);
-                            let formattedshippingPocEventSetupDate = shippingPocEventSetupDate.toLocaleDateString('en-CA');
-                            $('#ShippingPocEventSetupDate').val(formattedshippingPocEventSetupDate);
+                            
+                            let shippingPocEventSetupDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocEventSetupDate);
+                            $('#ShippingPocEventSetupDate').val(shippingPocEventSetupDate);
                         }
 
                         $('#ShippingPocEventSetupTime').val(combinedData.eventManagement.shippingPocEventSetupTime);
@@ -4749,7 +4729,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         var EventStaffDetailAndAdditionalRoleslist = combinedData.eventStaffDetailAndAdditionalRoleslist;
-                        debugger;
                         if (EventStaffDetailAndAdditionalRoleslist) {
                             // var stringdata = JSON.stringify(EventStaffDetailAndAdditionalRoleslist);
                             // console.log(stringdata);
@@ -4918,8 +4897,22 @@ function populateFilterRolesAndLicenseTypeDropdown() {
     }
 
     function generateControlsForDateRange(startDate, endDate, existingData = []) {
-        var date1 = new Date(startDate);
-        var date2 = new Date(endDate);
+        // Helper: parse YYYY-MM-DD string as UTC date
+        function parseDateUTC(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(Date.UTC(y, m - 1, d));
+        }
+
+        // Helper: format UTC date to YYYY-MM-DD for comparison or display if needed
+        function formatDateUTC(date) {
+            return date.toISOString().slice(0, 10);
+        }
+
+        // Parse dates safely in UTC
+        var date1 = parseDateUTC(startDate);
+        var date2 = parseDateUTC(endDate);
+
+        // Calculate total days (inclusive)
         var dayCount = Math.floor((date2 - date1) / (1000 * 3600 * 24)) + 1;
 
         if (dayCount > 14) {
@@ -4931,9 +4924,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         $('#dynamicControlsContainer').empty();
+
         for (var i = 0; i < dayCount; i++) {
-            var currentDate = new Date(date1);
-            currentDate.setDate(currentDate.getDate() + i);
+            // Current day in UTC
+            var currentDate = new Date(date1.getTime());
+            currentDate.setUTCDate(currentDate.getUTCDate() + i);
 
             var dayLabel = "Day " + (i + 1);
             var startTimeId = "EventStartTimeDay" + (i + 1);
@@ -4946,26 +4941,28 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             var eventEndTime = existingEntry.eventEndTime || "";
             var serviceMemberPercent = existingEntry.serviceMemberPercentPerDay || "";
 
+            // Build HTML for this day
             var controlHtml = `
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
-                                <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTime" value="${eventStartTime}" required/>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
-                                    <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTime" value="${eventEndTime}" required/>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
-                                    <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].ServiceMemberPercentPerDay" placeholder="Enter % per day" value="${serviceMemberPercent}" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" required/>
-                            </div>
-                            <input type="hidden" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventDay" value="${i + 1}" />
-                        </div>
-                    `;
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="${startTimeId}" class="form-label">${dayLabel} Start Time</label>
+                        <input type="text" class="form-control" id="${startTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventStartTime" value="${eventStartTime}" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="${endTimeId}" class="form-label">${dayLabel} End Time</label>
+                        <input type="text" class="form-control" id="${endTimeId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventEndTime" value="${eventEndTime}" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="${percentId}" class="form-label">${dayLabel} Service Member %</label>
+                        <input type="number" class="form-control" id="${percentId}" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].ServiceMemberPercentPerDay" placeholder="Enter % per day" value="${serviceMemberPercent}" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" required/>
+                    </div>
+                    <input type="hidden" name="SingleEventManagement.EventStartEndTimeDayWiseList[${i}].EventDay" value="${i + 1}" />
+                </div>
+            `;
 
             $('#dynamicControlsContainer').append(controlHtml);
 
+            // Initialize flatpickr for time pickers (time-only, timezone safe)
             flatpickr(`#${startTimeId}`, {
                 enableTime: true,
                 noCalendar: true,
@@ -4983,6 +4980,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
         }
     }
+
 
     
 </script>
