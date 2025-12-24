@@ -39,6 +39,7 @@ builder.Services.AddScoped<IImmunizationVaccineInfoService, ImmunizationVaccineI
 builder.Services.AddScoped<IContainerMonitoringService, ContainerMonitoringService>();
 //builder.Services.AddScoped<IGenericRepository<SubContractorService>, GenericRepository<SubContractorService>>();
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
+builder.Services.AddScoped<IUserEventMappingService, UserEventMappingService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();

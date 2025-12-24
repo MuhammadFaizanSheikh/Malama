@@ -1,4 +1,5 @@
-﻿using ExcelFilesCompiler.Interfaces;
+﻿using ExcelFilesCompiler.Controllers.Services;
+using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -17,13 +18,16 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly IEventManagementService _eventManagementService;
         private readonly IEventStaffService _eventStaffService;
+        private readonly IUserEventMappingService _userEventMappingService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly ILogger<EventSelectionController> _logger;
+        private const string CLASSNAME = "EventSelectionController";
 
 
-        public EventSelectionController(IEventManagementService eventManagementService, IEventStaffService eventStaffService, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
+        public EventSelectionController(ILogger<EventSelectionController> logger, IUserEventMappingService userEventMappingService, IEventManagementService eventManagementService, IEventStaffService eventStaffService, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<ApplicationRole> roleManager)
         {
             _eventManagementService = eventManagementService;
             _eventStaffService = eventStaffService;
@@ -31,6 +35,8 @@ namespace ExcelFilesCompiler.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _logger = logger;
+            _userEventMappingService = userEventMappingService;
         }
 
 
@@ -65,161 +71,66 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignEventRole(long selectedEventId)
         {
+            const string methodName = "AssignEventRole";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called. SelectedEventId: {EventId}",
+                CLASSNAME, methodName, selectedEventId);
+
             try
             {
                 HttpContext.Session.Remove("GlobalEventId");
-                var user = await _userManager.GetUserAsync(User);
 
+                var user = await GetLoggedInUserAsync();
                 if (user == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not found in context", CLASSNAME, methodName);
                     return Unauthorized();
                 }
 
                 if (selectedEventId == 0)
                 {
-                    await UpdateUserClaimsAsync(user, selectedEventId: 0, eventRoleNames: Enumerable.Empty<string>(), eventID: "", isEventAssignedToStaff: false, staffAttributes: new List<string>());
+                    _logger.LogInformation("{ClassName}, {MethodName}, No event selected. Clearing claims.", CLASSNAME, methodName);
+                    await ClearEventClaimsAsync(user);
                     return RedirectToAction("Index", "Dashboard");
                 }
 
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, UserId claim missing", CLASSNAME, methodName);
                     ViewBag.ErrorMessage = "User not found. Please log in again.";
                     return await ReturnIndexView();
                 }
 
-
                 var roles = await _userManager.GetRolesAsync(user);
+                bool isEventManager = IsEventManager(roles);
 
-                //Checking for is user contains "Event Manager" role.
-                bool isEventManager = roles.Any(r => string.Equals(r, "Event Manager", StringComparison.OrdinalIgnoreCase));
-
-                EventManagement eventManagement;
-
-                try
+                if (isEventManager)
                 {
-                    if (isEventManager)
-                    {
-                        bool isAssigned = await _unitOfWork.UserEventMapping.FindForSearching(u => u.UserId == userId && u.EventId == selectedEventId).AnyAsync();
-
-                        if (isAssigned)
-                        {
-                            eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
-                            await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, true);
-                            HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
-                            return RedirectToAction("Index", "Dashboard");
-                        }
-                        else
-                        {
-                            ViewBag.ErrorMessage = "The selected event is not assign.";
-                            return await ReturnIndexView();
-                        }
-                    }
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    ViewBag.ErrorMessage = ex.Message; // Show user-friendly message
-                    return await ReturnIndexView();
-                }
-                catch (ApplicationException ex)
-                {
-                    ViewBag.ErrorMessage = ex.Message;
-                    return await ReturnIndexView();
+                    return await HandleEventManagerSelectionAsync(user, userId, selectedEventId);
                 }
 
-                EventStaff eventStaff;
-
-                try
-                {
-                    eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
-                    eventStaff = await _eventStaffService.GetEventStaffWithAttributesByUserId(userId);
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    ViewBag.ErrorMessage = ex.Message; // Show user-friendly message
-                    return await ReturnIndexView();
-                }
-                catch (ApplicationException ex)
-                {
-                    ViewBag.ErrorMessage = ex.Message;
-                    return await ReturnIndexView();
-                }
-
-                bool isUserInEvent = eventManagement.EventStaffDetailList.Any(esd => esd.EventStaffId == eventStaff.Id);
-                bool isEventAssignedToStaff = false;
-                List<string?> eventWiseRoleNames = new List<string?>();
-                List<string> staffAttributes = new List<string>();
-
-                if (isUserInEvent)
-                {
-                    isEventAssignedToStaff = true;
-
-                    var staffDetails = eventManagement.EventStaffDetailList
-                    .FirstOrDefault(esd => esd.EventStaffId == eventStaff.Id);
-
-
-                    // Primary Roles
-                    var eventRolesIds = staffDetails?.EventWiseStaffRoleList
-                        .Select(r => r.RoleId)
-                        .ToList() ?? new List<string>();
-
-                    // Secondary Roles
-                    var eventSecondaryRolesIds = staffDetails?.EventWiseStaffSecondaryRoleList
-                        .Select(r => r.RoleId)
-                        .ToList() ?? new List<string>();
-
-                    if (staffDetails?.ProfileButtonAccess == true)
-                    {
-                        staffAttributes.Add("CanAccessProfile");
-                    }
-
-                    if (eventStaff.StaffQualification != null)
-                    {
-                        foreach (var license in eventStaff.StaffQualification)
-                        {
-                            foreach (var attribute in license.StaffAttributeDetails)
-                            {
-                                staffAttributes.Add(attribute.Attribute);
-                            }
-                        }
-                    }
-
-                    var combinedRoleIds = eventRolesIds.Concat(eventSecondaryRolesIds).Distinct().ToList();
-
-                    var allRoles = await _roleManager.Roles.ToListAsync();
-                    eventWiseRoleNames = allRoles.Where(r => combinedRoleIds.Contains(r.Id)).Select(r => r.Name).ToList();
-                }
-
-                var today = DateTime.Today;
-
-                // Allow access 2 days before event start
-                var allowedStartDate = eventManagement.EventStartDate.Date.AddDays(-2);
-                var allowedEndDate = eventManagement.EventEndDate.Date;
-
-                if (today < allowedStartDate || today > allowedEndDate)
-                {
-                    ViewBag.ErrorMessage = "The selected event is not active today.";
-                    return await ReturnIndexView();
-                }
-
-                bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventWiseRoleNames, eventManagement.EventID, isEventAssignedToStaff, staffAttributes);
-
-                if (!isClaimsUpdated)
-                {
-                    ViewBag.ErrorMessage = "Failed to update user claims. Please try again.";
-                    return View("Index", await _eventManagementService.GetAllEventID());
-                }
-
-                ViewBag.Message = "Role successfully assigned!";
-                HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);//Setting eventId so that staff user can access data on station forms
-                return RedirectToAction("Index", "Dashboard");
+                return await HandleEventStaffSelectionAsync(user, userId, selectedEventId);
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorMessage = ex.Message;
+                _logger.LogError(ex, "{ClassName}, {MethodName}, An unexpected error occurred.", CLASSNAME, methodName);
+
+                // Show inner exception message if it's a known, user-friendly exception
+                if (ex is KeyNotFoundException || ex is ApplicationException)
+                {
+                    ViewBag.ErrorMessage = ex.Message;
+                }
+                else
+                {
+                    // For other unknown exceptions, fallback to generic message
+                    ViewBag.ErrorMessage = "An unexpected error occurred. Please try again later.";
+                }
+
                 return await ReturnIndexView();
             }
+
         }
+
 
         // Helper method to return the index view
         private async Task<IActionResult> ReturnIndexView()
@@ -233,31 +144,152 @@ namespace ExcelFilesCompiler.Controllers
             return View("Index", eventViewModels);
         }
 
-        //private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames)
-        //{
-        //    try
-        //    {
-        //        var identityRoles = await _userManager.GetRolesAsync(user);
-        //        var identity = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
-        //        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
-        //        identity.AddClaim(new Claim("EventId", selectedEventId.ToString()));
+        private async Task<ApplicationUser?> GetLoggedInUserAsync()
+        {
+            return await _userManager.GetUserAsync(User);
+        }
 
-        //        foreach (var role in identityRoles.Concat(eventRoleNames))
-        //        {
-        //            identity.AddClaim(new Claim(ClaimTypes.Role, role));
-        //        }
 
-        //        var principal = new ClaimsPrincipal(identity);
-        //        await _signInManager.SignOutAsync();
-        //        await _signInManager.SignInAsync(user, isPersistent: false);
+        private async Task ClearEventClaimsAsync(ApplicationUser user)
+        {
+            await UpdateUserClaimsAsync(
+                user,
+                selectedEventId: 0,
+                eventRoleNames: Enumerable.Empty<string>(),
+                eventID: "",
+                isEventAssignedToStaff: false,
+                staffAttributes: new List<string>()
+            );
+        }
 
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return false;
-        //    }
-        //}
+        private static bool IsEventManager(IList<string> roles)
+        {
+            return roles.Any(r => string.Equals(r, "Event Manager", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task<IActionResult> HandleEventManagerSelectionAsync(ApplicationUser user, string userId, long selectedEventId)
+        {
+            const string methodName = "HandleEventManagerSelection";
+            _logger.LogInformation("{ClassName}, {MethodName}, Processing Event Manager flow. EventId: {EventId}",
+            CLASSNAME, methodName, selectedEventId);
+
+            bool isAssigned = await _userEventMappingService.IsUserAssignedToEventAsync(userId, selectedEventId);
+
+            if (!isAssigned)
+            {
+                _logger.LogWarning("{ClassName}, {MethodName}, Event not assigned to Event Manager. EventId: {EventId}",
+                    CLASSNAME, methodName, selectedEventId);
+
+                ViewBag.ErrorMessage = "The selected event is not assigned.";
+                return await ReturnIndexView();
+            }
+
+            var eventManagement = await _eventManagementService
+                .GetEventManagementForEventSelectionByIdWithoutInclude(selectedEventId);
+
+            await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, true);
+            HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Event Manager claims updated successfully",
+                CLASSNAME, methodName);
+
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+
+        private async Task<IActionResult> HandleEventStaffSelectionAsync(ApplicationUser user, string userId, long selectedEventId)
+        {
+            const string methodName = "HandleEventStaffSelection";
+            _logger.LogInformation("{ClassName}, {MethodName}, Processing Event Staff flow. EventId: {EventId}",
+                CLASSNAME, methodName, selectedEventId);
+
+            var eventManagement = await _eventManagementService
+                .GetEventManagementForEventSelectionById(selectedEventId);
+
+            var eventStaff = await _eventStaffService
+                .GetEventStaffWithAttributesByUserId(userId);
+
+            ValidateEventDate(eventManagement);
+
+            var (isAssigned, roleNames, staffAttributes) =
+                BuildEventStaffClaims(eventManagement, eventStaff);
+
+            bool updated = await UpdateUserClaimsAsync(
+                user,
+                selectedEventId,
+                roleNames,
+                eventManagement.EventID,
+                isAssigned,
+                staffAttributes
+            );
+
+            if (!updated)
+            {
+                _logger.LogError("{ClassName}, {MethodName}, Failed to update staff claims",
+                    CLASSNAME, methodName);
+
+                ViewBag.ErrorMessage = "Failed to update user claims.";
+                return await ReturnIndexView();
+            }
+
+            HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Event Staff claims updated successfully",
+                CLASSNAME, methodName);
+
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        private void ValidateEventDate(EventManagement eventManagement)
+        {
+            var today = DateTime.Today;
+            var allowedStartDate = eventManagement.EventStartDate.Date.AddDays(-2);
+            var allowedEndDate = eventManagement.EventEndDate.Date;
+
+            if (today < allowedStartDate || today > allowedEndDate)
+            {
+                throw new ApplicationException("The selected event is not active today.");
+            }
+        }
+
+        private (bool IsAssigned, List<string> RoleNames, List<string> StaffAttributes)
+    BuildEventStaffClaims(EventManagement eventManagement, EventStaff eventStaff)
+        {
+            bool isAssigned = false;
+            var roleNames = new List<string>();
+            var staffAttributes = new List<string>();
+
+            var staffDetail = eventManagement.EventStaffDetailList
+                .FirstOrDefault(esd => esd.EventStaffId == eventStaff.Id);
+
+            if (staffDetail == null)
+                return (false, roleNames, staffAttributes);
+
+            isAssigned = true;
+
+            var roleIds = staffDetail.EventWiseStaffRoleList
+                .Select(r => r.RoleId)
+                .Concat(staffDetail.EventWiseStaffSecondaryRoleList.Select(r => r.RoleId))
+                .Distinct()
+                .ToList();
+
+            var allRoles = _roleManager.Roles.ToList();
+            roleNames = allRoles.Where(r => roleIds.Contains(r.Id)).Select(r => r.Name).ToList();
+
+            if (staffDetail.ProfileButtonAccess)
+                staffAttributes.Add("CanAccessProfile");
+
+            if (eventStaff.StaffQualification != null)
+            {
+                foreach (var license in eventStaff.StaffQualification)
+                {
+                    staffAttributes.AddRange(
+                        license.StaffAttributeDetails.Select(a => a.Attribute));
+                }
+            }
+
+            return (isAssigned, roleNames, staffAttributes);
+        }
 
         private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID, bool isEventAssignedToStaff, List<string> staffAttributes)
         {
