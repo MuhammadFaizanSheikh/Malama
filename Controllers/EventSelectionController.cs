@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Security.Claims;
+using static Microsoft.IO.RecyclableMemoryStreamManager;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -37,7 +38,7 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                var events = await _eventManagementService.GetAllEventManagements();
+                var events = await _eventManagementService.GetAllEventID();
 
                 if (events == null && !events.Any()) // Ensure there is data
                 {
@@ -87,7 +88,45 @@ namespace ExcelFilesCompiler.Controllers
                     return await ReturnIndexView();
                 }
 
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                //Checking for is user contains "Event Manager" role.
+                bool isEventManager = roles.Any(r => string.Equals(r, "Event Manager", StringComparison.OrdinalIgnoreCase));
+
                 EventManagement eventManagement;
+
+                try
+                {
+                    if (isEventManager)
+                    {
+                        bool isAssigned = await _unitOfWork.UserEventMapping.FindForSearching(u => u.UserId == userId && u.EventId == selectedEventId).AnyAsync();
+
+                        if (isAssigned)
+                        {
+                            eventManagement = await _eventManagementService.GetEventManagementForEventSelectionById(selectedEventId);
+                            await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, true);
+                            HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
+                            return RedirectToAction("Index", "Dashboard");
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = "The selected event is not assign.";
+                            return await ReturnIndexView();
+                        }
+                    }
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    ViewBag.ErrorMessage = ex.Message; // Show user-friendly message
+                    return await ReturnIndexView();
+                }
+                catch (ApplicationException ex)
+                {
+                    ViewBag.ErrorMessage = ex.Message;
+                    return await ReturnIndexView();
+                }
+
                 EventStaff eventStaff;
 
                 try
@@ -153,24 +192,22 @@ namespace ExcelFilesCompiler.Controllers
 
                 var today = DateTime.Today;
 
-                bool isEventManager = eventWiseRoleNames.Contains("Event Manager");
+                // Allow access 2 days before event start
+                var allowedStartDate = eventManagement.EventStartDate.Date.AddDays(-2);
+                var allowedEndDate = eventManagement.EventEndDate.Date;
 
-                if (!isEventManager)
+                if (today < allowedStartDate || today > allowedEndDate)
                 {
-                    if (today < eventManagement.EventStartDate.Date || today > eventManagement.EventEndDate.Date)
-                    {
-                        ViewBag.ErrorMessage = "The selected event is not active today.";
-                        return await ReturnIndexView();
-                    }
+                    ViewBag.ErrorMessage = "The selected event is not active today.";
+                    return await ReturnIndexView();
                 }
-
 
                 bool isClaimsUpdated = await UpdateUserClaimsAsync(user, selectedEventId, eventWiseRoleNames, eventManagement.EventID, isEventAssignedToStaff, staffAttributes);
 
                 if (!isClaimsUpdated)
                 {
                     ViewBag.ErrorMessage = "Failed to update user claims. Please try again.";
-                    return View("Index", await _eventManagementService.GetAllEventManagements());
+                    return View("Index", await _eventManagementService.GetAllEventID());
                 }
 
                 ViewBag.Message = "Role successfully assigned!";
@@ -187,7 +224,7 @@ namespace ExcelFilesCompiler.Controllers
         // Helper method to return the index view
         private async Task<IActionResult> ReturnIndexView()
         {
-            var events = await _eventManagementService.GetAllEventManagements();
+            var events = await _eventManagementService.GetAllEventID();
             var eventViewModels = events.Select(e => new EventViewModel
             {
                 EventId = e.Id,
@@ -267,7 +304,34 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        public async Task UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, string eventID, bool isEventAssignedToStaff)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
 
+            var roles = await _userManager.GetRolesAsync(user);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim("EventIdLong", selectedEventId.ToString()),
+                new Claim("EventIdString", eventID ?? string.Empty),
+                new Claim("IsEventAssignedToStaff", isEventAssignedToStaff.ToString())
+            };
+
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            var identity = new ClaimsIdentity(
+                claims,
+                IdentityConstants.ApplicationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await _signInManager.SignOutAsync();
+            await _signInManager.Context.SignInAsync(
+                IdentityConstants.ApplicationScheme,
+                principal,
+                new AuthenticationProperties { IsPersistent = false });
+        }
     }
 }

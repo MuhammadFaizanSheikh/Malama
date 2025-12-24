@@ -7,7 +7,8 @@
         {
             ["SuperAdmin"] = new List<(string Role, string Attribute)>
         {
-            ("Super Admin", null)
+            ("Super Admin", null),
+            ("Event Manager", null)
         },
             ["Profile_View"] = new List<(string Role, string Attribute)>
         {
@@ -21,11 +22,13 @@
             ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null),
-            ("Super Admin", null)
+            ("Super Admin", null),
+            ("Event Manager", null)
         },
             ["CheckInOutStaff_Client_View"] = new List<(string Role, string Attribute)>
         {
-            ("Check in/out Staff", null)
+            ("Check in/out Staff", null),
+            ("Event Manager", null)
         },
             ["CheckInOutStaff_Admin_View"] = new List<(string Role, string Attribute)>
         {
@@ -34,7 +37,8 @@
             // Audiologist
             ["Audiologist_View"] = new List<(string Role, string Attribute)>
         {
-            ("Audiologist", null)
+            ("Audiologist", null),
+            ("Event Manager", null)
         },
 
             // Dental Exams
@@ -50,7 +54,8 @@
             ("DT-Dentist", "Oral Surgery"),
             ("DT-Dentist", "Endo"),
             ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment")
+            ("DT-Dental Director", "Treatment"),
+            ("Event Manager", null)
         },
 
             // Dental Treatment
@@ -63,7 +68,8 @@
             ("DT-Dentist", "Oral Surgery"),
             ("DT-Dentist", "Endo"),
             ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment")
+            ("DT-Dental Director", "Treatment"),
+            ("Event Manager", null)
         },
 
             // Dental X-Ray
@@ -79,20 +85,23 @@
             ("DT-Dentist", "Oral Surgery"),
             ("DT-Dentist", "Endo"),
             ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment")
+            ("DT-Dental Director", "Treatment"),
+            ("Event Manager", null)
         },
 
             // EKG
             ["EKG_View"] = new List<(string Role, string Attribute)>
         {
-            ("EKG Staff", null)
+            ("EKG Staff", null),
+            ("Event Manager", null)
         },
 
             // Hearing
             ["Hearing_View"] = new List<(string Role, string Attribute)>
         {
             ("Audio Tech", null),
-            ("Audiologist", null)
+            ("Audiologist", null),
+            ("Event Manager", null)
         },
 
             // Immunization forms
@@ -100,32 +109,37 @@
         {
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
-            ("Imm Staff", "Cold Chain Cert")
+            ("Imm Staff", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
             ["ImmunizationVaccineInfo_View"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
-            ("Imm Staff", "Cold Chain Cert")
+            ("Imm Staff", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
             ["Container_View"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
-            ("Imm Staff", "Cold Chain Cert")
+            ("Imm Staff", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
 
             // Labs
             ["Labs_View"] = new List<(string Role, string Attribute)>
         {
             ("Lab Staff", null),
-            ("Lab Admin", null)
+            ("Lab Admin", null),
+            ("Event Manager", null)
         },
 
             // Optometrist
             ["Optometrist_View"] = new List<(string Role, string Attribute)>
         {
-            ("Optometrist", null)
+            ("Optometrist", null),
+            ("Event Manager", null)
         },
 
             // Panoramic Dental X-Ray
@@ -142,14 +156,16 @@
             ("DT-Dentist", "Endo"),
             ("DT-Dental Assistant", "Treatment"),
             ("DT-Dental Director", "Treatment"),
-            ("Panorex X-ray", "Panorex X-ray")
+            ("Panorex X-ray", "Panorex X-ray"),
+            ("Event Manager", null)
         },
 
             // es Review
             ["RecordsReview_View"] = new List<(string Role, string Attribute)>
         {
             ("PHA-Record Review", null),
-            ("PHA Provider", null)
+            ("PHA Provider", null),
+            ("Event Manager", null)
         },
 
             // Vision Screening
@@ -157,36 +173,42 @@
         {
             ("Vitals Staff", null),
             ("Vision Tech", null),
-            ("Optometrist", null)
+            ("Optometrist", null),
+            ("Event Manager", null)
         },
 
             // Vitals
             ["Vitals_View"] = new List<(string Role, string Attribute)>
         {
-            ("Vitals Staff", null)
+            ("Vitals Staff", null),
+            ("Event Manager", null)
         },
             ["ImmunizationStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
             ("Imm Staff", "Imms"),
-            ("Imm Staff", "Cold Chain Cert")
+            ("Imm Staff", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
 
             ["ImmunizationVaccineInfo_Save"] = new List<(string Role, string Attribute)>
         {
-            ("Imm RN", "Cold Chain Cert")
+            ("Imm RN", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
 
             ["Container_Save"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
-            ("Imm Staff", "Cold Chain Cert")
+            ("Imm Staff", "Cold Chain Cert"),
+            ("Event Manager", null)
         },
             
             ["CheckInOutStaff_Save"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null),
-            ("Super Admin", null)
+            ("Super Admin", null),
+            ("Event Manager", null)
         }
 
         };

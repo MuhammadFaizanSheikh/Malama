@@ -9,7 +9,7 @@
     "id": "eventManager",
     "value": "Event Manager",
     "types": [],
-    "Category": "EventManagementRole"
+    "Category": "BasicRole"
   },
   {
     "id": "medicalLead",

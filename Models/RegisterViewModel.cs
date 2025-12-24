@@ -16,6 +16,7 @@ namespace Malama.Models
         [Required(ErrorMessage = "At least one role must be selected.")]
         [MinLength(1, ErrorMessage = "At least one role must be selected.")]
         public List<string> SelectedRoles { get; set; }
+        public List<int> SelectedEventIds { get; set; }
         public bool IsActive { get; set; }
     }
     public class ApplicationUser : IdentityUser

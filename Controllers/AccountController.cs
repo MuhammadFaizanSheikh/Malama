@@ -150,7 +150,23 @@ namespace ExcelFilesCompiler.Controllers
                     // Check for event user
                     var user = await _userManager.FindByEmailAsync(model.Email);
 
-                    if (user?.IsEventUser == true)
+                    if (user == null)
+                    {
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, Login succeeded but user not found. Email: {Email}",
+                            CLASSNAME, methodName, model.Email);
+
+                        ModelState.AddModelError(string.Empty, "Invalid user account.");
+                        return View(model);
+                    }
+
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    // Use ordinal, case-insensitive comparison
+                    bool isEventManager = roles.Any(r =>
+                        string.Equals(r, "Event Manager", StringComparison.OrdinalIgnoreCase));
+
+                    if (user.IsEventUser || isEventManager)
                     {
                         _logger.LogInformation(
                             "{ClassName}, {MethodName}, Event user detected. Redirecting to EventSelection. Email: {Email}",
@@ -158,6 +174,7 @@ namespace ExcelFilesCompiler.Controllers
 
                         return RedirectToAction("Index", "EventSelection");
                     }
+
 
                     _logger.LogInformation(
                         "{ClassName}, {MethodName}, Redirecting to Dashboard for Email: {Email}",

@@ -26,6 +26,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<Container> Container { get; }
         IGenericRepository<ContainerTemperatureReading> ContainerTemperatureReading { get; }
         IGenericRepository<ContainerNotification> ContainerNotification { get; }
+        IGenericRepository<UserEventMapping> UserEventMapping { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }

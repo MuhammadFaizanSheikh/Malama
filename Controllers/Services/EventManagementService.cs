@@ -56,6 +56,30 @@ namespace ExcelFilesCompiler.Controllers.Services
             return eventManagements;
         }
 
+        public async Task<List<EventManagementPreview>> GetAllEventID()
+        {
+            try
+            {
+                // Fetch only the necessary data
+                var eventData = await _unitOfWork.EventManagement.GetAllAsync(); // no Include needed
+
+                var eventManagements = eventData
+                    .Select(e => new EventManagementPreview
+                    {
+                        Id = e.Id,
+                        EventID = e.EventID // only these two fields
+                    })
+                    .OrderByDescending(e => e.Id)
+                    .ToList();
+
+                return eventManagements;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
 
         public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
         {
@@ -359,6 +383,29 @@ namespace ExcelFilesCompiler.Controllers.Services
                  .Include(x => x.EventStaffDetailList)
                  .ThenInclude(l => l.EventWiseStaffSecondaryRoleList)
                  .FirstOrDefaultAsync();
+
+                if (eventManagement == null)
+                {
+                    throw new KeyNotFoundException($"EventManagement with ID {id} not found.");
+                }
+
+                return eventManagement;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while retrieving event details.", ex);
+            }
+        }
+
+        public async Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id)
+        {
+            try
+            {
+                var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.Id == id);
 
                 if (eventManagement == null)
                 {

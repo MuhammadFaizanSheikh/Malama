@@ -28,6 +28,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<Container> Container { get; private set; }
         public IGenericRepository<ContainerTemperatureReading> ContainerTemperatureReading { get; private set; }
         public IGenericRepository<ContainerNotification> ContainerNotification { get; private set; }
+        public IGenericRepository<UserEventMapping> UserEventMapping { get; private set; }
 
 
 
@@ -54,6 +55,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             Container = new GenericRepository<Container>(_context);
             ContainerTemperatureReading = new GenericRepository<ContainerTemperatureReading>(_context);
             ContainerNotification = new GenericRepository<ContainerNotification>(_context);
+            UserEventMapping = new GenericRepository<UserEventMapping>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

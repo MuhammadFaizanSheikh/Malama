@@ -6,9 +6,11 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
         Task<List<EventManagementPreview>> GetAllEventManagements();
+        Task<List<EventManagementPreview>> GetAllEventID();
         Task<string> GetNextEventManagementId();
         Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id);
         Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
         Task<EventManagement> GetEventManagementForEventSelectionById(long id);
+        Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id);
     }
 }

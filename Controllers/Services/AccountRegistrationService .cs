@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Interfaces;
+using ExcelFilesCompiler.UnitOfWork;
 using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
@@ -11,17 +12,25 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<AccountRegistrationService> _logger;
+        private const string CLASSNAME = "AccountRegistrationService";
 
-        public AccountRegistrationService(
+        public AccountRegistrationService(ILogger<AccountRegistrationService> logger, IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> GetRegisterRolesAsync()
         {
+            const string methodName = "GetRegisterRolesAsync";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+
             try
             {
                 var rolesList = await Task.Run(() =>
@@ -35,6 +44,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                         .ToList()
                 );
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Roles retrieved successfully, Count: {Count}",
+                    CLASSNAME, methodName, rolesList.Count);
+
                 return new ResponseDto
                 {
                     Success = true,
@@ -44,6 +56,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error occurred while fetching roles",
+                    CLASSNAME, methodName);
+
                 return new ResponseDto
                 {
                     Success = false,
@@ -53,12 +68,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+
         public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
         {
+            const string methodName = "RegisterUserAsync";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called for Email: {Email}",
+                CLASSNAME, methodName, model?.Email);
+
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid user data received",
+                        CLASSNAME, methodName);
+
                     return new ResponseDto { Success = false, Message = "Invalid user data." };
                 }
 
@@ -67,24 +90,32 @@ namespace ExcelFilesCompiler.Controllers.Services
                     UserName = model.Email,
                     Email = model.Email,
                     IsActive = true,
-                    TwoFactorEnabled = false
-                    ,
-                    IsEventUser = IsEventUser
+                    TwoFactorEnabled = false,
+                    IsEventUser = IsEventUser,
+                    EmailConfirmed = true
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (!result.Succeeded)
                 {
+                    var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+
+                    _logger.LogError("{ClassName}, {MethodName}, User creation failed for Email: {Email}, Errors: {Errors}",
+                        CLASSNAME, methodName, model.Email, errorMessage);
+
                     return new ResponseDto
                     {
                         Success = false,
-                        Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Message = errorMessage
                     };
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, User created successfully, UserId: {UserId}",
+                    CLASSNAME, methodName, user.Id);
+
                 try
                 {
-                    var allRoles = _roleManager.Roles.ToList(); // Fetch roles in memory
+                    var allRoles = _roleManager.Roles.ToList();
                     var roleNames = allRoles
                         .Where(r => model.SelectedRoles.Contains(r.Id))
                         .Select(r => r.Name)
@@ -93,17 +124,34 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var roleResult = await _userManager.AddToRolesAsync(user, roleNames);
                     if (!roleResult.Succeeded)
                     {
-                        return await RollbackUserCreationAsync(user, "Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                        var roleErrors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+
+                        _logger.LogError("{ClassName}, {MethodName}, Role assignment failed for UserId: {UserId}, Errors: {Errors}",
+                            CLASSNAME, methodName, user.Id, roleErrors);
+
+                        return await RollbackUserCreationAsync(user, "Role assignment failed: " + roleErrors);
                     }
 
-                    // Confirm the user's email
-                    var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationResult = await _userManager.ConfirmEmailAsync(user, emailConfirmationToken);
+                    _logger.LogInformation("{ClassName}, {MethodName}, Roles assigned successfully to UserId: {UserId}",
+                        CLASSNAME, methodName, user.Id);
 
-                    if (!confirmationResult.Succeeded)
+                    if (model.SelectedEventIds != null && model.SelectedEventIds.Any())
                     {
-                        return await RollbackUserCreationAsync(user, "Email confirmation failed.");
+                        var userEventMappings = model.SelectedEventIds.Select(eventId => new UserEventMapping
+                        {
+                            UserId = user.Id,
+                            EventId = eventId
+                        }).ToList();
+
+                        _unitOfWork.UserEventMapping.AddRange(userEventMappings);
+                        await _unitOfWork.SaveAsync();
+
+                        _logger.LogInformation("{ClassName}, {MethodName}, Event mappings saved successfully, UserId: {UserId}, EventCount: {Count}",
+                            CLASSNAME, methodName, user.Id, userEventMappings.Count);
                     }
+
+                    _logger.LogInformation("{ClassName}, {MethodName}, User registration completed successfully, UserId: {UserId}",
+                        CLASSNAME, methodName, user.Id);
 
                     return new ResponseDto
                     {
@@ -112,16 +160,27 @@ namespace ExcelFilesCompiler.Controllers.Services
                         Data = new { user }
                     };
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "{ClassName}, {MethodName}, Error occurred during user setup, UserId: {UserId}",
+                        CLASSNAME, methodName, user.Id);
+
                     return await RollbackUserCreationAsync(user, "An unexpected error occurred during user setup.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new ResponseDto { Success = false, Message = "An unexpected error occurred. Please try again later." };
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Unexpected error occurred",
+                    CLASSNAME, methodName);
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred. Please try again later."
+                };
             }
         }
+
 
 
         /// <summary>

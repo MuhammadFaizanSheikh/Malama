@@ -792,8 +792,8 @@
                     if (!value) {
                         dto[mapping.key] = null;
                     } else {
-                        const dateOnly = getDateOnlyGlobal(value); // YYYY-MM-DD
-                        dto[mapping.key] = dateOnly; // store as string in DB
+                        let parsedDate = new Date(value);
+                        dto[mapping.key] = isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString();
                     }
                     break;
 
@@ -831,7 +831,9 @@
                 if (fieldType === 'int') {
                     value = value === '' || value == null ? null : parseInt(value);
                 } else if (fieldType === 'date') {
-                    value = value ? getDateOnlyGlobal(value) : null;
+                    debugger;
+                    value = value ? new Date(value).toISOString() : null;
+                    // value = value ? getDateOnlyGlobal(value) : null;
                 } else if (fieldType === 'string') {
                     value = value != null ? String(value) : null;
                 }

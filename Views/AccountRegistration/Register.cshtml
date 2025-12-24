@@ -61,226 +61,271 @@
         .form-control option {
             font-size: 16px; /* Adjust font size inside dropdown */
         }
+
+    /* Base styles for the dropdown */
+    .select2 {
+        width: 100%;
+        font-size: 14px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #333;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+        /*
+        /* Focused state */
+        .select2:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+    /* Dropdown arrow customization */
+
+
+    /* Adjust the dropdown width */
+    .select2 {
+        width: 100% !important; /* Ensures full-width dropdown */
+    }
+
+
+
+        /* Hover state for options */
+        .select2 option:hover {
+            background-color: #e6f7ff;
+        }
+
+        /* Focus state for options */
+        .select2 option:focus {
+            background-color: #cce5ff;
+        }
+
+        /* Disabled state */
+        .select2 option:disabled {
+            color: #aaa;
+            background-color: #f5f5f5;
+        }
 </style>
-    <div class="form-container">
-        <h2>Create User</h2>
+<div class="form-container">
+    <h2>Create User</h2>
 
-        @if (ViewBag.SuccessMessage != null)
-        {
-            <div class="alert alert-success">
-                @ViewBag.SuccessMessage
-            </div>
-        }
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.SuccessMessage
+        </div>
+    }
 
-        <form method="post" asp-action="Register" id="registrationForm" autocomplete="off">
-            @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    <form method="post" asp-action="Register" id="registrationForm" autocomplete="off">
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-            <div class="form-group" id="emailGroup">
-                <label asp-for="Email" class="font-weight-bold"></label>
-                <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="off" required/>
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+        <div class="form-group" id="emailGroup">
+            <label asp-for="Email" class="font-weight-bold"></label>
+            <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="off" required />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
 
-            <div class="form-group" id="passwordGroup">
-                <label asp-for="Password" class="font-weight-bold"></label>
-                <div class="input-group">
-                    <input asp-for="Password" type="text" class="form-control" placeholder="Enter your password" autocomplete="off" required/>
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
-                    </div>
+        <div class="form-group" id="passwordGroup">
+            <label asp-for="Password" class="font-weight-bold"></label>
+            <div class="input-group">
+                <input asp-for="Password" type="text" class="form-control" placeholder="Enter your password" autocomplete="off" required />
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-secondary" id="generatePasswordBtn">Auto Generate Password</button>
                 </div>
-                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+
+        @foreach (var role in (List<SelectListItem>)ViewData["Roles"])
+        {
+            <div class="form-check">
+                <input type="checkbox"
+                       class="form-check-input role-checkbox"
+                       id="role_@role.Value"
+                       name="SelectedRoles"
+                       value="@role.Value"
+                       data-role="@role.Value"
+                       data-role-name="@role.Text" />
+
+                <label class="form-check-label" for="role_@role.Value">
+                    @role.Text
+                </label>
             </div>
 
-
-            <div class="form-group" id="roleGroup">
-                <label class="font-weight-bold">Roles</label>
-                <div>
-                    @if (ViewData["Roles"] is List<SelectListItem> rolesList && rolesList.Any())
-                    {
-                        @foreach (var role in rolesList)
+            @if (role.Text == "Event Manager")
+            {
+                <div class="form-group d-none ml-4 mt-2" id="eventSelection">
+                    <label class="font-weight-bold">Select Event(s)</label>
+                    <select id="SelectedEventIds" name="SelectedEventIds" multiple="multiple" class="form-control">
+                        @foreach (var evt in (List<SelectListItem>)ViewData["Events"])
                         {
-                            <div class="form-check">
-                                <input type="checkbox" name="SelectedRoles" value="@role.Value" class="form-check-input" id="role_@role.Value" />
-                                <label class="form-check-label" for="role_@role.Value">@role.Text</label>
-                            </div>
+                            <option value="@evt.Value">@evt.Text</option>
                         }
-                    }
-                    else
-                    {
-                        <p class="text-muted">No roles available</p>
-                    }
+                    </select>
                 </div>
-                <span id="roleError" class="text-danger" style="display: none;">At least one role must be selected.</span>
-            </div>
-
-
-
-
-            <button type="submit" class="btn btn-theme" id="registerBtn">Register</button>
-
-            <div class="form-group">
-                <button type="button" id="findUserBtn" class="btn btn-secondary mt-2">
-                    <i class="fas fa-search"></i> Find User
-                </button>
-            </div>
-
-            <select id="userDropdown" class="form-control" style="display:none; margin-bottom: 10px;"></select>
-            <button type="button" id="deleteUserBtn" class="btn btn-danger" style="display:none;">Delete User</button>
-
-            <div id="loadingIndicator" class="text-center mt-2">
-                <span>Loading...</span>
-            </div>
-        </form>
-
-
-        @if (ViewBag.ErrorMessage != null)
-        {
-            <div class="alert alert-danger mt-3">
-                @ViewBag.ErrorMessage
-            </div>
+            }
         }
-    </div>
 
-    <!-- Bootstrap JS and dependencies (CDN) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <button type="submit" class="btn btn-theme" id="registerBtn">Register</button>
 
-    <script>
-        $(document).ready(function () {
+        <div class="form-group">
+            <button type="button" id="findUserBtn" class="btn btn-secondary mt-2">
+                <i class="fas fa-search"></i> Find User
+            </button>
+        </div>
 
-            $("#registerBtn").click(function (event) {
-        if ($("input[name='SelectedRoles']:checked").length === 0) {
-            $("#roleError").show();
-            event.preventDefault(); // Prevent form submission
-        } else {
-            $("#roleError").hide();
+        <select id="userDropdown" class="form-control" style="display:none; margin-bottom: 10px;"></select>
+        <button type="button" id="deleteUserBtn" class="btn btn-danger" style="display:none;">Delete User</button>
+
+        <div id="loadingIndicator" class="text-center mt-2">
+            <span>Loading...</span>
+        </div>
+    </form>
+
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">
+            @ViewBag.ErrorMessage
+        </div>
+    }
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $(`#SelectedEventIds`).select2({
+            placeholder: "Select options",
+            allowClear: true
+        });
+
+        function toggleEventSection() {
+            var isEventManagerChecked =
+                $("input[name='SelectedRoles'][data-role-name='Event Manager']").is(":checked");
+
+            debugger;
+
+            if (isEventManagerChecked) {
+                $("#eventSelection").removeClass("d-none").show();
+            } else {
+                $("#eventSelection").addClass("d-none").hide();
+                $("#eventSelection select").val([]); // clear selected events
+            }
         }
-    });
 
-           $('#findUserBtn').click(function () {
-                // Show user dropdown and fetch user details
+        $(document).on("change", "input[name='SelectedRoles']", function () {
+            toggleEventSection();
+        });
+
+        $("#registerBtn").click(function (event) {
+            if ($("input[name='SelectedRoles']:checked").length === 0) {
+                $("#roleError").show();
+                event.preventDefault(); // Prevent form submission
+            } else {
+                $("#roleError").hide();
+            }
+        });
+
+        $('#findUserBtn').click(function () {
+            // Show user dropdown and fetch user details
+            $.ajax({
+                url: '@Url.Action("GetUsers", "AccountRegistration")',
+                type: 'GET',
+                success: function (data) {
+                    var result = data.data;
+                    $('#userDropdown').empty().append('<option value="">Select a user</option>');
+                    $.each(result, function (index, user) {
+                        $('#userDropdown').append(`<option value="${user.id}">${user.email}</option>`);
+                    });
+                    $('#userDropdown').show();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching users:", error);
+                }
+            });
+        });
+
+        $('#userDropdown').change(function () {
+            var userId = $(this).val();
+            if (userId) {
                 $.ajax({
-                    url: '@Url.Action("GetUsers", "AccountRegistration")',
+                    url: '@Url.Action("GetUserDetails", "AccountRegistration")',
                     type: 'GET',
+                    data: { userId: userId },
                     success: function (data) {
-                        var result = data.data;
-                        $('#userDropdown').empty().append('<option value="">Select a user</option>');
-                        $.each(result, function (index, user) {
-                            $('#userDropdown').append(`<option value="${user.id}">${user.email}</option>`);
-                        });
-                        $('#userDropdown').show();
+                        $('#emailGroup input').val(data.data.email).prop('readonly', true);
+                        $('#passwordGroup input').val("********").prop('readonly', true); // Masked password
+
+                        // Uncheck all roles first
+                        $('input[name="SelectedRoles"]').prop('checked', false);
+
+                        // Check only the roles that the user has
+                        if (Array.isArray(data.data.roles) && data.data.roles.length > 0) {
+                            data.data.roles.forEach(function (role) {
+                                var roleCheckbox = $('#role_' + role.id);
+                                if (roleCheckbox.length) {
+                                    roleCheckbox.prop('checked', true);
+                                }
+                            });
+                        }
+
+                        $('#registerBtn').prop('disabled', true);
+                        $('#deleteUserBtn').show(); // Show deactivate button
                     },
                     error: function (xhr, status, error) {
-                        console.error("Error fetching users:", error);
+                        console.error("Error fetching user details:", error);
                     }
                 });
-            });
 
-            $('#userDropdown').change(function () {
-                var userId = $(this).val();
-                if (userId) {
+            } else {
+                $('#deleteUserBtn').hide();
+
+                // Uncheck all checkboxes if no user is selected
+                $('input[name="SelectedRoles"]').prop('checked', false);
+            }
+        });
+
+        $('#deleteUserBtn').click(function () {
+            var userId = $('#userDropdown').val();
+            if (userId) {
+                if (confirm("Are you sure you want to delete this user?")) {
                     $.ajax({
-                        url: '@Url.Action("GetUserDetails", "AccountRegistration")',
-                        type: 'GET',
-                        data: { userId: userId },
-                        success: function (data) {
-                            $('#emailGroup input').val(data.data.email).prop('readonly', true);
-                            $('#passwordGroup input').val("********").prop('readonly', true); // Masked password
+                        url: '@Url.Action("DeleteUser", "AccountRegistration")',
+                        type: 'POST',
+                        contentType: 'application/json', // Ensure proper JSON format
+                        data: JSON.stringify(userId), // Send as raw JSON string
+                        success: function (response) {
+                            if (response.success) {
+                                debugger;
+                                // Show success message
+                                $('.alert-success').text(response.message).show();
 
-                            // Uncheck all roles first
-                            $('input[name="SelectedRoles"]').prop('checked', false);
-
-                            // Check only the roles that the user has
-                            if (Array.isArray(data.data.roles) && data.data.roles.length > 0) {
-                                data.data.roles.forEach(function (role) {
-                                    var roleCheckbox = $('#role_' + role.id);
-                                    if (roleCheckbox.length) {
-                                        roleCheckbox.prop('checked', true);
-                                    }
-                                });
+                                // Clear and reset the form
+                                $('#userDropdown').val("").hide();
+                                $('#deleteUserBtn').hide();
+                                $('#emailGroup input').val("").prop('readonly', false);
+                                $('#passwordGroup input').val("").prop('readonly', false);
+                                $('#roleGroup select').val("User").prop('disabled', false);
+                                $('#registerBtn').prop('disabled', false);
+                            } else {
+                                // Show error message
+                                $('.alert-danger').text(response.message).show();
                             }
-
-                            $('#registerBtn').prop('disabled', true);
-                            $('#deleteUserBtn').show(); // Show deactivate button
                         },
-                        error: function (xhr, status, error) {
-                            console.error("Error fetching user details:", error);
+                        error: function () {
+                            $('.alert-danger').text("An unexpected error occurred while processing your request.").show();
                         }
                     });
-
-                } else {
-                    $('#deleteUserBtn').hide();
-
-                    // Uncheck all checkboxes if no user is selected
-                    $('input[name="SelectedRoles"]').prop('checked', false);
                 }
-            });
-
-
-
-            $('#deleteUserBtn').click(function () {
-    var userId = $('#userDropdown').val();
-    if (userId) {
-        if (confirm("Are you sure you want to delete this user?")) {
-            $.ajax({
-                url: '@Url.Action("DeleteUser", "AccountRegistration")',
-                type: 'POST',
-                contentType: 'application/json', // Ensure proper JSON format
-                data: JSON.stringify(userId), // Send as raw JSON string
-                success: function (response) {
-                    if (response.success) {
-                        debugger;
-                        // Show success message
-                        $('.alert-success').text(response.message).show();
-
-                        // Clear and reset the form
-                        $('#userDropdown').val("").hide();
-                        $('#deleteUserBtn').hide();
-                        $('#emailGroup input').val("").prop('readonly', false);
-                        $('#passwordGroup input').val("").prop('readonly', false);
-                        $('#roleGroup select').val("User").prop('disabled', false);
-                        $('#registerBtn').prop('disabled', false);
-                    } else {
-                        // Show error message
-                        $('.alert-danger').text(response.message).show();
-                    }
-                },
-                error: function () {
-                    $('.alert-danger').text("An unexpected error occurred while processing your request.").show();
-                }
-            });
-        }
-    }
-});
-
-
-
+            }
         });
 
         document.getElementById("generatePasswordBtn").addEventListener("click", function () {
-    const passwordField = document.querySelector("#passwordGroup input");
-    const generatedPassword = generatePassword(12); // Generate a password of length 12
-    passwordField.value = generatedPassword;
-});
-
-// function generatePassword(length) {
-//     const lettersAndDigits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//     const specialCharacters = "!@@#$%^&*()_+[]{}|;:',.<>?";
-
-//     const specialChar = specialCharacters[Math.floor(Math.random() * specialCharacters.length)];
-//     let password = specialChar;
-
-//     for (let i = 1; i < length; i++) {
-//         const randomIndex = Math.floor(Math.random() * lettersAndDigits.length);
-//         password += lettersAndDigits[randomIndex];
-//     }
-
-//     password = password.split('').sort(() => Math.random() - 0.5).join('');
-
-//     return password;
-// }
+            const passwordField = document.querySelector("#passwordGroup input");
+            const generatedPassword = generatePassword(12); // Generate a password of length 12
+            passwordField.value = generatedPassword;
+        });
 
         function generatePassword(length) {
             if (length < 3) {
@@ -311,8 +356,7 @@
             return password;
         }
 
+        toggleEventSection();
+    });
 
-
-
-
-    </script>
+</script>

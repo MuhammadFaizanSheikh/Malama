@@ -147,7 +147,7 @@
             </li>
 
             <!-- Show Select Event only if session is null -->
-            @if (isEventUser)
+            @if (isEventUser || User.IsInRole("Event Manager"))
             {
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="EventSelection" asp-action="Index">
