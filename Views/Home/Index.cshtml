@@ -12,11 +12,11 @@
     <div class="row my-3">
         <div class="col-md-4">
             <label for="calendarInput" style="color: black;">Event Start Date:</label>
-            <input type="date" class="form-control" id="calendarInput" />
+            <input type="text" class="form-control" id="calendarInput" placeholder="MM/DD/YYYY"/>
         </div>
         <div class="col-md-4">
             <label for="lastCalendarInput" style="color: black;">Event End Date:</label>
-            <input type="date" class="form-control" id="lastCalendarInput" />
+            <input type="text" class="form-control" id="lastCalendarInput" placeholder="MM/DD/YYYY"/>
         </div>
     </div>
     <div class="row my-3">
@@ -161,13 +161,17 @@
 
         <script>
             window.isCheckInOutPage = false;
-
+            let startDatePicker;
+            let endDatePicker;
 
             $(window).on('resize', function () {
                 $('#previewTable').DataTable().columns.adjust().draw();
             });
 
             document.addEventListener('DOMContentLoaded', function () {
+                startDatePicker = flatpickr("#calendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+                endDatePicker = flatpickr("#lastCalendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+
                 const clearBtn = document.getElementById('clearPreview');
                 if (clearBtn) {
                     clearBtn.addEventListener('click', clearPreview);
@@ -246,42 +250,60 @@
                 return -1;
             }
 
+            let isPreviewDoneSuccessfully = false;
 
             document.getElementById('uploadButton').addEventListener('click', function () {
-                const calendarInput = document.getElementById('calendarInput').value;
-                const lastCalendarInput = document.getElementById('lastCalendarInput').value;
+                const calendarInputElem = document.getElementById('calendarInput');
+                const lastCalendarInputElem = document.getElementById('lastCalendarInput');
                 const eventId = document.getElementById('eventId').value;
-
+            
+                // Get selected date from Flatpickr if available
+                const calendarInput = calendarInputElem._flatpickr
+                    ? calendarInputElem._flatpickr.input.value
+                    : calendarInputElem.value;
+            
+                const lastCalendarInput = lastCalendarInputElem._flatpickr
+                    ? lastCalendarInputElem._flatpickr.input.value
+                    : lastCalendarInputElem.value;
+            
                 if (!eventId) {
                     alert('Please enter an Event ID.');
                     return;
                 }
-
+            
                 if (!calendarInput) {
                     alert('Please select an Event Start Date.');
                     return;
                 }
-
+            
                 if (!lastCalendarInput) {
                     alert('Please select an Event Last Date.');
                     return;
                 }
-
-                if (lastCalendarInput < calendarInput) {
+            
+                // Convert to Date objects for comparison
+                const startDate = new Date(calendarInput);
+                const endDate = new Date(lastCalendarInput);
+            
+                if (endDate < startDate) {
                     alert('Event Last Date must be greater than Event Start Date.');
                     return;
                 }
-
+            
+                // Trigger file input
                 document.getElementById('fileInput').click();
             });
-
-            let isPreviewDoneSuccessfully = false;
 
             document.getElementById('fileInput').addEventListener('change', function () {
                 const form = document.getElementById('fileUploadForm');
                 const formData = new FormData(form);
-                formData.append('eventDate', document.getElementById('calendarInput').value);
-                formData.append('lastEventDate', document.getElementById('lastCalendarInput').value);
+            
+                // Get selected dates from Flatpickr
+                const startDate = startDatePicker.selectedDates[0]; // JS Date object
+                const endDate = endDatePicker.selectedDates[0];     // JS Date object
+            
+                formData.append('eventDate', getyyyymmddDateGlobalAgainstDate(startDate));
+                formData.append('lastEventDate', getyyyymmddDateGlobalAgainstDate(endDate));
                 formData.append('eventId', document.getElementById('eventId').value);
                 formData.append('lastDentalExam', document.getElementById('dropdownLastDentalExam').value);
                 formData.append('vision', document.getElementById('dropdownVision').value);
@@ -289,42 +311,43 @@
                 formData.append('pha', document.getElementById('dropdownPHA').value);
                 formData.append('hiv', document.getElementById('dropdownHIV').value);
                 formData.append('hearing', document.getElementById('dropdownHearing').value);
-
+            
                 document.getElementById('loader').classList.remove('d-none');
+            
                 fetch('@Url.Action("UploadAndPreview", "Home")', {
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorData => {
-                                throw new Error(errorData.message || "An unknown error occurred.");
-                            });
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || "An unknown error occurred.");
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const validationErrors = data[0];
+                    const mergedData = data[1];
+            
+                    if (mergedData) {
+                        displayPreview(mergedData);
+                    }
+            
+                    if (validationErrors && validationErrors.length > 0) {
+                        if (isPreviewDoneSuccessfully) {
+                            displayUploadFileValidationErrors(validationErrors, taskForceValueForErrorLog);
                         }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const validationErrors = data[0];
-                        const mergedData = data[1];
-
-                        if (mergedData) {
-                            displayPreview(mergedData);
-                        }
-
-                        if (validationErrors && validationErrors.length > 0) {
-                            if (isPreviewDoneSuccessfully) {
-                                displayUploadFileValidationErrors(validationErrors, taskForceValueForErrorLog);
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error uploading files:', error);
-                        alert(error.message || 'An error occurred while uploading files.');
-                    })
-                    .finally(() => {
-                        document.getElementById('loader').classList.add('d-none');
-                        document.getElementById('fileInput').value = '';
-                    });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error uploading files:', error);
+                    alert(error.message || 'An error occurred while uploading files.');
+                })
+                .finally(() => {
+                    document.getElementById('loader').classList.add('d-none');
+                    document.getElementById('fileInput').value = '';
+                });
             });
 
 
