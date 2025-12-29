@@ -8,6 +8,8 @@
     
 }
 
+<script src="~/js/Common/Methods.js"></script>
+
 <style>
     #page-heading {
         text-align: center;
@@ -316,7 +318,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="HepBExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="HepBExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
 
                     
@@ -429,7 +431,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="FluExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="FluExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
@@ -536,7 +538,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="MMRExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="MMRExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
@@ -642,7 +644,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="HepAExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="HepAExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
                     
                     <div class="col-md-2 vaccine-completed" style="display:none;">
@@ -747,7 +749,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="TetTdpExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="TetTdpExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
@@ -854,7 +856,7 @@
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
                         <label>Expiration Date</label>
-                        <input asp-for="VaricellaExpirationDate" type="date" class="form-control expiration-input" readonly />
+                        <input asp-for="VaricellaExpirationDate" type="text" class="form-control expiration-input" placeholder="MM/DD/YYYY" readonly />
                     </div>
 
                     <div class="col-md-2 vaccine-completed" style="display:none;">
@@ -938,6 +940,10 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        flatpickr(".expiration-input", {
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false,
+        });
+
         const immunizationData = @Html.Raw(jsonData);
         debugger;
         updateQuestionnaireReadonlyState();
@@ -1136,6 +1142,8 @@
 
                     // Populate manufacturer dropdown
                     const normalizedType = normalizeName(vaccineType);
+
+                    debugger;
                     const manufacturers = [...new Set(
                         immunizationData
                             .filter(x => normalizeName(x.ImmunizationType) === normalizedType)
@@ -1180,7 +1188,8 @@
                     const normalizedType = normalizeName(vaccineType);
 
                     lotSelect.innerHTML = '<option value="">-- Select Lot No --</option>';
-                    expirationInput.value = "";
+                    @* expirationInput.value = ""; *@
+                        expirationInput._flatpickr?.clear();
                     doseInput.value = "";
                     unitInput.value = "";
 
@@ -1225,7 +1234,8 @@
                     const normalizedType = normalizeName(vaccineType);
 
                     if (!selectedLot) {
-                        expirationInput.value = "";
+                        @* expirationInput.value = ""; *@
+                            expirationInput._flatpickr?.clear();
                         return;
                     }
 
@@ -1235,8 +1245,18 @@
                         .flatMap(x => x.Lots)
                         .find(l => l.LotNumber === selectedLot);
 
+                    debugger;
                     if (selectedLotObj) {
-                        expirationInput.value = selectedLotObj.Expiration?.split("T")[0] || "";
+                        @* expirationInput.value = selectedLotObj.Expiration?.split("T")[0] || ""; *@
+                            if (selectedLotObj?.Expiration && expirationInput._flatpickr) {
+                            expirationInput._flatpickr.setDate(
+                                getDateOnlyGlobal(selectedLotObj.Expiration),
+                                true   // trigger change event
+                            );
+                        } else if (expirationInput._flatpickr) {
+                            expirationInput._flatpickr.clear();
+                        }
+
                     }
                 });
             }

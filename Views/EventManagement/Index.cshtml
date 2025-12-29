@@ -486,11 +486,11 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
-                        <input type="date" class="form-control" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" required />
+                    <input type="text" class="form-control" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" placeholder="MM/DD/YYYY" required />
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
-                        <input asp-for="SingleEventManagement.EventEndDate" id="EventEndDate" type="date" class="form-control" required />
+                        <input type="text" class="form-control" id="EventEndDate" asp-for="SingleEventManagement.EventEndDate" placeholder="MM/DD/YYYY" required />
                     </div>
 
                 </div>
@@ -509,7 +509,7 @@
                     </div>
                     <div class="col-md-6" id="MOBDateContainer" style="display: none;">
                         <label asp-for="SingleEventManagement.MOBDate" class="form-label">MOB Date</label>
-                        <input asp-for="SingleEventManagement.MOBDate" id="EventMobDate" type="date" class="form-control" required />
+                        <input asp-for="SingleEventManagement.MOBDate" id="EventMobDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                     </div>
                 </div>
                 <div class="row">
@@ -822,7 +822,7 @@
                     <!-- Date Equipment Can Be Picked -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocPickupDate" class="form-label">Date Equipment Can Be Picked</label>
-                        <input asp-for="SingleEventManagement.ShippingPocPickupDate" id="PickupDate" class="form-control" type="date" />
+                        <input asp-for="SingleEventManagement.ShippingPocPickupDate" id="PickupDate" class="form-control" placeholder="MM/DD/YYYY" type="text" />
                     </div>
 
                     <!-- Time Equipment Can Be Picked -->
@@ -836,13 +836,13 @@
                     <!-- Delivery From -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" class="form-label">Delivery From</label>
-                        <input asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" id="DeliveryFromDate" class="form-control" type="date" />
+                        <input asp-for="SingleEventManagement.ShippingPocDeliveryFromDate" id="DeliveryFromDate" class="form-control" placeholder="MM/DD/YYYY" type="text" />
                     </div>
 
                     <!-- Delivery To -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocDeliveryToDate" class="form-label">Delivery To</label>
-                        <input asp-for="SingleEventManagement.ShippingPocDeliveryToDate" id="DeliveryToDate" class="form-control" type="date" />
+                    <input asp-for="SingleEventManagement.ShippingPocDeliveryToDate" id="DeliveryToDate" class="form-control" placeholder="MM/DD/YYYY" type="text" />
                     </div>
                 </div>
 
@@ -944,7 +944,7 @@
                     <!-- Event Setup Requirements - Date -->
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.ShippingPocEventSetupDate" class="form-label">Event Setup Date</label>
-                        <input asp-for="SingleEventManagement.ShippingPocEventSetupDate" id="ShippingPocEventSetupDate" type="date" class="form-control" required />
+                    <input asp-for="SingleEventManagement.ShippingPocEventSetupDate" id="ShippingPocEventSetupDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
                     </div>
 
                     <!-- Event Setup Requirements - Time -->
@@ -2093,7 +2093,24 @@
         </form>
     </div>
 <script>
+    let startDatePicker;
+    let endDatePicker;
+    let mobDatePicker;
+    let pickupDatePicker;
+    let deliveryFromDatePicker;
+    let deliveryToDatePicker;
+    let shippingPocEventSetupDatePicker;
+
     $(document).ready(function () {
+
+        startDatePicker = flatpickr("#EventStartDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        endDatePicker = flatpickr("#EventEndDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        mobDatePicker = flatpickr("#EventMobDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        pickupDatePicker = flatpickr("#PickupDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        deliveryFromDatePicker = flatpickr("#DeliveryFromDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        deliveryToDatePicker = flatpickr("#DeliveryToDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        shippingPocEventSetupDatePicker = flatpickr("#ShippingPocEventSetupDate", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        
 
         fetchRolesByCategory("");
 
@@ -2125,13 +2142,14 @@
             $('#EventZipCode').val('');
             $('#TotalRequestedServiceMembers').val('');
 
-            $('#EventStartDate').val('');
-            $('#EventEndDate').val('');
+            startDatePicker.clear();
+            endDatePicker.clear();
+            mobDatePicker.clear();
+
 
             $('#Deploying').prop('checked', false);
             $('#NonDeploying').prop('checked', false);
 
-            $('#EventMobDate').val('');
             $('#RegardingSites').val('');
             $('#EventHelpLine').val('');
 
@@ -2180,10 +2198,10 @@
             $('#CloseAt').val('');
             $('#ShippingInstruction').val('');
 
-            $('#PickupDate').val('');
+            pickupDatePicker.clear();
             $('#PickupTime').val('');
-            $('#DeliveryFromDate').val('');
-            $('#DeliveryToDate').val('');
+            deliveryFromDatePicker.clear();
+            deliveryToDatePicker.clear();
 
             $('#SuggestedHourlyFlow').val('');
             $('#ShippingPocSpecialGateInstructions').val('');
@@ -2201,7 +2219,7 @@
 
             $('#ShippingPocLockableRefrigeratorYes').prop('checked', false);
             $('#ShippingPocLockableRefrigeratorNo').prop('checked', false);
-            $('#ShippingPocEventSetupDate').val('');
+            shippingPocEventSetupDatePicker.clear();
             $('#ShippingPocEventSetupTime').val('');
             $('#PharmacyName').val('');
             $('#PharmacyAddressLine1').val('');
@@ -2914,159 +2932,127 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             let roleDropdownId = `roleSelect_${eventStaffData.id}`;
             let stationDropdownId = `stationSelect_${eventStaffData.id}`;
-
             let secondaryroleDropdownId = `secondaryRoleSelect_${eventStaffData.id}`;
             let secondarystationDropdownId = `secondaryStationSelect_${eventStaffData.id}`;
 
-            let eventStartDate = $('#EventStartDate').val();
-            let eventEndDate = $('#EventEndDate').val();
+            // Get Flatpickr dates
+            let startPicker = $('#EventStartDate')[0]._flatpickr;
+            let endPicker = $('#EventEndDate')[0]._flatpickr;
+
+            let eventStartDate = startPicker.selectedDates[0];
+            let eventEndDate = endPicker.selectedDates[0];
 
             // Validate event dates
             if (!eventStartDate || !eventEndDate) {
                 alert("Please fill Event Start Date and Event End Date first");
                 return;
             }
-
-            // Validate range using string comparison (YYYY-MM-DD format is safe)
             if (eventStartDate > eventEndDate) {
                 alert("Event Start Date cannot be after Event End Date");
                 return;
             }
 
-            // Extract selected dates from backend DateTime as YYYY-MM-DD strings
-            let selectedDates = (staffData.eventStaffDetail?.availabilityDatesList || []).map(item => getDateOnlyGlobal(item.availabilityDate));
+            // Extract availability dates from backend as YYYY-MM-DD strings
+            let selectedDatesSet = new Set(
+                (staffData.eventStaffDetail?.availabilityDatesList || [])
+                    .map(item => getDateOnlyGlobal(item.availabilityDate))
+            );
 
-            // Helper function to increment a date string by 1 day
-            function nextDate(dateStr) {
-                const [y, m, d] = dateStr.split('-').map(Number);
-                const tempDate = new Date(Date.UTC(y, m - 1, d)); // Use UTC to avoid local shifts
-                tempDate.setUTCDate(tempDate.getUTCDate() + 1);
-                return tempDate.toISOString().split('T')[0]; // Back to YYYY-MM-DD
+            // Helper: format Date object to YYYY-MM-DD
+            function toYYYYMMDD(date) {
+                const pad = (num) => num.toString().padStart(2, '0');
+                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
             }
 
-            let currentDate = eventStartDate;
+            // Build availability checkboxes
+            let currentDate = new Date(eventStartDate.getTime());
             let availabilityCheckboxes = "";
-            
             while (currentDate <= eventEndDate) {
-                // Display format for UI
-                let formattedDate = formatDateToMMDDYYYYGlobal(currentDate); // MM/DD/YYYY
-            
-                // Compare in YYYY-MM-DD format
-                let isChecked = selectedDates.includes(currentDate) ? "checked" : "";
-            
+                let yyyyMMdd = toYYYYMMDD(currentDate);                 // For comparison
+                let formattedDate = formatDateToMMDDYYYYGlobal(yyyyMMdd); // For display
+
+                let isChecked = selectedDatesSet.has(yyyyMMdd) ? "checked" : "";
+
                 availabilityCheckboxes += `
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox"
-                           id="chk_${eventStaffData.id}_${formattedDate}"
-                           name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
-                           value="${formattedDate}" ${isChecked}>
-                    <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
-                        ${formattedDate}
-                    </label>
-                </div>`;
-            
-                // Increment currentDate safely in UTC
-                currentDate = nextDate(currentDate);
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       id="chk_${eventStaffData.id}_${formattedDate}"
+                       name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+                       value="${formattedDate}" ${isChecked}>
+                <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
+                    ${formattedDate}
+                </label>
+            </div>`;
+
+                currentDate.setUTCDate(currentDate.getUTCDate() + 1);
             }
 
-            // Handle Pre-Event Availability Checkbox for Edit Mode
+            // Pre-event and profile access checkboxes
             let isPreEventChecked = staffData.eventStaffDetail?.preEventAvailability ? "checked" : "";
             let preEventAvailabilityCheckbox = `
-                <input type="checkbox" class="form-check-input" id="preEventChk_${eventStaffData.id}"
-                    name="SingleEventManagement.EventStaffDetailList[${rowIndex}].PreEventAvailability"
-                    value="true" ${isPreEventChecked}>
-            `;
+            <input type="checkbox" class="form-check-input" id="preEventChk_${eventStaffData.id}"
+                   name="SingleEventManagement.EventStaffDetailList[${rowIndex}].PreEventAvailability"
+                   value="true" ${isPreEventChecked}>
+        `;
 
-            let isProfileButtonAccesChecked = staffData.eventStaffDetail?.profileButtonAccess ? "checked" : "";
-            let profileButtonAccesCheckbox = `
-                    <input type="checkbox" class="form-check-input" id="profileButtonAccessChk_${eventStaffData.id}"
-                        name="SingleEventManagement.EventStaffDetailList[${rowIndex}].ProfileButtonAccess"
-                            value="true" ${isProfileButtonAccesChecked}>
-                `;
+            let isProfileButtonAccessChecked = staffData.eventStaffDetail?.profileButtonAccess ? "checked" : "";
+            let profileButtonAccessCheckbox = `
+            <input type="checkbox" class="form-check-input" id="profileButtonAccessChk_${eventStaffData.id}"
+                   name="SingleEventManagement.EventStaffDetailList[${rowIndex}].ProfileButtonAccess"
+                   value="true" ${isProfileButtonAccessChecked}>
+        `;
 
             // Filter roles based on CAC status
-            let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole");
-            filteredRoles = filteredRoles.filter(role => {
-                if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") {
-                    return false;
-                }
-                if (eventStaffData.staffCAC === "true" && role.name === "NonCAC'd Admin") {
-                    return false;
-                }
+            let filteredRoles = rolesData.filter(role => role.category === "EventManagementRole").filter(role => {
+                if (eventStaffData.staffCAC === "false" && role.name === "CAC'd Admin") return false;
+                if (eventStaffData.staffCAC === "true" && role.name === "NonCAC'd Admin") return false;
                 return true;
             });
 
             // Create role dropdown options
             let roleOptions = filteredRoles.map(role => {
-                let isSelected = false;
-
-                // Handle edit mode: Check if this role is in eventWiseStaffRoleList
-                if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffRoleList) {
-                    isSelected = staffData.eventStaffDetail.eventWiseStaffRoleList.some(r => r.roleId === role.id);
-                }
-
+                let isSelected = staffData.eventStaffDetail?.eventWiseStaffRoleList?.some(r => r.roleId === role.id) || false;
                 return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
             }).join("");
 
             let secondaryRoleOptions = filteredRoles.map(role => {
-                let isSelected = false;
-
-                // Handle edit mode: Check if this role is in eventWiseStaffRoleList
-                if (staffData.eventStaffDetail && staffData.eventStaffDetail.eventWiseStaffSecondaryRoleList) {
-                    isSelected = staffData.eventStaffDetail.eventWiseStaffSecondaryRoleList.some(r => r.roleId === role.id);
-                }
-
+                let isSelected = staffData.eventStaffDetail?.eventWiseStaffSecondaryRoleList?.some(r => r.roleId === role.id) || false;
                 return `<option value="${role.id}" ${isSelected ? "selected" : ""}>${role.name}</option>`;
             }).join("");
 
             let selectedStation = staffData.eventStaffDetail?.selectedStation || "";
-            let selectedSecondaryStation = staffData.eventStaffDetail?.selectedSecondaryStationList || "";
+            let selectedSecondaryStation = staffData.eventStaffDetail?.selectedSecondaryStationList || [];
 
-
+            // Station dropdowns
             let stationDropdown = `
-            <select id="${stationDropdownId}"
-                    name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedStation"
-                    class="form-select text-center station-dropdown"
-                    style="width: 230px;">
-                <option value="" disabled ${selectedStation === "" ? "selected" : ""}>Select Primary Station</option>
-                ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
-                    `<option value="${service}" ${service === selectedStation ? "selected" : ""}>${service}</option>`
-                ).join("")}
-            </select>`;
+          <select id="${stationDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedStation"
+                  class="form-select text-center station-dropdown" style="width: 230px;">
+              <option value="" disabled ${selectedStation === "" ? "selected" : ""}>Select Primary Station</option>
+              ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
+                `<option value="${service}" ${service === selectedStation ? "selected" : ""}>${service}</option>`).join("")}
+          </select>`;
 
-            let secondarystationDropdown = `
-      <select id="${secondarystationDropdownId}"
-              name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryStationList"
-              class="form-select text-center secondary-station-dropdown"
-              style="width: 230px;"
-              multiple>
-          ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
-                `<option value="${service}" ${selectedSecondaryStation.includes(service) ? "selected" : ""}>${service}</option>`
-            ).join("")}
-      </select>`;
+            let secondaryStationDropdown = `
+          <select id="${secondarystationDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryStationList"
+                  class="form-select text-center secondary-station-dropdown" style="width: 230px;" multiple>
+              ${[...allEventServices, "DOEHRS Entry", "Check-In/Out"].map(service =>
+                `<option value="${service}" ${selectedSecondaryStation.includes(service) ? "selected" : ""}>${service}</option>`).join("")}
+          </select>`;
 
-            $(document).on('change', `#${stationDropdownId}`, function () {
-                updateStaffRequirementTable();
-            });
+            $(document).on('change', `#${stationDropdownId}`, function () { updateStaffRequirementTable(); });
 
-            let roleDropdown = `
-                <select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles"
-                        class="form-control role-multi-select" multiple>
-                    ${roleOptions}
-                </select>`;
-
-                let secondaryroleDropdown = `
-                    <select id="${secondaryroleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryRoles"
-                        class="form-control secondary-role-multi-select" multiple>
-                        ${secondaryRoleOptions}
-                </select>`;
+            // Role dropdowns
+            let roleDropdown = `<select id="${roleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedRoles"
+                                 class="form-control role-multi-select" multiple>${roleOptions}</select>`;
+            let secondaryRoleDropdown = `<select id="${secondaryroleDropdownId}" name="SingleEventManagement.EventStaffDetailList[${rowIndex}].SelectedSecondaryRoles"
+                                          class="form-control secondary-role-multi-select" multiple>${secondaryRoleOptions}</select>`;
 
             // Add row to DataTable
             selectedTable.row.add({
-                staffID: `${eventStaffData.staffID} 
-                          <input type="hidden" class="eventStaffIdHidden" 
-                            name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
-                            value="${eventStaffData.id}" />`,
+                staffID: `${eventStaffData.staffID}
+                      <input type="hidden" class="eventStaffIdHidden"
+                        name="SingleEventManagement.EventStaffDetailList[${rowIndex}].EventStaffId"
+                        value="${eventStaffData.id}" />`,
                 staffLastName: eventStaffData.staffLastName,
                 staffFirstName: eventStaffData.staffFirstName,
                 attributes: eventStaffData.attributes,
@@ -3074,27 +3060,27 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 licenseStateAndTypes: eventStaffData.licenseStateAndTypes,
                 primaryState: eventStaffData.primaryState,
                 primaryCity: eventStaffData.primaryCity,
-                profileButtonAccess: profileButtonAccesCheckbox,
+                profileButtonAccess: profileButtonAccessCheckbox,
                 primaryZip: eventStaffData.primaryZip,
                 status: eventStaffData.status,
-                id: eventStaffData.id, 
+                id: eventStaffData.id,
                 countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
-                availability: availabilityCheckboxes,  // Add checkboxes for availability
-                preEventAvailability: preEventAvailabilityCheckbox, // Fix: Ensure it is checked in edit mode
+                availability: availabilityCheckboxes,
+                preEventAvailability: preEventAvailabilityCheckbox,
                 station: stationDropdown,
                 additionalroles: roleDropdown,
-                secondarystation: secondarystationDropdown,
-                secondaryadditionalroles: secondaryroleDropdown, 
+                secondarystation: secondaryStationDropdown,
+                secondaryadditionalroles: secondaryRoleDropdown,
                 action: `<button type="button" class="btn btn-danger btn-sm remove-staff-btn"
-                          data-staffid="${eventStaffData.id}">Remove</button>`
+                        data-staffid="${eventStaffData.id}">Remove</button>`
             }).draw();
 
-            // Initialize select2 for the new dropdown
+            // Initialize select2 for new dropdowns
             $(`#${roleDropdownId}`).select2();
             $(`#${secondaryroleDropdownId}`).select2();
             $(`#${secondarystationDropdownId}`).select2();
-            
         }
+
 
         function updateStaffRequirementTable() {
             let staffRequirementTable = $('#StaffRequirementTable').DataTable();
@@ -4175,15 +4161,25 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             const mobDateContainer = $("#MOBDateContainer");
             const mobDateInput = $("#EventMobDate");
 
+            // Get Flatpickr instance safely
+            const mobDatePicker = mobDateInput[0]?._flatpickr;
+
             if (isDeployingSelected) {
                 mobDateContainer.show();
                 mobDateInput.prop("required", true);
             } else {
                 mobDateContainer.hide();
                 mobDateInput.prop("required", false);
-                mobDateInput.val("");
+
+                // Properly clear Flatpickr value
+                if (mobDatePicker) {
+                    mobDatePicker.clear();
+                } else {
+                    mobDateInput.val(""); // fallback safety
+                }
             }
         }
+
 
         $("#Deploying, #NonDeploying").change(function () {
             toggleMobDate();
@@ -4198,19 +4194,32 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
         $('#EventStartDate, #EventEndDate').change(function () {
-            var startDate = $('#EventStartDate').val();
-            var endDate = $('#EventEndDate').val();
+            // Read Date objects from Flatpickr
+            var startPicker = $('#EventStartDate')[0]._flatpickr;
+            var endPicker = $('#EventEndDate')[0]._flatpickr;
 
+            var startDate = startPicker.selectedDates[0];
+            var endDate = endPicker.selectedDates[0];
+
+            // Only generate controls if both dates exist
             if (startDate && endDate) {
                 generateControlsForDateRange(startDate, endDate);
             }
         });
 
-        var startDate = $('#EventStartDate').val();
-        var endDate = $('#EventEndDate').val();
-        if (startDate && endDate) {
-            generateControlsForDateRange(startDate, endDate);
-        }
+
+        // Read Date objects from Flatpickr
+        // var startPicker = $('#EventStartDate')[0]._flatpickr;
+        // var endPicker = $('#EventEndDate')[0]._flatpickr;
+
+        // var startDate = startPicker.selectedDates[0];
+        // var endDate = endPicker.selectedDates[0];
+
+        // // Call function only if both dates exist
+        // if (startDate && endDate) {
+        //     generateControlsForDateRange(startDate, endDate);
+        // }
+
 
 
         function validateServiceMemberPercentages() {
@@ -4533,12 +4542,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
 
                         if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
+                            startDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventStartDate));
+                            endDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventEndDate));
 
-                            let eventStartDate = getDateOnlyGlobal(combinedData.eventManagement.eventStartDate);
-                            $('#EventStartDate').val(eventStartDate);
-
-                            let eventEndDate = getDateOnlyGlobal(combinedData.eventManagement.eventEndDate);
-                            $('#EventEndDate').val(eventEndDate);
+                            let eventStartDate = startDatePicker.selectedDates[0];
+                            let eventEndDate = endDatePicker.selectedDates[0];
 
                             generateControlsForDateRange(
                                 eventStartDate,
@@ -4554,8 +4562,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         if (combinedData.eventManagement.mobDate) {
-                            let eventMobDate = getDateOnlyGlobal(combinedData.eventManagement.mobDate);
-                            $('#EventMobDate').val(eventMobDate);
+                            mobDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.mobDate));
                         }
 
                         $('#RegardingSites').val(combinedData.eventManagement.regardingSites);
@@ -4610,20 +4617,17 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#ShippingInstruction').val(combinedData.eventManagement.shippingPocInstruction);
 
                         if (combinedData.eventManagement.shippingPocPickupDate) {
-                            let shippingPocPickupDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocPickupDate);
-                            $('#PickupDate').val(shippingPocPickupDate);
+                            pickupDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.shippingPocPickupDate));
                         }
 
                         $('#PickupTime').val(combinedData.eventManagement.shippingPocPickupTime);
 
                         if (combinedData.eventManagement.shippingPocDeliveryFromDate) {
-                            let shippingPocDeliveryFromDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryFromDate);
-                            $('#DeliveryFromDate').val(shippingPocDeliveryFromDate);
+                            deliveryFromDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryFromDate));
                         }
 
                         if (combinedData.eventManagement.shippingPocDeliveryToDate) {
-                            let shippingPocDeliveryToDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryToDate);
-                            $('#DeliveryToDate').val(shippingPocDeliveryToDate);
+                            deliveryToDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.shippingPocDeliveryToDate));
                         }
 
 
@@ -4662,9 +4666,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         if (combinedData.eventManagement.shippingPocEventSetupDate) {
-                            
-                            let shippingPocEventSetupDate = getDateOnlyGlobal(combinedData.eventManagement.shippingPocEventSetupDate);
-                            $('#ShippingPocEventSetupDate').val(shippingPocEventSetupDate);
+                            shippingPocEventSetupDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.shippingPocEventSetupDate));
                         }
 
                         $('#ShippingPocEventSetupTime').val(combinedData.eventManagement.shippingPocEventSetupTime);
@@ -4897,28 +4899,38 @@ function populateFilterRolesAndLicenseTypeDropdown() {
     }
 
     function generateControlsForDateRange(startDate, endDate, existingData = []) {
-        // Helper: parse YYYY-MM-DD string as UTC date
-        function parseDateUTC(dateStr) {
-            const [y, m, d] = dateStr.split('-').map(Number);
-            return new Date(Date.UTC(y, m - 1, d));
-        }
+        // // Helper: parse YYYY-MM-DD string as UTC date
+        // function parseDateUTC(dateStr) {
+        //     const [y, m, d] = dateStr.split('-').map(Number);
+        //     return new Date(Date.UTC(y, m - 1, d));
+        // }
 
-        // Helper: format UTC date to YYYY-MM-DD for comparison or display if needed
-        function formatDateUTC(date) {
-            return date.toISOString().slice(0, 10);
-        }
+        // // Helper: format UTC date to YYYY-MM-DD for comparison or display if needed
+        // function formatDateUTC(date) {
+        //     return date.toISOString().slice(0, 10);
+        // }
+        if (!startDate || !endDate) return;
 
         // Parse dates safely in UTC
-        var date1 = parseDateUTC(startDate);
-        var date2 = parseDateUTC(endDate);
+        var date1 = new Date(Date.UTC(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            startDate.getDate()
+        ));
+
+        var date2 = new Date(Date.UTC(
+            endDate.getFullYear(),
+            endDate.getMonth(),
+            endDate.getDate()
+        ));
 
         // Calculate total days (inclusive)
         var dayCount = Math.floor((date2 - date1) / (1000 * 3600 * 24)) + 1;
 
         if (dayCount > 14) {
             alert("Maximum 14 days are allowed");
-            $('#EventStartDate').val('');
-            $('#EventEndDate').val('');
+            startDatePicker.clear();
+            endDatePicker.clear();
             $('#dynamicControlsContainer').empty();
             return;
         }

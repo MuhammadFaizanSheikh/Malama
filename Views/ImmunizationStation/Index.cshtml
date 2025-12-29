@@ -6,6 +6,8 @@
     var selectedEventId = ViewBag.EventId;
 }
 
+<script src="~/js/Common/Methods.js"></script>
+
 <style>
     #page-heading {
         text-align: center;
@@ -181,7 +183,7 @@
             </div>
             <div class="col-md-3">
                 <label for="filterDob" class="form-label">DOB</label>
-                <input type="date" id="filterDob" class="form-control" placeholder="Date of Birth">
+                    <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
             </div>
             <div class="col-md-3">
                 <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
@@ -248,88 +250,88 @@
 </div>
 }
 <script>
-    $('#searchStaffBtn').on('click', function () {
-        var barcode = $('#filterBarcode').val().trim().toLowerCase();
-        var fullName = $('#filterFullName').val().trim().toLowerCase();
-        var dodId = $('#filterDodId').val().trim();
-        var dob = $('#filterDob').val();
-        var last4Ssn = $('#filterLast4Ssn').val().trim();
-        var status = $('#filterStatus').val().trim().toLowerCase();
+    $(document).ready(function () {
+        let filterDobPicker = flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
 
-        var contractsTable = $('#contractsTable').DataTable();
+        $('#searchStaffBtn').on('click', function () {
 
-        // Clear previous searches
-        contractsTable.columns().search('');
+            var barcode = $('#filterBarcode').val().trim().toLowerCase();
+            var fullName = $('#filterFullName').val().trim().toLowerCase();
+            var dodId = $('#filterDodId').val().trim();
+            var last4Ssn = $('#filterLast4Ssn').val().trim();
+            var status = $('#filterStatus').val().trim().toLowerCase();
 
-        if (barcode) {
-            contractsTable.column(8).search(barcode, true, false, true);
+            // 🔹 Get Flatpickr instance
+            let dobPicker = $('#filterDob')[0]?._flatpickr;
+            let dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            var contractsTable = $('#contractsTable').DataTable();
+
+            // Clear previous searches
+            contractsTable.columns().search('');
+
+            if (barcode) {
+                contractsTable.column(8).search(barcode, true, false, true);
+            }
+
+            if (fullName) {
+                const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                contractsTable.column(3).search(escapedFullName, true, false, true);
+            }
+
+            if (dodId) {
+                contractsTable.column(5).search('^' + dodId + '$', true, false);
+            }
+
+            if (dobDate) {
+                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+                const day = dobDate.getDate().toString().padStart(2, '0');
+                const year = dobDate.getFullYear();
+
+                // Format as MM/DD/YYYY (matches table display)
+                const dobFormatted = `${month}/${day}/${year}`;
+
+                // exact match only
+                contractsTable
+                    .column(7)
+                    .search('^' + dobFormatted + '$', true, false);
+            }
+
+
+            if (last4Ssn) {
+                contractsTable.column(4).search('^' + last4Ssn + '$', true, false);
+            }
+
+            if (status) {
+                contractsTable.column(1).search(status, true, false, true);
+            }
+
+            contractsTable.draw();
+        });
+
+        function resetAllFilters() {
+
+
+            // Clear all input and select fields
+            $('#filterBarcode').val('');
+            $('#filterFullName').val('');
+            $('#filterDodId').val('');
+            filterDobPicker.clear();
+            $('#filterLast4Ssn').val('');
+            $('#filterStatus').val('');
+            var previewTable = $('#contractsTable').DataTable();
+            previewTable.columns().search('');
+            previewTable.search('').draw();
+
         }
+        // Reset button
+        document.getElementById("resetFiltersBtn").addEventListener("click", function () {
+            resetAllFilters();
+        });
 
-        if (fullName) {
-            const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            contractsTable.column(3).search(escapedFullName, true, false, true);
+        function allowOnlyDigits(input) {
+            // Allow only digits
+            input.value = input.value.replace(/\D/g, '');
         }
-
-        if (dodId) {
-            contractsTable.column(5).search('^' + dodId + '$', true, false);
-        }
-
-        if (dob) {
-            contractsTable.column(7).search(formatDateToMMDDYYYY(dob));
-        }
-
-        if (last4Ssn) {
-            contractsTable.column(4).search('^' + last4Ssn + '$', true, false);
-        }
-
-        if (status) {
-            contractsTable.column(1).search(status, true, false, true);
-        }
-
-        contractsTable.draw();
-        // $('#contractsTable').DataTable().destroy();
-
-        // var contractsTable = $('#contractsTable').DataTable({
-        //     searching: false,   // no default search box
-        //     paging: false,       // keep pagination
-        //     info: false,         // keep "Showing 1 to N of X entries"
-        //     lengthChange: false,  // show "Show 10/25/50" dropdown (optional)
-        //         columnDefs: [
-        //         { className: "text-center", targets: "_all" }  // all columns centered
-        //     ],
-        //     ordering: false
-        // });
-
     });
-
-    function formatDateToMMDDYYYY(dateString) {
-        const [year, month, day] = dateString.split('-'); // Split the yyyy/mm/dd format
-        return `${month}/${day}/${year}`; // Return as mm/dd/yyyy
-    }
-
-    function resetAllFilters() {
-        
-
-        // Clear all input and select fields
-        $('#filterBarcode').val('');
-        $('#filterFullName').val('');
-        $('#filterDodId').val('');
-        $('#filterDob').val('');
-        $('#filterLast4Ssn').val('');
-        $('#filterStatus').val('');
-        var previewTable = $('#contractsTable').DataTable();
-        previewTable.columns().search('');
-        previewTable.search('').draw();
-        
-    }
-    // Reset button
-    document.getElementById("resetFiltersBtn").addEventListener("click", function () {
-        resetAllFilters();
-    });
-
-    function allowOnlyDigits(input) {
-        // Allow only digits
-        input.value = input.value.replace(/\D/g, '');
-    }
-
 </script>

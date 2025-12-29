@@ -235,12 +235,14 @@
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Immunization Entry Date</label>
                     <input asp-for="SingleImmunizationVaccineInfo.EventDate"
-                           class="form-control"
-                           type="date"
+                           type="text"
+                           class="form-control flatpickr-event-date"
+                           placeholder="MM/DD/YYYY"
                            value="@(Model.SingleImmunizationVaccineInfo.EventDate != DateTime.MinValue
-               ? Model.SingleImmunizationVaccineInfo.EventDate.ToString("yyyy-MM-dd")
-               : string.Empty)"
+            ? Model.SingleImmunizationVaccineInfo.EventDate.ToString("yyyy-MM-dd")
+            : string.Empty)"
                            required />
+
 
                     <span asp-validation-for="SingleImmunizationVaccineInfo.EventDate" class="text-danger"></span>
                 </div>
@@ -329,11 +331,13 @@
                         <!-- Expiration -->
                         <div class="col-md-3">
                             <label class="form-label">Expiration</label>
-                            <input type="date"
-                                   name="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
-                                   value="@(lots[i].Expiration != default(DateTime) ? lots[i].Expiration.ToString("yyyy-MM-dd") : string.Empty)"
-                                   class="form-control"
-                                   required />
+                            <input type="text"
+                            name="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
+                            value="@(lots[i].Expiration != default(DateTime) ? lots[i].Expiration.ToString("yyyy-MM-dd") : string.Empty)"
+                            class="form-control lot-expiration-input"
+                            placeholder="MM/DD/YYYY"
+                            required />
+
                             <span class="text-danger field-validation-valid"
                                   data-valmsg-for="SingleImmunizationVaccineInfo.Lots[@i].Expiration"
                                   data-valmsg-replace="true"></span>
@@ -390,7 +394,23 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
+        const immEntryDatePicker = flatpickr(".flatpickr-event-date", {
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+        });
+
+        initLotExpirationPickers();
+
+        function initLotExpirationPickers(context) {
+            const scope = context || document;
         
+            scope.querySelectorAll(".lot-expiration-input").forEach(input => {
+                if (input._flatpickr) return; // prevent double init
+        
+                flatpickr(input, {
+                    altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+                });
+            });
+        }
 
         // --- Back button ---
         const backBtn = document.getElementById("backToTableBtn");
@@ -441,7 +461,8 @@
                     <div class="col-md-3">
                         <label class="form-label">Expiration</label>
                         <input name="SingleImmunizationVaccineInfo.Lots[${nextIndex}].Expiration"
-                               type="date" class="form-control" required />
+                               type="text" class="form-control lot-expiration-input"
+                               placeholder="MM/DD/YYYY" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Select Container</label>
@@ -456,6 +477,7 @@
                     </div>
                 `;
                 lotsContainer.appendChild(row);
+                initLotExpirationPickers(row);
             });
         }
 

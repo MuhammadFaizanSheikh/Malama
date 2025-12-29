@@ -162,7 +162,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="filterContainerStartDate" class="form-label">Container Start Date</label>
-                    <input type="date" id="filterContainerStartDate" class="form-control">
+                    <input type="text" id="filterContainerStartDate" class="form-control" placeholder="MM/DD/YYYY">
                 </div>
                 <div class="col-12 text-center mt-3">
                     <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
@@ -211,10 +211,17 @@ else if (!string.IsNullOrEmpty(selectedEventId))
 }
 
 <script>
+    $(document).ready(function () {
+    const filterContainerStartDatePicker = flatpickr("#filterContainerStartDate", {
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
+        });
+
         $('#searchStaffBtn').on('click', function () {
         var containerName = $('#filterContainerName').val().trim().toLowerCase();
         var containerType = $('#filterContainerType').val().trim().toLowerCase();
-        var containerStartDate = $('#filterContainerStartDate').val();
+        debugger;
+        let containerStartDatePicker = $('#filterContainerStartDate')[0]?._flatpickr;
+        let containerStartDate = containerStartDatePicker?.selectedDates?.[0] || null;
 
         var contractsTable = $('#contractsTable').DataTable();
 
@@ -233,12 +240,20 @@ else if (!string.IsNullOrEmpty(selectedEventId))
             const escapedContainerType = containerType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             contractsTable.column(2).search(escapedContainerType, true, false, true);
         }
-
+        debugger;
         if (containerStartDate) {
-            // Convert yyyy-MM-dd to MM/dd/yyyy for matching table display
-            const formattedDate = formatDateToMMDDYYYY(containerStartDate);
-            contractsTable.column(3).search(formattedDate, true, false, true);
-        }
+                const month = (containerStartDate.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+                const day = containerStartDate.getDate().toString().padStart(2, '0');
+                const year = containerStartDate.getFullYear();
+
+                // Format as MM/DD/YYYY (matches table display)
+                const containerStartDateFormatted = `${month}/${day}/${year}`;
+
+                // exact match only
+                contractsTable
+                    .column(3)
+                    .search('^' + containerStartDateFormatted + '$', true, false);
+            }
 
         contractsTable.draw();
     });
@@ -247,17 +262,12 @@ else if (!string.IsNullOrEmpty(selectedEventId))
     $('#resetFiltersBtn').on('click', function () {
         $('#filterContainerName').val('');
         $('#filterContainerType').val('');
-        $('#filterContainerStartDate').val('');
+        let flatpickrInstance = $('#filterContainerStartDate')[0]?._flatpickr;
+        if(flatpickrInstance) flatpickrInstance.clear();
 
         var contractsTable = $('#contractsTable').DataTable();
         contractsTable.columns().search('');
         contractsTable.search('').draw();
     });
-
-
-    function formatDateToMMDDYYYY(dateString) {
-        const [year, month, day] = dateString.split('-'); // Split the yyyy/mm/dd format
-        return `${month}/${day}/${year}`; // Return as mm/dd/yyyy
-    }
-
+    });
 </script>

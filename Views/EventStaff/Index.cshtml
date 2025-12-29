@@ -1796,7 +1796,7 @@
 
                     $('#StaffID').val(eventStaff.staffID);
 
-                    startDatePicker.setDate(getDateOnlyGlobal(eventStaff.startDate));
+                    startDatePicker.setDate(getDateOnlyGlobal(eventStaff.startDate), true);
 
                     $('#StaffStatus').val(eventStaff.staffStatus);
                     $('#StaffLastName').val(eventStaff.staffLastName);
@@ -1804,7 +1804,7 @@
                     $('#StaffMiddleInitial').val(eventStaff.staffMiddleInitial);
                     $('#StaffSSN').val(eventStaff.staffSSN);
 
-                    staffDOBPicker.setDate(getDateOnlyGlobal(eventStaff.staffDOB));
+                    staffDOBPicker.setDate(getDateOnlyGlobal(eventStaff.staffDOB), true);
 
                     if (eventStaff.eventOnCallStaff === 'true') {
                         $('#eventOnCallYes').prop('checked', true).trigger('change');
