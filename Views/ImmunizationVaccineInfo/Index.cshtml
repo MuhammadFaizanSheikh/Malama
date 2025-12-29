@@ -414,17 +414,47 @@
 
         // --- Back button ---
         const backBtn = document.getElementById("backToTableBtn");
+
         if (backBtn) {
-            backBtn.addEventListener("click", function () {
+            backBtn.addEventListener("click", async function (e) {
+                e.preventDefault();
+        
+                const confirmed = await showYesNoModal(
+                    "Are you sure you want to go back to main screen without saving changes?"
+                );
+        
+                if (!confirmed) {
+                    return;
+                }
+        
                 const tableDiv = document.getElementById("vaccineTableDiv");
                 const formDiv = document.getElementById("vaccineFormDiv");
                 const inventoryBtn = document.getElementById("addInventoryBtn");
-
+        
                 if (formDiv) formDiv.style.display = "none";
                 if (tableDiv) tableDiv.style.display = "block";
                 if (inventoryBtn) inventoryBtn.style.display = "block";
+
+                const url = backBtn.getAttribute("href"); // <-- get href from anchor
+                if (url) {
+                    window.location.href = url;
+                }
             });
         }
+
+        $('#resetBtn').on('click', async function (e) {
+            e.preventDefault();
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to reset all fields?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            $(this).closest('form')[0].reset();
+        });
 
         // --- Add Lot button ---
         const addLotBtn = document.getElementById("addLotBtn");

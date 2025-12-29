@@ -1,0 +1,71 @@
+﻿<div class="modal fade" id="yesNoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-custom-width">
+        <div class="modal-content rounded-4 shadow-lg border-0">
+
+            <!-- Custom Colored Header -->
+            <div class="modal-header custom-header rounded-top-4">
+                <h5 class="modal-title w-100 text-center" id="yesNoModalTitle">
+                    <i class="bi bi-question-circle-fill me-2"></i>
+                    Confirmation
+                </h5>
+            </div>
+
+            <!-- Message Body -->
+            <div class="modal-body text-center p-4" id="yesNoModalMessage">
+                Are you sure you want to proceed?
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <button type="button" class="btn custom-yes-btn px-4 rounded-pill" id="yesBtn">Yes</button>
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" id="noBtn">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .modal-custom-width {
+        max-width: 400px;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .modal-content {
+        transition: all 0.3s ease;
+    }
+
+    /* Custom header color */
+    .custom-header,
+    .custom-header .modal-title {
+        background-color: rgba(80, 90, 201, 1);
+        border-bottom: none;
+        color: white !important; /* force override */
+    }
+
+
+    .custom-yes-btn {
+        background-color: rgba(80, 90, 201, 1); /* button background */
+        color: white; /* text color */
+        border: 1px solid rgba(80, 90, 201, 1); /* border color */
+    }
+
+        .custom-yes-btn:hover {
+            background-color: rgba(80, 90, 201, 0.8); /* hover effect */
+            color: white; /* keep text white */
+            border-color: rgba(80, 90, 201, 1);
+        }
+
+    /* Optional transition effect */
+    .modal.fade .modal-dialog {
+        transform: translateY(-20px);
+        transition: transform 0.3s ease-out;
+    }
+
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+
+
+</style>

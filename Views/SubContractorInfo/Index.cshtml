@@ -946,11 +946,31 @@
 
 
 
- $('#backToTableBtn').click(function () {
+        $('#backToTableBtn').on('click', async function () {
+            const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
             $('.card-body').hide();
             $('#datatableWrapper').show();
             $('#addContractBtn').show();
-            
+        });
+
+        $('#resetBtn').on('click', async function (e) {
+            e.preventDefault();
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to reset all fields?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            $(this).closest('form')[0].reset();
         });
 
         function validateCompanyMainName() {

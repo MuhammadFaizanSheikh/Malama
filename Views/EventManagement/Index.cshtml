@@ -3964,13 +3964,35 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $("#submitBtn").data("section", 1);
         });
 
-        $('#backToTableBtn').click(function () {
+        $('#backToTableBtn').on('click', async function () {
+
+            const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
             $('.card-body').hide();
             $('#datatableWrapper').show();
             $('#addContractBtn').show();
             $("#submitBtn").data("section", 1);
             $("#updateBtn").data("section", 1);
         });
+
+        $('#resetBtn').on('click', async function (e) {
+            e.preventDefault();
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to reset all fields?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            $(this).closest('form')[0].reset();
+        });
+
 
         $('#contractsTable').DataTable({
             "paging": true,

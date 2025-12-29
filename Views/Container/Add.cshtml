@@ -184,7 +184,7 @@
             <i class="bi bi-check-circle"></i> Submit
         </button>
 
-        <a asp-action="Index" class="btn btn-secondary btn-lg">
+        <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
             <i class="bi bi-arrow-left"></i> Back
         </a>
 
@@ -197,6 +197,22 @@
             altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false
         });
         onContainerTypeChange();
+
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            window.location.href = url;
+        });
 
         function onContainerTypeChange() {
         const sel = document.getElementById('containerTypeSelect');
