@@ -6,6 +6,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IUserEventMappingService
     {
         Task<bool> IsUserAssignedToEventAsync(string userId, long eventId);
+        Task<List<int>> GetEventsAgainstUserId(string userId);
     }
 
 }

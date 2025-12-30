@@ -13,16 +13,18 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserEventMappingService _userEventMappingService;
         private readonly ILogger<AccountRegistrationService> _logger;
         private const string CLASSNAME = "AccountRegistrationService";
 
         public AccountRegistrationService(ILogger<AccountRegistrationService> logger, IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager)
+            RoleManager<ApplicationRole> roleManager, IUserEventMappingService userEventMappingService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
+            _userEventMappingService = userEventMappingService;
             _logger = logger;
         }
 
@@ -223,14 +225,42 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<ResponseDto> GetUserDetailsAsync(string userId)
         {
+            const string methodName = nameof(GetUserDetailsAsync);
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, Fetching user details for UserId : {UserId}",
+                CLASSNAME, methodName, userId
+            );
+
             try
             {
-                if (string.IsNullOrEmpty(userId))
-                    return new ResponseDto { Success = false, Message = "User ID cannot be null or empty." };
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, UserId is null or empty",
+                        CLASSNAME, methodName
+                    );
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "User ID cannot be null or empty."
+                    };
+                }
 
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
-                    return new ResponseDto { Success = false, Message = "User not found." };
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, User not found for UserId : {UserId}",
+                        CLASSNAME, methodName, userId
+                    );
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found."
+                    };
+                }
 
                 var roleNames = await _userManager.GetRolesAsync(user);
 
@@ -240,11 +270,29 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .Select(r => new { r.Id, r.Name })
                     .ToList();
 
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Retrieved {RoleCount} roles for UserId : {UserId}",
+                    CLASSNAME, methodName, roles.Count, userId
+                );
+
+                var eventIds = await _userEventMappingService.GetEventsAgainstUserId(userId);
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Retrieved {EventCount} events for UserId : {UserId}",
+                    CLASSNAME, methodName, eventIds.Count, userId
+                );
+
                 var userDto = new
                 {
                     Email = user.Email,
-                    Roles = roles
+                    Roles = roles,
+                    EventIds = eventIds
                 };
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Successfully fetched user details for UserId : {UserId}",
+                    CLASSNAME, methodName, userId
+                );
 
                 return new ResponseDto
                 {
@@ -253,11 +301,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                     Data = userDto
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new ResponseDto { Success = false, Message = "An error occurred while fetching user details." };
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Error occurred while fetching user details for UserId : {UserId}",
+                    CLASSNAME, methodName, userId
+                );
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while fetching user details."
+                };
             }
         }
+
 
         public async Task<ResponseDto> DeleteUserAsync(string userId)
         {

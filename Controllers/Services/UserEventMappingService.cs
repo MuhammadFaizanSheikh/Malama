@@ -44,6 +44,40 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw;
             }
         }
+
+        public async Task<List<int>> GetEventsAgainstUserId(string userId)
+        {
+            const string methodName = nameof(GetEventsAgainstUserId);
+            _logger.LogInformation("{ClassName}, {MethodName}, Getting events against UserId : {userId}",
+                CLASSNAME, methodName, userId);
+
+            try
+            {
+                var eventIds = await _unitOfWork.UserEventMapping.FindForSearching(x => x.UserId == userId)
+                .Select(x => x.EventId).ToListAsync();
+
+                if (!eventIds.Any())
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, No events found for UserId : {UserId}",
+                        CLASSNAME, methodName, userId
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {EventCount} events against UserId : {UserId}",
+                    CLASSNAME, methodName, eventIds.Count, userId);
+                }
+
+                return eventIds;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Failed to get events against UserId : {userId}",
+                    CLASSNAME, methodName, userId);
+                throw;
+            }
+        }
     }
 
 
