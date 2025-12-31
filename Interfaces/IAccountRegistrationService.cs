@@ -10,6 +10,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> GetUserDetailsAsync(string userId);
         Task<ResponseDto> DeleteUserAsync(string userId);
         Task<ResponseDto> UpdateUserAsync(UserUpdateDto updatedUser);
+        Task<ResponseDto> UpdateUserRolesAndEventsAsync(RegisterViewModel model);
     }
 
 }

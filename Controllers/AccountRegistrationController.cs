@@ -88,11 +88,18 @@ namespace ExcelFilesCompiler.Controllers
 
                 await LoadRolesAndEventsAsync((IEnumerable<SelectListItem>)response.Data, methodName);
 
-                response = await _registrationService.RegisterUserAsync(model);
+                if (!string.IsNullOrEmpty(model.Id))
+                {
+                    response = await _registrationService.UpdateUserRolesAndEventsAsync(model);
+                }
+                else
+                {
+                    response = await _registrationService.RegisterUserAsync(model);
+                }
 
                 if (response.Success)
                 {
-                    _logger.LogInformation("{ClassName}, {MethodName}, User registration successful for Email: {Email}", CLASSNAME, methodName, model.Email);
+                    _logger.LogInformation("{ClassName}, {MethodName}, User registration/updation successful for Email: {Email}", CLASSNAME, methodName, model.Email);
 
                     TempData["SuccessMessage"] = response.Message;
                     ModelState.Clear();

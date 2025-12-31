@@ -71,6 +71,18 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            try
+            {
+                await _dbSet.AddRangeAsync(entities);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while adding multiple records.", ex);
+            }
+        }
+
         public async Task AddAsync(T entity)
         {
             try
@@ -151,31 +163,6 @@ namespace ExcelFilesCompiler.Repositories.Services
                 throw new Exception("An error occurred while updating multiple records.", ex);
             }
         }
-
-        //public async Task<IEnumerable<T>> FindByColumnAsync<T>(string columnName, object value) where T : class
-        //{
-        //    try
-        //    {
-        //        // Dynamically access the column by its name using reflection
-        //        var parameter = Expression.Parameter(typeof(T), "e");
-        //        var property = Expression.Property(parameter, columnName);
-        //        var valueExpression = Expression.Constant(value);
-
-        //        // Create an expression to compare the column value to the provided value
-        //        var equalsExpression = Expression.Equal(property, valueExpression);
-
-        //        // Build the lambda expression for the Where clause
-        //        var lambda = Expression.Lambda<Func<T, bool>>(equalsExpression, parameter);
-
-        //        // Execute the query with the dynamically generated filter
-        //        return await _context.Set<T>().Where(lambda).ToListAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"An error occurred while searching for records with {columnName} = {value}.", ex);
-        //    }
-        //}
-
 
         public IEnumerable<T> FindByEventId(string eventId)
         {
@@ -282,6 +269,19 @@ namespace ExcelFilesCompiler.Repositories.Services
             if (entities.Any())
             {
                 _dbSet.RemoveRange(entities);
+            }
+        }
+
+
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            try
+            { 
+                _dbSet.RemoveRange(entities);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while adding multiple records.", ex);
             }
         }
     }

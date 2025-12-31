@@ -10,6 +10,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         Task<T?> GetByIdAsync(long id);
         Task<T?> GetByNullableIdAsync(long? id);
         void AddRange(IEnumerable<T> entities);
+        Task AddRangeAsync(IEnumerable<T> entities);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(long id);
@@ -24,6 +25,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         Task<T> FindAsync(Expression<Func<T, bool>> predicate);
         Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate);
         IQueryable<T> GetWithInclude(Expression<Func<T, bool>> predicate = null,params Expression<Func<T, object>>[] includes);
+        void RemoveRange(IEnumerable<T> entities);
 
     }
 }

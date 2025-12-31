@@ -35,16 +35,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var rolesList = await Task.Run(() =>
-                    _roleManager.Roles
-                        .Where(r => r.Category == AppConstants.RolesCategory.BasicRoles)
-                        .Select(r => new SelectListItem
-                        {
-                            Value = r.Id,
-                            Text = r.Name
-                        })
-                        .ToList()
-                );
+                var rolesList = await _roleManager.Roles
+                .Where(r => r.Category == AppConstants.RolesCategory.BasicRoles)
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Id,
+                    Text = r.Name
+                })
+                .ToListAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Roles retrieved successfully, Count: {Count}",
                     CLASSNAME, methodName, rolesList.Count);
@@ -119,7 +117,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     var allRoles = _roleManager.Roles.ToList();
                     var roleNames = allRoles
-                        .Where(r => model.SelectedRoles.Contains(r.Id))
+                        .Where(r => model.SelectedRoles.Contains(r.Name))
                         .Select(r => r.Name)
                         .ToList();
 
@@ -193,9 +191,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             await _userManager.DeleteAsync(user);
             return new ResponseDto { Success = false, Message = errorMessage };
         }
-
-
-
 
         public async Task<ResponseDto> GetUsersAsync()
         {
@@ -284,6 +279,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var userDto = new
                 {
+                    Id = user.Id,
                     Email = user.Email,
                     Roles = roles,
                     EventIds = eventIds
@@ -316,7 +312,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 };
             }
         }
-
 
         public async Task<ResponseDto> DeleteUserAsync(string userId)
         {
@@ -469,6 +464,211 @@ namespace ExcelFilesCompiler.Controllers.Services
         //        };
         //    }
         //}
+
+        public async Task<ResponseDto> UpdateUserRolesAndEventsAsync(RegisterViewModel model)
+        {
+            const string methodName = nameof(UpdateUserRolesAndEventsAsync);
+
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, Called. UserId: {UserId}",
+                CLASSNAME, methodName, model?.Id
+            );
+
+            try
+            {
+                if (model == null || string.IsNullOrWhiteSpace(model.Id))
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Invalid model or missing UserId",
+                        CLASSNAME, methodName
+                    );
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid user data."
+                    };
+                }
+
+                var user = await _userManager.FindByIdAsync(model.Id);
+                if (user == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, User not found. UserId: {UserId}",
+                        CLASSNAME, methodName, model.Id
+                    );
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found."
+                    };
+                }
+
+                // ============================
+                // ROLE UPDATE
+                // ============================
+                var currentRoles = await _userManager.GetRolesAsync(user);
+
+                var selectedRoles = model.SelectedRoles ?? new List<string>();
+
+                var rolesToAdd = selectedRoles.Except(currentRoles).ToList();
+                var rolesToRemove = currentRoles.Except(selectedRoles).ToList();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Role delta calculated. UserId: {UserId}, RolesToAdd: {RolesToAdd}, RolesToRemove: {RolesToRemove}",
+                    CLASSNAME, methodName,
+                    user.Id,
+                    string.Join(",", rolesToAdd),
+                    string.Join(",", rolesToRemove)
+                );
+
+                if (rolesToAdd.Any())
+                {
+                    await _userManager.AddToRolesAsync(user, rolesToAdd);
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Roles added successfully. UserId: {UserId}",
+                        CLASSNAME, methodName, user.Id
+                    );
+                }
+
+                if (rolesToRemove.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Roles removed successfully. UserId: {UserId}",
+                        CLASSNAME, methodName, user.Id
+                    );
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Role updates completed. UserId: {UserId}",
+                    CLASSNAME, methodName, user.Id
+                );
+
+                // ============================
+                // EVENT MANAGER HANDLING
+                // ============================
+                bool isEventManagerSelected = selectedRoles.Contains("Event Manager");
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Event Manager role selected: {IsEventManager}. UserId: {UserId}",
+                    CLASSNAME, methodName, isEventManagerSelected, user.Id
+                );
+
+                if (isEventManagerSelected)
+                {
+                    var selectedEventIds = model.SelectedEventIds ?? new List<int>();
+
+                    var existingMappings = await _unitOfWork.UserEventMapping
+                        .FindForSearching(x => x.UserId == user.Id)
+                        .ToListAsync();
+
+                    var existingEventIds = existingMappings
+                        .Select(x => x.EventId)
+                        .ToList();
+
+                    var eventMappingsToAdd = selectedEventIds
+                        .Except(existingEventIds)
+                        .Select(eventId => new UserEventMapping
+                        {
+                            UserId = user.Id,
+                            EventId = eventId
+                        })
+                        .ToList();
+
+                    var mappingsToRemove = existingMappings
+                        .Where(x => !selectedEventIds.Contains(x.EventId))
+                        .ToList();
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Event mapping delta calculated. UserId: {UserId}, ToAdd: {AddCount}, ToRemove: {RemoveCount}",
+                        CLASSNAME, methodName,
+                        user.Id,
+                        eventMappingsToAdd.Count,
+                        mappingsToRemove.Count
+                    );
+
+                    if (eventMappingsToAdd.Any())
+                    {
+                        await _unitOfWork.UserEventMapping.AddRangeAsync(eventMappingsToAdd);
+
+                        _logger.LogInformation(
+                            "{ClassName}, {MethodName}, Event mappings added successfully. UserId: {UserId}",
+                            CLASSNAME, methodName, user.Id
+                        );
+                    }
+
+                    if (mappingsToRemove.Any())
+                    {
+                        _unitOfWork.UserEventMapping.RemoveRange(mappingsToRemove);
+
+                        _logger.LogInformation(
+                            "{ClassName}, {MethodName}, Event mappings removed successfully. UserId: {UserId}",
+                            CLASSNAME, methodName, user.Id
+                        );
+                    }
+                }
+                else
+                {
+                    var mappings = await _unitOfWork.UserEventMapping
+                        .FindForSearching(x => x.UserId == user.Id)
+                        .ToListAsync();
+
+                    if (mappings.Any())
+                    {
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, Event Manager role removed. Deleting {Count} event mappings. UserId: {UserId}",
+                            CLASSNAME, methodName,
+                            mappings.Count,
+                            user.Id
+                        );
+
+                        _unitOfWork.UserEventMapping.RemoveRange(mappings);
+                    }
+                }
+
+                // ============================
+                // SAVE CHANGES
+                // ============================
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Saving changes to database. UserId: {UserId}",
+                    CLASSNAME, methodName, user.Id
+                );
+
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, User updated successfully. UserId: {UserId}",
+                    CLASSNAME, methodName, user.Id
+                );
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "User updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception occurred while updating user. UserId: {UserId}",
+                    CLASSNAME, methodName, model?.Id
+                );
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while updating the user."
+                };
+            }
+        }
+
+
+
 
         public async Task<ResponseDto> UpdateUserAsync(UserUpdateDto updatedUser)
         {

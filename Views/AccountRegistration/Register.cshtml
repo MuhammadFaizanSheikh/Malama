@@ -166,6 +166,8 @@
     <form method="post" asp-action="Register" id="registrationForm" autocomplete="off">
         @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
+        <input type="hidden" id="UserId" name="Id" value="" />
+
         <div class="form-group" id="emailGroup">
             <label asp-for="Email" class="font-weight-bold"></label>
             <input asp-for="Email" class="form-control" placeholder="Enter your email" autocomplete="off" required />
@@ -190,9 +192,7 @@
                        class="form-check-input role-checkbox"
                        id="role_@role.Value"
                        name="SelectedRoles"
-                       value="@role.Value"
-                       data-role-name="@role.Text" />
-
+                       value="@role.Text" /> <!-- Use Name here -->
                 <label class="form-check-label" for="role_@role.Value">
                     @role.Text
                 </label>
@@ -273,6 +273,7 @@
                     data: { userId: userId },
                     success: function (data) {
 
+                        $('#UserId').val(data.data.id);
                         $('#emailGroup input').val(data.data.email).prop('readonly', true);
                         $('#passwordGroup input').val("********").prop('readonly', true);
 
@@ -305,7 +306,8 @@
                             }
                         }
 
-                        $('#registerBtn').prop('disabled', true);
+                        // $('#registerBtn').prop('disabled', true);
+                        $('#registerBtn').text("Update User");
                         $('#deleteUserBtn').show();
                         $('#userDropdown').hide();
                         $('#generatePasswordBtn').prop('disabled', true);
@@ -316,10 +318,13 @@
                 });
 
             } else {
-                $('#deleteUserBtn').hide();
-
-                // Uncheck all checkboxes if no user is selected
+                $('#UserId').val('');
+                $('#emailGroup input').val('').prop('readonly', false);
+                $('#passwordGroup input').val('').prop('readonly', false);
+                $('#generatePasswordBtn').prop('disabled', false);
                 $('input[name="SelectedRoles"]').prop('checked', false);
+                toggleEventSelection(false);
+                $('#deleteUserBtn').hide();
             }
         });
 
@@ -389,20 +394,22 @@
 
         function toggleEventSelection(isVisible) {
             const el = $('#eventSelection');
-
+        
             el.toggleClass('d-none', !isVisible);
-
+        
             if (!isVisible) {
                 $('#SelectedEventIds').val(null).trigger('change');
             }
         }
-
+        
         $('.role-checkbox').on('change', function () {
-            if ($(this).data('role-name') === 'Event Manager') {
-                toggleEventSelection(this.checked);
-            }
+            // Check if ANY Event Manager checkbox is checked
+            const isEventManagerChecked = $('.role-checkbox')
+                .filter((_, checkbox) => $(checkbox).val() === 'Event Manager' && $(checkbox).is(':checked'))
+                .length > 0;
+        
+            toggleEventSelection(isEventManagerChecked);
         });
-
 
         document.getElementById("generatePasswordBtn").addEventListener("click", function () {
             const passwordField = document.querySelector("#passwordGroup input");
