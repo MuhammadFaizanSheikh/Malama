@@ -17,7 +17,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IAccountRegistrationService _registrationService;
         private readonly IEventManagementService _eventManagementService;
         private readonly ILogger<AccountRegistrationController> _logger;
-        private const string CLASSNAME = "ContractDetailsController";
+        private const string CLASSNAME = "AccountRegistrationController";
 
         public AccountRegistrationController(ILogger<AccountRegistrationController> logger, IEventManagementService eventManagementService, IAccountRegistrationService registrationService)
         {

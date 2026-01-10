@@ -247,6 +247,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public IQueryable<FileDataDto> GetEventDataByEventIdForLab(string eventId)
+        {
+            try
+            {
+                return fileUploaderRepository.GetWithInclude(
+                    f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
+                ).Include(f => f.LabStationRecord);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching FileData by EventId", ex);
+            }
+        }
+
 
         public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName)
         {

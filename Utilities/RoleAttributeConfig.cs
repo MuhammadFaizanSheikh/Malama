@@ -128,7 +128,7 @@
         },
 
             // Labs
-            ["Labs_View"] = new List<(string Role, string Attribute)>
+            ["LabStation_View"] = new List<(string Role, string Attribute)>
         {
             ("Lab Staff", null),
             ("Lab Admin", null),
@@ -208,6 +208,12 @@
         {
             ("Check in/out Staff", null),
             ("Super Admin", null),
+            ("Event Manager", null)
+        },
+            ["LabStation_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Lab Staff", null),
+            ("Lab Admin", null),
             ("Event Manager", null)
         }
 

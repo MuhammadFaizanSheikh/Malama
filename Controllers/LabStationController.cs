@@ -18,25 +18,25 @@ using System.Text.Json.Serialization;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    public class ImmunizationStationController : Controller
+    public class LabStationController : Controller
     {
         private readonly IFileUploader _fileUploader;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IImmunizationStationService _immunizationStationService;
-        private readonly ILogger<ImmunizationStationController> _logger;
-        private const string CLASSNAME = "ImmunizationStationController";
+        private readonly ILabStationService _labStationService;
+        private readonly ILogger<LabStationController> _logger;
+        private const string CLASSNAME = "LabStationController";
 
-        public ImmunizationStationController(ILogger<ImmunizationStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IImmunizationStationService immunizationStationService)
+        public LabStationController(ILogger<LabStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, ILabStationService labStationService)
         {
             _logger = logger;
             _fileUploader = fileUploader;
             _configuration = configuration;
             _userManager = userManager;
-            _immunizationStationService = immunizationStationService;
+            _labStationService = labStationService;
         }
 
-        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
+        [RoleAttributeAuthorizeFromConfig("LabStation_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -63,7 +63,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var data = _fileUploader
-                    .GetEventDataByEventIdForImmunization(eventId)
+                    .GetEventDataByEventIdForLab(eventId)
                     .ToList();
 
                 _logger.LogInformation(
@@ -74,9 +74,9 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord?.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.ImmunizationRecord?.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.ImmunizationRecord?.Status == "Not given")
+                    ["Pending"] = data.Count(x => x.LabStationRecord == null || x.LabStationRecord?.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.LabStationRecord?.Status == "Completed"),
+                    ["NotGiven"] = data.Count(x => x.LabStationRecord?.Status == "Not given")
                 };
 
                 _logger.LogInformation(
@@ -117,25 +117,25 @@ namespace ExcelFilesCompiler.Controllers
         }
 
 
-        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
-        public async Task<IActionResult> ImmunizationStation(long immunizationId, long fileDataId)
+        [RoleAttributeAuthorizeFromConfig("LabStation_View")]
+        public async Task<IActionResult> LabStation(long labStationId, long fileDataId)
         {
-            const string methodName = "ImmunizationStation";
+            const string methodName = "LabStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
             try
             {
-                ImmunizationStation model;
+                LabStation model;
 
-                if (immunizationId > 0)
+                if (labStationId > 0)
                 {
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Edit mode. ImmunizationId={ImmunizationId}",
-                        CLASSNAME, methodName, immunizationId
+                        "{ClassName}, {MethodName}, Edit mode. labStationId={labStationId}",
+                        CLASSNAME, methodName, labStationId
                     );
 
                     // Edit mode → get child record including parent
-                    model = await _immunizationStationService.GetByIdWithParentAsync(immunizationId);
+                    model = await _labStationService.GetByIdWithParentAsync(labStationId);
                 }
                 else
                 {
@@ -147,7 +147,7 @@ namespace ExcelFilesCompiler.Controllers
                     // Add mode → create empty child but attach parent
                     var parent = await _fileUploader.GetByIdAsync(fileDataId);
 
-                    model = new ImmunizationStation
+                    model = new LabStation
                     {
                         FileDataId = fileDataId,
                         FileData = parent
@@ -161,28 +161,6 @@ namespace ExcelFilesCompiler.Controllers
                     "{ClassName}, {MethodName}, Using EventId={EventId}",
                     CLASSNAME, methodName, eventId
                 );
-
-                var immunizationData =
-                    await _immunizationStationService.GetImmunizationManufacturer(eventId);
-
-                if (immunizationData.Success && immunizationData.Data != null)
-                {
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Immunization manufacturer data loaded successfully",
-                        CLASSNAME, methodName
-                    );
-
-                    ViewBag.ImmunizationData = immunizationData.Data;
-                }
-                else
-                {
-                    _logger.LogError(
-                        "{ClassName}, {MethodName}, Failed to load immunization manufacturer data. Success={Success}",
-                        CLASSNAME, methodName, immunizationData.Success
-                    );
-
-                    ViewBag.ImmunizationData = new List<object>();
-                }
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Returning view",
@@ -203,22 +181,19 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        [RoleAttributeAuthorizeFromConfig("ImmunizationStation_Save")]
+        [RoleAttributeAuthorizeFromConfig("LabStation_Save")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveImmunization(ImmunizationStation model, string eventIdForRedirection)
+        public async Task<IActionResult> SaveLabStation(LabStation model, string eventIdForRedirection)
         {
-            const string methodName = "SaveImmunization";
+            const string methodName = "SaveLabStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    _logger.LogWarning(
-                        "{ClassName}, {MethodName}, ModelState is invalid",
-                        CLASSNAME, methodName
-                    );
+                    _logger.LogWarning("{ClassName}, {MethodName}, ModelState is invalid", CLASSNAME, methodName);
 
                     var allErrors = ModelState.Values
                         .SelectMany(v => v.Errors)
@@ -227,52 +202,19 @@ namespace ExcelFilesCompiler.Controllers
 
                     var message = string.Join(" | ", allErrors);
 
-                    _logger.LogError(
-                        "{ClassName}, {MethodName}, Validation failed with errors: {Errors}",
-                        CLASSNAME, methodName, message
-                    );
+                    _logger.LogError("{ClassName}, {MethodName}, Validation failed with errors: {Errors}", CLASSNAME, methodName, message);
 
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
-                    model = await _immunizationStationService.GetByIdWithParentAsync(model.Id);
-
-                    string eventId = model.FileData?.EventId;
-                    ViewBag.EventId = eventId;
-
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Reloading ImmunizationStation view for EventId={EventId}",
-                        CLASSNAME, methodName, eventId
-                    );
-
-                    var immunizationData = await _immunizationStationService.GetImmunizationManufacturer(eventId);
-
-                    if (immunizationData.Success && immunizationData.Data != null)
-                    {
-                        ViewBag.ImmunizationData = immunizationData.Data;
-                    }
-                    else
-                    {
-                        _logger.LogError(
-                            "{ClassName}, {MethodName}, Failed to load immunization manufacturer data. Success={Success}",
-                            CLASSNAME, methodName, immunizationData.Success
-                        );
-
-                        ViewBag.ImmunizationData = new List<object>();
-                    }
-
-                    return View("ImmunizationStation", model);
+                    return View("LabStation", model);
                 }
 
                 var user = await _userManager.GetUserAsync(User);
-
                 if (user == null)
                 {
-                    _logger.LogError(
-                        "{ClassName}, {MethodName}, User not found / unauthorized access",
-                        CLASSNAME, methodName
-                    );
+                    _logger.LogError("{ClassName}, {MethodName}, User not found / unauthorized access", CLASSNAME, methodName);
 
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Unauthorized";
@@ -283,53 +225,38 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (model.Id == 0)
                 {
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Add operation started by User={UserName}",
-                        CLASSNAME, methodName, user.UserName
-                    );
+                    _logger.LogInformation("{ClassName}, {MethodName}, Add operation started by User={UserName}", CLASSNAME, methodName, user.UserName);
 
-                    await _immunizationStationService.AddAsync(model, user.UserName);
+                    await _labStationService.AddAsync(model, user.UserName);
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Immunization record added successfully.";
+                    TempData["ResponseMessage"] = "Lab record added successfully.";
                 }
                 else
                 {
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Update operation started for ImmunizationId={ImmunizationId} by User={UserName}",
-                        CLASSNAME, methodName, model.Id, user.UserName
-                    );
+                    _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for LabId={LabId} by User={UserName}", CLASSNAME, methodName, model.Id, user.UserName);
 
-                    await _immunizationStationService.UpdateAsync(model, user.UserName);
+                    await _labStationService.UpdateAsync(model, user.UserName);
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Immunization record updated successfully.";
+                    TempData["ResponseMessage"] = "Lab record updated successfully.";
                 }
 
-                _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index",
-                    CLASSNAME, methodName
-                );
-
+                _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index", CLASSNAME, methodName);
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "{ClassName}, {MethodName}, Exception occurred while saving immunization record",
-                    CLASSNAME, methodName
-                );
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving lab record", CLASSNAME, methodName);
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = ex.Message;
 
-                return View("ImmunizationStation", model);
+                return View("LabStation", model);
             }
         }
-
     }
 }

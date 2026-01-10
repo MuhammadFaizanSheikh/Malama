@@ -1,0 +1,670 @@
+﻿@using Malama.Utilities
+@model Malama.Models.LabStation
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Add Lab Screening";
+}
+
+<style>
+    #page-heading {
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white; /* ensures text is visible */
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    h2, h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Aligns the text in the middle of the cell */
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table tbody tr {
+            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+        }
+
+            table tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            }
+
+        table td button,
+        table td a {
+            display: inline-block; /* Makes the buttons appear side by side */
+            margin-right: 5px; /* Optional: Adds space between the buttons */
+        }
+
+        table td .button-container {
+            display: flex;
+            justify-content: center; /* Aligns buttons horizontally in the center */
+        }
+
+            table td .button-container a {
+                margin-right: 5px; /* Optional: Adds space between the buttons */
+            }
+
+        table thead th {
+            background-color: rgba(120, 130, 221, 1); /* Header background color */
+            color: white; /* Header text color */
+            text-align: center; /* Center-align header text */
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+<h2 id="page-heading">Edit Service Member at Lab Station</h2>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+<form asp-action="SaveLabStation" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.FileDataId)
+    <!-- Link to parent contract -->
+    @* <input type="hidden" asp-for="FileDataId" /> *@
+
+    <h3 class="mb-4">Personal Information</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Full Name:</span> @Model.FileData?.FullName</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOD ID:</span> @Model.FileData?.DodId</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.FileData?.Barcode</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOB:</span> @Model.FileData?.Dob</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Age:</span> @Model.FileData?.Age</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Sex:</span> @Model.FileData?.Sex</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    
+
+    <h3 class="mb-4">Questionnaires :</h3>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">1. Are you fasting?</label>
+            <select asp-for="AreYouFasting" class="form-select">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">LabCorp Account Number : 42084755</label>
+        </div>
+    </div>
+    
+    <hr class="my-4" />
+    <h3 class="mb-4">Required Lab(s) :</h3>
+    <div id="lab-section">
+
+        @if (string.Equals(Model.FileData.G6pd?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Hepatitis B -->
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>G6pd Needed Status</label>
+                        <select asp-for="G6pdNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2" id="g6pdReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="G6pdReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.G6pdNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>G6PD Given Date/Time</label>
+                                <input asp-for="G6pdGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.G6pdGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        @if (string.Equals(Model.FileData.AboNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="card-body">
+
+                <div class="row mb-2">
+
+                    <!-- ABO Needed Status (REQUIRED) -->
+                    <div class="col-md-2">
+                        <label>ABO Needed Status</label>
+                        <select asp-for="AboNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason (Only when Not Completed) -->
+                    <div class="col-md-2" id="aboReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="AboReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+
+                    <!-- ABO Grouping (Only when Completed) -->
+                    <div class="col-md-2" id="aboGroupingContainer" style="display:none;">
+                        <label>ABO Grouping</label>
+                        <input asp-for="AboGrouping" class="form-control" />
+                    </div>
+
+                    <!-- Rh Factor (Only when Completed) -->
+                    <div class="col-md-2" id="aboRhContainer" style="display:none;">
+                        <label>Rh Factor</label>
+                        <input asp-for="AboRhFactor" class="form-control" />
+                    </div>
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.AboNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>ABO Given Date/Time</label>
+                                <input asp-for="AboGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.AboGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        @if (string.Equals(Model.FileData.LipidNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="card-body">
+
+                <div class="row mb-2">
+
+                    <!-- Lipid Panel Needed Status (REQUIRED) -->
+                    <div class="col-md-2">
+                        <label>Lipid Panel Needed Status</label>
+                        <select asp-for="LipidPanelNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="col-md-2" id="lipidReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="LipidPanelReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+
+                    <!-- Rapid Testing -->
+                    <div class="col-md-2" id="lipidRapidContainer" style="display:none;">
+                        <label class="d-block">Rapid Testing</label>
+                        <input type="checkbox" asp-for="LipidPanelRapidTesting" />
+                    </div>
+
+                </div>
+
+                <!-- Lipid Values (VERTICAL) -->
+                <div class="row" id="lipidValuesContainer" style="display:none;">
+                    <div class="col-md-3 offset-md-3">
+
+                        <div class="mb-2">
+                            <label>Total Cholesterol</label>
+                            <input asp-for="TotalCholesterol" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>HDL Cholesterol</label>
+                            <input asp-for="HdlCholesterol" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Triglycerides</label>
+                            <input asp-for="Triglycerides" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Glucose</label>
+                            <input asp-for="Glucose" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>LDL Cholesterol</label>
+                            <input asp-for="LdlCholesterol" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Total Cholesterol / HDL Ratio</label>
+                            <input asp-for="TotalCholesterolHdlRatio" class="form-control" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Non-HDL Cholesterol</label>
+                            <input asp-for="NonHdlCholesterol" class="form-control" />
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        @if (string.Equals(Model.FileData.Hiv?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="card-body">
+
+                <div class="row mb-2">
+
+                    <!-- HIV Needed Status -->
+                    <div class="col-md-2">
+                        <label>HIV Needed Status</label>
+                        <select asp-for="HivNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason (only if Not Completed) -->
+                    <div class="col-md-2" id="hivReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="HivReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+
+                    <!-- Barcode (Carebill) textbox, only if Completed -->
+                    <div class="col-md-2" id="hivBarcodeContainer" style="display:none;">
+                        <label>Barcode (Carebill)</label>
+                        <input asp-for="HivBarcodeCarebill" class="form-control" />
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        @if (string.Equals(Model.FileData.Sex?.Trim(), "F", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="card-body">
+
+                <div class="row mb-2">
+
+                    <!-- Pregnancy Test Needed Status -->
+                    <div class="col-md-2">
+                        <label>Pregnancy Test Needed Status</label>
+                        <select asp-for="PregnancyTestNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Result dropdown (only if Completed) -->
+                    <div class="col-md-2" id="pregnancyResultContainer" style="display:none;">
+                        <label>Result</label>
+                        <select asp-for="PregnancyTestResult" class="form-control">
+                            <option value=""></option>
+                            <option value="Positive">Positive</option>
+                            <option value="Negative">Negative</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason dropdown (only if Not Completed) -->
+                    <div class="col-md-2" id="pregnancyReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="PregnancyTestReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <label>FedEx Tracking No</label>
+                    <input asp-for="FedExTrackingNo" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+
+
+    </div>
+
+
+    <div class="row mb-2">
+        @* <div class="col-md-2">
+            <label>Staff Name</label>
+            <input asp-for="CompletedBy" class="form-control" value="@User.Identity.Name" readonly />
+        </div> *@
+
+        <div class="col-md-2">
+            <label>Status</label>
+            <select asp-for="Status" class="form-control">
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+    </div>
+    <!-- Submit Buttons -->
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "LabStation_Save") ? "" : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</form>
+
+<script>
+    
+    $(document).ready(function () {
+
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            window.location.href = url;
+        });
+
+        function toggleG6pdReason() {
+            var status = $('#G6pdNeeded').val();
+            var reason = $('#G6pdReason');
+
+            if (status === 'Not Completed') {
+                $('#g6pdReasonContainer').show();
+
+                // HTML5 required → browser will focus automatically on Save
+                reason.prop('required', true);
+
+            } else {
+                $('#g6pdReasonContainer').hide();
+
+                reason.prop('required', false);
+                reason.val('');
+            }
+        }
+
+        function toggleAboFields() {
+            var status = $('#AboNeeded').val();
+
+            var reason = $('#AboReason');
+            var grouping = $('#AboGrouping');
+            var rh = $('#AboRhFactor');
+
+            // Reset all
+            $('#aboReasonContainer').hide();
+            $('#aboGroupingContainer').hide();
+            $('#aboRhContainer').hide();
+
+            reason.prop('required', false);
+
+            if (status === 'Not Completed') {
+                $('#aboReasonContainer').show();
+                reason.prop('required', true);
+            }
+
+            if (status === 'Completed') {
+                $('#aboGroupingContainer').show();
+                $('#aboRhContainer').show();
+            }
+        }
+
+        function toggleLipidPanel() {
+            var status = $('#LipidPanelNeeded').val();
+            var rapid = $('#LipidPanelRapidTesting').is(':checked');
+
+            var reason = $('#LipidPanelReason');
+
+            // Reset
+            $('#lipidReasonContainer').hide();
+            $('#lipidRapidContainer').hide();
+            $('#lipidValuesContainer').hide();
+
+            reason.prop('required', false);
+
+            if (status === 'Not Completed') {
+                $('#lipidReasonContainer').show();
+                reason.prop('required', true);
+            }
+
+            if (status === 'Completed') {
+                $('#lipidRapidContainer').show();
+
+                if (rapid) {
+                    $('#lipidValuesContainer').show();
+                }
+            }
+        }
+
+        function toggleHivFields() {
+            var status = $('#HivNeeded').val();
+
+            // Reset all
+            $('#hivReasonContainer').hide();
+            $('#hivBarcodeContainer').hide();
+
+            if (status === 'Not Completed') {
+                $('#hivReasonContainer').show();
+            }
+
+            if (status === 'Completed') {
+                $('#hivBarcodeContainer').show();
+            }
+        }
+
+        function togglePregnancyTestFields() {
+            var status = $('#PregnancyTestNeeded').val();
+            var result = $('#PregnancyTestResult');
+            var reason = $('#PregnancyTestReason');
+
+            // Hide both initially
+            $('#pregnancyResultContainer').hide();
+            $('#pregnancyReasonContainer').hide();
+
+            // Remove required from both
+            result.prop('required', false);
+            reason.prop('required', false);
+
+            if (status === 'Completed') {
+                $('#pregnancyResultContainer').show();
+                result.prop('required', true); // Make Result required
+            }
+
+            if (status === 'Not Completed') {
+                $('#pregnancyReasonContainer').show();
+                reason.prop('required', true); // Make Reason required
+            }
+        }
+
+        function updateOverallStatus() {
+            var allSelected = true;
+
+            // Array of all visible Needed Status dropdowns
+            var dropdowns = [
+                '#G6pdNeeded',
+                '#AboNeeded',
+                '#LipidPanelNeeded',
+                '#HivNeeded',
+                '#PregnancyTestNeeded'
+            ];
+
+            dropdowns.forEach(function (selector) {
+                var elem = $(selector);
+
+                // Skip if element not visible
+                if (elem.length && elem.is(':visible')) {
+                    if (!elem.val()) { // empty value
+                        allSelected = false;
+                    }
+                }
+            });
+
+            // Set overall Status dropdown
+            if (allSelected) {
+                $('#Status').val('Completed');
+            } else {
+                $('#Status').val('Pending');
+            }
+        }
+
+        $('#AboNeeded').on('change', toggleAboFields);
+        $('#G6pdNeeded').on('change', function () {
+            toggleG6pdReason();
+        });
+        $('#LipidPanelNeeded').on('change', toggleLipidPanel);
+        $('#LipidPanelRapidTesting').on('change', toggleLipidPanel);
+        $('#HivNeeded').on('change', toggleHivFields);
+        $('#PregnancyTestNeeded').on('change', togglePregnancyTestFields);
+        $('#G6pdNeeded, #AboNeeded, #LipidPanelNeeded, #HivNeeded, #PregnancyTestNeeded').on('change', updateOverallStatus);
+
+        toggleG6pdReason();
+        toggleAboFields();
+        toggleLipidPanel();
+        toggleHivFields();
+        togglePregnancyTestFields();
+        @* updateOverallStatus(); *@
+    });
+</script>
+
+

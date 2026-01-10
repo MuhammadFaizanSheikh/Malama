@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110191458_Test57")]
+    partial class Test57
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1988,9 +1991,6 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("AboGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<string>("AboGrouping")
                         .HasColumnType("text");
 
@@ -2013,14 +2013,8 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FedExTrackingNo")
-                        .HasColumnType("text");
-
                     b.Property<long>("FileDataId")
                         .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("G6pdGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("G6pdNeeded")
                         .HasColumnType("text");
@@ -2037,9 +2031,6 @@ namespace Malama.Migrations
                     b.Property<string>("HivBarcodeCarebill")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("HivGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<string>("HivNeeded")
                         .HasColumnType("text");
 
@@ -2048,9 +2039,6 @@ namespace Malama.Migrations
 
                     b.Property<string>("LdlCholesterol")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("LipidPanelGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LipidPanelNeeded")
                         .HasColumnType("text");
@@ -2063,9 +2051,6 @@ namespace Malama.Migrations
 
                     b.Property<string>("NonHdlCholesterol")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("PregnancyTestGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("PregnancyTestNeeded")
                         .HasColumnType("text");

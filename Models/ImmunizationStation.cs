@@ -7,11 +7,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Malama.Models
 {
-    public class ImmunizationViewModel
-    {
-        public List<FileDataDto> FileDataList { get; set; } = new();
-        public ImmunizationSummary Summary { get; set; } = new();
-    }
     public class ImmunizationStation : GenericProperties
     {
         public long Id { get; set; }

@@ -11,6 +11,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<string>> GetDistinctEventIdsAsync();
         IQueryable<FileDataDto> GetEventDataByEventId(string eventId);
         IQueryable<FileDataDto> GetEventDataByEventIdForImmunization(string eventId);
+        IQueryable<FileDataDto> GetEventDataByEventIdForLab(string eventId);
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName);
         Task<FileDataDto> GetByIdAsync(long id);

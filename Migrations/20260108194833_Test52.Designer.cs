@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260108194833_Test52")]
+    partial class Test52
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1988,105 +1991,17 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("AboGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("AboGrouping")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboRhFactor")
-                        .HasColumnType("text");
-
                     b.Property<string>("AddedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("AreYouFasting")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FedExTrackingNo")
-                        .HasColumnType("text");
-
                     b.Property<long>("FileDataId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("G6pdGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("G6pdNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("G6pdReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Glucose")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HdlCholesterol")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HivBarcodeCarebill")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("HivGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("HivNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HivReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LdlCholesterol")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("LipidPanelGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("LipidPanelNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("LipidPanelRapidTesting")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LipidPanelReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NonHdlCholesterol")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("PregnancyTestGivenDateTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("PregnancyTestNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PregnancyTestReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PregnancyTestResult")
-                        .HasColumnType("text");
-
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TotalCholesterol")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TotalCholesterolHdlRatio")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Triglycerides")
                         .HasColumnType("text");
 
                     b.Property<string>("UpdatedBy")
