@@ -167,7 +167,11 @@
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">LabCorp Account Number : 42084755</label>
+            <label class="form-label">
+                LabCorp Account Number :
+                <span class="fw-bold fs-4">42084755</span>
+            </label>
+
         </div>
     </div>
     
@@ -305,10 +309,14 @@
 
                     <!-- Rapid Testing -->
                     <div class="col-md-2" id="lipidRapidContainer" style="display:none;">
-                        <label class="d-block">Rapid Testing</label>
-                        <input type="checkbox" asp-for="LipidPanelRapidTesting" />
+                        <div class="d-flex align-items-center mt-4">
+                            <input type="checkbox"
+                                   asp-for="LipidPanelRapidTesting"
+                                   class="form-check-input me-2"
+                                   style="transform: scale(2);" />
+                            <label class="mb-0">Rapid Testing</label>
+                        </div>
                     </div>
-
                 </div>
 
                 <!-- Lipid Values (VERTICAL) -->
