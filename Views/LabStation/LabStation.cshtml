@@ -580,18 +580,22 @@
         function toggleHivFields() {
             var status = $('#HivNeeded').val();
 
-            // Reset all
+            // Reset
             $('#hivReasonContainer').hide();
             $('#hivBarcodeContainer').hide();
 
+            $('#HivReason').prop('required', false).val('');
+
             if (status === 'Not Completed') {
                 $('#hivReasonContainer').show();
+                $('#HivReason').prop('required', true);
             }
 
             if (status === 'Completed') {
                 $('#hivBarcodeContainer').show();
             }
         }
+
 
         function togglePregnancyTestFields() {
             var status = $('#PregnancyTestNeeded').val();
