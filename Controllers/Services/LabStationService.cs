@@ -12,12 +12,20 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
+        private readonly IPdfGeneratorService _pdfGenerator;
+        private readonly ILogger<LabStationService> _logger;
+        private readonly IEventManagementService _eventManagementService;
+        private const string CLASSNAME = "LabStationService";
 
-        public LabStationService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader)
+
+        public LabStationService(ILogger<LabStationService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IPdfGeneratorService pdfGenerator, IEventManagementService eventManagementService, IFileUploader fileUploader)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
+            _eventManagementService = eventManagementService;
+            _pdfGenerator = pdfGenerator;
+            _logger = logger;
         }
 
         public async Task<LabStation?> GetByIdAsync(long id)
@@ -108,6 +116,76 @@ namespace ExcelFilesCompiler.Controllers.Services
             model.LipidPanelGivenDateTime = model.LipidPanelNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
             model.HivGivenDateTime = model.HivNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
             model.PregnancyTestGivenDateTime = model.PregnancyTestNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        }
+
+        public async Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId)
+        {
+            const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";
+            _logger.LogInformation("{ClassName}, {MethodName}, Started for EventId={EventId}",
+                CLASSNAME, methodName, eventId);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventId is null or empty",
+                        CLASSNAME, methodName);
+
+                    throw new ArgumentException("EventId is required.");
+                }
+
+                // 🔹 Fetch HIV lab data
+                var fileDataDtos = _fileUploader
+                    .GetEventDataByEventIdForLabHivReport(eventId)?
+                    .ToList();
+
+                if (fileDataDtos == null || !fileDataDtos.Any())
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, No HIV lab records found for EventId={EventId}",
+                        CLASSNAME, methodName, eventId);
+
+                    return Array.Empty<byte>();
+                }
+
+                // 🔹 Fetch Event details
+                var eventDto = await _eventManagementService
+                    .GetEventManagementByEventIdWithoutInclude(eventId);
+
+                if (eventDto == null)
+                {
+                    _logger.LogError("{ClassName}, {MethodName}, EventManagement returned null for EventId={EventId}",
+                        CLASSNAME, methodName, eventId);
+
+                    throw new KeyNotFoundException($"Event {eventId} not found.");
+                }
+
+                // 🔹 Generate PDF
+                var pdfBytes = await _pdfGenerator
+                    .GenerateHivSignInSheetPdfAsync(fileDataDtos, eventDto);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, PDF generation completed for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                return pdfBytes;
+            }
+            catch (KeyNotFoundException)
+            {
+                // Known, meaningful exception → rethrow
+                throw;
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Unexpected error for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw new ApplicationException(
+                    "Failed to generate HIV Sign-In Sheet PDF.", ex);
+            }
         }
 
     }

@@ -306,6 +306,144 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<byte[]> GenerateHivSignInSheetPdfAsync(List<FileDataDto> dtos, EventManagement eventInfo)
+        {
+            try
+            {
+                using var ms = new MemoryStream();
+                var document = new iTextSharp.text.Document(PageSize.A4, 36, 36, 36, 36);
+                var writer = PdfWriter.GetInstance(document, ms);
+                document.Open();
+
+                // Fonts
+                var mainFont = FontFactory.GetFont(FontFactory.TIMES, 11);
+                var boldFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 11);
+                var titleFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 20);
+                var subFont = FontFactory.GetFont(FontFactory.TIMES_BOLD, 12);
+
+                // 🔹 Heading coordinates
+                float yStart = document.PageSize.Height - 36; // top margin
+                float currentY = yStart;
+
+                // 🔹 Main Heading
+                ColumnText.ShowTextAligned(
+                    writer.DirectContent,
+                    Element.ALIGN_CENTER,
+                    new Phrase("HIV Sign-In Sheet", titleFont),
+                    document.PageSize.Width / 2,
+                    currentY,
+                    0
+                );
+
+                // Move Y down for subheading
+                currentY -= 30; // space below heading
+
+                // 🔹 Sub Heading: Event Location & Date
+                string locationText = $"Event Location : {eventInfo.EventCity}, {eventInfo.EventState}";
+                string dateText = $"Date : {eventInfo.EventEndDate:MM/dd/yyyy}";
+
+                ColumnText.ShowTextAligned(
+                    writer.DirectContent,
+                    Element.ALIGN_LEFT,
+                    new Phrase(locationText, subFont),
+                    36,        // left margin
+                    currentY,
+                    0
+                );
+
+                ColumnText.ShowTextAligned(
+                    writer.DirectContent,
+                    Element.ALIGN_RIGHT,
+                    new Phrase(dateText, subFont),
+                    document.PageSize.Width - 36, // right margin
+                    currentY,
+                    0
+                );
+
+                // Move Y down for table
+                currentY -= 40; // increased space to avoid overlap with table
+
+                // 🔹 Add spacing using an empty paragraph to shift the table down
+                document.Add(new Paragraph("\n") { SpacingBefore = currentY - 50 }); // adjust extra spacing if needed
+
+                // 🔹 Line separator
+                var line = new LineSeparator(1f, 100f, BaseColor.BLACK, Element.ALIGN_CENTER, 0);
+                document.Add(new Chunk(line));
+                document.Add(new Paragraph("\n") { SpacingAfter = 5f });
+
+                // 🔹 Table with 5 columns
+                var table = new PdfPTable(5)
+                {
+                    WidthPercentage = 100
+                };
+                table.SetWidths(new float[] { 6f, 28f, 18f, 18f, 30f });
+
+                void AddHeader(string text)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(text, boldFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+                }
+
+                AddHeader("S.No");
+                AddHeader("Name (Last, First)");
+                AddHeader("FMP / SSN");
+                AddHeader("Date of Birth");
+                AddHeader("Carebill");
+
+                int index = 1;
+                foreach (var dto in dtos)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(index.ToString(), mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+                    table.AddCell(new PdfPCell(new Phrase(dto.FullName ?? "", mainFont))
+                    {
+                        Padding = 5f
+                    });
+                    table.AddCell(new PdfPCell(new Phrase(dto.Last4 ?? "", mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+
+                    string dob = "";
+                    if (!string.IsNullOrEmpty(dto.Dob) && DateTime.TryParse(dto.Dob, out var parsedDob))
+                        dob = parsedDob.ToString("MM/dd/yyyy");
+
+                    table.AddCell(new PdfPCell(new Phrase(dob, mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+
+                    table.AddCell(new PdfPCell(new Phrase(dto.LabStationRecord?.HivBarcodeCarebill ?? "", mainFont))
+                    {
+                        Padding = 5f
+                    });
+
+                    index++;
+                }
+
+                document.Add(table);
+                document.Close();
+                return ms.ToArray();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("HIV Sign-In Sheet PDF generation failed: " + ex.Message);
+            }
+        }
+
+
+
+
+
+
 
 
 

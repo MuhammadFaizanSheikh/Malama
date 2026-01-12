@@ -8,5 +8,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<LabStation> GetByIdWithParentAsync(long id); // NEW
         Task AddAsync(LabStation model, string userName);
         Task UpdateAsync(LabStation model, string userName);
+        Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId);
     }
 }

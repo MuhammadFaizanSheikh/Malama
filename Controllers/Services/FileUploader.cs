@@ -261,6 +261,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public IQueryable<FileDataDto> GetEventDataByEventIdForLabHivReport(string eventId)
+        {
+            try
+            {
+                return fileUploaderRepository.GetWithInclude(
+                f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes" && f.LabStationRecord != null && f.LabStationRecord.HivNeeded == "Completed"
+                ).Include(f => f.LabStationRecord);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while fetching FileData by EventId for HIV Sign-In Sheet report", ex);
+            }
+        }
+
 
         public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName)
         {

@@ -423,5 +423,28 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
+
+        public async Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId)
+        {
+            try
+            {
+                var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.EventID == eventId);
+
+                if (eventManagement == null)
+                {
+                    throw new KeyNotFoundException($"EventManagement with ID {eventId} not found.");
+                }
+
+                return eventManagement;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while retrieving event details.", ex);
+            }
+        }
     }
 }

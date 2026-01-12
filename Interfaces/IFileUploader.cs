@@ -12,6 +12,7 @@ namespace ExcelFilesCompiler.Interfaces
         IQueryable<FileDataDto> GetEventDataByEventId(string eventId);
         IQueryable<FileDataDto> GetEventDataByEventIdForImmunization(string eventId);
         IQueryable<FileDataDto> GetEventDataByEventIdForLab(string eventId);
+        IQueryable<FileDataDto> GetEventDataByEventIdForLabHivReport(string eventId);
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName);
         Task<FileDataDto> GetByIdAsync(long id);

@@ -12,5 +12,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
         Task<EventManagement> GetEventManagementForEventSelectionById(long id);
         Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id);
+        Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId);
     }
 }

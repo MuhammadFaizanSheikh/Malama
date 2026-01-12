@@ -232,6 +232,18 @@
             </tbody>
         </table>
     </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button type="button"
+                id="btnHivReport"
+                class="btn btn-primary"
+                style="outline: none; background-color: rgba(80, 90, 201, 1);">
+            Generate HIV Sign-In Sheet
+        </button>
+    </div>
+
+
+
 }
 <script>
     $(document).ready(function () {
@@ -317,5 +329,56 @@
             // Allow only digits
             input.value = input.value.replace(/\D/g, '');
         }
+
+        $(document).on('click', '#btnHivReport', function () {
+
+            const eventId = '@ViewBag.EventId';
+
+            if (!eventId) {
+                alert('Event Id is missing.');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetLabDataAgainstEventIdAndGenerateHivPdf", "LabStation")',
+                type: 'GET',
+                data: { eventId: eventId },
+                xhrFields: {
+                    responseType: 'blob'   // important for binary PDF
+                },
+                beforeSend: function () {
+                    $('#btnHivReport').prop('disabled', true).text('Generating...');
+                },
+                success: function (data, status, xhr) {
+
+                    if (!data || data.size === 0) {
+                        alert('No records found to generate report.');
+                        return;
+                    }
+
+                    const blob = new Blob([data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+
+                    // Open PDF in new tab
+                    window.open(url, '_blank');
+
+                    // Cleanup
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                },
+                error: function (xhr) {
+                    if (xhr.status === 404) {      // NotFound from backend
+                        alert('No HIV records found for this event.');
+                    } else if (xhr.status === 400) { // BadRequest
+                        alert(xhr.responseText);
+                    } else {
+                        alert('Failed to generate PDF. Please try again.');
+                    }
+                },
+                complete: function () {
+                    $('#btnHivReport').prop('disabled', false).text('Generate HIV Sign-In Sheet');
+                }
+            });
+        });
+
     });
 </script>

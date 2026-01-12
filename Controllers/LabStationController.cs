@@ -258,5 +258,51 @@ namespace ExcelFilesCompiler.Controllers
                 return View("LabStation", model);
             }
         }
+
+        public async Task<IActionResult> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId)
+        {
+            const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventId={EventId}",
+                CLASSNAME, methodName, eventId);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventId is null or empty",
+                        CLASSNAME, methodName);
+
+                    return BadRequest("EventId is required.");
+                }
+
+                var pdfBytes = await _labStationService
+                    .GetLabDataAgainstEventIdAndGenerateHivPdf(eventId);
+
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, PDF generation returned empty result for EventId={EventId}",
+                        CLASSNAME, methodName, eventId);
+
+                    return NotFound("No HIV lab data found to generate report.");
+                }
+
+                var fileName = $"HIV_SignIn_Sheet_{eventId}.pdf";
+
+                _logger.LogInformation("{ClassName}, {MethodName}, PDF generated successfully for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while generating HIV PDF for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                return StatusCode(500, "An error occurred while generating HIV Sign-In Sheet.");
+            }
+        }
+
+
     }
 }
