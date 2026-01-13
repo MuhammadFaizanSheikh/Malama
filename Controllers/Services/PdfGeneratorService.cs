@@ -340,12 +340,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 // 🔹 Sub Heading: Event Location & Date
                 string locationText = $"Event Location : {eventInfo.EventCity}, {eventInfo.EventState}";
+                string eventIdText = $"Event ID : {eventInfo.EventID}";
                 string dateText = $"Date : {eventInfo.EventEndDate:MM/dd/yyyy}";
 
                 ColumnText.ShowTextAligned(
                     writer.DirectContent,
                     Element.ALIGN_LEFT,
-                    new Phrase(locationText, subFont),
+                    new Phrase($"{locationText}              {eventIdText}", subFont),
                     36,        // left margin
                     currentY,
                     0
@@ -405,7 +406,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         Padding = 5f
                     });
-                    table.AddCell(new PdfPCell(new Phrase(dto.Last4 ?? "", mainFont))
+                    table.AddCell(new PdfPCell(new Phrase(dto.FullSsn ?? "", mainFont))
                     {
                         HorizontalAlignment = Element.ALIGN_CENTER,
                         Padding = 5f

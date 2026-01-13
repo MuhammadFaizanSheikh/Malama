@@ -234,11 +234,20 @@
     </div>
 
     <div style="text-align: center; margin-top: 20px;">
-        <button type="button"
-                id="btnHivReport"
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "LabStation_HIVSignInSheet_View"))
+        {
+            <button type="button"
+            id="btnHivReport"
                 class="btn btn-primary"
                 style="outline: none; background-color: rgba(80, 90, 201, 1);">
             Generate HIV Sign-In Sheet
+        </button>
+        }
+        <button type="button"
+                id="btnRefreshLabCorpData"
+                class="btn btn-primary"
+                style="outline: none; background-color: rgba(80, 90, 201, 1);">
+            Refresh LabCorp Data
         </button>
     </div>
 

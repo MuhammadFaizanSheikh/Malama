@@ -14,6 +14,10 @@
         {
             ("Check in/out Staff", "CanAccessProfile")
         },
+            ["LabStation_HIVSignInSheet_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Event Manager", null)
+        },
             ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),

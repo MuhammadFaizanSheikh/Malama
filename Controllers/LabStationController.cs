@@ -259,6 +259,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
+        [RoleAttributeAuthorizeFromConfig("LabStation_HIVSignInSheet_View")]
         public async Task<IActionResult> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId)
         {
             const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";

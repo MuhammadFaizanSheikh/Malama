@@ -592,7 +592,11 @@
             $('#hivReasonContainer').hide();
             $('#hivBarcodeContainer').hide();
 
-            $('#HivReason').prop('required', false).val('');
+            $('#HivReason')
+                .prop('required', false);
+
+            $('#HivBarcodeCarebill')
+                .prop('required', false);
 
             if (status === 'Not Completed') {
                 $('#hivReasonContainer').show();
@@ -601,8 +605,10 @@
 
             if (status === 'Completed') {
                 $('#hivBarcodeContainer').show();
+                $('#HivBarcodeCarebill').prop('required', true);
             }
         }
+
 
 
         function togglePregnancyTestFields() {
