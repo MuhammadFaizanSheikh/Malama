@@ -267,7 +267,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 return fileUploaderRepository.GetWithInclude(
                 f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes" && f.LabStationRecord != null && f.LabStationRecord.HivNeeded == "Completed"
-                ).Include(f => f.LabStationRecord);
+                ).Include(f => f.LabStationRecord).OrderBy(f => f.LabStationRecord.HivBarcodeCarebill);
             }
             catch (Exception ex)
             {

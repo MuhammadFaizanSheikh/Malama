@@ -23,6 +23,9 @@ namespace Malama.Models
         public virtual FileDataDto FileData { get; set; }
 
         public string AreYouFasting { get; set; }
+        public string AnyComplicationInBloodDrawn { get; set; }
+        public string AllergicToLatex { get; set; }
+        public string FeelAlright { get; set; }
 
         public string? G6pdNeeded { get; set; }
         public string? G6pdReason { get; set; }

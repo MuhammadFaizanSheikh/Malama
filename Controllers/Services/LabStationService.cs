@@ -3,6 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.Record;
 
 namespace ExcelFilesCompiler.Controllers.Services
@@ -15,15 +16,17 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IPdfGeneratorService _pdfGenerator;
         private readonly ILogger<LabStationService> _logger;
         private readonly IEventManagementService _eventManagementService;
+        private readonly IContractService _contractService;
         private const string CLASSNAME = "LabStationService";
 
 
-        public LabStationService(ILogger<LabStationService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IPdfGeneratorService pdfGenerator, IEventManagementService eventManagementService, IFileUploader fileUploader)
+        public LabStationService(ILogger<LabStationService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IPdfGeneratorService pdfGenerator, IEventManagementService eventManagementService, IFileUploader fileUploader, IContractService contractService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
             _eventManagementService = eventManagementService;
+            _contractService = contractService;
             _pdfGenerator = pdfGenerator;
             _logger = logger;
         }
@@ -70,7 +73,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             // map all fields from model → existing
             MapToEntity(model, existing, userName);
-            SetGivenDateTimes(existing);
+            //SetGivenDateTimes(existing);
 
             await _unitOfWork.LabStation.UpdateAsync(existing);
             await _unitOfWork.SaveAsync();
@@ -78,33 +81,165 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private void MapToEntity(LabStation source, LabStation target, string userName)
         {
+            //G6pd
+
+            if (source.G6pdNeeded.IsNullOrEmpty())
+            {
+                target.G6pdGivenDateTime = null;
+                target.G6pdReason = null;
+            }
+            else if (source.G6pdNeeded == "Not Completed")
+            {
+                target.G6pdGivenDateTime = null;
+                target.G6pdReason = source.G6pdReason;
+            }
+            else
+            {
+                if (source.G6pdNeeded != target.G6pdNeeded)
+                {
+                    target.G6pdGivenDateTime = DateTime.Now;
+                }
+            }
+
+            //ABO 
+
+            if (source.AboNeeded.IsNullOrEmpty())
+            {
+                target.AboGivenDateTime = null;
+                target.AboGrouping = null;
+                target.AboRhFactor = null;
+                target.AboReason = null;
+            }
+            else if (source.AboNeeded == "Not Completed")
+            {
+                target.AboGivenDateTime = null;
+                target.AboGrouping = null;
+                target.AboRhFactor = null;
+                target.AboReason = source.AboReason;
+            }
+            else
+            {
+                if (source.AboNeeded != target.AboNeeded)
+                {
+                    target.AboGivenDateTime = DateTime.Now;
+                }
+
+                target.AboReason = null;
+                target.AboGrouping = source.AboGrouping;
+                target.AboRhFactor = source.AboRhFactor;
+            }
+
+            //Lipid
+
+            if (source.LipidPanelNeeded.IsNullOrEmpty())
+            {
+                target.LipidPanelGivenDateTime = null;
+                target.LipidPanelReason = null;
+                target.LipidPanelRapidTesting = false;
+                target.TotalCholesterol = null;
+                target.HdlCholesterol = null;
+                target.Triglycerides = null;
+                target.Glucose = null;
+                target.LdlCholesterol = null;
+                target.TotalCholesterolHdlRatio = null;
+                target.NonHdlCholesterol = null;
+            }
+            else if (source.LipidPanelNeeded == "Not Completed")
+            {
+                target.LipidPanelReason = source.LipidPanelReason;
+                target.LipidPanelGivenDateTime = null;
+                target.LipidPanelRapidTesting = false;
+                target.TotalCholesterol = null;
+                target.HdlCholesterol = null;
+                target.Triglycerides = null;
+                target.Glucose = null;
+                target.LdlCholesterol = null;
+                target.TotalCholesterolHdlRatio = null;
+                target.NonHdlCholesterol = null;
+            }
+            else
+            {
+                if (source.LipidPanelNeeded != target.LipidPanelNeeded)
+                {
+                    target.LipidPanelGivenDateTime = DateTime.Now;
+                }
+
+                target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
+                target.TotalCholesterol = source.TotalCholesterol;
+                target.HdlCholesterol = source.HdlCholesterol;
+                target.Triglycerides = source.Triglycerides;
+                target.Glucose = source.Glucose;
+                target.LdlCholesterol = source.LdlCholesterol;
+                target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
+                target.NonHdlCholesterol = source.NonHdlCholesterol;
+                target.LipidPanelReason = null;
+            }
+
+            //HIV
+
+            if (source.HivNeeded.IsNullOrEmpty())
+            {
+                target.HivGivenDateTime = null;
+                target.HivReason = null;
+                target.HivBarcodeCarebill = null;
+            }
+            else if (source.HivNeeded == "Not Completed")
+            {
+                target.HivGivenDateTime = null;
+                target.HivBarcodeCarebill = null;
+                target.HivReason = source.HivReason;
+            }
+            else
+            {
+                if (source.HivNeeded != target.HivNeeded)
+                {
+                    target.HivGivenDateTime = DateTime.Now;
+                }
+
+                target.HivReason = null;
+                target.HivBarcodeCarebill = source.HivBarcodeCarebill;
+            }
+
+            //Pregnancy
+
+            if (source.PregnancyTestNeeded.IsNullOrEmpty())
+            {
+                target.PregnancyTestGivenDateTime = null;
+                target.PregnancyTestResult = null;
+                target.PregnancyTestReason = null;
+            }
+            else if (source.PregnancyTestNeeded == "Not Completed")
+            {
+                target.PregnancyTestGivenDateTime = null;
+                target.PregnancyTestResult = null;
+                target.PregnancyTestReason = source.PregnancyTestReason;
+            }
+            else
+            {
+                if (source.PregnancyTestNeeded != target.PregnancyTestNeeded)
+                {
+                    target.PregnancyTestGivenDateTime = DateTime.Now;
+                }
+
+                target.PregnancyTestResult = source.PregnancyTestResult;
+                target.PregnancyTestReason = null;
+            }
+
             target.AreYouFasting = source.AreYouFasting;
+            target.AnyComplicationInBloodDrawn = source.AnyComplicationInBloodDrawn;
+            target.AllergicToLatex = source.AllergicToLatex;
+            target.FeelAlright = source.FeelAlright;
             target.G6pdNeeded = source.G6pdNeeded;
-            target.G6pdReason = source.G6pdReason;
             target.AboNeeded = source.AboNeeded;
-            target.AboReason = source.AboReason;
-            target.AboGrouping = source.AboGrouping;
-            target.AboRhFactor = source.AboRhFactor;
             target.LipidPanelNeeded = source.LipidPanelNeeded;
-            target.LipidPanelReason = source.LipidPanelReason;
-            target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
-            target.TotalCholesterol = source.TotalCholesterol;
-            target.HdlCholesterol = source.HdlCholesterol;
-            target.Triglycerides = source.Triglycerides;
-            target.Glucose = source.Glucose;
-            target.LdlCholesterol = source.LdlCholesterol;
-            target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
-            target.NonHdlCholesterol = source.NonHdlCholesterol;
             target.HivNeeded = source.HivNeeded;
-            target.HivReason = source.HivReason;
-            target.HivBarcodeCarebill = source.HivBarcodeCarebill;
             target.PregnancyTestNeeded = source.PregnancyTestNeeded;
-            target.PregnancyTestResult = source.PregnancyTestResult;
-            target.PregnancyTestReason = source.PregnancyTestReason;
             target.FedExTrackingNo = source.FedExTrackingNo;
             target.Status = source.Status;
             target.UpdatedOn = DateTime.Now;
             target.UpdatedBy = userName;
+
+            
         }
 
         public void SetGivenDateTimes(LabStation model)
@@ -159,9 +294,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                     throw new KeyNotFoundException($"Event {eventId} not found.");
                 }
 
+
+                var contractDetail = await _contractService.GetContractById(eventDto.ContractId, string.Empty, false);
+
+                if (!contractDetail.Success)
+                {
+                    _logger.LogError("{ClassName}, {MethodName}, {Message}",
+                        CLASSNAME, methodName, contractDetail.Message);
+
+                    throw new KeyNotFoundException($"{contractDetail.Message}");
+                }
+
                 // 🔹 Generate PDF
                 var pdfBytes = await _pdfGenerator
-                    .GenerateHivSignInSheetPdfAsync(fileDataDtos, eventDto);
+                    .GenerateHivSignInSheetPdfAsync(fileDataDtos, eventDto, contractDetail.Data as ContractDetails);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, PDF generation completed for EventId={EventId}",
                     CLASSNAME, methodName, eventId);

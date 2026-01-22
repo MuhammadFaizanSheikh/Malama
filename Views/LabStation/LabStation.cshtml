@@ -160,18 +160,45 @@
     <h3 class="mb-4">Questionnaires :</h3>
     <div class="row">
         <div class="col-md-6 mb-3">
-            <label class="form-label">1. Are you fasting?</label>
+            <label class="form-label">1. Are you fasting for 8 hours or more?</label>
             <select asp-for="AreYouFasting" class="form-select">
                 <option value="No" selected>No</option>
                 <option value="Yes">Yes</option>
             </select>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label">
-                LabCorp Account Number :
-                <span class="fw-bold fs-4">42084755</span>
-            </label>
-
+            <label class="form-label">2. Have you ever had any complications getting your blood drawn?</label>
+            <select asp-for="AnyComplicationInBloodDrawn" class="form-select">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">3. Are you allergic to Latex? </label>
+            <select asp-for="AllergicToLatex" class="form-select">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">4. Do you feel all right?"</label>
+            <select asp-for="FeelAlright" class="form-select">
+                <option value="No" selected>No</option>
+                <option value="Yes">Yes</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="mb-2">
+                <label class="form-label">LabCorp Account Number :</label>
+                <input type="text"
+                       class="form-control fw-bold"
+                       value="42084755"
+                       readonly />
+            </div>
         </div>
     </div>
     
@@ -209,7 +236,7 @@
                         @if (Model.G6pdNeeded == "Completed")
                         {
                             <div class="col-md-2">
-                                <label>G6PD Given Date/Time</label>
+                                <label>Collection Date/Time</label>
                                 <input asp-for="G6pdGivenDateTime" class="form-control givendatetime-input" type="text"
                                        value="@(Model.G6pdGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
                             </div>
@@ -253,20 +280,32 @@
                     <!-- ABO Grouping (Only when Completed) -->
                     <div class="col-md-2" id="aboGroupingContainer" style="display:none;">
                         <label>ABO Grouping</label>
-                        <input asp-for="AboGrouping" class="form-control" />
+                        <select asp-for="AboGrouping" class="form-control">
+                            <option value=""></option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+
                     </div>
 
                     <!-- Rh Factor (Only when Completed) -->
                     <div class="col-md-2" id="aboRhContainer" style="display:none;">
                         <label>Rh Factor</label>
-                        <input asp-for="AboRhFactor" class="form-control" />
+                        <select asp-for="AboRhFactor" class="form-control">
+                            <option value=""></option>
+                            <option value="+ve">+ve</option>
+                            <option value="-ve">-ve</option>
+                        </select>
+
                     </div>
                     @if (Model.Id != 0)
                     {
                         @if (Model.AboNeeded == "Completed")
                         {
                             <div class="col-md-2">
-                                <label>ABO Given Date/Time</label>
+                                <label>Collection Date/Time</label>
                                 <input asp-for="AboGivenDateTime" class="form-control givendatetime-input" type="text"
                                        value="@(Model.AboGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
                             </div>
@@ -317,6 +356,17 @@
                             <label class="mb-0">Rapid Testing</label>
                         </div>
                     </div>
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.LipidPanelNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>Collection Date/Time</label>
+                                <input asp-for="LipidPanelGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.LipidPanelGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
                 </div>
 
                 <!-- Lipid Values (VERTICAL) -->
@@ -360,7 +410,7 @@
 
                     </div>
                 </div>
-
+                
             </div>
 
             <hr class="my-4" />
@@ -400,7 +450,17 @@
                         <label>Barcode (Carebill)</label>
                         <input asp-for="HivBarcodeCarebill" class="form-control" />
                     </div>
-
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.HivNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>Collection Date/Time</label>
+                                <input asp-for="HivGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.HivGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
                 </div>
 
             </div>
@@ -446,7 +506,17 @@
                             <option value="Proof of Service">Proof of Service</option>
                         </select>
                     </div>
-
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.PregnancyTestNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>Collection Date/Time</label>
+                                <input asp-for="PregnancyTestGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.PregnancyTestGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
                 </div>
 
             </div>

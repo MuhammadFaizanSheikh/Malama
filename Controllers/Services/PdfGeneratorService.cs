@@ -306,7 +306,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<byte[]> GenerateHivSignInSheetPdfAsync(List<FileDataDto> dtos, EventManagement eventInfo)
+        public async Task<byte[]> GenerateHivSignInSheetPdfAsync(List<FileDataDto> dtos, EventManagement eventInfo, ContractDetails contractDetail)
         {
             try
             {
@@ -373,11 +373,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                 document.Add(new Paragraph("\n") { SpacingAfter = 5f });
 
                 // 🔹 Table with 5 columns
-                var table = new PdfPTable(5)
+                var table = new PdfPTable(9)
                 {
                     WidthPercentage = 100
                 };
-                table.SetWidths(new float[] { 6f, 28f, 18f, 18f, 30f });
+
+                // Column widths (adjusted for readability)
+                table.SetWidths(new float[]
+                {
+                    10f, // Site ID
+                    20f, // Barcode
+                    18f, // SSN
+                    30f, // Name
+                    16f, // DOB
+                    18f, // Collection Date
+                    10f, // SOT
+                    10f, // Duty
+                    12f  // FMP
+                });
 
                 void AddHeader(string text)
                 {
@@ -388,33 +401,53 @@ namespace ExcelFilesCompiler.Controllers.Services
                     });
                 }
 
-                AddHeader("S.No");
-                AddHeader("Name (Last, First)");
-                AddHeader("FMP / SSN");
-                AddHeader("Date of Birth");
-                AddHeader("Carebill");
+                // 🔹 Headers
+                AddHeader("Site ID");
+                AddHeader("Barcode Number");
+                AddHeader("SSN");
+                AddHeader("Name");
+                AddHeader("DOB (MMDDYYYY)");
+                AddHeader("Date of Collection (MMDDYYYY)");
+                AddHeader("SOT (1 digit Letter)");
+                AddHeader("Duty (1 digit Letter)");
+                AddHeader("FMP(2 digits Letter)");
 
-                int index = 1;
+                // 🔹 Data Rows
                 foreach (var dto in dtos)
                 {
-                    table.AddCell(new PdfPCell(new Phrase(index.ToString(), mainFont))
+                    // Site ID (Hardcoded)
+                    table.AddCell(new PdfPCell(new Phrase(contractDetail.SiteId, mainFont))
                     {
                         HorizontalAlignment = Element.ALIGN_CENTER,
                         Padding = 5f
                     });
-                    table.AddCell(new PdfPCell(new Phrase(dto.FullName ?? "", mainFont))
+
+                    // Barcode
+                    table.AddCell(new PdfPCell(new Phrase(dto.LabStationRecord?.HivBarcodeCarebill ?? "", mainFont))
                     {
                         Padding = 5f
                     });
+
+                    // SSN
                     table.AddCell(new PdfPCell(new Phrase(dto.FullSsn ?? "", mainFont))
                     {
                         HorizontalAlignment = Element.ALIGN_CENTER,
                         Padding = 5f
                     });
 
+                    // Name
+                    table.AddCell(new PdfPCell(new Phrase(dto.FullName ?? "", mainFont))
+                    {
+                        Padding = 5f
+                    });
+
+                    // DOB
                     string dob = "";
-                    if (!string.IsNullOrEmpty(dto.Dob) && DateTime.TryParse(dto.Dob, out var parsedDob))
-                        dob = parsedDob.ToString("MM/dd/yyyy");
+                    if (!string.IsNullOrWhiteSpace(dto.Dob) &&
+                        DateTime.TryParse(dto.Dob, out var parsedDob))
+                    {
+                        dob = parsedDob.ToString("MMddyyyy");
+                    }
 
                     table.AddCell(new PdfPCell(new Phrase(dob, mainFont))
                     {
@@ -422,12 +455,36 @@ namespace ExcelFilesCompiler.Controllers.Services
                         Padding = 5f
                     });
 
-                    table.AddCell(new PdfPCell(new Phrase(dto.LabStationRecord?.HivBarcodeCarebill ?? "", mainFont))
+                    // Date of Collection
+                    string collectionDate = dto.LabStationRecord?.HivGivenDateTime?
+                        .ToString("MMddyyyy") ?? "";
+
+                    table.AddCell(new PdfPCell(new Phrase(collectionDate, mainFont))
                     {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
                         Padding = 5f
                     });
 
-                    index++;
+                    // SOT (Hardcoded)
+                    table.AddCell(new PdfPCell(new Phrase("P", mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+
+                    // Duty (Hardcoded)
+                    table.AddCell(new PdfPCell(new Phrase("A", mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
+
+                    // FMP (Hardcoded)
+                    table.AddCell(new PdfPCell(new Phrase("20", mainFont))
+                    {
+                        HorizontalAlignment = Element.ALIGN_CENTER,
+                        Padding = 5f
+                    });
                 }
 
                 document.Add(table);

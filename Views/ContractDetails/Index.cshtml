@@ -290,19 +290,33 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractStatus" class="text-danger"></span>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="ContractStartDate" class="form-label">Contract Start Date</label>
+            <div class="col-md-6">
+                <label for="ClientName" class="form-label">Client Name</label>
+
+                <!-- Textbox for Active Duty / Reserve -->
+                <input type="text" id="ClientNameTextbox" asp-for="SingleContract.ClientName"
+                       class="form-control" style="display:none;" />
+
+                <!-- Dropdown for National Guard -->
+                <select id="ClientNameDropdown" asp-for="SingleContract.ClientName" class="form-select" style="display:none;">
+                    <option value="">Select Client Name</option>
+                </select>
+
+                <span asp-validation-for="SingleContract.ClientName" class="text-danger"></span>
+            </div>
+            </div>
+
+            <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="ContractStartDate" class="form-label">Contract Start Date</label>
                 <input id="ContractStartDate"
                        asp-for="SingleContract.ContractStartDate"
                        type="text"
                        class="form-control"
                        placeholder="MM/DD/YYYY"
                        required />
-                    <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
-                </div>
+                <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
             </div>
-
-            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="ContractEndDate" class="form-label">Contract End Date</label>
                 <input id="ContractEndDate"
@@ -314,6 +328,14 @@
                     <span asp-validation-for="SingleContract.ContractEndDate" class="text-danger"></span>
                 </div>
             </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="SiteId" class="form-label">Site ID</label>
+                <input id="SiteId" asp-for="SingleContract.SiteId" class="form-control" placeholder="Enter Site ID" maxLength="20" required />
+                <span asp-validation-for="SingleContract.SiteId" class="text-danger"></span>
+            </div>
+        </div>
 
             <h3 class="mt-5 mb-3">Contract Officer (KO)</h3>
 
@@ -541,12 +563,132 @@
 
 
 
+        const component = document.getElementById("ContractComponent");
+        const client = document.getElementById("ContractClient");
+
+        const clientTextbox = document.getElementById("ClientNameTextbox");
+        const clientDropdown = document.getElementById("ClientNameDropdown");
+
+        const siteIdInput = document.getElementById("SiteId");
+
+        // Load states JSON once
+        let stateList = [];
+
+        $.getJSON('/data/statesAndCities.json', function (data) {
+            stateList = data.states.map(s => s.Name);
+            populateClientDropdown(); // in case National Guard is preselected
+        });
+
+        // Populate dropdown dynamically
+        function populateClientDropdown() {
+            clientDropdown.innerHTML = '<option value="">Select State</option>'; // reset
+            stateList.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                clientDropdown.appendChild(option);
+            });
+        }
+
+        // Update Site ID based on Client Name selection
+        function updateSiteId() {
+            let clientName = "";
+
+            if (clientTextbox.style.display !== "none") {
+                clientName = clientTextbox.value;
+            } else if (clientDropdown.style.display !== "none") {
+                clientName = clientDropdown.value;
+            }
+
+            switch (clientName) {
+                case "California":
+                    siteIdInput.value = "GO06";
+                    siteIdInput.readOnly = true;
+                    break;
+                case "Florida":
+                    siteIdInput.value = "GO12";
+                    siteIdInput.readOnly = true;
+                    break;
+                default:
+                    siteIdInput.value = "";
+                    siteIdInput.readOnly = false;
+            }
+        }
+
+        // Update fields based on Contract Component selection
+        function updateClientFields() {
+            // Remove any previous event blocking
+            client.onmousedown = null;
+            client.onkeydown = null;
+
+            switch (component.value) {
+                case "Active Duty":
+                case "Reserve":
+                    client.value = "Command";       // ContractClient
+                    // Make "readonly" by blocking mouse/keyboard
+                    client.onmousedown = (e) => e.preventDefault();
+                    client.onkeydown = (e) => e.preventDefault();
+
+                    // Show textbox, hide dropdown
+                    clientTextbox.style.display = "block";
+                    clientDropdown.style.display = "none";
+
+                    clientTextbox.disabled = false;
+                    clientDropdown.disabled = true;
+                    clientDropdown.value = "";
+
+                    break;
+
+                case "National Guard":
+                    client.value = "State";         // ContractClient
+                    client.onmousedown = (e) => e.preventDefault();
+                    client.onkeydown = (e) => e.preventDefault();
+
+                    // Show dropdown, hide textbox
+                    clientDropdown.style.display = "block";
+                    clientTextbox.style.display = "none";
+
+                    clientDropdown.disabled = false;
+                    clientTextbox.disabled = true;
+                    clientTextbox.value = "";
+
+                    if (stateList.length > 0) {
+                        populateClientDropdown();
+                    }
+                    break;
+
+                default:
+                    client.value = "";
+                    client.onmousedown = null;
+                    client.onkeydown = null;
+
+                    clientTextbox.style.display = "none";
+                    clientDropdown.style.display = "none";
+
+                    clientTextbox.disabled = true;
+                    clientDropdown.disabled = true;
+
+                    clientTextbox.value = "";
+                    clientDropdown.value = "";
+            }
+
+            updateSiteId();
+        }
+
+
+
+        // Listen for Contract Component changes
+        component.addEventListener("change", updateClientFields);
+
+        // Listen for Client Name changes
+        clientDropdown.addEventListener("change", updateSiteId);
+
         $('#addContractBtn').click(function () {
 
             const controlIds = [
                 'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                'ContractStatus',
                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
                 'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
                 'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
@@ -590,8 +732,12 @@
             $('#DawsonRoleOnContract').val('');
             $('#ContractStatus').val('');
 
-            $('#ContractStartDate').val('');
-            $('#ContractEndDate').val('');
+            $('#ClientNameTextbox').val('');
+            $('#ClientNameDropdown').val('');
+            $('#SiteId').val('');
+
+            //contractStartPicker.clear();
+            // contractEndPicker.clear();
 
             // KO
             $('#KoLastName').val('');
@@ -689,6 +835,17 @@
                         $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
                         $('#ContractStatus').val(contract.contractStatus);
 
+                        updateClientFields();
+
+                        if (component.value === "National Guard") {
+                            clientDropdown.value = contract.clientName;
+                        } else {
+                            clientTextbox.value = contract.clientName;
+                        }
+
+                        updateSiteId();
+                        siteIdInput.value = contract.siteId;
+
                         const startDate = getDateOnlyGlobal(contract.contractStartDate); // flatpicker automatically convert date to mm/dd/yyyy
                         contractStartPicker.setDate(startDate, true);
 
@@ -736,7 +893,7 @@
                             const controlIds = [
                                 'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
                                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
+                                'ContractStatus', 'ClientNameTextbox', 'ClientNameDropdown', 'SiteId',
                                 'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
                                 'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
                                 'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
@@ -757,8 +914,8 @@
                             const controlIds = [
                                 'hiddenId', 'ContractAgency', 'ContractServiceBranch',
                                 'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                                'ContractStatus', 'ContractStartDate', 'ContractEndDate',
-                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                                'ContractStatus',
+                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail', 'ClientNameTextbox', 'ClientNameDropdown', 'SiteId',
                                 'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
                                 'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
                                 'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
@@ -838,6 +995,21 @@
 
             // Prevent form submission
             event.preventDefault();
+        }
+
+        const startDate = document.getElementById("ContractStartDate").value;
+        const endDate = document.getElementById("ContractEndDate").value;
+
+        if (!startDate) {
+            alert('Please enter Contract Start Date')
+            event.preventDefault();
+            return;
+        }
+
+        if (!endDate) {
+            alert('Please enter Contract End Date')
+            event.preventDefault();
+            return;
         }
     });
 
@@ -965,4 +1137,6 @@
             }
         }
     });
+
+    
 </script>

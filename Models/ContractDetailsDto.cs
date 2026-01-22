@@ -64,11 +64,21 @@
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Contract Status cannot be only white spaces.")]
         public string ContractStatus { get; set; }
 
+        [StringLength(20, ErrorMessage = "Client Name cannot exceed 20 characters.")]
+        [Required(ErrorMessage = "Client Name is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Client Name cannot be only white spaces.")]
+        public string ClientName { get; set; }
+
         [Required(ErrorMessage = "Contract Start Date is required.")]
         public DateTime ContractStartDate { get; set; } // DateTime cannot be null, so we remove the nullable (?)
 
         [Required(ErrorMessage = "Contract End Date is required.")]
         public DateTime ContractEndDate { get; set; } // DateTime cannot be null, so we remove the nullable (?)
+
+        [StringLength(20, ErrorMessage = "Site Id cannot exceed 20 characters.")]
+        [Required(ErrorMessage = "Site Id is required.")]
+        [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Site Id cannot be only white spaces.")]
+        public string SiteId { get; set; }
 
         // Contract Officer (KO) Properties
         [StringLength(50, ErrorMessage = "KO Last name cannot exceed 50 characters.")]
