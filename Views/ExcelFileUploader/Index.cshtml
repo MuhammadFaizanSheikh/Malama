@@ -207,7 +207,6 @@
     //     $("#page-heading").text(window.type + " - Malama");
     // }
     document.addEventListener("DOMContentLoaded", async function () {
-        debugger;
         if (window.userType === "client") {
              // $("#page-heading").text("Malama (Staff)");
             $("#btnProfile").show();
@@ -320,12 +319,12 @@
                 }
 
                 const lastRow = json[json.length - 1];
-                debugger;
                 // smIdCounter = lastRow[0] ?? null;
                 smIdCounter = lastRow[keys.indexOf("SM ID") - 1] ?? null;
 
                 const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 1;
                 const sexIndexForSorting = keys.indexOf("SEX") - 1;
+                const fullSSNIndexForHiding = keys.indexOf("FULL SSN");
 
                 $("#previewTable").DataTable({
                     data: formattedData,
@@ -357,6 +356,9 @@
                     },
                     ordering: true,
                     order: [],
+                    columnDefs: [
+                    { targets: fullSSNIndexForHiding, visible: false }// FULL SSN column is hidden
+                    ]
                 });
 
                 $('#eventSummaryTable').removeClass('d-none');
@@ -498,7 +500,6 @@
         $('#loader').removeClass('d-none');
 
         try {
-            debugger;
             const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
@@ -528,7 +529,6 @@
 
 
     function renderPreviewTable(data) {
-        debugger;
     // ===== 1. MERGE DB COLUMNS + PREVIEW-ONLY COLUMNS =====
     const previewMappings = [
         ...columnMappingsForInsertionAndFetching,
@@ -587,6 +587,7 @@
     const fullNameIndexForSorting = keys.indexOf("FULL NAME") -1;
     const sexIndexForSorting = keys.indexOf("SEX") -1;
     const smIdIndexForSorting = keys.indexOf("SM ID");
+    const fullSSNIndexForHiding = keys.indexOf("FULL SSN");
 
     // ===== 6. INITIALIZE DATATABLE =====
     $("#previewTable").DataTable({
@@ -618,11 +619,15 @@
         autoWidth: false,
         fixedColumns: { leftColumns: 7 },
         ordering: true,
-        order: [[smIdIndexForSorting, 'asc']]
+        order: [[smIdIndexForSorting, 'asc']],
+        columnDefs: [
+        { targets: fullSSNIndexForHiding, visible: false }// FULL SSN column is hidden
+        ]
     });
 
     // ===== 7. SM ID COUNTER UPDATE =====
     const table = $('#previewTable').DataTable();
+    // table.column(fullSSNIndexForHiding).visible(false);
     const smIdIndex = smIdIndexForSorting;
     const rowCount = table.rows().count();
 
@@ -768,7 +773,6 @@
 
 
     function prepareObjectToAddRecordInDatabase(fullRowData, keys) {
-        debugger;
         const dto = {};
 
         columnMappingsForInsertionAndFetching.forEach(mapping => {
@@ -829,7 +833,6 @@
                 if (fieldType === 'int') {
                     value = value === '' || value == null ? null : parseInt(value);
                 } else if (fieldType === 'date') {
-                    debugger;
                     value = value ? new Date(value).toISOString() : null;
                     // value = value ? getDateOnlyGlobal(value) : null;
                 } else if (fieldType === 'string') {

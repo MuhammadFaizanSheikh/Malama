@@ -545,6 +545,7 @@
 
                 const fullNameIndexForSorting = keys.indexOf("FULL NAME") - 2;
                 const sexIndexForSorting = keys.indexOf("SEX") - 2;
+                const fullSSNIndexForHiding = keys.indexOf("FULL SSN");
 
                 if ($.fn.DataTable.isDataTable('#previewTable')) {
                     $('#previewTable').DataTable().rows.add(formattedData).draw(false);
@@ -586,6 +587,9 @@
                         },
                         ordering: true,
                         order: [],
+                        columnDefs: [
+                            { targets: fullSSNIndexForHiding, visible: false }// FULL SSN column is hidden
+                        ],
                         createdRow: function (row, data, dataIndex) {
                             let backgroundColor = colors[(uploadCounter - 1) % colors.length];
                             $(row).find('td').addClass('previewRow').css('background-color', backgroundColor); // Apply background color class

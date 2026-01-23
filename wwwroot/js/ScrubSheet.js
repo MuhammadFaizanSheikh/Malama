@@ -166,28 +166,47 @@ let currentRow;
 let isAddingNewRow = false;
 let primaryKeyForEdit = 0;
 
+//function editRow(button) {
+//    currentRow = $(button).closest('tr');  // Get the row clicked for editing
+//    const rowData = {};
+//    isAddingNewRow = false;
+
+//    debugger;
+//    // Correct mapping: use tableToKeysIndexMap to map the table column index to the keys array
+//    tableToKeysIndexMap.forEach((tableColIndex, keysIndex) => {
+//        const key = keys[tableColIndex];  // Get the correct key from the keys array
+//        rowData[key] = currentRow.find('td').eq(tableColIndex).text().trim() || '';  // Get the value from the correct table column
+//    });
+
+//    smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
+
+//    primaryKeyForEdit = currentRow.find('.row-id').val();
+//    populateModalForEdit(rowData);  // Pass the mapped data to populateModal
+//    document.getElementById("editModalLabel").innerText = "Edit Service Member";
+//    $('#editModal').modal('show');  // Show the modal
+//}
+
 function editRow(button) {
     currentRow = $(button).closest('tr');  // Get the row clicked for editing
     const rowData = {};
     isAddingNewRow = false;
-    // Correct mapping: use tableToKeysIndexMap to map the table column index to the keys array
-    tableToKeysIndexMap.forEach((tableColIndex, keysIndex) => {
-        const key = keys[tableColIndex];  // Get the correct key from the keys array
-        rowData[key] = currentRow.find('td').eq(tableColIndex).text().trim() || '';  // Get the value from the correct table column
+
+    const table = $('#previewTable').DataTable();
+
+    const data = table.row(currentRow).data();
+
+    tableToKeysIndexMap.forEach((tableColIndex) => {
+        const key = keys[tableColIndex]; // Get the corresponding key
+        rowData[key] = data[tableColIndex] || ''; // Get value from DataTables row data
     });
 
-    smIdEditing = currentRow.find('td').eq(keys.indexOf('SM ID')).text();
+    smIdEditing = data[keys.indexOf('SM ID')];
     primaryKeyForEdit = currentRow.find('.row-id').val();
-    populateModalForEdit(rowData);  // Pass the mapped data to populateModal
+    populateModalForEdit(rowData);
     document.getElementById("editModalLabel").innerText = "Edit Service Member";
-    $('#editModal').modal('show');  // Show the modal
+    $('#editModal').modal('show');
 }
 
-//for edit
-//const readOnlyIndexesForEdit = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
-//const dropdownIndexesForEdit = [8, 10, 12, 17, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 52, 53, 55, 56, 57, 58, 59, 60];
-//const tableDataFieldsForEdit = [61];
-//const customFieldsForEdit = [18, 48, 49, 50, 51];
 
 const readOnlyFieldsForEdit = [
     "AGE", "MOS", "AGR", "MRC", "OVER 40", "EventID", "Over 44", "EventDate", "Event End Date",
@@ -207,16 +226,11 @@ const dropdownFieldsForEdit = [
 ];
 
 const tableDataFieldsForEdit = ["TaskForce"];
+const fullSsnFieldForAddAndEdit = ["FULL SSN"];
 
 const customFieldsForEdit = [
     "PANO Needed", "LIPID PANEL", "Cholesterol / HDL Cholesterol", "Framingham", "EKG (Date)"
 ];
-
-
-//for add
-//const dropdownIndexesForAdd = [8, 17, 18, 19, 20, 23, 26, 27, 28, 29, 30, 32, 37, 38, 39, 41, 42, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60];
-//const readOnlyIndexesForAdd = [7, 9, 10, 12, 14, 66, 63, 64, 65, 70, 67, 69, 71, 68, 15, 16, 21, 24, 22, 25, 31, 33, 34, 36, 40, 45, 35, 43, 44, 54];
-//const tableDataFieldsForAdd = [61, 64, 65, 66, 67, 68, 69, 70, 71];
 
 const dropdownFieldsForAdd = [
     "SEX", "Dental Needed", "PANO Needed", "BWX Needed", "DRC", "PHA Needed",
@@ -599,6 +613,37 @@ function populateModalForEdit(data) {
                         $("#checkedOutBy").val(value);
                     }
                 }
+                else if (fullSsnFieldForAddAndEdit.includes(key)) {
+                    inputHtml = `
+                        <div class="form-group col-lg-2">
+                            <label>${key}</label>
+                    
+                            <div style="position:relative;">
+                                <input
+                                    type="password"
+                                    class="form-control password-field"
+                                    name="${key}"
+                                    value="${value}"
+                                    ${required}
+                                    ${readOnly}
+                                    ${textColor}
+                                    style="padding-right:40px;"
+                                >
+                                <i
+                                    class="fa fa-eye toggle-password"
+                                    style="
+                                        position:absolute;
+                                        top:50%;
+                                        right:12px;
+                                        transform:translateY(-50%);
+                                        cursor:pointer;
+                                        color:#6c757d;
+                                    ">
+                                </i>
+                            </div>
+                        </div>
+                    `;
+                }
                 // Default text field
                 else {
                     inputHtml = `
@@ -637,11 +682,33 @@ function populateModalForEdit(data) {
             modalContent.append(rowHtml);
 
             // Attach input validation listeners to all text fields
-            modalContent.find('input[type="text"]').on('input', function () {
-                const value = $(this).val();
-                validateInput(this, value);
-            });
+            modalContent
+                .find('input[type="text"], input[type="password"]')
+                .on('input', function () {
+                    const value = $(this).val();
+                    validateInput(this, value);
+                });
         }
+    }
+
+    const fullSsnField = modalContent.find('input[name="FULL SSN"]');
+    if (fullSsnField.length > 0) {
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('toggle-password')) {
+                const icon = e.target;
+                const input = icon.previousElementSibling;
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        });
     }
 
     // After modal is populated, bind the event listener to the DOB field
@@ -886,8 +953,37 @@ function populateModalForAdd(data) {
                                 `;
                     }
                 }
-
-
+                else if (fullSsnFieldForAddAndEdit.includes(key)) {
+                    inputHtml = `
+                        <div class="form-group col-lg-2">
+                            <label>${key}</label>
+                    
+                            <div style="position:relative;">
+                                <input
+                                    type="password"
+                                    class="form-control password-field"
+                                    name="${key}"
+                                    value="${value}"
+                                    ${required}
+                                    ${readOnly}
+                                    ${textColor}
+                                    style="padding-right:40px;"
+                                >
+                                <i
+                                    class="fa fa-eye toggle-password"
+                                    style="
+                                        position:absolute;
+                                        top:50%;
+                                        right:12px;
+                                        transform:translateY(-50%);
+                                        cursor:pointer;
+                                        color:#6c757d;
+                                    ">
+                                </i>
+                            </div>
+                        </div>
+                    `;
+                }
                 // Default text field
                 else {
                     if (key === 'FULL NAME') {
@@ -948,11 +1044,31 @@ function populateModalForAdd(data) {
             modalContent.append(rowHtml);
 
             // Attach input validation listeners to all text fields
-            modalContent.find('input[type="text"]').on('input', function () {
+            modalContent.find('input[type="text"], input[type="password"]').on('input', function () {
                 const value = $(this).val();
                 validateInput(this, value);
             });
         }
+    }
+
+    const fullSsnField = modalContent.find('input[name="FULL SSN"]');
+    if (fullSsnField.length > 0) {
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('toggle-password')) {
+                const icon = e.target;
+                const input = icon.previousElementSibling;
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        });
     }
 
     checkLabRequisitionField();
@@ -1312,7 +1428,7 @@ async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-
+    debugger;
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
         const checkedOutDropdown = document.getElementById("checkedOut");
@@ -1579,28 +1695,43 @@ async function saveChangesButton() {
 
         }
         else {
-            keys.forEach((key, index) => {
-                if (key === 'SM ID') {
-                    smIdToIdentifyRecordForPrint = currentRow.find('td').eq(keys.indexOf('SM ID')).text().trim();
-                }
-                if (updatedData[key] !== undefined) {
-                    const currentCellValue = currentRow.find('td').eq(index).text().trim();
+            const table = $('#previewTable').DataTable();
+            const row = table.row(currentRow);
+            const rowData = row.data(); // array of all column values (VISIBLE + HIDDEN)
 
-                    // Skip update if key is Checked In Time or Checked Out Time and already has a value
+            keys.forEach((key, index) => {
+
+                // SM ID (read)
+                if (key === 'SM ID') {
+                    smIdToIdentifyRecordForPrint = (rowData[index] || '').toString().trim();
+                }
+
+                if (updatedData[key] !== undefined) {
+                    const currentCellValue = (rowData[index] || '').toString().trim();
+
+                    // Skip update if already has value
                     if (
-                        (key === 'Checked In Time' && currentCellValue !== '') || (key === 'Checked Out Time' && currentCellValue !== '')
+                        (key === 'Checked In Time' && currentCellValue !== '') ||
+                        (key === 'Checked Out Time' && currentCellValue !== '')
                     ) {
-                        return; // Skip this iteration
+                        return;
                     }
 
-                    // Always update for these keys or if value is non-empty
+                    // Always update for these OR if non-empty
                     if (
-                        key === 'ABO' || key === 'Checked In By' || key === 'Checked Out By' || updatedData[key].trim() !== ''
+                        key === 'ABO' ||
+                        key === 'Checked In By' ||
+                        key === 'Checked Out By' ||
+                        updatedData[key].trim() !== ''
                     ) {
-                        currentRow.find('td').eq(index).text(updatedData[key]);
+                        rowData[index] = updatedData[key];
                     }
                 }
             });
+
+            // Push updated data back to DataTable
+            row.data(rowData).invalidate().draw(false);
+
 
             $('#editModal').modal('hide');
             await printSpecificRowIfNeeded(shouldPrint, smIdToIdentifyRecordForPrint);
@@ -2513,14 +2644,17 @@ const statusPreviewColumns = [
 
 function submitData() {
     $('#loader').removeClass('d-none');
+    const table = $('#previewTable').DataTable();
     let tableRows = [];
 
-    $('#previewTable tbody tr').each(function () {
-        let $cells = $(this).find('td');
+    table.rows().every(function () {
+        const rowDataArray = this.data();
         let row = {};
 
         columnMappingsForInsertionAndFetching.forEach(mapping => {
-            let value = getCellValue($cells, mapping.label);
+            const colIndex = keys.indexOf(mapping.label);
+            let value = rowDataArray[colIndex] ?? '';
+
             switch (mapping.type) {
                 case "int":
                     row[mapping.key] = parseInt(value) || 0;
@@ -2529,42 +2663,20 @@ function submitData() {
                     row[mapping.key] = parseFloat(value) || 0.0;
                     break;
                 case "date":
-                    // Handle empty string or invalid date
-                    if (!value) {
-                        row[mapping.key] = null;
-                    } else {
-                        let parsedDate = new Date(value);
-
-                        // If invalid date, fallback to null
-                        if (isNaN(parsedDate.getTime())) {
-                            row[mapping.key] = null;
-                        } else {
-                            // Format as ISO string (PostgreSQL-compatible)
-                            row[mapping.key] = parsedDate.toISOString(); // e.g., "2025-07-14T10:30:00.000Z"
-                        }
-                    }
+                    row[mapping.key] = value ? new Date(value).toISOString() : null;
                     break;
-                default: // string or unknown
+                default:
                     row[mapping.key] = value;
-                    break;
             }
         });
 
-        row["isDeleted"] = false; // always false when inserting
+        row.isDeleted = false;
         tableRows.push(row);
     });
 
-    let eventId = null;
-
-    if (window.isCheckInOutPage === true) {
-        const firstRow = $('#previewTable tbody tr:first');
-        const $cells = firstRow.find('td');
-        eventId = getCellValue($cells, "EventID");
-
-    }
-    else {
-        eventId = document.getElementById('eventId').value;
-    }
+    let eventId = window.isCheckInOutPage
+        ? table.row(0).data()[keys.indexOf("EventID")]
+        : document.getElementById('eventId').value;
 
     $.ajax({
         url: '/Home/CheckForExistingDataAgainstEventId',

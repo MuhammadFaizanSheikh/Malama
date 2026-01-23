@@ -433,16 +433,65 @@
                     </div>
                 </div>
 
-                <div id="contractDetails" style="display: none;">
-                    <p><strong>Contract Id:</strong> <span id="contractIdLabel"></span></p>
-                    <p><strong>Contract Agency:</strong> <span id="contractAgencyLabel"></span></p>
-                    <p><strong>Dawson Service Branch:</strong> <span id="contractServiceBranchLabel"></span></p>
-                    <p><strong>Contract Component:</strong> <span id="contractComponentLabel"></span></p>
-                    <p><strong>Contract Type:</strong> <span id="contractTypeLabel"></span></p>
-                    <p><strong>Contract Start:</strong> <span id="contractStartDateLabel"></span></p>
-                    <p><strong>Contract End:</strong> <span id="contractEndDateLabel"></span></p>
-                    <p><strong>Dawson Project Manager:</strong> <span id="dawsonProjectManagerLabel"></span></p>
+            <div id="contractDetails" class="row" style="display:none;">
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Id:</strong>
+                    <span id="contractIdLabel"></span>
                 </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Agency:</strong>
+                    <span id="contractAgencyLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Dawson Service Branch:</strong>
+                    <span id="contractServiceBranchLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Component:</strong>
+                    <span id="contractComponentLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Client:</strong>
+                    <span id="contractClient"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Client Name:</strong>
+                    <span id="contractClientName"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Site ID:</strong>
+                    <span id="contractSiteId"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Type:</strong>
+                    <span id="contractTypeLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract Start:</strong>
+                    <span id="contractStartDateLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Contract End:</strong>
+                    <span id="contractEndDateLabel"></span>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <strong>Dawson Project Manager:</strong>
+                    <span id="dawsonProjectManagerLabel"></span>
+                </div>
+
+            </div>
+
 
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -2523,6 +2572,10 @@
                         $('#contractServiceBranchLabel').text(contract.contractServiceBranch);
                         $('#contractComponentLabel').text(contract.contractComponent);
                         $('#contractTypeLabel').text(contract.contractType);
+
+                        $('#contractClient').text(contract.contractClient);
+                        $('#contractClientName').text(contract.clientName);
+                        $('#contractSiteId').text(contract.siteId);
 
                         let contractStartDate = getDateOnlyGlobal(contract.contractStartDate);
                             $('#contractStartDateLabel').text(formatDateToMMDDYYYYGlobal(contractStartDate));
