@@ -103,8 +103,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.HepBNeeded = source.HepBNeeded;
             target.HepBReason = source.HepBReason;
             target.HepBReasonExcusedComments = source.HepBReasonExcusedComments;
-            target.HepBManufacturer = source.HepBManufacturer;
-            target.HepBLotNo = source.HepBLotNo;
+            target.HepBVaccineInfoId = source.HepBVaccineInfoId;
+            target.HepBVaccineLotEntryId = source.HepBVaccineLotEntryId;
             target.HepBExpirationDate = source.HepBExpirationDate;
             target.HepBType = source.HepBType;
             target.HepBBodyPart = source.HepBBodyPart;
@@ -116,8 +116,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.FluNeeded = source.FluNeeded;
             target.FluReason = source.FluReason;
             target.FluReasonExcusedComments = source.FluReasonExcusedComments;
-            target.FluManufacturer = source.FluManufacturer;
-            target.FluLotNo = source.FluLotNo;
+            target.FluVaccineInfoId = source.FluVaccineInfoId;
+            target.FluVaccineLotEntryId = source.FluVaccineLotEntryId;
             target.FluExpirationDate = source.FluExpirationDate;
             target.FluType = source.FluType;
             target.FluBodyPart = source.FluBodyPart;
@@ -129,8 +129,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.MMRNeeded = source.MMRNeeded;
             target.MMRReason = source.MMRReason;
             target.MMRReasonExcusedComments = source.MMRReasonExcusedComments;
-            target.MMRManufacturer = source.MMRManufacturer;
-            target.MMRLotNo = source.MMRLotNo;
+            target.MMRVaccineInfoId = source.MMRVaccineInfoId;
+            target.MMRVaccineLotEntryId = source.MMRVaccineLotEntryId;
             target.MMRExpirationDate = source.MMRExpirationDate;
             target.MMRType = source.MMRType;
             target.MMRBodyPart = source.MMRBodyPart;
@@ -142,8 +142,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.HepANeeded = source.HepANeeded;
             target.HepAReason = source.HepAReason;
             target.HepAReasonExcusedComments = source.HepAReasonExcusedComments;
-            target.HepAManufacturer = source.HepAManufacturer;
-            target.HepALotNo = source.HepALotNo;
+            target.HepAVaccineInfoId = source.HepAVaccineInfoId;
+            target.HepAVaccineLotEntryId = source.HepAVaccineLotEntryId;
             target.HepAExpirationDate = source.HepAExpirationDate;
             target.HepAType = source.HepAType;
             target.HepABodyPart = source.HepABodyPart;
@@ -155,8 +155,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.TetTdpNeeded = source.TetTdpNeeded;
             target.TetTdpReason = source.TetTdpReason;
             target.TetTdpReasonExcusedComments = source.TetTdpReasonExcusedComments;
-            target.TetTdpManufacturer = source.TetTdpManufacturer;
-            target.TetTdpLotNo = source.TetTdpLotNo;
+            target.TetTdpVaccineInfoId = source.TetTdpVaccineInfoId;
+            target.TetTdpVaccineLotEntryId = source.TetTdpVaccineLotEntryId;
             target.TetTdpExpirationDate = source.TetTdpExpirationDate;
             target.TetTdpType = source.TetTdpType;
             target.TetTdpBodyPart = source.TetTdpBodyPart;
@@ -168,8 +168,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.VaricellaNeeded = source.VaricellaNeeded;
             target.VaricellaReason = source.VaricellaReason;
             target.VaricellaReasonExcusedComments = source.VaricellaReasonExcusedComments;
-            target.VaricellaManufacturer = source.VaricellaManufacturer;
-            target.VaricellaLotNo = source.VaricellaLotNo;
+            target.VaricellaVaccineInfoId = source.VaricellaVaccineInfoId;
+            target.VaricellaVaccineLotEntryId = source.VaricellaVaccineLotEntryId;
             target.VaricellaExpirationDate = source.VaricellaExpirationDate;
             target.VaricellaType = source.VaricellaType;
             target.VaricellaBodyPart = source.VaricellaBodyPart;

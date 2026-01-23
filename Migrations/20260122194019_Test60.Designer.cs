@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122194019_Test60")]
+    partial class Test60
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1600,6 +1603,12 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("FluGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("FluLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FluManufacturer")
+                        .HasColumnType("text");
+
                     b.Property<string>("FluNeeded")
                         .HasColumnType("text");
 
@@ -1663,6 +1672,12 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("HepAGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("HepALotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepAManufacturer")
+                        .HasColumnType("text");
+
                     b.Property<string>("HepANeeded")
                         .HasColumnType("text");
 
@@ -1698,6 +1713,12 @@ namespace Malama.Migrations
 
                     b.Property<DateTime?>("HepBGivenDateTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("HepBLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepBManufacturer")
+                        .HasColumnType("text");
 
                     b.Property<string>("HepBNeeded")
                         .HasColumnType("text");
@@ -1751,6 +1772,12 @@ namespace Malama.Migrations
 
                     b.Property<DateTime?>("MMRGivenDateTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("MMRLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MMRManufacturer")
+                        .HasColumnType("text");
 
                     b.Property<string>("MMRNeeded")
                         .HasColumnType("text");
@@ -1808,6 +1835,12 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("TetTdpGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("TetTdpLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TetTdpManufacturer")
+                        .HasColumnType("text");
+
                     b.Property<string>("TetTdpNeeded")
                         .HasColumnType("text");
 
@@ -1853,6 +1886,12 @@ namespace Malama.Migrations
 
                     b.Property<DateTime?>("VaricellaGivenDateTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("VaricellaLotNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VaricellaManufacturer")
+                        .HasColumnType("text");
 
                     b.Property<string>("VaricellaNeeded")
                         .HasColumnType("text");

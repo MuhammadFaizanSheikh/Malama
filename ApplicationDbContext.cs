@@ -57,6 +57,73 @@ namespace ExcelFilesCompiler
                     }
                 }
             }
+
+            modelBuilder.Entity<ImmunizationStation>(entity =>
+            {
+                entity.HasOne(e => e.HepBVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.HepBVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.FluVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.FluVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.MMRVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.MMRVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.HepAVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.HepAVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.TetTdpVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.TetTdpVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.VaricellaVaccineInfo)
+                    .WithMany()
+                    .HasForeignKey(e => e.VaricellaVaccineInfoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                /* =========================================
+                   ImmunizationStation → VaccineLotEntry
+                   ========================================= */
+
+                entity.HasOne(e => e.HepBVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.HepBVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.FluVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.FluVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.MMRVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.MMRVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.HepAVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.HepAVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.TetTdpVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.TetTdpVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.VaricellaVaccineLot)
+                    .WithMany()
+                    .HasForeignKey(e => e.VaricellaVaccineLotEntryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
 
     }
