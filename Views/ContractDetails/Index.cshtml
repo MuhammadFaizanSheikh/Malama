@@ -574,14 +574,15 @@
         // Load states JSON once
         let stateList = [];
 
-        $.getJSON('/data/statesAndCities.json', function (data) {
-            stateList = data.states.map(s => s.Name);
-            populateClientDropdown(); // in case National Guard is preselected
+        $.getJSON('/data/statesAndTerritories.json', function (data) {
+            stateList = data; // data is already an array of strings
+            populateClientDropdown(); // in case something is preselected
         });
 
         // Populate dropdown dynamically
         function populateClientDropdown() {
-            clientDropdown.innerHTML = '<option value="">Select State</option>'; // reset
+            clientDropdown.innerHTML = '<option value="">Select State / Territory</option>'; // reset
+
             stateList.forEach(state => {
                 const option = document.createElement('option');
                 option.value = state;
@@ -589,6 +590,7 @@
                 clientDropdown.appendChild(option);
             });
         }
+
 
         // Update Site ID based on Client Name selection
         function updateSiteId() {

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260117200346_Test60")]
-    partial class Test60
+    [Migration("20260123174756_Test63")]
+    partial class Test63
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -372,6 +372,11 @@ namespace Malama.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)");
 
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("ContractAgency")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -482,6 +487,11 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SiteId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -1603,12 +1613,6 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("FluGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("FluLotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FluManufacturer")
-                        .HasColumnType("text");
-
                     b.Property<string>("FluNeeded")
                         .HasColumnType("text");
 
@@ -1626,6 +1630,12 @@ namespace Malama.Migrations
 
                     b.Property<string>("FluType")
                         .HasColumnType("text");
+
+                    b.Property<long?>("FluVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("FluVaccineLotEntryId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("HadBloodTransfusionOrAntiviralInPastYear")
                         .IsRequired()
@@ -1666,12 +1676,6 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("HepAGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("HepALotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HepAManufacturer")
-                        .HasColumnType("text");
-
                     b.Property<string>("HepANeeded")
                         .HasColumnType("text");
 
@@ -1690,6 +1694,12 @@ namespace Malama.Migrations
                     b.Property<string>("HepAType")
                         .HasColumnType("text");
 
+                    b.Property<long?>("HepAVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("HepAVaccineLotEntryId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("HepBBodyPart")
                         .HasColumnType("text");
 
@@ -1701,12 +1711,6 @@ namespace Malama.Migrations
 
                     b.Property<DateTime?>("HepBGivenDateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("HepBLotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HepBManufacturer")
-                        .HasColumnType("text");
 
                     b.Property<string>("HepBNeeded")
                         .HasColumnType("text");
@@ -1725,6 +1729,12 @@ namespace Malama.Migrations
 
                     b.Property<string>("HepBType")
                         .HasColumnType("text");
+
+                    b.Property<long?>("HepBVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("HepBVaccineLotEntryId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("ImmuneSuppressionReason")
                         .HasColumnType("text");
@@ -1755,12 +1765,6 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("MMRGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("MMRLotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MMRManufacturer")
-                        .HasColumnType("text");
-
                     b.Property<string>("MMRNeeded")
                         .HasColumnType("text");
 
@@ -1778,6 +1782,12 @@ namespace Malama.Migrations
 
                     b.Property<string>("MMRType")
                         .HasColumnType("text");
+
+                    b.Property<long?>("MMRVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("MMRVaccineLotEntryId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("PregnancyCheckboxSelected")
                         .HasColumnType("boolean");
@@ -1811,12 +1821,6 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("TetTdpGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("TetTdpLotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TetTdpManufacturer")
-                        .HasColumnType("text");
-
                     b.Property<string>("TetTdpNeeded")
                         .HasColumnType("text");
 
@@ -1834,6 +1838,12 @@ namespace Malama.Migrations
 
                     b.Property<string>("TetTdpType")
                         .HasColumnType("text");
+
+                    b.Property<long?>("TetTdpVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("TetTdpVaccineLotEntryId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("TookImmuneSuppressingMedicationRecently")
                         .IsRequired()
@@ -1857,12 +1867,6 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("VaricellaGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("VaricellaLotNo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VaricellaManufacturer")
-                        .HasColumnType("text");
-
                     b.Property<string>("VaricellaNeeded")
                         .HasColumnType("text");
 
@@ -1881,10 +1885,40 @@ namespace Malama.Migrations
                     b.Property<string>("VaricellaType")
                         .HasColumnType("text");
 
+                    b.Property<long?>("VaricellaVaccineInfoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("VaricellaVaccineLotEntryId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FileDataId")
                         .IsUnique();
+
+                    b.HasIndex("FluVaccineInfoId");
+
+                    b.HasIndex("FluVaccineLotEntryId");
+
+                    b.HasIndex("HepAVaccineInfoId");
+
+                    b.HasIndex("HepAVaccineLotEntryId");
+
+                    b.HasIndex("HepBVaccineInfoId");
+
+                    b.HasIndex("HepBVaccineLotEntryId");
+
+                    b.HasIndex("MMRVaccineInfoId");
+
+                    b.HasIndex("MMRVaccineLotEntryId");
+
+                    b.HasIndex("TetTdpVaccineInfoId");
+
+                    b.HasIndex("TetTdpVaccineLotEntryId");
+
+                    b.HasIndex("VaricellaVaccineInfoId");
+
+                    b.HasIndex("VaricellaVaccineLotEntryId");
 
                     b.ToTable("ImmunizationStation");
                 });
@@ -2062,6 +2096,9 @@ namespace Malama.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("LdlCholesterol")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LdlHdlLipoprotiens")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LipidPanelGivenDateTime")
@@ -2690,7 +2727,91 @@ namespace Malama.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "FluVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("FluVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "FluVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("FluVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "HepAVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("HepAVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "HepAVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("HepAVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "HepBVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("HepBVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "HepBVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("HepBVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "MMRVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("MMRVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "MMRVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("MMRVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "TetTdpVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("TetTdpVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "TetTdpVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("TetTdpVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineInfo", "VaricellaVaccineInfo")
+                        .WithMany()
+                        .HasForeignKey("VaricellaVaccineInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ImmunizationVaccineLotEntry", "VaricellaVaccineLot")
+                        .WithMany()
+                        .HasForeignKey("VaricellaVaccineLotEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("FileData");
+
+                    b.Navigation("FluVaccineInfo");
+
+                    b.Navigation("FluVaccineLot");
+
+                    b.Navigation("HepAVaccineInfo");
+
+                    b.Navigation("HepAVaccineLot");
+
+                    b.Navigation("HepBVaccineInfo");
+
+                    b.Navigation("HepBVaccineLot");
+
+                    b.Navigation("MMRVaccineInfo");
+
+                    b.Navigation("MMRVaccineLot");
+
+                    b.Navigation("TetTdpVaccineInfo");
+
+                    b.Navigation("TetTdpVaccineLot");
+
+                    b.Navigation("VaricellaVaccineInfo");
+
+                    b.Navigation("VaricellaVaccineLot");
                 });
 
             modelBuilder.Entity("Malama.Models.ImmunizationVaccineLotEntry", b =>

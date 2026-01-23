@@ -143,6 +143,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.LdlCholesterol = null;
                 target.TotalCholesterolHdlRatio = null;
                 target.NonHdlCholesterol = null;
+                target.LdlHdlLipoprotiens = null;
             }
             else if (source.LipidPanelNeeded == "Not Completed")
             {
@@ -156,6 +157,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.LdlCholesterol = null;
                 target.TotalCholesterolHdlRatio = null;
                 target.NonHdlCholesterol = null;
+                target.LdlHdlLipoprotiens = null;
             }
             else
             {
@@ -172,6 +174,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.LdlCholesterol = source.LdlCholesterol;
                 target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
                 target.NonHdlCholesterol = source.NonHdlCholesterol;
+                target.LdlHdlLipoprotiens = source.LdlHdlLipoprotiens;
                 target.LipidPanelReason = null;
             }
 

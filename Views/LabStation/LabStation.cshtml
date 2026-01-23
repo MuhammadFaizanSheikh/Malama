@@ -375,41 +375,47 @@
 
                         <div class="mb-2">
                             <label>Total Cholesterol</label>
-                            <input asp-for="TotalCholesterol" class="form-control" />
+                            <input asp-for="TotalCholesterol" class="form-control min-max" data-min="100" data-max="400" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>HDL Cholesterol</label>
-                            <input asp-for="HdlCholesterol" class="form-control" />
+                            <label>High Density Lipoprotiens (HDL CHOL)</label>
+                            <input asp-for="HdlCholesterol" class="form-control min-max" data-min="20" data-max="120" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>Triglycerides</label>
-                            <input asp-for="Triglycerides" class="form-control" />
+                            <label>Triglycerides (TRIG)</label>
+                            <input asp-for="Triglycerides" class="form-control min-max" data-min="50" data-max="500" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>Glucose</label>
-                            <input asp-for="Glucose" class="form-control" />
+                            <label>Glucose (eGLU)</label>
+                            <input asp-for="Glucose" class="form-control min-max" data-min="20" data-max="600" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>LDL Cholesterol</label>
-                            <input asp-for="LdlCholesterol" class="form-control" />
+                            <label>Low density Lipoprotiens (CALC LDL)</label>
+                            <input asp-for="LdlCholesterol" class="form-control max-3-digit" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>Total Cholesterol / HDL Ratio</label>
-                            <input asp-for="TotalCholesterolHdlRatio" class="form-control" />
+                            <label>Total Cholesterol/High Density Lipoprotiens (TC/HDL)</label>
+                            <input asp-for="TotalCholesterolHdlRatio" class="form-control two-digit-decimal" type="number" />
                         </div>
 
                         <div class="mb-2">
-                            <label>Non-HDL Cholesterol</label>
-                            <input asp-for="NonHdlCholesterol" class="form-control" />
+                            <label>Low density Lipoprotiens/High Density Lipoprotiens (TC/HDL)</label>
+                            <input asp-for="LdlHdlLipoprotiens" class="form-control two-digit-decimal" type="number" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Non - High Density Lipoprotiens (Non-HDL)</label>
+                            <input asp-for="NonHdlCholesterol" class="form-control max-3-digit" type="number" />
                         </div>
 
                     </div>
                 </div>
+
                 
             </div>
 
@@ -568,6 +574,53 @@
 <script>
     
     $(document).ready(function () {
+
+        $(document).on('input', '.min-max', function () {
+            // Remove non-digits (still allow user to type numbers)
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        $(document).on('blur', '.min-max', function () {
+            let val = parseInt(this.value, 10);
+            const min = parseInt($(this).data('min'), 10);
+            const max = parseInt($(this).data('max'), 10);
+
+            if (!isNaN(val)) {
+                if (val < min) this.value = min;
+                if (val > max) this.value = max;
+            }
+        });
+
+        $(document).on('input', '.max-3-digit', function () {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length > 3) {
+                this.value = this.value.slice(0, 3);
+            }
+        });
+
+        $(document).on('keypress', '.two-digit-decimal', function (e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9.]/.test(char)) e.preventDefault();
+        });
+
+        $(document).on('blur', '.two-digit-decimal', function () {
+            let val = this.value;
+
+            // Remove any invalid characters
+            val = val.replace(/[^\d.]/g, '');
+
+            // Split by dot
+            const parts = val.split('.');
+
+            let intPart = parts[0] || '0';
+            let decPart = parts[1] || '0';
+
+            // Keep only 1 digit for int and 1 digit for decimal
+            intPart = intPart[0] || '0';
+            decPart = decPart[0] || '0';
+
+            this.value = intPart + '.' + decPart;
+        });
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();

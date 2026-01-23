@@ -38,6 +38,18 @@ function formatDateTimeToMMDDYYYY_HHMMSSGlobal(date) {
     return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
+function formatDateTimeStringToMMDDYYYY_HHMMSS(dateString) {
+    if (!dateString) return "";
+
+    const [datePart, timePart] = dateString.split('T');
+    if (!datePart || !timePart) return dateString; // fallback
+
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute, second] = timePart.split(':');
+
+    return `${month}/${day}/${year} ${hour}:${minute}:${second}`;
+}
+
 function getCurrentDateTimeNumericLocal() {
     const now = new Date();
 

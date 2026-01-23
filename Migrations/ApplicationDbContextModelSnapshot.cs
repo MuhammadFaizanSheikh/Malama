@@ -2095,6 +2095,9 @@ namespace Malama.Migrations
                     b.Property<string>("LdlCholesterol")
                         .HasColumnType("text");
 
+                    b.Property<string>("LdlHdlLipoprotiens")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("LipidPanelGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 

@@ -47,6 +47,7 @@ namespace Malama.Models
         public string? Glucose { get; set; }
         public string? LdlCholesterol { get; set; }
         public string? TotalCholesterolHdlRatio { get; set; }
+        public string? LdlHdlLipoprotiens { get; set; }
         public string? NonHdlCholesterol { get; set; }
 
         public string? HivNeeded { get; set; }

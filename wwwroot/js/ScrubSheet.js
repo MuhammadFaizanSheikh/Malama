@@ -1563,6 +1563,7 @@ async function saveChangesButton() {
         const checkedInTimeIndex = keys.indexOf('Checked In Time');
 
         if ($('#checkedIn').val() === "Yes") {
+            debugger;
             fullRowData[checkedInTimeIndex] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
         } else {
             fullRowData[checkedInTimeIndex] = "";
@@ -1646,6 +1647,7 @@ async function saveChangesButton() {
         updatedData['Checked Out By'] = $('#checkedOutBy').val();
 
         if ($('#checkedIn').val() === "Yes") {
+            debugger;
             updatedData['Checked In Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
         }
         else {

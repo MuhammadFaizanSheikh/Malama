@@ -566,13 +566,25 @@
             }
 
             // Format dates
-                if (mapping.type === "date" && value) {
-                    // Extract date-only part safely
-                    const dateOnly = getDateOnlyGlobal(value);
+                // ===== Validate value =====
+            if (value !== undefined && value !== null && value !== "") {
+                // if (mapping.type === "date" && value) {
+                //     // Extract date-only part safely
+                //     const dateOnly = getDateOnlyGlobal(value);
 
-                    // Convert to MM/DD/YYYY for display
-                    value = formatDateToMMDDYYYYGlobal(dateOnly);
-                }
+                //     // Convert to MM/DD/YYYY for display
+                //     value = formatDateToMMDDYYYYGlobal(dateOnly);
+                // }
+                // else if (mapping.type === "datetime") {
+                //     debugger;
+                //     // value is already Date object from DB
+                //         value = formatDateTimeStringToMMDDYYYY_HHMMSS(value);
+                // }
+
+                    if (mapping.type === "date" && value) {
+                        value = formatDateTimeStringToMMDDYYYY_HHMMSS(value);
+                    }
+            }
 
             rowData.push($('<div>').text(value).html()); // HTML escape
         });
