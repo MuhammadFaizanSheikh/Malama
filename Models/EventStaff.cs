@@ -364,10 +364,8 @@ namespace Malama.Models
         [StringLength(50)]
         public string LicenseType { get; set; }
 
-        [Required]
-        public DateTime LicenseActiveDate { get; set; }
-        [Required]
-        public DateTime LicenseExpiryDate { get; set; }
+        public DateTime? LicenseActiveDate { get; set; }
+        public DateTime? LicenseExpiryDate { get; set; }
     }
 
     [Table("TravelHonor")]

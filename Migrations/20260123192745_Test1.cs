@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialPostgres : Migration
+    public partial class Test1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,6 +56,26 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ContainerType",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    TemperatureFromRange = table.Column<int>(type: "integer", nullable: false),
+                    TemperatureToRange = table.Column<int>(type: "integer", nullable: false),
+                    TemperatureUnit = table.Column<string>(type: "text", nullable: false),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContainerType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ContractDetails",
                 columns: table => new
                 {
@@ -70,8 +90,10 @@ namespace Malama.Migrations
                     ContractType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     DawsonRoleOnContract = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     ContractStatus = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ClientName = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     ContractStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ContractEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    SiteId = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     KoLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     KoFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     KOPhone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
@@ -351,9 +373,12 @@ namespace Malama.Migrations
                     EventEndDate = table.Column<string>(type: "text", nullable: true),
                     EventId = table.Column<string>(type: "text", nullable: true),
                     CheckIn = table.Column<string>(type: "text", nullable: true),
-                    CheckInDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CheckInBy = table.Column<string>(type: "text", nullable: true),
+                    CheckInTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     CheckOut = table.Column<string>(type: "text", nullable: true),
-                    CheckOutDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CheckOutBy = table.Column<string>(type: "text", nullable: true),
+                    CheckOutTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    WalkInServiceMember = table.Column<string>(type: "text", nullable: true),
                     VisionWin = table.Column<int>(type: "integer", nullable: true),
                     DentalWin = table.Column<int>(type: "integer", nullable: true),
                     PhaWin = table.Column<int>(type: "integer", nullable: true),
@@ -369,6 +394,31 @@ namespace Malama.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FileData", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ImmunizationVaccineInfo",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    EventDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ImmunizationType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Vaccine = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Manufacturer = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Dose = table.Column<decimal>(type: "numeric", nullable: false),
+                    Unit = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
+                    StartingDoses = table.Column<int>(type: "integer", nullable: false),
+                    FinalDoses = table.Column<int>(type: "integer", nullable: true),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImmunizationVaccineInfo", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -416,6 +466,20 @@ namespace Malama.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SubContractor", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserEventMapping",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    EventId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserEventMapping", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -525,6 +589,40 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Container",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventId = table.Column<string>(type: "text", nullable: false),
+                    ContainerName = table.Column<string>(type: "text", nullable: false),
+                    ContainerTypeId = table.Column<long>(type: "bigint", nullable: false),
+                    StartDateTimeUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    InitialTemperature = table.Column<decimal>(type: "numeric", nullable: false),
+                    CurrentStatus = table.Column<string>(type: "text", nullable: false),
+                    NextExpectedReadingUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    MonitoringIntervalMinutes = table.Column<int>(type: "integer", nullable: false),
+                    EscalationIntervalMinutes = table.Column<int>(type: "integer", nullable: false),
+                    ConsecutiveNormalReadings = table.Column<int>(type: "integer", nullable: false),
+                    FinalTemp = table.Column<bool>(type: "boolean", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Container", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Container_ContainerType_ContainerTypeId",
+                        column: x => x.ContainerTypeId,
+                        principalTable: "ContainerType",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EventManagementTaskforces",
                 columns: table => new
                 {
@@ -579,7 +677,9 @@ namespace Malama.Migrations
                     EventManagementId = table.Column<long>(type: "bigint", nullable: false),
                     EventStaffId = table.Column<long>(type: "bigint", nullable: false),
                     PreEventAvailability = table.Column<bool>(type: "boolean", nullable: false),
-                    SelectedStation = table.Column<string>(type: "text", nullable: true)
+                    ProfileButtonAccess = table.Column<bool>(type: "boolean", nullable: false),
+                    SelectedStation = table.Column<string>(type: "text", nullable: true),
+                    SelectedSecondaryStation = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -637,19 +737,20 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StaffLicense",
+                name: "StaffQualification",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     EventStaffId = table.Column<long>(type: "bigint", nullable: false),
-                    RoleId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    QualificationId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    QualificationName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StaffLicense", x => x.Id);
+                    table.PrimaryKey("PK_StaffQualification", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffLicense_EventStaff_EventStaffId",
+                        name: "FK_StaffQualification_EventStaff_EventStaffId",
                         column: x => x.EventStaffId,
                         principalTable: "EventStaff",
                         principalColumn: "Id",
@@ -679,6 +780,63 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LabStation",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileDataId = table.Column<long>(type: "bigint", nullable: false),
+                    AreYouFasting = table.Column<string>(type: "text", nullable: false),
+                    AnyComplicationInBloodDrawn = table.Column<string>(type: "text", nullable: false),
+                    AllergicToLatex = table.Column<string>(type: "text", nullable: false),
+                    FeelAlright = table.Column<string>(type: "text", nullable: false),
+                    G6pdNeeded = table.Column<string>(type: "text", nullable: true),
+                    G6pdReason = table.Column<string>(type: "text", nullable: true),
+                    AboNeeded = table.Column<string>(type: "text", nullable: true),
+                    AboReason = table.Column<string>(type: "text", nullable: true),
+                    AboGrouping = table.Column<string>(type: "text", nullable: true),
+                    AboRhFactor = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelNeeded = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelReason = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelRapidTesting = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalCholesterol = table.Column<string>(type: "text", nullable: true),
+                    HdlCholesterol = table.Column<string>(type: "text", nullable: true),
+                    Triglycerides = table.Column<string>(type: "text", nullable: true),
+                    Glucose = table.Column<string>(type: "text", nullable: true),
+                    LdlCholesterol = table.Column<string>(type: "text", nullable: true),
+                    TotalCholesterolHdlRatio = table.Column<string>(type: "text", nullable: true),
+                    LdlHdlLipoprotiens = table.Column<string>(type: "text", nullable: true),
+                    NonHdlCholesterol = table.Column<string>(type: "text", nullable: true),
+                    HivNeeded = table.Column<string>(type: "text", nullable: true),
+                    HivReason = table.Column<string>(type: "text", nullable: true),
+                    HivBarcodeCarebill = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestNeeded = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestResult = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestReason = table.Column<string>(type: "text", nullable: true),
+                    FedExTrackingNo = table.Column<string>(type: "text", nullable: true),
+                    G6pdGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    AboGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LipidPanelGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    HivGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    PregnancyTestGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabStation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LabStation_FileData_FileDataId",
+                        column: x => x.FileDataId,
+                        principalTable: "FileData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ServiceTypeProvided",
                 columns: table => new
                 {
@@ -694,6 +852,88 @@ namespace Malama.Migrations
                         name: "FK_ServiceTypeProvided_SubContractor_SubContractorId",
                         column: x => x.SubContractorId,
                         principalTable: "SubContractor",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContainerNotification",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ContainerId = table.Column<long>(type: "bigint", nullable: false),
+                    DueAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    IsAcknowledged = table.Column<bool>(type: "boolean", nullable: false),
+                    AcknowledgedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContainerNotification", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContainerNotification_Container_ContainerId",
+                        column: x => x.ContainerId,
+                        principalTable: "Container",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContainerTemperatureReading",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ContainerId = table.Column<long>(type: "bigint", nullable: false),
+                    ReadingTimeUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Temperature = table.Column<decimal>(type: "numeric", nullable: false),
+                    IsOutOfRange = table.Column<bool>(type: "boolean", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    AttemptNumber = table.Column<int>(type: "integer", nullable: false),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContainerTemperatureReading", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContainerTemperatureReading_Container_ContainerId",
+                        column: x => x.ContainerId,
+                        principalTable: "Container",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ImmunizationVaccineLotEntry",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    LotNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ContainerId = table.Column<long>(type: "bigint", nullable: false),
+                    ImmunizationVaccineInfoId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImmunizationVaccineLotEntry", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationVaccineLotEntry_Container_ContainerId",
+                        column: x => x.ContainerId,
+                        principalTable: "Container",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationVaccineLotEntry_ImmunizationVaccineInfo_Immuniz~",
+                        column: x => x.ImmunizationVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -739,21 +979,41 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EventWiseStaffSecondaryRole",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventStaffDetailId = table.Column<long>(type: "bigint", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventWiseStaffSecondaryRole", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventWiseStaffSecondaryRole_EventStaffDetail_EventStaffDeta~",
+                        column: x => x.EventStaffDetailId,
+                        principalTable: "EventStaffDetail",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StaffAttributeDetails",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StaffLicenseId = table.Column<long>(type: "bigint", nullable: false),
+                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
                     Attribute = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StaffAttributeDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffAttributeDetails_StaffLicense_StaffLicenseId",
-                        column: x => x.StaffLicenseId,
-                        principalTable: "StaffLicense",
+                        name: "FK_StaffAttributeDetails_StaffQualification_StaffQualification~",
+                        column: x => x.StaffQualificationId,
+                        principalTable: "StaffQualification",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -764,7 +1024,7 @@ namespace Malama.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StaffLicenseId = table.Column<long>(type: "bigint", nullable: false),
+                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
                     LicenseNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LicenseState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LicenseType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -775,11 +1035,199 @@ namespace Malama.Migrations
                 {
                     table.PrimaryKey("PK_StaffLicenseDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffLicenseDetails_StaffLicense_StaffLicenseId",
-                        column: x => x.StaffLicenseId,
-                        principalTable: "StaffLicense",
+                        name: "FK_StaffLicenseDetails_StaffQualification_StaffQualificationId",
+                        column: x => x.StaffQualificationId,
+                        principalTable: "StaffQualification",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ImmunizationStation",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileDataId = table.Column<long>(type: "bigint", nullable: false),
+                    IsSickToday = table.Column<string>(type: "text", nullable: false),
+                    IsSickTodayReason = table.Column<string>(type: "text", nullable: true),
+                    HasAllergiesToMedicationFoodVaccineOrLatex = table.Column<string>(type: "text", nullable: false),
+                    HasAllergiesReason = table.Column<string>(type: "text", nullable: true),
+                    HadSeriousReactionAfterVaccination = table.Column<string>(type: "text", nullable: false),
+                    SeriousReactionReason = table.Column<string>(type: "text", nullable: true),
+                    HasLongTermHealthProblem = table.Column<string>(type: "text", nullable: false),
+                    LongTermHealthProblemReason = table.Column<string>(type: "text", nullable: true),
+                    HasCancerOrImmuneSystemProblem = table.Column<string>(type: "text", nullable: false),
+                    CancerOrImmuneSystemReason = table.Column<string>(type: "text", nullable: true),
+                    TookImmuneSuppressingMedicationRecently = table.Column<string>(type: "text", nullable: false),
+                    ImmuneSuppressionReason = table.Column<string>(type: "text", nullable: true),
+                    HadSeizureOrNervousSystemProblem = table.Column<string>(type: "text", nullable: false),
+                    SeizureReason = table.Column<string>(type: "text", nullable: true),
+                    HadBloodTransfusionOrAntiviralInPastYear = table.Column<string>(type: "text", nullable: false),
+                    BloodTransfusionReason = table.Column<string>(type: "text", nullable: true),
+                    IsPregnantOrCouldBePregnant = table.Column<string>(type: "text", nullable: false),
+                    PregnancyCheckboxSelected = table.Column<bool>(type: "boolean", nullable: false),
+                    ReceivedVaccineInPast4Weeks = table.Column<string>(type: "text", nullable: false),
+                    ReceivedVaccineReason = table.Column<string>(type: "text", nullable: true),
+                    HepBNeeded = table.Column<string>(type: "text", nullable: true),
+                    HepBReason = table.Column<string>(type: "text", nullable: true),
+                    HepBReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    HepBVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    HepBVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    HepBExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    HepBType = table.Column<string>(type: "text", nullable: true),
+                    HepBBodyPart = table.Column<string>(type: "text", nullable: true),
+                    HepBBodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    HepBSite = table.Column<string>(type: "text", nullable: true),
+                    HepBStaffName = table.Column<string>(type: "text", nullable: true),
+                    HepBGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FluNeeded = table.Column<string>(type: "text", nullable: true),
+                    FluReason = table.Column<string>(type: "text", nullable: true),
+                    FluReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    FluVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    FluVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    FluExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FluType = table.Column<string>(type: "text", nullable: true),
+                    FluBodyPart = table.Column<string>(type: "text", nullable: true),
+                    FluBodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    FluSite = table.Column<string>(type: "text", nullable: true),
+                    FluStaffName = table.Column<string>(type: "text", nullable: true),
+                    FluGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    MMRNeeded = table.Column<string>(type: "text", nullable: true),
+                    MMRReason = table.Column<string>(type: "text", nullable: true),
+                    MMRReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    MMRVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    MMRVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    MMRExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    MMRType = table.Column<string>(type: "text", nullable: true),
+                    MMRBodyPart = table.Column<string>(type: "text", nullable: true),
+                    MMRBodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    MMRSite = table.Column<string>(type: "text", nullable: true),
+                    MMRStaffName = table.Column<string>(type: "text", nullable: true),
+                    MMRGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    HepANeeded = table.Column<string>(type: "text", nullable: true),
+                    HepAReason = table.Column<string>(type: "text", nullable: true),
+                    HepAReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    HepAVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    HepAVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    HepAExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    HepAType = table.Column<string>(type: "text", nullable: true),
+                    HepABodyPart = table.Column<string>(type: "text", nullable: true),
+                    HepABodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    HepASite = table.Column<string>(type: "text", nullable: true),
+                    HepAStaffName = table.Column<string>(type: "text", nullable: true),
+                    HepAGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    TetTdpNeeded = table.Column<string>(type: "text", nullable: true),
+                    TetTdpReason = table.Column<string>(type: "text", nullable: true),
+                    TetTdpReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    TetTdpVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    TetTdpVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    TetTdpExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    TetTdpType = table.Column<string>(type: "text", nullable: true),
+                    TetTdpBodyPart = table.Column<string>(type: "text", nullable: true),
+                    TetTdpBodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    TetTdpSite = table.Column<string>(type: "text", nullable: true),
+                    TetTdpStaffName = table.Column<string>(type: "text", nullable: true),
+                    TetTdpGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    VaricellaNeeded = table.Column<string>(type: "text", nullable: true),
+                    VaricellaReason = table.Column<string>(type: "text", nullable: true),
+                    VaricellaReasonExcusedComments = table.Column<string>(type: "text", nullable: true),
+                    VaricellaVaccineInfoId = table.Column<long>(type: "bigint", nullable: true),
+                    VaricellaVaccineLotEntryId = table.Column<long>(type: "bigint", nullable: true),
+                    VaricellaExpirationDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    VaricellaType = table.Column<string>(type: "text", nullable: true),
+                    VaricellaBodyPart = table.Column<string>(type: "text", nullable: true),
+                    VaricellaBodyPartOther = table.Column<string>(type: "text", nullable: true),
+                    VaricellaSite = table.Column<string>(type: "text", nullable: true),
+                    VaricellaStaffName = table.Column<string>(type: "text", nullable: true),
+                    VaricellaGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImmunizationStation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_FileData_FileDataId",
+                        column: x => x.FileDataId,
+                        principalTable: "FileData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_FluVaccineInfoId",
+                        column: x => x.FluVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_HepAVaccineInfo~",
+                        column: x => x.HepAVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_HepBVaccineInfo~",
+                        column: x => x.HepBVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_MMRVaccineInfoId",
+                        column: x => x.MMRVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_TetTdpVaccineIn~",
+                        column: x => x.TetTdpVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineInfo_VaricellaVaccin~",
+                        column: x => x.VaricellaVaccineInfoId,
+                        principalTable: "ImmunizationVaccineInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_FluVaccineL~",
+                        column: x => x.FluVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_HepAVaccine~",
+                        column: x => x.HepAVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_HepBVaccine~",
+                        column: x => x.HepBVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_MMRVaccineL~",
+                        column: x => x.MMRVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_TetTdpVacci~",
+                        column: x => x.TetTdpVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ImmunizationVaccineLotEntry_VaricellaVa~",
+                        column: x => x.VaricellaVaccineLotEntryId,
+                        principalTable: "ImmunizationVaccineLotEntry",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -820,6 +1268,21 @@ namespace Malama.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Container_ContainerTypeId",
+                table: "Container",
+                column: "ContainerTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContainerNotification_ContainerId",
+                table: "ContainerNotification",
+                column: "ContainerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContainerTemperatureReading_ContainerId",
+                table: "ContainerTemperatureReading",
+                column: "ContainerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventManagementStaffAvailability_EventStaffDetailId",
                 table: "EventManagementStaffAvailability",
                 column: "EventStaffDetailId");
@@ -850,14 +1313,106 @@ namespace Malama.Migrations
                 column: "EventStaffDetailId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EventWiseStaffSecondaryRole_EventStaffDetailId",
+                table: "EventWiseStaffSecondaryRole",
+                column: "EventStaffDetailId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FileData_EventId_isDeleted",
+                table: "FileData",
+                columns: new[] { "EventId", "isDeleted" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_FileDataId",
+                table: "ImmunizationStation",
+                column: "FileDataId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_FluVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "FluVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_FluVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "FluVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_HepAVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "HepAVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_HepAVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "HepAVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_HepBVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "HepBVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_HepBVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "HepBVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_MMRVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "MMRVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_MMRVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "MMRVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_TetTdpVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "TetTdpVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_TetTdpVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "TetTdpVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_VaricellaVaccineInfoId",
+                table: "ImmunizationStation",
+                column: "VaricellaVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_VaricellaVaccineLotEntryId",
+                table: "ImmunizationStation",
+                column: "VaricellaVaccineLotEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationVaccineLotEntry_ContainerId",
+                table: "ImmunizationVaccineLotEntry",
+                column: "ContainerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationVaccineLotEntry_ImmunizationVaccineInfoId",
+                table: "ImmunizationVaccineLotEntry",
+                column: "ImmunizationVaccineInfoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LabStation_FileDataId",
+                table: "LabStation",
+                column: "FileDataId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceTypeProvided_SubContractorId",
                 table: "ServiceTypeProvided",
                 column: "SubContractorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StaffAttributeDetails_StaffLicenseId",
+                name: "IX_StaffAttributeDetails_StaffQualificationId",
                 table: "StaffAttributeDetails",
-                column: "StaffLicenseId");
+                column: "StaffQualificationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StaffContractAffiliation_EventStaffId",
@@ -865,14 +1420,14 @@ namespace Malama.Migrations
                 column: "EventStaffId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StaffLicense_EventStaffId",
-                table: "StaffLicense",
-                column: "EventStaffId");
+                name: "IX_StaffLicenseDetails_StaffQualificationId",
+                table: "StaffLicenseDetails",
+                column: "StaffQualificationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StaffLicenseDetails_StaffLicenseId",
-                table: "StaffLicenseDetails",
-                column: "StaffLicenseId");
+                name: "IX_StaffQualification_EventStaffId",
+                table: "StaffQualification",
+                column: "EventStaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TravelHonor_EventStaffId",
@@ -899,6 +1454,12 @@ namespace Malama.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ContainerNotification");
+
+            migrationBuilder.DropTable(
+                name: "ContainerTemperatureReading");
+
+            migrationBuilder.DropTable(
                 name: "ContractDetails");
 
             migrationBuilder.DropTable(
@@ -917,7 +1478,13 @@ namespace Malama.Migrations
                 name: "EventWiseStaffRole");
 
             migrationBuilder.DropTable(
-                name: "FileData");
+                name: "EventWiseStaffSecondaryRole");
+
+            migrationBuilder.DropTable(
+                name: "ImmunizationStation");
+
+            migrationBuilder.DropTable(
+                name: "LabStation");
 
             migrationBuilder.DropTable(
                 name: "ServiceTypeProvided");
@@ -935,6 +1502,9 @@ namespace Malama.Migrations
                 name: "TravelHonor");
 
             migrationBuilder.DropTable(
+                name: "UserEventMapping");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -944,16 +1514,31 @@ namespace Malama.Migrations
                 name: "EventStaffDetail");
 
             migrationBuilder.DropTable(
+                name: "ImmunizationVaccineLotEntry");
+
+            migrationBuilder.DropTable(
+                name: "FileData");
+
+            migrationBuilder.DropTable(
                 name: "SubContractor");
 
             migrationBuilder.DropTable(
-                name: "StaffLicense");
+                name: "StaffQualification");
 
             migrationBuilder.DropTable(
                 name: "EventManagement");
 
             migrationBuilder.DropTable(
+                name: "Container");
+
+            migrationBuilder.DropTable(
+                name: "ImmunizationVaccineInfo");
+
+            migrationBuilder.DropTable(
                 name: "EventStaff");
+
+            migrationBuilder.DropTable(
+                name: "ContainerType");
         }
     }
 }

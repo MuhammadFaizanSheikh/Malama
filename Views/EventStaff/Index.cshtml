@@ -1365,11 +1365,34 @@
             return; // Exit the handler
         }
 
-        // if (!validateStaffContractAffiliation()) {
-        //     event.preventDefault(); // Prevent submission if staff contract affiliation validation fails
-        //     return; // Exit the handler
-        // }
+        const StartDate = document.getElementById("StartDate").value;
+        const StaffDOB = document.getElementById("StaffDOB").value;
+        const DAWSONInternalCredentialingCompleteDate = document.getElementById("DAWSONInternalCredentialingCompleteDate").value;
+        const CredentialingProcessDate = document.getElementById("CredentialingProcessDate").value;
 
+        if (!StartDate) {
+            alert('Please enter Contract Start Date')
+            event.preventDefault();
+            return;
+        }
+
+        if (!StaffDOB) {
+            alert('Please enter Staff DOB')
+            event.preventDefault();
+            return;
+        }
+
+        if (!DAWSONInternalCredentialingCompleteDate) {
+            alert('Please enter DAWSON Internal Credentialing Complete Date')
+            event.preventDefault();
+            return;
+        }
+
+        if (!CredentialingProcessDate) {
+            alert('Please enter Credentialing Process Date')
+            event.preventDefault();
+            return;
+        }
     });
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {

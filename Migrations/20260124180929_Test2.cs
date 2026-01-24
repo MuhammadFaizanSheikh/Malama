@@ -6,34 +6,34 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Malama.Migrations
 {
     /// <inheritdoc />
-    public partial class Test13 : Migration
+    public partial class Test2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<DateTime>(
-                name: "CompletedOn",
-                table: "ImmunizationStation",
+                name: "LicenseExpiryDate",
+                table: "StaffLicenseDetails",
                 type: "timestamp without time zone",
                 nullable: true,
                 oldClrType: typeof(DateTime),
                 oldType: "timestamp without time zone");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "CompletedBy",
-                table: "ImmunizationStation",
-                type: "text",
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "LicenseActiveDate",
+                table: "StaffLicenseDetails",
+                type: "timestamp without time zone",
                 nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text");
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<DateTime>(
-                name: "CompletedOn",
-                table: "ImmunizationStation",
+                name: "LicenseExpiryDate",
+                table: "StaffLicenseDetails",
                 type: "timestamp without time zone",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -41,14 +41,14 @@ namespace Malama.Migrations
                 oldType: "timestamp without time zone",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "CompletedBy",
-                table: "ImmunizationStation",
-                type: "text",
+            migrationBuilder.AlterColumn<DateTime>(
+                name: "LicenseActiveDate",
+                table: "StaffLicenseDetails",
+                type: "timestamp without time zone",
                 nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "text",
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                oldClrType: typeof(DateTime),
+                oldType: "timestamp without time zone",
                 oldNullable: true);
         }
     }

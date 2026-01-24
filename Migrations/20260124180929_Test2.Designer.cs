@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260122210251_Test61")]
-    partial class Test61
+    [Migration("20260124180929_Test2")]
+    partial class Test2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -372,6 +372,11 @@ namespace Malama.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)");
 
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("ContractAgency")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -482,6 +487,11 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SiteId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -2036,11 +2046,23 @@ namespace Malama.Migrations
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("AllergicToLatex")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AnyComplicationInBloodDrawn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("AreYouFasting")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FedExTrackingNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FeelAlright")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("FileDataId")
@@ -2074,6 +2096,9 @@ namespace Malama.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("LdlCholesterol")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LdlHdlLipoprotiens")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LipidPanelGivenDateTime")
@@ -2208,10 +2233,10 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("LicenseActiveDate")
+                    b.Property<DateTime?>("LicenseActiveDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LicenseExpiryDate")
+                    b.Property<DateTime?>("LicenseExpiryDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LicenseNumber")

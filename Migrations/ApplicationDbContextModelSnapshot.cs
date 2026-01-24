@@ -2230,10 +2230,10 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("LicenseActiveDate")
+                    b.Property<DateTime?>("LicenseActiveDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime>("LicenseExpiryDate")
+                    b.Property<DateTime?>("LicenseExpiryDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("LicenseNumber")

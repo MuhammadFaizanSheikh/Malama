@@ -456,6 +456,24 @@
             $(this).closest('form')[0].reset();
         });
 
+        $("#submitBtn").on("click", function (e) {
+
+            let isValid = true;
+
+                $(".lot-expiration-input").each(function () {
+                    if (!$(this).val() || !$(this).val().trim()) {
+                        e.preventDefault(); // stop submit
+                        alert("Please select expiration date for all lots.");
+                        $(this).focus();
+                        isValid = false;
+                        return false; // break .each()
+                    }
+                });
+            
+                return isValid;
+            });
+
+
         // --- Add Lot button ---
         const addLotBtn = document.getElementById("addLotBtn");
         const lotsContainer = document.getElementById("lotsContainer");

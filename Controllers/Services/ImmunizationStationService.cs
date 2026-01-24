@@ -3,6 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.Record;
 
 namespace ExcelFilesCompiler.Controllers.Services
@@ -69,7 +70,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             // map all fields from model → existing
             MapToEntity(model, existing, userName);
-            SetGivenDateTimes(existing);
 
             await _unitOfWork.ImmunizationStation.UpdateAsync(existing);
             await _unitOfWork.SaveAsync();
@@ -100,82 +100,306 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.ReceivedVaccineReason = source.ReceivedVaccineReason;
 
             // ========== Hepatitis B ==========
-            target.HepBNeeded = source.HepBNeeded;
-            target.HepBReason = source.HepBReason;
-            target.HepBReasonExcusedComments = source.HepBReasonExcusedComments;
-            target.HepBVaccineInfoId = source.HepBVaccineInfoId;
-            target.HepBVaccineLotEntryId = source.HepBVaccineLotEntryId;
-            target.HepBExpirationDate = source.HepBExpirationDate;
-            target.HepBType = source.HepBType;
-            target.HepBBodyPart = source.HepBBodyPart;
-            target.HepBBodyPartOther = source.HepBBodyPartOther;
-            target.HepBSite = source.HepBSite;
-            target.HepBStaffName = source.HepBStaffName;
+            if (source.HepBNeeded.IsNullOrEmpty())
+            {
+                target.HepBGivenDateTime = null;
+                target.HepBReason = null;
+                target.HepBReasonExcusedComments = null;
+                target.HepBVaccineInfoId = null;
+                target.HepBVaccineLotEntryId = null;
+                target.HepBExpirationDate = null;
+                target.HepBType = null;
+                target.HepBBodyPart = null;
+                target.HepBBodyPartOther = null;
+                target.HepBSite = null;
+                target.HepBStaffName = null;
+            }
+            else if (source.HepBNeeded == "Not Completed")
+            {
+                target.HepBGivenDateTime = null;
+                target.HepBVaccineInfoId = null;
+                target.HepBVaccineLotEntryId = null;
+                target.HepBExpirationDate = null;
+                target.HepBType = null;
+                target.HepBBodyPart = null;
+                target.HepBBodyPartOther = null;
+                target.HepBSite = null;
+                target.HepBStaffName = null;
+                target.HepBReason = source.HepBReason;
+                target.HepBReasonExcusedComments = source.HepBReasonExcusedComments;
+            }
+            else
+            {
+                if (source.HepBNeeded != target.HepBNeeded)
+                {
+                    target.HepBGivenDateTime = DateTime.Now;
+                }
+
+                target.HepBReason = null;
+                target.HepBReasonExcusedComments = null;
+                target.HepBVaccineInfoId = source.HepBVaccineInfoId;
+                target.HepBVaccineLotEntryId = source.HepBVaccineLotEntryId;
+                target.HepBExpirationDate = source.HepBExpirationDate;
+                target.HepBType = source.HepBType;
+                target.HepBBodyPart = source.HepBBodyPart;
+                target.HepBBodyPartOther = source.HepBBodyPartOther;
+                target.HepBSite = source.HepBSite;
+                target.HepBStaffName = source.HepBStaffName;
+            }
 
             // ========== Influenza ==========
-            target.FluNeeded = source.FluNeeded;
-            target.FluReason = source.FluReason;
-            target.FluReasonExcusedComments = source.FluReasonExcusedComments;
-            target.FluVaccineInfoId = source.FluVaccineInfoId;
-            target.FluVaccineLotEntryId = source.FluVaccineLotEntryId;
-            target.FluExpirationDate = source.FluExpirationDate;
-            target.FluType = source.FluType;
-            target.FluBodyPart = source.FluBodyPart;
-            target.FluBodyPartOther = source.FluBodyPartOther;
-            target.FluSite = source.FluSite;
-            target.FluStaffName = source.FluStaffName;
+
+            if (source.FluNeeded.IsNullOrEmpty())
+            {
+                target.FluGivenDateTime = null;
+                target.FluReason = null;
+                target.FluReasonExcusedComments = null;
+                target.FluVaccineInfoId = null;
+                target.FluVaccineLotEntryId = null;
+                target.FluExpirationDate = null;
+                target.FluType = null;
+                target.FluBodyPart = null;
+                target.FluBodyPartOther = null;
+                target.FluSite = null;
+                target.FluStaffName = null;
+            }
+            else if (source.FluNeeded == "Not Completed")
+            {
+                target.FluGivenDateTime = null;
+                target.FluVaccineInfoId = null;
+                target.FluVaccineLotEntryId = null;
+                target.FluExpirationDate = null;
+                target.FluType = null;
+                target.FluBodyPart = null;
+                target.FluBodyPartOther = null;
+                target.FluSite = null;
+                target.FluStaffName = null;
+                target.FluReason = source.FluReason;
+                target.FluReasonExcusedComments = source.FluReasonExcusedComments;
+            }
+            else
+            {
+                if (source.FluNeeded != target.FluNeeded)
+                {
+                    target.FluGivenDateTime = DateTime.Now;
+                }
+
+                target.FluReason = null;
+                target.FluReasonExcusedComments = null;
+                target.FluVaccineInfoId = source.FluVaccineInfoId;
+                target.FluVaccineLotEntryId = source.FluVaccineLotEntryId;
+                target.FluExpirationDate = source.FluExpirationDate;
+                target.FluType = source.FluType;
+                target.FluBodyPart = source.FluBodyPart;
+                target.FluBodyPartOther = source.FluBodyPartOther;
+                target.FluSite = source.FluSite;
+                target.FluStaffName = source.FluStaffName;
+            }
 
             // ========== MMR ==========
-            target.MMRNeeded = source.MMRNeeded;
-            target.MMRReason = source.MMRReason;
-            target.MMRReasonExcusedComments = source.MMRReasonExcusedComments;
-            target.MMRVaccineInfoId = source.MMRVaccineInfoId;
-            target.MMRVaccineLotEntryId = source.MMRVaccineLotEntryId;
-            target.MMRExpirationDate = source.MMRExpirationDate;
-            target.MMRType = source.MMRType;
-            target.MMRBodyPart = source.MMRBodyPart;
-            target.MMRBodyPartOther = source.MMRBodyPartOther;
-            target.MMRSite = source.MMRSite;
-            target.MMRStaffName = source.MMRStaffName;
+
+            if (source.MMRNeeded.IsNullOrEmpty())
+            {
+                target.MMRGivenDateTime = null;
+                target.MMRReason = null;
+                target.MMRReasonExcusedComments = null;
+                target.MMRVaccineInfoId = null;
+                target.MMRVaccineLotEntryId = null;
+                target.MMRExpirationDate = null;
+                target.MMRType = null;
+                target.MMRBodyPart = null;
+                target.MMRBodyPartOther = null;
+                target.MMRSite = null;
+                target.MMRStaffName = null;
+            }
+            else if (source.MMRNeeded == "Not Completed")
+            {
+                target.MMRGivenDateTime = null;
+                target.MMRVaccineInfoId = null;
+                target.MMRVaccineLotEntryId = null;
+                target.MMRExpirationDate = null;
+                target.MMRType = null;
+                target.MMRBodyPart = null;
+                target.MMRBodyPartOther = null;
+                target.MMRSite = null;
+                target.MMRStaffName = null;
+                target.MMRReason = source.MMRReason;
+                target.MMRReasonExcusedComments = source.MMRReasonExcusedComments;
+            }
+            else
+            {
+                if (source.MMRNeeded != target.MMRNeeded)
+                {
+                    target.MMRGivenDateTime = DateTime.Now;
+                }
+
+                target.MMRReason = null;
+                target.MMRReasonExcusedComments = null;
+                target.MMRVaccineInfoId = source.MMRVaccineInfoId;
+                target.MMRVaccineLotEntryId = source.MMRVaccineLotEntryId;
+                target.MMRExpirationDate = source.MMRExpirationDate;
+                target.MMRType = source.MMRType;
+                target.MMRBodyPart = source.MMRBodyPart;
+                target.MMRBodyPartOther = source.MMRBodyPartOther;
+                target.MMRSite = source.MMRSite;
+                target.MMRStaffName = source.MMRStaffName;
+            }
+
+            
 
             // ========== Hepatitis A ==========
-            target.HepANeeded = source.HepANeeded;
-            target.HepAReason = source.HepAReason;
-            target.HepAReasonExcusedComments = source.HepAReasonExcusedComments;
-            target.HepAVaccineInfoId = source.HepAVaccineInfoId;
-            target.HepAVaccineLotEntryId = source.HepAVaccineLotEntryId;
-            target.HepAExpirationDate = source.HepAExpirationDate;
-            target.HepAType = source.HepAType;
-            target.HepABodyPart = source.HepABodyPart;
-            target.HepABodyPartOther = source.HepABodyPartOther;
-            target.HepASite = source.HepASite;
-            target.HepAStaffName = source.HepAStaffName;
+
+            if (source.HepANeeded.IsNullOrEmpty())
+            {
+                target.HepAGivenDateTime = null;
+                target.HepAReason = null;
+                target.HepAReasonExcusedComments = null;
+                target.HepAVaccineInfoId = null;
+                target.HepAVaccineLotEntryId = null;
+                target.HepAExpirationDate = null;
+                target.HepAType = null;
+                target.HepABodyPart = null;
+                target.HepABodyPartOther = null;
+                target.HepASite = null;
+                target.HepAStaffName = null;
+            }
+            else if (source.HepANeeded == "Not Completed")
+            {
+                target.HepAGivenDateTime = null;
+                target.HepAVaccineInfoId = null;
+                target.HepAVaccineLotEntryId = null;
+                target.HepAExpirationDate = null;
+                target.HepAType = null;
+                target.HepABodyPart = null;
+                target.HepABodyPartOther = null;
+                target.HepASite = null;
+                target.HepAStaffName = null;
+                target.HepAReason = source.HepAReason;
+                target.HepAReasonExcusedComments = source.HepAReasonExcusedComments;
+            }
+            else
+            {
+                if (source.HepANeeded != target.HepANeeded)
+                {
+                    target.HepAGivenDateTime = DateTime.Now;
+                }
+
+                target.HepAReason = null;
+                target.HepAReasonExcusedComments = null;
+                target.HepAVaccineInfoId = source.HepAVaccineInfoId;
+                target.HepAVaccineLotEntryId = source.HepAVaccineLotEntryId;
+                target.HepAExpirationDate = source.HepAExpirationDate;
+                target.HepAType = source.HepAType;
+                target.HepABodyPart = source.HepABodyPart;
+                target.HepABodyPartOther = source.HepABodyPartOther;
+                target.HepASite = source.HepASite;
+                target.HepAStaffName = source.HepAStaffName;
+            }
 
             // ========== Tetanus / Tdap ==========
-            target.TetTdpNeeded = source.TetTdpNeeded;
-            target.TetTdpReason = source.TetTdpReason;
-            target.TetTdpReasonExcusedComments = source.TetTdpReasonExcusedComments;
-            target.TetTdpVaccineInfoId = source.TetTdpVaccineInfoId;
-            target.TetTdpVaccineLotEntryId = source.TetTdpVaccineLotEntryId;
-            target.TetTdpExpirationDate = source.TetTdpExpirationDate;
-            target.TetTdpType = source.TetTdpType;
-            target.TetTdpBodyPart = source.TetTdpBodyPart;
-            target.TetTdpBodyPartOther = source.TetTdpBodyPartOther;
-            target.TetTdpSite = source.TetTdpSite;
-            target.TetTdpStaffName = source.TetTdpStaffName;
 
+            if (source.TetTdpNeeded.IsNullOrEmpty())
+            {
+                target.TetTdpGivenDateTime = null;
+                target.TetTdpReason = null;
+                target.TetTdpReasonExcusedComments = null;
+                target.TetTdpVaccineInfoId = null;
+                target.TetTdpVaccineLotEntryId = null;
+                target.TetTdpExpirationDate = null;
+                target.TetTdpType = null;
+                target.TetTdpBodyPart = null;
+                target.TetTdpBodyPartOther = null;
+                target.TetTdpSite = null;
+                target.TetTdpStaffName = null;
+            }
+            else if (source.TetTdpNeeded == "Not Completed")
+            {
+                target.TetTdpGivenDateTime = null;
+                target.TetTdpVaccineInfoId = null;
+                target.TetTdpVaccineLotEntryId = null;
+                target.TetTdpExpirationDate = null;
+                target.TetTdpType = null;
+                target.TetTdpBodyPart = null;
+                target.TetTdpBodyPartOther = null;
+                target.TetTdpSite = null;
+                target.TetTdpStaffName = null;
+                target.TetTdpReason = source.TetTdpReason;
+                target.TetTdpReasonExcusedComments = source.TetTdpReasonExcusedComments;
+            }
+            else
+            {
+                if (source.TetTdpNeeded != target.TetTdpNeeded)
+                {
+                    target.TetTdpGivenDateTime = DateTime.Now;
+                }
+
+                target.TetTdpReason = null;
+                target.TetTdpReasonExcusedComments = null;
+                target.TetTdpVaccineInfoId = source.TetTdpVaccineInfoId;
+                target.TetTdpVaccineLotEntryId = source.TetTdpVaccineLotEntryId;
+                target.TetTdpExpirationDate = source.TetTdpExpirationDate;
+                target.TetTdpType = source.TetTdpType;
+                target.TetTdpBodyPart = source.TetTdpBodyPart;
+                target.TetTdpBodyPartOther = source.TetTdpBodyPartOther;
+                target.TetTdpSite = source.TetTdpSite;
+                target.TetTdpStaffName = source.TetTdpStaffName;
+            }
+            
             // ========== Varicella ==========
+
+            if (source.VaricellaNeeded.IsNullOrEmpty())
+            {
+                target.VaricellaGivenDateTime = null;
+                target.VaricellaReason = null;
+                target.VaricellaReasonExcusedComments = null;
+                target.VaricellaVaccineInfoId = null;
+                target.VaricellaVaccineLotEntryId = null;
+                target.VaricellaExpirationDate = null;
+                target.VaricellaType = null;
+                target.VaricellaBodyPart = null;
+                target.VaricellaBodyPartOther = null;
+                target.VaricellaSite = null;
+                target.VaricellaStaffName = null;
+            }
+            else if (source.VaricellaNeeded == "Not Completed")
+            {
+                target.VaricellaGivenDateTime = null;
+                target.VaricellaVaccineInfoId = null;
+                target.VaricellaVaccineLotEntryId = null;
+                target.VaricellaExpirationDate = null;
+                target.VaricellaType = null;
+                target.VaricellaBodyPart = null;
+                target.VaricellaBodyPartOther = null;
+                target.VaricellaSite = null;
+                target.VaricellaStaffName = null;
+                target.VaricellaReason = source.VaricellaReason;
+                target.VaricellaReasonExcusedComments = source.VaricellaReasonExcusedComments;
+            }
+            else
+            {
+                if (source.VaricellaNeeded != target.VaricellaNeeded)
+                {
+                    target.VaricellaGivenDateTime = DateTime.Now;
+                }
+
+                target.VaricellaReason = null;
+                target.VaricellaReasonExcusedComments = null;
+                target.VaricellaVaccineInfoId = source.VaricellaVaccineInfoId;
+                target.VaricellaVaccineLotEntryId = source.VaricellaVaccineLotEntryId;
+                target.VaricellaExpirationDate = source.VaricellaExpirationDate;
+                target.VaricellaType = source.VaricellaType;
+                target.VaricellaBodyPart = source.VaricellaBodyPart;
+                target.VaricellaBodyPartOther = source.VaricellaBodyPartOther;
+                target.VaricellaSite = source.VaricellaSite;
+                target.VaricellaStaffName = source.VaricellaStaffName;
+            }
+
+            target.HepBNeeded = source.HepBNeeded;
+            target.FluNeeded = source.FluNeeded;
+            target.MMRNeeded = source.MMRNeeded;
+            target.HepANeeded = source.HepANeeded;
+            target.TetTdpNeeded = source.TetTdpNeeded;
             target.VaricellaNeeded = source.VaricellaNeeded;
-            target.VaricellaReason = source.VaricellaReason;
-            target.VaricellaReasonExcusedComments = source.VaricellaReasonExcusedComments;
-            target.VaricellaVaccineInfoId = source.VaricellaVaccineInfoId;
-            target.VaricellaVaccineLotEntryId = source.VaricellaVaccineLotEntryId;
-            target.VaricellaExpirationDate = source.VaricellaExpirationDate;
-            target.VaricellaType = source.VaricellaType;
-            target.VaricellaBodyPart = source.VaricellaBodyPart;
-            target.VaricellaBodyPartOther = source.VaricellaBodyPartOther;
-            target.VaricellaSite = source.VaricellaSite;
-            target.VaricellaStaffName = source.VaricellaStaffName;
 
             // ========== Metadata ==========
             target.Status = source.Status;
