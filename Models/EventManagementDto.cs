@@ -1,5 +1,7 @@
 ﻿namespace Malama.Models
 {
+    using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+    using Newtonsoft.Json;
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
@@ -59,6 +61,11 @@
 
         [Required]
         public long ContractId { get; set; }
+
+        [ForeignKey(nameof(ContractId))]
+        [JsonIgnore]
+        [ValidateNever]
+        public ContractDetails ContractDetails { get; set; }
 
         [Required]
         [MaxLength(200)]

@@ -10,7 +10,6 @@ using System.ComponentModel.Design;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class SubContractorInfoController : Controller
     {
         private readonly ISubContractorService _subContractorService;
@@ -26,7 +25,7 @@ namespace ExcelFilesCompiler.Controllers
             _logger = logger;
         }
 
-
+        [RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> Index()
         {
             const string methodName = "Index";
@@ -67,6 +66,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("SubContractorInfo_Save")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateSubContracttor(SubContractorViewModel contractDto, string action)
         {
@@ -158,6 +158,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> GetNextCompanyCode(string companyName)
         {
             const string methodName = nameof(GetNextCompanyCode);
@@ -187,6 +188,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> GetSubContractorById(long id)
         {
             const string methodName = nameof(GetSubContractorById);
@@ -221,6 +223,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> GetSubContractorByCompanyNameForSearching(string companyName)
         {
             const string methodName = nameof(GetSubContractorByCompanyNameForSearching);
@@ -258,6 +261,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> GetContractIdsBySubContractorCompanyName(string companyName)
         {
             const string methodName = nameof(GetContractIdsBySubContractorCompanyName);
@@ -301,6 +305,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("SubContractorInfo_View")]
         public async Task<IActionResult> GetCompanyNameSuggestion(string term)
         {
             const string methodName = nameof(GetCompanyNameSuggestion);

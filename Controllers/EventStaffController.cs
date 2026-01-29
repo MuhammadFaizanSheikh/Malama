@@ -10,7 +10,6 @@ using Org.BouncyCastle.Asn1;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class EventStaffController : Controller
     {
         private readonly IEventStaffService _eventStaffService;
@@ -21,6 +20,8 @@ namespace ExcelFilesCompiler.Controllers
             _userManager = userManager;
             _eventStaffService = eventStaffService;
         }
+
+        [RoleAttributeAuthorizeFromConfig("EventStaff_View")]
 
         public async Task<IActionResult> Index()
         {
@@ -46,6 +47,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> GetAllEventStaff()
         {
             try
@@ -71,6 +73,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("EventStaff_Save")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventStaff(EventStaffViewModel eventStaffDto, string action)
         {
@@ -217,6 +220,7 @@ namespace ExcelFilesCompiler.Controllers
         //}
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> GetEventStaffById(long id)
         {
             try
@@ -236,6 +240,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> GetEventStaffWithoutIncludeById(long id)
         {
             try
@@ -256,6 +261,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> GetNextStaffId()
         {
             try
@@ -279,6 +285,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> GetEventStaffForSearching(string staffId)
         {
             try
@@ -300,6 +307,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventStaff_View")]
         public async Task<IActionResult> CheckSSNExists(string ssn)
         {
             try

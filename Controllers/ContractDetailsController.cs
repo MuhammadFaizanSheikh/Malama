@@ -10,7 +10,6 @@ using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class ContractDetailsController : Controller
     {
         private readonly IContractService _contractService;
@@ -25,6 +24,7 @@ namespace ExcelFilesCompiler.Controllers
             _logger = logger;
         }
 
+        [RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
         public async Task<IActionResult> Index()
         {
             const string methodName = "Index";
@@ -58,6 +58,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("ContractDetails_Save")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateContractDetails(ContractViewModel contractDto, string action)
         {
@@ -144,6 +145,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
         public async Task<IActionResult> GetContractById(long id, string companyName = null, bool checkIfContractAlreadyExist = false)
         {
             string methodName = nameof(GetContractById);
@@ -190,6 +192,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
         public async Task<IActionResult> GetContractsForSearching(string contractId)
         {
             string methodName = nameof(GetContractsForSearching);
@@ -227,6 +230,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
         public async Task<IActionResult> CheckIfContractExists(string contractId = null, string contractName = null, string checkType = "id")
         {
             string methodName = nameof(CheckIfContractExists);

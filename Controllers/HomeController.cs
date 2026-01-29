@@ -20,7 +20,6 @@ using System.Text.RegularExpressions;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -33,12 +32,14 @@ namespace ExcelFilesCompiler.Controllers
             this.fileUploader = _iFileUploader;
         }
 
+        [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
         public IActionResult Index()
         {
             //string sessionId = HttpContext.Session.GetString("SessionID");
             return View();
         }
 
+        [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
         public IActionResult UploadAndPreview(List<IFormFile> files, string eventDate, string lastEventDate, string eventId, int lastDentalExam , int vision, int dental, int pha, int hiv, int hearing)
         {
             try
@@ -78,6 +79,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        //[RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
         public IActionResult CheckForExistingDataAgainstEventId([FromBody] string eventId)
         {
             try
@@ -97,6 +99,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save")]
         public IActionResult SubmitDataInDatabase([FromBody] SubmitDataDto request)
         {
             try
@@ -133,10 +136,5 @@ namespace ExcelFilesCompiler.Controllers
 
         
 
-    }
-
-    public class CheckEventIdDto
-    {
-        public string EventId { get; set; }
     }
 }

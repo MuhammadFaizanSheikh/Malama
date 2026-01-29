@@ -111,23 +111,6 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                //var authResult = DashboardAuthorizationHelper.CheckCheckInOutAccess(User, userType);
-
-                //if (!authResult)
-                //{
-                //    return RedirectToAction("AccessDenied", "Account");
-                //}
-
-
-                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
-
-                //var dropdownList = eventIds.Select(e => new SelectListItem
-                //{
-                //    Value = e,
-                //    Text = e
-                //}).ToList();
-
-                //ViewBag.EventIdList = dropdownList;
                 ViewBag.UserType = userType;
                 return View();
             }

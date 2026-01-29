@@ -12,7 +12,6 @@ using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class EventManagementController : Controller
     {
         private readonly IEventManagementService _eventManagementService;
@@ -24,6 +23,7 @@ namespace ExcelFilesCompiler.Controllers
             _userManager = userManager;
         }
 
+        [RoleAttributeAuthorizeFromConfig("EventManagement_View")]
         public async Task<IActionResult> Index()
         {
             var responseDto = new ResponseDto();
@@ -49,6 +49,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("EventManagement_Save")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventManagement(EventManagementViewModel eventManagement, string action, string completedSections)
         {
@@ -140,6 +141,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        //[RoleAttributeAuthorizeFromConfig("EventManagement_View")]
         public async Task<IActionResult> GetNextEventManagementId()
         {
             try
@@ -162,6 +164,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("EventManagement_View")]
         public async Task<IActionResult> GetEventManagementById(long id)
         {
             try

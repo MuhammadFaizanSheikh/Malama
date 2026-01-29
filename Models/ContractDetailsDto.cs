@@ -182,6 +182,8 @@
         [Required(ErrorMessage = "Dawson Project Manager First Name is required.")]
         [RegularExpression(@"^\s*[\S]+.*$", ErrorMessage = "Dawson Project Manager First Name cannot be only white spaces.")]
         public string DawsonProjectManagerFirstName { get; set; }
+
+        public ICollection<EventManagement> EventManagement { get; set; } = new List<EventManagement>();
     }
 
 }

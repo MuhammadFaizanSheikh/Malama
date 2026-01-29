@@ -8,6 +8,49 @@
             ["SuperAdmin"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
+        },
+            ["ContractDetails_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["ContractDetails_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["SubContractorInfo_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["SubContractorInfo_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["EventStaff_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["EventStaff_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+        },
+            ["ReportProcessor_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+            ("Event Manager", null)
+        },
+            ["ReportProcessor_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+            ("Event Manager", null)
+        },
+            ["EventManagement_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+            ("Event Manager", null)
+        },
+            ["EventManagement_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
             ("Event Manager", null)
         },
             ["Profile_View"] = new List<(string Role, string Attribute)>
@@ -36,7 +79,7 @@
         },
             ["CheckInOutStaff_Admin_View"] = new List<(string Role, string Attribute)>
         {
-            ("Super Admin", null)
+            ("Project Manager & Program Manager", null)
         },
             // Audiologist
             ["Audiologist_View"] = new List<(string Role, string Attribute)>
