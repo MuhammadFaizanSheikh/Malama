@@ -137,13 +137,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.LipidPanelReason = null;
                 target.LipidPanelRapidTesting = false;
                 target.TotalCholesterol = null;
+                target.TotalCholesterol_LessThan100 = false;
+                target.TotalCholesterol_GreaterThan400 = false;
                 target.HdlCholesterol = null;
+                target.HdlCholesterol_LessThan20 = false;
+                target.HdlCholesterol_GreaterThan120 = false;
                 target.Triglycerides = null;
+                target.Triglycerides_LessThan50 = false;
+                target.Triglycerides_GreaterThan500 = false;
                 target.Glucose = null;
+                target.Glucose_LessThan20 = false;
+                target.Glucose_GreaterThan600 = false;
                 target.LdlCholesterol = null;
                 target.TotalCholesterolHdlRatio = null;
                 target.NonHdlCholesterol = null;
                 target.LdlHdlLipoprotiens = null;
+                target.A1C = null;
             }
             else if (source.LipidPanelNeeded == "Not Completed")
             {
@@ -151,13 +160,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.LipidPanelGivenDateTime = null;
                 target.LipidPanelRapidTesting = false;
                 target.TotalCholesterol = null;
+                target.TotalCholesterol_LessThan100 = false;
+                target.TotalCholesterol_GreaterThan400 = false;
                 target.HdlCholesterol = null;
+                target.HdlCholesterol_LessThan20 = false;
+                target.HdlCholesterol_GreaterThan120 = false;
                 target.Triglycerides = null;
+                target.Triglycerides_LessThan50 = false;
+                target.Triglycerides_GreaterThan500 = false;
                 target.Glucose = null;
+                target.Glucose_LessThan20 = false;
+                target.Glucose_GreaterThan600 = false;
                 target.LdlCholesterol = null;
                 target.TotalCholesterolHdlRatio = null;
                 target.NonHdlCholesterol = null;
                 target.LdlHdlLipoprotiens = null;
+                target.A1C = null;
             }
             else
             {
@@ -166,16 +184,49 @@ namespace ExcelFilesCompiler.Controllers.Services
                     target.LipidPanelGivenDateTime = DateTime.Now;
                 }
 
-                target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
-                target.TotalCholesterol = source.TotalCholesterol;
-                target.HdlCholesterol = source.HdlCholesterol;
-                target.Triglycerides = source.Triglycerides;
-                target.Glucose = source.Glucose;
-                target.LdlCholesterol = source.LdlCholesterol;
-                target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
-                target.NonHdlCholesterol = source.NonHdlCholesterol;
-                target.LdlHdlLipoprotiens = source.LdlHdlLipoprotiens;
-                target.LipidPanelReason = null;
+                if (source.LipidPanelRapidTesting)
+                {
+                    target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
+                    target.TotalCholesterol = source.TotalCholesterol;
+                    target.TotalCholesterol_LessThan100 = source.TotalCholesterol_LessThan100;
+                    target.TotalCholesterol_GreaterThan400 = source.TotalCholesterol_GreaterThan400;
+                    target.HdlCholesterol = source.HdlCholesterol;
+                    target.HdlCholesterol_LessThan20 = source.HdlCholesterol_LessThan20;
+                    target.HdlCholesterol_GreaterThan120 = source.HdlCholesterol_GreaterThan120;
+                    target.Triglycerides = source.Triglycerides;
+                    target.Triglycerides_LessThan50 = source.Triglycerides_LessThan50;
+                    target.Triglycerides_GreaterThan500 = source.Triglycerides_GreaterThan500;
+                    target.Glucose = source.Glucose;
+                    target.Glucose_LessThan20 = source.Glucose_LessThan20;
+                    target.Glucose_GreaterThan600 = source.Glucose_GreaterThan600;
+                    target.LdlCholesterol = source.LdlCholesterol;
+                    target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
+                    target.NonHdlCholesterol = source.NonHdlCholesterol;
+                    target.LdlHdlLipoprotiens = source.LdlHdlLipoprotiens;
+                    target.A1C = source.A1C;
+                    target.LipidPanelReason = null;
+                }
+                else
+                {
+                    target.LipidPanelRapidTesting = false;
+                    target.TotalCholesterol = null;
+                    target.TotalCholesterol_LessThan100 = false;
+                    target.TotalCholesterol_GreaterThan400 = false;
+                    target.HdlCholesterol = null;
+                    target.HdlCholesterol_LessThan20 = false;
+                    target.HdlCholesterol_GreaterThan120 = false;
+                    target.Triglycerides = null;
+                    target.Triglycerides_LessThan50 = false;
+                    target.Triglycerides_GreaterThan500 = false;
+                    target.Glucose = null;
+                    target.Glucose_LessThan20 = false;
+                    target.Glucose_GreaterThan600 = false;
+                    target.LdlCholesterol = null;
+                    target.TotalCholesterolHdlRatio = null;
+                    target.NonHdlCholesterol = null;
+                    target.LdlHdlLipoprotiens = null;
+                    target.A1C = null;
+                }
             }
 
             //HIV

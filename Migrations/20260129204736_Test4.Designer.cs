@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129204736_Test4")]
+    partial class Test4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2082,20 +2085,8 @@ namespace Malama.Migrations
                     b.Property<int?>("Glucose")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("Glucose_GreaterThan600")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Glucose_LessThan20")
-                        .HasColumnType("boolean");
-
                     b.Property<int?>("HdlCholesterol")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("HdlCholesterol_GreaterThan120")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("HdlCholesterol_LessThan20")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("HivBarcodeCarebill")
                         .HasColumnType("text");
@@ -2152,20 +2143,8 @@ namespace Malama.Migrations
                     b.Property<decimal?>("TotalCholesterolHdlRatio")
                         .HasColumnType("numeric");
 
-                    b.Property<bool>("TotalCholesterol_GreaterThan400")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("TotalCholesterol_LessThan100")
-                        .HasColumnType("boolean");
-
                     b.Property<int?>("Triglycerides")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("Triglycerides_GreaterThan500")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Triglycerides_LessThan50")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");

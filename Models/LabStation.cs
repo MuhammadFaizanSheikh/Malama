@@ -41,15 +41,23 @@ namespace Malama.Models
 
         public bool LipidPanelRapidTesting { get; set; } = false;
 
-        public string? TotalCholesterol { get; set; }
-        public string? HdlCholesterol { get; set; }
-        public string? Triglycerides { get; set; }
-        public string? Glucose { get; set; }
-        public string? A1C { get; set; }
-        public string? LdlCholesterol { get; set; }
-        public string? TotalCholesterolHdlRatio { get; set; }
-        public string? LdlHdlLipoprotiens { get; set; }
-        public string? NonHdlCholesterol { get; set; }
+        public int? TotalCholesterol { get; set; }
+        public bool TotalCholesterol_LessThan100 { get; set; }
+        public bool TotalCholesterol_GreaterThan400 { get; set; }
+        public int? HdlCholesterol { get; set; }
+        public bool HdlCholesterol_LessThan20 { get; set; }
+        public bool HdlCholesterol_GreaterThan120 { get; set; }
+        public int? Triglycerides { get; set; }
+        public bool Triglycerides_LessThan50 { get; set; }
+        public bool Triglycerides_GreaterThan500 { get; set; }
+        public int? Glucose { get; set; }
+        public bool Glucose_LessThan20 { get; set; }
+        public bool Glucose_GreaterThan600 { get; set; }
+        public decimal? A1C { get; set; }
+        public decimal? LdlCholesterol { get; set; }
+        public decimal? TotalCholesterolHdlRatio { get; set; }
+        public decimal? LdlHdlLipoprotiens { get; set; }
+        public int? NonHdlCholesterol { get; set; }
 
         public string? HivNeeded { get; set; }
         public string? HivReason { get; set; }
