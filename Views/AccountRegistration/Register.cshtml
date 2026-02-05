@@ -210,9 +210,11 @@
             </select>
         </div>
 
-
-        <button type="submit" class="btn btn-theme mb-2" id="registerBtn">Register</button>
-        <button type="button" id="deleteUserBtn" class="btn btn-danger btn-action" style="display:none;">Delete User</button>
+        <div class="d-flex justify-content-end mt-4 gap-2">
+            <button type="submit" class="btn btn-theme mb-2" id="registerBtn">Register</button>
+            <button type="button" class="btn btn-theme mb-2" id="cancelBtn" style="display:none">Cancel</button>
+            <button type="button" id="deleteUserBtn" class="btn btn-danger btn-action" style="display:none">Delete User</button>
+        </div>
 
 
         <div class="form-group">
@@ -306,9 +308,9 @@
                             }
                         }
 
-                        // $('#registerBtn').prop('disabled', true);
                         $('#registerBtn').text("Update User");
-                        $('#deleteUserBtn').show();
+                        $('#deleteUserBtn').show(); 
+                        $('#cancelBtn').show();
                         $('#userDropdown').hide();
                         $('#generatePasswordBtn').prop('disabled', true);
                     },
@@ -326,6 +328,18 @@
                 toggleEventSelection(false);
                 $('#deleteUserBtn').hide();
             }
+        });
+
+        $('#cancelBtn').click(function () {
+            $('#UserId').val('');
+            $('#registerBtn').text("Register");
+            $('#deleteUserBtn').hide();
+            $('#cancelBtn').hide();
+            $('#generatePasswordBtn').prop('disabled', false);
+            $('#emailGroup input').val('').prop('readonly', false);
+            $('#passwordGroup input').val('').prop('readonly', false);
+            $('#eventSelection').addClass('d-none');
+            $('input[name="SelectedRoles"]').prop('checked', false);
         });
 
         $('#deleteUserBtn').click(function () {

@@ -11,7 +11,6 @@ using Malama.Attributes;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("SuperAdmin")]
     public class AccountRegistrationController : Controller
     {
         private readonly IAccountRegistrationService _registrationService;
@@ -28,6 +27,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("AccountRegistration_View")]
         public async Task<IActionResult> Register()
         {
             const string methodName = "Register";
@@ -70,6 +70,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             const string methodName = "Register";
@@ -124,6 +125,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
         public async Task<IActionResult> GetUsers()
         {
             var response = await _registrationService.GetUsersAsync();
@@ -140,6 +142,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
         public async Task<IActionResult> DeleteUser([FromBody] string userId)
         {
             var response = await _registrationService.DeleteUserAsync(userId);
@@ -147,6 +150,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
+        [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updatedUser)
         {
             var response = await _registrationService.UpdateUserAsync(updatedUser);
@@ -208,10 +212,5 @@ namespace ExcelFilesCompiler.Controllers
             _logger.LogInformation("{ClassName}, {MethodName}, Successfully retrieved events, Count: {Count}", CLASSNAME, methodName, eventSelectList.Count);
         }
     }
-}
-
-public class RoleDto
-{
-    public string Text { get; set; }
 }
 

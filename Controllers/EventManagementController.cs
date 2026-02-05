@@ -182,5 +182,38 @@ namespace ExcelFilesCompiler.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEventStartAndEndDateById(int eventId)
+        {
+            try
+            {
+                var data = await _eventManagementService
+                    .GetEventStartAndEndDateById(eventId);
+
+                return Ok(new
+                {
+                    startDate = data.EventStartDate.ToString("yyyy-MM-dd"),
+                    endDate = data.EventEndDate.ToString("yyyy-MM-dd")
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new
+                {
+                    message = ex.Message
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    message = "Something went wrong while fetching event dates."
+                });
+            }
+        }
+
+
+
     }
 }

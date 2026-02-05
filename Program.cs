@@ -17,6 +17,8 @@ using Malama.Controllers.Services.ContainerTempMonitoringServices;
 using Malama.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Serilog;
+using Malama.Interfaces;
+using Malama.Controllers.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +44,7 @@ builder.Services.AddScoped<IContainerMonitoringService, ContainerMonitoringServi
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IUserEventMappingService, UserEventMappingService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
+builder.Services.AddScoped<IAccountUserService, AccountUserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

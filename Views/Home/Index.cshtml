@@ -12,17 +12,20 @@
     <div class="row my-3">
         <div class="col-md-4">
             <label for="calendarInput" style="color: black;">Event Start Date:</label>
-            <input type="text" class="form-control" id="calendarInput" placeholder="MM/DD/YYYY"/>
+            <input type="text" class="form-control" id="calendarInput" placeholder="MM/DD/YYYY" readonly/>
         </div>
         <div class="col-md-4">
             <label for="lastCalendarInput" style="color: black;">Event End Date:</label>
-            <input type="text" class="form-control" id="lastCalendarInput" placeholder="MM/DD/YYYY"/>
+            <input type="text" class="form-control" id="lastCalendarInput" placeholder="MM/DD/YYYY" readonly />
         </div>
     </div>
     <div class="row my-3">
         <div class="col-md-2">
             <label for="eventId" class="form-label" style="color: black;">Event ID</label>
-            <input type="text" class="form-control event-input" id="eventId" name="eventId" placeholder="Enter Event ID" required>
+            @* <input type="text" class="form-control event-input" id="eventId" name="eventId" placeholder="Enter Event ID" required> *@
+            <select asp-items="ViewBag.EventList" id="eventId" class="form-control">
+                <option value="">-- Select Event --</option>
+            </select>
         </div>
     </div>
 
@@ -169,8 +172,8 @@
             });
 
             document.addEventListener('DOMContentLoaded', function () {
-                startDatePicker = flatpickr("#calendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
-                endDatePicker = flatpickr("#lastCalendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+                startDatePicker = flatpickr("#calendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false });
+                endDatePicker = flatpickr("#lastCalendarInput", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false });
 
                 const clearBtn = document.getElementById('clearPreview');
                 if (clearBtn) {
@@ -178,6 +181,38 @@
                 }
             });
 
+            document.getElementById("eventId").addEventListener("change", function () {
+
+                const eventId = this.value;
+
+                if (!eventId) {
+                    startDatePicker.clear();
+                    endDatePicker.clear();
+                    return;
+                }
+
+                fetch(`/EventManagement/GetEventStartAndEndDateById?eventId=${eventId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err;
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        startDatePicker.setDate(data.startDate, true);
+                        endDatePicker.setDate(data.endDate, true);
+                    })
+                    .catch(err => {
+                        console.error(err);
+
+                        startDatePicker.clear();
+                        endDatePicker.clear();
+
+                        alert(err.message || "Unable to load event dates.");
+                    });
+            });
 
 
             // document.getElementById('clearPreview').addEventListener('click', clearPreview);
@@ -185,35 +220,116 @@
             
 
 
+            // document.getElementById('generateExcelButton').addEventListener('click', function () {
+            //     $('#previewTable').DataTable().search('').draw(); // clear search
+            //     const originalTable = document.getElementById('previewTable');
+            //     if (!originalTable) {
+            //         console.error('Table element not found.');
+            //         return;
+            //     }
+
+            //     const aoa = [];
+
+            //     // Extract rows from table manually
+            //     for (let rowIndex = 0; rowIndex < originalTable.rows.length; rowIndex++) {
+            //         const row = originalTable.rows[rowIndex];
+            //         const rowData = [];
+
+            //         for (let i = 1; i < row.cells.length; i++) {// skip first column
+            //             let cellText = row.cells[i].innerText || row.cells[i].textContent;
+            //             if (i === getBarcodeColumnIndex(originalTable)) {
+            //                 // Force barcode cell as exact string
+            //                 cellText = cellText.trim();
+            //             }
+            //             rowData.push(cellText);
+            //         }
+
+            //         // Add new column
+            //         if (rowIndex === 0) {
+            //             rowData.push("Walk-In Service Member"); // Header row
+            //         } else {
+            //             rowData.push("No"); // Data rows
+            //         }
+
+            //         aoa.push(rowData);
+            //     }
+
+            //     const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+
+            //     // Optional: force all barcode cells as string
+            //     const barcodeCol = getBarcodeColumnIndex(originalTable);
+            //     if (barcodeCol >= 0) {
+            //         for (let r = 1; r < aoa.length; r++) { // skip header
+            //             const cellRef = XLSX.utils.encode_cell({ c: barcodeCol, r });
+            //             const cell = worksheet[cellRef];
+            //             if (cell) {
+            //                 cell.t = 's';
+            //             }
+            //         }
+            //     }
+
+            //     const workbook = XLSX.utils.book_new();
+            //     XLSX.utils.book_append_sheet(workbook, worksheet, 'PreviewData');
+            //     XLSX.writeFile(workbook, 'PreviewData.xlsx');
+            // });
+
             document.getElementById('generateExcelButton').addEventListener('click', function () {
+
                 $('#previewTable').DataTable().search('').draw(); // clear search
+
                 const originalTable = document.getElementById('previewTable');
                 if (!originalTable) {
                     console.error('Table element not found.');
                     return;
                 }
 
+                const dataTable = $('#previewTable').DataTable();
                 const aoa = [];
 
-                // Extract rows from table manually
+                const hiddenSSNIndex = keys.indexOf("FULL SSN"); // DataTables index
+
+                // Extract rows
                 for (let rowIndex = 0; rowIndex < originalTable.rows.length; rowIndex++) {
+
                     const row = originalTable.rows[rowIndex];
                     const rowData = [];
 
-                    for (let i = 1; i < row.cells.length; i++) {// skip first column
-                        let cellText = row.cells[i].innerText || row.cells[i].textContent;
-                        if (i === getBarcodeColumnIndex(originalTable)) {
-                            // Force barcode cell as exact string
-                            cellText = cellText.trim();
+                    // DataTables row data (skip header)
+                    const dtRowData = rowIndex === 0 ? null : dataTable.row(rowIndex - 1).data();
+
+                    let domCellPointer = 1; // original logic: skip Actions
+
+                    for (let colIndex = 1; colIndex < dataTable.columns().count(); colIndex++) {
+
+                        let cellText = '';
+
+                        // If this is the hidden FULL SSN column
+                        if (colIndex === hiddenSSNIndex) {
+
+                            cellText = rowIndex === 0
+                                ? $(dataTable.column(colIndex).header()).text()
+                                : dtRowData[colIndex];
+
+                        } else {
+                            // Visible columns → original DOM behavior
+                            const domCell = row.cells[domCellPointer];
+                            cellText = domCell?.innerText || domCell?.textContent || '';
+                            domCellPointer++;
                         }
+
+                        // Preserve barcode handling
+                        if (colIndex === getBarcodeColumnIndex(originalTable)) {
+                            cellText = String(cellText).trim();
+                        }
+
                         rowData.push(cellText);
                     }
 
-                    // Add new column
+                    // Preserve Walk-In column logic
                     if (rowIndex === 0) {
-                        rowData.push("Walk-In Service Member"); // Header row
+                        rowData.push("Walk-In Service Member");
                     } else {
-                        rowData.push("No"); // Data rows
+                        rowData.push("No");
                     }
 
                     aoa.push(rowData);
@@ -221,14 +337,13 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(aoa);
 
-                // Optional: force all barcode cells as string
+                // Preserve barcode / SSN string enforcement
                 const barcodeCol = getBarcodeColumnIndex(originalTable);
                 if (barcodeCol >= 0) {
-                    for (let r = 1; r < aoa.length; r++) { // skip header
+                    for (let r = 1; r < aoa.length; r++) {
                         const cellRef = XLSX.utils.encode_cell({ c: barcodeCol, r });
-                        const cell = worksheet[cellRef];
-                        if (cell) {
-                            cell.t = 's';
+                        if (worksheet[cellRef]) {
+                            worksheet[cellRef].t = 's';
                         }
                     }
                 }
@@ -237,6 +352,7 @@
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'PreviewData');
                 XLSX.writeFile(workbook, 'PreviewData.xlsx');
             });
+
 
             // Helper to find the barcode column index based on header
             function getBarcodeColumnIndex(table) {
@@ -304,7 +420,10 @@
             
                 formData.append('eventDate', getyyyymmddDateGlobalAgainstDate(startDate));
                 formData.append('lastEventDate', getyyyymmddDateGlobalAgainstDate(endDate));
-                formData.append('eventId', document.getElementById('eventId').value);
+
+                var ddl = document.getElementById("eventId");
+                var selectedText = ddl.options[ddl.selectedIndex].text;
+                formData.append('eventId', selectedText);
                 formData.append('lastDentalExam', document.getElementById('dropdownLastDentalExam').value);
                 formData.append('vision', document.getElementById('dropdownVision').value);
                 formData.append('dental', document.getElementById('dropdownDental').value);

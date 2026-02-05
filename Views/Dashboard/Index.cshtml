@@ -3,11 +3,19 @@
 }
 
 <div class="dashboard-icons">
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SuperAdmin"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountRegistration_View"))
     {
         <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
             <img src="/images/Admin.jpg" alt="Admin" />
             <span>Admin</span>
+        </a>
+    }
+
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountUser_View"))
+    {
+        <a asp-controller="AccountUsers" asp-action="Index" class="icon-box">
+            <img src="/images/Admin.jpg" alt="Admin" />
+            <span>All Users</span>
         </a>
     }
 
@@ -23,7 +31,7 @@
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
             <img src="/images/Report Processor.jpg" alt="Malama Check In Out" />
-            <span>Malama Check In Out (Admin)</span>
+            <span>Scrubbed Sheet Uploader</span>
         </a>
     }
 

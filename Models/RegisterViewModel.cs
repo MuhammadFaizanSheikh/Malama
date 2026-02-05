@@ -43,4 +43,19 @@ namespace Malama.Models
         public string Category { get; set; } // New property for categorization
         public string Types { get; set; }
     }
+
+    public class AccountUserListDto
+    {
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+
+        public bool IsActive { get; set; }
+        public bool IsEventManager { get; set; }
+
+        public string Role { get; set; }
+        public List<string> Events { get; set; } = new();
+        public List<(string PageName, bool canView, bool canSave)> AccessiblePages { get; set; } = new();
+    }
+
 }

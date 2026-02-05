@@ -2622,7 +2622,7 @@ const statusPreviewColumns = [
     },
     {
         label: "Labs Needed Status",
-        getValue: (row) => row.LabRecord?.Status ?? "Pending"
+        getValue: (row) => row.LabStationRecord?.Status ?? "Pending"
     },
     {
         label: "PHA Needed Status",
@@ -2648,6 +2648,7 @@ function submitData() {
     $('#loader').removeClass('d-none');
     const table = $('#previewTable').DataTable();
     let tableRows = [];
+    debugger;
 
     table.rows().every(function () {
         const rowDataArray = this.data();
@@ -2665,6 +2666,7 @@ function submitData() {
                     row[mapping.key] = parseFloat(value) || 0.0;
                     break;
                 case "date":
+                    debugger;
                     row[mapping.key] = value ? new Date(value).toISOString() : null;
                     break;
                 default:
@@ -2678,7 +2680,8 @@ function submitData() {
 
     let eventId = window.isCheckInOutPage
         ? table.row(0).data()[keys.indexOf("EventID")]
-        : document.getElementById('eventId').value;
+        : document.getElementById('eventId').options[document.getElementById('eventId').selectedIndex].text;
+
 
     $.ajax({
         url: '/Home/CheckForExistingDataAgainstEventId',

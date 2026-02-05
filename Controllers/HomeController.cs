@@ -6,6 +6,7 @@ using MathNet.Numerics.LinearAlgebra;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
@@ -25,19 +26,31 @@ namespace ExcelFilesCompiler.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IFileUploader fileUploader;
         private readonly UserManager<ApplicationUser> _userManager;
-        public HomeController(ILogger<HomeController> logger, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
+        private readonly IEventManagementService _eventManagementService;
+        public HomeController(ILogger<HomeController> logger, IEventManagementService eventManagementService, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _userManager = userManager;
             this.fileUploader = _iFileUploader;
+            _eventManagementService = eventManagementService;
         }
 
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            //string sessionId = HttpContext.Session.GetString("SessionID");
+            var events = await _eventManagementService.GetAllEventID();
+
+            ViewBag.EventList = events
+                .Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.EventID
+                })
+                .ToList();
+
             return View();
         }
+
 
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
         public IActionResult UploadAndPreview(List<IFormFile> files, string eventDate, string lastEventDate, string eventId, int lastDentalExam , int vision, int dental, int pha, int hiv, int hearing)

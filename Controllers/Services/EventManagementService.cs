@@ -446,5 +446,26 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
+
+        public async Task<EventManagement> GetEventStartAndEndDateById(long eventId)
+        {
+            try
+            {
+                var result = await _unitOfWork.EventManagement
+                    .FindAsync(x => x.Id == eventId);
+
+                if (result == null)
+                    throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
+
+                return result;
+            }
+            catch (Exception)
+            {
+                // log here if you have logging
+                throw;
+            }
+        }
+
+
     }
 }

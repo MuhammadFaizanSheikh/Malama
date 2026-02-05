@@ -50,7 +50,35 @@ namespace Malama.Utilities
             }
         }
 
+        //This method is used to show rights of user on Account User List page
+        //public static List<(string PageName, bool CanView, bool CanSave)> GetAccessByRoles(IList<string> userRoles)
+        //{
+        //    var accessList = new List<(string PageName, bool CanView, bool CanSave)>();
 
+        //    // Get all unique pages
+        //    var allPages = RoleAttributeConfig.RoleAttributeCombinations.Keys
+        //        .Select(k => k.Substring(0, k.LastIndexOf("_"))) // remove _View/_Save
+        //        .Distinct();
+
+        //    foreach (var page in allPages)
+        //    {
+        //        bool canView = HasAccess(userRoles, page + "_View");
+        //        bool canSave = HasAccess(userRoles, page + "_Save");
+
+        //        accessList.Add((page, canView, canSave));
+        //    }
+
+        //    return accessList;
+        //}
+
+        //private static bool HasAccess(IList<string> userRoles, string permissionKey)
+        //{
+        //    if (!RoleAttributeConfig.RoleAttributeCombinations.TryGetValue(permissionKey, out var allowedList))
+        //        return false;
+
+        //    // If any role of user matches allowed role, return true
+        //    return allowedList.Any(r => r.Role != null && userRoles.Contains(r.Role));
+        //}
     }
 
 }

@@ -1,0 +1,118 @@
+﻿@model List<AccountUserListDto>
+
+@{
+    ViewData["Title"] = "Account Users";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Account Users</h5>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered table-hover align-middle" style="width:100%; table-layout:fixed;">
+                <thead class="table-light">
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Event Manager</th>
+                        <th>Events</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var user in Model)
+                        {
+                            <tr>
+                                <!-- Email -->
+                                <td >@user.Email</td>
+
+                                <!-- Roles -->
+                                <td style="width:180px;">
+                                    <div style="display:flex; flex-wrap:wrap;">
+                                        @foreach (var r in user.Role.Split(','))
+                                        {
+                                            <span style="background-color:#0d6efd; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                @r.Trim()
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <!-- Status -->
+                                <td style="text-align:center; vertical-align:middle;">
+                                    @if (user.IsActive)
+                                    {
+                                        <span style="background-color:#198754; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="background-color:#dc3545; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <!-- Is Event Manager -->
+                                <td style="text-align:center; vertical-align:middle;">
+                                    @if (user.IsEventManager)
+                                    {
+                                        <span style="background-color:#0dcaf0; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
+                                            Yes
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="background-color:#6c757d; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
+                                            No
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <!-- Events -->
+                                <td>
+                                    @if (user.Events != null && user.Events.Any())
+                                    {
+                                        <div style="display:flex; flex-wrap:wrap;">
+                                            @foreach (var evt in user.Events)
+                                            {
+                                                <span style="background-color:#f8f9fa; color:#212529; border:1px solid #dee2e6; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                    @evt
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                               @*  <td>
+                                    @foreach (var pg in user.AccessiblePages)
+                                    {
+                                        <span style="background-color:#0d6efd; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; font-size:0.85rem;">
+                                            @pg.PageName (View:@pg.canView, Save:@pg.canSave)
+                                        </span>
+                                    }
+
+                                </td> *@
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:#6c757d;">No users found</td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>

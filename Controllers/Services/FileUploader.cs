@@ -223,7 +223,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                return fileUploaderRepository.GetWithInclude(f => f.EventId == eventId && f.isDeleted != true,x => x.ImmunizationRecord);
+                return fileUploaderRepository.GetWithInclude(f => f.EventId == eventId && f.isDeleted != true,x => x.ImmunizationRecord, x => x.LabStationRecord);
 
                 //return fileUploaderRepository.FindForSearching(f => f.EventId == eventId && f.isDeleted != true);
             }

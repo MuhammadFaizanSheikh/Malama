@@ -5,7 +5,15 @@
         public static readonly Dictionary<string, List<(string Role, string Attribute)>> RoleAttributeCombinations
         = new()
         {
-            ["SuperAdmin"] = new List<(string Role, string Attribute)>
+            ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Super Admin", null),
+        },
+            ["AccountUser_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Super Admin", null),
+        },
+            ["AccountRegistration_Save"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
         },
@@ -28,20 +36,20 @@
             ["EventStaff_View"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null),
+            ("DAWSON Admin - Staffing/Credentialing", null),
         },
             ["EventStaff_Save"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null),
+            ("DAWSON Admin - Staffing/Credentialing", null),
         },
             ["ReportProcessor_View"] = new List<(string Role, string Attribute)>
         {
-            ("Project Manager & Program Manager", null),
-            ("Event Manager", null)
+            ("Project Manager & Program Manager", null)
         },
             ["ReportProcessor_Save"] = new List<(string Role, string Attribute)>
         {
-            ("Project Manager & Program Manager", null),
-            ("Event Manager", null)
+            ("Project Manager & Program Manager", null)
         },
             ["EventManagement_View"] = new List<(string Role, string Attribute)>
         {

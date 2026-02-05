@@ -13,5 +13,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<EventManagement> GetEventManagementForEventSelectionById(long id);
         Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id);
         Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId);
+        Task<EventManagement> GetEventStartAndEndDateById(long eventId);
     }
 }
