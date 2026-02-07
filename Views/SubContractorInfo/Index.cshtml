@@ -1133,21 +1133,50 @@
             });
         }
 
-        document.getElementById("submitBtn").addEventListener("click", function (event) {
-            var form = document.querySelector('form'); // Get the form element
+        let isSubmitting = false;
 
-            // Check browser's default validation
-            if (!form.reportValidity()) {
-                // If validation fails, browser will focus on the first invalid field
-                return false; // Stop further execution
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+            const form = document.querySelector("form");
+
+            if (isSubmitting) {
+                event.preventDefault();
+                return;
             }
+
+            if (!form.reportValidity()) {
+                event.preventDefault();
+                return;
+            }
+
             if (!validatePhoneFields()) {
-                event.preventDefault(); // Stop form submission if validation fails
+                event.preventDefault();
+                return;
             }
 
             if (!validateCompanyMainName()) {
-                event.preventDefault(); // Prevent form submission if validation fails
+                event.preventDefault();
+                return;
             }
+
+            isSubmitting = true;
+
+            this.disabled = true;
+            this.innerText = "Submitting...";
+        });
+
+        let isUpdating = false;
+
+        document.getElementById("updateBtn").addEventListener("click", function (event) {
+
+            if (isUpdating) {
+                event.preventDefault();
+                return;
+            }
+
+            isUpdating = true;
+
+            this.disabled = true;
+            this.innerText = "Updating...";
         });
 
         function validatePhoneFields() {

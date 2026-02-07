@@ -2643,8 +2643,15 @@ const statusPreviewColumns = [
 ];
 
 
-
+let isSubmitting = false;
 function submitData() {
+
+    if (isSubmitting) {
+        return;
+    }
+
+    isSubmitting = true;
+
     $('#loader').removeClass('d-none');
     const table = $('#previewTable').DataTable();
     let tableRows = [];
@@ -2713,6 +2720,7 @@ function submitData() {
             alert("Error: " + error);
         },
         complete: function () {
+            isSubmitting = false;
             $('#loader').addClass('d-none');
         }
     });

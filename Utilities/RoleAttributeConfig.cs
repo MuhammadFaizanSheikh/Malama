@@ -69,11 +69,6 @@
         {
             ("Event Manager", null)
         },
-            ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Super Admin", null),
-            ("Project Manager & Program Manager", null)
-        },
             ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null),

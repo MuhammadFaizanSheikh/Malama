@@ -889,9 +889,16 @@
             }
         });
 
+        let isSubmittingLab = false;
+
         $("#SaveLabStation").on("submit", function (e) {
-            // If Save button is disabled, do nothing
-            if ($("button[type='submit']", this).is(":disabled")) {
+            
+            const form = $(this);
+            const submitBtn = $("button[type='submit']", form);
+
+            // Prevent multiple submissions
+            if (isSubmittingLab || submitBtn.is(":disabled")) {
+                e.preventDefault();
                 return;
             }
 
@@ -922,6 +929,14 @@
             if (!isValid) {
                 e.preventDefault(); // stop submit
             }
+
+            isSubmittingLab = true;
+
+            // Disable the button and update text after current stack to avoid blocking native submit
+            setTimeout(() => {
+                submitBtn.prop("disabled", true);
+                submitBtn.html('<i class="bi bi-check-circle"></i> Saving...');
+            }, 0);
         });
 
 

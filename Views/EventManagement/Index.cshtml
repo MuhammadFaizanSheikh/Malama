@@ -557,7 +557,7 @@
                     </div>
                     <div class="col-md-6" id="MOBDateContainer" style="display: none;">
                         <label asp-for="SingleEventManagement.MOBDate" class="form-label">MOB Date</label>
-                        <input asp-for="SingleEventManagement.MOBDate" id="EventMobDate" type="text" class="form-control" placeholder="MM/DD/YYYY" required />
+                        <input asp-for="SingleEventManagement.MOBDate" id="EventMobDate" type="text" class="form-control" placeholder="MM/DD/YYYY"/>
                     </div>
                 </div>
                 <div class="row">
@@ -3605,9 +3605,16 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return html;
             }
 
+            let isSubmitting = false;
+
         $("#submitBtn").click(function (e) {
             e.preventDefault();
 
+            if (isSubmitting) {
+                return;
+            }
+
+            const $btn = $(this);
             const section = $(this).data("section");
 
             if (section !== 7)
@@ -3640,6 +3647,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             //     return;
             // }
 
+            isSubmitting = true;
+            $btn.prop("disabled", true).text("Submitting...");
+
             const completedSections = getCompletedProgressSections();
 
             $("<input>")
@@ -3659,10 +3669,17 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $("#eventManagementForm").submit();
         });
 
+        let isUpdating = false;
+
         $("#updateBtn").click(function (e) {
 
             e.preventDefault();
 
+            if (isUpdating) {
+                return;
+            }
+
+            const $btn = $(this);
             const section = $(this).data("section");
 
             if (section !== 7)
@@ -3694,6 +3711,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // if (!validateTableRequiredFields()) {
             //     return;
             // }
+
+            isUpdating = true;
+            $btn.prop("disabled", true).text("Updating...");
 
             const completedSections = getCompletedProgressSections();
 

@@ -239,14 +239,35 @@
             allowClear: true
         });
 
-        $("#registerBtn").click(function (event) {
+        let isRegistering = false;
+
+        document.getElementById("registrationForm").addEventListener("submit", function (event) {
+
+            const btn = document.getElementById("registerBtn");
+
+            // Prevent multiple submissions
+            if (isRegistering) {
+                event.preventDefault();
+                return;
+            }
+
+            // Role validation
             if ($("input[name='SelectedRoles']:checked").length === 0) {
                 $("#roleError").show();
-                event.preventDefault(); // Prevent form submission
+                event.preventDefault();
+                return;
             } else {
                 $("#roleError").hide();
             }
+
+            // ✅ All validations passed → lock + disable
+            isRegistering = true;
+            btn.disabled = true;          // Safe now
+            btn.innerText = "Registring...";
+
+            // ⚠ Let the form submit naturally
         });
+
 
         $('#findUserBtn').click(function () {
             $.ajax({

@@ -235,6 +235,24 @@
     const minTemp = @Model.ContainerType?.TemperatureFromRange ?? 0;
     const maxTemp = @Model.ContainerType?.TemperatureToRange ?? 0;
 
+    let isSubmitting = false;
+
+    $("#submitBtn").on("click", function (e) {
+        const btn = $(this);
+
+        if (isSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
+        isSubmitting = true;
+
+        setTimeout(() => {
+            btn.prop("disabled", true);
+            btn.html('<i class="bi bi-check-circle"></i> Saving...');
+        }, 0);
+    });
+
     $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
 

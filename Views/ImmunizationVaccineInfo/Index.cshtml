@@ -456,22 +456,43 @@
             $(this).closest('form')[0].reset();
         });
 
+        let isSubmitting = false;
+
         $("#submitBtn").on("click", function (e) {
+            const btn = $(this);
+
+            // Prevent multiple clicks
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
 
             let isValid = true;
 
-                $(".lot-expiration-input").each(function () {
-                    if (!$(this).val() || !$(this).val().trim()) {
-                        e.preventDefault(); // stop submit
-                        alert("Please select expiration date for all lots.");
-                        $(this).focus();
-                        isValid = false;
-                        return false; // break .each()
-                    }
-                });
-            
-                return isValid;
+            $(".lot-expiration-input").each(function () {
+                if (!$(this).val() || !$(this).val().trim()) {
+                    e.preventDefault(); // stop submit
+                    alert("Please select expiration date for all lots.");
+                    $(this).focus();
+                    isValid = false;
+                    return false; // break .each()
+                }
             });
+
+            if (!isValid) return;
+
+            // ✅ Mark submitting after validation
+            isSubmitting = true;
+
+            // Disable button and show text AFTER current stack to avoid blocking native submit
+            setTimeout(() => {
+                btn.prop("disabled", true);
+                btn.html('<i class="bi bi-check-circle"></i> Saving...');
+            }, 0);
+
+            // Form will now submit naturally
+        });
+
 
 
         // --- Add Lot button ---

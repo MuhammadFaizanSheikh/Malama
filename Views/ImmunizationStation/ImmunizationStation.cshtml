@@ -122,7 +122,7 @@
     </script>
 }
 
-<form asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
+<form id="ImmunizationForm" asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.Id)
@@ -922,7 +922,7 @@
     </div>
     <!-- Submit Buttons -->
     <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_Save") ? "" : "disabled")>
+        <button id="submitBtn" type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_Save") ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
         </button>
 
@@ -941,6 +941,27 @@
         flatpickr(".expiration-input", {
             altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false,
         });
+
+        let isSaving = false;
+
+        document.getElementById("ImmunizationForm").addEventListener("submit", function (event) {
+
+            const btn = document.getElementById("submitBtn");
+
+            // Prevent multiple submissions
+            if (isSaving) {
+                event.preventDefault();
+                return;
+            }
+
+            isSaving = true;
+            btn.disabled = true;          // Safe now
+            btn.innerText = "Registring...";
+
+            // ⚠ Let the form submit naturally
+        });
+
+
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
