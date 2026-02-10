@@ -6,36 +6,32 @@ using Microsoft.AspNetCore.Mvc;
 namespace Malama.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class RoleAttributeAuthorizeFromConfigAttribute : TypeFilterAttribute
+    public class RoleAttributeAuthorizeFromConfig : Attribute, IAuthorizationFilter
     {
-        public RoleAttributeAuthorizeFromConfigAttribute(string featureName)
-            : base(typeof(RoleAttributeAuthorizeFromConfigFilter))
-        {
-            Arguments = new object[] { featureName };
-        }
-    }
+        private readonly string[] _featureNames;
 
-    public class RoleAttributeAuthorizeFromConfigFilter : IAuthorizationFilter
-    {
-        private readonly string _featureName;
-
-        public RoleAttributeAuthorizeFromConfigFilter(string featureName)
+        public RoleAttributeAuthorizeFromConfig(params string[] featureNames)
         {
-            _featureName = featureName;
+            _featureNames = featureNames;
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var authService = context.HttpContext.RequestServices.GetService<IAuthorizationService>();
-            var requirement = RoleAttributeRequirementProvider.GetRequirement(_featureName);
+            var authService = context.HttpContext.RequestServices
+                .GetRequiredService<IAuthorizationService>();
 
-            var task = authService.AuthorizeAsync(context.HttpContext.User, null, requirement);
-            task.Wait();
-
-            if (!task.Result.Succeeded)
+            foreach (var feature in _featureNames)
             {
-                context.Result = new ForbidResult();
+                var requirement = RoleAttributeRequirementProvider.GetRequirement(feature);
+                var result = authService.AuthorizeAsync(
+                    context.HttpContext.User, null, requirement).Result;
+
+                if (result.Succeeded)
+                    return; // ✅ OR logic
             }
+
+            context.Result = new ForbidResult();
         }
     }
+
 }

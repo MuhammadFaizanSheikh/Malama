@@ -38,11 +38,11 @@ namespace Malama.Utilities
         {
             if (userType == "admin")
             {
-                return HasAccess(user, "CheckInOutStaff_Admin_View");
+                return HasAccess(user, "ScrubbedSheetUploader_View");
             }
             else if (userType == "client")
             {
-                return HasAccess(user, "CheckInOutStaff_Client_View");
+                return HasAccess(user, "CheckInOutStaff_View");
             }
             else
             {

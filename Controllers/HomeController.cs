@@ -92,7 +92,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
-        //[RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
+        [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save", "ScrubbedSheetUploader_Save")]
         public IActionResult CheckForExistingDataAgainstEventId([FromBody] string eventId)
         {
             try
@@ -112,7 +112,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
-        [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save")]
+        [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save", "ScrubbedSheetUploader_Save")]
         public IActionResult SubmitDataInDatabase([FromBody] SubmitDataDto request)
         {
             try

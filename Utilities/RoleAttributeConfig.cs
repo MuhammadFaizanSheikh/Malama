@@ -45,14 +45,6 @@ namespace Malama.Utilities
             ("Project Manager & Program Manager", null),
             ("DAWSON Admin - Staffing/Credentialing", null),
         },
-            ["ReportProcessor_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Project Manager & Program Manager", null)
-        },
-            ["ReportProcessor_Save"] = new List<(string Role, string Attribute)>
-        {
-            ("Project Manager & Program Manager", null)
-        },
             ["EventManagement_View"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null),
@@ -63,30 +55,10 @@ namespace Malama.Utilities
             ("Project Manager & Program Manager", null),
             ("Event Manager", null)
         },
-            ["Profile_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Check in/out Staff", "CanAccessProfile")
-        },
             ["LabStation_HIVSignInSheet_View"] = new List<(string Role, string Attribute)>
         {
             ("Event Manager", null)
         },
-            ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Check in/out Staff", null),
-            ("Super Admin", null),
-            ("Event Manager", null)
-        },
-            ["CheckInOutStaff_Client_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Check in/out Staff", null),
-            ("Event Manager", null)
-        },
-            ["CheckInOutStaff_Admin_View"] = new List<(string Role, string Attribute)>
-        {
-            ("Project Manager & Program Manager", null)
-        },
-            // Audiologist
             ["Audiologist_View"] = new List<(string Role, string Attribute)>
         {
             ("Audiologist", null),
@@ -255,20 +227,44 @@ namespace Malama.Utilities
             ("Imm Staff", "Cold Chain Cert"),
             ("Event Manager", null)
         },
-            
-            ["CheckInOutStaff_Save"] = new List<(string Role, string Attribute)>
-        {
-            ("Check in/out Staff", null),
-            ("Super Admin", null),
-            ("Event Manager", null)
-        },
             ["LabStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Lab Staff", null),
             ("Lab Admin", null),
             ("Event Manager", null)
-        }
+        },
+            ["Profile_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Check in/out Staff", "CanAccessProfile")
+        },
 
+
+            ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Check in/out Staff", null),
+            ("Event Manager", null)
+        },
+            ["ScrubbedSheetUploader_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
+            ["ReportProcessor_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
+            ["CheckInOutStaff_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Check in/out Staff", null),
+            ("Event Manager", null)
+        },
+            ["ScrubbedSheetUploader_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
+            ["ReportProcessor_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        }
         };
 
         public static readonly Dictionary<string, string> PageNames = new()
@@ -282,8 +278,8 @@ namespace Malama.Utilities
             ["EventManagement"] = "Event Management",
             ["Profile"] = "User Profile",
             ["LabStation_HIVSignInSheet"] = "HIV Sign-In Sheet",
-            ["CheckInOutStaff_Admin"] = "Scrubbed Sheet Uploader",
-            ["CheckInOutStaff_Client"] = "Check-In/Out Staff",
+            ["ScrubbedSheetUploader"] = "Scrubbed Sheet Uploader",
+            ["CheckInOutStaff"] = "Check-In/Out Staff",
             ["Audiologist"] = "Audiologist",
             ["DentalExams"] = "Dental Exams",
             ["DentalTreatment"] = "Dental Treatment",

@@ -27,7 +27,7 @@
         </a>
      }
 
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_Admin_View"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ScrubbedSheetUploader_View"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
             <img src="/images/ScrubbedSheetUploader.png" alt="Malama Check In Out" />
@@ -36,7 +36,7 @@
     }
 
 
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_Client_View"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
     {
         <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
             <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
