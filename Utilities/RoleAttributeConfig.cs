@@ -1,4 +1,6 @@
-﻿namespace Malama.Utilities
+﻿using Malama.Models;
+
+namespace Malama.Utilities
 {
     public static class RoleAttributeConfig
     {
@@ -268,6 +270,98 @@
         }
 
         };
-    }
 
+        public static readonly Dictionary<string, string> PageNames = new()
+        {
+            ["AccountRegistration"] = "Account Registration",
+            ["AccountUser"] = "Account User Register",
+            ["ContractDetails"] = "Contract Details",
+            ["SubContractorInfo"] = "Sub-Contractor Information",
+            ["EventStaff"] = "Event Staff",
+            ["ReportProcessor"] = "Report Processor",
+            ["EventManagement"] = "Event Management",
+            ["Profile"] = "User Profile",
+            ["LabStation_HIVSignInSheet"] = "HIV Sign-In Sheet",
+            ["CheckInOutStaff_Admin"] = "Scrubbed Sheet Uploader",
+            ["CheckInOutStaff_Client"] = "Check-In/Out Staff",
+            ["Audiologist"] = "Audiologist",
+            ["DentalExams"] = "Dental Exams",
+            ["DentalTreatment"] = "Dental Treatment",
+            ["DentalXRay"] = "Dental X-Ray",
+            ["EKG"] = "EKG",
+            ["Hearing"] = "Hearing",
+            ["ImmunizationStation"] = "Immunization Station",
+            ["ImmunizationVaccineInfo"] = "Vaccine Information",
+            ["Container"] = "Vaccine Container",
+            ["LabStation"] = "Lab Station",
+            ["Optometrist"] = "Optometrist",
+            ["PanoramicDentalXRay"] = "Panoramic Dental X-Ray",
+            ["RecordsReview"] = "Records Review",
+            ["VisionScreening"] = "Vision Screening",
+            ["Vitals"] = "Vitals"
+        };
+
+        public static class PagePermissionResolver
+        {
+            public static List<UserPagePermissionDto> ResolveUserPages(
+                IEnumerable<string> userRoles,
+                IEnumerable<string>? userAttributes = null)
+            {
+                var result = new Dictionary<string, UserPagePermissionDto>();
+
+                foreach (var entry in RoleAttributeConfig.RoleAttributeCombinations)
+                {
+                    var feature = entry.Key; // ContractDetails_View
+                    var allowed = entry.Value;
+
+                    var splitIndex = feature.LastIndexOf('_');
+                    if (splitIndex <= 0)
+                        continue;
+
+                    var pageKey = feature[..splitIndex];
+                    var action = feature[(splitIndex + 1)..]; // View / Save
+
+                    var isAllowed = allowed.Any(a =>
+                        userRoles.Contains(a.Role) &&
+                        (
+                            a.Attribute == null ||               // role-only permission
+                            userAttributes == null ||             // attribute ignored for now
+                            userAttributes.Contains(a.Attribute)  // attribute matched
+                        )
+                    );
+
+                    if (!isAllowed)
+                        continue;
+
+                    if (!result.TryGetValue(pageKey, out var page))
+                    {
+                        result[pageKey] = page = new UserPagePermissionDto
+                        {
+                            PageKey = pageKey,
+                            PageName = RoleAttributeConfig.PageNames.TryGetValue(pageKey, out var name)
+                                ? name
+                                : pageKey,
+                            Access = PageAccessLevel.ReadOnly
+                        };
+                    }
+
+                    if (action.Equals("Save", StringComparison.OrdinalIgnoreCase))
+                    {
+                        page.Access = PageAccessLevel.ReadWrite;
+                    }
+                }
+
+                return result.Values.ToList();
+            }
+        }
+
+    }
 }
+
+public enum PageAccessLevel
+{
+    ReadOnly,
+    ReadWrite
+}
+
+

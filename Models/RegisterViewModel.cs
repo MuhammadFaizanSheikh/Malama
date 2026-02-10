@@ -55,7 +55,14 @@ namespace Malama.Models
 
         public string Role { get; set; }
         public List<string> Events { get; set; } = new();
-        public List<(string PageName, bool canView, bool canSave)> AccessiblePages { get; set; } = new();
+
+        public List<UserPagePermissionDto> AllowedPages { get; set; } = new();
     }
 
+    public class UserPagePermissionDto
+    {
+        public string PageKey { get; set; }      // ContractDetails
+        public string PageName { get; set; }     // Contract Details Register
+        public PageAccessLevel Access { get; set; }
+    }
 }

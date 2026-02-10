@@ -1,4 +1,5 @@
-﻿@model List<AccountUserListDto>
+﻿@using Malama.Models
+@model List<AccountUserListDto>
 
 @{
     ViewData["Title"] = "Account Users";
@@ -17,9 +18,10 @@
                     <tr>
                         <th>Email</th>
                         <th>Role</th>
-                        <th>Status</th>
-                        <th>Event Manager</th>
+                        <th style="width:100px;">Status</th>
+                        @* <th>Event Manager</th> *@
                         <th>Events</th>
+                        <th style="width:340px;">Allowed Pages</th>
                     </tr>
                 </thead>
 
@@ -37,12 +39,27 @@
                                     <div style="display:flex; flex-wrap:wrap;">
                                         @foreach (var r in user.Role.Split(','))
                                         {
-                                            <span style="background-color:#0d6efd; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
-                                                @r.Trim()
+                                            var roleTrimmed = r.Trim();
+                                            var roleColor = roleTrimmed switch
+                                            {
+                                                "Super Admin" => "#dc3545",                    // Red
+                                                "Event Manager" => "#0dcaf0",                  // Cyan
+                                                "Project Manager & Program Manager" => "#6c757d", // Green
+                                                "DAWSON Admin - Event Coordinator" => "#6c757d",  // Purple
+                                                "DAWSON Admin - Staffing/Credentialing" => "#6c757d", // Orange
+                                                "DAWSON Admin - System" => "#6c757d",         // Dark Purple
+                                                "DAWSON Leadership" => "#6c757d",             // Teal
+                                                "DAWSON Admin - Event Staff" => "#6c757d",    // Yellow
+                                                _ => "#6c757d"                                // Default blue
+                                            };
+
+                                            <span style="background-color:@roleColor; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                @roleTrimmed
                                             </span>
                                         }
                                     </div>
                                 </td>
+
 
                                 <!-- Status -->
                                 <td style="text-align:center; vertical-align:middle;">
@@ -62,7 +79,7 @@
 
 
                                 <!-- Is Event Manager -->
-                                <td style="text-align:center; vertical-align:middle;">
+                               @*  <td style="text-align:center; vertical-align:middle;">
                                     @if (user.IsEventManager)
                                     {
                                         <span style="background-color:#0dcaf0; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
@@ -75,7 +92,7 @@
                                             No
                                         </span>
                                     }
-                                </td>
+                                </td> *@
 
 
                                 <!-- Events -->
@@ -92,15 +109,29 @@
                                         </div>
                                     }
                                 </td>
-                               @*  <td>
-                                    @foreach (var pg in user.AccessiblePages)
-                                    {
-                                        <span style="background-color:#0d6efd; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; font-size:0.85rem;">
-                                            @pg.PageName (View:@pg.canView, Save:@pg.canSave)
-                                        </span>
-                                    }
+                                <td>
+                                    <ul style="padding-left: 1rem; margin:0; list-style-type: disc;">
+                                        @foreach (Malama.Models.UserPagePermissionDto allowedPage in user.AllowedPages)
+                                        {
+                                            <li style="margin-bottom:0.25rem; display:flex; align-items:center;">
+                                                <!-- Page Name with fixed width -->
+                                                <span style="display:inline-block; width:180px;">@allowedPage.PageName</span>
 
-                                </td> *@
+                                                <!-- Access Badge -->
+                                                @{
+                                                    var badgeColor = allowedPage.Access == PageAccessLevel.ReadWrite ? "#28a745" : "#fd7e14"; // Green = RW, Orange = RO
+                                                    var badgeText = allowedPage.Access == PageAccessLevel.ReadWrite ? "Read & Write" : "Read-Only";
+                                                }
+                                                <span style="background-color:@badgeColor; color:white; padding:0.15rem 0.6rem; border-radius:0.25rem; font-size:0.75rem; display:inline-block; min-width:90px; text-align:center; white-space:nowrap;">
+                                                    @badgeText
+                                                </span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </td>
+
+
+
                             </tr>
                         }
                     }
