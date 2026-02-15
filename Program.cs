@@ -47,6 +47,7 @@ builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationServi
 builder.Services.AddScoped<IAccountUserService, AccountUserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+builder.Services.AddScoped<IEventUsersService, EventUsersService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();
 builder.Services.AddAutoMapper(typeof(Program));

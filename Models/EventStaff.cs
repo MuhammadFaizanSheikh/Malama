@@ -244,6 +244,9 @@ namespace Malama.Models
         //public List<TravelHonor> TravelHonorCarList { get; set; } = new List<TravelHonor>();  // List of Airlines
         public List<TravelHonor>? TravelHonorList { get; set; } = new List<TravelHonor>();  // List of Airlines
 
+        public List<EventStaffDetail> EventStaffDetails { get; set; } = new List<EventStaffDetail>();
+
+
     }
 
     [Table("StaffContractAffiliation")]
@@ -266,35 +269,6 @@ namespace Malama.Models
         public List<long> StaffContractAffiliationTemp { get; set; } = new List<long>();
     }
 
-    //[Table("SubContractorContractAffiliation")]
-    //public class SubContractorContractAffiliation
-    //{
-    //    [Key]
-    //    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    //    public long Id { get; set; } // Primary key
-
-    //    [ForeignKey("StaffSubContractorAffiliation")]
-    //    public long StaffSubContractorAffiliationId { get; set; }
-    //    public long ContractId { get; set; }
-    //}
-
-    //[Table("StaffRoles")]
-    //public class StaffRoleDto
-    //{
-    //    [Key]
-    //    public long Id { get; set; }
-
-    //    [Required]
-    //    public long EventStaffId { get; set; }
-
-    //    [Required]
-    //    public string RoleName { get; set; }
-
-    //    [ForeignKey("EventStaffId")]
-    //    public EventStaffDto EventStaff { get; set; }
-
-    //}
-
     [Table("StaffQualification")]
     public class StaffQualification
     {
@@ -305,7 +279,6 @@ namespace Malama.Models
         [ForeignKey("EventStaff")]
 
         public long EventStaffId { get; set; }
-
 
         [Required]
         [StringLength(50)]
@@ -333,7 +306,7 @@ namespace Malama.Models
         [ForeignKey("StaffQualification")]
 
         public long StaffQualificationId { get; set; }
-
+        
         [Required]
         [StringLength(50)]
         public string Attribute { get; set; }

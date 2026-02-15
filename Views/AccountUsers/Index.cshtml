@@ -18,7 +18,7 @@
                     <tr>
                         <th>Email</th>
                         <th>Role</th>
-                        <th style="width:100px;">Status</th>
+                        @* <th style="width:100px;">Status</th> *@
                         @* <th>Event Manager</th> *@
                         <th>Events</th>
                         <th style="width:340px;">Allowed Pages & Permissions</th>
@@ -62,7 +62,7 @@
 
 
                                 <!-- Status -->
-                                <td style="text-align:center; vertical-align:middle;">
+                                @* <td style="text-align:center; vertical-align:middle;">
                                     @if (user.IsActive)
                                     {
                                         <span style="background-color:#198754; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; font-size:0.85rem; display:inline-block;">
@@ -75,7 +75,7 @@
                                             Inactive
                                         </span>
                                     }
-                                </td>
+                                </td> *@
 
 
                                 <!-- Is Event Manager -->

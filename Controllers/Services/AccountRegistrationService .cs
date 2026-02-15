@@ -560,7 +560,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (isEventManagerSelected)
                 {
-                    var selectedEventIds = model.SelectedEventIds ?? new List<int>();
+                    var selectedEventIds = model.SelectedEventIds ?? new List<long>();
 
                     var existingMappings = await _unitOfWork.UserEventMapping
                         .FindForSearching(x => x.UserId == user.Id)

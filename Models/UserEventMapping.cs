@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
@@ -11,6 +12,10 @@ namespace Malama.Models
         public long Id { get; set; }
 
         public string UserId { get; set; }
-        public int EventId { get; set; }
+        public long EventId { get; set; }
+
+        [ForeignKey(nameof(EventId))]
+        [JsonIgnore]
+        public EventManagement EventManagement { get; set; }
     }
 }

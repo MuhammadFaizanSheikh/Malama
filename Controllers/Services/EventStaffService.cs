@@ -564,5 +564,27 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return new ResponseDto { Success = false, Message = "An unexpected error occurred while updating user. Please try again later or contact your administrator." };
             }
         }
+        public async Task<List<EventStaffDetail>> GetAllEventStaffByEventId(long id)
+        {
+            try
+            {
+                return await _unitOfWork.EventStaffDetail
+                .GetWithInclude()
+                .Where(x => x.EventManagementId == id)
+                .Include(x => x.EventStaff)
+                    .ThenInclude(s => s.StaffQualification)
+                        .ThenInclude(q => q.StaffAttributeDetails)
+                .Include(x => x.EventWiseStaffRoleList)
+                .Include(x => x.EventWiseStaffSecondaryRoleList)
+                .ToListAsync();
+
+
+            }
+            catch (Exception ex)
+            {
+                // Log and rethrow the exception with more context if needed
+                throw new Exception("An error occurred while retrieving the EventStaffDetail.", ex);
+            }
+        }
     }
 }

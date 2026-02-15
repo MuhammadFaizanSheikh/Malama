@@ -14,5 +14,6 @@ namespace ExcelFilesCompiler.Interfaces
         Task<EventStaff> GetEventStaffWithAttributesByUserId(string userId);
         Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses();
         Task<bool> CheckSSNExistsAsync(string ssn);
+        Task<List<EventStaffDetail>> GetAllEventStaffByEventId(long id);
     }
 }

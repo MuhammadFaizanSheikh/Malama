@@ -12,7 +12,7 @@ using Malama.Interfaces;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    [RoleAttributeAuthorizeFromConfig("AccountUser_View")]
+    [RoleAttributeAuthorizeFromConfig("DawsonUser_View")]
     public class AccountUsersController : Controller
     {
         private const string CLASSNAME = nameof(AccountUsersController);

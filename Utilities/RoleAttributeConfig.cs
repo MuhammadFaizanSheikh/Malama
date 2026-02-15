@@ -10,14 +10,17 @@ namespace Malama.Utilities
             ["AccountRegistration_View"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
+            ("DAWSON Admin - System", null)
         },
-            ["AccountUser_View"] = new List<(string Role, string Attribute)>
+            ["DawsonUser_View"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
+            ("DAWSON Admin - System", null)
         },
             ["AccountRegistration_Save"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
+            ("DAWSON Admin - System", null)
         },
             ["ContractDetails_View"] = new List<(string Role, string Attribute)>
         {

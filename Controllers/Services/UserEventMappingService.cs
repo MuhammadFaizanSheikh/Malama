@@ -45,7 +45,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<List<int>> GetEventsAgainstUserId(string userId)
+        public async Task<List<long>> GetEventsAgainstUserId(string userId)
         {
             const string methodName = nameof(GetEventsAgainstUserId);
             _logger.LogInformation("{ClassName}, {MethodName}, Getting events against UserId : {userId}",

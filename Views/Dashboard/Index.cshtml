@@ -3,6 +3,13 @@
 }
 
 <div class="dashboard-icons">
+
+    <a asp-controller="EventUsers" asp-action="Index" class="icon-box">
+        <img src="/images/Admin.jpg" alt="Admin" />
+        <span>Event Users</span>
+    </a>
+
+
     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountRegistration_View"))
     {
         <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
@@ -11,11 +18,11 @@
         </a>
     }
 
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountUser_View"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DawsonUser_View"))
     {
         <a asp-controller="AccountUsers" asp-action="Index" class="icon-box">
             <img src="/images/Admin.jpg" alt="Admin" />
-            <span>All Users</span>
+            <span>Dawson Users</span>
         </a>
     }
 
@@ -259,7 +266,6 @@
 
         .icon-box span {
             font-size: 16px;
-            font-weight: bold;
         }
 
     .dashboard-icons {

@@ -1,0 +1,114 @@
+﻿@using Malama.Models
+@model EventUsersViewModel
+
+@{
+    ViewData["Title"] = "Event Users";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Event Users</h5>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Event Dropdown -->
+            <form method="get">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Select Event</label>
+                        <select name="eventId" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Select Event --</option>
+                            @foreach (var evt in Model.Events)
+                            {
+                                <option value="@evt.EventId"
+                                        selected="@(Model.SelectedEventId == evt.EventId)">
+                                    @evt.EventName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Show table only if event selected -->
+            @if (Model.SelectedEventId.HasValue)
+            {
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Email</th>
+                            <th>Primary Roles</th>
+                            <th>Primary Station</th>
+                            <th>Profile Button Acces</th>
+                            <th style="width:340px;">Allowed Pages & Permissions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.Users.Any())
+                        {
+                            foreach (var user in Model.Users)
+                            {
+                                <tr>
+                                    <td>@user.Email</td>
+                                    <td>@user.PrimaryRole</td>
+                                    <td>@user.PrimaryStation</td>
+                                    <td>@user.ProfileButtonAccess</td>
+                                    <td>
+                                        <table style="width:100%; border-collapse:collapse;">
+                                            <tbody>
+                                                @foreach (Malama.Models.UserPagePermissionDto allowedPage in user.AllowedPages)
+                                                {
+                                                    var badgeColor = allowedPage.Access == PageAccessLevel.ReadWrite
+                                                    ? "#28a745"
+                                                    : "#fd7e14";
+
+                                                    var badgeText = allowedPage.Access == PageAccessLevel.ReadWrite
+                                                    ? "Read & Write"
+                                                    : "Read-Only";
+
+                                                    <tr>
+                                                        <td style="padding:4px 6px; border-bottom:1px solid #e9ecef;">
+                                                            @allowedPage.PageName
+                                                        </td>
+
+                                                        <td style="padding:4px 6px; border-bottom:1px solid #e9ecef; text-align:right;">
+                                                            <span style="
+                            background-color:@badgeColor;
+                            color:white;
+                            padding:0.15rem 0.6rem;
+                            border-radius:0.25rem;
+                            font-size:0.75rem;
+                            display:inline-block;
+                            min-width:90px;
+                            text-align:center;
+                            white-space:nowrap;">
+                                                                @badgeText
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    No users found for selected event
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+        </div>
+    </div>
+</div>

@@ -399,7 +399,13 @@
         public long EventManagementId { get; set; }
 
         [Required]
+        [ForeignKey("EventStaff")]
         public long EventStaffId { get; set; }
+
+
+        [ValidateNever]
+        [JsonIgnore]
+        public EventStaff EventStaff { get; set; }
         [NotMapped]
         public List<string> SelectedRoles { get; set; } = new List<string>();
         public List<EventWiseStaffRole> EventWiseStaffRoleList { get; set; } = new List<EventWiseStaffRole>();

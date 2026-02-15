@@ -1322,16 +1322,16 @@
         }
     }
 
-    let isSubmitting = false;
+    // let isSubmitting = false;
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
         var form = document.querySelector('form'); // Get the form element
 
-        if (isSubmitting) {
-        event.preventDefault();
-        return;
-        }
+        // if (isSubmitting) {
+        // event.preventDefault();
+        // return;
+        // }
 
         if (!emailValid) {
             event.preventDefault(); // Stop form submission
@@ -1401,21 +1401,21 @@
             return;
         }
 
-        isSubmitting = true;
+        // isSubmitting = true;
 
-        this.disabled = true;
-        this.innerText = "Submitting...";
+        // this.disabled = true;
+        // this.innerText = "Submitting...";
     });
 
-    let isUpdating = false;
+    // let isUpdating = false;
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
         var form = document.querySelector('form'); // Get the form element
 
-        if (isUpdating) {
-        event.preventDefault();
-        return;
-        }
+        // if (isUpdating) {
+        // event.preventDefault();
+        // return;
+        // }
 
         let errorContainer = $("#roleError");
         if ($(".role-checkbox:checked").length === 0) {
@@ -1439,10 +1439,10 @@
         //     event.preventDefault(); // Prevent form submission if validation fails
         // }
 
-        isUpdating = true;
+        // isUpdating = true;
 
-        this.disabled = true;
-        this.innerText = "Updating...";
+        // this.disabled = true;
+        // this.innerText = "Updating...";
     });
 
     function validateCertificationFields() {
