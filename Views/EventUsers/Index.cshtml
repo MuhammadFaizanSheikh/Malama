@@ -42,7 +42,10 @@
                             <th>Email</th>
                             <th>Primary Roles</th>
                             <th>Primary Station</th>
-                            <th>Profile Button Acces</th>
+                            <th>Secondary Roles</th>
+                            <th>Secondary Station</th>
+                            <th>Attributes</th>
+                            <th>Detail Summary Acces</th>
                             <th style="width:340px;">Allowed Pages & Permissions</th>
                         </tr>
                     </thead>
@@ -54,9 +57,75 @@
                             {
                                 <tr>
                                     <td>@user.Email</td>
-                                    <td>@user.PrimaryRole</td>
+                                    <td style="width:180px;">
+                                        <div style="display:flex; flex-wrap:wrap;">
+                                            @foreach (var r in user.PrimaryRole.Split(','))
+                                            {
+                                                var roleTrimmed = r.Trim();
+                                                var roleColor = "#6c757d"; // One common color for all roles
+
+                                                <span style="background-color:@roleColor; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                    @roleTrimmed
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
                                     <td>@user.PrimaryStation</td>
-                                    <td>@user.ProfileButtonAccess</td>
+
+                                    <td style="width:180px;">
+                                        <div style="display:flex; flex-wrap:wrap;">
+                                            @foreach (var r in user.SecondaryRole.Split(','))
+                                            {
+                                                var roleTrimmed = r.Trim();
+                                                var roleColor = "#6c757d"; // One common color for all roles
+
+                                                <span style="background-color:@roleColor; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                    @roleTrimmed
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td>@user.SecondaryStation</td>
+                                    <td style="width:180px;">
+                                        <div style="display:flex; flex-wrap:wrap;">
+                                            @foreach (var a in user.Attributes?.Split(',') ?? new string[] { })
+                                            {
+                                                var attributeTrimmed = a.Trim();
+
+                                                var attributeColor = attributeTrimmed switch
+                                                {
+                                                    "Exam" => "#0d6efd",              // Blue
+                                                    "Treatment" => "#198754",         // Green
+                                                    "General" => "#6f42c1",           // Purple
+                                                    "Oral Surgery" => "#dc3545",      // Red
+                                                    "Endo" => "#fd7e14",              // Orange
+                                                    "Cold Chain Cert" => "#20c997",   // Teal
+                                                    "Imms" => "#0dcaf0",              // Cyan
+                                                    "Panorex X-ray" => "#6610f2",     // Indigo
+                                                    "CanAccessProfile" => "#6c757d",  // Gray
+                                                    _ => "#6c757d"                    // Default gray
+                                                };
+
+                                                <span style="background-color:@attributeColor; color:white; padding:0.25rem 0.5rem; border-radius:0.25rem; margin-right:0.25rem; margin-bottom:0.25rem; font-size:0.85rem;">
+                                                    @attributeTrimmed
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <td style="width:120px;">
+                                        @{
+                                            var hasAccess = user.DetailSummaryAccess;
+                                            var detailSummaryBadgeColor = hasAccess ? "#198754" : "#dc3545"; // Green for Yes, Red for No
+                                            var displayText = hasAccess ? "Yes" : "No";
+                                        }
+
+                                        <span style="background-color:@detailSummaryBadgeColor; color:white; padding:0.25rem 0.6rem; border-radius:0.25rem; font-size:0.85rem;">
+                                            @displayText
+                                        </span>
+                                    </td>
+
                                     <td>
                                         <table style="width:100%; border-collapse:collapse;">
                                             <tbody>

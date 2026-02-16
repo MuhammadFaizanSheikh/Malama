@@ -20,7 +20,8 @@ namespace Malama.Models
         public string PrimaryRole { get; set; }
         public string SecondaryRole { get; set; }
         public string PrimaryStation { get; set; }
-        public bool ProfileButtonAccess { get; set; }
+        public string SecondaryStation { get; set; }
+        public bool DetailSummaryAccess { get; set; }
         public string Attributes { get; set; }
 
         public List<UserPagePermissionDto> AllowedPages { get; set; } = new();

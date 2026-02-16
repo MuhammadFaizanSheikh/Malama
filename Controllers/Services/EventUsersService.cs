@@ -172,7 +172,8 @@ namespace Malama.Controllers.Services
                         Attributes = attributesCommaSeparated,
                         AllowedPages = allowedPages,
                         PrimaryStation = eventStaffDetail.SelectedStation,
-                        ProfileButtonAccess = eventStaffDetail.ProfileButtonAccess
+                        SecondaryStation = eventStaffDetail.SelectedSecondaryStation,
+                        DetailSummaryAccess = eventStaffDetail.ProfileButtonAccess
                     };
                 }).ToList();
 
