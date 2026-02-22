@@ -17,9 +17,48 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
         }
 
+        //public async Task<List<EventManagementPreview>> GetAllEventManagements()
+        //{
+        //    var responseDto = new ResponseDto();
+        //    List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
+
+        //    try
+        //    {
+        //        var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
+        //            null,
+        //            x => x.EventManagementTaskforcesList
+        //        );
+
+        //        eventManagements = eventData.OrderByDescending(c => c.Id)
+        //            .Select(e => new EventManagementPreview
+        //            {
+        //                Id = e.Id,
+        //                EventID = e.EventID,
+        //                EventVersion = e.EventVersion,
+        //                SubEventID = e.SubEventID,
+        //                EventStatus = e.EventStatus,
+        //                EventState = e.EventState,
+        //                EventCity = e.EventCity,
+        //                EventZipCode = e.EventZipCode,
+        //                StatusDescription = e.StatusDescription,
+        //                EventStartDate = e.EventStartDate,
+        //                EventEndDate = e.EventEndDate,
+        //                TaskForce = e.EventManagementTaskforcesList != null
+        //                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+        //                    : string.Empty
+        //            })
+        //            .ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+
+        //    return eventManagements;
+        //}
+
         public async Task<List<EventManagementPreview>> GetAllEventManagements()
         {
-            var responseDto = new ResponseDto();
             List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
 
             try
@@ -29,23 +68,39 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventManagementTaskforcesList
                 );
 
-                eventManagements = eventData.OrderByDescending(c => c.Id)
-                    .Select(e => new EventManagementPreview
+                // Group by EventID to handle versions
+                eventManagements = eventData
+                    .GroupBy(e => e.EventID)
+                    .SelectMany(group =>
                     {
-                        Id = e.Id,
-                        EventID = e.EventID,
-                        SubEventID = e.SubEventID,
-                        EventStatus = e.EventStatus,
-                        EventState = e.EventState,
-                        EventCity = e.EventCity,
-                        EventZipCode = e.EventZipCode,
-                        StatusDescription = e.StatusDescription,
-                        EventStartDate = e.EventStartDate,
-                        EventEndDate = e.EventEndDate,
-                        TaskForce = e.EventManagementTaskforcesList != null
-                            ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
-                            : string.Empty
+                        // Find the highest version for each EventID
+                        int maxVersion = group.Max(e => e.EventVersion);
+
+                        return group.OrderByDescending(e => e.EventVersion)
+                            .Select(e => new EventManagementPreview
+                            {
+                                Id = e.Id,
+                                EventID = e.EventID,
+                                EventVersion = e.EventVersion,
+                                SubEventID = e.SubEventID,
+                                EventStatus = e.EventStatus,
+                                EventState = e.EventState,
+                                EventCity = e.EventCity,
+                                EventZipCode = e.EventZipCode,
+                                StatusDescription = e.StatusDescription,
+                                EventStartDate = e.EventStartDate,
+                                EventEndDate = e.EventEndDate,
+                                TaskForce = e.EventManagementTaskforcesList != null
+                                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                                    : string.Empty,
+                                // Logic for CanEdit:
+                                // Allow edit if not cancelled OR if it's the latest version
+                                CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
+                                          || e.EventVersion == maxVersion
+                            })
+                            .ToList();
                     })
+                    .OrderByDescending(e => e.Id)
                     .ToList();
             }
             catch (Exception ex)
@@ -56,23 +111,21 @@ namespace ExcelFilesCompiler.Controllers.Services
             return eventManagements;
         }
 
+
         public async Task<List<EventManagementPreview>> GetAllEventID()
         {
             try
             {
                 // Fetch only the necessary data
-                var eventData = await _unitOfWork.EventManagement.GetAllAsync(); // no Include needed
-
-                var eventManagements = eventData
-                    .Select(e => new EventManagementPreview
-                    {
-                        Id = e.Id,
-                        EventID = e.EventID // only these two fields
-                    })
-                    .OrderByDescending(e => e.Id)
-                    .ToList();
-
-                return eventManagements;
+                return await _unitOfWork.EventManagement
+                .FindForSearching(e => e.EventStatus != "Canceled") // filtered in DB
+                .OrderByDescending(e => e.Id)
+                .Select(e => new EventManagementPreview
+                {
+                    Id = e.Id,
+                    EventID = e.EventID
+                })
+                .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -104,7 +157,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
+        public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName, string action)
         {
             var responseDto = new ResponseDto();
             using var transaction = await _unitOfWork.BeginTransactionAsync();
@@ -140,7 +193,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 //EventStaffDetail
                 await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-                
+
 
                 foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
                 {
@@ -170,7 +223,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     eventManagementTaskforce.EventManagementId = eventManagement.Id;
                 }
 
-                
+
 
                 _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
 
@@ -178,7 +231,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await transaction.CommitAsync();
 
                 responseDto.Success = true;
-                responseDto.Message = "Event updated successfully!";
+
+                if (action == "Update")
+                {
+                    responseDto.Message = "Event updated successfully!";
+                }
+                else if (action == "UpdateAndDuplicate")
+                {
+                    responseDto.Message = "Event duplicated successfully!";
+                }
             }
             catch (Exception ex)
             {
@@ -447,25 +508,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<EventManagement> GetEventStartAndEndDateById(long eventId)
+        public async Task<(DateTime StartDate, DateTime EndDate, int Version)>GetEventDetailsById(long eventId)
         {
-            try
-            {
-                var result = await _unitOfWork.EventManagement
-                    .FindAsync(x => x.Id == eventId);
+            var result = await _unitOfWork.EventManagement
+                .FindForSearching(x => x.Id == eventId)
+                .Select(x => new
+                {
+                    x.EventStartDate,
+                    x.EventEndDate,
+                    x.EventVersion
+                })
+                .FirstOrDefaultAsync();
 
-                if (result == null)
-                    throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
+            if (result == null)
+                throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
 
-                return result;
-            }
-            catch (Exception)
-            {
-                // log here if you have logging
-                throw;
-            }
+            return (result.EventStartDate, result.EventEndDate, result.EventVersion);
         }
-
-
     }
 }

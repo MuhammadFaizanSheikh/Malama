@@ -24,14 +24,22 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [RoleAttributeAuthorizeFromConfig("EventManagement_View")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(long? editId)
         {
             var responseDto = new ResponseDto();
             List<EventManagementPreview> eventManagementList = new List<EventManagementPreview>();
 
             try
             {
-                eventManagementList = await _eventManagementService.GetAllEventManagements();
+                if (editId.HasValue)
+                {
+                    ViewBag.EditId = editId;
+                    return View();
+                }
+                else
+                {
+                    eventManagementList = await _eventManagementService.GetAllEventManagements();
+                }
             }
             catch (Exception ex)
             {
@@ -109,9 +117,9 @@ namespace ExcelFilesCompiler.Controllers
                     {
                         res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, user.UserName);
                     }
-                    else if (action == "Update")
+                    else if (action == "Update" || action == "UpdateAndDuplicate")
                     {
-                        res = await _eventManagementService.UpdateEventManagementAsync(eventManagement.SingleEventManagement, user.UserName);
+                        res = await _eventManagementService.UpdateEventManagementAsync(eventManagement.SingleEventManagement, user.UserName, action);
                     }
                 }
                 else
@@ -127,6 +135,11 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseStatus"] = res.Success ? "success" : "error"; // SweetAlert2 icon
                 TempData["ResponseTitle"] = res.Success ? "Success" : "Error";
                 TempData["ResponseMessage"] = res.Message;
+
+                if (action == "UpdateAndDuplicate")
+                {
+                    return RedirectToAction("Index", new { editId = eventManagement.SingleEventManagement.Id });
+                }
                 return RedirectToAction("Index");
                 //return RedirectToAction("Index", contractDto);
             }
@@ -184,17 +197,18 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEventStartAndEndDateById(int eventId)
+        public async Task<IActionResult> GetEventStartAndEndDateById(long eventId)
         {
             try
             {
                 var data = await _eventManagementService
-                    .GetEventStartAndEndDateById(eventId);
+                    .GetEventDetailsById(eventId);
 
                 return Ok(new
                 {
-                    startDate = data.EventStartDate.ToString("yyyy-MM-dd"),
-                    endDate = data.EventEndDate.ToString("yyyy-MM-dd")
+                    startDate = data.StartDate.ToString("yyyy-MM-dd"),
+                    endDate = data.EndDate.ToString("yyyy-MM-dd"),
+                    version = data.Version
                 });
             }
             catch (KeyNotFoundException ex)
@@ -208,10 +222,11 @@ namespace ExcelFilesCompiler.Controllers
             {
                 return StatusCode(500, new
                 {
-                    message = "Something went wrong while fetching event dates."
+                    message = "Something went wrong while fetching event details."
                 });
             }
         }
+
 
 
 

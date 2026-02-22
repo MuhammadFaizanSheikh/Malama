@@ -323,6 +323,7 @@
             <thead>
                 <tr>
                     <th>Event ID</th>
+                    <th>Version</th>
                     <th>Sub Event Id</th>
                     <th>Taskforce</th>
                     <th>Event Status</th>
@@ -341,6 +342,13 @@
                     {
                         <tr data-id="@contract.Id">
                             <td>@contract.EventID</td>
+                        <td>
+                            @if (contract.EventVersion != 0)
+                            {
+                                @contract.EventVersion
+                            }
+                        </td>
+
                             <td>@contract.SubEventID</td>
                             <td>@contract.TaskForce</td>
                             <td>@contract.EventStatus</td>
@@ -352,7 +360,11 @@
                             <td>
                                 <div class="button-container">
                                     <a href="javascript:void(0);" class="btn btn-primary" data-id="@contract.Id" style="background-color: @(contract.StatusDescription == "Pending" ? "#f5db8e" : (contract.StatusDescription == "Completed" ? "green" : ""))">@contract.StatusDescription</a>
-                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                @if (contract.CanEdit)
+                                {
+                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id"
+                                       style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                }
                                     <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
                                 </div>
                             </td>
@@ -364,6 +376,7 @@
                 {
                     <tr>
                         <td class="text-center">No data available</td>
+                    <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
@@ -410,6 +423,10 @@
                         <label asp-for="SingleEventManagement.SubEventID" class="form-label">Sub Event ID Number</label>
                         <input asp-for="SingleEventManagement.SubEventID" id="SubEventID" class="form-control" maxLength="5" placeholder="Enter Sub Event ID" />
                     </div>
+                <div class="col-md-6">
+                    <label asp-for="SingleEventManagement.EventVersion" class="form-label">Version</label>
+                    <input asp-for="SingleEventManagement.EventVersion" id="EventVersion" class="form-control" readonly/>
+                </div>
                 </div>
 
                 <div class="row mb-3">
@@ -2133,6 +2150,9 @@
                 <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update" data-section="1">
                     <i class="bi bi-pencil"></i> Update
                 </button>
+            <button type="submit" class="btn btn-warning btn-lg me-3" id="updateAndDuplicateBtn" style="display:none;" name="action" value="UpdateAndDuplicate" data-section="1">
+                <i class="bi bi-pencil"></i> Update and Duplicate
+            </button>
                 <button id="backToTableBtn" type="button" class="btn btn-secondary">
                     Back to Event Management
                 </button>
@@ -2161,6 +2181,8 @@
         
 
         fetchRolesByCategory("");
+
+        
 
         function resetFormFields() {
             tableInitialized = false;
@@ -2392,6 +2414,14 @@
 
         $("#EventStatus").change(function () {
             toggleTaskForceRequired();
+
+            var selectedText = $("#EventStatus option:selected").text().trim();
+
+            if (selectedText === "Canceled") {
+                $("#updateAndDuplicateBtn").show();
+            } else {
+                $("#updateAndDuplicateBtn").hide();
+            }
         });
 
         // Call this function when adding a new Task Force row
@@ -2954,19 +2984,35 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         var staffEventCountCache = {};
 
+        // function loadStaffForEditMode(staffList) {
+        //     tableInitialized = true;
+        //     initializeEventStaffTable();
+        //     initializeSelectedStaffTable();
+        //     GenerateStaffRequirementTable(); //this function is being called here to set allEventServices (allEventServices is being set in this function) so that addStaffToSelectedTable function can have all stations in dropdown with selected value
+            
+        //     setTimeout(() => {
+        //         staffList.forEach((staffData, index) => {
+        //             debugger;
+        //             addStaffToSelectedTable(staffData, index);
+        //         });
+
+        //         updateRowIndices();
+        //     }, 500);
+        // }
+
         function loadStaffForEditMode(staffList) {
-            tableInitialized = true;
             initializeEventStaffTable();
             initializeSelectedStaffTable();
-            GenerateStaffRequirementTable(); //this function is being called here to set allEventServices (allEventServices is being set in this function) so that addStaffToSelectedTable function can have all stations in dropdown with selected value
-            setTimeout(() => {
+            GenerateStaffRequirementTable().then(() => {
                 staffList.forEach((staffData, index) => {
                     addStaffToSelectedTable(staffData, index);
                 });
-
                 updateRowIndices();
-            }, 500);
+            });
         }
+
+
+
 
         function addStaffToSelectedTable(staffData, rowIndex = null) {
             let eventStaffData = staffData.eventStaffRolesNameAndLicense || staffData; // Handle both Add & Edit mode
@@ -3323,235 +3369,399 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             };
 
         const allEventServices = [];
-        // Function to generate final table dynamically based on selected rows from eventServicesTable
-        function GenerateStaffRequirementTable() {
+        
+        // function GenerateStaffRequirementTable() {
 
-              setTimeout(function () {
-                // Check if DataTable is already initialized and destroy it
+        //       setTimeout(function () {
+        //         // Check if DataTable is already initialized and destroy it
+        //         if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
+        //             $('#StaffRequirementTable').DataTable().clear().destroy();
+        //         }
+
+
+        //         let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
+        //     let dayIndex = 1;
+        //     const checkedRows = [];
+
+        //         function collectCheckedRowsFrom(tableSelector) {
+        //             $(`${tableSelector} tbody tr`).each(function () {
+        //                 const checkbox = $(this).find('input[type="checkbox"]');
+        //                 if (checkbox.prop('checked')) {
+        //                     const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
+
+        //                     let totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
+
+        //                     if (!totalMembers) {
+        //                         totalMembers = parseInt($(this).find("input[type='number'][name*='InitialReportNumbers']").val()) || 0;
+        //                     }
+
+        //                     if (!totalMembers) {
+        //                         totalMembers = parseInt($(this).find("input[type='number'][name*='ClientRequestInitial']").val()) || 0;
+        //                     }
+
+        //                     checkedRows.push({ eventService, totalMembers });
+        //                 }
+        //             });
+        //         }
+
+
+            
+
+        //     function renderRow(role, eventService, totalMembers, isDropdown = false) {
+        //         const ratePerHour = ratePerHourData[eventService]?.rate;
+        //         if (!ratePerHour) return '';
+
+        //         let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
+
+        //         if (isDropdown) {
+        //                 row += `<td><select class="form-select text-center roleDropdown">
+        //                     <option value="Dentist" selected>Dentist</option>
+        //                                         <option value="${dentalAssitantAndRDHRole}">${dentalAssitantAndRDHRole}</option>
+        //                 </select></td>`;
+        //         } else {
+        //             row += `<td>${role}</td>`;
+        //         }
+
+        //         row += `<td>${eventService}</td>`;
+        //         row += generateStaffCountCells(ratePerHour, totalMembers, eventService);
+        //         row += `<td>0</td>`;
+        //         row += `</tr>`;
+        //         return row;
+        //     }
+
+        //     collectCheckedRowsFrom('#eventServicesTable');
+        //     collectCheckedRowsFrom('#eventServicesTable2');
+        //     collectCheckedRowsFrom('#eventServicesTable3');
+
+        //     while ($(`#EventStartTimeDay${dayIndex}`).length) {
+        //             finalTableHtml += `<th name="Required Staff Count Day ${dayIndex}">Required Staff Count Day ${dayIndex}</th>`;
+        //         dayIndex++;
+        //     }
+
+        //         finalTableHtml += `<th name="Total Required Staff"">Total Required Staff</th>`;
+        //     finalTableHtml += '</tr></thead><tbody>';
+
+        //     let labTotalMembers = 0;  // Variable to store sum of totalMembers for LABS events
+        //     let immunizationsTotalMembers = 0;
+
+        //     checkedRows.forEach(function (row) {
+        //         const { eventService, totalMembers } = row;
+        //         const rateData = ratePerHourData[eventService];
+        //         const role = rateData?.roles;
+        //         const rate = rateData?.rate;
+        //         const group = rateData?.group;  // Get the group if it exists
+
+                   
+
+        //         // Check if the eventService belongs to the LABS group
+        //         if (group === "LABS") {
+        //             labTotalMembers += totalMembers;
+
+        //                 if (!allEventServices.includes(group)) {
+        //                     allEventServices.push(group);
+        //                 }
+        //         } else if (group === "Immunizations") {
+        //             immunizationsTotalMembers += totalMembers;
+
+        //                 if (!allEventServices.includes(group)) {
+        //                     allEventServices.push(group);
+        //                 }
+        //             } else {
+        //             // Process non-LABS events as usual
+        //             if (eventService === "Dental Treatment") {
+        //                 finalTableHtml += renderRow(role, eventService, totalMembers, true);
+        //             } else {
+        //                 finalTableHtml += renderRow(role, eventService, totalMembers);
+        //             }
+
+        //             if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
+        //                     finalTableHtml += renderRow(dentalAssitantAndRDHRole, eventService, totalMembers);
+        //             }
+
+        //             if (eventService === "Periodic Health Assessment") {
+        //                 const rrEventService = "Record Review (Periodic Health Assessment)";
+        //                 const rrRole = ratePerHourData[rrEventService]?.roles;
+        //                 const rrRate = ratePerHourData[rrEventService]?.rate;
+
+        //                 if (rrRole && rrRate) {
+        //                     finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
+        //                 }
+        //             }
+
+        //                 if (!allEventServices.includes(eventService)) {
+        //                     allEventServices.push(eventService);
+        //                 }
+        //         }
+        //     });
+
+        //     if (labTotalMembers > 0) {
+        //             const rateDataLabs = ratePerHourData["LABS"];
+        //             finalTableHtml += renderRow(rateDataLabs?.roles, "LABS", labTotalMembers);
+        //     }
+
+        //     if (immunizationsTotalMembers > 0) {
+        //             const rateDataImmunizations = ratePerHourData["Immunizations"];
+        //             finalTableHtml += renderRow(rateDataImmunizations?.roles, "Immunizations", immunizationsTotalMembers);
+        //     }
+        //     const doerhsEvent = "DOEHRS Entry";
+        //     const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
+        //     const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
+        //     if (doerhsRole && doerhsRate) {
+        //         finalTableHtml += renderRow(doerhsRole, doerhsEvent, 1);
+        //     }
+
+        //     const checkInOutEvent = "Check-In/Out";
+        //     const checkInOutRole = ratePerHourData[checkInOutEvent]?.roles;
+        //     const checkInOutRate = ratePerHourData[checkInOutEvent]?.rate;
+        //     if (checkInOutRole && checkInOutRate) {
+        //         finalTableHtml += renderRow(checkInOutRole, checkInOutEvent, 1);
+        //     }
+
+
+        //     finalTableHtml += '</tbody>';
+        //     $('#StaffRequirementTable').html(finalTableHtml);
+
+          
+        //         // Reinitialize DataTable
+        //         $('#StaffRequirementTable').DataTable({
+        //             searching: false,
+        //             paging: false,
+        //             info: false,
+        //             order: [],
+        //             autoWidth: false
+        //         });
+        //     }, 300);
+
+        //     // $(document).on('change', 'select.roleDropdown', function () {
+        //     // $('select.roleDropdown').change(function () {
+        //     let roleDropdownChanging = false;
+
+        //     $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
+        //         if (roleDropdownChanging) return;
+
+        //         roleDropdownChanging = true;
+
+        //         const selectedRole = $(this).val();
+        //         const row = $(this).closest('tr');
+        //         const eventService = row.find('td:nth-child(2)').text().trim();
+        //         const totalMembers = parseInt(row.data('total-members')) || 0;
+        //         const ratePerHour = ratePerHourData[eventService]?.rate;
+
+        //         const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
+
+        //         // Remove previous day count cells (everything between 2nd and last td)
+        //         const tds = row.find('td');
+        //         const lastIndex = tds.length - 1;
+        //         tds.each(function (index) {
+        //             if (index > 1 && index < lastIndex) {
+        //                 $(this).remove();
+        //             }
+        //         });
+
+        //         // Insert new day count cells before "Total Count"
+        //         $(staffCountHtml).insertBefore(tds.last());
+
+        //         const table = $('#StaffRequirementTable').DataTable();
+
+        //         if (selectedRole === "Dentist") {
+        //             const newRowData = [
+        //         dentalAssitantAndRDHRole,
+        //                 eventService,
+        //                 ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(), // convert staffCountHtml tds to strings
+        //                 '0'
+        //             ];
+        //             table.row.add(newRowData).draw(false);
+        //         }
+
+
+        // if (selectedRole === dentalAssitantAndRDHRole) {
+        //             table.rows().every(function () {
+        //                 const tr = $(this.node());
+        //                 const roleTd = tr.find('td:nth-child(1)');
+        //                 const role = roleTd.find('select').length > 0
+        //                     ? roleTd.find('select option:selected').text().trim()
+        //                     : roleTd.text().trim();
+        //                 const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
+
+        //                 if (role === dentalAssitantAndRDHRole && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
+        //                     this.remove(); // DataTables way
+        //                 }
+        //             });
+        //             table.draw(false); // Redraw to reflect removals
+        //         }
+
+
+        //         setTimeout(() => {
+        //             roleDropdownChanging = false;
+        //         }, 100); 
+
+        //         updateStaffRequirementTable();
+        //     });
+        // }
+
+
+        // Function to generate final table dynamically based on selected rows from eventServicesTable
+        //Above commented function was working fine but while doing duplicate event handling, i had to remove timeout handling, below function is without timeout.
+
+        function GenerateStaffRequirementTable() {
+            return new Promise((resolve) => {
+                // Destroy existing DataTable if exists
                 if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
                     $('#StaffRequirementTable').DataTable().clear().destroy();
                 }
 
-
                 let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
-            let dayIndex = 1;
-            const checkedRows = [];
+                let dayIndex = 1;
+                const checkedRows = [];
 
                 function collectCheckedRowsFrom(tableSelector) {
                     $(`${tableSelector} tbody tr`).each(function () {
                         const checkbox = $(this).find('input[type="checkbox"]');
                         if (checkbox.prop('checked')) {
                             const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
-
                             let totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
-
-                            if (!totalMembers) {
-                                totalMembers = parseInt($(this).find("input[type='number'][name*='InitialReportNumbers']").val()) || 0;
-                            }
-
-                            if (!totalMembers) {
-                                totalMembers = parseInt($(this).find("input[type='number'][name*='ClientRequestInitial']").val()) || 0;
-                            }
-
+                            if (!totalMembers) totalMembers = parseInt($(this).find("input[type='number'][name*='InitialReportNumbers']").val()) || 0;
+                            if (!totalMembers) totalMembers = parseInt($(this).find("input[type='number'][name*='ClientRequestInitial']").val()) || 0;
                             checkedRows.push({ eventService, totalMembers });
                         }
                     });
                 }
 
-
-            
-
-            function renderRow(role, eventService, totalMembers, isDropdown = false) {
-                const ratePerHour = ratePerHourData[eventService]?.rate;
-                if (!ratePerHour) return '';
-
-                let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
-
-                if (isDropdown) {
+                function renderRow(role, eventService, totalMembers, isDropdown = false) {
+                    const ratePerHour = ratePerHourData[eventService]?.rate;
+                    if (!ratePerHour) return '';
+                    let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
+                    if (isDropdown) {
                         row += `<td><select class="form-select text-center roleDropdown">
-                            <option value="Dentist" selected>Dentist</option>
-                                                <option value="${dentalAssitantAndRDHRole}">${dentalAssitantAndRDHRole}</option>
-                        </select></td>`;
-                } else {
-                    row += `<td>${role}</td>`;
+                        <option value="Dentist" selected>Dentist</option>
+                        <option value="${dentalAssitantAndRDHRole}">${dentalAssitantAndRDHRole}</option>
+                    </select></td>`;
+                    } else row += `<td>${role}</td>`;
+                    row += `<td>${eventService}</td>`;
+                    row += generateStaffCountCells(ratePerHour, totalMembers, eventService);
+                    row += `<td>0</td>`;
+                    row += `</tr>`;
+                    return row;
                 }
 
-                row += `<td>${eventService}</td>`;
-                row += generateStaffCountCells(ratePerHour, totalMembers, eventService);
-                row += `<td>0</td>`;
-                row += `</tr>`;
-                return row;
-            }
+                // Collect checked rows from all event tables
+                collectCheckedRowsFrom('#eventServicesTable');
+                collectCheckedRowsFrom('#eventServicesTable2');
+                collectCheckedRowsFrom('#eventServicesTable3');
 
-            collectCheckedRowsFrom('#eventServicesTable');
-            collectCheckedRowsFrom('#eventServicesTable2');
-            collectCheckedRowsFrom('#eventServicesTable3');
-
-            while ($(`#EventStartTimeDay${dayIndex}`).length) {
+                while ($(`#EventStartTimeDay${dayIndex}`).length) {
                     finalTableHtml += `<th name="Required Staff Count Day ${dayIndex}">Required Staff Count Day ${dayIndex}</th>`;
-                dayIndex++;
-            }
-
-                finalTableHtml += `<th name="Total Required Staff"">Total Required Staff</th>`;
-            finalTableHtml += '</tr></thead><tbody>';
-
-            let labTotalMembers = 0;  // Variable to store sum of totalMembers for LABS events
-            let immunizationsTotalMembers = 0;
-
-            checkedRows.forEach(function (row) {
-                const { eventService, totalMembers } = row;
-                const rateData = ratePerHourData[eventService];
-                const role = rateData?.roles;
-                const rate = rateData?.rate;
-                const group = rateData?.group;  // Get the group if it exists
-
-                   
-
-                // Check if the eventService belongs to the LABS group
-                if (group === "LABS") {
-                    labTotalMembers += totalMembers;
-
-                        if (!allEventServices.includes(group)) {
-                            allEventServices.push(group);
-                        }
-                } else if (group === "Immunizations") {
-                    immunizationsTotalMembers += totalMembers;
-
-                        if (!allEventServices.includes(group)) {
-                            allEventServices.push(group);
-                        }
-                    } else {
-                    // Process non-LABS events as usual
-                    if (eventService === "Dental Treatment") {
-                        finalTableHtml += renderRow(role, eventService, totalMembers, true);
-                    } else {
-                        finalTableHtml += renderRow(role, eventService, totalMembers);
-                    }
-
-                    if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
-                            finalTableHtml += renderRow(dentalAssitantAndRDHRole, eventService, totalMembers);
-                    }
-
-                    if (eventService === "Periodic Health Assessment") {
-                        const rrEventService = "Record Review (Periodic Health Assessment)";
-                        const rrRole = ratePerHourData[rrEventService]?.roles;
-                        const rrRate = ratePerHourData[rrEventService]?.rate;
-
-                        if (rrRole && rrRate) {
-                            finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
-                        }
-                    }
-
-                        if (!allEventServices.includes(eventService)) {
-                            allEventServices.push(eventService);
-                        }
+                    dayIndex++;
                 }
-            });
+                finalTableHtml += `<th name="Total Required Staff"">Total Required Staff</th>`;
+                finalTableHtml += '</tr></thead><tbody>';
 
-            if (labTotalMembers > 0) {
+                let labTotalMembers = 0;
+                let immunizationsTotalMembers = 0;
+
+                // Build table rows
+                checkedRows.forEach(row => {
+                    const { eventService, totalMembers } = row;
+                    const rateData = ratePerHourData[eventService];
+                    const role = rateData?.roles;
+                    const group = rateData?.group;
+
+                    if (group === "LABS") {
+                        labTotalMembers += totalMembers;
+                        if (!allEventServices.includes(group)) allEventServices.push(group);
+                    } else if (group === "Immunizations") {
+                        immunizationsTotalMembers += totalMembers;
+                        if (!allEventServices.includes(group)) allEventServices.push(group);
+                    } else {
+                        finalTableHtml += (eventService === "Dental Treatment") ? renderRow(role, eventService, totalMembers, true) : renderRow(role, eventService, totalMembers);
+                        if (!allEventServices.includes(eventService)) allEventServices.push(eventService);
+                    }
+                });
+
+                if (labTotalMembers > 0) {
                     const rateDataLabs = ratePerHourData["LABS"];
                     finalTableHtml += renderRow(rateDataLabs?.roles, "LABS", labTotalMembers);
-            }
+                }
 
-            if (immunizationsTotalMembers > 0) {
+                if (immunizationsTotalMembers > 0) {
                     const rateDataImmunizations = ratePerHourData["Immunizations"];
                     finalTableHtml += renderRow(rateDataImmunizations?.roles, "Immunizations", immunizationsTotalMembers);
-            }
-            const doerhsEvent = "DOEHRS Entry";
-            const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
-            const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
-            if (doerhsRole && doerhsRate) {
-                finalTableHtml += renderRow(doerhsRole, doerhsEvent, 1);
-            }
+                }
 
-            const checkInOutEvent = "Check-In/Out";
-            const checkInOutRole = ratePerHourData[checkInOutEvent]?.roles;
-            const checkInOutRate = ratePerHourData[checkInOutEvent]?.rate;
-            if (checkInOutRole && checkInOutRate) {
-                finalTableHtml += renderRow(checkInOutRole, checkInOutEvent, 1);
-            }
+                // Insert HTML
+                $('#StaffRequirementTable').html(finalTableHtml);
 
-
-            finalTableHtml += '</tbody>';
-            $('#StaffRequirementTable').html(finalTableHtml);
-
-          
-                // Reinitialize DataTable
-                $('#StaffRequirementTable').DataTable({
+                // Initialize DataTable and wait until it finishes
+                const table = $('#StaffRequirementTable').DataTable({
                     searching: false,
                     paging: false,
                     info: false,
                     order: [],
                     autoWidth: false
                 });
-            }, 300);
 
-            // $(document).on('change', 'select.roleDropdown', function () {
-            // $('select.roleDropdown').change(function () {
-            let roleDropdownChanging = false;
+                // Resolve after DataTable is fully initialized
+                table.one('draw', () => {
+                    // Attach role dropdown change event
+                    let roleDropdownChanging = false;
+                    $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
+                        if (roleDropdownChanging) return;
+                        roleDropdownChanging = true;
 
-            $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
-                if (roleDropdownChanging) return;
+                        const selectedRole = $(this).val();
+                        const row = $(this).closest('tr');
+                        const eventService = row.find('td:nth-child(2)').text().trim();
+                        const totalMembers = parseInt(row.data('total-members')) || 0;
+                        const ratePerHour = ratePerHourData[eventService]?.rate;
 
-                roleDropdownChanging = true;
+                        const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
 
-                const selectedRole = $(this).val();
-                const row = $(this).closest('tr');
-                const eventService = row.find('td:nth-child(2)').text().trim();
-                const totalMembers = parseInt(row.data('total-members')) || 0;
-                const ratePerHour = ratePerHourData[eventService]?.rate;
+                        const tds = row.find('td');
+                        const lastIndex = tds.length - 1;
+                        tds.each(function (index) {
+                            if (index > 1 && index < lastIndex) $(this).remove();
+                        });
 
-                const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
+                        $(staffCountHtml).insertBefore(tds.last());
 
-                // Remove previous day count cells (everything between 2nd and last td)
-                const tds = row.find('td');
-                const lastIndex = tds.length - 1;
-                tds.each(function (index) {
-                    if (index > 1 && index < lastIndex) {
-                        $(this).remove();
-                    }
+                        if (selectedRole === "Dentist") {
+                            const newRowData = [
+                                dentalAssitantAndRDHRole,
+                                eventService,
+                                ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(),
+                                '0'
+                            ];
+                            table.row.add(newRowData).draw(false);
+                        }
+
+                        if (selectedRole === dentalAssitantAndRDHRole) {
+                            table.rows().every(function () {
+                                const tr = $(this.node());
+                                const roleTd = tr.find('td:nth-child(1)');
+                                const role = roleTd.find('select').length > 0
+                                    ? roleTd.find('select option:selected').text().trim()
+                                    : roleTd.text().trim();
+                                const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
+                                if (role === dentalAssitantAndRDHRole && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
+                                    this.remove();
+                                }
+                            });
+                            table.draw(false);
+                        }
+
+                        roleDropdownChanging = false;
+                        updateStaffRequirementTable();
+                    });
+
+                    resolve();
                 });
 
-                // Insert new day count cells before "Total Count"
-                $(staffCountHtml).insertBefore(tds.last());
-
-                const table = $('#StaffRequirementTable').DataTable();
-
-                if (selectedRole === "Dentist") {
-                    const newRowData = [
-                dentalAssitantAndRDHRole,
-                        eventService,
-                        ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(), // convert staffCountHtml tds to strings
-                        '0'
-                    ];
-                    table.row.add(newRowData).draw(false);
-                }
-
-
-        if (selectedRole === dentalAssitantAndRDHRole) {
-                    table.rows().every(function () {
-                        const tr = $(this.node());
-                        const roleTd = tr.find('td:nth-child(1)');
-                        const role = roleTd.find('select').length > 0
-                            ? roleTd.find('select option:selected').text().trim()
-                            : roleTd.text().trim();
-                        const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
-
-                        if (role === dentalAssitantAndRDHRole && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
-                            this.remove(); // DataTables way
-                        }
-                    });
-                    table.draw(false); // Redraw to reflect removals
-                }
-
-
-                setTimeout(() => {
-                    roleDropdownChanging = false;
-                }, 100); 
-
-                updateStaffRequirementTable();
+                // If no rows exist, resolve immediately
+                if ($('#StaffRequirementTable tbody tr').length === 0) resolve();
             });
         }
+
+
 
         function generateStaffCountCells(ratePerHour, totalMembers, eventService) {
                 let html = "";
@@ -3671,7 +3881,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         let isUpdating = false;
 
-        $("#updateBtn").click(function (e) {
+        $("#updateBtn, #updateAndDuplicateBtn").click(function (e) {
 
             e.preventDefault();
 
@@ -3713,7 +3923,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // }
 
             isUpdating = true;
-            $btn.prop("disabled", true).text("Updating...");
+            if ($btn.attr("id") === "updateBtn") {
+                $btn.prop("disabled", true).text("Updating...");
+            } else if ($btn.attr("id") === "updateAndDuplicateBtn") {
+                $btn.prop("disabled", true).text("Updating and duplicating...");
+            }
 
             const completedSections = getCompletedProgressSections();
 
@@ -4033,6 +4247,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $('#addContractBtn').hide();
             $('[id^="section"]').hide();
             $(`#section1`).show();
+            $('#EventVersion').val(1);
             $("#submitBtn").data("section", 1);
         });
 
@@ -4110,7 +4325,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         //     "responsive": true
         // });
 
-        $.getJSON('/data/statesAndCities.json', function (data) {
+        let statesCitiesLoaded = null;
+
+        function loadStatesAndCities() {
+
+        if (statesCitiesLoaded) {
+            return statesCitiesLoaded; // prevent double loading
+        }
+
+        statesCitiesLoaded  = $.getJSON('/data/statesAndCities.json', function (data) {
             const stateCityMap = {};
             const stateDropdowns = $('#EventState, #ShippingState, #PharmacyState, #QuestPickupState, #filterState, #filterLicenseStates');
 
@@ -4181,6 +4404,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
             });
         });
+
+            return statesCitiesLoaded;
+        }
 
         let isEditMode = false;
 
@@ -4584,23 +4810,61 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
-            var contractId = $(this).data('id');
+            var isViewMode = $(this).hasClass('view-btn');
+            var eventManagementId = $(this).data('id');
+            loadEventManagementForEdit(eventManagementId, isViewMode);
+        });
+
+        //Below calling is for UpdateAndDUplicate feature and its position is deliberately here
+        loadStatesAndCities().done(function () {
+
+            var editId = '@ViewBag.EditId';
+
+            if (editId && editId !== '') {
+                loadEventManagementForEdit(editId, false, true);
+                startDatePicker.clear();
+                endDatePicker.clear();
+            }
+
+        });
+
+        function loadEventManagementForEdit(contractId, isViewButton = false, isDuplicateEvent = false) {
+            debugger;
             $("#updateBtn").data("section", 1);
-            var isViewButton = $(this).hasClass('view-btn');
             $.ajax({
                 url: '/EventManagement/GetEventManagementById/' + contractId,
                 type: 'GET',
+                async: false,
                 success: function (response) {
                     if (response.success) {
                         isEditMode = true;
+                        debugger;
                         var combinedData = response.combinedData;
                         setProgressFromServer(combinedData.eventManagement.completedSections);
-                        $('#hiddenId').val(combinedData.eventManagement.id);
+
+                        if (!isDuplicateEvent)
+                        {
+                            $('#hiddenId').val(combinedData.eventManagement.id);
+                            $('#EventVersion').val(combinedData.eventManagement.eventVersion);
+                        }
+                        else
+                        {
+                            var nextVersion = (combinedData.eventManagement.eventVersion || 0) + 1;
+                            $('#EventVersion').val(nextVersion);
+                        }
+
                         $('#EventID').text(combinedData.eventManagement.eventID);
                         $('#EventIDHidden').val(combinedData.eventManagement.eventID);
                         $('#SubEventID').val(combinedData.eventManagement.subEventID);
                         populateTaskForces(combinedData.eventManagement.eventManagementTaskforcesList);
-                        $('#EventStatus').val(combinedData.eventManagement.eventStatus);
+
+                        if (!isDuplicateEvent) {
+                            $('#EventStatus').val(combinedData.eventManagement.eventStatus);
+
+                            if (combinedData.eventManagement.eventStatus === 'Canceled') {
+                                $('#updateAndDuplicateBtn').show();
+                            }
+                        }
 
                         var selectedData = {
                             id: combinedData.contractDetails.id,
@@ -4831,12 +5095,23 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             loadStaffForEditMode(EventStaffDetailAndAdditionalRoleslist);
                         };
 
+                        debugger;
                         // Show the form and hide the table
                         $(`#progressBar span[data-target='1']`).addClass("active");
                         $('#datatableWrapper').hide();
                         $('.card-body').show();
-                        $('#submitBtn').hide();
-                        $('#resetBtn').hide();
+
+                        if (isDuplicateEvent) 
+                        {
+                            $('#submitBtn').show();
+                            $('#resetBtn').show();
+                        }
+                        else 
+                        { 
+                            $('#submitBtn').hide();
+                            $('#resetBtn').hide();
+                        }
+                        
                         $('#addContractBtn').hide();
                         $('[id^="section"]').hide();
                         $(`#section1`).show();
@@ -4867,8 +5142,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                                 .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
                                 .prop('disabled', false);
 
-
-                            $('#updateBtn').show();
+                            if (!isDuplicateEvent) 
+                            {
+                                $('#updateBtn').show();
+                            }
                             updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
                             updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
                             updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
@@ -4883,15 +5160,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     alert('An error occurred while fetching contract data.');
                 }
             });
-        });
-
-
-
-
-
-
-
-
+        }
 
         function updateTableRows(tableId, data) {
             const table = document.getElementById(tableId);
@@ -4966,9 +5235,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
             });
         }
-
-
-
+        
     });
 
     function setProgressFromServer(completedSections) {
@@ -5087,6 +5354,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
     }
 
-
+    
     
 </script>

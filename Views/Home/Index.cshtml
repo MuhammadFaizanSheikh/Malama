@@ -27,6 +27,10 @@
                 <option value="">-- Select Event --</option>
             </select>
         </div>
+        <div class="col-md-2">
+            <label for="eventVersion" class="form-label" style="color: black;">Event Version</label>
+            <input type="text" class="form-control event-version" id="eventVersion" name="eventVersion" readonly>
+        </div>
     </div>
 
     <!-- Dropdowns Section -->
@@ -188,6 +192,7 @@
                 if (!eventId) {
                     startDatePicker.clear();
                     endDatePicker.clear();
+                    document.getElementById("eventVersion").value = "";
                     return;
                 }
 
@@ -203,17 +208,20 @@
                     .then(data => {
                         startDatePicker.setDate(data.startDate, true);
                         endDatePicker.setDate(data.endDate, true);
+
+                        // ✅ Set version textbox
+                        document.getElementById("eventVersion").value = data.version;
                     })
                     .catch(err => {
                         console.error(err);
 
                         startDatePicker.clear();
                         endDatePicker.clear();
+                        document.getElementById("eventVersion").value = "";
 
-                        alert(err.message || "Unable to load event dates.");
+                        alert(err.message || "Unable to load event details.");
                     });
             });
-
 
             // document.getElementById('clearPreview').addEventListener('click', clearPreview);
 

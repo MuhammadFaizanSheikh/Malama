@@ -9,10 +9,10 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<EventManagementPreview>> GetAllEventID();
         Task<string> GetNextEventManagementId();
         Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id);
-        Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
+        Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName, string action);
         Task<EventManagement> GetEventManagementForEventSelectionById(long id);
         Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id);
         Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId);
-        Task<EventManagement> GetEventStartAndEndDateById(long eventId);
+        Task<(DateTime StartDate, DateTime EndDate, int Version)> GetEventDetailsById(long eventId);
     }
 }

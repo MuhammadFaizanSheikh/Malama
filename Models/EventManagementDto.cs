@@ -31,6 +31,7 @@
     {
         public long Id { get; set; }
         public string? EventID { get; set; }
+        public int EventVersion { get; set; }
         public string? SubEventID { get; set; }
         public string? EventStatus { get; set; }
         public string? TaskForce { get; set; }
@@ -40,6 +41,7 @@
         public string? StatusDescription { get; set; }
         public DateTime EventStartDate { get; set; }
         public DateTime EventEndDate { get; set; }
+        public Boolean CanEdit { get; set; }
     }
 
     [Table("EventManagement")]
@@ -54,7 +56,10 @@
         public string EventID { get; set; } // Read-only field
         [MaxLength(50)]
         public string? SubEventID { get; set; }
-        
+
+        [Required]
+        public int EventVersion { get; set; }
+
         [Required]
         [MaxLength(50)]
         public string EventStatus { get; set; }
