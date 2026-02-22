@@ -115,7 +115,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     if (action == "Add")
                     {
-                        res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, user.UserName);
+                        res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, eventManagement.SubmissionToken, user.UserName);
                     }
                     else if (action == "Update" || action == "UpdateAndDuplicate")
                     {

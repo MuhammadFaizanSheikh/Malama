@@ -8,6 +8,7 @@ namespace ExcelFilesCompiler.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
+        public IGenericRepository<SubmissionTokenRecord> SubmissionTokenRecord { get; private set; }
         public IGenericRepository<ContractDetails> ContractDetails { get; private set; }
         public IGenericRepository<SubContractor> SubContractors { get; private set; }
         public IGenericRepository<EventStaff> EventStaff { get; private set; }
@@ -36,6 +37,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
+            SubmissionTokenRecord = new GenericRepository<SubmissionTokenRecord>(_context);
             ContractDetails = new GenericRepository<ContractDetails>(_context);
             SubContractors = new GenericRepository<SubContractor>(_context);
             EventStaff = new GenericRepository<EventStaff>(_context);

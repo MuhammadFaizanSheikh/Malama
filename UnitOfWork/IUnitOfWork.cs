@@ -6,6 +6,7 @@ namespace ExcelFilesCompiler.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
+        IGenericRepository<SubmissionTokenRecord> SubmissionTokenRecord { get; }
         IGenericRepository<ContractDetails> ContractDetails { get; }
         IGenericRepository<SubContractor> SubContractors { get; }
         IGenericRepository<EventStaff> EventStaff { get; }

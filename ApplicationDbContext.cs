@@ -15,7 +15,7 @@ namespace ExcelFilesCompiler
         // Define your table as a DbSet
         public DbSet<FileDataDto> FileData { get; set; }
         public DbSet<SubContractor> SubContractor { get; set; }
-
+        public DbSet<SubmissionTokenRecord> SubmissionTokenRecord { get; set; }
         public DbSet<ContractDetails> ContractDetails { get; set; }
         public DbSet<EventStaff> EventStaff { get; set; }
         public DbSet<StaffQualification> StaffQualification { get; set; }

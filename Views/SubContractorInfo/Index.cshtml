@@ -226,6 +226,7 @@
         <form asp-action="CreateSubContracttor" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleSubContractor.Id" id="hiddenId" />
+            <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
         <h3 class="mt-5">Company Main:</h3>
 
@@ -1133,15 +1134,9 @@
             });
         }
 
-        let isSubmitting = false;
 
         document.getElementById("submitBtn").addEventListener("click", function (event) {
             const form = document.querySelector("form");
-
-            if (isSubmitting) {
-                event.preventDefault();
-                return;
-            }
 
             if (!form.reportValidity()) {
                 event.preventDefault();
@@ -1157,26 +1152,13 @@
                 event.preventDefault();
                 return;
             }
-
-            isSubmitting = true;
-
-            this.disabled = true;
-            this.innerText = "Submitting...";
         });
 
         let isUpdating = false;
 
         document.getElementById("updateBtn").addEventListener("click", function (event) {
 
-            if (isUpdating) {
-                event.preventDefault();
-                return;
-            }
-
-            isUpdating = true;
-
-            this.disabled = true;
-            this.innerText = "Updating...";
+            
         });
 
         function validatePhoneFields() {

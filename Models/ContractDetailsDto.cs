@@ -8,6 +8,7 @@
     {
         public List<ContractDetails>? Contracts { get; set; }
         public ContractDetails SingleContract { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     [Table("ContractDetails")]

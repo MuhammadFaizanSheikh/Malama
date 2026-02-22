@@ -17,46 +17,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
         }
 
-        //public async Task<List<EventManagementPreview>> GetAllEventManagements()
-        //{
-        //    var responseDto = new ResponseDto();
-        //    List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
-
-        //    try
-        //    {
-        //        var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
-        //            null,
-        //            x => x.EventManagementTaskforcesList
-        //        );
-
-        //        eventManagements = eventData.OrderByDescending(c => c.Id)
-        //            .Select(e => new EventManagementPreview
-        //            {
-        //                Id = e.Id,
-        //                EventID = e.EventID,
-        //                EventVersion = e.EventVersion,
-        //                SubEventID = e.SubEventID,
-        //                EventStatus = e.EventStatus,
-        //                EventState = e.EventState,
-        //                EventCity = e.EventCity,
-        //                EventZipCode = e.EventZipCode,
-        //                StatusDescription = e.StatusDescription,
-        //                EventStartDate = e.EventStartDate,
-        //                EventEndDate = e.EventEndDate,
-        //                TaskForce = e.EventManagementTaskforcesList != null
-        //                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
-        //                    : string.Empty
-        //            })
-        //            .ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw;
-        //    }
-
-        //    return eventManagements;
-        //}
-
         public async Task<List<EventManagementPreview>> GetAllEventManagements()
         {
             List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
@@ -134,12 +94,30 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName)
+        public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string submissionToken, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
             try
             {
+                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
+                if (existingToken != null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "This form has already been submitted."
+                    };
+                }
+
+                // 2️⃣ Save token first
+                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                {
+                    Token = submissionToken,
+                    CreatedAt = DateTime.Now
+                });
+
+
                 eventManagement.AddedBy = loggedinUserName;
                 eventManagement.AddedOn = DateTime.Now;
                 await _unitOfWork.EventManagement.AddAsync(eventManagement);

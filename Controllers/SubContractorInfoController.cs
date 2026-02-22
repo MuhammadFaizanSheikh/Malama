@@ -117,7 +117,7 @@ namespace ExcelFilesCompiler.Controllers
                         _logger.LogInformation("{ClassName}, {MethodName}, Adding new SubContractor, User: {UserName}",
                             CLASSNAME, methodName, user.UserName);
 
-                        res = await _subContractorService.AddContractAsync(contractDto.SingleSubContractor, user.UserName);
+                        res = await _subContractorService.AddContractAsync(contractDto.SingleSubContractor, contractDto.SubmissionToken, user.UserName);
                     }
                     else if (action == "Update")
                     {

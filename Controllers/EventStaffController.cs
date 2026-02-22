@@ -162,7 +162,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     if (action == "Add")
                     {
-                        res = await _eventStaffService.AddContractAsync(eventStaffDto.SingleEventStaff, user.UserName);
+                        res = await _eventStaffService.AddContractAsync(eventStaffDto.SingleEventStaff, eventStaffDto.SubmissionToken, user.UserName);
                     }
                     else if (action == "Update")
                     {

@@ -397,6 +397,7 @@
         <form id="eventManagementForm" asp-action="CreateEventManagement" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleEventManagement.Id" id="hiddenId" />
+            <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
             <div class="col-md-6 d-flex align-items-center">
                 <label class="form-label me-2 fw-bold" style="font-size: 1.2rem;">Event ID : </label>
                 <label asp-for="SingleEventManagement.EventID" id="EventID" class="form-label" style="font-size: 1.2rem;" readonly required></label>
@@ -3815,16 +3816,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return html;
             }
 
-            let isSubmitting = false;
 
         $("#submitBtn").click(function (e) {
-            e.preventDefault();
+            // e.preventDefault();
 
-            if (isSubmitting) {
-                return;
-            }
-
-            const $btn = $(this);
             const section = $(this).data("section");
 
             if (section !== 7)
@@ -3832,33 +3827,35 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
+                    e.preventDefault();
                     return;
                 }
             }
 
             if (!validateSection1()) {
+                e.preventDefault();
                 alert("Please fill in all required fields of Event Specific Details!");
                 return;
             }
 
              if (!validateServiceMemberPercentages()) {
+                 e.preventDefault();
                 return;
             }
 
             if (!validateDeployRadioGroup()) {
+                e.preventDefault();
                 return; // Stop form submission
             }
 
             if (!validateEventStatusDependantFields(requirements)) {
+                e.preventDefault();
                 return;
             }
 
             // if (!validateTableRequiredFields()) {
             //     return;
             // }
-
-            isSubmitting = true;
-            $btn.prop("disabled", true).text("Submitting...");
 
             const completedSections = getCompletedProgressSections();
 
@@ -3876,20 +3873,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 .attr("value", actionValue)
                 .appendTo("#eventManagementForm");
 
-            $("#eventManagementForm").submit();
+            // $("#eventManagementForm").submit();
         });
 
-        let isUpdating = false;
 
         $("#updateBtn, #updateAndDuplicateBtn").click(function (e) {
 
-            e.preventDefault();
+            // e.preventDefault();
 
-            if (isUpdating) {
-                return;
-            }
-
-            const $btn = $(this);
             const section = $(this).data("section");
 
             if (section !== 7)
@@ -3897,37 +3888,35 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 const isValid = validateSectionFields(section);
 
                 if (!isValid) {
+                    e.preventDefault();
                     return;
                 }
             }
 
             if (!validateSection1()) {
+                e.preventDefault();
                 alert("Please fill in all required fields of Event Specific Details!");
                 return;
             }
 
             if (!validateServiceMemberPercentages()) {
+                e.preventDefault();
                 return;
             }
 
             if (!validateDeployRadioGroup()) {
+                e.preventDefault();
                 return; // Stop form submission
             }
 
             if (!validateEventStatusDependantFields(requirements)) {
+                e.preventDefault();
                 return;
             }
 
             // if (!validateTableRequiredFields()) {
             //     return;
             // }
-
-            isUpdating = true;
-            if ($btn.attr("id") === "updateBtn") {
-                $btn.prop("disabled", true).text("Updating...");
-            } else if ($btn.attr("id") === "updateAndDuplicateBtn") {
-                $btn.prop("disabled", true).text("Updating and duplicating...");
-            }
 
             const completedSections = getCompletedProgressSections();
 
@@ -3945,7 +3934,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 .attr("value", actionValue)
                 .appendTo("#eventManagementForm");
 
-            $("#eventManagementForm").submit();
+            // $("#eventManagementForm").submit();
         });
 
         function validateDeployRadioGroup() {

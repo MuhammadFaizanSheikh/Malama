@@ -14,14 +14,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 {
     public class SubContractorService : ISubContractorService
     {
-        private readonly IGenericRepository<SubContractor> repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SubContractorService> _logger;
         private const string CLASSNAME = "SubContractorService";
 
-        public SubContractorService(ILogger<SubContractorService> logger, IGenericRepository<SubContractor> repository, IUnitOfWork unitOfWork)
+        public SubContractorService(ILogger<SubContractorService> logger, IUnitOfWork unitOfWork)
         {
-            this.repository = repository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -93,7 +91,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var existingCompany = await repository.FindAsync(c => c.CompanyMainName == companyName);
+                var existingCompany = await _unitOfWork.SubContractors.FindAsync(c => c.CompanyMainName == companyName);
 
                 if (existingCompany != null)
                 {
@@ -105,7 +103,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 companyName = companyName.Replace(" ", "").ToUpper();
 
-                var allCompanies = await repository.GetAllAsync();
+                var allCompanies = await _unitOfWork.SubContractors.GetAllAsync();
 
                 if (allCompanies == null || !allCompanies.Any())
                 {
@@ -147,7 +145,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var subContractor = await repository.GetByIdAsync(id);
+                var subContractor = await _unitOfWork.SubContractors.GetByIdAsync(id);
                 if (subContractor == null)
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, No subcontractor found, Id: {Id}",
@@ -193,7 +191,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string submissionToken, string loggedinUserName)
         {
             const string methodName = nameof(AddContractAsync);
             _logger.LogInformation("{ClassName}, {MethodName}, Adding SubContractor, User: {UserName}",
@@ -203,9 +201,26 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
+                if (existingToken != null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "This form has already been submitted."
+                    };
+                }
+
+                // 2️⃣ Save token first
+                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                {
+                    Token = submissionToken,
+                    CreatedAt = DateTime.Now
+                });
+
                 contractDetail.AddedBy = loggedinUserName;
                 contractDetail.AddedOn = DateTime.Now;
-                await repository.AddAsync(contractDetail);
+                await _unitOfWork.SubContractors.AddAsync(contractDetail);
 
                 responseDto.Success = true;
                 responseDto.Message = "SubContractor added successfully!";
@@ -243,7 +258,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 contract.UpdatedBy = loggedinUserName;
                 contract.UpdatedOn = DateTime.Now;
 
-                await repository.UpdateAsync(contract);
+                await _unitOfWork.SubContractors.UpdateAsync(contract);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Updated SubContractor details in repository, Id: {SubContractorId}",
                     CLASSNAME, methodName, contract.Id);
@@ -286,11 +301,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (string.IsNullOrEmpty(companyName))
                 {
-                    result = await repository.FindForSearchingAsync(c => true);
+                    result = await _unitOfWork.SubContractors.FindForSearchingAsync(c => true);
                 }
                 else
                 {
-                    result = await repository.FindForSearchingAsync(
+                    result = await _unitOfWork.SubContractors.FindForSearchingAsync(
                         c => c.CompanyMainName.ToLower().Contains(companyName.ToLower())
                     );
                 }

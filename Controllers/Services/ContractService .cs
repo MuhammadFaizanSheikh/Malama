@@ -12,19 +12,17 @@ namespace ExcelFilesCompiler.Controllers.Services
 {
     public class ContractService : IContractService
     {
-        private readonly IGenericRepository<ContractDetails> repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ContractService> _logger;
         private const string CLASSNAME = "ContractService";
 
-        public ContractService(ILogger<ContractService> logger, IGenericRepository<ContractDetails> repository, IUnitOfWork unitOfWork)
+        public ContractService(ILogger<ContractService> logger, IUnitOfWork unitOfWork)
         {
-            this.repository = repository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
-        public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string submissionToken,  string loggedinUserName)
         {
             const string methodName = "AddContractAsync";
             _logger.LogInformation("{ClassName}, {MethodName}, Called with ContractID: {ContractID}, User: {UserName}",
@@ -34,8 +32,25 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
+                if (existingToken != null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "This form has already been submitted."
+                    };
+                }
+
+                // 2️⃣ Save token first
+                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                {
+                    Token = submissionToken,
+                    CreatedAt = DateTime.Now
+                });
+
                 // Check if contract already exists
-                var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
+                var existingContractDetails = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
                 if (existingContractDetails != null && existingContractDetails.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, ContractID already exists: {ContractID}, User: {UserName}",
@@ -50,7 +65,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 contractDetail.AddedBy = loggedinUserName;
                 contractDetail.AddedOn = DateTime.Now;
 
-                await repository.AddAsync(contractDetail);
+                await _unitOfWork.ContractDetails.AddAsync(contractDetail);
                 _logger.LogInformation("{ClassName}, {MethodName}, Contract added successfully: {ContractID}, User: {UserName}",
                     CLASSNAME, methodName, contractDetail.ContractID, loggedinUserName);
 
@@ -79,7 +94,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                contracts = (await repository.GetAllAsync())
+                contracts = (await _unitOfWork.ContractDetails.GetAllAsync())
                     .OrderByDescending(c => c.Id)
                     .ToList();
 
@@ -128,7 +143,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
                 }
 
-                var contractDetails = await repository.GetByIdAsync(id);
+                var contractDetails = await _unitOfWork.ContractDetails.GetByIdAsync(id);
 
                 if (contractDetails == null)
                 {
@@ -183,7 +198,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 // Check if ContractID already exists in another record
-                var existingContractDetails = await repository.FindForSearchingAsync(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
+                var existingContractDetails = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
                 if (existingContractDetails != null && existingContractDetails.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, ContractID already exists in another record: {ContractID}, User: {UserName}",
@@ -195,7 +210,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 // Preserve original AddedBy / AddedOn
-                var existingContract = await repository.GetByIdAsync(contract.Id);
+                var existingContract = await _unitOfWork.ContractDetails.GetByIdAsync(contract.Id);
                 contract.AddedBy = existingContract.AddedBy;
                 contract.AddedOn = existingContract.AddedOn;
 
@@ -203,7 +218,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 contract.UpdatedBy = loggedinUserName;
                 contract.UpdatedOn = DateTime.Now;
 
-                await repository.UpdateAsync(contract);
+                await _unitOfWork.ContractDetails.UpdateAsync(contract);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Contract updated successfully: {ContractID}, User: {UserName}",
                     CLASSNAME, methodName, contract.ContractID, loggedinUserName);
@@ -242,11 +257,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Empty search term received. Returning all contracts.",
                         CLASSNAME, methodName);
 
-                    result = await repository.FindForSearchingAsync(c => true);
+                    result = await _unitOfWork.ContractDetails.FindForSearchingAsync(c => true);
                 }
                 else
                 {
-                    result = await repository.FindForSearchingAsync(
+                    result = await _unitOfWork.ContractDetails.FindForSearchingAsync(
                                 c => c.ContractName.ToLower().Contains(contractName.ToLower()));
 
                     _logger.LogInformation(
@@ -286,7 +301,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Checking by ContractID: {ContractId}",
                         CLASSNAME, methodName, contractId);
 
-                    result = await repository.FindAsync(c => c.ContractID == contractId);
+                    result = await _unitOfWork.ContractDetails.FindAsync(c => c.ContractID == contractId);
                 }
                 else
                 {
@@ -294,7 +309,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Checking by ContractName: {ContractName}",
                         CLASSNAME, methodName, contractName);
 
-                    result = await repository.FindAsync(c => c.ContractName == contractName);
+                    result = await _unitOfWork.ContractDetails.FindAsync(c => c.ContractName == contractName);
                 }
 
                 _logger.LogInformation(

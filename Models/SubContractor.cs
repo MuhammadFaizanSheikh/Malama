@@ -11,9 +11,9 @@ namespace Malama.Models
 
     public class SubContractorViewModel
     {
-        //public List<SubContractorInfoDto>? SubContractor { get; set; }
         public List<SubContractorAndContractViewModel>? SubContractor { get; set; }
         public SubContractor SingleSubContractor { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class SubContractorAndContractViewModel

@@ -10,6 +10,7 @@
     {
         public List<EventManagementPreview>? EventManagements { get; set; }
         public EventManagement SingleEventManagement { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class CombinedEventManagementAndContractDetails

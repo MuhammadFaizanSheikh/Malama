@@ -31,7 +31,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleService = roleService;
         }
 
-        public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string loggedinUserName)
+        public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string submissionToken, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
             bool userCreated = false; // Track if user was created
@@ -41,6 +41,23 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 try
                 {
+                    var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
+                    if (existingToken != null)
+                    {
+                        return new ResponseDto
+                        {
+                            Success = false,
+                            Message = "This form has already been submitted."
+                        };
+                    }
+
+                    // 2️⃣ Save token first
+                    await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                    {
+                        Token = submissionToken,
+                        CreatedAt = DateTime.Now
+                    });
+
                     foreach (var affiliation in eventStaff.StaffContractAffiliation)
                     {
                         var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);

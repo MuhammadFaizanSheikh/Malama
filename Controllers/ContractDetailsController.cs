@@ -98,7 +98,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     if (action == "Add")
                     {
-                        res = await _contractService.AddContractAsync(contractDto.SingleContract, user.UserName);
+                        res = await _contractService.AddContractAsync(contractDto.SingleContract, contractDto.SubmissionToken, user.UserName);
                         _logger.LogInformation("{ClassName}, {MethodName}, AddContractAsync completed, Success: {Success}, Message: {Message}",
                             CLASSNAME, methodName, res.Success, res.Message);
                     }

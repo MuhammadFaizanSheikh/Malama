@@ -31,6 +31,7 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+//builder.Services.AddScoped<IGenericRepository<SubmissionTokenRecord>, GenericRepository<SubmissionTokenRecord>>();
 builder.Services.AddScoped<IFileUploader, FileUploader>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IContractService, ContractService>();

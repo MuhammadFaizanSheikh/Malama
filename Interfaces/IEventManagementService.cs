@@ -4,7 +4,7 @@ namespace ExcelFilesCompiler.Interfaces
 {
     public interface IEventManagementService
     {
-        Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string loggedinUserName);
+        Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string submissionToken, string loggedinUserName);
         Task<List<EventManagementPreview>> GetAllEventManagements();
         Task<List<EventManagementPreview>> GetAllEventID();
         Task<string> GetNextEventManagementId();

@@ -307,6 +307,7 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleEventStaff.Id" id="hiddenId" />
             <input type="hidden" id="hiddenUserId" />
+        <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -1322,16 +1323,9 @@
         }
     }
 
-    // let isSubmitting = false;
-
     document.getElementById("submitBtn").addEventListener("click", function (event) {
 
         var form = document.querySelector('form'); // Get the form element
-
-        // if (isSubmitting) {
-        // event.preventDefault();
-        // return;
-        // }
 
         if (!emailValid) {
             event.preventDefault(); // Stop form submission
@@ -1400,22 +1394,10 @@
             event.preventDefault();
             return;
         }
-
-        // isSubmitting = true;
-
-        // this.disabled = true;
-        // this.innerText = "Submitting...";
     });
-
-    // let isUpdating = false;
 
     document.getElementById("updateBtn").addEventListener("click", function (event) {
         var form = document.querySelector('form'); // Get the form element
-
-        // if (isUpdating) {
-        // event.preventDefault();
-        // return;
-        // }
 
         let errorContainer = $("#roleError");
         if ($(".role-checkbox:checked").length === 0) {
@@ -1434,15 +1416,6 @@
         if (!validateCertificationFields()) {
             event.preventDefault();
         }
-
-        // if (!validateStaffContractAffiliation()) {
-        //     event.preventDefault(); // Prevent form submission if validation fails
-        // }
-
-        // isUpdating = true;
-
-        // this.disabled = true;
-        // this.innerText = "Updating...";
     });
 
     function validateCertificationFields() {

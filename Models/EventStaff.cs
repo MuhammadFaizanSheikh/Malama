@@ -10,6 +10,7 @@ namespace Malama.Models
     {
         public List<EventStaff>? EventStaff { get; set; }
         public EventStaff SingleEventStaff { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class CombinedEventStaffSubContractorAndContractDto

@@ -194,6 +194,7 @@
         <form id="contractForm" asp-action="CreateContractDetails" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
+        <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
             <!-- Row 1 -->
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -969,18 +970,19 @@
         }
     });
 
-    let isSubmitting = false;
+    // let isSubmitting = false;
 
     document.getElementById("submitBtn").addEventListener("click", function (event) {
         // Perform the default form validation first
 
-        if (isSubmitting) {
-        event.preventDefault();
-        return;
-        }
+        // if (isSubmitting) {
+        // event.preventDefault();
+        // return;
+        // }
 
         if (!validatePhoneFields()) {
             event.preventDefault(); // Stop form submission if validation fails
+            return;
         }
 
         if (isContractIDExists) {
@@ -993,6 +995,7 @@
 
             // Prevent form submission
             event.preventDefault();
+            return;
         }
 
         if (isContractNameExists) {
@@ -1005,6 +1008,7 @@
 
             // Prevent form submission
             event.preventDefault();
+            return;
         }
 
         const startDate = document.getElementById("ContractStartDate").value;
@@ -1022,11 +1026,11 @@
             return;
         }
 
-        isSubmitting = true;
+        // isSubmitting = true;
 
-        const btn = this;
-        btn.disabled = true;
-        btn.innerText = "Submitting...";
+        // const btn = this;
+        // btn.disabled = true;
+        // btn.innerText = "Submitting...";
     });
 
     function checkIfContractExists(contractID, contractName, checkType) {
@@ -1080,24 +1084,12 @@
         return isValid;
     }
 
-    let isUpdating = false;
-
     document.getElementById("updateBtn").addEventListener("click", function (event) {
-
-        if (isUpdating) {
-            event.preventDefault();
-            return;
-        }
 
         if (!validatePhoneFields()) {
             event.preventDefault();
             return;
         }
-
-        isUpdating = true;
-
-        this.disabled = true;
-        this.innerText = "Updating...";
     });
 
     var isContractIDExists = false; // To track if ContractID exists
