@@ -12,7 +12,7 @@ using Malama.Interfaces;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    //[RoleAttributeAuthorizeFromConfig("DawsonUser_View")]
+    [RoleAttributeAuthorizeFromConfig("EventUser_View")]
     public class EventUsersController : Controller
     {
         private readonly IAccountUserService _accountUserService;

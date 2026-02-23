@@ -17,6 +17,11 @@ namespace Malama.Utilities
             ("Super Admin", null),
             ("DAWSON Admin - System", null)
         },
+            ["EventUser_View"] = new List<(string Role, string Attribute)>
+        {
+             ("Project Manager & Program Manager", null),
+             ("Event Manager", null)
+        },
             ["AccountRegistration_Save"] = new List<(string Role, string Attribute)>
         {
             ("Super Admin", null),
