@@ -145,7 +145,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [HttpGet]
-        [RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
+        //[RoleAttributeAuthorizeFromConfig("ContractDetails_View")]
         public async Task<IActionResult> GetContractById(long id, string companyName = null, bool checkIfContractAlreadyExist = false)
         {
             string methodName = nameof(GetContractById);

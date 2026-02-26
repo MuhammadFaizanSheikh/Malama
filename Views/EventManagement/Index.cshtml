@@ -2590,6 +2590,7 @@
         });
 
         $('#ContractId').on('select2:select', function (e) {
+            debugger;
             const selectedContractId = e.params.data.id;
             $.ajax({
                 url: '/ContractDetails/GetContractById',
@@ -2990,7 +2991,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         var staffEventCountCache = {};
 
         function loadStaffForEditMode(staffList) {
-            
+            return new Promise((resolve) => {
             initializeEventStaffTable();
             initializeSelectedStaffTable();
             GenerateStaffRequirementTable().then(() => {//Generate Requirement Table as per Event Service checked items
@@ -3001,6 +3002,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                 updateStaffRequirementTable();//Calculate "Total Required Staff" in Requirement Table's column as per selection of Primary Station
                 updateRowIndices();//Add indexes in eventStaffSelectedTable
+            });
             });
         }
 
@@ -4711,24 +4713,29 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
             var isViewMode = $(this).hasClass('view-btn');
             var eventManagementId = $(this).data('id');
-            loadEventManagementForEdit(eventManagementId, isViewMode);
+
+            loadEventManagementForEdit(eventManagementId, isViewMode).then(() => {
+                // Optional: Any code to run after data is fully loaded
+                console.log('Event Management data fully loaded for edit/view.');
+            }).catch((err) => {
+                console.error('Failed to load Event Management:', err);
+            });
         });
 
         //Below calling is for UpdateAndDUplicate feature and its position is deliberately here
         loadStatesAndCities().done(function () {
-
             var editId = '@ViewBag.EditId';
-
             if (editId && editId !== '') {
-                loadEventManagementForEdit(editId, false, true);
-                startDatePicker.clear();
-                endDatePicker.clear();
+                loadEventManagementForEdit(editId, false, true).then(() => {
+                    // This executes after all staff is loaded and tables updated
+                    startDatePicker.clear();
+                    endDatePicker.clear();
+                });
             }
-
         });
 
         function loadEventManagementForEdit(contractId, isViewButton = false, isDuplicateEvent = false) {
-            
+            return new Promise((resolve, reject) => {
             $("#updateBtn").data("section", 1);
             $.ajax({
                 url: '/EventManagement/GetEventManagementById/' + contractId,
@@ -4991,10 +4998,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
                             updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
 
-                        var EventStaffDetailAndAdditionalRoleslist = combinedData.eventStaffDetailAndAdditionalRoleslist;
-                        if (EventStaffDetailAndAdditionalRoleslist) {
-                            loadStaffForEditMode(EventStaffDetailAndAdditionalRoleslist);
-                        };
+                            if (combinedData.eventStaffDetailAndAdditionalRoleslist) {
+                                loadStaffForEditMode(combinedData.eventStaffDetailAndAdditionalRoleslist).then(() => {
+                                    resolve(); // All staff loaded, resolve the main Promise
+                                });
+                            } else {
+                                resolve(); // No staff, resolve immediately
+                            }
 
                         
                         // Show the form and hide the table
@@ -5055,6 +5065,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 error: function () {
                     alert('An error occurred while fetching contract data.');
                 }
+            });
             });
         }
 
