@@ -77,5 +77,10 @@ namespace ExcelFilesCompiler.UnitOfWork
         {
             _context.Dispose();
         }
+
+        public void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class
+        {
+            _context.Entry(existing).CurrentValues.SetValues(updated);
+        }
     }
 }

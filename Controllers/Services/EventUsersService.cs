@@ -156,7 +156,7 @@ namespace Malama.Controllers.Services
                         : string.Empty;
 
                     var allRoles = primaryRoleNames.Concat(secondaryRoleNames).Distinct().ToList();
-
+                    ;
                     var allowedPages = PagePermissionResolver.ResolveUserPages(
                         allRoles,    // pass actual role names
                         attributes           // pass attribute strings

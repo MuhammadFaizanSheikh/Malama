@@ -31,5 +31,6 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<LabStation> LabStation { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
+        void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class;
     }
 }

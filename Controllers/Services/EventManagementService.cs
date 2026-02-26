@@ -135,96 +135,227 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName, string action)
+        //public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName, string action)
+        //{
+        //    var responseDto = new ResponseDto();
+        //    using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var existingEventManagement = await _unitOfWork.EventManagement.GetByIdAsync(eventManagement.Id);
+        //        eventManagement.AddedBy = existingEventManagement.AddedBy;
+        //        eventManagement.AddedOn = existingEventManagement.AddedOn;
+        //        eventManagement.UpdatedBy = loggedinUserName;
+        //        eventManagement.UpdatedOn = DateTime.Now;
+        //        await _unitOfWork.EventManagement.UpdateAsync(eventManagement);
+
+        //        //EventStartEndTimeDayWise
+        //        await _unitOfWork.EventStartEndTimeDayWise.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+        //        foreach (var eventStartEndTime in eventManagement.EventStartEndTimeDayWiseList)
+        //        {
+        //            eventStartEndTime.EventManagementId = eventManagement.Id;
+        //        }
+
+        //        _unitOfWork.EventStartEndTimeDayWise.AddRange(eventManagement.EventStartEndTimeDayWiseList);
+
+        //        //EventServiceDetail
+        //        await _unitOfWork.EventServiceDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+        //        foreach (var eventServiceDetail in eventManagement.EventServiceDetailList)
+        //        {
+        //            eventServiceDetail.EventManagementId = eventManagement.Id;
+        //        }
+
+        //        _unitOfWork.EventServiceDetail.AddRange(eventManagement.EventServiceDetailList);
+
+        //        //EventStaffDetail
+        //        await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+
+        //        foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+        //        {
+        //            eventStaffDetail.EventManagementId = eventManagement.Id;
+        //        }
+
+        //        _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
+
+        //        //EventStaff Availability Date
+        //        await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventStaffDetailId");
+
+        //        foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+        //        {
+        //            foreach (var staffAvailabilityDate in eventStaffDetail.AvailabilityDatesList)
+        //            {
+        //                staffAvailabilityDate.EventStaffDetailId = eventStaffDetail.Id;
+        //            }
+
+        //            _unitOfWork.EventManagementStaffAvailability.AddRange(eventStaffDetail.AvailabilityDatesList);
+        //        }
+
+        //        //EventTaskforce
+        //        await _unitOfWork.EventManagementTaskforces.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+
+        //        foreach (var eventManagementTaskforce in eventManagement.EventManagementTaskforcesList)
+        //        {
+        //            eventManagementTaskforce.EventManagementId = eventManagement.Id;
+        //        }
+
+
+
+        //        _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
+
+        //        await _unitOfWork.SaveAsync();
+        //        await transaction.CommitAsync();
+
+        //        responseDto.Success = true;
+
+        //        if (action == "Update")
+        //        {
+        //            responseDto.Message = "Event updated successfully!";
+        //        }
+        //        else if (action == "UpdateAndDuplicate")
+        //        {
+        //            responseDto.Message = "Event duplicated successfully!";
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Step 7: Rollback in case of any error
+        //        await transaction.RollbackAsync();
+        //        responseDto.Success = false;
+        //        responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
+        //    }
+
+        //    return responseDto;
+        //}
+
+        public async Task<ResponseDto> UpdateEventManagementAsync(
+    EventManagement updatedModel,
+    string loggedinUserName,
+    string action)
         {
             var responseDto = new ResponseDto();
+
             using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var existingEventManagement = await _unitOfWork.EventManagement.GetByIdAsync(eventManagement.Id);
-                eventManagement.AddedBy = existingEventManagement.AddedBy;
-                eventManagement.AddedOn = existingEventManagement.AddedOn;
-                eventManagement.UpdatedBy = loggedinUserName;
-                eventManagement.UpdatedOn = DateTime.Now;
-                await _unitOfWork.EventManagement.UpdateAsync(eventManagement);
+                // 1️⃣ Load existing entity WITH children
+                var existing = (await _unitOfWork.EventManagement
+           .GetWithIncludeAsync(
+               e => e.Id == updatedModel.Id,
+               e => e.EventServiceDetailList,
+               e => e.EventStartEndTimeDayWiseList,
+               e => e.EventStaffDetailList,
+               e => e.EventManagementTaskforcesList
+           )).FirstOrDefault();
 
-                //EventStartEndTimeDayWise
-                await _unitOfWork.EventStartEndTimeDayWise.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-                foreach (var eventStartEndTime in eventManagement.EventStartEndTimeDayWiseList)
+                if (existing == null)
                 {
-                    eventStartEndTime.EventManagementId = eventManagement.Id;
+                    responseDto.Success = false;
+                    responseDto.Message = "Event not found.";
+                    return responseDto;
                 }
 
-                _unitOfWork.EventStartEndTimeDayWise.AddRange(eventManagement.EventStartEndTimeDayWiseList);
+                // 2️⃣ Preserve audit fields
+                updatedModel.AddedBy = existing.AddedBy;
+                updatedModel.AddedOn = existing.AddedOn;
+                updatedModel.UpdatedBy = loggedinUserName;
+                updatedModel.UpdatedOn = DateTime.Now;
 
-                //EventServiceDetail
-                await _unitOfWork.EventServiceDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
+                // 3️⃣ Update scalar properties
+                _unitOfWork.SetValues(existing, updatedModel);
 
-                foreach (var eventServiceDetail in eventManagement.EventServiceDetailList)
+                // =========================
+                // 4️⃣ Replace CHILD COLLECTIONS
+                // =========================
+
+                // EventServiceDetail
+                existing.EventServiceDetailList.Clear();
+                foreach (var item in updatedModel.EventServiceDetailList)
                 {
-                    eventServiceDetail.EventManagementId = eventManagement.Id;
+                    existing.EventServiceDetailList.Add(item);
                 }
 
-                _unitOfWork.EventServiceDetail.AddRange(eventManagement.EventServiceDetailList);
-
-                //EventStaffDetail
-                await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-
-                foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+                // EventStartEndTimeDayWise
+                existing.EventStartEndTimeDayWiseList.Clear();
+                foreach (var item in updatedModel.EventStartEndTimeDayWiseList)
                 {
-                    eventStaffDetail.EventManagementId = eventManagement.Id;
+                    existing.EventStartEndTimeDayWiseList.Add(item);
                 }
 
-                _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
-
-                //EventStaff Availability Date
-                await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventStaffDetailId");
-
-                foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
+                // EventManagementTaskforces
+                existing.EventManagementTaskforcesList.Clear();
+                foreach (var item in updatedModel.EventManagementTaskforcesList)
                 {
-                    foreach (var staffAvailabilityDate in eventStaffDetail.AvailabilityDatesList)
+                    existing.EventManagementTaskforcesList.Add(item);
+                }
+
+                // =========================
+                // 5️⃣ EventStaffDetail (Nested Graph)
+                // =========================
+
+                existing.EventStaffDetailList.Clear();
+
+                foreach (var staff in updatedModel.EventStaffDetailList)
+                {
+                    var newStaff = new EventStaffDetail
                     {
-                        staffAvailabilityDate.EventStaffDetailId = eventStaffDetail.Id;
+                        EventStaffId = staff.EventStaffId,
+                        SelectedStation = staff.SelectedStation,
+                        PreEventAvailability = staff.PreEventAvailability,
+                        ProfileButtonAccess = staff.ProfileButtonAccess,
+                        SelectedSecondaryStation = staff.SelectedSecondaryStation
+                    };
+
+                    // Availability Dates
+                    foreach (var date in staff.AvailabilityDatesList)
+                    {
+                        newStaff.AvailabilityDatesList.Add(
+                            new EventManagementStaffAvailability
+                            {
+                                AvailabilityDate = date.AvailabilityDate
+                            });
                     }
 
-                    _unitOfWork.EventManagementStaffAvailability.AddRange(eventStaffDetail.AvailabilityDatesList);
+                    // Primary Roles
+                    foreach (var role in staff.EventWiseStaffRoleList)
+                    {
+                        newStaff.EventWiseStaffRoleList.Add(
+                            new EventWiseStaffRole
+                            {
+                                RoleId = role.RoleId
+                            });
+                    }
+
+                    // Secondary Roles
+                    foreach (var role in staff.EventWiseStaffSecondaryRoleList)
+                    {
+                        newStaff.EventWiseStaffSecondaryRoleList.Add(
+                            new EventWiseStaffSecondaryRole
+                            {
+                                RoleId = role.RoleId
+                            });
+                    }
+
+                    existing.EventStaffDetailList.Add(newStaff);
                 }
 
-                //EventTaskforce
-                await _unitOfWork.EventManagementTaskforces.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-                foreach (var eventManagementTaskforce in eventManagement.EventManagementTaskforcesList)
-                {
-                    eventManagementTaskforce.EventManagementId = eventManagement.Id;
-                }
-
-
-
-                _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
-
+                // 6️⃣ Save once
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
                 responseDto.Success = true;
-
-                if (action == "Update")
-                {
-                    responseDto.Message = "Event updated successfully!";
-                }
-                else if (action == "UpdateAndDuplicate")
-                {
-                    responseDto.Message = "Event duplicated successfully!";
-                }
+                responseDto.Message = action == "Update"
+                    ? "Event updated successfully!"
+                    : "Event duplicated successfully!";
             }
             catch (Exception ex)
             {
-                // Step 7: Rollback in case of any error
                 await transaction.RollbackAsync();
                 responseDto.Success = false;
-                responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
+                responseDto.Message = $"Error updating event: {ex.Message}";
             }
 
             return responseDto;

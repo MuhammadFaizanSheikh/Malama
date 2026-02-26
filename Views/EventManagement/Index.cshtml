@@ -2654,17 +2654,21 @@
 
            
 
-            if (target == 7 && !tableInitialized) {
-                initializeEventStaffTable();
-                initializeSelectedStaffTable();
-                tableInitialized = true; // Prevent reloading the table again
-            }
-
             if (target == 7) {
-                GenerateStaffRequirementTable();
-                setTimeout(() => {
-                    updateStaffRequirementTable();
-                }, 500);
+                if (!tableInitialized) {   
+                    initializeEventStaffTable();//Ajax call to fetched current available staff
+
+                    if (!isEditMode) {// Restrict to clear Event Staff rows on edit mode
+                        initializeSelectedStaffTable();
+                    }
+
+                    tableInitialized = true;  // Prevent reloading the table again
+                }
+
+                GenerateStaffRequirementTable().then(() => { //Generate Requirement Table as per Event Service checked items
+                    refreshStationDropdowns();//refresh StationDropdowns of EventStaff selected record (if any change occur in EventService tables)
+                    updateStaffRequirementTable();//Calculate "Total Required Staff" in Requirement Table's column as per selection of Primary Station
+                });
             }
 
             $(".section").hide();
@@ -2985,30 +2989,18 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         var staffEventCountCache = {};
 
-        // function loadStaffForEditMode(staffList) {
-        //     tableInitialized = true;
-        //     initializeEventStaffTable();
-        //     initializeSelectedStaffTable();
-        //     GenerateStaffRequirementTable(); //this function is being called here to set allEventServices (allEventServices is being set in this function) so that addStaffToSelectedTable function can have all stations in dropdown with selected value
-            
-        //     setTimeout(() => {
-        //         staffList.forEach((staffData, index) => {
-        //             debugger;
-        //             addStaffToSelectedTable(staffData, index);
-        //         });
-
-        //         updateRowIndices();
-        //     }, 500);
-        // }
-
         function loadStaffForEditMode(staffList) {
+            
             initializeEventStaffTable();
             initializeSelectedStaffTable();
-            GenerateStaffRequirementTable().then(() => {
+            GenerateStaffRequirementTable().then(() => {//Generate Requirement Table as per Event Service checked items
+
                 staffList.forEach((staffData, index) => {
-                    addStaffToSelectedTable(staffData, index);
+                    addStaffToSelectedTable(staffData, index);//Add records of EventStaff with all updated selection
                 });
-                updateRowIndices();
+
+                updateStaffRequirementTable();//Calculate "Total Required Staff" in Requirement Table's column as per selection of Primary Station
+                updateRowIndices();//Add indexes in eventStaffSelectedTable
             });
         }
 
@@ -3065,25 +3057,50 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             // Build availability checkboxes
             let currentDate = new Date(eventStartDate.getTime());
+
+            debugger;
             let availabilityCheckboxes = "";
+            // while (currentDate <= eventEndDate) {
+            //     let yyyyMMdd = toYYYYMMDD(currentDate);                 // For comparison
+            //     let formattedDate = formatDateToMMDDYYYYGlobal(yyyyMMdd); // For display
+
+            //     let isChecked = selectedDatesSet.has(yyyyMMdd) ? "checked" : "";
+
+            //     availabilityCheckboxes += `
+            // <div class="form-check">
+            //     <input class="form-check-input" type="checkbox"
+            //            id="chk_${eventStaffData.id}_${formattedDate}"
+            //            name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+            //            value="${formattedDate}" ${isChecked}>
+            //     <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
+            //         ${formattedDate}
+            //     </label>
+            // </div>`;
+
+            //     currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+            // }
+
             while (currentDate <= eventEndDate) {
-                let yyyyMMdd = toYYYYMMDD(currentDate);                 // For comparison
-                let formattedDate = formatDateToMMDDYYYYGlobal(yyyyMMdd); // For display
+
+                let yyyyMMdd = toYYYYMMDD(currentDate);
+                let formattedDate = formatDateToMMDDYYYYGlobal(yyyyMMdd);
 
                 let isChecked = selectedDatesSet.has(yyyyMMdd) ? "checked" : "";
 
                 availabilityCheckboxes += `
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox"
-                       id="chk_${eventStaffData.id}_${formattedDate}"
-                       name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
-                       value="${formattedDate}" ${isChecked}>
-                <label class="form-check-label" for="chk_${eventStaffData.id}_${formattedDate}">
-                    ${formattedDate}
-                </label>
-            </div>`;
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox"
+               id="chk_${eventStaffData.id}_${yyyyMMdd}"
+               name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+               value="${formattedDate}" ${isChecked}>
+        <label class="form-check-label"
+               for="chk_${eventStaffData.id}_${yyyyMMdd}">
+            ${formattedDate}
+        </label>
+    </div>`;
 
-                currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+                // ✅ LOCAL increment
+                currentDate.setDate(currentDate.getDate() + 1);
             }
 
             // Pre-event and profile access checkboxes
@@ -3164,7 +3181,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 status: eventStaffData.status,
                 id: eventStaffData.id,
                 countOfStaffEnrolledInEvent: staffEventCountCache[eventStaffData.id] || 0,
-                availability: availabilityCheckboxes,
+                availability: `<div class="availability-container">${availabilityCheckboxes}</div>`,
                 preEventAvailability: preEventAvailabilityCheckbox,
                 station: stationDropdown,
                 additionalroles: roleDropdown,
@@ -3178,6 +3195,121 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $(`#${roleDropdownId}`).select2();
             $(`#${secondaryroleDropdownId}`).select2();
             $(`#${secondarystationDropdownId}`).select2();
+        }
+
+        function refreshStationDropdowns() {
+            // Create updated service list
+            const updatedServices = [...new Set([...allEventServices, "DOEHRS Entry", "Check-In/Out"])];
+
+            $('#eventStaffSelectedTable tbody tr').each(function () {
+
+                const primarySelect = $(this).find('select.station-dropdown');
+                const secondarySelect = $(this).find('select.secondary-station-dropdown');
+
+                if (!primarySelect.length) return;
+
+                // Preserve selected values
+                const selectedPrimary = primarySelect.val();
+                const selectedSecondary = secondarySelect.val() || [];
+
+                // Rebuild primary options
+                let primaryOptions = `
+                <option value="" disabled>Select Primary Station</option>
+                ${updatedServices.map(service =>
+                    `<option value="${service}">${service}</option>`
+                ).join("")}
+            `;
+
+                primarySelect.html(primaryOptions);
+
+                // Restore selected value if still valid
+                if (updatedServices.includes(selectedPrimary)) {
+                    primarySelect.val(selectedPrimary);
+                } else {
+                    primarySelect.val("");
+                }
+
+                // Rebuild secondary options
+                let secondaryOptions = updatedServices.map(service =>
+                    `<option value="${service}">${service}</option>`
+                ).join("");
+
+                secondarySelect.html(secondaryOptions);
+
+                // Restore valid secondary selections
+                const validSecondary = selectedSecondary.filter(s => updatedServices.includes(s));
+                secondarySelect.val(validSecondary);
+
+                // Refresh select2 if used
+                primarySelect.trigger('change.select2');
+                secondarySelect.trigger('change.select2');
+            });
+        }
+
+        function refreshAvailabilityDates() {
+
+            let startPicker = $('#EventStartDate')[0]?._flatpickr;
+            let endPicker = $('#EventEndDate')[0]?._flatpickr;
+
+            if (!startPicker || !endPicker) return;
+
+            let eventStartDate = startPicker.selectedDates[0];
+            let eventEndDate = endPicker.selectedDates[0];
+
+            if (!eventStartDate || !eventEndDate) return;
+            if (eventStartDate > eventEndDate) return;
+
+            // Helper: format Date to YYYY-MM-DD
+            function toYYYYMMDD(date) {
+                const pad = (num) => num.toString().padStart(2, '0');
+                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+            }
+
+            $('#eventStaffSelectedTable tbody tr').each(function (rowIndex) {
+
+                const row = $(this);
+                const availabilityContainer = row.find('.availability-container');
+
+                if (!availabilityContainer.length) return;
+
+                // Capture previously checked valid dates
+                let previouslyCheckedDates = new Set();
+
+                availabilityContainer.find('input[type="checkbox"]:checked').each(function () {
+                    let dateOnly = getDateOnlyGlobal($(this).val());
+                    previouslyCheckedDates.add(dateOnly);
+                });
+
+                // Rebuild availability checkboxes
+                let currentDate = new Date(eventStartDate.getTime());
+                let newAvailabilityHtml = "";
+
+                while (currentDate <= eventEndDate) {
+
+                    let yyyyMMdd = toYYYYMMDD(currentDate);
+                    let formattedDate = formatDateToMMDDYYYYGlobal(yyyyMMdd);
+
+                    let isChecked = previouslyCheckedDates.has(yyyyMMdd) ? "checked" : "";
+
+                    newAvailabilityHtml += `
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="SingleEventManagement.EventStaffDetailList[${rowIndex}].AvailabilityDates"
+                               value="${formattedDate}"
+                               ${isChecked}>
+                        <label class="form-check-label">
+                            ${formattedDate}
+                        </label>
+                    </div>
+                `;
+
+                    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+                }
+
+                availabilityContainer.html(newAvailabilityHtml);
+
+            });
         }
 
 
@@ -3314,6 +3446,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 $(this).find('select[name*="SelectedRoles"]').each(function () {
                     updateNameAttribute(this, index);
                 });
+
+                $(this).find('select[name*="SelectedSecondaryStationList"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
+
+                // Secondary roles
+                $(this).find('select[name*="SelectedSecondaryRoles"]').each(function () {
+                    updateNameAttribute(this, index);
+                });
             });
         }
 
@@ -3371,236 +3512,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         const allEventServices = [];
         
-        // function GenerateStaffRequirementTable() {
-
-        //       setTimeout(function () {
-        //         // Check if DataTable is already initialized and destroy it
-        //         if ($.fn.DataTable.isDataTable('#StaffRequirementTable')) {
-        //             $('#StaffRequirementTable').DataTable().clear().destroy();
-        //         }
-
-
-        //         let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
-        //     let dayIndex = 1;
-        //     const checkedRows = [];
-
-        //         function collectCheckedRowsFrom(tableSelector) {
-        //             $(`${tableSelector} tbody tr`).each(function () {
-        //                 const checkbox = $(this).find('input[type="checkbox"]');
-        //                 if (checkbox.prop('checked')) {
-        //                     const eventService = $(this).find("input[type='hidden'][name*='EventService']").val();
-
-        //                     let totalMembers = parseInt($(this).find("input[type='number'][name*='FinalPreEventConfirmedNumbers']").val()) || 0;
-
-        //                     if (!totalMembers) {
-        //                         totalMembers = parseInt($(this).find("input[type='number'][name*='InitialReportNumbers']").val()) || 0;
-        //                     }
-
-        //                     if (!totalMembers) {
-        //                         totalMembers = parseInt($(this).find("input[type='number'][name*='ClientRequestInitial']").val()) || 0;
-        //                     }
-
-        //                     checkedRows.push({ eventService, totalMembers });
-        //                 }
-        //             });
-        //         }
-
-
-            
-
-        //     function renderRow(role, eventService, totalMembers, isDropdown = false) {
-        //         const ratePerHour = ratePerHourData[eventService]?.rate;
-        //         if (!ratePerHour) return '';
-
-        //         let row = `<tr${isDropdown ? ` data-total-members="${totalMembers}"` : ''}>`;
-
-        //         if (isDropdown) {
-        //                 row += `<td><select class="form-select text-center roleDropdown">
-        //                     <option value="Dentist" selected>Dentist</option>
-        //                                         <option value="${dentalAssitantAndRDHRole}">${dentalAssitantAndRDHRole}</option>
-        //                 </select></td>`;
-        //         } else {
-        //             row += `<td>${role}</td>`;
-        //         }
-
-        //         row += `<td>${eventService}</td>`;
-        //         row += generateStaffCountCells(ratePerHour, totalMembers, eventService);
-        //         row += `<td>0</td>`;
-        //         row += `</tr>`;
-        //         return row;
-        //     }
-
-        //     collectCheckedRowsFrom('#eventServicesTable');
-        //     collectCheckedRowsFrom('#eventServicesTable2');
-        //     collectCheckedRowsFrom('#eventServicesTable3');
-
-        //     while ($(`#EventStartTimeDay${dayIndex}`).length) {
-        //             finalTableHtml += `<th name="Required Staff Count Day ${dayIndex}">Required Staff Count Day ${dayIndex}</th>`;
-        //         dayIndex++;
-        //     }
-
-        //         finalTableHtml += `<th name="Total Required Staff"">Total Required Staff</th>`;
-        //     finalTableHtml += '</tr></thead><tbody>';
-
-        //     let labTotalMembers = 0;  // Variable to store sum of totalMembers for LABS events
-        //     let immunizationsTotalMembers = 0;
-
-        //     checkedRows.forEach(function (row) {
-        //         const { eventService, totalMembers } = row;
-        //         const rateData = ratePerHourData[eventService];
-        //         const role = rateData?.roles;
-        //         const rate = rateData?.rate;
-        //         const group = rateData?.group;  // Get the group if it exists
-
-                   
-
-        //         // Check if the eventService belongs to the LABS group
-        //         if (group === "LABS") {
-        //             labTotalMembers += totalMembers;
-
-        //                 if (!allEventServices.includes(group)) {
-        //                     allEventServices.push(group);
-        //                 }
-        //         } else if (group === "Immunizations") {
-        //             immunizationsTotalMembers += totalMembers;
-
-        //                 if (!allEventServices.includes(group)) {
-        //                     allEventServices.push(group);
-        //                 }
-        //             } else {
-        //             // Process non-LABS events as usual
-        //             if (eventService === "Dental Treatment") {
-        //                 finalTableHtml += renderRow(role, eventService, totalMembers, true);
-        //             } else {
-        //                 finalTableHtml += renderRow(role, eventService, totalMembers);
-        //             }
-
-        //             if (eventService === "Dental Exam" || eventService === "Dental Treatment") {
-        //                     finalTableHtml += renderRow(dentalAssitantAndRDHRole, eventService, totalMembers);
-        //             }
-
-        //             if (eventService === "Periodic Health Assessment") {
-        //                 const rrEventService = "Record Review (Periodic Health Assessment)";
-        //                 const rrRole = ratePerHourData[rrEventService]?.roles;
-        //                 const rrRate = ratePerHourData[rrEventService]?.rate;
-
-        //                 if (rrRole && rrRate) {
-        //                     finalTableHtml += renderRow(rrRole, rrEventService, totalMembers);
-        //                 }
-        //             }
-
-        //                 if (!allEventServices.includes(eventService)) {
-        //                     allEventServices.push(eventService);
-        //                 }
-        //         }
-        //     });
-
-        //     if (labTotalMembers > 0) {
-        //             const rateDataLabs = ratePerHourData["LABS"];
-        //             finalTableHtml += renderRow(rateDataLabs?.roles, "LABS", labTotalMembers);
-        //     }
-
-        //     if (immunizationsTotalMembers > 0) {
-        //             const rateDataImmunizations = ratePerHourData["Immunizations"];
-        //             finalTableHtml += renderRow(rateDataImmunizations?.roles, "Immunizations", immunizationsTotalMembers);
-        //     }
-        //     const doerhsEvent = "DOEHRS Entry";
-        //     const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
-        //     const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
-        //     if (doerhsRole && doerhsRate) {
-        //         finalTableHtml += renderRow(doerhsRole, doerhsEvent, 1);
-        //     }
-
-        //     const checkInOutEvent = "Check-In/Out";
-        //     const checkInOutRole = ratePerHourData[checkInOutEvent]?.roles;
-        //     const checkInOutRate = ratePerHourData[checkInOutEvent]?.rate;
-        //     if (checkInOutRole && checkInOutRate) {
-        //         finalTableHtml += renderRow(checkInOutRole, checkInOutEvent, 1);
-        //     }
-
-
-        //     finalTableHtml += '</tbody>';
-        //     $('#StaffRequirementTable').html(finalTableHtml);
-
-          
-        //         // Reinitialize DataTable
-        //         $('#StaffRequirementTable').DataTable({
-        //             searching: false,
-        //             paging: false,
-        //             info: false,
-        //             order: [],
-        //             autoWidth: false
-        //         });
-        //     }, 300);
-
-        //     // $(document).on('change', 'select.roleDropdown', function () {
-        //     // $('select.roleDropdown').change(function () {
-        //     let roleDropdownChanging = false;
-
-        //     $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
-        //         if (roleDropdownChanging) return;
-
-        //         roleDropdownChanging = true;
-
-        //         const selectedRole = $(this).val();
-        //         const row = $(this).closest('tr');
-        //         const eventService = row.find('td:nth-child(2)').text().trim();
-        //         const totalMembers = parseInt(row.data('total-members')) || 0;
-        //         const ratePerHour = ratePerHourData[eventService]?.rate;
-
-        //         const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
-
-        //         // Remove previous day count cells (everything between 2nd and last td)
-        //         const tds = row.find('td');
-        //         const lastIndex = tds.length - 1;
-        //         tds.each(function (index) {
-        //             if (index > 1 && index < lastIndex) {
-        //                 $(this).remove();
-        //             }
-        //         });
-
-        //         // Insert new day count cells before "Total Count"
-        //         $(staffCountHtml).insertBefore(tds.last());
-
-        //         const table = $('#StaffRequirementTable').DataTable();
-
-        //         if (selectedRole === "Dentist") {
-        //             const newRowData = [
-        //         dentalAssitantAndRDHRole,
-        //                 eventService,
-        //                 ...$(staffCountHtml).map((_, td) => $(td).prop('outerHTML')).get(), // convert staffCountHtml tds to strings
-        //                 '0'
-        //             ];
-        //             table.row.add(newRowData).draw(false);
-        //         }
-
-
-        // if (selectedRole === dentalAssitantAndRDHRole) {
-        //             table.rows().every(function () {
-        //                 const tr = $(this.node());
-        //                 const roleTd = tr.find('td:nth-child(1)');
-        //                 const role = roleTd.find('select').length > 0
-        //                     ? roleTd.find('select option:selected').text().trim()
-        //                     : roleTd.text().trim();
-        //                 const eventServiceColumn = tr.find('td:nth-child(2)').text().trim();
-
-        //                 if (role === dentalAssitantAndRDHRole && eventServiceColumn === "Dental Treatment" && !tr.is(row)) {
-        //                     this.remove(); // DataTables way
-        //                 }
-        //             });
-        //             table.draw(false); // Redraw to reflect removals
-        //         }
-
-
-        //         setTimeout(() => {
-        //             roleDropdownChanging = false;
-        //         }, 100); 
-
-        //         updateStaffRequirementTable();
-        //     });
-        // }
-
-
         // Function to generate final table dynamically based on selected rows from eventServicesTable
         //Above commented function was working fine but while doing duplicate event handling, i had to remove timeout handling, below function is without timeout.
 
@@ -3660,6 +3571,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 let labTotalMembers = 0;
                 let immunizationsTotalMembers = 0;
 
+                allEventServices.length = 0;
                 // Build table rows
                 checkedRows.forEach(row => {
                     const { eventService, totalMembers } = row;
@@ -3674,6 +3586,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         immunizationsTotalMembers += totalMembers;
                         if (!allEventServices.includes(group)) allEventServices.push(group);
                     } else {
+                        
                         finalTableHtml += (eventService === "Dental Treatment") ? renderRow(role, eventService, totalMembers, true) : renderRow(role, eventService, totalMembers);
                         if (!allEventServices.includes(eventService)) allEventServices.push(eventService);
                     }
@@ -3701,11 +3614,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     autoWidth: false
                 });
 
-                // Resolve after DataTable is fully initialized
-                table.one('draw', () => {
                     // Attach role dropdown change event
                     let roleDropdownChanging = false;
                     $('#StaffRequirementTable').off('change', 'select.roleDropdown').on('change', 'select.roleDropdown', function () {
+
+                        
                         if (roleDropdownChanging) return;
                         roleDropdownChanging = true;
 
@@ -3751,14 +3664,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         }
 
                         roleDropdownChanging = false;
-                        updateStaffRequirementTable();
                     });
 
-                    resolve();
-                });
-
-                // If no rows exist, resolve immediately
-                if ($('#StaffRequirementTable tbody tr').length === 0) resolve();
+                resolve();
             });
         }
 
@@ -4514,6 +4422,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             if (startDate && endDate) {
                 generateControlsForDateRange(startDate, endDate);
             }
+
+            refreshAvailabilityDates();//refresh Availability date of EventStaff selected record (if any change occur in Event Start/End Date)
         });
 
 
@@ -4818,7 +4728,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         });
 
         function loadEventManagementForEdit(contractId, isViewButton = false, isDuplicateEvent = false) {
-            debugger;
+            
             $("#updateBtn").data("section", 1);
             $.ajax({
                 url: '/EventManagement/GetEventManagementById/' + contractId,
@@ -4827,7 +4737,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 success: function (response) {
                     if (response.success) {
                         isEditMode = true;
-                        debugger;
+                        
                         var combinedData = response.combinedData;
                         setProgressFromServer(combinedData.eventManagement.completedSections);
 
@@ -5077,14 +4987,16 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             $('#HIVDropOffStaffFirstName').val(combinedData.eventStaffForHIVDropOff.staffLastName);
                         }
 
+                            updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
+                            updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
+                            updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+
                         var EventStaffDetailAndAdditionalRoleslist = combinedData.eventStaffDetailAndAdditionalRoleslist;
                         if (EventStaffDetailAndAdditionalRoleslist) {
-                            // var stringdata = JSON.stringify(EventStaffDetailAndAdditionalRoleslist);
-                            // console.log(stringdata);
                             loadStaffForEditMode(EventStaffDetailAndAdditionalRoleslist);
                         };
 
-                        debugger;
+                        
                         // Show the form and hide the table
                         $(`#progressBar span[data-target='1']`).addClass("active");
                         $('#datatableWrapper').hide();
@@ -5106,9 +5018,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $(`#section1`).show();
 
                         if (isViewButton) {
-                            updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
-                            updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
-                            updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
                             $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
                             $('input[type="checkbox"]').prop('disabled', true);
                             $('select').prop('disabled', true);
@@ -5135,9 +5044,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             {
                                 $('#updateBtn').show();
                             }
-                            updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
-                            updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
-                            updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
+                            
                         }
 
 
