@@ -192,13 +192,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             return new ResponseDto { Success = false, Message = errorMessage };
         }
 
-        public async Task<ResponseDto> GetUsersAsync()
+        public async Task<ResponseDto> GetUsersAsync(string currentUserId)
         {
             try
             {
                 var users = _userManager.Users
-                    .Where(u => u.IsActive && !u.IsEventUser) // Filtering users
-                    .Select(u => new { id = u.Id, email = u.Email })
+                    .Where(u => u.IsActive
+                                && !u.IsEventUser
+                                && !u.IsSuperAdmin
+                                && u.Id != currentUserId) // 🔹 Exclude logged-in user
+                    .Select(u => new
+                    {
+                        id = u.Id,
+                        email = u.Email
+                    })
                     .ToList();
 
                 return new ResponseDto
@@ -208,7 +215,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     Data = users
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new ResponseDto
                 {

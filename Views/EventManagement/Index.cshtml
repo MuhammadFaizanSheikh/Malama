@@ -312,12 +312,15 @@
     }
 
 
+@if (!User.IsInRole("Event Manager"))
+{
     <div style="display: flex; justify-content: center; align-items: center;">
         <button class="btn btn-primary" id="addContractBtn"
                 style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
             Add New Event
         </button>
     </div>
+}
     <div id="datatableWrapper" class="datatable-wrapper">
         <table id="contractsTable" class="display">
             <thead>
@@ -332,6 +335,7 @@
                     <th>ZipCode</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th>Form Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -357,17 +361,36 @@
                             <td>@contract.EventZipCode</td>
                             <td>@contract.EventStartDate.ToString("MM-dd-yyyy")</td>
                             <td>@contract.EventEndDate.ToString("MM-dd-yyyy")</td>
-                            <td>
-                                <div class="button-container">
-                                    <a href="javascript:void(0);" class="btn btn-primary" data-id="@contract.Id" style="background-color: @(contract.StatusDescription == "Pending" ? "#f5db8e" : (contract.StatusDescription == "Completed" ? "green" : ""))">@contract.StatusDescription</a>
+                        <td>
+                            <a href="javascript:void(0);"
+                               class="btn btn-primary"
+                               data-id="@contract.Id"
+                               style="background-color: @(contract.StatusDescription == "Pending" ? "#f5db8e" :
+                                  (contract.StatusDescription == "Completed" ? "green" : ""))">
+                                @contract.StatusDescription
+                            </a>
+                        </td>
+
+                        <!-- Actions Column -->
+                        <td>
+                            <div class="button-container">
                                 @if (contract.CanEdit)
                                 {
-                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id"
-                                       style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                    <a href="javascript:void(0);"
+                                       class="btn btn-primary edit-btn"
+                                       data-id="@contract.Id"
+                                       style="background-color: rgba(80, 90, 201, 1);">
+                                        Edit
+                                    </a>
                                 }
-                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
-                                </div>
-                            </td>
+
+                                <a href="javascript:void(0);"
+                                   class="btn btn-secondary view-btn"
+                                   data-id="@contract.Id">
+                                    View
+                                </a>
+                            </div>
+                        </td>
 
                         </tr>
                     }
@@ -385,6 +408,7 @@
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
                         <td class="text-center">No data available</td>
+                    <td class="text-center">No data available</td>
                     <td class="text-center">No data available</td>
                     </tr>
                 }
@@ -2182,8 +2206,56 @@
         
 
         fetchRolesByCategory("");
-
         
+        var serverDate = new Date('@DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")');
+        applyStatusRules(serverDate, null, null, false);
+
+        function applyStatusRules(serverDate, eventStartDate, eventEndDate, isEdit) {
+
+            var dropdown = document.getElementById("EventStatus");
+            var options = dropdown.options;
+
+            function disableAll() {
+                for (var i = 0; i < options.length; i++) {
+                    options[i].disabled = true;
+                }
+            }
+
+            function enableOptions(values) {
+                for (var i = 0; i < options.length; i++) {
+                    if (values.includes(options[i].value)) {
+                        options[i].disabled = false;
+                    }
+                }
+            }
+
+            disableAll();
+
+            // ===== ADD MODE =====
+            if (!isEdit) {
+                enableOptions(["Initial Pre-event"]);
+                dropdown.value = "Initial Pre-event";
+                return;
+            }
+
+            // ===== EDIT MODE =====
+            if (serverDate < eventStartDate) {
+                enableOptions([
+                    "Initial Pre-event",
+                    "Pre-Event Confirmed",
+                    "Pre-Event Complete"
+                ]);
+            }
+            else if (serverDate >= eventStartDate && serverDate <= eventEndDate) {
+                enableOptions(["In Progress"]);
+            }
+            else if (serverDate > eventEndDate) {
+                enableOptions([
+                    "Post Event Processing",
+                    "Complete"
+                ]);
+            }
+        }
 
         function resetFormFields() {
             tableInitialized = false;
@@ -4764,14 +4836,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#SubEventID').val(combinedData.eventManagement.subEventID);
                         populateTaskForces(combinedData.eventManagement.eventManagementTaskforcesList);
 
-                        if (!isDuplicateEvent) {
-                            $('#EventStatus').val(combinedData.eventManagement.eventStatus);
-
-                            if (combinedData.eventManagement.eventStatus === 'Canceled') {
-                                $('#updateAndDuplicateBtn').show();
-                            }
-                        }
-
                         var selectedData = {
                             id: combinedData.contractDetails.id,
                             text: combinedData.contractDetails.contractName
@@ -5033,6 +5097,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             $('select').prop('disabled', true);
                             $('textarea').prop('disabled', true);
                             $('#updateBtn').hide();
+                            $('#updateAndDuplicateBtn').hide();
                         }
                         else {
                             // Enable all inputs except those inside the table
@@ -5049,6 +5114,14 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             $('textarea')
                                 .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
                                 .prop('disabled', false);
+
+                            if (!isDuplicateEvent) {
+                                $('#EventStatus').val(combinedData.eventManagement.eventStatus);
+
+                                if (combinedData.eventManagement.eventStatus === 'Canceled') {
+                                    $('#updateAndDuplicateBtn').show();
+                                }
+                            }
 
                             if (!isDuplicateEvent) 
                             {

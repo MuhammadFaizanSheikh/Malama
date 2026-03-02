@@ -15,23 +15,26 @@
         <div class="card-body">
 
             <!-- Event Dropdown -->
-            <form method="get">
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Select Event</label>
-                        <select name="eventId" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Select Event --</option>
-                            @foreach (var evt in Model.Events)
-                            {
-                                <option value="@evt.EventId"
-                                        selected="@(Model.SelectedEventId == evt.EventId)">
-                                    @evt.EventName
-                                </option>
-                            }
-                        </select>
+            @if (!User.IsInRole("Event Manager"))
+            {
+                <form method="get">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Select Event</label>
+                            <select name="eventId" class="form-select" onchange="this.form.submit()">
+                                <option value="">-- Select Event --</option>
+                                @foreach (var evt in Model.Events)
+                                {
+                                    <option value="@evt.EventId"
+                                            selected="@(Model.SelectedEventId == evt.EventId)">
+                                        @evt.EventName
+                                    </option>
+                                }
+                            </select>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            }
 
             <!-- Show table only if event selected -->
             @if (Model.SelectedEventId.HasValue)

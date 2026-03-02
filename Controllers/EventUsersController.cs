@@ -40,16 +40,33 @@ namespace ExcelFilesCompiler.Controllers
             {
                 var model = new EventUsersViewModel();
 
-                // Load dropdown always
+                // Always load events (for non Event Manager users)
                 model.Events = await _eventService.GetAllEventsAsync();
 
-                model.SelectedEventId = eventId;
-
-                // Load users only if event selected
-                if (eventId.HasValue)
+                // 🔹 If user is Event Manager → get EventId from claim
+                if (User.IsInRole("Event Manager"))
                 {
-                    model.Users = await _eventService
-                        .GetEventUsersByEventIdAsync(eventId.Value);
+                    var eventIdClaim = User.FindFirst("EventIdLong")?.Value;
+
+                    if (!string.IsNullOrEmpty(eventIdClaim) &&
+                        long.TryParse(eventIdClaim, out long claimEventId))
+                    {
+                        model.SelectedEventId = claimEventId;
+
+                        model.Users = await _eventService
+                            .GetEventUsersByEventIdAsync(claimEventId);
+                    }
+                }
+                else
+                {
+                    // Normal flow
+                    model.SelectedEventId = eventId;
+
+                    if (eventId.HasValue)
+                    {
+                        model.Users = await _eventService
+                            .GetEventUsersByEventIdAsync(eventId.Value);
+                    }
                 }
 
                 return View(model);

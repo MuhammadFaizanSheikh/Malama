@@ -128,7 +128,10 @@ namespace ExcelFilesCompiler.Controllers
         [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
         public async Task<IActionResult> GetUsers()
         {
-            var response = await _registrationService.GetUsersAsync();
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var response = await _registrationService.GetUsersAsync(currentUserId);
+
             return Json(response);
         }
 

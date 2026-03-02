@@ -24,10 +24,11 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [RoleAttributeAuthorizeFromConfig("EventManagement_View")]
-        public async Task<IActionResult> Index(long? editId)
+        [HttpGet]
+        public async Task<IActionResult> Index(long? editId) // eventid for duplication event handling
         {
             var responseDto = new ResponseDto();
-            List<EventManagementPreview> eventManagementList = new List<EventManagementPreview>();
+            List<EventManagementPreview> eventManagementList = new();
 
             try
             {
@@ -36,14 +37,29 @@ namespace ExcelFilesCompiler.Controllers
                     ViewBag.EditId = editId;
                     return View();
                 }
-                else
+
+                long? claimEventId = null;
+
+                // 🔹 If Event Manager → get EventId from claim
+                if (User.IsInRole("Event Manager"))
                 {
-                    eventManagementList = await _eventManagementService.GetAllEventManagements();
+                    var eventIdClaim = User.FindFirst("EventIdLong")?.Value;
+
+                    if (!string.IsNullOrEmpty(eventIdClaim) &&
+                        long.TryParse(eventIdClaim, out long parsedId))
+                    {
+                        claimEventId = parsedId;
+                    }
                 }
+
+                // Pass claimEventId (null means return all)
+                eventManagementList = await _eventManagementService
+                    .GetAllEventManagements(claimEventId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                TempData["ErrorMessage"] = "We encountered an issue while loading event managements. Please try again later.";
+                TempData["ErrorMessage"] =
+                    "We encountered an issue while loading event managements. Please try again later.";
             }
 
             var viewModel = new EventManagementViewModel
@@ -51,9 +67,8 @@ namespace ExcelFilesCompiler.Controllers
                 EventManagements = eventManagementList,
                 SingleEventManagement = null
             };
-            // Pass contracts data to the view
-            return View(viewModel);
 
+            return View(viewModel);
         }
 
         [HttpPost]

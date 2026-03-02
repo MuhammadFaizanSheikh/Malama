@@ -3,6 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -17,14 +18,22 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
         }
 
-        public async Task<List<EventManagementPreview>> GetAllEventManagements()
+        public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
         {
-            List<EventManagementPreview> eventManagements = new List<EventManagementPreview>();
+            List<EventManagementPreview> eventManagements = new();
 
             try
             {
+                Expression<Func<EventManagement, bool>> predicate = null;
+
+                if (eventIdFilter.HasValue)
+                {
+                    long id = eventIdFilter.Value; // avoid closure issues
+                    predicate = e => e.Id == id;
+                }
+
                 var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
-                    null,
+                    predicate,
                     x => x.EventManagementTaskforcesList
                 );
 
@@ -33,7 +42,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GroupBy(e => e.EventID)
                     .SelectMany(group =>
                     {
-                        // Find the highest version for each EventID
                         int maxVersion = group.Max(e => e.EventVersion);
 
                         return group.OrderByDescending(e => e.EventVersion)
@@ -53,8 +61,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 TaskForce = e.EventManagementTaskforcesList != null
                                     ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
                                     : string.Empty,
-                                // Logic for CanEdit:
-                                // Allow edit if not cancelled OR if it's the latest version
+
+                                // Same CanEdit logic (unchanged)
                                 CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
                                           || e.EventVersion == maxVersion
                             })
@@ -63,7 +71,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .OrderByDescending(e => e.Id)
                     .ToList();
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }

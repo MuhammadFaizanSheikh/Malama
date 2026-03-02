@@ -99,7 +99,8 @@ namespace ExcelFilesCompiler
                     Email = adminEmail,
                     IsActive = true, // You can set other properties as necessary
                     TwoFactorEnabled = false, // Admin should have 2FA enabled, you can adjust this if needed
-                    IsEventUser = false
+                    IsEventUser = false,
+                    IsSuperAdmin = true
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);

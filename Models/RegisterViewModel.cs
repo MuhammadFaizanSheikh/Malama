@@ -23,6 +23,7 @@ namespace Malama.Models
     {
         public bool IsActive { get; set; } = true; // Default to active
         public bool IsEventUser { get; set; } = false; // Default to active
+        public bool IsSuperAdmin { get; set; } = false;
     }
 
     public class UserUpdateDto
