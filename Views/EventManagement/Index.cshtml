@@ -312,7 +312,7 @@
     }
 
 
-@if (!User.IsInRole("Event Manager"))
+@if (User.IsInRole("Project Manager & Program Manager"))
 {
     <div style="display: flex; justify-content: center; align-items: center;">
         <button class="btn btn-primary" id="addContractBtn"
@@ -2208,9 +2208,9 @@
         fetchRolesByCategory("");
         
         var serverDate = new Date('@DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")');
-        applyStatusRules(serverDate, null, null, false);
+        applyStatusRules(serverDate, null, null, false, null);
 
-        function applyStatusRules(serverDate, eventStartDate, eventEndDate, isEdit) {
+        function applyStatusRules(serverDate, eventStartDate, eventEndDate, isEdit, dayWiseList) {
 
             var dropdown = document.getElementById("EventStatus");
             var options = dropdown.options;
@@ -2239,17 +2239,39 @@
             }
 
             // ===== EDIT MODE =====
-            if (serverDate < eventStartDate) {
+
+            if (!dayWiseList || dayWiseList.length === 0) return;
+
+            // Get first day's start time
+            var firstStartTime = dayWiseList[0].eventStartTime; // "08:00"
+
+            // Get last day's end time
+            var lastEndTime = dayWiseList[dayWiseList.length - 1].eventEndTime; // "16:00"
+
+            // Build actual event start datetime
+            var eventActualStart = new Date(eventStartDate);
+            var startParts = firstStartTime.split(":");
+            eventActualStart.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0, 0);
+
+            // Build actual event end datetime
+            var eventActualEnd = new Date(eventEndDate);
+            var endParts = lastEndTime.split(":");
+            eventActualEnd.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0, 0);
+
+            // ===== STATUS LOGIC =====
+
+            if (serverDate < eventActualStart) {
                 enableOptions([
                     "Initial Pre-event",
                     "Pre-Event Confirmed",
-                    "Pre-Event Complete"
+                    "Pre-Event Complete",
+                    "Canceled"
                 ]);
             }
-            else if (serverDate >= eventStartDate && serverDate <= eventEndDate) {
+            else if (serverDate >= eventActualStart && serverDate <= eventActualEnd) {
                 enableOptions(["In Progress"]);
             }
-            else if (serverDate > eventEndDate) {
+            else if (serverDate > eventActualEnd) {
                 enableOptions([
                     "Post Event Processing",
                     "Complete"
@@ -4869,6 +4891,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
                         $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
 
+                        debugger;
+
                         if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
                             startDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventStartDate));
                             endDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventEndDate));
@@ -4879,6 +4903,12 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             generateControlsForDateRange(
                                 eventStartDate,
                                 eventEndDate,
+                                combinedData.eventManagement.eventStartEndTimeDayWiseList
+                            );
+
+                            var serverDate = new Date(response.serverDate);
+
+                            applyStatusRules(new Date(response.serverDate), eventStartDate, eventEndDate, isEditMode,
                                 combinedData.eventManagement.eventStartEndTimeDayWiseList
                             );
                         }
@@ -5240,16 +5270,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
     }
 
     function generateControlsForDateRange(startDate, endDate, existingData = []) {
-        // // Helper: parse YYYY-MM-DD string as UTC date
-        // function parseDateUTC(dateStr) {
-        //     const [y, m, d] = dateStr.split('-').map(Number);
-        //     return new Date(Date.UTC(y, m - 1, d));
-        // }
-
-        // // Helper: format UTC date to YYYY-MM-DD for comparison or display if needed
-        // function formatDateUTC(date) {
-        //     return date.toISOString().slice(0, 10);
-        // }
+       
         if (!startDate || !endDate) return;
 
         // Parse dates safely in UTC

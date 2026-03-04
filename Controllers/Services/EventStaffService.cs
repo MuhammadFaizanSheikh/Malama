@@ -21,14 +21,16 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IAccountRegistrationService _registrationService;
         private readonly IRoleService _roleService;
+        private readonly ISubmissionTokenService _submissionTokenService;
 
-        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService)
+        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _registrationService = registrationService;
             _roleManager = roleManager;
             _roleService = roleService;
+            _submissionTokenService = submissionTokenService;
         }
 
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string submissionToken, string loggedinUserName)
@@ -41,22 +43,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 try
                 {
-                    var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
-                    if (existingToken != null)
-                    {
-                        return new ResponseDto
-                        {
-                            Success = false,
-                            Message = "This form has already been submitted."
-                        };
-                    }
+                    var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, loggedinUserName);
 
-                    // 2️⃣ Save token first
-                    await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                    if (!tokenResult.Success)
                     {
-                        Token = submissionToken,
-                        CreatedAt = DateTime.Now
-                    });
+                        return tokenResult;
+                    }
 
                     foreach (var affiliation in eventStaff.StaffContractAffiliation)
                     {

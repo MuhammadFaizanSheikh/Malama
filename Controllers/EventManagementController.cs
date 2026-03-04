@@ -16,17 +16,24 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly IEventManagementService _eventManagementService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<EventManagementController> _logger;
+        private const string CLASSNAME = "EventManagementController";
 
-        public EventManagementController(IEventManagementService eventManagementService, UserManager<ApplicationUser> userManager)
+        public EventManagementController(ILogger<EventManagementController> logger, IEventManagementService eventManagementService, UserManager<ApplicationUser> userManager)
         {
             _eventManagementService = eventManagementService;
             _userManager = userManager;
+            _logger = logger;
         }
 
         [RoleAttributeAuthorizeFromConfig("EventManagement_View")]
         [HttpGet]
         public async Task<IActionResult> Index(long? editId) // eventid for duplication event handling
         {
+            const string methodName = "Index";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with editId: {EditID}",
+                CLASSNAME, methodName, editId);
+
             var responseDto = new ResponseDto();
             List<EventManagementPreview> eventManagementList = new();
 
@@ -35,6 +42,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (editId.HasValue)
                 {
                     ViewBag.EditId = editId;
+                    _logger.LogInformation("{ClassName}, {MethodName}, EditId provided, returning View only.", CLASSNAME, methodName);
                     return View();
                 }
 
@@ -49,15 +57,22 @@ namespace ExcelFilesCompiler.Controllers
                         long.TryParse(eventIdClaim, out long parsedId))
                     {
                         claimEventId = parsedId;
+                        _logger.LogInformation("{ClassName}, {MethodName}, Event Manager detected, claimEventId: {ClaimEventID}",
+                            CLASSNAME, methodName, claimEventId);
                     }
                 }
 
                 // Pass claimEventId (null means return all)
-                eventManagementList = await _eventManagementService
-                    .GetAllEventManagements(claimEventId);
+                eventManagementList = await _eventManagementService.GetAllEventManagements(claimEventId);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} event management records.",
+                    CLASSNAME, methodName, eventManagementList.Count);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error while loading event managements.",
+                    CLASSNAME, methodName);
+
                 TempData["ErrorMessage"] =
                     "We encountered an issue while loading event managements. Please try again later.";
             }
@@ -76,6 +91,10 @@ namespace ExcelFilesCompiler.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventManagement(EventManagementViewModel eventManagement, string action, string completedSections)
         {
+            const string methodName = "CreateEventManagement";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with action: {Action}, EventID: {EventID}",
+                CLASSNAME, methodName, action, eventManagement.SingleEventManagement?.Id);
+
             try
             {
                 ResponseDto res = new ResponseDto();
@@ -91,7 +110,8 @@ namespace ExcelFilesCompiler.Controllers
                     {
                         foreach (var err in error.Errors)
                         {
-                            Console.WriteLine($"Error: {err.ErrorMessage}");
+                            _logger.LogWarning("{ClassName}, {MethodName}, ModelState error: {Error}",
+                                CLASSNAME, methodName, err.ErrorMessage);
                         }
                     }
 
@@ -102,6 +122,9 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (user != null)
                 {
+                    _logger.LogInformation("{ClassName}, {MethodName}, User authenticated: {UserName}",
+                        CLASSNAME, methodName, user.UserName);
+
                     int totalSections = 7; // Total number of sections
                     var filledSectionsList = completedSections.Split(',').ToList();
                     eventManagement.SingleEventManagement.StatusDescription = (filledSectionsList.Count == totalSections) ? "Completed" : "Pending";
@@ -109,7 +132,6 @@ namespace ExcelFilesCompiler.Controllers
 
                     foreach (var staffDetail in eventManagement.SingleEventManagement.EventStaffDetailList)
                     {
-                        // Convert SelectedRoles (list of role IDs) into EventWiseStaffRoleList (list of objects)
                         staffDetail.EventWiseStaffRoleList = staffDetail.SelectedRoles
                             .Select(roleId => new EventWiseStaffRole { RoleId = roleId })
                             .ToList();
@@ -119,8 +141,8 @@ namespace ExcelFilesCompiler.Controllers
                             .ToList();
 
                         staffDetail.AvailabilityDatesList = (staffDetail.AvailabilityDates ?? new List<DateTime>())
-                        .Select(availabilityDate => new EventManagementStaffAvailability { AvailabilityDate = availabilityDate })
-                        .ToList();
+                            .Select(availabilityDate => new EventManagementStaffAvailability { AvailabilityDate = availabilityDate })
+                            .ToList();
 
                         if (staffDetail.SelectedSecondaryStationList != null && staffDetail.SelectedSecondaryStationList.Count > 0)
                         {
@@ -130,20 +152,26 @@ namespace ExcelFilesCompiler.Controllers
 
                     if (action == "Add")
                     {
+                        _logger.LogInformation("{ClassName}, {MethodName}, Adding new event.", CLASSNAME, methodName);
                         res = await _eventManagementService.AddEventManagementAsync(eventManagement.SingleEventManagement, eventManagement.SubmissionToken, user.UserName);
                     }
                     else if (action == "Update" || action == "UpdateAndDuplicate")
                     {
+                        _logger.LogInformation("{ClassName}, {MethodName}, Updating event ID: {EventID}", CLASSNAME, methodName, eventManagement.SingleEventManagement.Id);
                         res = await _eventManagementService.UpdateEventManagementAsync(eventManagement.SingleEventManagement, user.UserName, action);
                     }
+
+                    _logger.LogInformation("{ClassName}, {MethodName}, Operation result: Success={Success}, Message={Message}",
+                        CLASSNAME, methodName, res.Success, res.Message);
                 }
                 else
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not authenticated", CLASSNAME, methodName);
+
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Please login and try again";
                     TempData["ContractDto"] = eventManagement;
-                    //return RedirectToAction("Index", contractDto);
                     return RedirectToAction("Index");
                 }
 
@@ -156,10 +184,11 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction("Index", new { editId = eventManagement.SingleEventManagement.Id });
                 }
                 return RedirectToAction("Index");
-                //return RedirectToAction("Index", contractDto);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Unexpected error while creating/updating event.", CLASSNAME, methodName);
+
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
@@ -203,7 +232,7 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(new { success = false, message = "Contract not found." });
                 }
 
-                return Json(new { success = true, combinedData = combinedData });
+                return Json(new { success = true, combinedData = combinedData, serverDate = DateTime.Now });
             }
             catch (Exception ex)
             {

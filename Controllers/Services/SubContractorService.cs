@@ -15,13 +15,15 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class SubContractorService : ISubContractorService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<SubContractorService> _logger;
         private const string CLASSNAME = "SubContractorService";
 
-        public SubContractorService(ILogger<SubContractorService> logger, IUnitOfWork unitOfWork)
+        public SubContractorService(ILogger<SubContractorService> logger, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _submissionTokenService = submissionTokenService;
         }
 
         public async Task<List<SubContractorAndContractViewModel>> GetAllSubContractors()
@@ -201,22 +203,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
-                if (existingToken != null)
-                {
-                    return new ResponseDto
-                    {
-                        Success = false,
-                        Message = "This form has already been submitted."
-                    };
-                }
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, loggedinUserName);
 
-                // 2️⃣ Save token first
-                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                if (!tokenResult.Success)
                 {
-                    Token = submissionToken,
-                    CreatedAt = DateTime.Now
-                });
+                    return tokenResult;
+                }
 
                 contractDetail.AddedBy = loggedinUserName;
                 contractDetail.AddedOn = DateTime.Now;

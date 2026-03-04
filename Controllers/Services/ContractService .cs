@@ -13,13 +13,15 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class ContractService : IContractService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<ContractService> _logger;
         private const string CLASSNAME = "ContractService";
 
-        public ContractService(ILogger<ContractService> logger, IUnitOfWork unitOfWork)
+        public ContractService(ILogger<ContractService> logger, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _submissionTokenService = submissionTokenService;
         }
 
         public async Task<ResponseDto> AddContractAsync(ContractDetails contractDetail, string submissionToken,  string loggedinUserName)
@@ -32,22 +34,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
-                if (existingToken != null)
-                {
-                    return new ResponseDto
-                    {
-                        Success = false,
-                        Message = "This form has already been submitted."
-                    };
-                }
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, loggedinUserName);
 
-                // 2️⃣ Save token first
-                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                if (!tokenResult.Success)
                 {
-                    Token = submissionToken,
-                    CreatedAt = DateTime.Now
-                });
+                    return tokenResult;
+                }
 
                 // Check if contract already exists
                 var existingContractDetails = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);

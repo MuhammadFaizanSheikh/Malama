@@ -4,22 +4,33 @@ using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class EventManagementService : IEventManagementService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly ILogger<EventManagementService> _logger;
+        private const string CLASSNAME = "ContractService";
 
-        public EventManagementService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager)
+        public EventManagementService(ILogger<EventManagementService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
+            _logger = logger;
+            _submissionTokenService = submissionTokenService;
         }
 
         public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
         {
+            const string methodName = "GetAllEventManagements";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventIdFilter: {EventIdFilter}",
+                CLASSNAME, methodName, eventIdFilter);
+
             List<EventManagementPreview> eventManagements = new();
 
             try
@@ -30,12 +41,18 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     long id = eventIdFilter.Value; // avoid closure issues
                     predicate = e => e.Id == id;
+
+                    _logger.LogInformation("{ClassName}, {MethodName}, Applying filter for EventId: {EventId}",
+                        CLASSNAME, methodName, id);
                 }
 
                 var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
                     predicate,
                     x => x.EventManagementTaskforcesList
                 );
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
+                    CLASSNAME, methodName, eventData?.Count() ?? 0);
 
                 // Group by EventID to handle versions
                 eventManagements = eventData
@@ -70,9 +87,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     })
                     .OrderByDescending(e => e.Id)
                     .ToList();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
+                    CLASSNAME, methodName, eventManagements.Count);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements. EventIdFilter: {EventIdFilter}",
+                    CLASSNAME, methodName, eventIdFilter);
+
                 throw;
             }
 
@@ -82,21 +106,35 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<List<EventManagementPreview>> GetAllEventID()
         {
+            const string methodName = "GetAllEventID";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called",
+                CLASSNAME, methodName);
+
             try
             {
                 // Fetch only the necessary data
-                return await _unitOfWork.EventManagement
-                .FindForSearching(e => e.EventStatus != "Canceled") // filtered in DB
-                .OrderByDescending(e => e.Id)
-                .Select(e => new EventManagementPreview
-                {
-                    Id = e.Id,
-                    EventID = e.EventID
-                })
-                .ToListAsync();
+                var result = await _unitOfWork.EventManagement
+                    .FindForSearching(e => e.EventStatus != "Canceled") // filtered in DB
+                    .OrderByDescending(e => e.Id)
+                    .Select(e => new EventManagementPreview
+                    {
+                        Id = e.Id,
+                        EventID = e.EventID
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved EventID count: {Count}",
+                    CLASSNAME, methodName, result.Count);
+
+                return result;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventIDs",
+                    CLASSNAME, methodName);
+
                 throw;
             }
         }
@@ -104,38 +142,49 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string submissionToken, string loggedinUserName)
         {
+            const string methodName = "AddEventManagementAsync";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}, User: {UserName}",
+                CLASSNAME, methodName, eventManagement?.EventID, loggedinUserName);
+
             var responseDto = new ResponseDto();
 
             try
             {
-                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
-                if (existingToken != null)
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, loggedinUserName);
+
+                if (!tokenResult.Success)
                 {
-                    return new ResponseDto
-                    {
-                        Success = false,
-                        Message = "This form has already been submitted."
-                    };
+                    return tokenResult;
                 }
 
-                // 2️⃣ Save token first
-                await _unitOfWork.SubmissionTokenRecord.AddAsync(new SubmissionTokenRecord
+                if (!ValidateEventStatus(eventManagement, loggedinUserName, false, out string statusError))
                 {
-                    Token = submissionToken,
-                    CreatedAt = DateTime.Now
-                });
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid EventStatus: {Status}, User: {UserName}, Error: {Error}",
+                        CLASSNAME, methodName, eventManagement.EventStatus, loggedinUserName, statusError);
 
+                    responseDto.Success = false;
+                    responseDto.Message = statusError;
+                    return responseDto;
+                }
 
                 eventManagement.AddedBy = loggedinUserName;
                 eventManagement.AddedOn = DateTime.Now;
+
                 await _unitOfWork.EventManagement.AddAsync(eventManagement);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Event added successfully. EventID: {EventID}, User: {UserName}",
+                    CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
 
                 responseDto.Success = true;
                 responseDto.Message = "Event added successfully!";
             }
             catch (Exception ex)
             {
-                // If an exception occurs, set Success to false and provide the error message
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while adding Event. EventID: {EventID}, User: {UserName}",
+                    CLASSNAME, methodName, eventManagement?.EventID, loggedinUserName);
+
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred: {ex.Message}";
             }
@@ -143,106 +192,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        //public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement eventManagement, string loggedinUserName, string action)
-        //{
-        //    var responseDto = new ResponseDto();
-        //    using var transaction = await _unitOfWork.BeginTransactionAsync();
-
-        //    try
-        //    {
-        //        var existingEventManagement = await _unitOfWork.EventManagement.GetByIdAsync(eventManagement.Id);
-        //        eventManagement.AddedBy = existingEventManagement.AddedBy;
-        //        eventManagement.AddedOn = existingEventManagement.AddedOn;
-        //        eventManagement.UpdatedBy = loggedinUserName;
-        //        eventManagement.UpdatedOn = DateTime.Now;
-        //        await _unitOfWork.EventManagement.UpdateAsync(eventManagement);
-
-        //        //EventStartEndTimeDayWise
-        //        await _unitOfWork.EventStartEndTimeDayWise.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-        //        foreach (var eventStartEndTime in eventManagement.EventStartEndTimeDayWiseList)
-        //        {
-        //            eventStartEndTime.EventManagementId = eventManagement.Id;
-        //        }
-
-        //        _unitOfWork.EventStartEndTimeDayWise.AddRange(eventManagement.EventStartEndTimeDayWiseList);
-
-        //        //EventServiceDetail
-        //        await _unitOfWork.EventServiceDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-        //        foreach (var eventServiceDetail in eventManagement.EventServiceDetailList)
-        //        {
-        //            eventServiceDetail.EventManagementId = eventManagement.Id;
-        //        }
-
-        //        _unitOfWork.EventServiceDetail.AddRange(eventManagement.EventServiceDetailList);
-
-        //        //EventStaffDetail
-        //        await _unitOfWork.EventStaffDetail.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-
-        //        foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
-        //        {
-        //            eventStaffDetail.EventManagementId = eventManagement.Id;
-        //        }
-
-        //        _unitOfWork.EventStaffDetail.AddRange(eventManagement.EventStaffDetailList);
-
-        //        //EventStaff Availability Date
-        //        await _unitOfWork.EventManagementStaffAvailability.DeleteAgainstFieldAsync(eventManagement.Id, "EventStaffDetailId");
-
-        //        foreach (var eventStaffDetail in eventManagement.EventStaffDetailList)
-        //        {
-        //            foreach (var staffAvailabilityDate in eventStaffDetail.AvailabilityDatesList)
-        //            {
-        //                staffAvailabilityDate.EventStaffDetailId = eventStaffDetail.Id;
-        //            }
-
-        //            _unitOfWork.EventManagementStaffAvailability.AddRange(eventStaffDetail.AvailabilityDatesList);
-        //        }
-
-        //        //EventTaskforce
-        //        await _unitOfWork.EventManagementTaskforces.DeleteAgainstFieldAsync(eventManagement.Id, "EventManagementId");
-
-        //        foreach (var eventManagementTaskforce in eventManagement.EventManagementTaskforcesList)
-        //        {
-        //            eventManagementTaskforce.EventManagementId = eventManagement.Id;
-        //        }
-
-
-
-        //        _unitOfWork.EventManagementTaskforces.AddRange(eventManagement.EventManagementTaskforcesList);
-
-        //        await _unitOfWork.SaveAsync();
-        //        await transaction.CommitAsync();
-
-        //        responseDto.Success = true;
-
-        //        if (action == "Update")
-        //        {
-        //            responseDto.Message = "Event updated successfully!";
-        //        }
-        //        else if (action == "UpdateAndDuplicate")
-        //        {
-        //            responseDto.Message = "Event duplicated successfully!";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Step 7: Rollback in case of any error
-        //        await transaction.RollbackAsync();
-        //        responseDto.Success = false;
-        //        responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
-        //    }
-
-        //    return responseDto;
-        //}
-
-        public async Task<ResponseDto> UpdateEventManagementAsync(
-    EventManagement updatedModel,
-    string loggedinUserName,
-    string action)
+        public async Task<ResponseDto> UpdateEventManagementAsync(EventManagement updatedModel, string loggedinUserName, string action)
         {
+            const string methodName = "UpdateEventManagementAsync";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}, Action: {Action}, User: {UserName}",
+                CLASSNAME, methodName, updatedModel?.Id, action, loggedinUserName);
+
             var responseDto = new ResponseDto();
 
             using var transaction = await _unitOfWork.BeginTransactionAsync();
@@ -251,18 +206,31 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 // 1️⃣ Load existing entity WITH children
                 var existing = (await _unitOfWork.EventManagement
-           .GetWithIncludeAsync(
-               e => e.Id == updatedModel.Id,
-               e => e.EventServiceDetailList,
-               e => e.EventStartEndTimeDayWiseList,
-               e => e.EventStaffDetailList,
-               e => e.EventManagementTaskforcesList
-           )).FirstOrDefault();
+                    .GetWithIncludeAsync(
+                        e => e.Id == updatedModel.Id,
+                        e => e.EventServiceDetailList,
+                        e => e.EventStartEndTimeDayWiseList,
+                        e => e.EventStaffDetailList,
+                        e => e.EventManagementTaskforcesList
+                    )).FirstOrDefault();
 
                 if (existing == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Event not found. EventID: {EventID}, User: {UserName}",
+                        CLASSNAME, methodName, updatedModel.Id, loggedinUserName);
+
                     responseDto.Success = false;
                     responseDto.Message = "Event not found.";
+                    return responseDto;
+                }
+
+                if (!ValidateEventStatus(updatedModel, loggedinUserName, true, out string statusError))
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid EventStatus: {Status}, EventID: {EventID}, User: {UserName}, Error: {Error}",
+                        CLASSNAME, methodName, updatedModel.EventStatus, updatedModel.Id, loggedinUserName, statusError);
+
+                    responseDto.Success = false;
+                    responseDto.Message = statusError;
                     return responseDto;
                 }
 
@@ -275,25 +243,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // 3️⃣ Update scalar properties
                 _unitOfWork.SetValues(existing, updatedModel);
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Updating collections for EventID: {EventID}, User: {UserName}",
+                    CLASSNAME, methodName, updatedModel.Id, loggedinUserName);
+
                 // =========================
                 // 4️⃣ Replace CHILD COLLECTIONS
                 // =========================
-
-                // EventServiceDetail
                 existing.EventServiceDetailList.Clear();
                 foreach (var item in updatedModel.EventServiceDetailList)
                 {
                     existing.EventServiceDetailList.Add(item);
                 }
 
-                // EventStartEndTimeDayWise
                 existing.EventStartEndTimeDayWiseList.Clear();
                 foreach (var item in updatedModel.EventStartEndTimeDayWiseList)
                 {
                     existing.EventStartEndTimeDayWiseList.Add(item);
                 }
 
-                // EventManagementTaskforces
                 existing.EventManagementTaskforcesList.Clear();
                 foreach (var item in updatedModel.EventManagementTaskforcesList)
                 {
@@ -303,7 +270,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // =========================
                 // 5️⃣ EventStaffDetail (Nested Graph)
                 // =========================
-
                 existing.EventStaffDetailList.Clear();
 
                 foreach (var staff in updatedModel.EventStaffDetailList)
@@ -317,7 +283,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                         SelectedSecondaryStation = staff.SelectedSecondaryStation
                     };
 
-                    // Availability Dates
                     foreach (var date in staff.AvailabilityDatesList)
                     {
                         newStaff.AvailabilityDatesList.Add(
@@ -327,7 +292,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                             });
                     }
 
-                    // Primary Roles
                     foreach (var role in staff.EventWiseStaffRoleList)
                     {
                         newStaff.EventWiseStaffRoleList.Add(
@@ -337,7 +301,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                             });
                     }
 
-                    // Secondary Roles
                     foreach (var role in staff.EventWiseStaffSecondaryRoleList)
                     {
                         newStaff.EventWiseStaffSecondaryRoleList.Add(
@@ -354,6 +317,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Event saved successfully. EventID: {EventID}, Action: {Action}, User: {UserName}",
+                    CLASSNAME, methodName, updatedModel.Id, action, loggedinUserName);
+
                 responseDto.Success = true;
                 responseDto.Message = action == "Update"
                     ? "Event updated successfully!"
@@ -362,6 +328,11 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while updating Event. EventID: {EventID}, Action: {Action}, User: {UserName}",
+                    CLASSNAME, methodName, updatedModel?.Id, action, loggedinUserName);
+
                 responseDto.Success = false;
                 responseDto.Message = $"Error updating event: {ex.Message}";
             }
@@ -371,13 +342,24 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<string> GetNextEventManagementId()
         {
+            const string methodName = "GetNextEventManagementId";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called",
+                CLASSNAME, methodName);
+
             try
             {
                 var allEventManagement = await _unitOfWork.EventManagement.GetAllAsync();
 
+                _logger.LogInformation("{ClassName}, {MethodName}",
+                    CLASSNAME, methodName);
+
                 if (allEventManagement == null || !allEventManagement.Any())
                 {
-                    return "0001"; 
+                    _logger.LogInformation("{ClassName}, {MethodName}, No existing EventManagement found. Returning default ID '0001'",
+                        CLASSNAME, methodName);
+
+                    return "0001";
                 }
 
                 var lastEventManagement = allEventManagement
@@ -389,10 +371,19 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 numericPart++;
 
-                return numericPart.ToString("D4");
+                var nextId = numericPart.ToString("D4");
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Last EventID: {LastEventID}, Next EventID: {NextEventID}",
+                    CLASSNAME, methodName, eventManagementId, nextId);
+
+                return nextId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while fetching next EventManagement ID",
+                    CLASSNAME, methodName);
+
                 throw new Exception("Error while fetching the next Event Management Id.", ex);
             }
         }
@@ -437,7 +428,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     foreach (var eventStaffDetails in firstEventManagement.EventStaffDetailList)
                     {
-                        if ( !string.IsNullOrEmpty(eventStaffDetails.SelectedSecondaryStation))
+                        if (!string.IsNullOrEmpty(eventStaffDetails.SelectedSecondaryStation))
                         {
                             eventStaffDetails.SelectedSecondaryStationList = eventStaffDetails.SelectedSecondaryStation.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
                         }
@@ -549,6 +540,10 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<EventManagement> GetEventManagementForEventSelectionById(long id)
         {
+            const string methodName = "GetEventManagementForEventSelectionById";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                CLASSNAME, methodName, id);
+
             try
             {
                 var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
@@ -564,83 +559,243 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (eventManagement == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventManagement not found for ID: {EventID}",
+                        CLASSNAME, methodName, id);
                     throw new KeyNotFoundException($"EventManagement with ID {id} not found.");
                 }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, EventManagement retrieved successfully for EventID: {EventID}",
+                    CLASSNAME, methodName, id);
 
                 return eventManagement;
             }
             catch (KeyNotFoundException ex)
             {
+                // Already logged above, just rethrow
                 throw;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagement for ID: {EventID}",
+                    CLASSNAME, methodName, id);
                 throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
 
         public async Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id)
         {
+            const string methodName = "GetEventManagementForEventSelectionByIdWithoutInclude";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                CLASSNAME, methodName, id);
+
             try
             {
                 var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.Id == id);
 
                 if (eventManagement == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventManagement not found for ID: {EventID}",
+                        CLASSNAME, methodName, id);
                     throw new KeyNotFoundException($"EventManagement with ID {id} not found.");
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, EventManagement retrieved successfully for EventID: {EventID}",
+                    CLASSNAME, methodName, id);
+
                 return eventManagement;
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
+                // Already logged above, just rethrow
                 throw;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagement for ID: {EventID}",
+                    CLASSNAME, methodName, id);
                 throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
 
         public async Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId)
         {
+            const string methodName = "GetEventManagementByEventIdWithoutInclude";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                CLASSNAME, methodName, eventId);
+
             try
             {
                 var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.EventID == eventId);
 
                 if (eventManagement == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventManagement not found for EventID: {EventID}",
+                        CLASSNAME, methodName, eventId);
                     throw new KeyNotFoundException($"EventManagement with ID {eventId} not found.");
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, EventManagement retrieved successfully for EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+
                 return eventManagement;
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
+                // Already logged above, just rethrow
                 throw;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagement for EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
                 throw new ApplicationException("An error occurred while retrieving event details.", ex);
             }
         }
 
-        public async Task<(DateTime StartDate, DateTime EndDate, int Version)>GetEventDetailsById(long eventId)
+        public async Task<(DateTime StartDate, DateTime EndDate, int Version)> GetEventDetailsById(long eventId)
         {
-            var result = await _unitOfWork.EventManagement
-                .FindForSearching(x => x.Id == eventId)
-                .Select(x => new
+            const string methodName = "GetEventDetailsById";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                CLASSNAME, methodName, eventId);
+
+            try
+            {
+                var result = await _unitOfWork.EventManagement
+                    .FindForSearching(x => x.Id == eventId)
+                    .Select(x => new
+                    {
+                        x.EventStartDate,
+                        x.EventEndDate,
+                        x.EventVersion
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (result == null)
                 {
-                    x.EventStartDate,
-                    x.EventEndDate,
-                    x.EventVersion
-                })
-                .FirstOrDefaultAsync();
+                    _logger.LogWarning("{ClassName}, {MethodName}, Event not found for EventID: {EventID}",
+                        CLASSNAME, methodName, eventId);
+                    throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
+                }
 
-            if (result == null)
-                throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
+                _logger.LogInformation("{ClassName}, {MethodName}, Event retrieved successfully for EventID: {EventID}, StartDate: {StartDate}, EndDate: {EndDate}, Version: {Version}",
+                    CLASSNAME, methodName, eventId, result.EventStartDate, result.EventEndDate, result.EventVersion);
 
-            return (result.EventStartDate, result.EventEndDate, result.EventVersion);
+                return (result.EventStartDate, result.EventEndDate, result.EventVersion);
+            }
+            catch (KeyNotFoundException)
+            {
+                // Already logged above, just rethrow
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving Event details for EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+                throw new ApplicationException("An error occurred while retrieving event details.", ex);
+            }
+        }
+
+        public bool ValidateEventStatus(EventManagement model, string loggedinUserName, bool isUpdate, out string errorMessage)
+        {
+            const string methodName = "ValidateEventStatus";
+            errorMessage = string.Empty;
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called for EventID: {EventID}, User: {UserName}, Status: {Status}",
+                CLASSNAME, methodName, model?.EventID, loggedinUserName, model?.EventStatus);
+
+            try
+            {
+                if (model == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Model is null, User: {UserName}",
+                        CLASSNAME, methodName, loggedinUserName);
+
+                    errorMessage = "Invalid request.";
+                    return false;
+                }
+
+                if (model.EventStartEndTimeDayWiseList == null || !model.EventStartEndTimeDayWiseList.Any())
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Day-wise list empty, EventID: {EventID}, User: {UserName}",
+                        CLASSNAME, methodName, model.EventID, loggedinUserName);
+
+                    errorMessage = "Event time data missing.";
+                    return false;
+                }
+
+                // Build actual start/end datetime
+                var firstDay = model.EventStartEndTimeDayWiseList.First();
+                var lastDay = model.EventStartEndTimeDayWiseList.Last();
+
+                if (firstDay.EventStartTime == null || lastDay.EventEndTime == null)
+                {
+                    throw new Exception("Event start or end time is missing.");
+                }
+
+                var eventActualStart = model.EventStartDate.Add(firstDay.EventStartTime.Value);
+                var eventActualEnd = model.EventEndDate.Add(lastDay.EventEndTime.Value);
+
+                var now = DateTime.Now;
+
+                var allowedStatuses = new List<string>();
+
+                if (!isUpdate)
+                {
+                    allowedStatuses.Add("Initial Pre-event");
+                }
+                else
+                {
+                    if (now < eventActualStart)
+                    {
+                        allowedStatuses.AddRange(new[]
+                        {
+                        "Initial Pre-event",
+                        "Pre-Event Confirmed",
+                        "Pre-Event Complete",
+                        "Canceled"
+                    });
+                    }
+                    else if (now >= eventActualStart && now <= eventActualEnd)
+                    {
+                        allowedStatuses.Add("In Progress");
+                    }
+                    else if (now > eventActualEnd)
+                    {
+                        allowedStatuses.AddRange(new[]
+                        {
+                        "Post Event Processing",
+                        "Complete"
+                    });
+                    }
+                }
+
+                // Validate user input
+                if (!allowedStatuses.Contains(model.EventStatus))
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Status tampering detected. Attempted: {AttemptedStatus}, Allowed: {AllowedStatuses}, EventID: {EventID}, User: {UserName}",
+                        CLASSNAME, methodName, model.EventStatus, string.Join(",", allowedStatuses), model.EventID, loggedinUserName);
+
+                    errorMessage = "Invalid status transition.";
+                    return false;
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Status validated successfully. EventID: {EventID}, User: {UserName}, Status: {Status}",
+                    CLASSNAME, methodName, model.EventID, loggedinUserName, model.EventStatus);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception during status validation. EventID: {EventID}, User: {UserName}, Status: {Status}",
+                    CLASSNAME, methodName, model?.EventID, loggedinUserName, model?.EventStatus);
+
+                errorMessage = $"An unexpected error occurred: {ex.Message}";
+                return false;
+            }
         }
     }
 }
