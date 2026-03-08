@@ -340,53 +340,107 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
-        public async Task<string> GetNextEventManagementId()
+        public async Task<string> GetNextEventIdNumber()
         {
-            const string methodName = "GetNextEventManagementId";
-
-            _logger.LogInformation("{ClassName}, {MethodName}, Called",
-                CLASSNAME, methodName);
+            const string methodName = "GetNextEventIdNumber";
+            _logger.LogInformation("{ClassName}, {MethodName} called.", CLASSNAME, methodName);
 
             try
             {
-                var allEventManagement = await _unitOfWork.EventManagement.GetAllAsync();
+                // Step 1: Get all EventIDs from database
+                var eventIds = await _unitOfWork.EventManagement
+                    .GetAll()
+                    .Where(x => !string.IsNullOrEmpty(x.EventID))
+                    .Select(x => x.EventID)
+                    .ToListAsync(); // only EventID column
 
-                _logger.LogInformation("{ClassName}, {MethodName}",
-                    CLASSNAME, methodName);
+                _logger.LogInformation("{ClassName}, {MethodName}, Total EventIDs fetched: {Count}",
+                    CLASSNAME, methodName, eventIds.Count);
 
-                if (allEventManagement == null || !allEventManagement.Any())
-                {
-                    _logger.LogInformation("{ClassName}, {MethodName}, No existing EventManagement found. Returning default ID '0001'",
-                        CLASSNAME, methodName);
+                // Step 2: Extract numeric part in memory
+                int maxNumber = eventIds
+                    .Select(eid =>
+                    {
+                        var numericPart = new string(eid.Reverse()
+                                                        .TakeWhile(char.IsDigit)
+                                                        .Reverse()
+                                                        .ToArray());
+                        return int.TryParse(numericPart, out int n) ? n : 0;
+                    })
+                    .DefaultIfEmpty(0)
+                    .Max();
 
-                    return "0001";
-                }
+                _logger.LogInformation("{ClassName}, {MethodName}, Max numeric part found: {MaxNumber}",
+                    CLASSNAME, methodName, maxNumber);
 
-                var lastEventManagement = allEventManagement
-                    .OrderByDescending(c => c.Id)
-                    .FirstOrDefault();
+                // Step 3: Increment
+                int nextNumber = maxNumber + 1;
 
-                var eventManagementId = lastEventManagement.EventID;
-                int numericPart = Convert.ToInt32(eventManagementId.Substring(5));
+                // Step 4: Return 4-digit string
+                var nextEventIdNumber = nextNumber.ToString("D4");
 
-                numericPart++;
+                _logger.LogInformation("{ClassName}, {MethodName}, Next EventID number to use: {NextEventID}",
+                    CLASSNAME, methodName, nextEventIdNumber);
 
-                var nextId = numericPart.ToString("D4");
-
-                _logger.LogInformation("{ClassName}, {MethodName}, Last EventID: {LastEventID}, Next EventID: {NextEventID}",
-                    CLASSNAME, methodName, eventManagementId, nextId);
-
-                return nextId;
+                return nextEventIdNumber;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while fetching next EventManagement ID",
+                    "{ClassName}, {MethodName}, Exception occurred while fetching next EventId number",
                     CLASSNAME, methodName);
 
-                throw new Exception("Error while fetching the next Event Management Id.", ex);
+                throw new Exception("Error while fetching the next EventId number.", ex);
             }
         }
+
+        //public async Task<string> GetNextEventManagementId()
+        //{
+        //    const string methodName = "GetNextEventManagementId";
+
+        //    _logger.LogInformation("{ClassName}, {MethodName}, Called",
+        //        CLASSNAME, methodName);
+
+        //    try
+        //    {
+        //        var allEventManagement = await _unitOfWork.EventManagement.GetAllAsync();
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}",
+        //            CLASSNAME, methodName);
+
+        //        if (allEventManagement == null || !allEventManagement.Any())
+        //        {
+        //            _logger.LogInformation("{ClassName}, {MethodName}, No existing EventManagement found. Returning default ID '0001'",
+        //                CLASSNAME, methodName);
+
+        //            return "0001";
+        //        }
+
+        //        var lastEventManagement = allEventManagement
+        //            .OrderByDescending(c => c.Id)
+        //            .FirstOrDefault();
+
+        //        var eventManagementId = lastEventManagement.EventID;
+        //        int numericPart = Convert.ToInt32(eventManagementId.Substring(5));
+
+        //        numericPart++;
+
+        //        var nextId = numericPart.ToString("D4");
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}, Last EventID: {LastEventID}, Next EventID: {NextEventID}",
+        //            CLASSNAME, methodName, eventManagementId, nextId);
+
+        //        return nextId;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex,
+        //            "{ClassName}, {MethodName}, Exception occurred while fetching next EventManagement ID",
+        //            CLASSNAME, methodName);
+
+        //        throw new Exception("Error while fetching the next Event Management Id.", ex);
+        //    }
+        //}
 
         public async Task<CombinedEventManagementAndContractDetails> GetEventManagementById(long id)
         {
@@ -517,10 +571,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     // Combine data into DTO
                     var combinedDto = new CombinedEventManagementAndContractDetails
                     {
+                        EventRuntimeStatus = GetEventRuntimeStatus(firstEventManagement.EventStartDate, firstEventManagement.EventEndDate, firstEventManagement.EventStartEndTimeDayWiseList),
                         EventManagement = firstEventManagement,
                         ContractDetails = contractDetails,
                         EventStaffForHIVDropOff = eventStaff,
-                        EventStaffDetailAndAdditionalRoleslist = EventStaffDetailAndAdditionalRoleslist // Now contains multiple records
+                        EventStaffDetailAndAdditionalRoleslist = EventStaffDetailAndAdditionalRoleslist // Now contains multiple records,
                     };
 
 
@@ -796,6 +851,28 @@ namespace ExcelFilesCompiler.Controllers.Services
                 errorMessage = $"An unexpected error occurred: {ex.Message}";
                 return false;
             }
+        }
+
+        private string GetEventRuntimeStatus(DateTime eventStartDate, DateTime eventEndDate, List<EventStartEndTimeDayWise> dayWiseList)
+        {
+            if (dayWiseList == null || !dayWiseList.Any())
+                return "Event Not Started";
+
+            var firstDay = dayWiseList.OrderBy(x => x.EventDay).First();
+            var lastDay = dayWiseList.OrderBy(x => x.EventDay).Last();
+
+            var actualStart = eventStartDate.Date + (firstDay.EventStartTime ?? TimeSpan.Zero);
+            var actualEnd = eventEndDate.Date + (lastDay.EventEndTime ?? TimeSpan.Zero);
+
+            var now = DateTime.Now;
+
+            if (now < actualStart)
+                return "Event Not Started";
+
+            if (now >= actualStart && now <= actualEnd)
+                return "Event In Progress";
+
+            return "Event Completed";
         }
     }
 }

@@ -134,13 +134,42 @@
                                             <tbody>
                                                 @foreach (Malama.Models.UserPagePermissionDto allowedPage in user.AllowedPages)
                                                 {
-                                                    var badgeColor = allowedPage.Access == PageAccessLevel.ReadWrite
-                                                    ? "#28a745"
-                                                    : "#fd7e14";
+                                                    var access = allowedPage.Access;
 
-                                                    var badgeText = allowedPage.Access == PageAccessLevel.ReadWrite
-                                                    ? "Read & Write"
-                                                    : "Read-Only";
+                                                    string badgeText;
+                                                    string badgeColor;
+
+                                                    if (access.HasFlag(PageAccessLevel.Add) && access.HasFlag(PageAccessLevel.Update))
+                                                    {
+                                                        badgeText = "View, Add & Update";
+                                                        badgeColor = "#28a745"; // Green
+                                                    }
+                                                    else if (access.HasFlag(PageAccessLevel.Add))
+                                                    {
+                                                        badgeText = access.HasFlag(PageAccessLevel.View)
+                                                        ? "View & Add"
+                                                        : "Add Only";
+
+                                                        badgeColor = "#17a2b8"; // Blue
+                                                    }
+                                                    else if (access.HasFlag(PageAccessLevel.Update))
+                                                    {
+                                                        badgeText = access.HasFlag(PageAccessLevel.View)
+                                                        ? "View & Update"
+                                                        : "Update Only";
+
+                                                        badgeColor = "#007bff"; // Dark Blue
+                                                    }
+                                                    else if (access.HasFlag(PageAccessLevel.View))
+                                                    {
+                                                        badgeText = "View-Only";
+                                                        badgeColor = "#fd7e14"; // Orange
+                                                    }
+                                                    else
+                                                    {
+                                                        badgeText = "No Access";
+                                                        badgeColor = "#6c757d"; // Gray
+                                                    }
 
                                                     <tr>
                                                         <td style="padding:4px 6px; border-bottom:1px solid #e9ecef;">
@@ -149,15 +178,15 @@
 
                                                         <td style="padding:4px 6px; border-bottom:1px solid #e9ecef; text-align:right;">
                                                             <span style="
-                            background-color:@badgeColor;
-                            color:white;
-                            padding:0.15rem 0.6rem;
-                            border-radius:0.25rem;
-                            font-size:0.75rem;
-                            display:inline-block;
-                            min-width:90px;
-                            text-align:center;
-                            white-space:nowrap;">
+background-color:@badgeColor;
+color:white;
+padding:0.15rem 0.6rem;
+border-radius:0.25rem;
+font-size:0.75rem;
+display:inline-block;
+min-width:110px;
+text-align:center;
+white-space:nowrap;">
                                                                 @badgeText
                                                             </span>
                                                         </td>

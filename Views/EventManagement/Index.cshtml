@@ -267,7 +267,21 @@
                 background-color: #f5f5f5;
             }
 
-        */
+            /* readonly class for event manager */
+            .readonly-section {
+                pointer-events: none; /* everything inside is readonly */
+            }
+            
+            .readonly-section input,
+            .readonly-section textarea {
+                background-color: #f5f5f5;
+            }
+            
+            /* Only allow elements with .allow-edit to remain editable */
+            .readonly-section .allow-edit {
+                pointer-events: auto !important;
+                background-color: #fff; /* optional: keep normal background */
+            }
     </style>
 
 
@@ -312,7 +326,7 @@
     }
 
 
-@if (User.IsInRole("Project Manager & Program Manager"))
+@if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventManagement_Add"))
 {
     <div style="display: flex; justify-content: center; align-items: center;">
         <button class="btn btn-primary" id="addContractBtn"
@@ -462,7 +476,7 @@
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SingleEventManagement.EventStatus" class="form-label">Event Status</label>
-                        <select asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control" required>
+                        <select asp-for="SingleEventManagement.EventStatus" id="EventStatus" class="form-control allow-edit" required>
                             <option value="">Select Event Status</option>
                             <option value="Initial Pre-event">Initial Pre-event</option>
                             <option value="Pre-Event Confirmed">Pre-Event Confirmed</option>
@@ -615,7 +629,7 @@
                     @* <input asp-for="SingleEventManagement.TaskForce" id="TaskForce" class="form-control" maxLength="100" placeholder="Enter Task Force" /> *@
 
                     <div class="form-container-Taskforce">
-                        <!-- Dynamic License Rows will be inserted here -->
+                        <!-- Dynamic taskforce will be inserted here -->
                     </div>
 
                     <button type="button" id="addTaskForceRowButton" class="add-row-button mt-2" style="background-color: rgba(80, 90, 201, 1); color: white; border: none; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; cursor: pointer;">
@@ -624,6 +638,13 @@
                     </button>
                     </div>
                 
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 cancel-reason-container" style="display: none;">
+                        <label asp-for="SingleEventManagement.ReasonOfCancel" class="form-label">Reason of Cancel</label>
+                        <textarea asp-for="SingleEventManagement.ReasonOfCancel" id="ReasonOfCancel" class="form-control" rows="4" maxLength="300" placeholder="Enter reason of event cancel"></textarea>
+                    </div>
                 </div>
 
                 <div class="row mt-4">
@@ -1272,13 +1293,13 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Staff Last Name</label>
-                        <input id="HIVDropOffStaffLastName" class="form-control" placeholder="Staff Last Name" readonly required />
+                        <input id="HIVDropOffStaffLastName" type="text" class="form-control" placeholder="Staff Last Name" readonly required />
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Staff First Name</label>
-                        <input id="HIVDropOffStaffFirstName" class="form-control" placeholder="Staff First Name" readonly required />
+                        <input id="HIVDropOffStaffFirstName" type="text" class="form-control" placeholder="Staff First Name" readonly required />
                     </div>
                 </div>
 
@@ -2207,10 +2228,9 @@
 
         fetchRolesByCategory("");
         
-        var serverDate = new Date('@DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")');
-        applyStatusRules(serverDate, null, null, false, null);
+        applyStatusRules(null, false);
 
-        function applyStatusRules(serverDate, eventStartDate, eventEndDate, isEdit, dayWiseList) {
+        function applyStatusRules(eventRuntimeStatus, isEdit) {
 
             var dropdown = document.getElementById("EventStatus");
             var options = dropdown.options;
@@ -2240,42 +2260,28 @@
 
             // ===== EDIT MODE =====
 
-            if (!dayWiseList || dayWiseList.length === 0) return;
+            if (eventRuntimeStatus === "Event Not Started") {
 
-            // Get first day's start time
-            var firstStartTime = dayWiseList[0].eventStartTime; // "08:00"
-
-            // Get last day's end time
-            var lastEndTime = dayWiseList[dayWiseList.length - 1].eventEndTime; // "16:00"
-
-            // Build actual event start datetime
-            var eventActualStart = new Date(eventStartDate);
-            var startParts = firstStartTime.split(":");
-            eventActualStart.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0, 0);
-
-            // Build actual event end datetime
-            var eventActualEnd = new Date(eventEndDate);
-            var endParts = lastEndTime.split(":");
-            eventActualEnd.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0, 0);
-
-            // ===== STATUS LOGIC =====
-
-            if (serverDate < eventActualStart) {
                 enableOptions([
                     "Initial Pre-event",
                     "Pre-Event Confirmed",
                     "Pre-Event Complete",
                     "Canceled"
                 ]);
+
             }
-            else if (serverDate >= eventActualStart && serverDate <= eventActualEnd) {
+            else if (eventRuntimeStatus === "Event In Progress") {
+
                 enableOptions(["In Progress"]);
+
             }
-            else if (serverDate > eventActualEnd) {
+            else if (eventRuntimeStatus === "Event Completed") {
+
                 enableOptions([
                     "Post Event Processing",
                     "Complete"
                 ]);
+
             }
         }
 
@@ -2504,19 +2510,6 @@
                         .prop('disabled', true).removeAttr('required'); // disable them
                 });
             });
-        });
-
-
-        $("#EventStatus").change(function () {
-            toggleTaskForceRequired();
-
-            var selectedText = $("#EventStatus option:selected").text().trim();
-
-            if (selectedText === "Canceled") {
-                $("#updateAndDuplicateBtn").show();
-            } else {
-                $("#updateAndDuplicateBtn").hide();
-            }
         });
 
         // Call this function when adding a new Task Force row
@@ -3096,6 +3089,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                 updateStaffRequirementTable();//Calculate "Total Required Staff" in Requirement Table's column as per selection of Primary Station
                 updateRowIndices();//Add indexes in eventStaffSelectedTable
+                resolve();
             });
             });
         }
@@ -4424,7 +4418,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     } else {
                         // Fetch the next Event Management ID
                         $.ajax({
-                            url: '/EventManagement/GetNextEventManagementId',
+                                url: '/EventManagement/GetNextEventIdNumber',
                             type: 'GET',
                             success: function (response) {
                                 if (response.success) {
@@ -4656,18 +4650,35 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 TaskForce: true,
             },
             "Canceled": {
-                PickupDate: true,
-                PickupTime: true,
-                DeliveryFromDate: true,
-                DeliveryToDate: true,
-                SuggestedHourlyFlow: true,
-                TaskForce: true,
+                PickupDate: false,
+                PickupTime: false,
+                DeliveryFromDate: false,
+                DeliveryToDate: false,
+                SuggestedHourlyFlow: false,
+                TaskForce: false,
             },
         };
 
-        document.getElementById("EventStatus").addEventListener("change", function () {
+        $("#EventStatus").change(function () {
             updateFieldRequirements(requirements);
+            toggleTaskForceRequired();
+            toggleCancelReason();
         });
+
+        function toggleCancelReason() {
+        var selectedText = $("#EventStatus option:selected").text().trim();
+
+        if (selectedText === "Canceled") {
+            $("#updateAndDuplicateBtn").show();
+            $('.cancel-reason-container').show();
+            $('#ReasonOfCancel').attr('required', 'required');
+        } else {
+            $("#updateAndDuplicateBtn").hide();
+            $('.cancel-reason-container').hide();
+            $('#ReasonOfCancel').removeAttr('required');
+            $('#ReasonOfCancel').val('');
+        }
+    }
 
         // Update field requirements based on EventStatus
         function updateFieldRequirements(requirements) {
@@ -4820,8 +4831,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         loadStatesAndCities().done(function () {
             var editId = '@ViewBag.EditId';
             if (editId && editId !== '') {
+                debugger;
                 loadEventManagementForEdit(editId, false, true).then(() => {
                     // This executes after all staff is loaded and tables updated
+                    debugger;
                     startDatePicker.clear();
                     endDatePicker.clear();
                 });
@@ -4840,17 +4853,22 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         isEditMode = true;
                         
                         var combinedData = response.combinedData;
+                        var eventRuntimeStatus = combinedData.eventRuntimeStatus;
                         setProgressFromServer(combinedData.eventManagement.completedSections);
 
                         if (!isDuplicateEvent)
                         {
                             $('#hiddenId').val(combinedData.eventManagement.id);
                             $('#EventVersion').val(combinedData.eventManagement.eventVersion);
+                            $('#EventStatus').val(combinedData.eventManagement.eventStatus);
+                            toggleCancelReason();
+                            $('#ReasonOfCancel').val(combinedData.eventManagement.reasonOfCancel);
                         }
                         else
                         {
                             var nextVersion = (combinedData.eventManagement.eventVersion || 0) + 1;
                             $('#EventVersion').val(nextVersion);
+                                $("#EventStatus").val("");
                         }
 
                         $('#EventID').text(combinedData.eventManagement.eventID);
@@ -4906,11 +4924,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                                 combinedData.eventManagement.eventStartEndTimeDayWiseList
                             );
 
-                            var serverDate = new Date(response.serverDate);
-
-                            applyStatusRules(new Date(response.serverDate), eventStartDate, eventEndDate, isEditMode,
-                                combinedData.eventManagement.eventStartEndTimeDayWiseList
-                            );
+                            
+                            applyStatusRules(eventRuntimeStatus ,isEditMode);
                         }
 
                         if (combinedData.eventManagement.deploy === 'Deploying') {
@@ -5091,12 +5106,16 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
                             updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
                             updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
-
+                            
                             if (combinedData.eventStaffDetailAndAdditionalRoleslist) {
                                 loadStaffForEditMode(combinedData.eventStaffDetailAndAdditionalRoleslist).then(() => {
+
+                                    debugger;
                                     resolve(); // All staff loaded, resolve the main Promise
                                 });
                             } else {
+
+                                debugger;
                                 resolve(); // No staff, resolve immediately
                             }
 
@@ -5121,45 +5140,82 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('[id^="section"]').hide();
                         $(`#section1`).show();
 
+                        debugger;
                         if (isViewButton) {
-                            $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
-                            $('input[type="checkbox"]').prop('disabled', true);
+                            $('input[type="text"], input[type="radio"], input[type="checkbox"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
                             $('select').prop('disabled', true);
                             $('textarea').prop('disabled', true);
+                            $('.form-container-Taskforce').find('input').prop('disabled', true);
+                            $('#addTaskForceRowButton').prop('disabled', true);
                             $('#updateBtn').hide();
                             $('#updateAndDuplicateBtn').hide();
                         }
-                        else {
-                            // Enable all inputs except those inside the table
-                            $('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
-                                .not('#eventServicesTable input, #eventServicesTable2 input, #eventServicesTable3 input')
-                                .prop('disabled', false);
+                        else if (response.canEdit) 
+                        {
+                            @* first enable (if disabled by view button) *@
+                            $('input[type="text"], input[type="radio"], input[type="checkbox"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
+                            .prop('disabled', false);
+                            $('select').prop('disabled', false);
+                            $('textarea').prop('disabled', false);
+                            $('#addTaskForceRowButton').prop('disabled', false);
 
-                            $('input[type="checkbox"]').prop('disabled', false);
+                            $('#updateBtn').show();
 
-                            $('select')
-                                .not('#eventServicesTable select, #eventServicesTable2 select, #eventServicesTable3 select')
-                                .prop('disabled', false);
+                            if (eventRuntimeStatus === 'Event Not Started')
+                            {
+                                applyTableFieldLogic('eventServicesTable');
+                                applyTableFieldLogic('eventServicesTable2');
+                                applyTableFieldLogic('eventServicesTable3');
 
-                            $('textarea')
-                                .not('#eventServicesTable textarea, #eventServicesTable2 textarea, #eventServicesTable3 textarea')
-                                .prop('disabled', false);
+                                if (!isDuplicateEvent) {
 
-                            if (!isDuplicateEvent) {
-                                $('#EventStatus').val(combinedData.eventManagement.eventStatus);
-
-                                if (combinedData.eventManagement.eventStatus === 'Canceled') {
-                                    $('#updateAndDuplicateBtn').show();
+                                    if (combinedData.eventManagement.eventStatus === 'Canceled') {
+                                        $('#updateAndDuplicateBtn').show();
+                                    }
+                                }
+                                else
+                                {
+                                    $('#updateBtn').hide();
+                                    @* $('#section1, #section2, #section3, #section4, #section5, #section6').addClass('readonly-section');
+                                    $('.readonly-section').find('.next, .back').css('pointer-events', 'auto'); *@
                                 }
                             }
-
-                            if (!isDuplicateEvent) 
+                            else if (eventRuntimeStatus === 'Event In Progress')
                             {
-                                $('#updateBtn').show();
+                                setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6', true);
                             }
-                            
+                            else if (eventRuntimeStatus === 'Event Completed')
+                            {
+                                setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6, #section7', true);
+                            }
                         }
+                        else @* for event manager OR other than Project and Program Manager *@
+                        {
+                            @* first enable (if disabled by view button) *@
+                            $('input[type="text"], input[type="radio"], input[type="checkbox"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]')
+                            .prop('disabled', false);
+                            $('select').prop('disabled', false);
+                            $('textarea').prop('disabled', false);
+                            $('#addTaskForceRowButton').prop('disabled', false);
 
+                            @* then make field View-Only *@
+
+                            if (eventRuntimeStatus === 'Event Not Started')
+                            {
+                                setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6', false);
+                                $('#updateBtn').show(); 
+                            }
+                            else if (eventRuntimeStatus === 'Event In Progress')
+                            {
+                                setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6', false);
+                                $('#updateBtn').show(); 
+                            }
+                            else if (eventRuntimeStatus === 'Event Completed')
+                            {
+                                setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6, #section7', false);
+                                $('#updateBtn').hide();
+                            }
+                        }
 
                     } else {
                         alert(response.message);
@@ -5172,10 +5228,104 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
         }
 
+        function setFormReadonly(sectionsSelector, isEventStatusEditable) {
+            // Make sections readonly
+            $(sectionsSelector).addClass('readonly-section');
+        
+            // Allow navigation buttons
+            $(sectionsSelector).find('.next, .back').css('pointer-events', 'auto');
+        
+            // Conditionally make EventStatus editable
+            if (isEventStatusEditable) {
+                $('#EventStatus').addClass('allow-edit');
+            } else {
+                $('#EventStatus').removeClass('allow-edit');
+            }
+        }
+
         function updateTableRows(tableId, data) {
             const table = document.getElementById(tableId);
             const rows = table.querySelectorAll('tbody tr');
 
+            rows.forEach(row => {
+                const eventService = row.getAttribute('data-event-service');
+                const matchingData = data.find(item => item.eventService === eventService);
+
+                if (!matchingData) return;
+
+                const checkbox = row.querySelector('input.is-selected-checkbox');
+                const clientRequestInput = row.querySelector('td:nth-of-type(2) input[type="number"]');
+                const initialReportInput = row.querySelector('td:nth-of-type(3) input[type="number"]');
+                const finalPreEventInput = row.querySelector('td:nth-of-type(4) input[type="number"]');
+                const isConfirmedCheckbox = row.querySelector('input.is-confirmed-checkbox');
+                const eventServiceHidden = row.querySelector('input[type="hidden"][name$=".EventService"]');
+                const typeHidden = row.querySelector('input[type="hidden"][name$=".Type"]');
+
+                if (checkbox) checkbox.checked = matchingData.isSelected || false;
+
+                if (clientRequestInput)
+                    clientRequestInput.value = matchingData.clientRequestInitial ?? '';
+
+                if (initialReportInput)
+                    initialReportInput.value = matchingData.initialReportNumbers ?? '';
+
+                if (finalPreEventInput)
+                    finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
+
+                if (isConfirmedCheckbox)
+                    isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
+
+                if (eventServiceHidden)
+                    eventServiceHidden.value = matchingData.eventService ?? '';
+
+                if (typeHidden)
+                    typeHidden.value = matchingData.type ?? '';
+            });
+        }
+
+        function applyTableFieldLogic(tableId) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const checkbox = row.querySelector('input.is-selected-checkbox');
+                const clientRequestInput = row.querySelector('td:nth-of-type(2) input[type="number"]');
+                const initialReportInput = row.querySelector('td:nth-of-type(3) input[type="number"]');
+                const finalPreEventInput = row.querySelector('td:nth-of-type(4) input[type="number"]');
+                const isConfirmedCheckbox = row.querySelector('input.is-confirmed-checkbox');
+
+                if (!checkbox) return;
+
+                const isEnabled = checkbox.checked;
+
+                if (clientRequestInput)
+                    clientRequestInput.disabled = !isEnabled;
+
+                if (initialReportInput)
+                    initialReportInput.disabled = !isEnabled;
+
+                if (finalPreEventInput)
+                    finalPreEventInput.disabled = !isEnabled;
+
+                if (isConfirmedCheckbox) {
+                    const clientRequestValue = parseInt(clientRequestInput?.value) || 0;
+                    const initialReportValue = parseInt(initialReportInput?.value) || 0;
+                    const finalPreEventValue = parseInt(finalPreEventInput?.value) || 0;
+
+                    if (clientRequestValue > 0 && initialReportValue > 0 && finalPreEventValue > 0) {
+                        isConfirmedCheckbox.disabled = false;
+                    } else {
+                        isConfirmedCheckbox.disabled = true;
+                    }
+                }
+            });
+        }
+
+        @* function updateTableRows(tableId, data) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+
+            debugger;
             rows.forEach(row => {
                 const eventService = row.getAttribute('data-event-service');
                 const matchingData = data.find(item => item.eventService === eventService);
@@ -5207,19 +5357,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
                             finalPreEventInput.disabled = !isEnabled;
                         }
-                        // if (isConfirmedCheckbox) {
-                        //     isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
-
-                        //     if (isConfirmedCheckbox.checked)
-                        //     {
-                        //         isConfirmedCheckbox.disabled = false;
-                        //     }
-                        //     else
-                        //     {
-                        //     isConfirmedCheckbox.disabled = true;
-                        //     }
-                            
-                        // }
 
                         if (isConfirmedCheckbox) {
                             isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
@@ -5244,7 +5381,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     }
                 }
             });
-        }
+        } *@
         
     });
 

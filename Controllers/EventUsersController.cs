@@ -15,18 +15,18 @@ namespace ExcelFilesCompiler.Controllers
     [RoleAttributeAuthorizeFromConfig("EventUser_View")]
     public class EventUsersController : Controller
     {
-        private readonly IAccountUserService _accountUserService;
+        private readonly IDawsonUserService _dawsonUserService;
         private readonly IEventUsersService _eventService;
         private readonly ILogger<EventUsersController> _logger;
 
         private const string CLASSNAME = nameof(EventUsersController);
 
         public EventUsersController(
-            IAccountUserService accountUserService,
+            IDawsonUserService dawsonUserService,
             IEventUsersService eventService,
             ILogger<EventUsersController> logger)
         {
-            _accountUserService = accountUserService;
+            _dawsonUserService = dawsonUserService;
             _eventService = eventService;
             _logger = logger;
         }

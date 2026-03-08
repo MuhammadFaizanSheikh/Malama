@@ -2,9 +2,9 @@
 
 namespace Malama.Interfaces
 {
-    public interface IAccountUserService
+    public interface IDawsonUserService
     {
-        Task<List<AccountUserListDto>> GetAccountUsersAsync();
+        Task<List<DawsonUserListDto>> GetDawsonUsersAsync();
     }
 
 }

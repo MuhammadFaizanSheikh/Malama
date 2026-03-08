@@ -45,7 +45,7 @@ builder.Services.AddScoped<IContainerMonitoringService, ContainerMonitoringServi
 builder.Services.AddScoped<ISubContractorService, SubContractorService>();
 builder.Services.AddScoped<IUserEventMappingService, UserEventMappingService>();
 builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationService>();
-builder.Services.AddScoped<IAccountUserService, AccountUserService>();
+builder.Services.AddScoped<IDawsonUserService, DawsonUserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 builder.Services.AddScoped<IEventUsersService, EventUsersService>();

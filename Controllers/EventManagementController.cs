@@ -2,6 +2,7 @@
 using ExcelFilesCompiler.Interfaces;
 using Malama.Attributes;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -87,7 +88,6 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpPost]
-        [RoleAttributeAuthorizeFromConfig("EventManagement_Save")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEventManagement(EventManagementViewModel eventManagement, string action, string completedSections)
         {
@@ -97,6 +97,23 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
+                //Check authorization because add and update roles are different
+                var feature = eventManagement.SingleEventManagement.Id == 0
+                ? "EventManagement_Add"
+                : "EventManagement_Update";
+
+                var authService = HttpContext.RequestServices
+                    .GetRequiredService<IAuthorizationService>();
+
+                var requirement = RoleAttributeRequirementProvider.GetRequirement(feature);
+
+                var result = await authService.AuthorizeAsync(User, null, requirement);
+
+                if (!result.Succeeded)
+                {
+                    return Forbid();
+                }
+
                 ResponseDto res = new ResponseDto();
 
                 if (eventManagement.SingleEventManagement.Id == 0)
@@ -199,11 +216,11 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpGet]
         //[RoleAttributeAuthorizeFromConfig("EventManagement_View")]
-        public async Task<IActionResult> GetNextEventManagementId()
+        public async Task<IActionResult> GetNextEventIdNumber()
         {
             try
             {
-                var eventManagementId = await _eventManagementService.GetNextEventManagementId();
+                var eventManagementId = await _eventManagementService.GetNextEventIdNumber();
 
                 return Ok(new
                 {
@@ -227,12 +244,22 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 var combinedData = await _eventManagementService.GetEventManagementById(id);
+
                 if (combinedData == null)
                 {
                     return Json(new { success = false, message = "Contract not found." });
                 }
 
-                return Json(new { success = true, combinedData = combinedData, serverDate = DateTime.Now });
+                // 🔹 Check update permission using existing helper
+                var canEdit = DashboardAuthorizationHelper
+                    .HasAccess(User, "EventManagement_Add");
+
+                return Json(new
+                {
+                    success = true,
+                    combinedData = combinedData,
+                    canEdit = canEdit
+                });
             }
             catch (Exception ex)
             {

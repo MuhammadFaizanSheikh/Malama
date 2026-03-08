@@ -29,6 +29,18 @@ namespace ExcelFilesCompiler.Repositories.Services
             }
         }
 
+        public IQueryable<T> GetAll()
+        {
+            try
+            {
+                return _dbSet.AsQueryable();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving records.", ex);
+            }
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.Where(predicate).ToListAsync();

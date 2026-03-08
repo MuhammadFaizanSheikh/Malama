@@ -10,27 +10,27 @@ using static Malama.Utilities.RoleAttributeConfig;
 
 namespace Malama.Controllers.Services
 {
-    public class AccountUserService : IAccountUserService
+    public class DawsonUserService : IDawsonUserService
     {
-        private const string CLASSNAME = nameof(AccountUserService);
+        private const string CLASSNAME = nameof(DawsonUserService);
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<AccountUserService> _logger;
+        private readonly ILogger<DawsonUserService> _logger;
 
-        public AccountUserService(
+        public DawsonUserService(
             UserManager<ApplicationUser> userManager,
             IUnitOfWork unitOfWork,
-            ILogger<AccountUserService> logger)
+            ILogger<DawsonUserService> logger)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
-        public async Task<List<AccountUserListDto>> GetAccountUsersAsync()
+        public async Task<List<DawsonUserListDto>> GetDawsonUsersAsync()
         {
-            var methodName = nameof(GetAccountUsersAsync);
+            var methodName = nameof(GetDawsonUsersAsync);
 
             try
             {
@@ -42,7 +42,7 @@ namespace Malama.Controllers.Services
                     .Where(u => !u.IsEventUser)
                     .ToListAsync();
 
-                var result = new List<AccountUserListDto>();
+                var result = new List<DawsonUserListDto>();
 
                 foreach (var user in users)
                 {
@@ -50,7 +50,7 @@ namespace Malama.Controllers.Services
                     {
                         var roles = await _userManager.GetRolesAsync(user);
 
-                        var dto = new AccountUserListDto
+                        var dto = new DawsonUserListDto
                         {
                             UserId = user.Id,
                             UserName = user.UserName,
@@ -125,7 +125,7 @@ namespace Malama.Controllers.Services
                     "{ClassName}, {MethodName}, Failed to get account users: {Message}",
                     CLASSNAME, methodName, ex.Message);
 
-                return new List<AccountUserListDto>(); // never crash, return empty list
+                return new List<DawsonUserListDto>(); // never crash, return empty list
             }
         }
 

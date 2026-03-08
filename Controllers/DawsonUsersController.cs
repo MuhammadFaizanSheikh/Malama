@@ -13,18 +13,18 @@ using Malama.Interfaces;
 namespace ExcelFilesCompiler.Controllers
 {
     [RoleAttributeAuthorizeFromConfig("DawsonUser_View")]
-    public class AccountUsersController : Controller
+    public class DawsonUsersController : Controller
     {
-        private const string CLASSNAME = nameof(AccountUsersController);
+        private const string CLASSNAME = nameof(DawsonUsersController);
 
-        private readonly IAccountUserService _accountUserService;
-        private readonly ILogger<AccountUsersController> _logger;
+        private readonly IDawsonUserService _dawsonUserService;
+        private readonly ILogger<DawsonUsersController> _logger;
 
-        public AccountUsersController(
-            IAccountUserService accountUserService,
-            ILogger<AccountUsersController> logger)
+        public DawsonUsersController(
+            IDawsonUserService dawsonUserService,
+            ILogger<DawsonUsersController> logger)
         {
-            _accountUserService = accountUserService;
+            _dawsonUserService = dawsonUserService;
             _logger = logger;
         }
 
@@ -34,7 +34,7 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var users = await _accountUserService.GetAccountUsersAsync();
+                var users = await _dawsonUserService.GetDawsonUsersAsync();
                 return View(users);
             }
             catch (Exception ex)

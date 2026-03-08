@@ -58,7 +58,12 @@ namespace Malama.Utilities
             ("Project Manager & Program Manager", null),
             ("Event Manager", null)
         },
-            ["EventManagement_Save"] = new List<(string Role, string Attribute)>
+            ["EventManagement_Add"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
+        
+            ["EventManagement_Update"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null),
             ("Event Manager", null)
@@ -315,7 +320,7 @@ namespace Malama.Utilities
 
                 foreach (var entry in RoleAttributeConfig.RoleAttributeCombinations)
                 {
-                    var feature = entry.Key; // ContractDetails_View
+                    var feature = entry.Key;
                     var allowed = entry.Value;
 
                     var splitIndex = feature.LastIndexOf('_');
@@ -323,14 +328,14 @@ namespace Malama.Utilities
                         continue;
 
                     var pageKey = feature[..splitIndex];
-                    var action = feature[(splitIndex + 1)..]; // View / Save
+                    var action = feature[(splitIndex + 1)..]; // View / Save / Add / Update
 
                     var isAllowed = allowed.Any(a =>
                         userRoles.Contains(a.Role) &&
                         (
-                            a.Attribute == null ||               // role-only permission
-                            userAttributes == null ||             // attribute ignored for now
-                            userAttributes.Contains(a.Attribute)  // attribute matched
+                            a.Attribute == null ||
+                            userAttributes == null ||
+                            userAttributes.Contains(a.Attribute)
                         )
                     );
 
@@ -345,13 +350,27 @@ namespace Malama.Utilities
                             PageName = RoleAttributeConfig.PageNames.TryGetValue(pageKey, out var name)
                                 ? name
                                 : pageKey,
-                            Access = PageAccessLevel.ReadOnly
+                            Access = PageAccessLevel.None
                         };
                     }
 
-                    if (action.Equals("Save", StringComparison.OrdinalIgnoreCase))
+                    if (action.Equals("View", StringComparison.OrdinalIgnoreCase))
                     {
-                        page.Access = PageAccessLevel.ReadWrite;
+                        page.Access |= PageAccessLevel.View;
+                    }
+                    else if (action.Equals("Save", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Legacy: Save = Add + Update
+                        page.Access |= PageAccessLevel.Add;
+                        page.Access |= PageAccessLevel.Update;
+                    }
+                    else if (action.Equals("Add", StringComparison.OrdinalIgnoreCase))
+                    {
+                        page.Access |= PageAccessLevel.Add;
+                    }
+                    else if (action.Equals("Update", StringComparison.OrdinalIgnoreCase))
+                    {
+                        page.Access |= PageAccessLevel.Update;
                     }
                 }
 
@@ -362,10 +381,13 @@ namespace Malama.Utilities
     }
 }
 
+[Flags]
 public enum PageAccessLevel
 {
-    ReadOnly,
-    ReadWrite
+    None = 0,
+    View = 1,
+    Add = 2,
+    Update = 4
 }
 
 

@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "ExcelToCsv": {
+    "Malama": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

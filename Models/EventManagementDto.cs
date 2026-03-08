@@ -19,6 +19,7 @@
         public ContractDetails ContractDetails { get; set; }
         public EventStaff EventStaffForHIVDropOff { get; set; }
         public List<EventStaffDetailAndAdditionalRoles> EventStaffDetailAndAdditionalRoleslist { get; set; }
+        public string EventRuntimeStatus { get; set; }
     }
 
     public class EventStaffDetailAndAdditionalRoles
@@ -105,6 +106,9 @@
         [Required]
         [MaxLength(12)]
         public string EventHelpLine { get; set; }
+
+        [MaxLength(300)]
+        public string? ReasonOfCancel { get; set; }
 
         // Event Main POC
         [MaxLength(50)]

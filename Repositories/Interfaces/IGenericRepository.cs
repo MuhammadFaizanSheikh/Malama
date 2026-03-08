@@ -6,6 +6,7 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
     public interface IGenericRepository<T> where T : class
     {
         Task<IEnumerable<T>> GetAllAsync();
+        IQueryable<T> GetAll();
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate);
         Task<T?> GetByIdAsync(long id);
         Task<T?> GetByNullableIdAsync(long? id);

@@ -45,7 +45,7 @@ namespace Malama.Models
         public string Types { get; set; }
     }
 
-    public class AccountUserListDto
+    public class DawsonUserListDto
     {
         public string UserId { get; set; }
         public string UserName { get; set; }
