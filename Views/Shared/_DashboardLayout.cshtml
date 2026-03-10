@@ -181,11 +181,12 @@
             <div>
                 @{
                     var eventId = User.Claims.FirstOrDefault(c => c.Type == "EventIdString")?.Value;
+                    var eventVersion = User.Claims.FirstOrDefault(c => c.Type == "EventVersion")?.Value;
                 }
-                @if (!string.IsNullOrEmpty(eventId))
+                @if (!string.IsNullOrEmpty(eventId) && !string.IsNullOrEmpty(eventVersion))
                 {
                     <span>Event ID:</span>
-                    <span>@eventId</span>
+                    <span>@($"{eventId} (V{eventVersion})")</span>
                 }
             </div>
             <div>

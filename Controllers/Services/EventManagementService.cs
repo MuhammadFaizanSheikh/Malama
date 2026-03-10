@@ -120,7 +120,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .Select(e => new EventManagementPreview
                     {
                         Id = e.Id,
-                        EventID = e.EventID
+                        EventID = $"{e.EventID} (V{e.EventVersion})"
                     })
                     .ToListAsync();
 

@@ -42,12 +42,11 @@ namespace ExcelFilesCompiler.Controllers.Services
             _mapper = mapper;
         }
 
-        public List<List<Dictionary<string, object>>> UploadAndPreview(List<IFormFile> files, IFormFile G6PDFile, DateTime parsedEventDate, DateTime? parsedLastEventDate, string eventId, int lastDentalExam, int vision, int dental, int pha, int hiv, int hearing)
+        public List<List<Dictionary<string, object>>> UploadAndPreview(List<IFormFile> files, IFormFile G6PDFile, DateTime parsedEventDate, DateTime? parsedLastEventDate, long eventId, int lastDentalExam, int vision, int dental, int pha, int hiv, int hearing)
         {
-            var eventRecords = _unitOfWork.EventManagement.GetAllAsync().Result;
-            var matchedEvent = eventRecords.FirstOrDefault(e => string.Equals(e.EventID, eventId, StringComparison.OrdinalIgnoreCase));
-
-            if (matchedEvent == null)
+            var eventRecords = _unitOfWork.EventManagement.GetByIdAsync(eventId).Result;
+            
+            if (eventRecords == null)
             {
                 throw new Exception($"No Event Id found against {eventId}");
             }
@@ -65,8 +64,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             var fileConfigG6PD = fileConfigurations["G6PDReport.xlsx"];
             var G6PDDataTable = GetDataFromFile(G6PDFile, fileConfigG6PD.Headers, fileConfigG6PD.SelectedColumns, fileConfigG6PD.stoppingKeyword, isG6PD: true, out string taskForceValue, out long totalRecordValueInG6pdFile);
             CheckG6PDTotalAssignedCountWithTotalRow(G6PDDataTable, totalRecordValueInG6pdFile);
-            ProcessExcelFiles(files, G6PDDataTable, processingSequence, fileConfigurations, parsedLastEventDate, visionDate, dentalDate, phaDate, hivDate, hearingDate, parsedEventDate, lastDentalExam, vision, dental, pha, hiv, hearing, eventId);
-            MergeSomeMoreColumns(G6PDDataTable, taskForceValue, matchedEvent.Id);
+            ProcessExcelFiles(files, G6PDDataTable, processingSequence, fileConfigurations, parsedLastEventDate, visionDate, dentalDate, phaDate, hivDate, hearingDate, parsedEventDate, lastDentalExam, vision, dental, pha, hiv, hearing, eventRecords.EventID);
+            MergeSomeMoreColumns(G6PDDataTable, taskForceValue, eventId);
             var headerMapping = GetHeaderMapping();
             string[] predefinedColumnOrder = GetPredefinedColumnHeader();
             var preparedDataTable = RenameReorderAndProcess(G6PDDataTable, headerMapping, predefinedColumnOrder);

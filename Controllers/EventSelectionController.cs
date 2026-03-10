@@ -157,6 +157,7 @@ namespace ExcelFilesCompiler.Controllers
                 selectedEventId: 0,
                 eventRoleNames: Enumerable.Empty<string>(),
                 eventID: "",
+                0,
                 isEventAssignedToStaff: false,
                 staffAttributes: new List<string>()
             );
@@ -187,7 +188,7 @@ namespace ExcelFilesCompiler.Controllers
             var eventManagement = await _eventManagementService
                 .GetEventManagementForEventSelectionByIdWithoutInclude(selectedEventId);
 
-            await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, true);
+            await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, eventManagement.EventVersion, true);
             HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Event Manager claims updated successfully",
@@ -219,6 +220,7 @@ namespace ExcelFilesCompiler.Controllers
                 selectedEventId,
                 roleNames,
                 eventManagement.EventID,
+                eventManagement.EventVersion,
                 isAssigned,
                 staffAttributes
             );
@@ -291,7 +293,7 @@ namespace ExcelFilesCompiler.Controllers
             return (isAssigned, roleNames, staffAttributes);
         }
 
-        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID, bool isEventAssignedToStaff, List<string> staffAttributes)
+        private async Task<bool> UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, IEnumerable<string> eventRoleNames, string eventID, int eventVersion, bool isEventAssignedToStaff, List<string> staffAttributes)
         {
             try
             {
@@ -303,6 +305,7 @@ namespace ExcelFilesCompiler.Controllers
                 identity.AddClaim(new Claim(ClaimTypes.Name, user.UserName ?? ""));
                 identity.AddClaim(new Claim("EventIdLong", selectedEventId.ToString()));
                 identity.AddClaim(new Claim("EventIdString", eventID.ToString()));
+                identity.AddClaim(new Claim("EventVersion", eventVersion.ToString()));
                 identity.AddClaim(new Claim("IsEventAssignedToStaff", isEventAssignedToStaff.ToString()));
 
                 // ✅ 3. Add only event-specific roles as claims
@@ -336,7 +339,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        public async Task UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, string eventID, bool isEventAssignedToStaff)
+        public async Task UpdateUserClaimsAsync(ApplicationUser user, long selectedEventId, string eventID, int eventVersion, bool isEventAssignedToStaff)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -348,6 +351,7 @@ namespace ExcelFilesCompiler.Controllers
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim("EventIdLong", selectedEventId.ToString()),
                 new Claim("EventIdString", eventID ?? string.Empty),
+                new Claim("EventVersion", eventVersion.ToString()),
                 new Claim("IsEventAssignedToStaff", isEventAssignedToStaff.ToString())
             };
 

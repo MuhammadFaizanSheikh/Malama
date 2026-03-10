@@ -53,7 +53,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
-        public IActionResult UploadAndPreview(List<IFormFile> files, string eventDate, string lastEventDate, string eventId, int lastDentalExam , int vision, int dental, int pha, int hiv, int hearing)
+        public IActionResult UploadAndPreview(List<IFormFile> files, string eventDate, string lastEventDate, long eventId, int lastDentalExam , int vision, int dental, int pha, int hiv, int hearing)
         {
             try
             {

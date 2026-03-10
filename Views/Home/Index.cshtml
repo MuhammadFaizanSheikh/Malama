@@ -430,8 +430,7 @@
                 formData.append('lastEventDate', getyyyymmddDateGlobalAgainstDate(endDate));
 
                 var ddl = document.getElementById("eventId");
-                var selectedText = ddl.options[ddl.selectedIndex].text;
-                formData.append('eventId', selectedText);
+                formData.append('eventId', ddl.value);
                 formData.append('lastDentalExam', document.getElementById('dropdownLastDentalExam').value);
                 formData.append('vision', document.getElementById('dropdownVision').value);
                 formData.append('dental', document.getElementById('dropdownDental').value);
