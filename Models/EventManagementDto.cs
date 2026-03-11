@@ -41,8 +41,8 @@
         public string? EventCity { get; set; }
         public string? EventZipCode { get; set; }
         public string? StatusDescription { get; set; }
-        public DateTime EventStartDate { get; set; }
-        public DateTime EventEndDate { get; set; }
+        public DateTime EventStartDateUtc { get; set; }
+        public DateTime EventEndDateUtc { get; set; }
         public Boolean CanEdit { get; set; }
     }
 
@@ -92,9 +92,12 @@
         public int TotalRequestedServiceMembers { get; set; }
 
         [Required]
-        public DateTime EventStartDate { get; set; }
+        public string Timezone { get; set; }
+
         [Required]
-        public DateTime EventEndDate { get; set; }
+        public DateTime EventStartDateUtc { get; set; }
+        [Required]
+        public DateTime EventEndDateUtc { get; set; }
         
         [Required]
         public string Deploy { get; set; }

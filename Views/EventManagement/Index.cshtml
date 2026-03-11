@@ -374,8 +374,8 @@
                             <td>@contract.EventState</td>
                             <td>@contract.EventCity</td>
                             <td>@contract.EventZipCode</td>
-                            <td>@contract.EventStartDate.ToString("MM-dd-yyyy")</td>
-                            <td>@contract.EventEndDate.ToString("MM-dd-yyyy")</td>
+                            <td>@contract.EventStartDateUtc.ToString("MM-dd-yyyy")</td>
+                            <td>@contract.EventEndDateUtc.ToString("MM-dd-yyyy")</td>
                         <td>
                             <a href="javascript:void(0);"
                                class="btn btn-primary"
@@ -583,6 +583,26 @@
                         </select>
                     </div>
                     <div class="col-md-6">
+                        <label asp-for="SingleEventManagement.TotalRequestedServiceMembers" class="form-label">Event Timezone</label>
+                        @{
+                            var timezones = new List<SelectListItem>
+                            {
+                    new SelectListItem { Text = "Select Event Timezone", Value = "", Selected = true },
+                                new SelectListItem { Text = "(UTC-05:00) Eastern Time – New York", Value = "Eastern Standard Time" },
+                                new SelectListItem { Text = "(UTC-06:00) Central Time – Chicago", Value = "Central Standard Time" },
+                                new SelectListItem { Text = "(UTC-07:00) Mountain Time – Denver", Value = "Mountain Standard Time" },
+                                new SelectListItem { Text = "(UTC-07:00) Arizona – Phoenix", Value = "US Mountain Standard Time" },
+                                new SelectListItem { Text = "(UTC-08:00) Pacific Time – Los Angeles", Value = "Pacific Standard Time" },
+                                new SelectListItem { Text = "(UTC-09:00) Alaska – Anchorage", Value = "Alaska Standard Time" },
+                                new SelectListItem { Text = "(UTC-10:00) Hawaii – Honolulu", Value = "Hawaii-Aleutian Standard Time" }
+                            };
+                        }
+                    <select asp-for="SingleEventManagement.Timezone" id="Timezone" class="form-control" required asp-items="timezones"></select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
                         <label asp-for="SingleEventManagement.TotalRequestedServiceMembers" class="form-label">Total Requested Service Members</label>
                         <input asp-for="SingleEventManagement.TotalRequestedServiceMembers" id="TotalRequestedServiceMembers" class="form-control" maxLength="4" placeholder="Enter Total Requested Service Members" type="number" oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);" required />
                     </div>
@@ -590,12 +610,12 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.EventStartDate" class="form-label">Event Start Date</label>
-                    <input type="text" class="form-control" id="EventStartDate" asp-for="SingleEventManagement.EventStartDate" placeholder="MM/DD/YYYY" required />
+                        <label asp-for="SingleEventManagement.EventStartDateUtc" class="form-label">Event Start Date</label>
+                    <input type="text" class="form-control" id="EventStartDate" asp-for="SingleEventManagement.EventStartDateUtc" placeholder="MM/DD/YYYY" required />
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="SingleEventManagement.EventEndDate" class="form-label">Event End Date</label>
-                        <input type="text" class="form-control" id="EventEndDate" asp-for="SingleEventManagement.EventEndDate" placeholder="MM/DD/YYYY" required />
+                        <label asp-for="SingleEventManagement.EventEndDateUtc" class="form-label">Event End Date</label>
+                        <input type="text" class="form-control" id="EventEndDate" asp-for="SingleEventManagement.EventEndDateUtc" placeholder="MM/DD/YYYY" required />
                     </div>
 
                 </div>
@@ -4060,8 +4080,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 const fieldValue = $(this).val();
 
                 if (
-                    fieldValue !== "SingleEventManagement.EventStartDate" &&
-                    fieldValue !== "SingleEventManagement.EventEndDate" &&
+                    fieldValue !== "SingleEventManagement.EventStartDateUtc" &&
+                    fieldValue !== "SingleEventManagement.EventEndDateUtc" &&
                     fieldValue !== "SingleEventManagement.EventStartTimeDay" &&
                     fieldValue !== "SingleEventManagement.EventEndTimeDay" &&
                     fieldValue !== "Deploying" &&
@@ -4908,13 +4928,15 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventState').val(combinedData.eventManagement.eventState).trigger('change');
                         $('#EventCity').val(combinedData.eventManagement.eventCity).trigger('change');
                         $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
+                        debugger;
+                        $('#Timezone').val(combinedData.eventManagement.timezone.trim());
                         $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
 
                         debugger;
 
-                        if (combinedData.eventManagement.eventStartDate && combinedData.eventManagement.eventEndDate) {
-                            startDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventStartDate));
-                            endDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventEndDate));
+                        if (combinedData.eventManagement.eventStartDateUtc && combinedData.eventManagement.eventEndDateUtc) {
+                            startDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventStartDateUtc));
+                                endDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventEndDateUtc));
 
                             let eventStartDate = startDatePicker.selectedDates[0];
                             let eventEndDate = endDatePicker.selectedDates[0];

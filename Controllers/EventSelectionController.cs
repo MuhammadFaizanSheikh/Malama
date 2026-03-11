@@ -244,13 +244,41 @@ namespace ExcelFilesCompiler.Controllers
 
         private void ValidateEventDate(EventManagement eventManagement)
         {
-            var today = DateTime.Today;
-            var allowedStartDate = eventManagement.EventStartDate.Date.AddDays(-2);
-            var allowedEndDate = eventManagement.EventEndDate.Date;
+            const string methodName = nameof(ValidateEventDate);
 
-            if (today < allowedStartDate || today > allowedEndDate)
+            try
             {
-                throw new ApplicationException("The selected event is not active today.");
+                if (eventManagement == null)
+                {
+                    _logger.LogError("{ClassName}, {MethodName}, Event data is null.", CLASSNAME, methodName);
+                    throw new ApplicationException("Invalid event data.");
+                }
+
+                var allowedStartDate = eventManagement.EventStartDateUtc.AddDays(-2).Date;
+                var allowedEndDate = eventManagement.EventEndDateUtc.Date;
+
+                var nowUtc = DateTime.UtcNow.Date;
+
+                if (nowUtc < allowedStartDate || nowUtc > allowedEndDate)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Event not active. EventID: {EventID}, TodayUTC: {TodayUTC}, AllowedStart: {AllowedStart}, EventEnd: {EventEnd}",
+                        CLASSNAME, methodName, eventManagement.EventID, nowUtc, allowedStartDate, allowedEndDate);
+
+                    throw new ApplicationException("The selected event is not active today.");
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Event date validated successfully. EventID: {EventID}, TodayUTC: {TodayUTC}",
+                    CLASSNAME, methodName, eventManagement.EventID, nowUtc);
+            }
+            catch (ApplicationException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception during event date validation. EventID: {EventID}",
+                    CLASSNAME, methodName, eventManagement?.EventID);
+                throw new ApplicationException("An unexpected error occurred during event date validation.");
             }
         }
 
