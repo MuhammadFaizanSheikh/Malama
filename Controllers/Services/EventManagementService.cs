@@ -234,7 +234,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
-                responseDto = ConvertEventTimesToUtc(existing, loggedinUserName);
+                responseDto = ConvertEventTimesToUtc(updatedModel, loggedinUserName);
 
                 if (!responseDto.Success)
                 {
@@ -463,6 +463,8 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
+                string eventStatus = string.Empty;
+
                 var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
@@ -486,6 +488,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         throw new Exception($"EventManagement with ID {id} not found.");
                     }
 
+                    eventStatus = GetEventStatus(firstEventManagement);//this method will be called before ConvertEventToLocalTime because date is being used before from TUC to localtime convertion
                     ConvertEventToLocalTime(firstEventManagement);
 
                     var contractDetails = await _unitOfWork.ContractDetails.GetByIdAsync(firstEventManagement.ContractId);
@@ -590,7 +593,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     // Combine data into DTO
                     var combinedDto = new CombinedEventManagementAndContractDetails
                     {
-                        EventRuntimeStatus = GetEventStatus(firstEventManagement),
+                        EventRuntimeStatus = eventStatus,
                         EventManagement = firstEventManagement,
                         ContractDetails = contractDetails,
                         EventStaffForHIVDropOff = eventStaff,
@@ -1101,18 +1104,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 // TimeZone for event
-                TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(eventManagement.Timezone);
+                //TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(eventManagement.Timezone);
 
-                // Current time in event's timezone
-                DateTime currentEventTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+                //// Current time in event's timezone
+                //DateTime currentEventTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
 
-                // Event start and end in event's timezone
-                DateTime eventStartLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventStartDateUtc, tz);
-                DateTime eventEndLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventEndDateUtc, tz);
+                DateTime currentEventTime = DateTime.UtcNow;
+                //// Event start and end in event's timezone
+                //DateTime eventStartLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventStartDateUtc, tz);
+                //DateTime eventEndLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventEndDateUtc, tz);
 
-                if (currentEventTime < eventStartLocal)
+                if (currentEventTime < eventManagement.EventStartDateUtc)
                     return "Event Not Started";
-                else if (currentEventTime >= eventStartLocal && currentEventTime < eventEndLocal)
+                else if (currentEventTime >= eventManagement.EventStartDateUtc && currentEventTime < eventManagement.EventEndDateUtc)
                     return "Event In Progress";
                 else
                     return "Event Completed";
