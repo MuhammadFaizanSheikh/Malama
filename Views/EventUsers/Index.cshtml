@@ -39,6 +39,45 @@
             <!-- Show table only if event selected -->
             @if (Model.SelectedEventId.HasValue)
             {
+                
+<div class="card p-3 mb-4">
+    <h5 class="text-center">Search Event Users</h5>
+
+    <div class="container">
+        <div class="row g-2">
+
+            <div class="col-md-3">
+                <input type="text" id="filterEmail" class="form-control" placeholder="Email">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" id="filterPrimaryRole" class="form-control" placeholder="Primary Role">
+            </div>
+
+             <div class="col-md-3">
+                <input type="text" id="filterPrimaryStation" class="form-control" placeholder="Primary Station">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" id="filterSecondaryRole" class="form-control" placeholder="Secondary Role">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" id="filterSecondaryStation" class="form-control" placeholder="Secondary Station">
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" id="filterAttribute" class="form-control" placeholder="Attribute">
+            </div>
+
+            <div class="col-12 text-center mt-2">
+                <button id="searchEventUsersBtn" type="button" class="btn btn-primary px-4">Search</button>
+                <button id="resetEventUsersFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
+            </div>
+
+        </div>
+    </div>
+</div>
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
                         <tr>
@@ -59,8 +98,8 @@
                             foreach (var user in Model.Users)
                             {
                                 <tr>
-                                    <td>@user.Email</td>
-                                    <td style="width:180px;">
+                                    <td class="email-cell">@user.Email</td>
+                                    <td class="primaryrole-cell">
                                         <div style="display:flex; flex-wrap:wrap;">
                                             @foreach (var r in user.PrimaryRole.Split(','))
                                             {
@@ -73,9 +112,9 @@
                                             }
                                         </div>
                                     </td>
-                                    <td>@user.PrimaryStation</td>
+                                    <td class="primarystation-cell">@user.PrimaryStation</td>
 
-                                    <td style="width:180px;">
+                                    <td class="secondaryrole-cell">
                                         <div style="display:flex; flex-wrap:wrap;">
                                             @foreach (var r in user.SecondaryRole.Split(','))
                                             {
@@ -89,8 +128,8 @@
                                         </div>
                                     </td>
 
-                                    <td>@user.SecondaryStation</td>
-                                    <td style="width:180px;">
+                                    <td class="secondarystation-cell">@user.SecondaryStation</td>
+                                    <td class="attribute-cell">
                                         <div style="display:flex; flex-wrap:wrap;">
                                             @foreach (var a in user.Attributes?.Split(',') ?? new string[] { })
                                             {
@@ -213,3 +252,57 @@ white-space:nowrap;">
         </div>
     </div>
 </div>
+<script>
+
+document.getElementById("searchEventUsersBtn")?.addEventListener("click", function () {
+
+    let email = document.getElementById("filterEmail").value.toLowerCase();
+    let primaryRole = document.getElementById("filterPrimaryRole").value.toLowerCase();
+    let secondaryRole = document.getElementById("filterSecondaryRole").value.toLowerCase();
+    let primaryStation = document.getElementById("filterPrimaryStation").value.toLowerCase();
+    let secondaryStation = document.getElementById("filterSecondaryStation").value.toLowerCase();
+    let attribute = document.getElementById("filterAttribute").value.toLowerCase();
+
+    let rows = document.querySelectorAll("table tbody tr");
+
+    rows.forEach(row => {
+
+        let emailText = row.querySelector(".email-cell")?.innerText.toLowerCase() || "";
+        let primaryRoleText = row.querySelector(".primaryrole-cell")?.innerText.toLowerCase() || "";
+        let secondaryRoleText = row.querySelector(".secondaryrole-cell")?.innerText.toLowerCase() || "";
+        let primaryStationText = row.querySelector(".primarystation-cell")?.innerText.toLowerCase() || "";
+        let secondaryStationText = row.querySelector(".secondarystation-cell")?.innerText.toLowerCase() || "";
+        let attributeText = row.querySelector(".attribute-cell")?.innerText.toLowerCase() || "";
+
+        let match =
+            (email === "" || emailText.includes(email)) &&
+            (primaryRole === "" || primaryRoleText.includes(primaryRole)) &&
+            (secondaryRole === "" || secondaryRoleText.includes(secondaryRole)) &&
+            (primaryStation === "" || primaryStationText.includes(primaryStation)) &&
+            (secondaryStation === "" || secondaryStationText.includes(secondaryStation)) &&
+            (attribute === "" || attributeText.includes(attribute));
+
+        row.style.display = match ? "" : "none";
+
+    });
+
+});
+
+document.getElementById("resetEventUsersFiltersBtn")?.addEventListener("click", function () {
+
+    document.getElementById("filterEmail").value = "";
+    document.getElementById("filterPrimaryRole").value = "";
+    document.getElementById("filterSecondaryRole").value = "";
+    document.getElementById("filterPrimaryStation").value = "";
+    document.getElementById("filterSecondaryStation").value = "";
+    document.getElementById("filterAttribute").value = "";
+
+    let rows = document.querySelectorAll("table tbody tr");
+
+    rows.forEach(row => {
+        row.style.display = "";
+    });
+
+});
+
+</script>

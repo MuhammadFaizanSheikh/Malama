@@ -88,9 +88,9 @@ namespace Malama.Controllers.Services
                                     var eventIdsLong = eventIds.Select(id => (long)id).ToList();
 
                                     dto.Events = _unitOfWork.EventManagement
-                                        .FindForSearching(e => eventIdsLong.Contains(e.Id))
-                                        .Select(e => e.EventID)
-                                        .ToList();
+                                    .FindForSearching(e => eventIdsLong.Contains(e.Id))
+                                    .Select(e => e.EventID + " (V" + e.EventVersion + ")")
+                                    .ToList();
                                 }
                             }
                             catch (Exception exEvents)

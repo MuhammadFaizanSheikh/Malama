@@ -7,10 +7,40 @@
 }
 
 <div class="container-fluid">
+
+    
+</div>
+
     <div class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Dawson Users</h5>
         </div>
+
+        <div class="card p-3 mb-4">
+    <h5 class="text-center">Search Dawson Users</h5>
+
+    <div class="container">
+        <div class="row g-2">
+
+            <div class="col-md-4">
+                <input type="text" id="filterEmail" class="form-control" placeholder="Email">
+            </div>
+
+            <div class="col-md-4">
+                <input type="text" id="filterRole" class="form-control" placeholder="Role">
+            </div>
+
+            <div class="col-md-4">
+                <input type="text" id="filterEvent" class="form-control" placeholder="Event">
+            </div>
+
+            <div class="col-12 text-center mt-2">
+                <button id="searchUsersBtn" type="button" class="btn btn-primary px-4">Search</button>
+                <button id="resetUsersFiltersBtn" type="button" class="btn btn-secondary px-4 ms-2">Reset Filters</button>
+            </div>
+
+        </div>
+    </div>
 
         <div class="card-body">
             <table class="table table-bordered table-hover align-middle" style="width:100%; table-layout:fixed;">
@@ -32,10 +62,10 @@
                         {
                             <tr>
                                 <!-- Email -->
-                                <td >@user.Email</td>
+                                <td class="email-cell">@user.Email</td>
 
                                 <!-- Roles -->
-                                <td style="width:180px;">
+                                <td class="role-cell" style="width:180px;">
                                     <div style="display:flex; flex-wrap:wrap;">
                                         @foreach (var r in user.Role.Split(','))
                                         {
@@ -96,7 +126,7 @@
 
 
                                 <!-- Events -->
-                                <td>
+                                <td class="event-cell">
                                     @if (user.Events != null && user.Events.Any())
                                     {
                                         <div style="display:flex; flex-wrap:wrap;">
@@ -195,3 +225,45 @@ white-space:nowrap;">
         </div>
     </div>
 </div>
+<script>
+
+    document.getElementById("searchUsersBtn").addEventListener("click", function () {
+
+        let emailFilter = document.getElementById("filterEmail").value.toLowerCase();
+        let roleFilter = document.getElementById("filterRole").value.toLowerCase();
+        let eventFilter = document.getElementById("filterEvent").value.toLowerCase();
+
+        let rows = document.querySelectorAll("table tbody tr");
+
+        rows.forEach(row => {
+
+            let email = row.querySelector(".email-cell")?.innerText.toLowerCase() || "";
+            let role = row.querySelector(".role-cell")?.innerText.toLowerCase() || "";
+            let event = row.querySelector(".event-cell")?.innerText.toLowerCase() || "";
+
+            let match =
+                (emailFilter === "" || email.includes(emailFilter)) &&
+                (roleFilter === "" || role.includes(roleFilter)) &&
+                (eventFilter === "" || event.includes(eventFilter));
+
+            row.style.display = match ? "" : "none";
+
+        });
+
+    });
+
+    document.getElementById("resetUsersFiltersBtn").addEventListener("click", function () {
+
+        document.getElementById("filterEmail").value = "";
+        document.getElementById("filterRole").value = "";
+        document.getElementById("filterEvent").value = "";
+
+        let rows = document.querySelectorAll("table tbody tr");
+
+        rows.forEach(row => {
+            row.style.display = "";
+        });
+
+    });
+
+</script>
