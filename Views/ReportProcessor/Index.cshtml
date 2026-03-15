@@ -440,7 +440,7 @@
             
                 document.getElementById('loader').classList.remove('d-none');
             
-                fetch('@Url.Action("UploadAndPreview", "Home")', {
+                fetch('@Url.Action("UploadAndPreview", "ReportProcessor")', {
                     method: 'POST',
                     body: formData
                 })

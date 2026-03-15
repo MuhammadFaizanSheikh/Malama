@@ -1,26 +1,12 @@
 ﻿using AutoMapper;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Repositories.Interfaces;
-using ExcelFilesCompiler.Repositories.Services;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
-using MathNet.Numerics.LinearAlgebra.Factorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using Org.BouncyCastle.Utilities.Encoders;
-using SixLabors.ImageSharp.ColorSpaces;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text.RegularExpressions;
-using static Microsoft.IO.RecyclableMemoryStreamManager;
-using static NPOI.POIFS.Crypt.CryptoFunctions;
 using Microsoft.EntityFrameworkCore;
 using ExcelFilesCompiler.Utilities;
 

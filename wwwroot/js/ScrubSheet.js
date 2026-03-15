@@ -2691,7 +2691,7 @@ function submitData() {
 
 
     $.ajax({
-        url: '/Home/CheckForExistingDataAgainstEventId',
+        url: '/ReportProcessor/CheckForExistingDataAgainstEventId',
         type: 'POST',
         data: JSON.stringify(eventId),
         contentType: 'application/json; charset=utf-8',
@@ -2733,7 +2733,7 @@ function submitDataToDatabase(tableRows, eventId) {
     });
     console.log(dataToSend);
     $.ajax({
-        url: '/Home/SubmitDataInDatabase',
+        url: '/ReportProcessor/SubmitDataInDatabase',
         type: 'POST',
         data: dataToSend,
         contentType: 'application/json; charset=utf-8',

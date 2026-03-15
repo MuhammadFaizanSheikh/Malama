@@ -21,13 +21,13 @@ using System.Text.RegularExpressions;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    public class HomeController : Controller
+    public class ReportProcessorController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<ReportProcessorController> _logger;
         private readonly IFileUploader fileUploader;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEventManagementService _eventManagementService;
-        public HomeController(ILogger<HomeController> logger, IEventManagementService eventManagementService, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
+        public ReportProcessorController(ILogger<ReportProcessorController> logger, IEventManagementService eventManagementService, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _userManager = userManager;
