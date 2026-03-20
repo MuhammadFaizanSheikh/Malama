@@ -4,7 +4,7 @@ namespace ExcelFilesCompiler.Interfaces
 {
     public interface IPdfGeneratorService
     {
-        Task<byte[]> GenerateEventSummaryPdfAsync(FileDataDto dto);
-        Task<byte[]> GenerateHivSignInSheetPdfAsync(List<FileDataDto> dtos, EventManagement eventInfo, ContractDetails contractDetail);
+        Task<byte[]> GenerateEventSummaryPdfAsync(ServiceMembersChild dto);
+        Task<byte[]> GenerateHivSignInSheetPdfAsync(List<ServiceMembersChild> dtos, EventManagement eventInfo, ContractDetails contractDetail);
     }
 }

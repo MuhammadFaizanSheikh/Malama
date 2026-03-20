@@ -116,11 +116,11 @@
     </script>
 }
 
-<form id="SaveLabStation" asp-action="SaveLabStation" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
+<form id="SaveLabStation" asp-action="SaveLabStation" asp-route-eventIdForRedirection="@Model.ServiceMembersChild.ServiceMembersParent.EventManagement.EventID" method="post">
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.Id)
-    @Html.HiddenFor(m => m.FileDataId)
+    @Html.HiddenFor(m => m.ServiceMembersChildId)
     <!-- Link to parent contract -->
     @* <input type="hidden" asp-for="FileDataId" /> *@
 
@@ -129,25 +129,25 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Full Name:</span> @Model.FileData?.FullName</p>
+                    <p><span class="fw-bold">Full Name:</span> @Model.ServiceMembersChild?.FullName</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOD ID:</span> @Model.FileData?.DodId</p>
+                    <p><span class="fw-bold">DOD ID:</span> @Model.ServiceMembersChild?.DodId</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.FileData?.Barcode</p>
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.ServiceMembersChild?.Barcode</p>
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOB:</span> @Model.FileData?.Dob</p>
+                    <p><span class="fw-bold">DOB:</span> @Model.ServiceMembersChild?.Dob</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Age:</span> @Model.FileData?.Age</p>
+                    <p><span class="fw-bold">Age:</span> @Model.ServiceMembersChild?.Age</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Sex:</span> @Model.FileData?.Sex</p>
+                    <p><span class="fw-bold">Sex:</span> @Model.ServiceMembersChild?.Sex</p>
                 </div>
             </div>
         </div>
@@ -206,7 +206,7 @@
     <h3 class="mb-4">Required Lab(s) :</h3>
     <div id="lab-section">
 
-        @if (string.Equals(Model.FileData.G6pd?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.G6pd?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Hepatitis B -->
             <div class="card-body">
@@ -248,7 +248,7 @@
             <hr class="my-4" />
         }
 
-        @if (string.Equals(Model.FileData.AboNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.AboNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <div class="card-body">
 
@@ -317,7 +317,7 @@
             <hr class="my-4" />
         }
 
-        @if (string.Equals(Model.FileData.LipidNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.LipidNeeded?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <div class="card-body">
 
@@ -601,7 +601,7 @@
             <hr class="my-4" />
         }
 
-        @if (string.Equals(Model.FileData.Hiv?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.Hiv?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <div class="card-body">
 
@@ -653,7 +653,7 @@
             <hr class="my-4" />
         }
 
-        @if (string.Equals(Model.FileData.Sex?.Trim(), "F", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.Sex?.Trim(), "F", StringComparison.OrdinalIgnoreCase))
         {
             <div class="card-body">
 

@@ -105,7 +105,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<List<EventManagementPreview>> GetAllEventID()
+        public async Task<List<EventManagementPreview>> GetAllEventID(bool includeVersion = true)
         {
             const string methodName = "GetAllEventID";
 
@@ -121,7 +121,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .Select(e => new EventManagementPreview
                     {
                         Id = e.Id,
-                        EventID = $"{e.EventID} (V{e.EventVersion})"
+                        EventID = includeVersion
+                            ? $"{e.EventID} (V{e.EventVersion})"
+                            : e.EventID
                     })
                     .ToListAsync();
 
@@ -940,8 +942,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto { Success = false, Message = endError };
                 }
 
-                eventManagement.EventStartDateUtc = DateTime.SpecifyKind(startUtc, DateTimeKind.Unspecified);
-                eventManagement.EventEndDateUtc = DateTime.SpecifyKind(endUtc, DateTimeKind.Unspecified);
+                eventManagement.EventStartDateUtc = Helper.NormalizeDateTime(startUtc);
+                eventManagement.EventEndDateUtc = Helper.NormalizeDateTime(endUtc);
 
                 // --- Convert per-day EventStartTime / EventEndTime ---
                 foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
@@ -1124,6 +1126,152 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch
             {
                 return "Initialized"; // default if something goes wrong
+            }
+        }
+
+        public async Task<bool> HasServiceMembersAsync(string eventId)
+        {
+            return await _unitOfWork.ServiceMembersParent
+                .FindForSearching(x => x.EventManagement.EventID == eventId &&
+                                       !x.isDeleted.GetValueOrDefault())
+                .AnyAsync();
+        }
+
+        public async Task<List<FileDataDto>> GetServiceMembersByEventAsync(string eventId, int eventVersion)
+        {
+            string methodName = nameof(GetServiceMembersByEventAsync);
+
+            try
+            {
+                _logger.LogInformation("{ClassName}, {MethodName}, Fetching data for EventId: {EventId}, Version: {Version}",
+                    CLASSNAME, methodName, eventId, eventVersion);
+
+                var query = _unitOfWork.EventManagement
+                    .GetWithInclude(em => em.EventID == eventId && em.EventVersion == eventVersion);
+
+                var data = await query
+                    .Where(em => em.ServiceMembersParent != null && !(em.ServiceMembersParent.isDeleted ?? false))
+                    .SelectMany(em => em.ServiceMembersParent.ServiceMembersChildren.Select(c => new FileDataDto
+                    {
+                        Id = c.Id,
+
+                        // Parent
+                        VisionWin = em.ServiceMembersParent.VisionWin,
+                        DentalWin = em.ServiceMembersParent.DentalWin,
+                        PhaWin = em.ServiceMembersParent.PhaWin,
+                        HivWin = em.ServiceMembersParent.HivWin,
+                        HearingWin = em.ServiceMembersParent.HearingWin,
+                        isDeleted = em.ServiceMembersParent.isDeleted,
+
+                        // Event
+                        EventId = em.EventID,
+
+                        // Child
+                        SmId = c.SmId,
+                        FullName = c.FullName,
+                        FullSsn = c.FullSsn,
+                        Last4 = c.Last4,
+                        DodId = c.DodId,
+                        Rank = c.Rank,
+                        Age = c.Age,
+                        Sex = c.Sex,
+                        Mos = c.Mos,
+                        Agr = c.Agr,
+                        Uic = c.Uic,
+                        Mrc = c.Mrc,
+                        Dob = c.Dob,
+                        Over40 = c.Over40,
+
+                        DentalDue = c.DentalDue,
+                        DentalExam = c.DentalExam,
+                        DentalNeeded = c.DentalNeeded,
+                        PanoNeeded = c.PanoNeeded,
+                        BwxNeeded = c.BwxNeeded,
+                        Drc = c.Drc,
+
+                        PhaDate = c.PhaDate,
+                        PhaDue = c.PhaDue,
+                        Pha = c.Pha,
+                        Pulhes = c.Pulhes,
+
+                        VisionDate = c.VisionDate,
+                        Vision = c.Vision,
+                        NearVision = c.NearVision,
+                        Vrc = c.Vrc,
+                        Vision2pg = c.Vision2pg,
+                        Vision1mi = c.Vision1mi,
+
+                        HearingDate = c.HearingDate,
+                        Hearing = c.Hearing,
+                        Hrc = c.Hrc,
+                        HearingProfile = c.HearingProfile,
+
+                        Quest = c.Quest,
+                        LabNeeded = c.LabNeeded,
+
+                        Abo = c.Abo,
+                        AboNeeded = c.AboNeeded,
+                        Dna = c.Dna,
+
+                        SickleDate = c.SickleDate,
+                        Sickle = c.Sickle,
+                        G6pd = c.G6pd,
+                        G6pdDate = c.G6pdDate,
+                        G6pdStatus = c.G6pdStatus,
+
+                        HivNextTestDate = c.HivNextTestDate,
+                        Hiv = c.Hiv,
+
+                        LipidNeeded = c.LipidNeeded,
+                        LipidPanel = c.LipidPanel,
+                        CholesterolHdlCholesterol = c.CholesterolHdlCholesterol,
+                        Framingham = c.Framingham,
+
+                        Ekg = c.Ekg,
+                        EkgNeeded = c.EkgNeeded,
+                        PregnancyTestNeeded = c.PregnancyTestNeeded,
+
+                        Imm = c.Imm,
+                        HepB = c.HepB,
+                        HepA = c.HepA,
+                        Flu = c.Flu,
+                        TetTdp = c.TetTdp,
+                        Mmr = c.Mmr,
+                        Varicella = c.Varicella,
+
+                        TaskForce = c.TaskForce,
+                        Notes = c.Notes,
+                        Over44 = c.Over44,
+
+                        EventDate = c.EventDate,
+                        EventEndDate = c.EventEndDate,
+
+                        CheckIn = c.CheckIn,
+                        CheckInBy = c.CheckInBy,
+                        CheckInTime = c.CheckInTime,
+                        CheckOut = c.CheckOut,
+                        CheckOutBy = c.CheckOutBy,
+                        CheckOutTime = c.CheckOutTime,
+
+                        WalkInServiceMember = c.WalkInServiceMember,
+                        Barcode = c.Barcode,
+
+                        // Navigation properties
+                        ImmunizationRecord = c.ImmunizationRecord,
+                        LabStationRecord = c.LabStationRecord
+                    }))
+                    .ToListAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Fetched {Count} records for EventId: {EventId}",
+                    CLASSNAME, methodName, data.Count, eventId);
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error fetching data for EventId: {EventId}",
+                    CLASSNAME, methodName, eventId);
+                throw;
             }
         }
     }

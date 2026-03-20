@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.Record;
+using System.Reflection;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -44,9 +45,46 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<LabStation> GetByIdWithParentAsync(long id)
+        //public async Task<LabStation> GetByIdWithParentAsync(long id)
+        //{
+        //    return await _unitOfWork.LabStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
+        //}
+
+        public async Task<(LabStation LabStation, string EventId)> GetLabStationByIdWithEventIdAsync(long labStationId)
         {
-            return await _unitOfWork.LabStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
+            const string methodName = "GetLabStationByIdWithEventIdAsync";
+
+            try
+            {
+                _logger.LogDebug("{ClassName}, {MethodName}, Fetching LabStation with Id: {Id}", labStationId);
+
+                // Start from ServiceMembersChild but only project what we need
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithInclude(
+                        c => c.LabStationRecord != null && c.LabStationRecord.Id == labStationId, // Defensive null check
+                        c => c.LabStationRecord,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .Select(c => new
+                    {
+                        LabStationRecord = c.LabStationRecord,
+                        EventId = c.ServiceMembersParent.EventManagement.EventID
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (result == null || result.LabStationRecord == null)
+                {
+                    _logger.LogInformation("No LabStationRecord found with Id: {Id}", labStationId);
+                    return (null, null);
+                }
+
+                return (result.LabStationRecord, result.EventId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching LabStationRecord with Id: {Id}", labStationId);
+                throw; // Let controller handle displaying generic error
+            }
         }
 
         public async Task AddAsync(LabStation model, string userName)
@@ -63,7 +101,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task UpdateAsync(LabStation model, string userName)
         {
             var existing = await _unitOfWork.LabStation
-                .GetWithInclude(x => x.Id == model.Id, x => x.FileData)
+                .GetWithInclude(x => x.Id == model.Id)
                 .FirstOrDefaultAsync();
 
             if (existing == null)
@@ -324,11 +362,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 // 🔹 Fetch HIV lab data
-                var fileDataDtos = _fileUploader
-                    .GetEventDataByEventIdForLabHivReport(eventId)?
-                    .ToList();
+                var serviceMembersChild = await _fileUploader
+                    .GetEventDataByEventIdForLabHivReport(eventId);
 
-                if (fileDataDtos == null || !fileDataDtos.Any())
+                if (serviceMembersChild == null || !serviceMembersChild.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, No HIV lab records found for EventId={EventId}",
                         CLASSNAME, methodName, eventId);
@@ -361,7 +398,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 // 🔹 Generate PDF
                 var pdfBytes = await _pdfGenerator
-                    .GenerateHivSignInSheetPdfAsync(fileDataDtos, eventDto, contractDetail.Data as ContractDetails);
+                    .GenerateHivSignInSheetPdfAsync(serviceMembersChild, eventDto, contractDetail.Data as ContractDetails);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, PDF generation completed for EventId={EventId}",
                     CLASSNAME, methodName, eventId);

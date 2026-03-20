@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260215183239_Test10")]
-    partial class Test10
+    [Migration("20260319160906_Test1")]
+    partial class Test1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -82,6 +82,9 @@ namespace Malama.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsEventUser")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSuperAdmin")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")
@@ -577,7 +580,7 @@ namespace Malama.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("EventEndDate")
+                    b.Property<DateTime>("EventEndDateUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("EventHelpLine")
@@ -589,7 +592,7 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("EventStartDate")
+                    b.Property<DateTime>("EventStartDateUtc")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("EventState")
@@ -601,6 +604,9 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<int>("EventVersion")
+                        .HasColumnType("integer");
 
                     b.Property<string>("EventZipCode")
                         .IsRequired()
@@ -757,6 +763,10 @@ namespace Malama.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("ReasonOfCancel")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<string>("RegardingSites")
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
@@ -899,6 +909,10 @@ namespace Malama.Migrations
                     b.Property<string>("SubEventID")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Timezone")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("TotalRequestedServiceMembers")
                         .HasColumnType("integer");
@@ -1315,273 +1329,6 @@ namespace Malama.Migrations
                     b.ToTable("EventWiseStaffSecondaryRole");
                 });
 
-            modelBuilder.Entity("Malama.Models.FileDataDto", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Abo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AboNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Agr")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Barcode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BwxNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CheckIn")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CheckInBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CheckInTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("CheckOut")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CheckOutBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CheckOutTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("CholesterolHdlCholesterol")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DentalDue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DentalExam")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DentalNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("DentalWin")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Dna")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Dob")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DodId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Drc")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Ekg")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EkgNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EventDate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EventEndDate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EventId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Flu")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Framingham")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FullSsn")
-                        .HasColumnType("text");
-
-                    b.Property<string>("G6pd")
-                        .HasColumnType("text");
-
-                    b.Property<string>("G6pdDate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("G6pdStatus")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Hearing")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HearingDate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HearingProfile")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("HearingWin")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("HepA")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HepB")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Hiv")
-                        .HasColumnType("text");
-
-                    b.Property<string>("HivNextTestDate")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("HivWin")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Hrc")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Imm")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LabNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Last4")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LipidNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LipidPanel")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Mmr")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Mos")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Mrc")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NearVision")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Over40")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Over44")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PanoNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Pha")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhaDate")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhaDue")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("PhaWin")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PregnancyTestNeeded")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Pulhes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Quest")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Rank")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Sex")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Sickle")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SickleDate")
-                        .HasColumnType("text");
-
-                    b.Property<long?>("SmId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TaskForce")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TetTdp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Uic")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Varicella")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vision")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vision1mi")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vision2pg")
-                        .HasColumnType("text");
-
-                    b.Property<string>("VisionDate")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("VisionWin")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Vrc")
-                        .HasColumnType("text");
-
-                    b.Property<string>("WalkInServiceMember")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("isDeleted")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId", "isDeleted");
-
-                    b.ToTable("FileData");
-                });
-
             modelBuilder.Entity("Malama.Models.ImmunizationStation", b =>
                 {
                     b.Property<long>("Id")
@@ -1601,9 +1348,6 @@ namespace Malama.Migrations
 
                     b.Property<string>("CancerOrImmuneSystemReason")
                         .HasColumnType("text");
-
-                    b.Property<long>("FileDataId")
-                        .HasColumnType("bigint");
 
                     b.Property<string>("FluBodyPart")
                         .HasColumnType("text");
@@ -1809,6 +1553,9 @@ namespace Malama.Migrations
                     b.Property<string>("SeriousReactionReason")
                         .HasColumnType("text");
 
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1897,9 +1644,6 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileDataId")
-                        .IsUnique();
-
                     b.HasIndex("FluVaccineInfoId");
 
                     b.HasIndex("FluVaccineLotEntryId");
@@ -1915,6 +1659,9 @@ namespace Malama.Migrations
                     b.HasIndex("MMRVaccineInfoId");
 
                     b.HasIndex("MMRVaccineLotEntryId");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
 
                     b.HasIndex("TetTdpVaccineInfoId");
 
@@ -2072,9 +1819,6 @@ namespace Malama.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("FileDataId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime?>("G6pdGivenDateTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -2147,6 +1891,9 @@ namespace Malama.Migrations
                     b.Property<string>("PregnancyTestResult")
                         .HasColumnType("text");
 
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -2180,10 +1927,295 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileDataId")
+                    b.HasIndex("ServiceMembersChildId")
                         .IsUnique();
 
                     b.ToTable("LabStation");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceMembersChild", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Abo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AboNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Age")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Agr")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Barcode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BwxNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CheckIn")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CheckInBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CheckOut")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CheckOutBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CholesterolHdlCholesterol")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DentalDue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DentalExam")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DentalNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Dna")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Dob")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DodId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Drc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Ekg")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EkgNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventEndDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Flu")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Framingham")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullSsn")
+                        .HasColumnType("text");
+
+                    b.Property<string>("G6pd")
+                        .HasColumnType("text");
+
+                    b.Property<string>("G6pdDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("G6pdStatus")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hearing")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HearingDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HearingProfile")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepA")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HepB")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hiv")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HivNextTestDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Imm")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LabNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Last4")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LipidNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LipidPanel")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mmr")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mos")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NearVision")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Over40")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Over44")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PanoNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Pha")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhaDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhaDue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PregnancyTestNeeded")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Pulhes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Quest")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Rank")
+                        .HasColumnType("text");
+
+                    b.Property<long>("ServiceMembersParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Sex")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Sickle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SickleDate")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("SmId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TaskForce")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TetTdp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Uic")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Varicella")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vision")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vision1mi")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vision2pg")
+                        .HasColumnType("text");
+
+                    b.Property<string>("VisionDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("WalkInServiceMember")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersParentId");
+
+                    b.ToTable("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceMembersParent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("DentalWin")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("EventManagementId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("HearingWin")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HivWin")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PhaWin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("VisionWin")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("isDeleted")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventManagementId");
+
+                    b.ToTable("ServiceMembersParent");
                 });
 
             modelBuilder.Entity("Malama.Models.ServiceTypeProvided", b =>
@@ -2499,6 +2531,29 @@ namespace Malama.Migrations
                     b.ToTable("SubContractor");
                 });
 
+            modelBuilder.Entity("Malama.Models.SubmissionTokenRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("SubmissionTokenRecord");
+                });
+
             modelBuilder.Entity("Malama.Models.TravelHonor", b =>
                 {
                     b.Property<long>("Id")
@@ -2773,12 +2828,6 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.ImmunizationStation", b =>
                 {
-                    b.HasOne("Malama.Models.FileDataDto", "FileData")
-                        .WithOne("ImmunizationRecord")
-                        .HasForeignKey("Malama.Models.ImmunizationStation", "FileDataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Malama.Models.ImmunizationVaccineInfo", "FluVaccineInfo")
                         .WithMany()
                         .HasForeignKey("FluVaccineInfoId")
@@ -2819,6 +2868,12 @@ namespace Malama.Migrations
                         .HasForeignKey("MMRVaccineLotEntryId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("ImmunizationRecord")
+                        .HasForeignKey("Malama.Models.ImmunizationStation", "ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Malama.Models.ImmunizationVaccineInfo", "TetTdpVaccineInfo")
                         .WithMany()
                         .HasForeignKey("TetTdpVaccineInfoId")
@@ -2839,8 +2894,6 @@ namespace Malama.Migrations
                         .HasForeignKey("VaricellaVaccineLotEntryId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("FileData");
-
                     b.Navigation("FluVaccineInfo");
 
                     b.Navigation("FluVaccineLot");
@@ -2856,6 +2909,8 @@ namespace Malama.Migrations
                     b.Navigation("MMRVaccineInfo");
 
                     b.Navigation("MMRVaccineLot");
+
+                    b.Navigation("ServiceMembersChild");
 
                     b.Navigation("TetTdpVaccineInfo");
 
@@ -2887,13 +2942,35 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.LabStation", b =>
                 {
-                    b.HasOne("Malama.Models.FileDataDto", "FileData")
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
                         .WithOne("LabStationRecord")
-                        .HasForeignKey("Malama.Models.LabStation", "FileDataId")
+                        .HasForeignKey("Malama.Models.LabStation", "ServiceMembersChildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("FileData");
+                    b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceMembersChild", b =>
+                {
+                    b.HasOne("Malama.Models.ServiceMembersParent", "ServiceMembersParent")
+                        .WithMany("ServiceMembersChildren")
+                        .HasForeignKey("ServiceMembersParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceMembersParent");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceMembersParent", b =>
+                {
+                    b.HasOne("Malama.Models.EventManagement", "EventManagement")
+                        .WithMany("ServiceMembersParent")
+                        .HasForeignKey("EventManagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventManagement");
                 });
 
             modelBuilder.Entity("Malama.Models.ServiceTypeProvided", b =>
@@ -3026,6 +3103,8 @@ namespace Malama.Migrations
                     b.Navigation("EventStaffDetailList");
 
                     b.Navigation("EventStartEndTimeDayWiseList");
+
+                    b.Navigation("ServiceMembersParent");
                 });
 
             modelBuilder.Entity("Malama.Models.EventStaff", b =>
@@ -3048,7 +3127,12 @@ namespace Malama.Migrations
                     b.Navigation("EventWiseStaffSecondaryRoleList");
                 });
 
-            modelBuilder.Entity("Malama.Models.FileDataDto", b =>
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineInfo", b =>
+                {
+                    b.Navigation("Lots");
+                });
+
+            modelBuilder.Entity("Malama.Models.ServiceMembersChild", b =>
                 {
                     b.Navigation("ImmunizationRecord")
                         .IsRequired();
@@ -3057,9 +3141,9 @@ namespace Malama.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Malama.Models.ImmunizationVaccineInfo", b =>
+            modelBuilder.Entity("Malama.Models.ServiceMembersParent", b =>
                 {
-                    b.Navigation("Lots");
+                    b.Navigation("ServiceMembersChildren");
                 });
 
             modelBuilder.Entity("Malama.Models.StaffQualification", b =>

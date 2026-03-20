@@ -62,9 +62,7 @@ namespace ExcelFilesCompiler.Controllers
                     );
                 }
 
-                var data = _fileUploader
-                    .GetEventDataByEventIdForLab(eventId)
-                    .ToList();
+                var data = await _fileUploader.GetLabStationByEventIdAsync(eventId);
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}",
@@ -74,9 +72,9 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x.LabStationRecord == null || x.LabStationRecord?.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.LabStationRecord?.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.LabStationRecord?.Status == "Not given")
+                    ["Pending"] = data.Count(x => x == null || x.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.Status == "Completed"),
+                    ["NotGiven"] = data.Count(x => x.Status == "Not given")
                 };
 
                 _logger.LogInformation(
@@ -118,7 +116,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [RoleAttributeAuthorizeFromConfig("LabStation_View")]
-        public async Task<IActionResult> LabStation(long labStationId, long fileDataId)
+        public async Task<IActionResult> LabStation(long labStationId, long serviceMembersChildId)
         {
             const string methodName = "LabStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
@@ -126,6 +124,7 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 LabStation model;
+                string eventId = string.Empty;
 
                 if (labStationId > 0)
                 {
@@ -135,26 +134,29 @@ namespace ExcelFilesCompiler.Controllers
                     );
 
                     // Edit mode → get child record including parent
-                    model = await _labStationService.GetByIdWithParentAsync(labStationId);
+                    var result = await _labStationService.GetLabStationByIdWithEventIdAsync(labStationId);
+                    model = result.LabStation;
                 }
                 else
                 {
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Add mode. FileDataId={FileDataId}",
-                        CLASSNAME, methodName, fileDataId
+                        "{ClassName}, {MethodName}, Add mode. ServiceMembersChildId={serviceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId
                     );
 
                     // Add mode → create empty child but attach parent
-                    var parent = await _fileUploader.GetByIdAsync(fileDataId);
+                    var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
 
                     model = new LabStation
                     {
-                        FileDataId = fileDataId,
-                        FileData = parent
+
+                        ServiceMembersChildId = serviceMembersChildId,
+                        ServiceMembersChild = result.ServiceMembersChild
                     };
+
+                    eventId = result.EventId;
                 }
 
-                string eventId = model.FileData?.EventId;
                 ViewBag.EventId = eventId;
 
                 _logger.LogInformation(

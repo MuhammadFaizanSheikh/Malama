@@ -99,7 +99,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    }
         //}
 
-        public async Task<byte[]> GenerateEventSummaryPdfAsync(FileDataDto dto)
+        public async Task<byte[]> GenerateEventSummaryPdfAsync(ServiceMembersChild dto)
         {
             try
             {
@@ -191,7 +191,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (!string.IsNullOrEmpty(dto.EventEndDate) && DateTime.TryParse(dto.EventEndDate, out var parsedEnd))
                     endDate = parsedEnd.ToString("MM/dd/yyyy");
 
-                string eventInfo = $"{dto.EventId} ({startDate} - {endDate})";
+                string eventInfo = $"{dto.ServiceMembersParent.EventManagement.EventID} ({startDate} - {endDate})";
                 AddRow("Event ID", eventInfo);
 
                 document.Add(table);
@@ -306,7 +306,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<byte[]> GenerateHivSignInSheetPdfAsync(List<FileDataDto> dtos, EventManagement eventInfo, ContractDetails contractDetail)
+        public async Task<byte[]> GenerateHivSignInSheetPdfAsync(List<ServiceMembersChild> dtos, EventManagement eventInfo, ContractDetails contractDetail)
         {
             try
             {

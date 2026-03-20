@@ -13,10 +13,10 @@ namespace Malama.Models
         public long Id { get; set; }
 
         // Foreign key to FileDataDto (1-to-1 or 1-to-many, depending on your flow)
-        public long FileDataId { get; set; }
+        public long ServiceMembersChildId { get; set; }
         [JsonIgnore]
         [ValidateNever]
-        public virtual FileDataDto FileData { get; set; }
+        public virtual ServiceMembersChild ServiceMembersChild { get; set; }
 
 
         // Question 1

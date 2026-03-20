@@ -8,6 +8,11 @@
             return DateTime.SpecifyKind(dt.Value, DateTimeKind.Unspecified);
         }
 
+        public static DateTime NormalizeDateTime(DateTime dt)
+        {
+            return DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
+        }
+
         public static DateTime ConvertToUtcBasedOnTimezone(DateTime localDate, TimeSpan? time, string timeZoneId, out string errorMessage)
         {
             errorMessage = null;

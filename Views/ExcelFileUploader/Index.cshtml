@@ -500,11 +500,12 @@
         $('#loader').removeClass('d-none');
 
         try {
-            const response = await fetch('/ExcelFileUploader/GetEventDataByEventId', {
+            const response = await fetch('/ExcelFileUploader/GetServiceMembersByEventId', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
 
+            debugger;
             const result = await response.json();
 
             if (!result.success) {

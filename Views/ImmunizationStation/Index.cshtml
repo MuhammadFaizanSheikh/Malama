@@ -227,7 +227,7 @@
         {
             <tr>
                 <td>
-                        <a asp-action="ImmunizationStation" asp-route-immunizationId="@c.ImmunizationRecord?.Id" asp-route-fileDataId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            <a asp-action="ImmunizationStation" asp-route-immunizationId="@c.ImmunizationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                 </td>
                      <td>@(c.ImmunizationRecord == null ? "Pending" : c.ImmunizationRecord.Status)</td> 
                 <td>@c.SmId</td>

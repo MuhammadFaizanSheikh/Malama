@@ -35,6 +35,7 @@ namespace Malama.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsEventUser = table.Column<bool>(type: "boolean", nullable: false),
+                    IsSuperAdmin = table.Column<bool>(type: "boolean", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -125,121 +126,6 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventManagement",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventID = table.Column<string>(type: "text", nullable: false),
-                    SubEventID = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    EventStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    ContractId = table.Column<long>(type: "bigint", nullable: false),
-                    EventAddress1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    EventAddress2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    EventState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EventCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EventZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    TotalRequestedServiceMembers = table.Column<int>(type: "integer", nullable: false),
-                    EventStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    EventEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Deploy = table.Column<string>(type: "text", nullable: false),
-                    MOBDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    RegardingSites = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    EventHelpLine = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
-                    MainPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    MainPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    MainPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    MainPocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    MainPocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    MainPocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    MainPocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    SecondaryPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    SecondaryPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    SecondaryPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    SecondaryPocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    SecondaryPocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    SecondaryPocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    SecondaryPocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddAddtionalAlternatePoc = table.Column<bool>(type: "boolean", nullable: false),
-                    AddtionalAlternatePocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddtionalAlternatePocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddtionalAlternatePocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddtionalAlternatePocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    AddtionalAlternatePocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    AddtionalAlternatePocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddtionalAlternatePocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    AddtionalAlternatePocRole = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    ShippingAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    ShippingAddressState = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    ShippingAddressCity = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    ShippingAddressZipCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    ShippingPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocPrimaryPhone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    ShippingPocSecondaryPhone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    ShippingPocPrimaryEmail = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocSecondaryEmail = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocOpenAt = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    ShippingPocCloseAt = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    ShippingPocInstruction = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    ShippingPocPickupDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ShippingPocPickupTime = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    ShippingPocDeliveryFromDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ShippingPocDeliveryToDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ShippingPocSuggestedHourlyFlow = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ShippingPocSpecialGateInstructions = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    ShippingPocParkingInstructions = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    ShippingPocTablesAndChairsAvailable = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    ShippingPocLocationSecured = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    ShippingPocRefrigeratorAvailable = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    ShippingPocLockableRefrigerator = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    ShippingPocEventSetupDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ShippingPocEventSetupTime = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    PharmacyName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    PharmacyAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    PharmacyAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    PharmacyState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    PharmacyCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    PharmacyZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    PharmacyPhoneNumber = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    PharmacyMilitaryArrangement = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    HIVSuppliesNeeded = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    HIVSupplyMilitaryContactPOCLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    HIVSupplyMilitaryContactPOCRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    HIVSupplyMilitaryContactPOCFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    HIVSupplyMilitaryContactPOCPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    HIVSupplyMilitaryContactPOCPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    HIVSupplyMilitaryContactPOCEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    HIVSupplyMilitaryContactPOCEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ImmunizationVaccineNeeded = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    ImmVaccineSupplyMilitaryContactPOCEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    QuestPickupAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    QuestPickupAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    QuestPickupState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    QuestPickupCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    QuestPickupZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    HIVDropOffStaffId = table.Column<long>(type: "bigint", nullable: true),
-                    StatusDescription = table.Column<string>(type: "text", nullable: true),
-                    CompletedSections = table.Column<string>(type: "text", nullable: true),
-                    AddedBy = table.Column<string>(type: "text", nullable: true),
-                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventManagement", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EventStaff",
                 columns: table => new
                 {
@@ -298,102 +184,6 @@ namespace Malama.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EventStaff", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "FileData",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SmId = table.Column<long>(type: "bigint", nullable: true),
-                    FullName = table.Column<string>(type: "text", nullable: true),
-                    FullSsn = table.Column<string>(type: "text", nullable: true),
-                    Last4 = table.Column<string>(type: "text", nullable: true),
-                    DodId = table.Column<string>(type: "text", nullable: true),
-                    Rank = table.Column<string>(type: "text", nullable: true),
-                    Age = table.Column<int>(type: "integer", nullable: true),
-                    Sex = table.Column<string>(type: "text", nullable: true),
-                    Mos = table.Column<string>(type: "text", nullable: true),
-                    Agr = table.Column<string>(type: "text", nullable: true),
-                    Uic = table.Column<string>(type: "text", nullable: true),
-                    Mrc = table.Column<string>(type: "text", nullable: true),
-                    Dob = table.Column<string>(type: "text", nullable: true),
-                    Over40 = table.Column<string>(type: "text", nullable: true),
-                    DentalDue = table.Column<string>(type: "text", nullable: true),
-                    DentalExam = table.Column<string>(type: "text", nullable: true),
-                    DentalNeeded = table.Column<string>(type: "text", nullable: true),
-                    PanoNeeded = table.Column<string>(type: "text", nullable: true),
-                    BwxNeeded = table.Column<string>(type: "text", nullable: true),
-                    Drc = table.Column<string>(type: "text", nullable: true),
-                    PhaDate = table.Column<string>(type: "text", nullable: true),
-                    PhaDue = table.Column<string>(type: "text", nullable: true),
-                    Pha = table.Column<string>(type: "text", nullable: true),
-                    Pulhes = table.Column<string>(type: "text", nullable: true),
-                    VisionDate = table.Column<string>(type: "text", nullable: true),
-                    Vision = table.Column<string>(type: "text", nullable: true),
-                    NearVision = table.Column<string>(type: "text", nullable: true),
-                    Vrc = table.Column<string>(type: "text", nullable: true),
-                    Vision2pg = table.Column<string>(type: "text", nullable: true),
-                    Vision1mi = table.Column<string>(type: "text", nullable: true),
-                    HearingDate = table.Column<string>(type: "text", nullable: true),
-                    Hearing = table.Column<string>(type: "text", nullable: true),
-                    Hrc = table.Column<string>(type: "text", nullable: true),
-                    HearingProfile = table.Column<string>(type: "text", nullable: true),
-                    Quest = table.Column<string>(type: "text", nullable: true),
-                    LabNeeded = table.Column<string>(type: "text", nullable: true),
-                    Abo = table.Column<string>(type: "text", nullable: true),
-                    AboNeeded = table.Column<string>(type: "text", nullable: true),
-                    Dna = table.Column<string>(type: "text", nullable: true),
-                    SickleDate = table.Column<string>(type: "text", nullable: true),
-                    Sickle = table.Column<string>(type: "text", nullable: true),
-                    G6pd = table.Column<string>(type: "text", nullable: true),
-                    G6pdDate = table.Column<string>(type: "text", nullable: true),
-                    G6pdStatus = table.Column<string>(type: "text", nullable: true),
-                    HivNextTestDate = table.Column<string>(type: "text", nullable: true),
-                    Hiv = table.Column<string>(type: "text", nullable: true),
-                    LipidNeeded = table.Column<string>(type: "text", nullable: true),
-                    LipidPanel = table.Column<string>(type: "text", nullable: true),
-                    CholesterolHdlCholesterol = table.Column<string>(type: "text", nullable: true),
-                    Framingham = table.Column<string>(type: "text", nullable: true),
-                    Ekg = table.Column<string>(type: "text", nullable: true),
-                    EkgNeeded = table.Column<string>(type: "text", nullable: true),
-                    PregnancyTestNeeded = table.Column<string>(type: "text", nullable: true),
-                    Imm = table.Column<string>(type: "text", nullable: true),
-                    HepB = table.Column<string>(type: "text", nullable: true),
-                    HepA = table.Column<string>(type: "text", nullable: true),
-                    Flu = table.Column<string>(type: "text", nullable: true),
-                    TetTdp = table.Column<string>(type: "text", nullable: true),
-                    Mmr = table.Column<string>(type: "text", nullable: true),
-                    Varicella = table.Column<string>(type: "text", nullable: true),
-                    TaskForce = table.Column<string>(type: "text", nullable: true),
-                    Notes = table.Column<string>(type: "text", nullable: true),
-                    Over44 = table.Column<string>(type: "text", nullable: true),
-                    EventDate = table.Column<string>(type: "text", nullable: true),
-                    EventEndDate = table.Column<string>(type: "text", nullable: true),
-                    EventId = table.Column<string>(type: "text", nullable: true),
-                    CheckIn = table.Column<string>(type: "text", nullable: true),
-                    CheckInBy = table.Column<string>(type: "text", nullable: true),
-                    CheckInTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    CheckOut = table.Column<string>(type: "text", nullable: true),
-                    CheckOutBy = table.Column<string>(type: "text", nullable: true),
-                    CheckOutTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    WalkInServiceMember = table.Column<string>(type: "text", nullable: true),
-                    VisionWin = table.Column<int>(type: "integer", nullable: true),
-                    DentalWin = table.Column<int>(type: "integer", nullable: true),
-                    PhaWin = table.Column<int>(type: "integer", nullable: true),
-                    HivWin = table.Column<int>(type: "integer", nullable: true),
-                    HearingWin = table.Column<int>(type: "integer", nullable: true),
-                    isDeleted = table.Column<bool>(type: "boolean", nullable: true),
-                    Barcode = table.Column<string>(type: "text", nullable: true),
-                    AddedBy = table.Column<string>(type: "text", nullable: true),
-                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FileData", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -469,17 +259,17 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserEventMapping",
+                name: "SubmissionTokenRecord",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    EventId = table.Column<int>(type: "integer", nullable: false)
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserEventMapping", x => x.Id);
+                    table.PrimaryKey("PK_SubmissionTokenRecord", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -623,94 +413,125 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventManagementTaskforces",
+                name: "EventManagement",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
-                    Taskforce = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                    EventID = table.Column<string>(type: "text", nullable: false),
+                    SubEventID = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    EventVersion = table.Column<int>(type: "integer", nullable: false),
+                    EventStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ContractId = table.Column<long>(type: "bigint", nullable: false),
+                    EventAddress1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    EventAddress2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    EventState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    EventCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    EventZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    TotalRequestedServiceMembers = table.Column<int>(type: "integer", nullable: false),
+                    Timezone = table.Column<string>(type: "text", nullable: false),
+                    EventStartDateUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    EventEndDateUtc = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Deploy = table.Column<string>(type: "text", nullable: false),
+                    MOBDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    RegardingSites = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    EventHelpLine = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
+                    ReasonOfCancel = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    MainPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    MainPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    MainPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    MainPocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    MainPocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    MainPocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    MainPocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    SecondaryPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    SecondaryPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    SecondaryPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    SecondaryPocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    SecondaryPocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    SecondaryPocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    SecondaryPocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddAddtionalAlternatePoc = table.Column<bool>(type: "boolean", nullable: false),
+                    AddtionalAlternatePocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddtionalAlternatePocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddtionalAlternatePocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddtionalAlternatePocPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    AddtionalAlternatePocPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    AddtionalAlternatePocEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddtionalAlternatePocEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    AddtionalAlternatePocRole = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ShippingAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ShippingAddressState = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ShippingAddressCity = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ShippingAddressZipCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    ShippingPocLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocPrimaryPhone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    ShippingPocSecondaryPhone = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    ShippingPocPrimaryEmail = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocSecondaryEmail = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocOpenAt = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    ShippingPocCloseAt = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    ShippingPocInstruction = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    ShippingPocPickupDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ShippingPocPickupTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    ShippingPocDeliveryFromDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ShippingPocDeliveryToDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ShippingPocSuggestedHourlyFlow = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ShippingPocSpecialGateInstructions = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    ShippingPocParkingInstructions = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    ShippingPocTablesAndChairsAvailable = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    ShippingPocLocationSecured = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    ShippingPocRefrigeratorAvailable = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    ShippingPocLockableRefrigerator = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    ShippingPocEventSetupDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ShippingPocEventSetupTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    PharmacyName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    PharmacyAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PharmacyAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    PharmacyState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    PharmacyCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    PharmacyZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    PharmacyPhoneNumber = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    PharmacyMilitaryArrangement = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    HIVSuppliesNeeded = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    HIVSupplyMilitaryContactPOCLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    HIVSupplyMilitaryContactPOCRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    HIVSupplyMilitaryContactPOCFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    HIVSupplyMilitaryContactPOCPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    HIVSupplyMilitaryContactPOCPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    HIVSupplyMilitaryContactPOCEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    HIVSupplyMilitaryContactPOCEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImmunizationVaccineNeeded = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCLastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCRank = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCFirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCPhonePrimary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCPhoneSecondary = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCEmailPrimary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImmVaccineSupplyMilitaryContactPOCEmailSecondary = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    QuestPickupAddressLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    QuestPickupAddressLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    QuestPickupState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    QuestPickupCity = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    QuestPickupZipCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    HIVDropOffStaffId = table.Column<long>(type: "bigint", nullable: true),
+                    StatusDescription = table.Column<string>(type: "text", nullable: true),
+                    CompletedSections = table.Column<string>(type: "text", nullable: true),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventManagementTaskforces", x => x.Id);
+                    table.PrimaryKey("PK_EventManagement", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventManagementTaskforces_EventManagement_EventManagementId",
-                        column: x => x.EventManagementId,
-                        principalTable: "EventManagement",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventServiceDetail",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
-                    EventService = table.Column<string>(type: "text", nullable: true),
-                    IsSelected = table.Column<bool>(type: "boolean", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: true),
-                    ClientRequestInitial = table.Column<int>(type: "integer", nullable: true),
-                    InitialReportNumbers = table.Column<int>(type: "integer", nullable: true),
-                    FinalPreEventConfirmedNumbers = table.Column<int>(type: "integer", nullable: true),
-                    IsConfirmed = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventServiceDetail", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventServiceDetail_EventManagement_EventManagementId",
-                        column: x => x.EventManagementId,
-                        principalTable: "EventManagement",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventStaffDetail",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
-                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
-                    PreEventAvailability = table.Column<bool>(type: "boolean", nullable: false),
-                    ProfileButtonAccess = table.Column<bool>(type: "boolean", nullable: false),
-                    SelectedStation = table.Column<string>(type: "text", nullable: true),
-                    SelectedSecondaryStation = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventStaffDetail", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventStaffDetail_EventManagement_EventManagementId",
-                        column: x => x.EventManagementId,
-                        principalTable: "EventManagement",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventStartEndTimeDayWise",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
-                    EventDay = table.Column<int>(type: "integer", nullable: false),
-                    EventStartTime = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    EventEndTime = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    ServiceMemberPercentPerDay = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventStartEndTimeDayWise", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventStartEndTimeDayWise_EventManagement_EventManagementId",
-                        column: x => x.EventManagementId,
-                        principalTable: "EventManagement",
+                        name: "FK_EventManagement_ContractDetails_ContractId",
+                        column: x => x.ContractId,
+                        principalTable: "ContractDetails",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -775,63 +596,6 @@ namespace Malama.Migrations
                         name: "FK_TravelHonor_EventStaff_EventStaffId",
                         column: x => x.EventStaffId,
                         principalTable: "EventStaff",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LabStation",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FileDataId = table.Column<long>(type: "bigint", nullable: false),
-                    AreYouFasting = table.Column<string>(type: "text", nullable: false),
-                    AnyComplicationInBloodDrawn = table.Column<string>(type: "text", nullable: false),
-                    AllergicToLatex = table.Column<string>(type: "text", nullable: false),
-                    FeelAlright = table.Column<string>(type: "text", nullable: false),
-                    G6pdNeeded = table.Column<string>(type: "text", nullable: true),
-                    G6pdReason = table.Column<string>(type: "text", nullable: true),
-                    AboNeeded = table.Column<string>(type: "text", nullable: true),
-                    AboReason = table.Column<string>(type: "text", nullable: true),
-                    AboGrouping = table.Column<string>(type: "text", nullable: true),
-                    AboRhFactor = table.Column<string>(type: "text", nullable: true),
-                    LipidPanelNeeded = table.Column<string>(type: "text", nullable: true),
-                    LipidPanelReason = table.Column<string>(type: "text", nullable: true),
-                    LipidPanelRapidTesting = table.Column<bool>(type: "boolean", nullable: false),
-                    TotalCholesterol = table.Column<string>(type: "text", nullable: true),
-                    HdlCholesterol = table.Column<string>(type: "text", nullable: true),
-                    Triglycerides = table.Column<string>(type: "text", nullable: true),
-                    Glucose = table.Column<string>(type: "text", nullable: true),
-                    LdlCholesterol = table.Column<string>(type: "text", nullable: true),
-                    TotalCholesterolHdlRatio = table.Column<string>(type: "text", nullable: true),
-                    LdlHdlLipoprotiens = table.Column<string>(type: "text", nullable: true),
-                    NonHdlCholesterol = table.Column<string>(type: "text", nullable: true),
-                    HivNeeded = table.Column<string>(type: "text", nullable: true),
-                    HivReason = table.Column<string>(type: "text", nullable: true),
-                    HivBarcodeCarebill = table.Column<string>(type: "text", nullable: true),
-                    PregnancyTestNeeded = table.Column<string>(type: "text", nullable: true),
-                    PregnancyTestResult = table.Column<string>(type: "text", nullable: true),
-                    PregnancyTestReason = table.Column<string>(type: "text", nullable: true),
-                    FedExTrackingNo = table.Column<string>(type: "text", nullable: true),
-                    G6pdGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    AboGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LipidPanelGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    HivGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    PregnancyTestGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    AddedBy = table.Column<string>(type: "text", nullable: true),
-                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LabStation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LabStation_FileData_FileDataId",
-                        column: x => x.FileDataId,
-                        principalTable: "FileData",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -939,6 +703,198 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EventManagementTaskforces",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
+                    Taskforce = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventManagementTaskforces", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventManagementTaskforces_EventManagement_EventManagementId",
+                        column: x => x.EventManagementId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventServiceDetail",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
+                    EventService = table.Column<string>(type: "text", nullable: true),
+                    IsSelected = table.Column<bool>(type: "boolean", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: true),
+                    ClientRequestInitial = table.Column<int>(type: "integer", nullable: true),
+                    InitialReportNumbers = table.Column<int>(type: "integer", nullable: true),
+                    FinalPreEventConfirmedNumbers = table.Column<int>(type: "integer", nullable: true),
+                    IsConfirmed = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventServiceDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventServiceDetail_EventManagement_EventManagementId",
+                        column: x => x.EventManagementId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventStaffDetail",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
+                    EventStaffId = table.Column<long>(type: "bigint", nullable: false),
+                    PreEventAvailability = table.Column<bool>(type: "boolean", nullable: false),
+                    ProfileButtonAccess = table.Column<bool>(type: "boolean", nullable: false),
+                    SelectedStation = table.Column<string>(type: "text", nullable: true),
+                    SelectedSecondaryStation = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventStaffDetail", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventStaffDetail_EventManagement_EventManagementId",
+                        column: x => x.EventManagementId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventStaffDetail_EventStaff_EventStaffId",
+                        column: x => x.EventStaffId,
+                        principalTable: "EventStaff",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventStartEndTimeDayWise",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
+                    EventDay = table.Column<int>(type: "integer", nullable: false),
+                    EventStartTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    EventEndTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    ServiceMemberPercentPerDay = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventStartEndTimeDayWise", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventStartEndTimeDayWise_EventManagement_EventManagementId",
+                        column: x => x.EventManagementId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServiceMembersParent",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EventManagementId = table.Column<long>(type: "bigint", nullable: false),
+                    VisionWin = table.Column<int>(type: "integer", nullable: true),
+                    DentalWin = table.Column<int>(type: "integer", nullable: true),
+                    PhaWin = table.Column<int>(type: "integer", nullable: true),
+                    HivWin = table.Column<int>(type: "integer", nullable: true),
+                    HearingWin = table.Column<int>(type: "integer", nullable: true),
+                    isDeleted = table.Column<bool>(type: "boolean", nullable: true),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceMembersParent", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceMembersParent_EventManagement_EventManagementId",
+                        column: x => x.EventManagementId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserEventMapping",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    EventId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserEventMapping", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserEventMapping_EventManagement_EventId",
+                        column: x => x.EventId,
+                        principalTable: "EventManagement",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StaffAttributeDetails",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
+                    Attribute = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffAttributeDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StaffAttributeDetails_StaffQualification_StaffQualification~",
+                        column: x => x.StaffQualificationId,
+                        principalTable: "StaffQualification",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StaffLicenseDetails",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
+                    LicenseNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LicenseState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LicenseType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LicenseActiveDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LicenseExpiryDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffLicenseDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StaffLicenseDetails_StaffQualification_StaffQualificationId",
+                        column: x => x.StaffQualificationId,
+                        principalTable: "StaffQualification",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EventManagementStaffAvailability",
                 columns: table => new
                 {
@@ -999,45 +955,93 @@ namespace Malama.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StaffAttributeDetails",
+                name: "ServiceMembersChild",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
-                    Attribute = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    ServiceMembersParentId = table.Column<long>(type: "bigint", nullable: false),
+                    SmId = table.Column<long>(type: "bigint", nullable: true),
+                    FullName = table.Column<string>(type: "text", nullable: true),
+                    FullSsn = table.Column<string>(type: "text", nullable: true),
+                    Last4 = table.Column<string>(type: "text", nullable: true),
+                    DodId = table.Column<string>(type: "text", nullable: true),
+                    Rank = table.Column<string>(type: "text", nullable: true),
+                    Age = table.Column<int>(type: "integer", nullable: true),
+                    Sex = table.Column<string>(type: "text", nullable: true),
+                    Mos = table.Column<string>(type: "text", nullable: true),
+                    Agr = table.Column<string>(type: "text", nullable: true),
+                    Uic = table.Column<string>(type: "text", nullable: true),
+                    Mrc = table.Column<string>(type: "text", nullable: true),
+                    Dob = table.Column<string>(type: "text", nullable: true),
+                    Over40 = table.Column<string>(type: "text", nullable: true),
+                    DentalDue = table.Column<string>(type: "text", nullable: true),
+                    DentalExam = table.Column<string>(type: "text", nullable: true),
+                    DentalNeeded = table.Column<string>(type: "text", nullable: true),
+                    PanoNeeded = table.Column<string>(type: "text", nullable: true),
+                    BwxNeeded = table.Column<string>(type: "text", nullable: true),
+                    Drc = table.Column<string>(type: "text", nullable: true),
+                    PhaDate = table.Column<string>(type: "text", nullable: true),
+                    PhaDue = table.Column<string>(type: "text", nullable: true),
+                    Pha = table.Column<string>(type: "text", nullable: true),
+                    Pulhes = table.Column<string>(type: "text", nullable: true),
+                    VisionDate = table.Column<string>(type: "text", nullable: true),
+                    Vision = table.Column<string>(type: "text", nullable: true),
+                    NearVision = table.Column<string>(type: "text", nullable: true),
+                    Vrc = table.Column<string>(type: "text", nullable: true),
+                    Vision2pg = table.Column<string>(type: "text", nullable: true),
+                    Vision1mi = table.Column<string>(type: "text", nullable: true),
+                    HearingDate = table.Column<string>(type: "text", nullable: true),
+                    Hearing = table.Column<string>(type: "text", nullable: true),
+                    Hrc = table.Column<string>(type: "text", nullable: true),
+                    HearingProfile = table.Column<string>(type: "text", nullable: true),
+                    Quest = table.Column<string>(type: "text", nullable: true),
+                    LabNeeded = table.Column<string>(type: "text", nullable: true),
+                    Abo = table.Column<string>(type: "text", nullable: true),
+                    AboNeeded = table.Column<string>(type: "text", nullable: true),
+                    Dna = table.Column<string>(type: "text", nullable: true),
+                    SickleDate = table.Column<string>(type: "text", nullable: true),
+                    Sickle = table.Column<string>(type: "text", nullable: true),
+                    G6pd = table.Column<string>(type: "text", nullable: true),
+                    G6pdDate = table.Column<string>(type: "text", nullable: true),
+                    G6pdStatus = table.Column<string>(type: "text", nullable: true),
+                    HivNextTestDate = table.Column<string>(type: "text", nullable: true),
+                    Hiv = table.Column<string>(type: "text", nullable: true),
+                    LipidNeeded = table.Column<string>(type: "text", nullable: true),
+                    LipidPanel = table.Column<string>(type: "text", nullable: true),
+                    CholesterolHdlCholesterol = table.Column<string>(type: "text", nullable: true),
+                    Framingham = table.Column<string>(type: "text", nullable: true),
+                    Ekg = table.Column<string>(type: "text", nullable: true),
+                    EkgNeeded = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestNeeded = table.Column<string>(type: "text", nullable: true),
+                    Imm = table.Column<string>(type: "text", nullable: true),
+                    HepB = table.Column<string>(type: "text", nullable: true),
+                    HepA = table.Column<string>(type: "text", nullable: true),
+                    Flu = table.Column<string>(type: "text", nullable: true),
+                    TetTdp = table.Column<string>(type: "text", nullable: true),
+                    Mmr = table.Column<string>(type: "text", nullable: true),
+                    Varicella = table.Column<string>(type: "text", nullable: true),
+                    TaskForce = table.Column<string>(type: "text", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    Over44 = table.Column<string>(type: "text", nullable: true),
+                    EventDate = table.Column<string>(type: "text", nullable: true),
+                    EventEndDate = table.Column<string>(type: "text", nullable: true),
+                    CheckIn = table.Column<string>(type: "text", nullable: true),
+                    CheckInBy = table.Column<string>(type: "text", nullable: true),
+                    CheckInTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    CheckOut = table.Column<string>(type: "text", nullable: true),
+                    CheckOutBy = table.Column<string>(type: "text", nullable: true),
+                    CheckOutTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    WalkInServiceMember = table.Column<string>(type: "text", nullable: true),
+                    Barcode = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StaffAttributeDetails", x => x.Id);
+                    table.PrimaryKey("PK_ServiceMembersChild", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StaffAttributeDetails_StaffQualification_StaffQualification~",
-                        column: x => x.StaffQualificationId,
-                        principalTable: "StaffQualification",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StaffLicenseDetails",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StaffQualificationId = table.Column<long>(type: "bigint", nullable: false),
-                    LicenseNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    LicenseState = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    LicenseType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    LicenseActiveDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    LicenseExpiryDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StaffLicenseDetails", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StaffLicenseDetails_StaffQualification_StaffQualificationId",
-                        column: x => x.StaffQualificationId,
-                        principalTable: "StaffQualification",
+                        name: "FK_ServiceMembersChild_ServiceMembersParent_ServiceMembersPare~",
+                        column: x => x.ServiceMembersParentId,
+                        principalTable: "ServiceMembersParent",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1048,7 +1052,7 @@ namespace Malama.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FileDataId = table.Column<long>(type: "bigint", nullable: false),
+                    ServiceMembersChildId = table.Column<long>(type: "bigint", nullable: false),
                     IsSickToday = table.Column<string>(type: "text", nullable: false),
                     IsSickTodayReason = table.Column<string>(type: "text", nullable: true),
                     HasAllergiesToMedicationFoodVaccineOrLatex = table.Column<string>(type: "text", nullable: false),
@@ -1151,12 +1155,6 @@ namespace Malama.Migrations
                 {
                     table.PrimaryKey("PK_ImmunizationStation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ImmunizationStation_FileData_FileDataId",
-                        column: x => x.FileDataId,
-                        principalTable: "FileData",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_ImmunizationStation_ImmunizationVaccineInfo_FluVaccineInfoId",
                         column: x => x.FluVaccineInfoId,
                         principalTable: "ImmunizationVaccineInfo",
@@ -1228,6 +1226,78 @@ namespace Malama.Migrations
                         principalTable: "ImmunizationVaccineLotEntry",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ImmunizationStation_ServiceMembersChild_ServiceMembersChild~",
+                        column: x => x.ServiceMembersChildId,
+                        principalTable: "ServiceMembersChild",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LabStation",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ServiceMembersChildId = table.Column<long>(type: "bigint", nullable: false),
+                    AreYouFasting = table.Column<string>(type: "text", nullable: false),
+                    AnyComplicationInBloodDrawn = table.Column<string>(type: "text", nullable: false),
+                    AllergicToLatex = table.Column<string>(type: "text", nullable: false),
+                    FeelAlright = table.Column<string>(type: "text", nullable: false),
+                    G6pdNeeded = table.Column<string>(type: "text", nullable: true),
+                    G6pdReason = table.Column<string>(type: "text", nullable: true),
+                    AboNeeded = table.Column<string>(type: "text", nullable: true),
+                    AboReason = table.Column<string>(type: "text", nullable: true),
+                    AboGrouping = table.Column<string>(type: "text", nullable: true),
+                    AboRhFactor = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelNeeded = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelReason = table.Column<string>(type: "text", nullable: true),
+                    LipidPanelRapidTesting = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalCholesterol = table.Column<int>(type: "integer", nullable: true),
+                    TotalCholesterol_LessThan100 = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalCholesterol_GreaterThan400 = table.Column<bool>(type: "boolean", nullable: false),
+                    HdlCholesterol = table.Column<int>(type: "integer", nullable: true),
+                    HdlCholesterol_LessThan20 = table.Column<bool>(type: "boolean", nullable: false),
+                    HdlCholesterol_GreaterThan120 = table.Column<bool>(type: "boolean", nullable: false),
+                    Triglycerides = table.Column<int>(type: "integer", nullable: true),
+                    Triglycerides_LessThan50 = table.Column<bool>(type: "boolean", nullable: false),
+                    Triglycerides_GreaterThan500 = table.Column<bool>(type: "boolean", nullable: false),
+                    Glucose = table.Column<int>(type: "integer", nullable: true),
+                    Glucose_LessThan20 = table.Column<bool>(type: "boolean", nullable: false),
+                    Glucose_GreaterThan600 = table.Column<bool>(type: "boolean", nullable: false),
+                    A1C = table.Column<decimal>(type: "numeric", nullable: true),
+                    LdlCholesterol = table.Column<decimal>(type: "numeric", nullable: true),
+                    TotalCholesterolHdlRatio = table.Column<decimal>(type: "numeric", nullable: true),
+                    LdlHdlLipoprotiens = table.Column<decimal>(type: "numeric", nullable: true),
+                    NonHdlCholesterol = table.Column<int>(type: "integer", nullable: true),
+                    HivNeeded = table.Column<string>(type: "text", nullable: true),
+                    HivReason = table.Column<string>(type: "text", nullable: true),
+                    HivBarcodeCarebill = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestNeeded = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestResult = table.Column<string>(type: "text", nullable: true),
+                    PregnancyTestReason = table.Column<string>(type: "text", nullable: true),
+                    FedExTrackingNo = table.Column<string>(type: "text", nullable: true),
+                    G6pdGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    AboGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LipidPanelGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    HivGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    PregnancyTestGivenDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    AddedBy = table.Column<string>(type: "text", nullable: true),
+                    AddedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LabStation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LabStation_ServiceMembersChild_ServiceMembersChildId",
+                        column: x => x.ServiceMembersChildId,
+                        principalTable: "ServiceMembersChild",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1283,6 +1353,11 @@ namespace Malama.Migrations
                 column: "ContainerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EventManagement_ContractId",
+                table: "EventManagement",
+                column: "ContractId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventManagementStaffAvailability_EventStaffDetailId",
                 table: "EventManagementStaffAvailability",
                 column: "EventStaffDetailId");
@@ -1303,6 +1378,11 @@ namespace Malama.Migrations
                 column: "EventManagementId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EventStaffDetail_EventStaffId",
+                table: "EventStaffDetail",
+                column: "EventStaffId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventStartEndTimeDayWise_EventManagementId",
                 table: "EventStartEndTimeDayWise",
                 column: "EventManagementId");
@@ -1316,17 +1396,6 @@ namespace Malama.Migrations
                 name: "IX_EventWiseStaffSecondaryRole_EventStaffDetailId",
                 table: "EventWiseStaffSecondaryRole",
                 column: "EventStaffDetailId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FileData_EventId_isDeleted",
-                table: "FileData",
-                columns: new[] { "EventId", "isDeleted" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ImmunizationStation_FileDataId",
-                table: "ImmunizationStation",
-                column: "FileDataId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ImmunizationStation_FluVaccineInfoId",
@@ -1369,6 +1438,12 @@ namespace Malama.Migrations
                 column: "MMRVaccineLotEntryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ImmunizationStation_ServiceMembersChildId",
+                table: "ImmunizationStation",
+                column: "ServiceMembersChildId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ImmunizationStation_TetTdpVaccineInfoId",
                 table: "ImmunizationStation",
                 column: "TetTdpVaccineInfoId");
@@ -1399,10 +1474,20 @@ namespace Malama.Migrations
                 column: "ImmunizationVaccineInfoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LabStation_FileDataId",
+                name: "IX_LabStation_ServiceMembersChildId",
                 table: "LabStation",
-                column: "FileDataId",
+                column: "ServiceMembersChildId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceMembersChild_ServiceMembersParentId",
+                table: "ServiceMembersChild",
+                column: "ServiceMembersParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceMembersParent_EventManagementId",
+                table: "ServiceMembersParent",
+                column: "EventManagementId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceTypeProvided_SubContractorId",
@@ -1430,9 +1515,20 @@ namespace Malama.Migrations
                 column: "EventStaffId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SubmissionTokenRecord_Token",
+                table: "SubmissionTokenRecord",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TravelHonor_EventStaffId",
                 table: "TravelHonor",
                 column: "EventStaffId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserEventMapping_EventId",
+                table: "UserEventMapping",
+                column: "EventId");
         }
 
         /// <inheritdoc />
@@ -1458,9 +1554,6 @@ namespace Malama.Migrations
 
             migrationBuilder.DropTable(
                 name: "ContainerTemperatureReading");
-
-            migrationBuilder.DropTable(
-                name: "ContractDetails");
 
             migrationBuilder.DropTable(
                 name: "EventManagementStaffAvailability");
@@ -1499,6 +1592,9 @@ namespace Malama.Migrations
                 name: "StaffLicenseDetails");
 
             migrationBuilder.DropTable(
+                name: "SubmissionTokenRecord");
+
+            migrationBuilder.DropTable(
                 name: "TravelHonor");
 
             migrationBuilder.DropTable(
@@ -1517,7 +1613,7 @@ namespace Malama.Migrations
                 name: "ImmunizationVaccineLotEntry");
 
             migrationBuilder.DropTable(
-                name: "FileData");
+                name: "ServiceMembersChild");
 
             migrationBuilder.DropTable(
                 name: "SubContractor");
@@ -1526,19 +1622,25 @@ namespace Malama.Migrations
                 name: "StaffQualification");
 
             migrationBuilder.DropTable(
-                name: "EventManagement");
-
-            migrationBuilder.DropTable(
                 name: "Container");
 
             migrationBuilder.DropTable(
                 name: "ImmunizationVaccineInfo");
 
             migrationBuilder.DropTable(
+                name: "ServiceMembersParent");
+
+            migrationBuilder.DropTable(
                 name: "EventStaff");
 
             migrationBuilder.DropTable(
                 name: "ContainerType");
+
+            migrationBuilder.DropTable(
+                name: "EventManagement");
+
+            migrationBuilder.DropTable(
+                name: "ContractDetails");
         }
     }
 }

@@ -356,6 +356,7 @@
 
         public List<EventStaffDetail> EventStaffDetailList { get; set; } = new List<EventStaffDetail>();
         public List<EventManagementTaskforces> EventManagementTaskforcesList { get; set; } = new List<EventManagementTaskforces>();
+        public ServiceMembersParent ServiceMembersParent { get; set; }
     }
 
     [Table("EventServiceDetail")]

@@ -4,8 +4,6 @@
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Add Immunization Screening";
-    var selectedEventId = ViewBag.EventId;
-    
 }
 
 <style>
@@ -98,10 +96,6 @@
 </style>
 
 <h2 id="page-heading">Edit Service Member at Immunization Station</h2>
-@* @if (selectedEventId != null && !string.IsNullOrEmpty(selectedEventId.ToString()))
-{
-    <h2 id="page-heading">Event ID : @selectedEventId</h2>
-} *@
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -122,11 +116,11 @@
     </script>
 }
 
-<form id="ImmunizationForm" asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.FileData.EventId" method="post">
+<form id="ImmunizationForm" asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.ServiceMembersChild.ServiceMembersParent.EventManagement.EventID" method="post">
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.Id)
-    @Html.HiddenFor(m => m.FileDataId)
+    @Html.HiddenFor(m => m.ServiceMembersChildId)
     <!-- Link to parent contract -->
     @* <input type="hidden" asp-for="FileDataId" /> *@
 
@@ -135,25 +129,25 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Full Name:</span> @Model.FileData?.FullName</p>
+                    <p><span class="fw-bold">Full Name:</span> @Model.ServiceMembersChild?.FullName</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOD ID:</span> @Model.FileData?.DodId</p>
+                    <p><span class="fw-bold">DOD ID:</span> @Model.ServiceMembersChild?.DodId</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.FileData?.Barcode</p>
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.ServiceMembersChild?.Barcode</p>
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOB:</span> @Model.FileData?.Dob</p>
+                    <p><span class="fw-bold">DOB:</span> @Model.ServiceMembersChild?.Dob</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Age:</span> @Model.FileData?.Age</p>
+                    <p><span class="fw-bold">Age:</span> @Model.ServiceMembersChild?.Age</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Sex:</span> @Model.FileData?.Sex</p>
+                    <p><span class="fw-bold">Sex:</span> @Model.ServiceMembersChild?.Sex</p>
                 </div>
             </div>
         </div>
@@ -261,7 +255,7 @@
     <h3 class="mb-4">Required Immunization(s) :</h3>
     <div id="immunization-section">
 
-        @if (string.Equals(Model.FileData.HepB?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.HepB?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Hepatitis B -->
             <div class="card-body vaccine-block" data-vaccine="HepB">
@@ -373,7 +367,7 @@
         }
 
 
-        @if (string.Equals(Model.FileData.Flu?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.Flu?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Influenza -->
             <div class="card-body vaccine-block" data-vaccine="Flu">
@@ -480,7 +474,7 @@
 
 
 
-        @if (string.Equals(Model.FileData.Mmr?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.Mmr?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- MMR -->
             <div class="card-body vaccine-block" data-vaccine="MMR">
@@ -586,7 +580,7 @@
 
 
 
-        @if (string.Equals(Model.FileData.HepA?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.HepA?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Hepatitis A -->
             <div class="card-body vaccine-block" data-vaccine="HepA">
@@ -691,7 +685,7 @@
         }
 
 
-        @if (string.Equals(Model.FileData.TetTdp?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.TetTdp?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Tetanus / Tdap -->
             <div class="card-body vaccine-block" data-vaccine="TetTdap">
@@ -798,7 +792,7 @@
 
 
 
-        @if (string.Equals(Model.FileData.Varicella?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        @if (string.Equals(Model.ServiceMembersChild.Varicella?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
         {
             <!-- Varicella -->
             <div class="card-body vaccine-block" data-vaccine="Varicella">

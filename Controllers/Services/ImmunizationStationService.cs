@@ -3,8 +3,10 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NPOI.HSSF.Record;
+using NPOI.POIFS.Properties;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -14,13 +16,16 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
         private readonly IImmunizationVaccineInfoService _immunizationVaccineInfoService;
+        private readonly ILogger<ImmunizationStationService> _logger;
+        private const string CLASSNAME = "ImmunizationStationService";
 
-        public ImmunizationStationService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader, IImmunizationVaccineInfoService immunizationVaccineInfoService)
+        public ImmunizationStationService(ILogger<ImmunizationStationService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader, IImmunizationVaccineInfoService immunizationVaccineInfoService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
             _immunizationVaccineInfoService = immunizationVaccineInfoService;
+            _logger = logger;
         }
 
         public async Task<ImmunizationStation?> GetByIdAsync(long id)
@@ -36,9 +41,45 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ImmunizationStation> GetByIdWithParentAsync(long id)
+        public async Task<(ImmunizationStation Immunization, string EventId)> GetImmunizationByIdWithEventIdAsync(long immunizationId)
         {
-            return await _unitOfWork.ImmunizationStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
+            try
+            {
+                if (immunizationId <= 0)
+                {
+                    _logger.LogWarning("GetImmunizationByIdWithEventIdAsync called with invalid Id: {Id}", immunizationId);
+                    return (null, null);
+                }
+
+                _logger.LogDebug("Fetching ImmunizationRecord with Id: {Id} and its EventId", immunizationId);
+
+                // Start from ServiceMembersChild but only project what we need
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithInclude(
+                        c => c.ImmunizationRecord != null && c.ImmunizationRecord.Id == immunizationId, // Defensive null check
+                        c => c.ImmunizationRecord,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .Select(c => new
+                    {
+                        Immunization = c.ImmunizationRecord,
+                        EventId = c.ServiceMembersParent.EventManagement.EventID
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (result == null || result.Immunization == null)
+                {
+                    _logger.LogInformation("No ImmunizationRecord found with Id: {Id}", immunizationId);
+                    return (null, null);
+                }
+
+                return (result.Immunization, result.EventId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ImmunizationRecord with Id: {Id}", immunizationId);
+                throw; // Let controller handle displaying generic error
+            }
         }
 
         public async Task<ResponseDto> GetImmunizationManufacturer(string eventId)
@@ -59,9 +100,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task UpdateAsync(ImmunizationStation model, string userName)
         {
-            var existing = await _unitOfWork.ImmunizationStation
-                .GetWithInclude(x => x.Id == model.Id, x => x.FileData)
-                .FirstOrDefaultAsync();
+            //var existing = await _unitOfWork.ImmunizationStation
+            //    .GetWithInclude(x => x.Id == model.Id)
+            //    .FirstOrDefaultAsync();
+
+            var existing = await _unitOfWork.ImmunizationStation.GetByIdAsync(model.Id);
 
             if (existing == null)
             {

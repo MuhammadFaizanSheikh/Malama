@@ -13,7 +13,9 @@ namespace ExcelFilesCompiler
         }
 
         // Define your table as a DbSet
-        public DbSet<FileDataDto> FileData { get; set; }
+        //public DbSet<FileDataDto> FileData { get; set; }
+        public DbSet<ServiceMembersParent> ServiceMembersParent { get; set; }
+        public DbSet<ServiceMembersChild> ServiceMembersChild { get; set; }
         public DbSet<SubContractor> SubContractor { get; set; }
         public DbSet<SubmissionTokenRecord> SubmissionTokenRecord { get; set; }
         public DbSet<ContractDetails> ContractDetails { get; set; }
@@ -57,6 +59,10 @@ namespace ExcelFilesCompiler
                     }
                 }
             }
+
+            modelBuilder.Entity<ServiceMembersChild>()
+            .HasIndex(x => new { x.ServiceMembersParentId, x.SmId })
+            .IsUnique();
 
             modelBuilder.Entity<ImmunizationStation>(entity =>
             {

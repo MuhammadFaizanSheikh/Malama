@@ -6,13 +6,39 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Malama.Models
 {
-    public class FileDataDto
+    [Table("ServiceMembersParent")]
+    public class ServiceMembersParent : GenericProperties
     {
         [Key]
         public long Id { get; set; }
+
+        public long EventManagementId { get; set; }
+
+        [ForeignKey("EventManagementId")]
+        public virtual EventManagement EventManagement { get; set; }
+
+        public int? VisionWin { get; set; }
+        public int? DentalWin { get; set; }
+        public int? PhaWin { get; set; }
+        public int? HivWin { get; set; }
+        public int? HearingWin { get; set; }
+
+        public bool? isDeleted { get; set; }
+        public virtual ICollection<ServiceMembersChild> ServiceMembersChildren { get; set; } = new List<ServiceMembersChild>();
+    }
+
+    [Table("ServiceMembersChild")]
+    public class ServiceMembersChild : GenericProperties
+    {
+        [Key]
+        public long Id { get; set; }
+
+        public long ServiceMembersParentId { get; set; }
+
+        [ForeignKey("ServiceMembersParentId")]
+        public virtual ServiceMembersParent ServiceMembersParent { get; set; }
         public long? SmId { get; set; }
         public string? FullName { get; set; }
-        //public string? Name { get; set; }
         public string? FullSsn { get; set; }
         public string? Last4 { get; set; }
         public string? DodId { get; set; }
@@ -76,7 +102,6 @@ namespace Malama.Models
         public string? Over44 { get; set; }
         public string? EventDate { get; set; }
         public string? EventEndDate { get; set; }
-        public string? EventId { get; set; }
         public string? CheckIn { get; set; } = "No";
         public string? CheckInBy { get; set; }
         public DateTime? CheckInTime { get; set; }
@@ -84,15 +109,11 @@ namespace Malama.Models
         public string? CheckOutBy { get; set; } = "No";
         public DateTime? CheckOutTime { get; set; }
         public string? WalkInServiceMember { get; set; } = "No";
-        public int? VisionWin { get; set; }
-        public int? DentalWin { get; set; }
-        public int? PhaWin { get; set; }
-        public int? HivWin { get; set; }
-        public int? HearingWin { get; set; }
-        public bool? isDeleted { get; set; }
         public string? Barcode { get; set; }
 
-        public ImmunizationStation ImmunizationRecord { get; set; }
-        public LabStation LabStationRecord { get; set; }
+        [ValidateNever]
+        public virtual ImmunizationStation ImmunizationRecord { get; set; }
+        [ValidateNever]
+        public virtual LabStation LabStationRecord { get; set; }
     }
 }

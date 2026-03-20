@@ -62,9 +62,7 @@ namespace ExcelFilesCompiler.Controllers
                     );
                 }
 
-                var data = _fileUploader
-                    .GetEventDataByEventIdForImmunization(eventId)
-                    .ToList();
+                var data = await _fileUploader.GetImmunizationsByEventIdAsync(eventId);
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}",
@@ -74,9 +72,9 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x.ImmunizationRecord == null || x.ImmunizationRecord?.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.ImmunizationRecord?.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.ImmunizationRecord?.Status == "Not given")
+                    ["Pending"] = data.Count(x => x == null || x?.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.Status == "Completed"),
+                    ["NotGiven"] = data.Count(x => x.Status == "Not given")
                 };
 
                 _logger.LogInformation(
@@ -118,7 +116,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
         [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
-        public async Task<IActionResult> ImmunizationStation(long immunizationId, long fileDataId)
+        public async Task<IActionResult> ImmunizationStation(long immunizationId, long serviceMembersChildId)
         {
             const string methodName = "ImmunizationStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
@@ -126,6 +124,7 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 ImmunizationStation model;
+                string eventId = string.Empty;
 
                 if (immunizationId > 0)
                 {
@@ -135,26 +134,29 @@ namespace ExcelFilesCompiler.Controllers
                     );
 
                     // Edit mode → get child record including parent
-                    model = await _immunizationStationService.GetByIdWithParentAsync(immunizationId);
+                    var result = await _immunizationStationService.GetImmunizationByIdWithEventIdAsync(immunizationId);
+                    model = result.Immunization;
                 }
                 else
                 {
                     _logger.LogInformation(
                         "{ClassName}, {MethodName}, Add mode. FileDataId={FileDataId}",
-                        CLASSNAME, methodName, fileDataId
+                        CLASSNAME, methodName, serviceMembersChildId
                     );
 
                     // Add mode → create empty child but attach parent
-                    var parent = await _fileUploader.GetByIdAsync(fileDataId);
+                    var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
 
                     model = new ImmunizationStation
                     {
-                        FileDataId = fileDataId,
-                        FileData = parent
+
+                        ServiceMembersChildId = serviceMembersChildId,
+                        ServiceMembersChild = result.ServiceMembersChild
                     };
+
+                    eventId = result.EventId;
                 }
 
-                string eventId = model.FileData?.EventId;
                 ViewBag.EventId = eventId;
 
                 _logger.LogInformation(
@@ -236,15 +238,19 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
-                    model = await _immunizationStationService.GetByIdWithParentAsync(model.Id);
-
-                    string eventId = model.FileData?.EventId;
+                    var result = await _immunizationStationService.GetImmunizationByIdWithEventIdAsync(model.Id);
+                    if (result.Immunization == null)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Not Found";
+                        TempData["ResponseMessage"] = "Immunization record not found.";
+                        return RedirectToAction("Index");
+                    }
+                    model = result.Immunization;
+                    var eventId = result.EventId ?? string.Empty;
                     ViewBag.EventId = eventId;
 
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Reloading ImmunizationStation view for EventId={EventId}",
-                        CLASSNAME, methodName, eventId
-                    );
+                    _logger.LogDebug("{ClassName}, {MethodName}: Reloading view for EventId={EventId}", CLASSNAME, methodName, eventId);
 
                     var immunizationData = await _immunizationStationService.GetImmunizationManufacturer(eventId);
 

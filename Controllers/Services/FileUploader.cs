@@ -9,6 +9,9 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ExcelFilesCompiler.Utilities;
+using static iTextSharp.text.pdf.AcroFields;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -17,15 +20,20 @@ namespace ExcelFilesCompiler.Controllers.Services
         List<string> dateHeaderNames = new List<string> { "DOB", "Date of Next Exam", "PHA Date", "Next PHA Date", "Date of Vision Screen", "Audiogram Date", "Sickle Cell Date", "G6PD Date", "Next Test Date" };
         private string DateFormat = "MM/dd/yyyy";
 
-        private readonly IGenericRepository<FileDataDto> fileUploaderRepository;
+        private readonly IGenericRepository<ServiceMembersChild> _serviceMembersChild;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IEventManagementService _eventManagementService;
+        private readonly ILogger<FileUploader> _logger;
+        private const string CLASSNAME = "FileUploader";
 
-        public FileUploader(IGenericRepository<FileDataDto> fileUploaderRepository, IUnitOfWork unitOfWork,IMapper mapper)
+        public FileUploader(IGenericRepository<ServiceMembersChild> serviceMembersChild, ILogger<FileUploader> logger, IEventManagementService eventManagementService, IUnitOfWork unitOfWork,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            this.fileUploaderRepository = fileUploaderRepository;
             _mapper = mapper;
+            _eventManagementService = eventManagementService;
+            _serviceMembersChild = serviceMembersChild;
+            _logger = logger;
         }
 
         public List<List<Dictionary<string, object>>> UploadAndPreview(List<IFormFile> files, IFormFile G6PDFile, DateTime parsedEventDate, DateTime? parsedLastEventDate, long eventId, int lastDentalExam, int vision, int dental, int pha, int hiv, int hearing)
@@ -64,80 +72,168 @@ namespace ExcelFilesCompiler.Controllers.Services
             };
         }
 
-        public ResponseDto AddRecordsBulk(IEnumerable<FileDataDto> data, string eventId, string loggedinUserName)
+        public async Task<ResponseDto> AddRecordsBulkAsync(List<FileDataDto> fileDataDtos, string eventId, string addedBy)
         {
-            try
+            const string methodName = nameof(AddRecordsBulkAsync);
+
+            if (fileDataDtos == null || !fileDataDtos.Any())
             {
-                bool isRecordUpdate = false;
+                _logger.LogWarning("{ClassName}, {MethodName}, No data provided to insert for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
 
-                var dataAgainstEventId = fileUploaderRepository.FindByEventId(eventId);
-
-                if (dataAgainstEventId != null && dataAgainstEventId.Any())
-                {
-                    isRecordUpdate = true;
-
-                    foreach (var item in dataAgainstEventId)
-                    {
-                        item.isDeleted = true;
-                        item.UpdatedBy = loggedinUserName;
-                        item.UpdatedOn = DateTime.Now;
-                    }
-
-                    fileUploaderRepository.UpdateRange(dataAgainstEventId);
-                    fileUploaderRepository.Save();
-                }
-                foreach (var itm in data)
-                {
-                    itm.AddedBy = loggedinUserName;
-                    itm.AddedOn = DateTime.Now;
-                    itm.CheckInTime = itm.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(itm.CheckInTime) : null;
-                    itm.CheckOutTime = itm.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(itm.CheckOutTime) : null;
-                }
-
-
-                //var Records = data.Select(dto => 
-                //MapAndEnrich(dto, loggedinUserName)).ToList();
-
-                
-
-                fileUploaderRepository.AddRange(data);
-                fileUploaderRepository.Save();
-
-                return new ResponseDto
-                {
-                    Success = true,
-                    Message = Messages.DataInsertSuccesfully
-                };
-            }
-            catch (Exception ex)
-            {
                 return new ResponseDto
                 {
                     Success = false,
-                    Message = Messages.DataInsertFailed,
+                    Message = "No data provided to insert.",
+                    Data = null
+                };
+            }
+
+            const string genericErrorMsg = "An error occurred while inserting records.";
+
+            try
+            {
+                // Fetch latest EventManagement and existing parent
+                var (fetchResponse, eventManagement, existingParent) =
+                    await FetchLatestEventManagementWithParentAsync(eventId, addedBy);
+
+                if (!fetchResponse.Success)
+                    return fetchResponse;
+
+                long eventManagementId = eventManagement.Id;
+                int eventVersion = eventManagement.EventVersion;
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Inserting {Count} records for EventID: {EventID} (V{Version}) by User: {UserName}",
+                    CLASSNAME, methodName, fileDataDtos.Count, eventId, eventVersion, addedBy);
+
+                // ✅ Begin transaction
+                await using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+                try
+                {
+                    // Mark existing parent as deleted
+                    if (existingParent != null)
+                    {
+                        existingParent.isDeleted = true;
+                        existingParent.UpdatedBy = addedBy;
+                        existingParent.UpdatedOn = DateTime.Now;
+
+                        await _unitOfWork.ServiceMembersParent.UpdateAsync(existingParent);
+
+                        _logger.LogInformation("{ClassName}, {MethodName}, Marked existing ServiceMembersParent (ID: {ParentId}) as deleted for EventID: {EventID} by User: {UserName}",
+                            CLASSNAME, methodName, existingParent.Id, eventId, addedBy);
+                    }
+
+                    // Map FileDataDto to new parent + children
+                    var newParent = MapToParentEntity(fileDataDtos, eventManagementId, addedBy);
+
+                    await _unitOfWork.ServiceMembersParent.AddAsync(newParent);
+
+                    _logger.LogInformation("{ClassName}, {MethodName}, Added new ServiceMembersParent (ID: {ParentId}) with {Count} children for EventID: {EventID} by User: {UserName}",
+                        CLASSNAME, methodName, newParent.Id, newParent.ServiceMembersChildren.Count, eventId, addedBy);
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("{ClassName}, {MethodName}, Transaction committed successfully for EventID: {EventID} by User: {UserName}",
+                        CLASSNAME, methodName, eventId, addedBy);
+
+                    return new ResponseDto
+                    {
+                        Success = true,
+                        Message = $"Successfully inserted {fileDataDtos.Count} records for EventID {eventId} (V{eventVersion}).",
+                        Data = newParent.Id
+                    };
+                }
+                catch
+                {
+                    // Rollback in case of any failure inside transaction
+                    await transaction.RollbackAsync();
+                    throw; // outer catch will log the error
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error inserting records for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = genericErrorMsg,
                     Data = null
                 };
             }
         }
 
-        public ResponseDto CheckForExistingDataAgainstEventId(string eventId)
+        public async Task<ResponseDto> CheckForExistingDataAgainstEventIdAsync(string eventId, string addedBy)
         {
-            var dataAgainstEventId = fileUploaderRepository.FindByEventId(eventId);
+            const string methodName = nameof(CheckForExistingDataAgainstEventIdAsync);
 
-            if (dataAgainstEventId.Any())
+            if (string.IsNullOrEmpty(eventId))
             {
+                _logger.LogWarning("{ClassName}, {MethodName}, EventID is null or empty", CLASSNAME, methodName);
                 return new ResponseDto
                 {
                     Success = false,
-                    Message = ""
+                    Message = "EventID cannot be empty.",
+                    Data = null
                 };
             }
 
-            return new ResponseDto
+            try
             {
-                Success = true,
-                Message = ""
-            };
+                var (fetchResponse, eventManagement, existingParent) =
+                    await FetchLatestEventManagementWithParentAsync(eventId, addedBy);
+
+                if (!fetchResponse.Success)
+                {
+                    // EventManagement not found
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = fetchResponse.Message,
+                        Data = null
+                    };
+                }
+
+                if (existingParent != null)
+                {
+                    // Data exists
+                    _logger.LogInformation("{ClassName}, {MethodName}, Data already exists for EventID: {EventID} (ParentID: {ParentId}) by User: {UserName}",
+                        CLASSNAME, methodName, eventId, existingParent.Id, addedBy);
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Data already exists for this EventID.",
+                        Data = existingParent.Id
+                    };
+                }
+
+                // No existing data
+                _logger.LogInformation("{ClassName}, {MethodName}, No existing data found for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "No existing data found for this EventID.",
+                    Data = null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error checking existing data for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "Error occurred while checking existing data.",
+                    Data = null
+                };
+            }
         }
 
         public List<Dictionary<string, object>> CheckFieldsBeforeUploading(List<IFormFile> files, List<string>? processingSequence)
@@ -169,162 +265,233 @@ namespace ExcelFilesCompiler.Controllers.Services
             return validationErrors;
         }
 
-        //public async Task<List<string>> GetDistinctEventIdsAsync()
+        public async Task<List<ImmunizationStation>> GetImmunizationsByEventIdAsync(string eventId)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching ImmunizationRecords where Imm=Needed and CheckIn=Yes for EventID={EventId}", eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithInclude(
+                        c => c.ServiceMembersParent.EventManagement.EventID == eventId &&
+                             c.Imm == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes",
+                        c => c.ImmunizationRecord,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .Select(c => c.ImmunizationRecord) // Only return ImmunizationRecord
+                    .Where(i => i != null)
+                    .ToListAsync();
+
+                _logger.LogInformation("Found {Count} ImmunizationRecords for EventID={EventId}", result.Count, eventId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching needed ImmunizationRecords for EventID={EventId}", eventId);
+                throw;
+            }
+        }
+
+        public async Task<List<LabStation>> GetLabStationByEventIdAsync(string eventId)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching LabStation where LabNeeded=Needed and CheckIn=Yes for EventID={EventId}", eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithInclude(
+                        c => c.ServiceMembersParent.EventManagement.EventID == eventId &&
+                             c.LabNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes",
+                        c => c.LabStationRecord,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .Select(c => c.LabStationRecord) // Only return ImmunizationRecord
+                    .Where(i => i != null)
+                    .ToListAsync();
+
+                _logger.LogInformation("Found {Count} LabStation for EventID={EventId}", result.Count, eventId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching needed LabStation for EventID={EventId}", eventId);
+                throw;
+            }
+        }
+
+        //public IQueryable<FileDataDto> GetEventDataByEventIdForLab(string eventId)
         //{
         //    try
         //    {
-        //        var data = await fileUploaderRepository.FindForSearchingAsync(f => f.isDeleted != true);
-        //        return data
-        //            .Select(x => x.EventId)
-        //            .Where(x => !string.IsNullOrEmpty(x))
-        //            .Distinct()
-        //            .ToList();
+        //        return fileUploaderRepository.GetWithInclude(
+        //            f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
+        //        ).Include(f => f.LabStationRecord);
         //    }
         //    catch (Exception ex)
         //    {
-        //        throw new Exception("Error fetching distinct EventIds from FileData.", ex);
+        //        throw new Exception("Error while fetching FileData by EventId", ex);
         //    }
         //}
 
-        public async Task<List<string>> GetDistinctEventIdsAsync()
+        public async Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(string eventId)
         {
             try
             {
-                return await fileUploaderRepository
-                    .GetWithInclude(f => f.isDeleted != true)   // filters at DB
-                    .Select(f => f.EventId)              // projection at DB
-                    .Where(id => !string.IsNullOrEmpty(id))
-                    .Distinct()                          // DB applies DISTINCT
-                    .ToListAsync();                      // executes SQL
+                _logger.LogInformation("Fetching LabStationRecords for EventID={EventId}", eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+            .GetWithInclude(
+                c => c.ServiceMembersParent.EventManagement.EventID == eventId,
+                c => c.LabStationRecord,
+                c => c.ServiceMembersParent.EventManagement
+            )
+            .Where(c => c.LabStationRecord != null) // only those having lab data
+            .ToListAsync();
+
+                _logger.LogInformation("Found {Count} LabStationRecords for EventID={EventId}", result.Count, eventId);
+
+                return result;
             }
             catch (Exception ex)
             {
-                throw new Exception("Error fetching distinct EventIds from FileData.", ex);
+                _logger.LogError(ex, "Error fetching LabStationRecords for EventID={EventId}", eventId);
+                throw;
             }
         }
 
 
-        public IQueryable<FileDataDto> GetEventDataByEventId(string eventId)
+        public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string eventId, int eventVersion, string addedBy)
         {
+            string methodName = nameof(AddSingleRecordAsync);
+
             try
             {
-                return fileUploaderRepository.GetWithInclude(f => f.EventId == eventId && f.isDeleted != true,x => x.ImmunizationRecord, x => x.LabStationRecord);
+                _logger.LogInformation("{ClassName}, {MethodName}, Add single record started for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, eventVersion, addedBy);
 
-                //return fileUploaderRepository.FindForSearching(f => f.EventId == eventId && f.isDeleted != true);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error while fetching FileData by EventId", ex);
-            }
-        }
+                var (parent, children) = await GetServiceMembersByEventAsync(eventId, eventVersion);
 
-        public IQueryable<FileDataDto> GetEventDataByEventIdForImmunization(string eventId)
-        {
-            try
-            {
-                return fileUploaderRepository.GetWithInclude(
-                    f => f.EventId == eventId && f.isDeleted != true && f.Imm == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
-                ).Include(f => f.ImmunizationRecord);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error while fetching FileData by EventId", ex);
-            }
-        }
-
-        public IQueryable<FileDataDto> GetEventDataByEventIdForLab(string eventId)
-        {
-            try
-            {
-                return fileUploaderRepository.GetWithInclude(
-                    f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes"
-                ).Include(f => f.LabStationRecord);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error while fetching FileData by EventId", ex);
-            }
-        }
-
-        public IQueryable<FileDataDto> GetEventDataByEventIdForLabHivReport(string eventId)
-        {
-            try
-            {
-                return fileUploaderRepository.GetWithInclude(
-                f => f.EventId == eventId && f.isDeleted != true && f.LabNeeded == AppConstants.NeededOrNA.Needed && f.CheckIn == "Yes" && f.LabStationRecord != null && f.LabStationRecord.HivNeeded == "Completed"
-                ).Include(f => f.LabStationRecord).OrderBy(f => f.LabStationRecord.HivBarcodeCarebill);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error while fetching FileData by EventId for HIV Sign-In Sheet report", ex);
-            }
-        }
-
-
-        public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string userName)
-        {
-            try
-            {
-                dto.AddedBy = userName;
-                dto.AddedOn = DateTime.Now;
-                dto.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : dto.CheckInTime;
-                dto.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : dto.CheckOutTime;
-
-                var allRecords = await fileUploaderRepository.GetAllAsync(c =>
-      c.EventId == dto.EventId && c.isDeleted == false);
-
-                var lastRecord = allRecords
-                    .OrderByDescending(x => x.SmId)
-                    .FirstOrDefault();
-
-                long newSmId = 1;
-
-                if (lastRecord?.SmId != null)
+                if (parent == null)
                 {
-                    newSmId = lastRecord.SmId.Value + 1;
+                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
+                        CLASSNAME, methodName, eventId, eventVersion, addedBy);
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Service Member Parent record not found",
+                        Data = null
+                    };
                 }
 
-                dto.SmId = newSmId;
+                children ??= new List<ServiceMembersChild>();
 
-                if (!string.IsNullOrEmpty(dto.Barcode) && dto.Barcode.Contains("-"))
+                int retryCount = 0;
+                const int maxRetries = 3;
+                bool isSaved = false;
+
+                while (!isSaved && retryCount < maxRetries)
                 {
-                    var parts = dto.Barcode.Split('-');
-                    if (parts.Length == 2)
+                    try
                     {
-                        dto.Barcode = parts[0].PadLeft(5, '0') + "-" + newSmId.ToString("D5");
+                        // ✅ Generate SmId
+                        var latestSmId = children.Any() ? children.Max(x => x.SmId) : 0;
+                        var newSmId = latestSmId + 1;
+
+                        dto.SmId = newSmId;
+
+                        // ✅ Barcode generation
+                        if (!string.IsNullOrWhiteSpace(dto.Barcode) && dto.Barcode.Contains("-"))
+                        {
+                            var parts = dto.Barcode.Split('-');
+                            if (parts.Length == 2)
+                            {
+                                dto.Barcode = parts[0].PadLeft(5, '0') + "-" + ((long)newSmId).ToString("D5");
+                            }
+                        }
+
+                        // ✅ Map child (reuse your existing mapping via parent method)
+                        var singleDtoList = new List<FileDataDto> { dto };
+                        var parentEntity = MapToParentEntity(singleDtoList, 0, addedBy);
+                        var child = parentEntity.ServiceMembersChildren.First();
+
+                        // ✅ Correct FK assignment
+                        child.ServiceMembersParentId = parent.Id;
+
+                        await _unitOfWork.ServiceMembersChild.AddAsync(child);
+
+                        isSaved = true;
+
+                        _logger.LogInformation("{ClassName}, {MethodName}, Child inserted successfully with SmId: {SmId} for ParentId: {ParentId} by User: {UserName}",
+                            CLASSNAME, methodName, newSmId, parent.Id, addedBy);
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        retryCount++;
+
+                        _logger.LogWarning(ex, "{ClassName}, {MethodName}, SmId conflict detected. Retry attempt: {RetryCount} for EventID: {EventID} by User: {UserName}",
+                            CLASSNAME, methodName, retryCount, eventId, addedBy);
+
+                        if (retryCount >= maxRetries)
+                        {
+                            _logger.LogError(ex, "{ClassName}, {MethodName}, Max retry reached while inserting child for EventID: {EventID} by User: {UserName}",
+                                CLASSNAME, methodName, eventId, addedBy);
+
+                            throw;
+                        }
                     }
                 }
-
-
-
-                await fileUploaderRepository.AddAsync(dto);
 
                 return new ResponseDto
                 {
                     Success = true,
                     Message = Messages.DataInsertSuccesfully,
-                    Data = dto // You can return the saved DTO (with generated Id etc.)
+                    Data = dto
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Error occurred while adding single record for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, eventVersion, addedBy);
+
                 return new ResponseDto
                 {
                     Success = false,
                     Message = Messages.DataInsertFailed,
-                    Data = null
+                    Data = ex.Message
                 };
             }
         }
 
-        public async Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string userName)
+        public async Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string updatedBy)
         {
+            const string methodName = nameof(UpdateSingleRecordAsync);
+
             try
             {
-                var existingRecord = await fileUploaderRepository.GetByIdAsync(dto.Id);
+                if (dto == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, DTO is null", CLASSNAME, methodName);
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid input data.",
+                        Data = null
+                    };
+                }
+
+                var existingRecord = await _serviceMembersChild.GetByIdAsync(dto.Id);
 
                 if (existingRecord == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, No existing record found for Id: {Id}",
+                        CLASSNAME, methodName, dto.Id);
+
                     return new ResponseDto
                     {
                         Success = false,
@@ -333,34 +500,50 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
-                dto.AddedBy = existingRecord.AddedBy;
-                dto.AddedOn = existingRecord.AddedOn;
-                dto.Barcode = existingRecord.Barcode;
-                dto.UpdatedBy = userName;
-                dto.UpdatedOn = DateTime.Now;
-                dto.CheckInTime = dto.CheckInTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime) : null;
-                dto.CheckOutTime = dto.CheckOutTime.HasValue ? Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime) : null;
-                dto.WalkInServiceMember = existingRecord.WalkInServiceMember;
+                _logger.LogInformation("{ClassName}, {MethodName}, Mapping DTO to existing record Id: {Id}",
+                    CLASSNAME, methodName, dto.Id);
 
-                //var entity = MapAndEnrich(dto, "");
+                // Map DTO -> existing child
+                var singleDtoList = new List<FileDataDto> { dto };
+                var parentEntity = MapToParentEntity(singleDtoList, 0, updatedBy, isUpdate: true, existingRecord);
 
-                // Or manually:
-                // existingRecord.FullName = dto.FullName;
-                // existingRecord.Age = dto.Age;
-                // existingRecord.CheckInTime = dto.CheckInTime;
-                // ...
+                var child = parentEntity.ServiceMembersChildren.FirstOrDefault();
+                if (child == null)
+                {
+                    _logger.LogError("{ClassName}, {MethodName}, Mapping resulted in null child for Id: {Id}",
+                        CLASSNAME, methodName, dto.Id);
 
-                await fileUploaderRepository.UpdateAsync(dto);
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Failed to map DTO to entity.",
+                        Data = null
+                    };
+                }
+
+                //WalkInServiceMember
+                //Barcode
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Calling UpdateAsync for Id: {Id}",
+                    CLASSNAME, methodName, dto.Id);
+
+                await _serviceMembersChild.UpdateAsync(child);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Successfully updated record Id: {Id}",
+                    CLASSNAME, methodName, dto.Id);
 
                 return new ResponseDto
                 {
                     Success = true,
                     Message = Messages.DataUpdatedSuccesfully,
-                    Data = existingRecord
+                    Data = child
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error updating record Id: {Id}",
+                    CLASSNAME, methodName, dto?.Id);
+
                 return new ResponseDto
                 {
                     Success = false,
@@ -370,27 +553,78 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<FileDataDto> GetByIdAsync(long id)
-        {
-            return await fileUploaderRepository.GetByIdAsync(id);
-        }
+        //public async Task<ServiceMembersChild> GetByIdAsync(long id)
+        //{
+        //    return await fileUploaderRepository.GetByIdAsync(id);
+        //}
 
-        public FileDataDto GetByIdWithInclude(long id)
+        public async Task<(ServiceMembersChild ServiceMembersChild, string EventId)> GetServiceMemberChildWithEventIdAsync(long serviceMemberChildId)
         {
             try
             {
-                var query = fileUploaderRepository.GetWithInclude(
-                    f => f.Id == id,
-                    x => x.ImmunizationRecord
-                );
-                //More child tables will be handle here
+                if (serviceMemberChildId <= 0)
+                {
+                    _logger.LogWarning("GetServiceMemberChildWithEventIdAsync called with invalid Id: {Id}", serviceMemberChildId);
+                    return (null, null);
+                }
 
-                var entity = query.FirstOrDefault();
+                _logger.LogInformation("Fetching ServiceMembersChild Id={Id} with EventID", serviceMemberChildId);
 
-                if (entity == null)
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithInclude(
+                        c => c.Id == serviceMemberChildId,
+                        c => c.ServiceMembersParent,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .Select(c => new
+                    {
+                        ServiceMembersChild = c,
+                        EventId = c.ServiceMembersParent.EventManagement.EventID
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (result == null || result.ServiceMembersChild == null)
+                {
+                    _logger.LogInformation("No ServiceMembersChild found with Id: {Id}", serviceMemberChildId);
+                    return (null, null);
+                }
+
+                return (result.ServiceMembersChild, result.EventId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching ServiceMembersChild with Id: {Id}", serviceMemberChildId);
+                throw;
+            }
+        }
+
+        public async Task<ServiceMembersChild> GetByIdWithInclude(long id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    _logger.LogWarning("GetServiceMemberWithParentAndImmunizationAsync called with invalid Id: {Id}", id);
                     return null;
+                }
 
-                return _mapper.Map<FileDataDto>(entity);
+                _logger.LogInformation("Fetching ServiceMembersChild with Id: {Id}", id);
+
+                var childWithHierarchy = await _unitOfWork.ServiceMembersChild
+                .GetWithInclude(
+                    c => c.Id == id,         // filter by child id
+                    c => c.ServiceMembersParent,               // include parent
+                    c => c.ServiceMembersParent.EventManagement, // include event from parent
+                    c => c.ImmunizationRecord                   // include immunization record
+                )
+                .FirstOrDefaultAsync();
+
+                if (childWithHierarchy == null)
+                {
+                    _logger.LogInformation("No ServiceMembersChild found with Id: {Id}", id);
+                }
+
+                return childWithHierarchy;
             }
             catch (Exception ex)
             {
@@ -1842,6 +2076,209 @@ namespace ExcelFilesCompiler.Controllers.Services
             else
             {
                 parentRow["EventID"] = "";
+            }
+        }
+
+        private ServiceMembersParent MapToParentEntity(List<FileDataDto> fileDataDtos, long eventId, string addedBy, bool isUpdate = false, ServiceMembersChild existingServiceMembersChild = null)
+        {
+            var first = fileDataDtos.First();
+            DateTime addedDateTime = DateTime.Now;
+
+            var parent = new ServiceMembersParent
+            {
+                EventManagementId = eventId,
+                VisionWin = first.VisionWin,
+                DentalWin = first.DentalWin,
+                PhaWin = first.PhaWin,
+                HivWin = first.HivWin,
+                HearingWin = first.HearingWin,
+                //isDeleted = first.isDeleted,
+                AddedBy = addedBy,
+                AddedOn = addedDateTime,
+
+                ServiceMembersChildren = fileDataDtos.Select(dto => new ServiceMembersChild
+                {
+                    SmId = dto.SmId,
+                    FullName = dto.FullName,
+                    FullSsn = dto.FullSsn,
+                    Last4 = dto.Last4,
+                    DodId = dto.DodId,
+                    Rank = dto.Rank,
+                    Age = dto.Age,
+                    Sex = dto.Sex,
+                    Mos = dto.Mos,
+                    Agr = dto.Agr,
+                    Uic = dto.Uic,
+                    Mrc = dto.Mrc,
+                    Dob = dto.Dob,
+                    Over40 = dto.Over40,
+                    DentalDue = dto.DentalDue,
+                    DentalExam = dto.DentalExam,
+                    DentalNeeded = dto.DentalNeeded,
+                    PanoNeeded = dto.PanoNeeded,
+                    BwxNeeded = dto.BwxNeeded,
+                    Drc = dto.Drc,
+                    PhaDate = dto.PhaDate,
+                    PhaDue = dto.PhaDue,
+                    Pha = dto.Pha,
+                    Pulhes = dto.Pulhes,
+                    VisionDate = dto.VisionDate,
+                    Vision = dto.Vision,
+                    NearVision = dto.NearVision,
+                    Vrc = dto.Vrc,
+                    Vision2pg = dto.Vision2pg,
+                    Vision1mi = dto.Vision1mi,
+                    HearingDate = dto.HearingDate,
+                    Hearing = dto.Hearing,
+                    Hrc = dto.Hrc,
+                    HearingProfile = dto.HearingProfile,
+                    Quest = dto.Quest,
+                    LabNeeded = dto.LabNeeded,
+                    Abo = dto.Abo,
+                    AboNeeded = dto.AboNeeded,
+                    Dna = dto.Dna,
+                    SickleDate = dto.SickleDate,
+                    Sickle = dto.Sickle,
+                    G6pd = dto.G6pd,
+                    G6pdDate = dto.G6pdDate,
+                    G6pdStatus = dto.G6pdStatus,
+                    HivNextTestDate = dto.HivNextTestDate,
+                    Hiv = dto.Hiv,
+                    LipidNeeded = dto.LipidNeeded,
+                    LipidPanel = dto.LipidPanel,
+                    CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol,
+                    Framingham = dto.Framingham,
+                    Ekg = dto.Ekg,
+                    EkgNeeded = dto.EkgNeeded,
+                    PregnancyTestNeeded = dto.PregnancyTestNeeded,
+                    Imm = dto.Imm,
+                    HepB = dto.HepB,
+                    HepA = dto.HepA,
+                    Flu = dto.Flu,
+                    TetTdp = dto.TetTdp,
+                    Mmr = dto.Mmr,
+                    Varicella = dto.Varicella,
+                    TaskForce = dto.TaskForce,
+                    Notes = dto.Notes,
+                    Over44 = dto.Over44,
+                    EventDate = dto.EventDate,
+                    EventEndDate = dto.EventEndDate,
+                    CheckIn = dto.CheckIn,
+                    CheckInBy = dto.CheckInBy,
+                    CheckInTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime),
+                    CheckOut = dto.CheckOut,
+                    CheckOutBy = dto.CheckOutBy,
+                    CheckOutTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime),
+                    WalkInServiceMember = dto.WalkInServiceMember,
+                    Barcode = dto.Barcode,
+                    AddedBy = isUpdate ? existingServiceMembersChild.AddedBy : addedBy,
+                    AddedOn = isUpdate ? existingServiceMembersChild.AddedOn : addedDateTime,
+                    UpdatedBy = isUpdate ? addedBy : null,
+                    UpdatedOn = isUpdate ? addedDateTime : null
+                }).ToList()
+            };
+
+            return parent;
+        }
+
+        private async Task<(ResponseDto Response, EventManagement EventManagement, ServiceMembersParent ExistingParent)>
+    FetchLatestEventManagementWithParentAsync(string eventId, string addedBy)
+        {
+            const string methodName = nameof(FetchLatestEventManagementWithParentAsync);
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Fetching latest EventManagement for EventID: {EventID} by User: {UserName}",
+                CLASSNAME, methodName, eventId, addedBy);
+
+            try
+            {
+                // Fetch EventManagement with related parents
+                var eventManagement = await _unitOfWork.EventManagement
+                    .GetWithInclude(
+                        x => x.EventID == eventId,
+                        x => x.ServiceMembersParent
+                    )
+                    .OrderByDescending(x => x.EventVersion)
+                    .FirstOrDefaultAsync();
+
+                if (eventManagement == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventManagement not found for EventID: {EventID} by User: {UserName}",
+                        CLASSNAME, methodName, eventId, addedBy);
+
+                    return (new ResponseDto
+                    {
+                        Success = false,
+                        Message = $"EventManagement not found for EventID: {eventId}",
+                        Data = null
+                    }, null, null);
+                }
+
+                long eventManagementId = eventManagement.Id;
+                int eventVersion = eventManagement.EventVersion;
+
+                _logger.LogInformation("{ClassName}, {MethodName}, EventManagement found (V{Version}) for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventVersion, eventId, addedBy);
+
+
+                // Check for existing parent
+                var existingParent = eventManagement.ServiceMembersParent;
+
+                if (existingParent == null || existingParent.isDeleted.GetValueOrDefault())
+                {
+                    // Parent does not exist or is marked deleted
+                    existingParent = null;
+                }
+
+                return (new ResponseDto { Success = true }, eventManagement, existingParent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error fetching EventManagement for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
+
+                return (new ResponseDto
+                {
+                    Success = false,
+                    Message = "Error fetching EventManagement.",
+                    Data = null
+                }, null, null);
+            }
+        }
+
+        public async Task<(ServiceMembersParent Parent, List<ServiceMembersChild> Children)>GetServiceMembersByEventAsync(string eventId, int eventVersion)
+        {
+            try
+            {
+                _logger.LogInformation("{ClassName}, {MethodName}, Fetching ServiceMembersParent for EventId: {EventId}, EventVersion: {EventVersion}",
+                    eventId, eventVersion);
+
+                var eventManagement = await _unitOfWork.EventManagement
+                    .GetWithInclude(
+                        x => x.EventID == eventId && x.EventVersion == eventVersion,
+                        x => x.ServiceMembersParent,
+                        x => x.ServiceMembersParent.ServiceMembersChildren
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (eventManagement?.ServiceMembersParent == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventId: {EventId}, EventVersion: {EventVersion}",
+                        eventId, eventVersion);
+                    return (null, new List<ServiceMembersChild>());
+                }
+
+                var parent = eventManagement.ServiceMembersParent;
+                var children = parent.ServiceMembersChildren?.ToList() ?? new List<ServiceMembersChild>();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Found ServiceMembersParent with {ChildCount} children");
+
+                return (parent, children);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName},Error fetching ServiceMembersParent for EventId: {EventId}, EventVersion: {EventVersion}",
+                    eventId, eventVersion);
+                throw;
             }
         }
     }

@@ -19,16 +19,21 @@ namespace ExcelFilesCompiler.Controllers
     public class ExcelFileUploaderController : Controller
     {
         private readonly IFileUploader _fileUploader;
+        private readonly IEventManagementService _eventManagementService;
         private readonly IPdfGeneratorService _pdfGenerator;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<ExcelFileUploaderController> _logger;
+        private const string CLASSNAME = "ExcelFileUploaderController";
 
-        public ExcelFileUploaderController(IFileUploader fileUploader, IPdfGeneratorService pdfGenerator, IConfiguration configuration, UserManager<ApplicationUser> userManager)
+        public ExcelFileUploaderController(IFileUploader fileUploader, ILogger<ExcelFileUploaderController> logger, IEventManagementService eventManagementService, IPdfGeneratorService pdfGenerator, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _fileUploader = fileUploader;
+            _eventManagementService = eventManagementService;
             _configuration = configuration;
             _userManager = userManager;
             _pdfGenerator = pdfGenerator;
+            _logger = logger;
         }
 
         [CheckInOutAuthorize]
@@ -50,49 +55,58 @@ namespace ExcelFilesCompiler.Controllers
 
         [RoleAttributeAuthorizeFromConfig("CheckInOutStaff_View")]
         [HttpPost]
-        public async Task<IActionResult> GetEventDataByEventId()
+        public async Task<IActionResult> GetServiceMembersByEventId()
         {
             try
             {
                 string eventId = HttpContext.Session.GetString("GlobalEventId");
+                string eventVersion = HttpContext.Session.GetString("GlobalEventVersion");
+
                 if (string.IsNullOrEmpty(eventId))
                 {
-                    var noIdResponse = new { success = false, message = "No EventID selected." };
-                    var options = new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = null,
-                        DictionaryKeyPolicy = null
-                    };
-                    var json = JsonSerializer.Serialize(noIdResponse, options);
-                    return Content(json, "application/json");
+                    _logger.LogWarning("GetEventDataByEventId: EventId is missing from session");
+
+                    return Json(new { success = false, message = "No EventID selected." });
                 }
 
-                var data = _fileUploader.GetEventDataByEventId(eventId);
-
-                var result = new { success = true, data };
-
-                var optionsSuccess = new JsonSerializerOptions
+                if (!int.TryParse(eventVersion, out int parsedEventVersion))
                 {
-                    PropertyNamingPolicy = null,
-                    DictionaryKeyPolicy = null
-                };
+                    _logger.LogWarning("GetEventDataByEventId: Invalid EventVersion: {EventVersion}", eventVersion);
 
-                var jsonSuccess = JsonSerializer.Serialize(result, optionsSuccess);
-                return Content(jsonSuccess, "application/json");
+                    return Json(new { success = false, message = "Invalid EventVersion format." });
+                }
+
+                _logger.LogInformation("Fetching service members for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+
+                // ✅ IMPORTANT FIX: await was missing
+                var data = await _eventManagementService
+                    .GetServiceMembersByEventAsync(eventId, parsedEventVersion);
+
+                if (data == null || !data.Any())
+                {
+                    _logger.LogInformation("No data found for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+
+                    return new JsonResult(new { success = true, data = new List<FileDataDto>() }, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = null // preserve C# property names (PascalCase)
+                    });
+                }
+
+                // Return the actual data, also preserving PascalCase
+                return new JsonResult(new { success = true, data }, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null // preserve C# property names (PascalCase)
+                });
             }
             catch (Exception ex)
             {
-                var error = new { success = false, message = "Error fetching preview data.", error = ex.Message };
+                _logger.LogError(ex, "Error in GetEventDataByEventId");
 
-                var options = new JsonSerializerOptions
+                return Json(new
                 {
-                    PropertyNamingPolicy = null,
-                    DictionaryKeyPolicy = null
-                };
-
-                var json = JsonSerializer.Serialize(error, options);
-
-                return Content(json, "application/json");
+                    success = false,
+                    message = "Error fetching preview data."
+                });
             }
         }
 
@@ -105,7 +119,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (string.IsNullOrEmpty(eventId))
                     return BadRequest("Event ID is required.");
 
-                var data = _fileUploader.GetEventDataByEventIdForImmunization(eventId);
+                var data = _fileUploader.GetImmunizationsByEventIdAsync(eventId);
 
                 var result = new { success = true, data };
 
@@ -143,7 +157,7 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 // 1. Get parent + child table data
-                var eventDto = _fileUploader.GetByIdWithInclude(id);
+                var eventDto = await _fileUploader.GetByIdWithInclude(id);
                 if (eventDto == null)
                     return NotFound("Event not found.");
 
@@ -187,7 +201,26 @@ namespace ExcelFilesCompiler.Controllers
                     });
                 }
 
-                var response = await _fileUploader.AddSingleRecordAsync(dto, user.UserName);
+                string eventId = HttpContext.Session.GetString("GlobalEventId");
+                string eventVersion = HttpContext.Session.GetString("GlobalEventVersion");
+
+                if (string.IsNullOrEmpty(eventId))
+                {
+                    _logger.LogWarning("GetEventDataByEventId: EventId is missing from session");
+
+                    return Json(new { success = false, message = "No EventID selected." });
+                }
+
+                if (!int.TryParse(eventVersion, out int parsedEventVersion))
+                {
+                    _logger.LogWarning("GetEventDataByEventId: Invalid EventVersion: {EventVersion}", eventVersion);
+
+                    return Json(new { success = false, message = "Invalid EventVersion format." });
+                }
+
+                _logger.LogInformation("Fetching service members for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+
+                var response = await _fileUploader.AddSingleRecordAsync(dto, eventId, parsedEventVersion, user.UserName);
 
                 if (response.Success)
                     return Ok(response);
@@ -196,9 +229,6 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                // Optional: log exception with your logger
-                // _logger.LogError(ex, "Error inserting record");
-
                 return StatusCode(500, new ResponseDto
                 {
                     Success = false,
@@ -212,8 +242,13 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateSingleRecord([FromBody] FileDataDto dto)
         {
+            const string methodName = nameof(UpdateSingleRecord);
+
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("{ClassName}, {MethodName}, Invalid model state: {@ModelState}",
+                    CLASSNAME, methodName, ModelState);
+
                 return BadRequest(new ResponseDto
                 {
                     Success = false,
@@ -225,9 +260,10 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 var user = await _userManager.GetUserAsync(User);
-
                 if (user == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not authenticated", CLASSNAME, methodName);
+
                     return StatusCode(401, new ResponseDto
                     {
                         Success = false,
@@ -235,16 +271,30 @@ namespace ExcelFilesCompiler.Controllers
                     });
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Updating record Id: {Id} by User: {UserName}",
+                    CLASSNAME, methodName, dto.Id, user.UserName);
+
                 var response = await _fileUploader.UpdateSingleRecordAsync(dto, user.UserName);
 
                 if (response.Success)
+                {
+                    _logger.LogInformation("{ClassName}, {MethodName}, Successfully updated record Id: {Id}",
+                        CLASSNAME, methodName, dto.Id);
+
                     return Ok(response);
+                }
                 else
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Update failed for record Id: {Id}",
+                        CLASSNAME, methodName, dto.Id);
+
                     return StatusCode(500, response);
+                }
             }
             catch (Exception ex)
             {
-                // Log the exception here if you have a logger, e.g., _logger.LogError(ex, "Error updating record");
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Unexpected error updating record Id: {Id}",
+                    CLASSNAME, methodName, dto.Id);
 
                 return StatusCode(500, new ResponseDto
                 {
@@ -254,7 +304,5 @@ namespace ExcelFilesCompiler.Controllers
                 });
             }
         }
-
-
     }
 }

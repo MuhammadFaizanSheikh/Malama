@@ -15,6 +15,7 @@ using NPOI.XSSF.UserModel;
 using SixLabors.ImageSharp.ColorSpaces;
 using System;
 using System.Data;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -27,6 +28,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IFileUploader fileUploader;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEventManagementService _eventManagementService;
+        private const string CLASSNAME = "ReportProcessorController";
         public ReportProcessorController(ILogger<ReportProcessorController> logger, IEventManagementService eventManagementService, IFileUploader _iFileUploader, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
@@ -38,7 +40,7 @@ namespace ExcelFilesCompiler.Controllers
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_View")]
         public async Task<IActionResult> Index()
         {
-            var events = await _eventManagementService.GetAllEventID();
+            var events = await _eventManagementService.GetAllEventID(false);
 
             ViewBag.EventList = events
                 .Select(e => new SelectListItem
@@ -93,13 +95,28 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpPost]
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save", "ScrubbedSheetUploader_Save")]
-        public IActionResult CheckForExistingDataAgainstEventId([FromBody] string eventId)
+        public async Task<IActionResult> CheckForExistingDataAgainstEventId([FromBody] string eventId)
         {
+            const string methodName = nameof(SubmitDataInDatabase);
+
             try
             {
                 if (eventId != null && !string.IsNullOrEmpty(eventId))
                 {
-                    var existingData = fileUploader.CheckForExistingDataAgainstEventId(eventId);
+                    var user = await _userManager.GetUserAsync(User);
+
+                    if (user == null)
+                    {
+                        _logger.LogWarning("{ClassName}, {MethodName}, User not logged in.", CLASSNAME, methodName);
+                        return StatusCode(401, new ResponseDto
+                        {
+                            Success = false,
+                            Message = "Please login and try again.",
+                            Data = null
+                        });
+                    }
+
+                    var existingData = await fileUploader.CheckForExistingDataAgainstEventIdAsync(eventId, user.UserName);
                     return Json(new { success = existingData.Success, message = existingData.Message });
                 }
                 return BadRequest("No data to check!");
@@ -113,41 +130,74 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpPost]
         [RoleAttributeAuthorizeFromConfig("ReportProcessor_Save", "ScrubbedSheetUploader_Save")]
-        public IActionResult SubmitDataInDatabase([FromBody] SubmitDataDto request)
+        public async Task<IActionResult> SubmitDataInDatabase([FromBody] SubmitDataDto request)
         {
+            const string methodName = nameof(SubmitDataInDatabase);
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}, EntityCount: {Count}",
+                CLASSNAME, methodName, request?.EventId, request?.Entities?.Count ?? 0);
+
             try
             {
-                if (request != null && !string.IsNullOrEmpty(request.EventId) &&  request.Entities != null && request.Entities.Count > 0)
+                if (request == null || string.IsNullOrEmpty(request.EventId) || request.Entities == null || request.Entities.Count == 0)
                 {
-                    var user = _userManager.GetUserAsync(User).Result;
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid request or no data to insert.",
+                        CLASSNAME, methodName);
 
-                    if (user == null)
+                    return BadRequest(new ResponseDto
                     {
-                        return StatusCode(401, new ResponseDto
-                        {
-                            Success = false,
-                            Message = "Please login and try again.",
-                        });
-                    }
-
-                    var result = fileUploader.AddRecordsBulk(request.Entities, request.EventId, user.UserName);
-                    
-                    if (!result.Success)
-                    {
-                        return BadRequest(result.Message);
-                    }
-                    return Json(new { success = result.Success, message = result.Message });
+                        Success = false,
+                        Message = "No data to insert!",
+                        Data = null
+                    });
                 }
 
-                return BadRequest("No data to insert!");
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not logged in.", CLASSNAME, methodName);
+                    return StatusCode(401, new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Please login and try again.",
+                        Data = null
+                    });
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Inserting {Count} records for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, request.Entities.Count, request.EventId, user.UserName);
+
+                var result = await fileUploader.AddRecordsBulkAsync(request.Entities, request.EventId, user.UserName);
+
+                if (!result.Success)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Failed to insert records for EventID: {EventID}, Message: {Message}",
+                        CLASSNAME, methodName, request.EventId, result.Message);
+
+                    return BadRequest(result);
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Successfully inserted {Count} records for EventID: {EventID} (New ParentId: {ParentId})",
+                    CLASSNAME, methodName, request.Entities.Count, request.EventId, result.Data);
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while processing EventID: {EventID}",
+                    CLASSNAME, methodName, request?.EventId);
+
+                return StatusCode(500, new ResponseDto
+                {
+                    Success = false,
+                    Message = $"Internal server error: {ex.Message}",
+                    Data = null
+                });
             }
         }
 
-        
+
 
     }
 }

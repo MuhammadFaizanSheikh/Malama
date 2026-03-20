@@ -29,6 +29,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<ContainerNotification> ContainerNotification { get; }
         IGenericRepository<UserEventMapping> UserEventMapping { get; }
         IGenericRepository<LabStation> LabStation { get; }
+        IGenericRepository<ServiceMembersParent> ServiceMembersParent { get; }
+        IGenericRepository<ServiceMembersChild> ServiceMembersChild { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
         void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class;

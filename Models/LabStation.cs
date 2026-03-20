@@ -9,7 +9,7 @@ namespace Malama.Models
 {
     public class LabStationViewModel
     {
-        public List<FileDataDto> FileDataList { get; set; } = new();
+        public List<ServiceMembersChild> FileDataList { get; set; } = new();
         //public ImmunizationSummary Summary { get; set; } = new();
     }
     public class LabStation : GenericProperties
@@ -17,10 +17,10 @@ namespace Malama.Models
         public long Id { get; set; }
 
         // Foreign key to FileDataDto (1-to-1 or 1-to-many, depending on your flow)
-        public long FileDataId { get; set; }
+        public long ServiceMembersChildId { get; set; }
         [JsonIgnore]
         [ValidateNever]
-        public virtual FileDataDto FileData { get; set; }
+        public virtual ServiceMembersChild ServiceMembersChild { get; set; }
 
         public string AreYouFasting { get; set; }
         public string AnyComplicationInBloodDrawn { get; set; }

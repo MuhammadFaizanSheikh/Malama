@@ -78,6 +78,7 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 HttpContext.Session.Remove("GlobalEventId");
+                HttpContext.Session.Remove("EventVersion");
 
                 var user = await GetLoggedInUserAsync();
                 if (user == null)
@@ -190,6 +191,7 @@ namespace ExcelFilesCompiler.Controllers
 
             await UpdateUserClaimsAsync(user, selectedEventId, eventManagement.EventID, eventManagement.EventVersion, true);
             HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
+            HttpContext.Session.SetString("GlobalEventVersion", eventManagement.EventVersion.ToString());
 
             _logger.LogInformation("{ClassName}, {MethodName}, Event Manager claims updated successfully",
                 CLASSNAME, methodName);
@@ -235,6 +237,7 @@ namespace ExcelFilesCompiler.Controllers
             }
 
             HttpContext.Session.SetString("GlobalEventId", eventManagement.EventID);
+            HttpContext.Session.SetString("GlobalEventVersion", eventManagement.EventVersion.ToString());
 
             _logger.LogInformation("{ClassName}, {MethodName}, Event Staff claims updated successfully",
                 CLASSNAME, methodName);
