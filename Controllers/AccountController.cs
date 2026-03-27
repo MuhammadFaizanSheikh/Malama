@@ -115,9 +115,12 @@ namespace ExcelFilesCompiler.Controllers
             {
                 // Remove eventID session if previous staff logged in on same browser
                 HttpContext.Session.Remove("GlobalEventId");
+                HttpContext.Session.Remove("GlobalEventVersion");
+                HttpContext.Session.Remove("GlobalEventIdAndVersion");
+                HttpContext.Session.Remove("GlobalEventIdLong");
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Removed GlobalEventId session",
+                    "{ClassName}, {MethodName}, Removed Global sessions",
                     CLASSNAME, methodName);
 
                 if (!ModelState.IsValid)

@@ -92,7 +92,7 @@ namespace Malama.Models
         public bool? isDeleted { get; set; }
         public string? Barcode { get; set; }
 
-        public ImmunizationStation ImmunizationRecord { get; set; }
-        public LabStation LabStationRecord { get; set; }
+        public ImmunizationStation? ImmunizationRecord { get; set; }
+        public LabStation? LabStationRecord { get; set; }
     }
 }

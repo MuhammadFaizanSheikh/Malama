@@ -45,19 +45,22 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
+                string eventIDAndVersion = HttpContext.Session.GetString("GlobalEventIdAndVersion");
+                string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
-                //var dropdownList = eventIds.Select(e => new SelectListItem
-                //{
-                //    Value = e,
-                //    Text = e
-                //}).ToList();
+                if (string.IsNullOrWhiteSpace(eventIDAndVersion) || string.IsNullOrWhiteSpace(eventId) || !long.TryParse(eventId, out long eventIdLong))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Session Expired";
+                    TempData["ResponseMessage"] = "Your session has expired. Please reload the page or start again.";
 
-                //ViewBag.EventIdList = dropdownList;
-                string eventId = HttpContext.Session.GetString("GlobalEventId");
-                model.EventId = eventId;
+                    return RedirectToAction("Index");
+                }
+
+                model.EventId = eventIdLong;
+                model.EventIdAndVersion = eventIDAndVersion;
                 model.ListOfImmunizationVaccineInfo = await _immunizationVaccineInfoService
-                    .GetVaccineEntriesByEventIdAsync(eventId);
+                    .GetVaccineEntriesByEventIdAsync(eventIdLong);
 
                 return View("Index", model);
             }
@@ -111,7 +114,7 @@ namespace ExcelFilesCompiler.Controllers
         //}
 
         [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_View")]
-        public async Task<IActionResult> AddNewVaccine(string eventId)
+        public async Task<IActionResult> AddNewVaccine(long eventId, string eventIdAndVersion)
         {
             try
             {
@@ -119,7 +122,7 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     SingleImmunizationVaccineInfo = new ImmunizationVaccineInfo
                     {
-                        EventId = eventId,
+                        EventManagementId = eventId,
                         Lots = new List<ImmunizationVaccineLotEntry>()
                     }
                 };
@@ -141,6 +144,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 model.EventId = eventId;
+                model.EventIdAndVersion = eventIdAndVersion;
                 return View("Index", model);
             }
             catch (Exception ex)
@@ -175,8 +179,8 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseTitle"] = "Invalid Data";
                 TempData["ResponseMessage"] = message;
 
-                model.EventId = model.SingleImmunizationVaccineInfo.EventId;
-                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+                model.EventId = model.SingleImmunizationVaccineInfo.EventManagementId;
+                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventManagementId);
 
                 if (containerResponse.Success && containerResponse.Data is List<Container> containers)
                 {
@@ -235,8 +239,8 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = res.Message;
 
-                    model.EventId = model.SingleImmunizationVaccineInfo.EventId;
-                    var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+                    model.EventId = model.SingleImmunizationVaccineInfo.EventManagementId;
+                    var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventManagementId);
 
                     if (containerResponse.Success && containerResponse.Data is List<Container> containers)
                     {
@@ -268,7 +272,7 @@ namespace ExcelFilesCompiler.Controllers
 
         [RoleAttributeAuthorizeFromConfig("ImmunizationVaccineInfo_View")]
         [HttpGet]
-        public async Task<IActionResult> GetImmunizationVaccineInfoById(long immunizationId)
+        public async Task<IActionResult> GetImmunizationVaccineInfoById(long immunizationId, string eventIdAndVersion)
         {
             try
             {
@@ -302,10 +306,11 @@ namespace ExcelFilesCompiler.Controllers
                 var model = new ImmunizationVaccineViewModel
                 {
                     SingleImmunizationVaccineInfo = vaccineInfo,
-                    EventId = vaccineInfo.EventId
+                    EventId = vaccineInfo.EventManagementId,
+                    EventIdAndVersion = eventIdAndVersion
                 };
 
-                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventId);
+                var containerResponse = await _immunizationVaccineInfoService.GetContainersByEventIdAsync(model.SingleImmunizationVaccineInfo.EventManagementId);
 
                 if (containerResponse.Success && containerResponse.Data is List<Container> containers)
                 {

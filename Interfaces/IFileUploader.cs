@@ -9,13 +9,13 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> CheckForExistingDataAgainstEventIdAsync(string eventId, string addedBy);
         Task<ResponseDto> AddRecordsBulkAsync(List<FileDataDto> fileDataDtos, string eventId, string addedBy);
         //Task<List<string>> GetDistinctEventIdsAsync();
-        Task<List<ImmunizationStation>> GetImmunizationsByEventIdAsync(string eventId);
-        Task<List<LabStation>> GetLabStationByEventIdAsync(string eventId);
-        Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(string eventId);
-        Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string eventId, int eventVersion, string addedBy);
+        Task<List<ServiceMembersChild>> GetImmunizationsByEventIdAsync(long eventId);
+        Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId);
+        Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(long eventId);
+        Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, long eventId, string addedBy);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string addedBy);
         //Task<ServiceMembersChild> GetByIdAsync(long id);
-        Task<(ServiceMembersChild ServiceMembersChild, string EventId)> GetServiceMemberChildWithEventIdAsync(long serviceMemberChildId);
+        Task<(ServiceMembersChild ServiceMembersChild, long EventId)> GetServiceMemberChildWithEventIdAsync(long serviceMemberChildId);
         Task<ServiceMembersChild> GetByIdWithInclude(long id);
     }
 }

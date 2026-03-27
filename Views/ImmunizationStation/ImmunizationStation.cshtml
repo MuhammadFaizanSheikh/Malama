@@ -116,7 +116,7 @@
     </script>
 }
 
-<form id="ImmunizationForm" asp-action="SaveImmunization" asp-route-eventIdForRedirection="@Model.ServiceMembersChild.ServiceMembersParent.EventManagement.EventID" method="post">
+<form id="ImmunizationForm" asp-action="SaveImmunization" method="post">
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.Id)
@@ -129,25 +129,25 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Full Name:</span> @Model.ServiceMembersChild?.FullName</p>
+                    <p><span class="fw-bold">Full Name:</span> @Model.ServiceMembersChild.FullName</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOD ID:</span> @Model.ServiceMembersChild?.DodId</p>
+                    <p><span class="fw-bold">DOD ID:</span> @Model.ServiceMembersChild.DodId</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.ServiceMembersChild?.Barcode</p>
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @Model.ServiceMembersChild.Barcode</p>
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DOB:</span> @Model.ServiceMembersChild?.Dob</p>
+                    <p><span class="fw-bold">DOB:</span> @Model.ServiceMembersChild.Dob</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Age:</span> @Model.ServiceMembersChild?.Age</p>
+                    <p><span class="fw-bold">Age:</span> @Model.ServiceMembersChild.Age</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">Sex:</span> @Model.ServiceMembersChild?.Sex</p>
+                    <p><span class="fw-bold">Sex:</span> @Model.ServiceMembersChild.Sex</p>
                 </div>
             </div>
         </div>

@@ -33,16 +33,16 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<List<Container>> GetContainersByEventIdAsync(string eventId)
+        public async Task<List<Container>> GetContainersByEventIdAsync(long eventId)
         {
             return await _unitOfWork.Container
-                .GetWithInclude(x => x.EventId == eventId, x => x.ContainerType)
+                .GetWithInclude(x => x.EventManagementId == eventId, x => x.ContainerType)
                 .ToListAsync(); // <-- Materialize query
         }
 
-        public async Task<List<Container>> GetOnlyContainersByEventIdAsync(string eventId)
+        public async Task<List<Container>> GetOnlyContainersByEventIdAsync(long eventId)
         {
-            return await _unitOfWork.Container.FindForSearching(f => f.EventId == eventId).ToListAsync();
+            return await _unitOfWork.Container.FindForSearching(f => f.EventManagementId == eventId).ToListAsync();
         }
 
 
@@ -86,7 +86,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var existingContainer = await _unitOfWork.Container.FindAsync(c =>
             c.ContainerName.ToLower() == dto.ContainerName.ToLower().Trim() &&
-            c.EventId == dto.EventId
+            c.EventManagementId == dto.EventId
         );
 
                 if (existingContainer != null)
@@ -113,7 +113,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // 3️⃣ Build entity
                 var container = new Container
                 {
-                    EventId = dto.EventId,
+                    EventManagementId = dto.EventId,
                     ContainerName = dto.ContainerName,
                     ContainerTypeId = dto.ContainerTypeId,
                     StartDateTimeUtc = DateTime.Now,

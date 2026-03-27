@@ -59,32 +59,31 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                string eventId = HttpContext.Session.GetString("GlobalEventId");
-                string eventVersion = HttpContext.Session.GetString("GlobalEventVersion");
+                string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
                 if (string.IsNullOrEmpty(eventId))
                 {
                     _logger.LogWarning("GetEventDataByEventId: EventId is missing from session");
 
-                    return Json(new { success = false, message = "No EventID selected." });
+                    return Json(new { success = false, message = "No EventId selected." });
                 }
 
-                if (!int.TryParse(eventVersion, out int parsedEventVersion))
+                if (!int.TryParse(eventId, out int parsedEventId))
                 {
-                    _logger.LogWarning("GetEventDataByEventId: Invalid EventVersion: {EventVersion}", eventVersion);
+                    _logger.LogWarning("GetEventDataByEventId: Invalid EventId: {eventId}", eventId);
 
                     return Json(new { success = false, message = "Invalid EventVersion format." });
                 }
 
-                _logger.LogInformation("Fetching service members for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+                _logger.LogInformation("Fetching service members for EventId: {EventId}, Version: {Version}", eventId, parsedEventId);
 
                 // ✅ IMPORTANT FIX: await was missing
                 var data = await _eventManagementService
-                    .GetServiceMembersByEventAsync(eventId, parsedEventVersion);
+                    .GetServiceMembersByEventAsync(parsedEventId);
 
                 if (data == null || !data.Any())
                 {
-                    _logger.LogInformation("No data found for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+                    _logger.LogInformation("No data found for EventId: {EventId}", parsedEventId);
 
                     return new JsonResult(new { success = true, data = new List<FileDataDto>() }, new JsonSerializerOptions
                     {
@@ -119,8 +118,8 @@ namespace ExcelFilesCompiler.Controllers
                 if (string.IsNullOrEmpty(eventId))
                     return BadRequest("Event ID is required.");
 
-                var data = _fileUploader.GetImmunizationsByEventIdAsync(eventId);
-
+                //var data = _fileUploader.GetImmunizationsByEventIdAsync(eventId);
+                var data = string.Empty;
                 var result = new { success = true, data };
 
                 // 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)
@@ -201,8 +200,7 @@ namespace ExcelFilesCompiler.Controllers
                     });
                 }
 
-                string eventId = HttpContext.Session.GetString("GlobalEventId");
-                string eventVersion = HttpContext.Session.GetString("GlobalEventVersion");
+                string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
                 if (string.IsNullOrEmpty(eventId))
                 {
@@ -211,16 +209,16 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(new { success = false, message = "No EventID selected." });
                 }
 
-                if (!int.TryParse(eventVersion, out int parsedEventVersion))
+                if (!int.TryParse(eventId, out int parsedEventId))
                 {
-                    _logger.LogWarning("GetEventDataByEventId: Invalid EventVersion: {EventVersion}", eventVersion);
+                    _logger.LogWarning("GetEventDataByEventId: Invalid EventVersion: {EventId}", eventId);
 
                     return Json(new { success = false, message = "Invalid EventVersion format." });
                 }
 
-                _logger.LogInformation("Fetching service members for EventId: {EventId}, Version: {Version}", eventId, parsedEventVersion);
+                _logger.LogInformation("Fetching service members for EventId: {EventId}, ", eventId);
 
-                var response = await _fileUploader.AddSingleRecordAsync(dto, eventId, parsedEventVersion, user.UserName);
+                var response = await _fileUploader.AddSingleRecordAsync(dto, parsedEventId, user.UserName);
 
                 if (response.Success)
                     return Ok(response);

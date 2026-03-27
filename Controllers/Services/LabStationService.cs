@@ -50,7 +50,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    return await _unitOfWork.LabStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
         //}
 
-        public async Task<(LabStation LabStation, string EventId)> GetLabStationByIdWithEventIdAsync(long labStationId)
+        public async Task<(LabStation LabStation, long EventId)> GetLabStationByIdWithEventIdAsync(long labStationId)
         {
             const string methodName = "GetLabStationByIdWithEventIdAsync";
 
@@ -58,27 +58,28 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 _logger.LogDebug("{ClassName}, {MethodName}, Fetching LabStation with Id: {Id}", labStationId);
 
-                // Start from ServiceMembersChild but only project what we need
                 var result = await _unitOfWork.ServiceMembersChild
-                    .GetWithInclude(
-                        c => c.LabStationRecord != null && c.LabStationRecord.Id == labStationId, // Defensive null check
-                        c => c.LabStationRecord,
-                        c => c.ServiceMembersParent.EventManagement
-                    )
-                    .Select(c => new
-                    {
-                        LabStationRecord = c.LabStationRecord,
-                        EventId = c.ServiceMembersParent.EventManagement.EventID
-                    })
-                    .FirstOrDefaultAsync();
+                .GetWithInclude(
+                    c => c.LabStationRecord != null && c.LabStationRecord.Id == labStationId,
+                    c => c.LabStationRecord,                      // forward navigation
+                    c => c.ServiceMembersParent.EventManagement
+                )
+                .Include(c => c.LabStationRecord)               // ensure tracking
+                    .ThenInclude(ir => ir.ServiceMembersChild)   // include back navigation
+                .Select(c => new
+                {
+                    LabStation = c.LabStationRecord,
+                    EventId = c.ServiceMembersParent.EventManagement.Id
+                })
+                .FirstOrDefaultAsync();
 
-                if (result == null || result.LabStationRecord == null)
+                if (result == null || result.LabStation == null)
                 {
                     _logger.LogInformation("No LabStationRecord found with Id: {Id}", labStationId);
-                    return (null, null);
+                    return (null, 0);
                 }
 
-                return (result.LabStationRecord, result.EventId);
+                return (result.LabStation, result.EventId);
             }
             catch (Exception ex)
             {
@@ -345,7 +346,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             model.PregnancyTestGivenDateTime = model.PregnancyTestNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
         }
 
-        public async Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId)
+        public async Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(long eventId)
         {
             const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";
             _logger.LogInformation("{ClassName}, {MethodName}, Started for EventId={EventId}",
@@ -353,14 +354,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                if (string.IsNullOrWhiteSpace(eventId))
-                {
-                    _logger.LogWarning("{ClassName}, {MethodName}, EventId is null or empty",
-                        CLASSNAME, methodName);
-
-                    throw new ArgumentException("EventId is required.");
-                }
-
                 // 🔹 Fetch HIV lab data
                 var serviceMembersChild = await _fileUploader
                     .GetEventDataByEventIdForLabHivReport(eventId);
@@ -373,9 +366,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return Array.Empty<byte>();
                 }
 
-                // 🔹 Fetch Event details
-                var eventDto = await _eventManagementService
-                    .GetEventManagementByEventIdWithoutInclude(eventId);
+                var eventDto = serviceMembersChild.FirstOrDefault()?.ServiceMembersParent?.EventManagement;
 
                 if (eventDto == null)
                 {
@@ -384,7 +375,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     throw new KeyNotFoundException($"Event {eventId} not found.");
                 }
-
 
                 var contractDetail = await _contractService.GetContractById(eventDto.ContractId, string.Empty, false);
 

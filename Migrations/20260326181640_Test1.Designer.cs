@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260319160906_Test1")]
+    [Migration("20260326181640_Test1")]
     partial class Test1
     {
         /// <inheritdoc />
@@ -166,9 +166,8 @@ namespace Malama.Migrations
                     b.Property<int>("EscalationIntervalMinutes")
                         .HasColumnType("integer");
 
-                    b.Property<string>("EventId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("EventManagementId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("FinalTemp")
                         .HasColumnType("boolean");
@@ -194,6 +193,8 @@ namespace Malama.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ContainerTypeId");
+
+                    b.HasIndex("EventManagementId");
 
                     b.ToTable("Container");
                 });
@@ -1694,10 +1695,8 @@ namespace Malama.Migrations
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("EventId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<long>("EventManagementId")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("FinalDoses")
                         .HasColumnType("integer");
@@ -1733,6 +1732,8 @@ namespace Malama.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventManagementId");
 
                     b.ToTable("ImmunizationVaccineInfo");
                 });
@@ -1947,6 +1948,12 @@ namespace Malama.Migrations
                     b.Property<string>("AboNeeded")
                         .HasColumnType("text");
 
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int?>("Age")
                         .HasColumnType("integer");
 
@@ -2142,6 +2149,12 @@ namespace Malama.Migrations
                     b.Property<string>("Uic")
                         .HasColumnType("text");
 
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("Varicella")
                         .HasColumnType("text");
 
@@ -2165,7 +2178,8 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ServiceMembersParentId");
+                    b.HasIndex("ServiceMembersParentId", "SmId")
+                        .IsUnique();
 
                     b.ToTable("ServiceMembersChild");
                 });
@@ -2719,7 +2733,15 @@ namespace Malama.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Malama.Models.EventManagement", "EventManagement")
+                        .WithMany("Container")
+                        .HasForeignKey("EventManagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("ContainerType");
+
+                    b.Navigation("EventManagement");
                 });
 
             modelBuilder.Entity("Malama.Models.ContainerNotification", b =>
@@ -2921,6 +2943,17 @@ namespace Malama.Migrations
                     b.Navigation("VaricellaVaccineLot");
                 });
 
+            modelBuilder.Entity("Malama.Models.ImmunizationVaccineInfo", b =>
+                {
+                    b.HasOne("Malama.Models.EventManagement", "EventManagement")
+                        .WithMany("ImmunizationVaccineInfo")
+                        .HasForeignKey("EventManagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventManagement");
+                });
+
             modelBuilder.Entity("Malama.Models.ImmunizationVaccineLotEntry", b =>
                 {
                     b.HasOne("Malama.Models.Container", "Container")
@@ -2965,7 +2998,7 @@ namespace Malama.Migrations
             modelBuilder.Entity("Malama.Models.ServiceMembersParent", b =>
                 {
                     b.HasOne("Malama.Models.EventManagement", "EventManagement")
-                        .WithMany("ServiceMembersParent")
+                        .WithMany("ServiceMembersParents")
                         .HasForeignKey("EventManagementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3096,6 +3129,8 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.EventManagement", b =>
                 {
+                    b.Navigation("Container");
+
                     b.Navigation("EventManagementTaskforcesList");
 
                     b.Navigation("EventServiceDetailList");
@@ -3104,7 +3139,9 @@ namespace Malama.Migrations
 
                     b.Navigation("EventStartEndTimeDayWiseList");
 
-                    b.Navigation("ServiceMembersParent");
+                    b.Navigation("ImmunizationVaccineInfo");
+
+                    b.Navigation("ServiceMembersParents");
                 });
 
             modelBuilder.Entity("Malama.Models.EventStaff", b =>

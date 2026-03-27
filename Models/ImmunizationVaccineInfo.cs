@@ -11,7 +11,9 @@ namespace Malama.Models
     public class ImmunizationVaccineViewModel
     {
         [ValidateNever]
-        public string EventId { get; set; }
+        public long EventId { get; set; }
+        [ValidateNever]
+        public string EventIdAndVersion { get; set; }
         public List<ImmunizationVaccineInfoForPreview>? ListOfImmunizationVaccineInfo { get; set; }
         public ImmunizationVaccineInfo SingleImmunizationVaccineInfo { get; set; }
     }
@@ -44,9 +46,12 @@ namespace Malama.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required(ErrorMessage = "Event ID is required")]
-        [StringLength(50, ErrorMessage = "Event ID cannot exceed 50 characters")]
-        public string EventId { get; set; }  // readonly in UI, but still validated
+        public long EventManagementId { get; set; }
+
+        [ForeignKey("EventManagementId")]
+        [JsonIgnore]
+        [ValidateNever]
+        public virtual EventManagement EventManagement { get; set; }
 
         [Required(ErrorMessage = "Event Date is required")]
         [DataType(DataType.Date)]

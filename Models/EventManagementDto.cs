@@ -356,7 +356,10 @@
 
         public List<EventStaffDetail> EventStaffDetailList { get; set; } = new List<EventStaffDetail>();
         public List<EventManagementTaskforces> EventManagementTaskforcesList { get; set; } = new List<EventManagementTaskforces>();
-        public ServiceMembersParent ServiceMembersParent { get; set; }
+
+        public ICollection<ServiceMembersParent> ServiceMembersParents { get; set; } = new List<ServiceMembersParent>();
+        public ICollection<Container> Container { get; set; } = new List<Container>();
+        public ICollection<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; set; } = new List<ImmunizationVaccineInfo>();
     }
 
     [Table("EventServiceDetail")]

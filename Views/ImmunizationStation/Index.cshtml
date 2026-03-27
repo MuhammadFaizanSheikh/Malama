@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Malama.Models.FileDataDto>
+﻿@model IEnumerable<Malama.Models.ServiceMembersChild>
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
@@ -97,7 +97,6 @@
 
 
 <h2 id="page-heading" >Immunization Station</h2>
-@* <h2 id="page-heading">Event ID : @selectedEventId</h2> *@
 
 @if (TempData["ResponseMessage"] != null)
 {

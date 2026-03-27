@@ -19,20 +19,17 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         List<string> dateHeaderNames = new List<string> { "DOB", "Date of Next Exam", "PHA Date", "Next PHA Date", "Date of Vision Screen", "Audiogram Date", "Sickle Cell Date", "G6PD Date", "Next Test Date" };
         private string DateFormat = "MM/dd/yyyy";
-
-        private readonly IGenericRepository<ServiceMembersChild> _serviceMembersChild;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IEventManagementService _eventManagementService;
         private readonly ILogger<FileUploader> _logger;
         private const string CLASSNAME = "FileUploader";
 
-        public FileUploader(IGenericRepository<ServiceMembersChild> serviceMembersChild, ILogger<FileUploader> logger, IEventManagementService eventManagementService, IUnitOfWork unitOfWork,IMapper mapper)
+        public FileUploader(ILogger<FileUploader> logger, IEventManagementService eventManagementService, IUnitOfWork unitOfWork,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _eventManagementService = eventManagementService;
-            _serviceMembersChild = serviceMembersChild;
             _logger = logger;
         }
 
@@ -125,12 +122,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
 
                     // Map FileDataDto to new parent + children
-                    var newParent = MapToParentEntity(fileDataDtos, eventManagementId, addedBy);
+                    //var newParent = MapToParentEntity(fileDataDtos, eventManagementId, addedBy);
+                    var newServiceMembersParent = MapToServiceMembersParent(fileDataDtos.FirstOrDefault(), eventManagementId, addedBy);
+                    newServiceMembersParent.ServiceMembersChildren = MapToServiceMembersChildren(fileDataDtos, addedBy);
+                    //var parentEntity = MapToServiceMembersParent(fileDataDtos.First(), eventId, updatedBy, childEntities);
 
-                    await _unitOfWork.ServiceMembersParent.AddAsync(newParent);
+                    await _unitOfWork.ServiceMembersParent.AddAsync(newServiceMembersParent);
 
                     _logger.LogInformation("{ClassName}, {MethodName}, Added new ServiceMembersParent (ID: {ParentId}) with {Count} children for EventID: {EventID} by User: {UserName}",
-                        CLASSNAME, methodName, newParent.Id, newParent.ServiceMembersChildren.Count, eventId, addedBy);
+                        CLASSNAME, methodName, newServiceMembersParent.Id, newServiceMembersParent.ServiceMembersChildren.Count, eventId, addedBy);
 
                     // Commit transaction
                     await transaction.CommitAsync();
@@ -142,7 +142,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         Success = true,
                         Message = $"Successfully inserted {fileDataDtos.Count} records for EventID {eventId} (V{eventVersion}).",
-                        Data = newParent.Id
+                        Data = newServiceMembersParent.Id
                     };
                 }
                 catch
@@ -265,7 +265,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return validationErrors;
         }
 
-        public async Task<List<ImmunizationStation>> GetImmunizationsByEventIdAsync(string eventId)
+        public async Task<List<ServiceMembersChild>> GetImmunizationsByEventIdAsync(long eventId)
         {
             try
             {
@@ -273,14 +273,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithInclude(
-                        c => c.ServiceMembersParent.EventManagement.EventID == eventId &&
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.Imm == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == "Yes",
-                        c => c.ImmunizationRecord,
-                        c => c.ServiceMembersParent.EventManagement
+                        c => c.ImmunizationRecord
                     )
-                    .Select(c => c.ImmunizationRecord) // Only return ImmunizationRecord
-                    .Where(i => i != null)
                     .ToListAsync();
 
                 _logger.LogInformation("Found {Count} ImmunizationRecords for EventID={EventId}", result.Count, eventId);
@@ -294,7 +291,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<List<LabStation>> GetLabStationByEventIdAsync(string eventId)
+        public async Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId)
         {
             try
             {
@@ -302,14 +299,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithInclude(
-                        c => c.ServiceMembersParent.EventManagement.EventID == eventId &&
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == "Yes",
-                        c => c.LabStationRecord,
-                        c => c.ServiceMembersParent.EventManagement
+                        c => c.LabStationRecord
                     )
-                    .Select(c => c.LabStationRecord) // Only return ImmunizationRecord
-                    .Where(i => i != null)
                     .ToListAsync();
 
                 _logger.LogInformation("Found {Count} LabStation for EventID={EventId}", result.Count, eventId);
@@ -337,7 +331,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    }
         //}
 
-        public async Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(string eventId)
+        public async Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(long eventId)
         {
             try
             {
@@ -345,7 +339,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var result = await _unitOfWork.ServiceMembersChild
             .GetWithInclude(
-                c => c.ServiceMembersParent.EventManagement.EventID == eventId,
+                c => c.ServiceMembersParent.EventManagement.Id == eventId,
                 c => c.LabStationRecord,
                 c => c.ServiceMembersParent.EventManagement
             )
@@ -364,21 +358,21 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, string eventId, int eventVersion, string addedBy)
+        public async Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, long eventId, string addedBy)
         {
             string methodName = nameof(AddSingleRecordAsync);
 
             try
             {
-                _logger.LogInformation("{ClassName}, {MethodName}, Add single record started for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
-                    CLASSNAME, methodName, eventId, eventVersion, addedBy);
+                _logger.LogInformation("{ClassName}, {MethodName}, Add single record started for EventID: {EventID}, by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
 
-                var (parent, children) = await GetServiceMembersByEventAsync(eventId, eventVersion);
+                var (parent, children) = await GetServiceMembersByEventAsync(eventId);
 
                 if (parent == null)
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
-                        CLASSNAME, methodName, eventId, eventVersion, addedBy);
+                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventID: {EventID} by User: {UserName}",
+                        CLASSNAME, methodName, eventId, addedBy);
 
                     return new ResponseDto
                     {
@@ -414,12 +408,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                             }
                         }
 
-                        // ✅ Map child (reuse your existing mapping via parent method)
                         var singleDtoList = new List<FileDataDto> { dto };
-                        var parentEntity = MapToParentEntity(singleDtoList, 0, addedBy);
-                        var child = parentEntity.ServiceMembersChildren.First();
+                        var childEntities = MapToServiceMembersChildren(singleDtoList, addedBy, isUpdate: false);
 
-                        // ✅ Correct FK assignment
+                        var child = childEntities.FirstOrDefault();
+
+                        if (child == null)
+                        {
+                            _logger.LogError("{ClassName}, {MethodName}, Mapping resulted in null",
+                                CLASSNAME, methodName);
+
+                            return new ResponseDto
+                            {
+                                Success = false,
+                                Message = "Failed to map DTO to entity.",
+                                Data = null
+                            };
+                        }
+
                         child.ServiceMembersParentId = parent.Id;
 
                         await _unitOfWork.ServiceMembersChild.AddAsync(child);
@@ -456,8 +462,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Error occurred while adding single record for EventID: {EventID}, EventVersion: {EventVersion} by User: {UserName}",
-                    CLASSNAME, methodName, eventId, eventVersion, addedBy);
+                    "{ClassName}, {MethodName}, Error occurred while adding single record for EventID: {EventID} by User: {UserName}",
+                    CLASSNAME, methodName, eventId, addedBy);
 
                 return new ResponseDto
                 {
@@ -485,9 +491,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
-                var existingRecord = await _serviceMembersChild.GetByIdAsync(dto.Id);
+                var existingChild = await _unitOfWork.ServiceMembersChild.GetByIdAsync(dto.Id);
 
-                if (existingRecord == null)
+                if (existingChild == null)
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, No existing record found for Id: {Id}",
                         CLASSNAME, methodName, dto.Id);
@@ -503,11 +509,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, Mapping DTO to existing record Id: {Id}",
                     CLASSNAME, methodName, dto.Id);
 
-                // Map DTO -> existing child
                 var singleDtoList = new List<FileDataDto> { dto };
-                var parentEntity = MapToParentEntity(singleDtoList, 0, updatedBy, isUpdate: true, existingRecord);
+                var childEntities = MapToServiceMembersChildren(singleDtoList, addedBy: updatedBy, isUpdate: true, existingChild: existingChild);
 
-                var child = parentEntity.ServiceMembersChildren.FirstOrDefault();
+                var child = childEntities.FirstOrDefault();
+                
                 if (child == null)
                 {
                     _logger.LogError("{ClassName}, {MethodName}, Mapping resulted in null child for Id: {Id}",
@@ -520,14 +526,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                         Data = null
                     };
                 }
-
-                //WalkInServiceMember
-                //Barcode
+                child.ServiceMembersParentId = existingChild.ServiceMembersParentId;
+                child.Id = existingChild.Id;
+                child.WalkInServiceMember = existingChild.WalkInServiceMember;
+                child.Barcode = existingChild.Barcode;
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Calling UpdateAsync for Id: {Id}",
                     CLASSNAME, methodName, dto.Id);
 
-                await _serviceMembersChild.UpdateAsync(child);
+                await _unitOfWork.ServiceMembersChild.UpdateAsync(child);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Successfully updated record Id: {Id}",
                     CLASSNAME, methodName, dto.Id);
@@ -558,14 +565,14 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    return await fileUploaderRepository.GetByIdAsync(id);
         //}
 
-        public async Task<(ServiceMembersChild ServiceMembersChild, string EventId)> GetServiceMemberChildWithEventIdAsync(long serviceMemberChildId)
+        public async Task<(ServiceMembersChild ServiceMembersChild, long EventId)> GetServiceMemberChildWithEventIdAsync(long serviceMemberChildId)
         {
             try
             {
                 if (serviceMemberChildId <= 0)
                 {
                     _logger.LogWarning("GetServiceMemberChildWithEventIdAsync called with invalid Id: {Id}", serviceMemberChildId);
-                    return (null, null);
+                    return (null, 0);
                 }
 
                 _logger.LogInformation("Fetching ServiceMembersChild Id={Id} with EventID", serviceMemberChildId);
@@ -579,14 +586,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .Select(c => new
                     {
                         ServiceMembersChild = c,
-                        EventId = c.ServiceMembersParent.EventManagement.EventID
+                        EventId = c.ServiceMembersParent.EventManagement.Id
                     })
                     .FirstOrDefaultAsync();
 
                 if (result == null || result.ServiceMembersChild == null)
                 {
                     _logger.LogInformation("No ServiceMembersChild found with Id: {Id}", serviceMemberChildId);
-                    return (null, null);
+                    return (null, 0);
                 }
 
                 return (result.ServiceMembersChild, result.EventId);
@@ -2079,106 +2086,207 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private ServiceMembersParent MapToParentEntity(List<FileDataDto> fileDataDtos, long eventId, string addedBy, bool isUpdate = false, ServiceMembersChild existingServiceMembersChild = null)
-        {
-            var first = fileDataDtos.First();
-            DateTime addedDateTime = DateTime.Now;
+        //private ServiceMembersParent MapToParentEntity(List<FileDataDto> fileDataDtos, long eventId, string addedBy, bool isUpdate = false, ServiceMembersChild existingServiceMembersChild = null)
+        //{
+        //    var first = fileDataDtos.First();
+        //    DateTime addedDateTime = DateTime.Now;
 
-            var parent = new ServiceMembersParent
+        //    var parent = new ServiceMembersParent
+        //    {
+        //        EventManagementId = eventId,
+        //        VisionWin = first.VisionWin,
+        //        DentalWin = first.DentalWin,
+        //        PhaWin = first.PhaWin,
+        //        HivWin = first.HivWin,
+        //        HearingWin = first.HearingWin,
+        //        //isDeleted = first.isDeleted,
+        //        AddedBy = addedBy,
+        //        AddedOn = addedDateTime,
+
+        //        ServiceMembersChildren = fileDataDtos.Select(dto => new ServiceMembersChild
+        //        {
+        //            SmId = dto.SmId,
+        //            FullName = dto.FullName,
+        //            FullSsn = dto.FullSsn,
+        //            Last4 = dto.Last4,
+        //            DodId = dto.DodId,
+        //            Rank = dto.Rank,
+        //            Age = dto.Age,
+        //            Sex = dto.Sex,
+        //            Mos = dto.Mos,
+        //            Agr = dto.Agr,
+        //            Uic = dto.Uic,
+        //            Mrc = dto.Mrc,
+        //            Dob = dto.Dob,
+        //            Over40 = dto.Over40,
+        //            DentalDue = dto.DentalDue,
+        //            DentalExam = dto.DentalExam,
+        //            DentalNeeded = dto.DentalNeeded,
+        //            PanoNeeded = dto.PanoNeeded,
+        //            BwxNeeded = dto.BwxNeeded,
+        //            Drc = dto.Drc,
+        //            PhaDate = dto.PhaDate,
+        //            PhaDue = dto.PhaDue,
+        //            Pha = dto.Pha,
+        //            Pulhes = dto.Pulhes,
+        //            VisionDate = dto.VisionDate,
+        //            Vision = dto.Vision,
+        //            NearVision = dto.NearVision,
+        //            Vrc = dto.Vrc,
+        //            Vision2pg = dto.Vision2pg,
+        //            Vision1mi = dto.Vision1mi,
+        //            HearingDate = dto.HearingDate,
+        //            Hearing = dto.Hearing,
+        //            Hrc = dto.Hrc,
+        //            HearingProfile = dto.HearingProfile,
+        //            Quest = dto.Quest,
+        //            LabNeeded = dto.LabNeeded,
+        //            Abo = dto.Abo,
+        //            AboNeeded = dto.AboNeeded,
+        //            Dna = dto.Dna,
+        //            SickleDate = dto.SickleDate,
+        //            Sickle = dto.Sickle,
+        //            G6pd = dto.G6pd,
+        //            G6pdDate = dto.G6pdDate,
+        //            G6pdStatus = dto.G6pdStatus,
+        //            HivNextTestDate = dto.HivNextTestDate,
+        //            Hiv = dto.Hiv,
+        //            LipidNeeded = dto.LipidNeeded,
+        //            LipidPanel = dto.LipidPanel,
+        //            CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol,
+        //            Framingham = dto.Framingham,
+        //            Ekg = dto.Ekg,
+        //            EkgNeeded = dto.EkgNeeded,
+        //            PregnancyTestNeeded = dto.PregnancyTestNeeded,
+        //            Imm = dto.Imm,
+        //            HepB = dto.HepB,
+        //            HepA = dto.HepA,
+        //            Flu = dto.Flu,
+        //            TetTdp = dto.TetTdp,
+        //            Mmr = dto.Mmr,
+        //            Varicella = dto.Varicella,
+        //            TaskForce = dto.TaskForce,
+        //            Notes = dto.Notes,
+        //            Over44 = dto.Over44,
+        //            EventDate = dto.EventDate,
+        //            EventEndDate = dto.EventEndDate,
+        //            CheckIn = dto.CheckIn,
+        //            CheckInBy = dto.CheckInBy,
+        //            CheckInTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime),
+        //            CheckOut = dto.CheckOut,
+        //            CheckOutBy = dto.CheckOutBy,
+        //            CheckOutTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime),
+        //            WalkInServiceMember = dto.WalkInServiceMember,
+        //            Barcode = dto.Barcode,
+        //            AddedBy = isUpdate ? existingServiceMembersChild.AddedBy : addedBy,
+        //            AddedOn = isUpdate ? existingServiceMembersChild.AddedOn : addedDateTime,
+        //            UpdatedBy = isUpdate ? addedBy : null,
+        //            UpdatedOn = isUpdate ? addedDateTime : null
+        //        }).ToList()
+        //    };
+
+        //    return parent;
+        //}
+
+        private ServiceMembersParent MapToServiceMembersParent(FileDataDto dto, long eventId, string addedBy, List<ServiceMembersChild> children = null)
+        {
+            return new ServiceMembersParent
             {
                 EventManagementId = eventId,
-                VisionWin = first.VisionWin,
-                DentalWin = first.DentalWin,
-                PhaWin = first.PhaWin,
-                HivWin = first.HivWin,
-                HearingWin = first.HearingWin,
-                //isDeleted = first.isDeleted,
+                VisionWin = dto.VisionWin,
+                DentalWin = dto.DentalWin,
+                PhaWin = dto.PhaWin,
+                HivWin = dto.HivWin,
+                HearingWin = dto.HearingWin,
                 AddedBy = addedBy,
-                AddedOn = addedDateTime,
-
-                ServiceMembersChildren = fileDataDtos.Select(dto => new ServiceMembersChild
-                {
-                    SmId = dto.SmId,
-                    FullName = dto.FullName,
-                    FullSsn = dto.FullSsn,
-                    Last4 = dto.Last4,
-                    DodId = dto.DodId,
-                    Rank = dto.Rank,
-                    Age = dto.Age,
-                    Sex = dto.Sex,
-                    Mos = dto.Mos,
-                    Agr = dto.Agr,
-                    Uic = dto.Uic,
-                    Mrc = dto.Mrc,
-                    Dob = dto.Dob,
-                    Over40 = dto.Over40,
-                    DentalDue = dto.DentalDue,
-                    DentalExam = dto.DentalExam,
-                    DentalNeeded = dto.DentalNeeded,
-                    PanoNeeded = dto.PanoNeeded,
-                    BwxNeeded = dto.BwxNeeded,
-                    Drc = dto.Drc,
-                    PhaDate = dto.PhaDate,
-                    PhaDue = dto.PhaDue,
-                    Pha = dto.Pha,
-                    Pulhes = dto.Pulhes,
-                    VisionDate = dto.VisionDate,
-                    Vision = dto.Vision,
-                    NearVision = dto.NearVision,
-                    Vrc = dto.Vrc,
-                    Vision2pg = dto.Vision2pg,
-                    Vision1mi = dto.Vision1mi,
-                    HearingDate = dto.HearingDate,
-                    Hearing = dto.Hearing,
-                    Hrc = dto.Hrc,
-                    HearingProfile = dto.HearingProfile,
-                    Quest = dto.Quest,
-                    LabNeeded = dto.LabNeeded,
-                    Abo = dto.Abo,
-                    AboNeeded = dto.AboNeeded,
-                    Dna = dto.Dna,
-                    SickleDate = dto.SickleDate,
-                    Sickle = dto.Sickle,
-                    G6pd = dto.G6pd,
-                    G6pdDate = dto.G6pdDate,
-                    G6pdStatus = dto.G6pdStatus,
-                    HivNextTestDate = dto.HivNextTestDate,
-                    Hiv = dto.Hiv,
-                    LipidNeeded = dto.LipidNeeded,
-                    LipidPanel = dto.LipidPanel,
-                    CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol,
-                    Framingham = dto.Framingham,
-                    Ekg = dto.Ekg,
-                    EkgNeeded = dto.EkgNeeded,
-                    PregnancyTestNeeded = dto.PregnancyTestNeeded,
-                    Imm = dto.Imm,
-                    HepB = dto.HepB,
-                    HepA = dto.HepA,
-                    Flu = dto.Flu,
-                    TetTdp = dto.TetTdp,
-                    Mmr = dto.Mmr,
-                    Varicella = dto.Varicella,
-                    TaskForce = dto.TaskForce,
-                    Notes = dto.Notes,
-                    Over44 = dto.Over44,
-                    EventDate = dto.EventDate,
-                    EventEndDate = dto.EventEndDate,
-                    CheckIn = dto.CheckIn,
-                    CheckInBy = dto.CheckInBy,
-                    CheckInTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime),
-                    CheckOut = dto.CheckOut,
-                    CheckOutBy = dto.CheckOutBy,
-                    CheckOutTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime),
-                    WalkInServiceMember = dto.WalkInServiceMember,
-                    Barcode = dto.Barcode,
-                    AddedBy = isUpdate ? existingServiceMembersChild.AddedBy : addedBy,
-                    AddedOn = isUpdate ? existingServiceMembersChild.AddedOn : addedDateTime,
-                    UpdatedBy = isUpdate ? addedBy : null,
-                    UpdatedOn = isUpdate ? addedDateTime : null
-                }).ToList()
+                AddedOn = DateTime.Now,
+                ServiceMembersChildren = children ?? new List<ServiceMembersChild>()
             };
+        }
+        private List<ServiceMembersChild> MapToServiceMembersChildren(List<FileDataDto> fileDataDtos, string addedBy, bool isUpdate = false, ServiceMembersChild existingChild = null)
+        {
+            DateTime addedDateTime = DateTime.Now;
 
-            return parent;
+            return fileDataDtos.Select(dto => new ServiceMembersChild
+            {
+                SmId = dto.SmId,
+                FullName = dto.FullName,
+                FullSsn = dto.FullSsn,
+                Last4 = dto.Last4,
+                DodId = dto.DodId,
+                Rank = dto.Rank,
+                Age = dto.Age,
+                Sex = dto.Sex,
+                Mos = dto.Mos,
+                Agr = dto.Agr,
+                Uic = dto.Uic,
+                Mrc = dto.Mrc,
+                Dob = dto.Dob,
+                Over40 = dto.Over40,
+                DentalDue = dto.DentalDue,
+                DentalExam = dto.DentalExam,
+                DentalNeeded = dto.DentalNeeded,
+                PanoNeeded = dto.PanoNeeded,
+                BwxNeeded = dto.BwxNeeded,
+                Drc = dto.Drc,
+                PhaDate = dto.PhaDate,
+                PhaDue = dto.PhaDue,
+                Pha = dto.Pha,
+                Pulhes = dto.Pulhes,
+                VisionDate = dto.VisionDate,
+                Vision = dto.Vision,
+                NearVision = dto.NearVision,
+                Vrc = dto.Vrc,
+                Vision2pg = dto.Vision2pg,
+                Vision1mi = dto.Vision1mi,
+                HearingDate = dto.HearingDate,
+                Hearing = dto.Hearing,
+                Hrc = dto.Hrc,
+                HearingProfile = dto.HearingProfile,
+                Quest = dto.Quest,
+                LabNeeded = dto.LabNeeded,
+                Abo = dto.Abo,
+                AboNeeded = dto.AboNeeded,
+                Dna = dto.Dna,
+                SickleDate = dto.SickleDate,
+                Sickle = dto.Sickle,
+                G6pd = dto.G6pd,
+                G6pdDate = dto.G6pdDate,
+                G6pdStatus = dto.G6pdStatus,
+                HivNextTestDate = dto.HivNextTestDate,
+                Hiv = dto.Hiv,
+                LipidNeeded = dto.LipidNeeded,
+                LipidPanel = dto.LipidPanel,
+                CholesterolHdlCholesterol = dto.CholesterolHdlCholesterol,
+                Framingham = dto.Framingham,
+                Ekg = dto.Ekg,
+                EkgNeeded = dto.EkgNeeded,
+                PregnancyTestNeeded = dto.PregnancyTestNeeded,
+                Imm = dto.Imm,
+                HepB = dto.HepB,
+                HepA = dto.HepA,
+                Flu = dto.Flu,
+                TetTdp = dto.TetTdp,
+                Mmr = dto.Mmr,
+                Varicella = dto.Varicella,
+                TaskForce = dto.TaskForce,
+                Notes = dto.Notes,
+                Over44 = dto.Over44,
+                EventDate = dto.EventDate,
+                EventEndDate = dto.EventEndDate,
+                CheckIn = dto.CheckIn,
+                CheckInBy = dto.CheckInBy,
+                CheckInTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckInTime),
+                CheckOut = dto.CheckOut,
+                CheckOutBy = dto.CheckOutBy,
+                CheckOutTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime),
+                WalkInServiceMember = dto.WalkInServiceMember,
+                Barcode = dto.Barcode,
+                AddedBy = isUpdate ? existingChild?.AddedBy : addedBy,
+                AddedOn = isUpdate ? existingChild?.AddedOn ?? addedDateTime : addedDateTime,
+                UpdatedBy = isUpdate ? addedBy : null,
+                UpdatedOn = isUpdate ? addedDateTime : null
+            }).ToList();
         }
 
         private async Task<(ResponseDto Response, EventManagement EventManagement, ServiceMembersParent ExistingParent)>
@@ -2193,12 +2301,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 // Fetch EventManagement with related parents
                 var eventManagement = await _unitOfWork.EventManagement
-                    .GetWithInclude(
-                        x => x.EventID == eventId,
-                        x => x.ServiceMembersParent
-                    )
-                    .OrderByDescending(x => x.EventVersion)
-                    .FirstOrDefaultAsync();
+                .GetWithInclude(
+                    x => x.EventID == eventId,
+                    x => x.ServiceMembersParents
+                )
+                .OrderByDescending(x => x.EventVersion)
+                .FirstOrDefaultAsync();
 
                 if (eventManagement == null)
                 {
@@ -2220,10 +2328,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     CLASSNAME, methodName, eventVersion, eventId, addedBy);
 
 
-                // Check for existing parent
-                var existingParent = eventManagement.ServiceMembersParent;
+                var existingParent = eventManagement?.ServiceMembersParents.FirstOrDefault(p => !(p.isDeleted ?? false));
 
-                if (existingParent == null || existingParent.isDeleted.GetValueOrDefault())
+                if (existingParent == null)
                 {
                     // Parent does not exist or is marked deleted
                     existingParent = null;
@@ -2245,39 +2352,41 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<(ServiceMembersParent Parent, List<ServiceMembersChild> Children)>GetServiceMembersByEventAsync(string eventId, int eventVersion)
+        public async Task<(ServiceMembersParent serviceMembersParent, List<ServiceMembersChild> serviceMembersChildren)>GetServiceMembersByEventAsync(long eventId)
         {
             try
             {
-                _logger.LogInformation("{ClassName}, {MethodName}, Fetching ServiceMembersParent for EventId: {EventId}, EventVersion: {EventVersion}",
-                    eventId, eventVersion);
+                _logger.LogInformation("{ClassName}, {MethodName}, Fetching ServiceMembersParent for EventId: {EventId}",
+                    eventId);
 
-                var eventManagement = await _unitOfWork.EventManagement
-                    .GetWithInclude(
-                        x => x.EventID == eventId && x.EventVersion == eventVersion,
-                        x => x.ServiceMembersParent,
-                        x => x.ServiceMembersParent.ServiceMembersChildren
-                    )
-                    .FirstOrDefaultAsync();
+                var serviceMembersParent = await _unitOfWork.EventManagement
+                .GetWithInclude(
+                    x => x.Id == eventId
+                )
+                .Include(x => x.ServiceMembersParents)
+                    .ThenInclude(p => p.ServiceMembersChildren)
+                .SelectMany(em => em.ServiceMembersParents)
+                .Where(p => !(p.isDeleted ?? false))
+                .OrderBy(p => p.Id)
+                .FirstOrDefaultAsync();
 
-                if (eventManagement?.ServiceMembersParent == null)
+                if (serviceMembersParent == null)
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventId: {EventId}, EventVersion: {EventVersion}",
-                        eventId, eventVersion);
+                    _logger.LogWarning("{ClassName}, {MethodName}, No ServiceMembersParent found for EventId: {EventId}",
+                        eventId);
                     return (null, new List<ServiceMembersChild>());
                 }
 
-                var parent = eventManagement.ServiceMembersParent;
-                var children = parent.ServiceMembersChildren?.ToList() ?? new List<ServiceMembersChild>();
+                var serviceMembersChildren = serviceMembersParent.ServiceMembersChildren?.ToList() ?? new List<ServiceMembersChild>();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Found ServiceMembersParent with {ChildCount} children");
 
-                return (parent, children);
+                return (serviceMembersParent, serviceMembersChildren);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName},Error fetching ServiceMembersParent for EventId: {EventId}, EventVersion: {EventVersion}",
-                    eventId, eventVersion);
+                _logger.LogError(ex, "{ClassName}, {MethodName},Error fetching ServiceMembersParent for EventId: {EventId}",
+                    eventId);
                 throw;
             }
         }

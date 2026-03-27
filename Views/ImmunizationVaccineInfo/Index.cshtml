@@ -195,7 +195,7 @@
                     {
                         <tr>
                             <td>
-                                <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                                <a asp-action="GetImmunizationVaccineInfoById" asp-route-immunizationId="@c.Id" asp-route-eventIdAndVersion="@Model.EventIdAndVersion" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                             </td>
                             <td>@c.ImmunizationType</td>
                             <td>@c.Vaccine</td>
@@ -215,22 +215,24 @@
     </div>
 
     <div class="text-center mt-4 pb-4">
-        <a asp-action="AddNewVaccine" asp-route-eventId="@Model.EventId" class="btn btn-general" id="addInventoryBtn">Add Inventory</a>
+        <a asp-action="AddNewVaccine" asp-route-eventId="@Model.EventId" asp-route-eventIdAndVersion="@Model.EventIdAndVersion" class="btn btn-general" id="addInventoryBtn">Add Inventory</a>
 
     </div>
 }
 <div id="vaccineFormDiv">
     @if (Model != null && Model.SingleImmunizationVaccineInfo != null)
     {
-        @* <h2 id="page-heading">Event ID : @Model.EventId</h2> *@
         <form asp-action="SaveVaccineEntry" method="post">
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label asp-for="SingleImmunizationVaccineInfo.EventId" class="form-label">Event ID</label>
-                    <input asp-for="SingleImmunizationVaccineInfo.EventId" class="form-control" readonly placeholder="Event ID" required />
-                    <span asp-validation-for="SingleImmunizationVaccineInfo.EventId" class="text-danger"></span>
+                    <label asp-for="SingleImmunizationVaccineInfo.EventManagementId" class="form-label">Event ID</label>
+                    <input value="@Model.EventIdAndVersion" class="form-control" readonly />
+                    <input type="hidden" asp-for="SingleImmunizationVaccineInfo.EventManagementId" />
+
+                    @* <input asp-for="SingleImmunizationVaccineInfo.EventManagementId" class="form-control" readonly placeholder="Event ID" required /> *@
+                    <span asp-validation-for="SingleImmunizationVaccineInfo.EventManagementId" class="text-danger"></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.EventDate" class="form-label">Immunization Entry Date</label>

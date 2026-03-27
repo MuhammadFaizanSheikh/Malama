@@ -79,7 +79,7 @@ namespace Malama.Controllers.Services.ContainerTempMonitoringServices
                 // Send SignalR alert **only if not acknowledged**
                 if (!notification.IsAcknowledged)
                 {
-                    await _hub.Clients.Group(container.EventId).SendAsync("TemperatureAlert", new
+                    await _hub.Clients.Group(container.EventManagementId.ToString()).SendAsync("TemperatureAlert", new
                     {
                         notificationId = notification.Id,
                         containerId = container.Id,

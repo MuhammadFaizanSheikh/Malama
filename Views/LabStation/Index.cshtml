@@ -213,7 +213,7 @@
                 {
                     <tr>
                         <td>
-                            <a asp-action="LabStation" asp-route-labStationId="@c.LabStationRecord?.Id" asp-route-fileDataId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            <a asp-action="LabStation" asp-route-labStationId="@c.LabStationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
                         <td>@(c.LabStationRecord == null ? "Pending" : c.LabStationRecord.Status)</td>
                         <td>@c.SmId</td>

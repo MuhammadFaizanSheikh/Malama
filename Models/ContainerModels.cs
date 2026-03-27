@@ -1,4 +1,6 @@
-﻿ using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Malama.Models
@@ -26,7 +28,12 @@ namespace Malama.Models
         public long Id { get; set; }
 
 
-        public string EventId { get; set; } // assume Event table exists
+        public long EventManagementId { get; set; }
+
+        [ForeignKey("EventManagementId")]
+        [JsonIgnore]
+        [ValidateNever]
+        public virtual EventManagement EventManagement { get; set; }
 
 
         public string ContainerName { get; set; } = string.Empty;

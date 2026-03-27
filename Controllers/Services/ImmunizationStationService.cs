@@ -41,48 +41,51 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<(ImmunizationStation Immunization, string EventId)> GetImmunizationByIdWithEventIdAsync(long immunizationId)
+        public async Task<(ImmunizationStation Immunization, long EventId)> GetImmunizationByIdWithEventIdAsync(long immunizationId)
         {
+            const string methodName = "GetImmunizationByIdWithEventIdAsync";
+
             try
             {
                 if (immunizationId <= 0)
                 {
-                    _logger.LogWarning("GetImmunizationByIdWithEventIdAsync called with invalid Id: {Id}", immunizationId);
-                    return (null, null);
+                    _logger.LogWarning("{ClassName}, {MethodName}, GetImmunizationByIdWithEventIdAsync called with invalid Id: {Id}", immunizationId);
+                    return (null, 0);
                 }
 
-                _logger.LogDebug("Fetching ImmunizationRecord with Id: {Id} and its EventId", immunizationId);
+                _logger.LogDebug("{ClassName}, {MethodName}, Fetching ImmunizationRecord with Id: {Id} and its EventId", immunizationId);
 
-                // Start from ServiceMembersChild but only project what we need
                 var result = await _unitOfWork.ServiceMembersChild
-                    .GetWithInclude(
-                        c => c.ImmunizationRecord != null && c.ImmunizationRecord.Id == immunizationId, // Defensive null check
-                        c => c.ImmunizationRecord,
-                        c => c.ServiceMembersParent.EventManagement
-                    )
-                    .Select(c => new
-                    {
-                        Immunization = c.ImmunizationRecord,
-                        EventId = c.ServiceMembersParent.EventManagement.EventID
-                    })
-                    .FirstOrDefaultAsync();
+                .GetWithInclude(
+                    c => c.ImmunizationRecord != null && c.ImmunizationRecord.Id == immunizationId,
+                    c => c.ImmunizationRecord,                      // forward navigation
+                    c => c.ServiceMembersParent.EventManagement
+                )
+                .Include(c => c.ImmunizationRecord)               // ensure tracking
+                    .ThenInclude(ir => ir.ServiceMembersChild)   // include back navigation
+                .Select(c => new
+                {
+                    Immunization = c.ImmunizationRecord,
+                    EventId = c.ServiceMembersParent.EventManagement.Id
+                })
+                .FirstOrDefaultAsync();
 
                 if (result == null || result.Immunization == null)
                 {
-                    _logger.LogInformation("No ImmunizationRecord found with Id: {Id}", immunizationId);
-                    return (null, null);
+                    _logger.LogInformation("{ClassName}, {MethodName}, No ImmunizationRecord found with Id: {Id}", immunizationId);
+                    return (null, 0);
                 }
 
                 return (result.Immunization, result.EventId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching ImmunizationRecord with Id: {Id}", immunizationId);
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error fetching ImmunizationRecord with Id: {Id}", immunizationId);
                 throw; // Let controller handle displaying generic error
             }
         }
 
-        public async Task<ResponseDto> GetImmunizationManufacturer(string eventId)
+        public async Task<ResponseDto> GetImmunizationManufacturer(long eventId)
         {
             return await _immunizationVaccineInfoService.GetManufacturerByEventIdAsync(eventId);
         }

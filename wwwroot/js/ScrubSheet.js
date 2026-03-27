@@ -1598,7 +1598,7 @@ async function saveChangesButton() {
 
         if (window.userType === "client") {
             const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
-
+            debugger;
             const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
 
             if (result.success) {

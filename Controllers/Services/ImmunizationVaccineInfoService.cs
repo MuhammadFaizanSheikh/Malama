@@ -23,14 +23,14 @@ namespace ExcelFilesCompiler.Controllers.Services
             _containerMonitoringService = containerMonitoringService;
         }
 
-        public async Task<List<ImmunizationVaccineInfoForPreview>> GetVaccineEntriesByEventIdAsync(string eventId)
+        public async Task<List<ImmunizationVaccineInfoForPreview>> GetVaccineEntriesByEventIdAsync(long eventId)
         {
             try
             {
                 //if (string.IsNullOrEmpty(eventId))
                 //    throw new ArgumentException("EventId cannot be null or empty.", nameof(eventId));
 
-                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventId == eventId).Include(x => x.Lots).ThenInclude(l => l.Container);
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventManagementId == eventId).Include(x => x.Lots).ThenInclude(l => l.Container);
 
                 return records.Select(x => new ImmunizationVaccineInfoForPreview
                 {
@@ -64,7 +64,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f => f.EventId == immunizationVaccine.EventId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
+                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f => f.EventManagementId == immunizationVaccine.EventManagementId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
 
                 if (records != null && records.Any())
                 {
@@ -103,7 +103,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f =>
-                f.EventId == immunizationVaccine.EventId &&
+                f.EventManagementId == immunizationVaccine.EventManagementId &&
                 f.ImmunizationType == immunizationVaccine.ImmunizationType &&
                 f.Vaccine == immunizationVaccine.Vaccine &&
                 f.Dose == immunizationVaccine.Dose &&
@@ -200,13 +200,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             return response;
         }
 
-        public async Task<ResponseDto> GetContainersByEventIdAsync(string eventId)
+        public async Task<ResponseDto> GetContainersByEventIdAsync(long eventId)
         {
             var response = new ResponseDto();
 
             try
             {
-                if (string.IsNullOrWhiteSpace(eventId))
+                if (eventId <= 0)
                 {
                     response.Success = false;
                     response.Message = "Event ID cannot be null or empty.";
@@ -237,20 +237,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             return response;
         }
 
-        public async Task<ResponseDto> GetManufacturerByEventIdAsync(string eventId)
+        public async Task<ResponseDto> GetManufacturerByEventIdAsync(long eventId)
         {
             var response = new ResponseDto();
 
             try
             {
-                if (string.IsNullOrWhiteSpace(eventId))
+                if (eventId <= 0)
                 {
                     response.Success = false;
                     response.Message = "Event ID cannot be null or empty.";
                     return response;
                 }
 
-                var vaccineInfo = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(x => x.EventId == eventId, x => x.Lots);
+                var vaccineInfo = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(x => x.EventManagementId == eventId, x => x.Lots);
                 
                 if (vaccineInfo == null || !vaccineInfo.Any())
                 {
@@ -262,7 +262,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var immunizationData = vaccineInfo.Select(v => new
                 {
                     v.Id,
-                    v.EventId,
+                    v.EventManagementId,
                     v.ImmunizationType,
                     v.Vaccine,
                     v.Manufacturer,

@@ -1,20 +1,9 @@
-﻿using Azure;
-using ExcelFilesCompiler.Controllers.Services;
-using ExcelFilesCompiler.Interfaces;
+﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Attributes;
 using Malama.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -45,24 +34,25 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                string eventId = HttpContext.Session.GetString("GlobalEventId");
+                string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
-                if (string.IsNullOrWhiteSpace(eventId))
-                {
-                    _logger.LogWarning(
-                        "{ClassName}, {MethodName}, GlobalEventId not found in session",
-                        CLASSNAME, methodName
-                    );
-                }
-                else
-                {
-                    _logger.LogInformation(
+                _logger.LogInformation(
                         "{ClassName}, {MethodName}, Retrieved GlobalEventId: {EventId}",
                         CLASSNAME, methodName, eventId
                     );
+
+                if (string.IsNullOrWhiteSpace(eventId) || !int.TryParse(eventId, out int parsedEventId))
+                {
+                    _logger.LogWarning("\"{ClassName}, {MethodName}: Invalid EventId: {eventId}", eventId);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid EventId";
+                    TempData["ResponseMessage"] = "Invalid EventId";
+
+                    return View("Index");
                 }
 
-                var data = await _fileUploader.GetLabStationByEventIdAsync(eventId);
+                var data = await _fileUploader.GetLabStationByEventIdAsync(parsedEventId);
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}",
@@ -72,9 +62,9 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x == null || x.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.Status == "Completed"),
-                    ["NotGiven"] = data.Count(x => x.Status == "Not given")
+                    ["Pending"] = data.Count(x => x == null || x?.LabStationRecord?.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.LabStationRecord?.Status == "Completed"),
+                    ["NotGiven"] = data.Count(x => x.LabStationRecord?.Status == "Not given")
                 };
 
                 _logger.LogInformation(
@@ -124,7 +114,7 @@ namespace ExcelFilesCompiler.Controllers
             try
             {
                 LabStation model;
-                string eventId = string.Empty;
+                long eventId = 0;
 
                 if (labStationId > 0)
                 {
@@ -136,6 +126,7 @@ namespace ExcelFilesCompiler.Controllers
                     // Edit mode → get child record including parent
                     var result = await _labStationService.GetLabStationByIdWithEventIdAsync(labStationId);
                     model = result.LabStation;
+                    eventId = result.EventId;
                 }
                 else
                 {
@@ -186,7 +177,7 @@ namespace ExcelFilesCompiler.Controllers
         [RoleAttributeAuthorizeFromConfig("LabStation_Save")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveLabStation(LabStation model, string eventIdForRedirection)
+        public async Task<IActionResult> SaveLabStation(LabStation model)
         {
             const string methodName = "SaveLabStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
@@ -262,7 +253,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [RoleAttributeAuthorizeFromConfig("LabStation_HIVSignInSheet_View")]
-        public async Task<IActionResult> GetLabDataAgainstEventIdAndGenerateHivPdf(string eventId)
+        public async Task<IActionResult> GetLabDataAgainstEventIdAndGenerateHivPdf(long eventId)
         {
             const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";
             _logger.LogInformation("{ClassName}, {MethodName}, Called with EventId={EventId}",
@@ -270,7 +261,7 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(eventId))
+                if (eventId <= 0)
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, EventId is null or empty",
                         CLASSNAME, methodName);

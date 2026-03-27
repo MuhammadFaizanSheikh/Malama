@@ -35,18 +35,18 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                //var eventIds = await _fileUploader.GetDistinctEventIdsAsync();
+                string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
-                //var dropdownList = eventIds.Select(e => new SelectListItem
-                //{
-                //    Value = e,
-                //    Text = e
-                //}).ToList();
+                if (string.IsNullOrWhiteSpace(eventId) || !long.TryParse(eventId, out long eventIdLong))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Session Expired";
+                    TempData["ResponseMessage"] = "Event ID is missing or invalid. Please try again.";
 
-                //ViewBag.EventIdList = dropdownList;
+                    return RedirectToAction("Index");
+                }
 
-                string eventId = HttpContext.Session.GetString("GlobalEventId");
-                containers = await _service.GetContainersByEventIdAsync(eventId);
+                containers = await _service.GetContainersByEventIdAsync(eventIdLong);
                 ViewBag.EventId = eventId;
                 return View("Index", containers);
             }
@@ -97,13 +97,13 @@ namespace ExcelFilesCompiler.Controllers
 
         [RoleAttributeAuthorizeFromConfig("Container_View")]
         [HttpGet("Add")]
-        public async Task<IActionResult> Add(string eventId)
+        public async Task<IActionResult> Add(long eventId)
         {
             try
             {
-                if (string.IsNullOrEmpty(eventId))
+                if (eventId <= 0)
                 {
-                    TempData["ErrorMessage"] = "Event ID is required.";
+                    TempData["ErrorMessage"] = "Session expired.";
 
                     return View("Index");
                 }
@@ -133,7 +133,6 @@ namespace ExcelFilesCompiler.Controllers
         {
             try
             {
-                // Populate dropdown for view reload (always)
                 var containerTypes = await _service.GetAllContainerTypesAsync();
                 ViewBag.ContainerTypes = containerTypes;
                 ViewBag.EventId = dto.EventId;
@@ -156,7 +155,7 @@ namespace ExcelFilesCompiler.Controllers
 
 
                 // Load event containers if needed
-                var containers = string.IsNullOrEmpty(dto.EventId)
+                var containers = dto.EventId <= 0
                     ? new List<Container>()
                     : await _service.GetContainersByEventIdAsync(dto.EventId);
 
@@ -248,7 +247,6 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                // Optionally log the exception here as well
                 return StatusCode(500, new { message = ex.Message });
             }
         }

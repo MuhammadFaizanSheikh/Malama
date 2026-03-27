@@ -5,7 +5,7 @@ namespace Malama.Models
 {
     public class CreateContainerDto
     {
-        public string EventId { get; set; }
+        public long EventId { get; set; }
         public string ContainerName { get; set; } = string.Empty;
         public int ContainerTypeId { get; set; }
         public DateTime StartDate { get; set; } // date portion
