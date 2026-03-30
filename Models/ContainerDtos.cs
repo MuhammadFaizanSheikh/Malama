@@ -12,6 +12,7 @@ namespace Malama.Models
         //public TimeSpan StartTime { get; set; } // time portion
         public decimal InitialTemperature { get; set; }
         public string? Comment { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class CreateReadingDto
@@ -20,5 +21,6 @@ namespace Malama.Models
         public decimal? Temperature { get; set; }
         public string? Comment { get; set; }
         public bool IsFinalReading { get; set; }
+        public string SubmissionToken { get; set; }
     }
 }

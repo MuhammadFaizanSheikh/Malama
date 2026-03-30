@@ -18,6 +18,7 @@ namespace Malama.Models
         public List<string> SelectedRoles { get; set; }
         public List<long>? SelectedEventIds { get; set; }
         public bool IsActive { get; set; }
+        public string SubmissionToken { get; set; }
     }
     public class ApplicationUser : IdentityUser
     {

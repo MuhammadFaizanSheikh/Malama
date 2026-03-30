@@ -121,6 +121,7 @@
 
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.ServiceMembersChildId)
+    <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     <!-- Link to parent contract -->
     @* <input type="hidden" asp-for="FileDataId" /> *@
 
@@ -889,18 +890,11 @@
             }
         });
 
-        let isSubmittingLab = false;
 
         $("#SaveLabStation").on("submit", function (e) {
             
             const form = $(this);
             const submitBtn = $("button[type='submit']", form);
-
-            // Prevent multiple submissions
-            if (isSubmittingLab || submitBtn.is(":disabled")) {
-                e.preventDefault();
-                return;
-            }
 
             let isValid = true;
 
@@ -929,14 +923,6 @@
             if (!isValid) {
                 e.preventDefault(); // stop submit
             }
-
-            isSubmittingLab = true;
-
-            // Disable the button and update text after current stack to avoid blocking native submit
-            setTimeout(() => {
-                submitBtn.prop("disabled", true);
-                submitBtn.html('<i class="bi bi-check-circle"></i> Saving...');
-            }, 0);
         });
 
 

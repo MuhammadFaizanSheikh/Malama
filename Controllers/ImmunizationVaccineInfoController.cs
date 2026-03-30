@@ -216,7 +216,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (model.SingleImmunizationVaccineInfo.Id == 0)
                 {
                     res = await _immunizationVaccineInfoService.AddInventoryAsync(
-                        model.SingleImmunizationVaccineInfo, user.UserName
+                        model.SingleImmunizationVaccineInfo, model.SubmissionToken, user.UserName
                     );
                 }
                 else

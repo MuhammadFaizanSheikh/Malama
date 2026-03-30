@@ -121,6 +121,7 @@
 
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.ServiceMembersChildId)
+    <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     <!-- Link to parent contract -->
     @* <input type="hidden" asp-for="FileDataId" /> *@
 
@@ -935,27 +936,6 @@
         flatpickr(".expiration-input", {
             altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false,
         });
-
-        let isSaving = false;
-
-        document.getElementById("ImmunizationForm").addEventListener("submit", function (event) {
-
-            const btn = document.getElementById("submitBtn");
-
-            // Prevent multiple submissions
-            if (isSaving) {
-                event.preventDefault();
-                return;
-            }
-
-            isSaving = true;
-            btn.disabled = true;          // Safe now
-            btn.innerText = "Registring...";
-
-            // ⚠ Let the form submit naturally
-        });
-
-
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();

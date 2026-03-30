@@ -110,6 +110,7 @@
     @Html.AntiForgeryToken()
 
     <input type="hidden" name="EventId" value="@selectedEventId" />
+    <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     <!-- Container Name -->
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -172,10 +173,6 @@
         </div>
     </div>
 
-    <!-- Submit Button -->
-    @* <div class="d-flex justify-content-end">
-    <button type="submit" class="btn btn-primary">Submit</button>
-    </div> *@
     <div class="d-flex justify-content-end mt-4">
         
 
@@ -196,26 +193,6 @@
             altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: false, clickOpens: false
         });
         onContainerTypeChange();
-
-        let isSubmitting = false;
-
-        $("#submitBtn").on("click", function (e) {
-            const btn = $(this);
-
-            if (isSubmitting) {
-                e.preventDefault();
-                return;
-            }
-
-            isSubmitting = true;
-
-            setTimeout(() => {
-                btn.prop("disabled", true);
-                btn.html('<i class="bi bi-check-circle"></i> Saving...');
-            }, 0);
-
-            // Form will now submit naturally
-        });
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();

@@ -167,6 +167,7 @@
         @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
         <input type="hidden" id="UserId" name="Id" value="" />
+        <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
         <div class="form-group" id="emailGroup">
             <label asp-for="Email" class="font-weight-bold"></label>
@@ -239,17 +240,9 @@
             allowClear: true
         });
 
-        let isRegistering = false;
-
         document.getElementById("registrationForm").addEventListener("submit", function (event) {
 
             const btn = document.getElementById("registerBtn");
-
-            // Prevent multiple submissions
-            if (isRegistering) {
-                event.preventDefault();
-                return;
-            }
 
             // Role validation
             if ($("input[name='SelectedRoles']:checked").length === 0) {
@@ -259,13 +252,6 @@
             } else {
                 $("#roleError").hide();
             }
-
-            // ✅ All validations passed → lock + disable
-            isRegistering = true;
-            btn.disabled = true;          // Safe now
-            btn.innerText = "Registring...";
-
-            // ⚠ Let the form submit naturally
         });
 
 

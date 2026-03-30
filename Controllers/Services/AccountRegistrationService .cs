@@ -14,10 +14,11 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserEventMappingService _userEventMappingService;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<AccountRegistrationService> _logger;
         private const string CLASSNAME = "AccountRegistrationService";
 
-        public AccountRegistrationService(ILogger<AccountRegistrationService> logger, IUnitOfWork unitOfWork,
+        public AccountRegistrationService(ILogger<AccountRegistrationService> logger, ISubmissionTokenService submissionTokenService, IUnitOfWork unitOfWork,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager, IUserEventMappingService userEventMappingService)
         {
@@ -25,6 +26,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
             _userEventMappingService = userEventMappingService;
+            _submissionTokenService = submissionTokenService;
             _logger = logger;
         }
 
@@ -69,7 +71,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false)
+        public async Task<ResponseDto> RegisterUserAsync(RegisterViewModel model, bool IsEventUser = false, string addedBy = "")
         {
             const string methodName = "RegisterUserAsync";
             _logger.LogInformation("{ClassName}, {MethodName}, Called for Email: {Email}",
@@ -77,6 +79,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(model.SubmissionToken, addedBy);
+
+                if (!tokenResult.Success)
+                {
+                    return tokenResult;
+                }
+
                 if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Invalid user data received",

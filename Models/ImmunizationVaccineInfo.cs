@@ -16,6 +16,7 @@ namespace Malama.Models
         public string EventIdAndVersion { get; set; }
         public List<ImmunizationVaccineInfoForPreview>? ListOfImmunizationVaccineInfo { get; set; }
         public ImmunizationVaccineInfo SingleImmunizationVaccineInfo { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class ImmunizationVaccineInfoForPreview

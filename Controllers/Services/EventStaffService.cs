@@ -1,16 +1,8 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
-using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
-using ExcelFilesCompiler.Utilities;
-using Malama.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Runtime.Intrinsics.Arm;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -22,8 +14,10 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IAccountRegistrationService _registrationService;
         private readonly IRoleService _roleService;
         private readonly ISubmissionTokenService _submissionTokenService;
+        private readonly ILogger<EventStaffService> _logger;
+        private const string CLASSNAME = "EventStaffService";
 
-        public EventStaffService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService, ISubmissionTokenService submissionTokenService)
+        public EventStaffService(ILogger<EventStaffService> logger, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
@@ -31,13 +25,18 @@ namespace ExcelFilesCompiler.Controllers.Services
             _roleManager = roleManager;
             _roleService = roleService;
             _submissionTokenService = submissionTokenService;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string submissionToken, string loggedinUserName)
         {
+            const string methodName = "AddContractAsync";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called by User: {UserName}, Email: {Email}",
+                CLASSNAME, methodName, loggedinUserName, eventStaff?.UserEmail);
+
             var responseDto = new ResponseDto();
-            bool userCreated = false; // Track if user was created
-            ApplicationUser createdUser = null; // Store the created user for deletion if needed
+            bool userCreated = false;
+            ApplicationUser createdUser = null;
 
             using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
@@ -47,6 +46,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     if (!tokenResult.Success)
                     {
+                        _logger.LogWarning("{ClassName}, {MethodName}, Submission token invalid. User: {UserName}", CLASSNAME, methodName, loggedinUserName);
                         return tokenResult;
                     }
 
@@ -54,22 +54,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
                         affiliation.SubContractorId = subContractor?.Id ?? 0;
+
+                        _logger.LogInformation("{ClassName}, {MethodName}, Affiliation mapped. ContractId: {ContractId}, SubContractorId: {SubContractorId}",
+                            CLASSNAME, methodName, affiliation.ContractId, affiliation.SubContractorId);
                     }
 
                     eventStaff.AddedBy = loggedinUserName;
                     eventStaff.AddedOn = DateTime.Now;
 
-                    RegisterViewModel rvm = new RegisterViewModel
+                    var rvm = new RegisterViewModel
                     {
                         Email = eventStaff.UserEmail,
                         Password = eventStaff.UserPassword,
                         SelectedRoles = new List<string>()
                     };
-
-                    //if (!rvm.SelectedRoles.Any())
-                    //{
-                    //    return new ResponseDto { Success = false, Message = "Role not selected." };
-                    //}
 
                     responseDto = await _registrationService.RegisterUserAsync(rvm, true);
 
@@ -80,17 +78,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                         if (createdUser != null)
                         {
                             eventStaff.UserId = createdUser.Id;
-                            userCreated = true; // Mark that user was successfully created
+                            userCreated = true;
+                            _logger.LogInformation("{ClassName}, {MethodName}, User created successfully. UserID: {UserId}", CLASSNAME, methodName, createdUser.Id);
                         }
 
                         await _unitOfWork.EventStaff.AddAsync(eventStaff);
                         await _unitOfWork.SaveAsync();
-                        await transaction.CommitAsync(); // ✅ Commit only if everything is successful
+                        await transaction.CommitAsync();
+
+                        _logger.LogInformation("{ClassName}, {MethodName}, Event Staff added successfully. StaffID: {StaffId}, AddedBy: {UserName}",
+                            CLASSNAME, methodName, eventStaff.Id, loggedinUserName);
 
                         return new ResponseDto { Success = true, Message = "Event Staff added successfully!" };
                     }
                     else
                     {
+                        _logger.LogWarning("{ClassName}, {MethodName}, User registration failed. Message: {Message}", CLASSNAME, methodName, responseDto.Message);
                         return new ResponseDto { Success = false, Message = responseDto.Message };
                     }
                 }
@@ -98,28 +101,34 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     await transaction.RollbackAsync();
 
-                    // ✅ Delete the user only if it was actually created
                     if (userCreated && createdUser != null)
                     {
                         await _userManager.DeleteAsync(createdUser);
+                        _logger.LogInformation("{ClassName}, {MethodName}, Rolled back user creation. UserID: {UserId}", CLASSNAME, methodName, createdUser.Id);
                     }
 
+                    _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while adding Event Staff. User: {UserName}", CLASSNAME, methodName, loggedinUserName);
                     return new ResponseDto { Success = false, Message = $"An error occurred: {ex.Message}" };
                 }
             }
         }
 
+
         public async Task<List<EventStaff>> GetAllEventStaff()
         {
-            var responseDto = new ResponseDto();
-            List<EventStaff> eventStaff = new List<EventStaff>(); // Initialize contracts outside try-catch
+            const string methodName = "GetAllEventStaff";
+            _logger.LogInformation("{ClassName}, {MethodName}, Fetching all EventStaff.", CLASSNAME, methodName);
+
+            List<EventStaff> eventStaff = new List<EventStaff>();
 
             try
             {
                 eventStaff = (await _unitOfWork.EventStaff.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} EventStaff records.", CLASSNAME, methodName, eventStaff.Count);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while fetching EventStaff.", CLASSNAME, methodName);
                 throw;
             }
 
@@ -128,6 +137,9 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses()
         {
+            const string methodName = "GetAllEventStaffWithRolesAndLicenses";
+            _logger.LogInformation("{ClassName}, {MethodName}, Fetching all EventStaff with roles and licenses.", CLASSNAME, methodName);
+
             try
             {
                 var eventStaffList = await _unitOfWork.EventStaff.GetWithInclude()
@@ -141,34 +153,37 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (eventStaffList == null || !eventStaffList.Any())
                 {
-                    throw new KeyNotFoundException("No Event Staff records found.");
+                    _logger.LogWarning("{ClassName}, {MethodName}, No Event Staff records found.", CLASSNAME, methodName);
+                    return new List<CombinedEventStaffRolesNameAndLicense>();
                 }
 
-                // ✅ Fetch Completed Events first and ensure it's a List
-                var completedEventList = (await _unitOfWork.EventManagement.FindForSearchingAsync(c => c.EventStatus == "Complete")).ToList();
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} EventStaff records.", CLASSNAME, methodName, eventStaffList.Count);
 
-                // ✅ Extract only Event IDs
+                // Fetch completed events
+                var completedEventList = (await _unitOfWork.EventManagement.FindForSearchingAsync(c => c.EventStatus == "Complete")).ToList();
                 var eventIds = completedEventList.Select(e => e.Id).ToList();
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Found {Count} completed events.", CLASSNAME, methodName, eventIds.Count);
 
-                var groupedResult = new Dictionary<long, int>(); // Dictionary to store StaffId and CompletedEventCount
+                // Map staff to completed event counts
+                var groupedResult = new Dictionary<long, int>();
 
                 foreach (var eventId in eventIds)
                 {
                     var eventStaffDetailList = await _unitOfWork.EventStaffDetail
                         .GetWithInclude()
                         .Where(esd => esd.EventManagementId == eventId)
-                        .ToListAsync(); // Get records for this Event ID
+                        .ToListAsync();
 
                     foreach (var staff in eventStaffDetailList)
                     {
                         if (groupedResult.ContainsKey(staff.EventStaffId))
                         {
-                            groupedResult[staff.EventStaffId]++; // Increment count if staff exists
+                            groupedResult[staff.EventStaffId]++;
                         }
                         else
                         {
-                            groupedResult[staff.EventStaffId] = 1; // Initialize count
+                            groupedResult[staff.EventStaffId] = 1;
                         }
                     }
                 }
@@ -176,7 +191,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var roles = await _roleManager.Roles.ToListAsync();
                 var roleDictionary = roles.ToDictionary(r => r.Id, r => r.Name);
 
-                List<CombinedEventStaffRolesNameAndLicense> model = new List<CombinedEventStaffRolesNameAndLicense>();
+                var model = new List<CombinedEventStaffRolesNameAndLicense>();
 
                 foreach (var staff in eventStaffList)
                 {
@@ -185,49 +200,38 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     foreach (var staffLicense in staff.StaffQualification)
                     {
-                        // Fetch Role Name from RoleManager using RoleId
-                        //if (roleDictionary.TryGetValue(staffLicense.QualificationName, out string roleName))
-                        //{
-                        //if (!roleLicenseMapping.ContainsKey(roleName))
-                        //{
-                        //    roleLicenseMapping[roleName] = new List<string>();
-                        //}
-
                         string qualificationName = staffLicense.QualificationName;
                         roleLicenseMapping[qualificationName] = new List<string>();
 
-                        // Extract LicenseState & LicenseType from StaffLicenseDetails
                         foreach (var licenseDetail in staffLicense.StaffLicenseDetails)
-                            {
-                                roleLicenseMapping[qualificationName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
-                            }
+                        {
+                            roleLicenseMapping[qualificationName].Add($"{licenseDetail.LicenseState}: {licenseDetail.LicenseType}");
+                        }
 
-                            if (staffLicense.StaffAttributeDetails != null)
+                        if (staffLicense.StaffAttributeDetails != null)
+                        {
+                            foreach (var attrDetail in staffLicense.StaffAttributeDetails)
                             {
-                                foreach (var attrDetail in staffLicense.StaffAttributeDetails)
+                                if (!string.IsNullOrWhiteSpace(attrDetail.Attribute))
                                 {
-                                    if (!string.IsNullOrWhiteSpace(attrDetail.Attribute))
-                                    {
-                                        attributeList.Add(attrDetail.Attribute.Trim());
-                                    }
+                                    attributeList.Add(attrDetail.Attribute.Trim());
                                 }
-
                             }
-                        //}
+                        }
                     }
 
-                    // Generate formatted strings
-                    var rolesString = string.Join(", ", roleLicenseMapping.Keys); // Comma-separated roles
-                    var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value))); // Line-separated licenses per role
-                    var attributesString = string.Join(", ", attributeList
+                    // Format roles, licenses, attributes
+                    var rolesString = string.Join(", ", roleLicenseMapping.Keys);
+                    var licensesString = string.Join("<br/>", roleLicenseMapping.Select(kv => string.Join(", ", kv.Value)));
+                    var attributesString = string.Join(", ",
+                        attributeList
                             .Select(a => a.Trim())
                             .Where(a => !string.IsNullOrWhiteSpace(a))
-                            .Distinct(StringComparer.OrdinalIgnoreCase)   // ✅ remove duplicates (case-insensitive)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
                             .OrderBy(a => a));
 
                     int completedEventCount = groupedResult.ContainsKey(staff.Id) ? groupedResult[staff.Id] : 0;
 
-                    // Create a new instance for each staff
                     model.Add(new CombinedEventStaffRolesNameAndLicense
                     {
                         Id = staff.Id,
@@ -238,7 +242,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         PrimaryState = staff.PrimaryState,
                         PrimaryZip = staff.PrimaryZip,
                         StaffCAC = staff.StaffCAC,
-                        Roles = rolesString,  // Roles in one line, comma-separated
+                        Roles = rolesString,
                         LicenseStateAndTypes = licensesString,
                         Status = staff.StaffStatus,
                         CountOfStaffEnrolledInEvent = completedEventCount,
@@ -246,106 +250,110 @@ namespace ExcelFilesCompiler.Controllers.Services
                     });
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Prepared final combined EventStaff model with {Count} entries.", CLASSNAME, methodName, model.Count);
+
                 return model;
             }
             catch (KeyNotFoundException ex)
             {
-                return new List<CombinedEventStaffRolesNameAndLicense>(); // Return empty list
+                _logger.LogWarning(ex, "{ClassName}, {MethodName}, No Event Staff records found.", CLASSNAME, methodName);
+                return new List<CombinedEventStaffRolesNameAndLicense>();
             }
             catch (Exception ex)
             {
-                throw new Exception("An internal error occurred while processing your request.");
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Unexpected error while fetching Event Staff with roles and licenses.", CLASSNAME, methodName);
+                throw new Exception("An internal error occurred while processing your request.", ex);
             }
         }
 
         public async Task<CombinedEventStaffSubContractorAndContractDto> GetEventStaffById(long id)
         {
+            const string methodName = "GetEventStaffById";
+            _logger.LogInformation("{ClassName}, {MethodName}, Fetching EventStaff with ID {EventStaffId}", CLASSNAME, methodName, id);
+
             try
             {
                 var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
-                    x => x.Id == id,
-                    x => x.StaffQualification,
-                    x => x.StaffContractAffiliation,
-                    x => x.TravelHonorList
-                )
+                        x => x.Id == id,
+                        x => x.StaffQualification,
+                        x => x.StaffContractAffiliation,
+                        x => x.TravelHonorList
+                    )
                     .Include(x => x.StaffQualification)
-                        .ThenInclude(l => l.StaffLicenseDetails).Include(x => x.StaffQualification).ThenInclude(l => l.StaffAttributeDetails) // Now second-level include works!
+                        .ThenInclude(l => l.StaffLicenseDetails)
+                    .Include(x => x.StaffQualification)
+                        .ThenInclude(l => l.StaffAttributeDetails)
                     .FirstOrDefaultAsync();
 
-
-                if (eventStaff != null)
+                if (eventStaff == null)
                 {
-                    var firstEventStaff = eventStaff;
-
-                    if (firstEventStaff == null)
-                    {
-                        throw new Exception($"EventStaff with ID {id} not found.");
-                    }
-
-                    if (firstEventStaff.StaffContractAffiliation == null)
-                    {
-                        throw new Exception($"EventStaff Staff Contract Affiliation with ID {id} not found.");
-                    }
-
-                    var result = new List<StaffSubContractorAffiliationDto>();
-
-                    foreach (var info in firstEventStaff.StaffContractAffiliation)
-                    {
-                        var filteredContracts = await _unitOfWork.ContractDetails.GetByIdAsync(info.ContractId);
-                        var filteredSubContractor = await _unitOfWork.SubContractors.GetByIdAsync(info.SubContractorId);
-
-                        if (filteredContracts == null)
-                        {
-                            throw new Exception($"SubContractor not found for EventStaff with ID {id}.");
-                        }
-
-                        if (filteredSubContractor == null)
-                        {
-                            throw new Exception($"SubContracts against ContractIds with ID {id} not found.");
-                        }
-
-                        var contractAffilication = new StaffContractAffiliationDto
-                        {
-                            ContractId = info.ContractId,
-                            ContractName = filteredContracts.ContractName // Assuming ContractID is the name for contract
-                        };
-
-                        var subContractorAffiliation = result.FirstOrDefault(x => x.SubContractorName == filteredSubContractor.CompanyMainName);
-
-                        if (subContractorAffiliation == null)
-                        {
-                            subContractorAffiliation = new StaffSubContractorAffiliationDto
-                            {
-                                SubContractorId = info.SubContractorId,
-                                SubContractorName = filteredSubContractor.CompanyMainName,
-                                StaffContractAffiliation = new List<StaffContractAffiliationDto> { contractAffilication }
-                            };
-
-                            result.Add(subContractorAffiliation);
-                        }
-                        else
-                        {
-                            subContractorAffiliation.StaffContractAffiliation.Add(contractAffilication);
-                        }
-                    }
-
-                    var combinedDto = new CombinedEventStaffSubContractorAndContractDto
-                    {
-                        EventStaff = firstEventStaff,
-                        StaffSubContractorAffiliation = result,
-                        TravelHonor = firstEventStaff.TravelHonorList
-                    };
-
-                    return combinedDto;
-                }
-                else
-                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventStaff with ID {EventStaffId} not found.", CLASSNAME, methodName, id);
                     throw new Exception($"EventStaff with ID {id} not found.");
                 }
+
+                if (eventStaff.StaffContractAffiliation == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, EventStaff with ID {EventStaffId} has no contract affiliations.", CLASSNAME, methodName, id);
+                    throw new Exception($"StaffContractAffiliation for EventStaff with ID {id} not found.");
+                }
+
+                var subContractorAffiliations = new List<StaffSubContractorAffiliationDto>();
+
+                foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                {
+                    var contract = await _unitOfWork.ContractDetails.GetByIdAsync(affiliation.ContractId);
+                    var subContractor = await _unitOfWork.SubContractors.GetByIdAsync(affiliation.SubContractorId);
+
+                    if (contract == null)
+                    {
+                        _logger.LogWarning("{ClassName}, {MethodName}, Contract with ID {ContractId} not found.", CLASSNAME, methodName, affiliation.ContractId);
+                        throw new Exception($"Contract with ID {affiliation.ContractId} not found.");
+                    }
+
+                    if (subContractor == null)
+                    {
+                        _logger.LogWarning("{ClassName}, {MethodName}, SubContractor with ID {SubContractorId} not found.", CLASSNAME, methodName, affiliation.SubContractorId);
+                        throw new Exception($"SubContractor with ID {affiliation.SubContractorId} not found.");
+                    }
+
+                    var contractDto = new StaffContractAffiliationDto
+                    {
+                        ContractId = contract.Id,
+                        ContractName = contract.ContractName
+                    };
+
+                    var existingSubContractorDto = subContractorAffiliations
+                        .FirstOrDefault(x => x.SubContractorId == subContractor.Id);
+
+                    if (existingSubContractorDto == null)
+                    {
+                        subContractorAffiliations.Add(new StaffSubContractorAffiliationDto
+                        {
+                            SubContractorId = subContractor.Id,
+                            SubContractorName = subContractor.CompanyMainName,
+                            StaffContractAffiliation = new List<StaffContractAffiliationDto> { contractDto }
+                        });
+                    }
+                    else
+                    {
+                        existingSubContractorDto.StaffContractAffiliation.Add(contractDto);
+                    }
+                }
+
+                var combinedDto = new CombinedEventStaffSubContractorAndContractDto
+                {
+                    EventStaff = eventStaff,
+                    StaffSubContractorAffiliation = subContractorAffiliations,
+                    TravelHonor = eventStaff.TravelHonorList
+                };
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Successfully retrieved EventStaff with ID {EventStaffId}.", CLASSNAME, methodName, id);
+
+                return combinedDto;
             }
             catch (Exception ex)
             {
-                // Log and rethrow the exception with more context if needed
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error retrieving EventStaff with ID {EventStaffId}.", CLASSNAME, methodName, id);
                 throw new Exception("An error occurred while retrieving the EventStaff.", ex);
             }
         }
@@ -356,75 +364,76 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(id);
 
-                if (eventStaff != null)
+                if (eventStaff == null)
                 {
-                    return eventStaff;
+                    throw new KeyNotFoundException($"EventStaff with ID {id} not found.");
                 }
-                else
-                {
-                    throw new Exception($"EventStaff with ID {id} not found.");
-                }
+
+                return eventStaff;
             }
             catch (Exception ex)
             {
-                // Log and rethrow the exception with more context if needed
+                _logger.LogError(ex, "Error retrieving EventStaff without includes for ID {EventStaffId}", id);
                 throw new Exception("An error occurred while retrieving the EventStaff.", ex);
             }
         }
 
-
-
         public async Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
+
             using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             try
             {
+                // Update sub-contractor IDs
                 foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
-                    var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
-                    affiliation.SubContractorId = subContractor.Id;
+                    var subContractor = await _unitOfWork.SubContractors.FindAsync(
+                        c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName
+                    );
+
+                    if (subContractor != null)
+                        affiliation.SubContractorId = subContractor.Id;
                 }
 
+                // Preserve original metadata
                 var existingEvent = await _unitOfWork.EventStaff.GetByIdAsync(eventStaff.Id);
                 eventStaff.AddedBy = existingEvent.AddedBy;
                 eventStaff.AddedOn = existingEvent.AddedOn;
                 eventStaff.UpdatedBy = loggedinUserName;
-                eventStaff.UpdatedOn = DateTime.Now;
+                eventStaff.UpdatedOn = DateTime.UtcNow;
                 eventStaff.UserId = existingEvent.UserId;
+
+                // Update EventStaff entity
                 await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
 
+                // Refresh StaffQualification
                 await _unitOfWork.StaffQualification.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-
                 foreach (var license in eventStaff.StaffQualification)
                 {
                     license.EventStaffId = eventStaff.Id;
                 }
-
                 _unitOfWork.StaffQualification.AddRange(eventStaff.StaffQualification);
 
+                // Refresh StaffContractAffiliation
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-
                 foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
                     affiliation.EventStaffId = eventStaff.Id;
                 }
-
                 _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliation);
 
+                // Refresh TravelHonorList
                 await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-
                 foreach (var travelHonor in eventStaff.TravelHonorList)
                 {
                     travelHonor.EventStaffId = eventStaff.Id;
                 }
-
                 _unitOfWork.TravelHonor.AddRange(eventStaff.TravelHonorList);
 
-
-                var result = await UpdateUser(eventStaff);
-                //var result = await _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
+                // Update related user roles / identity if needed
+                var result = await UpdateUser(eventStaff); // Or _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
 
                 if (!result.Success)
                 {
@@ -440,8 +449,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
-                // Step 7: Rollback in case of any error
                 await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error updating EventStaff with ID {EventStaffId}", eventStaff.Id);
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
             }
@@ -461,18 +470,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 var lastEventStaff = allEventStaff
-                    .OrderByDescending(c => c.Id) // Sort by Id or another property as necessary
+                    .OrderByDescending(c => c.Id)
                     .FirstOrDefault();
 
-                var staffId = lastEventStaff.StaffID; // Extract the last StaffID
-                var numericPart = int.Parse(staffId.Substring(3)); // Get the numeric part (e.g., "0001")
+                var staffId = lastEventStaff.StaffID;
 
+                if (string.IsNullOrEmpty(staffId) || staffId.Length < 4)
+                    throw new Exception("Invalid last StaffID format.");
+
+                var numericPart = int.Parse(staffId.Substring(staffId.Length - 4)); // Last 4 digits
                 numericPart++;
 
-                return numericPart.ToString("D4"); // Return incremented value in "0001" format
+                return numericPart.ToString("D4");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error while fetching next StaffID");
                 throw new Exception("Error while fetching the next StaffID.", ex);
             }
         }
@@ -481,18 +494,18 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                if (string.IsNullOrEmpty(staffId))
+                if (string.IsNullOrWhiteSpace(staffId))
                 {
                     return await _unitOfWork.EventStaff.FindForSearchingAsync(c => true);
                 }
 
-                //return await _unitOfWork.EventStaff.FindForSearchingAsync(c => c.StaffID.Contains(staffId));
                 return await _unitOfWork.EventStaff.FindForSearchingAsync(
-            c => c.StaffID.ToLower().Contains(staffId.ToLower())
-        );
+                    c => c.StaffID.ToLower().Contains(staffId.Trim().ToLower())
+                );
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching EventStaff for searching with StaffID {StaffID}", staffId);
                 throw new Exception("Error while fetching contract details.", ex);
             }
         }
@@ -501,37 +514,32 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                //var eventStaff = _unitOfWork.EventStaff.GetWithInclude(
-                //x => x.UserId == userId,
-                //x => x.StaffLicense,
-                //x => x.StaffLicense.Select(sl => sl.StaffAttributeDetails)
-                //).FirstOrDefault();
-
-                var eventStaff = _unitOfWork.EventStaff.GetWithInclude()
-                .Include(es => es.StaffQualification)
-                    .ThenInclude(sl => sl.StaffAttributeDetails)
-                .FirstOrDefault(es => es.UserId == userId);
-
+                var eventStaff = await _unitOfWork.EventStaff.GetWithInclude()
+                    .Include(es => es.StaffQualification)
+                        .ThenInclude(sl => sl.StaffAttributeDetails)
+                    .FirstOrDefaultAsync(es => es.UserId == userId);
 
                 if (eventStaff == null)
-                {
                     throw new KeyNotFoundException($"EventStaff with UserId {userId} not found.");
-                }
+
                 return eventStaff;
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                throw;
+                throw; // preserve KeyNotFound for controller handling
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error retrieving EventStaff with attributes for UserId {UserId}", userId);
                 throw new ApplicationException("An error occurred while retrieving event staff and its attributes.", ex);
             }
         }
 
-
         public async Task<bool> CheckSSNExistsAsync(string ssn)
         {
+            if (string.IsNullOrWhiteSpace(ssn))
+                return false;
+
             try
             {
                 var staff = await _unitOfWork.EventStaff.FindAsync(es => es.StaffSSN == ssn);
@@ -539,18 +547,16 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error checking SSN existence: {SSN}", ssn);
                 return false;
             }
         }
 
         private async Task<ResponseDto> UpdateUser(EventStaff eventStaff)
         {
-            var responseDto = new ResponseDto();
-
             try
             {
-                UserUpdateDto userUpdateDto = new UserUpdateDto();
-
+                var responseDto = new ResponseDto();
                 var user = await _userManager.FindByIdAsync(eventStaff.UserId);
 
                 if (user == null)
@@ -560,38 +566,45 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
-                //var existingRoleNames = await _userManager.GetRolesAsync(user);
-                userUpdateDto.Id = eventStaff.UserId;
-                userUpdateDto.Email = eventStaff.UserEmail;
-                //userUpdateDto.Password = user.PasswordHash;// eventStaff.UserPassword;
-                userUpdateDto.SelectedRoles = eventStaff.StaffQualification.Select(l => l.QualificationName).ToList();
+                var userUpdateDto = new UserUpdateDto
+                {
+                    Id = eventStaff.UserId,
+                    Email = eventStaff.UserEmail,
+                    SelectedRoles = eventStaff.StaffQualification
+                        .Select(l => l.QualificationName)
+                        .ToList()
+                };
 
                 return await _registrationService.UpdateUserAsync(userUpdateDto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new ResponseDto { Success = false, Message = "An unexpected error occurred while updating user. Please try again later or contact your administrator." };
+                _logger.LogError(ex, "Error updating user for EventStaffId {EventStaffId}", eventStaff.Id);
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating user. Please try again later or contact your administrator."
+                };
             }
         }
-        public async Task<List<EventStaffDetail>> GetAllEventStaffByEventId(long id)
+
+        public async Task<List<EventStaffDetail>> GetAllEventStaffByEventId(long eventId)
         {
             try
             {
                 return await _unitOfWork.EventStaffDetail
-                .GetWithInclude()
-                .Where(x => x.EventManagementId == id)
-                .Include(x => x.EventStaff)
-                    .ThenInclude(s => s.StaffQualification)
-                        .ThenInclude(q => q.StaffAttributeDetails)
-                .Include(x => x.EventWiseStaffRoleList)
-                .Include(x => x.EventWiseStaffSecondaryRoleList)
-                .ToListAsync();
-
-
+                    .GetWithInclude()
+                    .Where(x => x.EventManagementId == eventId)
+                    .Include(x => x.EventStaff)
+                        .ThenInclude(s => s.StaffQualification)
+                            .ThenInclude(q => q.StaffAttributeDetails)
+                    .Include(x => x.EventWiseStaffRoleList)
+                    .Include(x => x.EventWiseStaffSecondaryRoleList)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
-                // Log and rethrow the exception with more context if needed
+                _logger.LogError(ex, "Error retrieving EventStaffDetail for EventId {EventId}", eventId);
                 throw new Exception("An error occurred while retrieving the EventStaffDetail.", ex);
             }
         }

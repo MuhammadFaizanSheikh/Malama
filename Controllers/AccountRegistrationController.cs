@@ -16,13 +16,15 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IAccountRegistrationService _registrationService;
         private readonly IEventManagementService _eventManagementService;
         private readonly ILogger<AccountRegistrationController> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
         private const string CLASSNAME = "AccountRegistrationController";
 
-        public AccountRegistrationController(ILogger<AccountRegistrationController> logger, IEventManagementService eventManagementService, IAccountRegistrationService registrationService)
+        public AccountRegistrationController(ILogger<AccountRegistrationController> logger, UserManager<ApplicationUser> userManager, IEventManagementService eventManagementService, IAccountRegistrationService registrationService)
         {
             _registrationService = registrationService;
             _eventManagementService = eventManagementService;
             _logger = logger;
+            _userManager = userManager;
         }
 
 
@@ -71,6 +73,7 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpPost]
         [RoleAttributeAuthorizeFromConfig("AccountRegistration_Save")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             const string methodName = "Register";
@@ -78,7 +81,19 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var response = await _registrationService.GetRegisterRolesAsync();
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not authenticated, redirecting to Index", CLASSNAME, methodName);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = "Please login and try again";
+
+                    return RedirectToAction("Index");
+                }
+                    var response = await _registrationService.GetRegisterRolesAsync();
 
                 if (!response.Success)
                 {
@@ -95,7 +110,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
                 else
                 {
-                    response = await _registrationService.RegisterUserAsync(model);
+                    response = await _registrationService.RegisterUserAsync(model,false, user.UserName);
                 }
 
                 if (response.Success)

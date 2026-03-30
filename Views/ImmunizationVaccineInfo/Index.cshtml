@@ -225,6 +225,7 @@
         <form asp-action="SaveVaccineEntry" method="post">
             @Html.AntiForgeryToken()
             @Html.HiddenFor(m => m.SingleImmunizationVaccineInfo.Id)
+            <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label asp-for="SingleImmunizationVaccineInfo.EventManagementId" class="form-label">Event ID</label>
@@ -458,16 +459,8 @@
             $(this).closest('form')[0].reset();
         });
 
-        let isSubmitting = false;
-
         $("#submitBtn").on("click", function (e) {
             const btn = $(this);
-
-            // Prevent multiple clicks
-            if (isSubmitting) {
-                e.preventDefault();
-                return;
-            }
 
             let isValid = true;
 
@@ -482,17 +475,6 @@
             });
 
             if (!isValid) return;
-
-            // ✅ Mark submitting after validation
-            isSubmitting = true;
-
-            // Disable button and show text AFTER current stack to avoid blocking native submit
-            setTimeout(() => {
-                btn.prop("disabled", true);
-                btn.html('<i class="bi bi-check-circle"></i> Saving...');
-            }, 0);
-
-            // Form will now submit naturally
         });
 
 

@@ -11,16 +11,18 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class ImmunizationVaccineInfoService : IImmunizationVaccineInfoService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
         private readonly IContainerMonitoringService _containerMonitoringService;
 
-        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, IFileUploader fileUploader, IContainerMonitoringService containerMonitoringService)
+        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService, IFileUploader fileUploader, IContainerMonitoringService containerMonitoringService)
         {
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
             _containerMonitoringService = containerMonitoringService;
+            _submissionTokenService = submissionTokenService;
         }
 
         public async Task<List<ImmunizationVaccineInfoForPreview>> GetVaccineEntriesByEventIdAsync(long eventId)
@@ -58,12 +60,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ResponseDto> AddInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName)
+        public async Task<ResponseDto> AddInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string SubmissionToken, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
             try
             {
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(SubmissionToken, loggedinUserName);
+
+                if (!tokenResult.Success)
+                {
+                    return tokenResult;
+                }
+
                 var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f => f.EventManagementId == immunizationVaccine.EventManagementId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
 
                 if (records != null && records.Any())

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Diagnostics.Contracts;
+using Azure.Core;
+using System.Net.NetworkInformation;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -38,7 +40,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto
                     {
                         Success = false,
-                        Message = "This form has already been submitted."
+                        Message = "Your request was already received and is being processed. No need to submit again."
                     };
                 }
 
@@ -56,13 +58,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Error validating submission token: {Token}, User: {UserName}",
-                    CLASSNAME, methodName, submissionToken, userName);
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Error validating submission token: {Token}, User: {UserName},Exception : {ex.Message}",
+                    CLASSNAME, methodName, submissionToken, userName, ex.Message);
 
                 return new ResponseDto
                 {
                     Success = false,
-                    Message = $"Error validating submission token: {ex.Message}"
+                    Message = $"Something went wrong while processing your request. Please try again."
                 };
             }
         }

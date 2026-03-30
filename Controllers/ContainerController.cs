@@ -15,10 +15,11 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IContainerMonitoringService _service;
-        private readonly ILogger<ImmunizationStationController> _logger;
-         
+        private readonly ILogger<ContainerController> _logger;
+        private const string CLASSNAME = "ContainerController";
 
-        public ContainerController(ILogger<ImmunizationStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IContainerMonitoringService service)
+
+        public ContainerController(ILogger<ContainerController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IContainerMonitoringService service)
         {
             _logger = logger;
             _fileUploader = fileUploader;
@@ -31,14 +32,21 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            const string methodName = "Index";
             List<Container> containers = new List<Container>();
 
             try
             {
                 string eventId = HttpContext.Session.GetString("GlobalEventIdLong");
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Called. EventID from session: {EventID}",
+                    CLASSNAME, methodName, eventId);
+
                 if (string.IsNullOrWhiteSpace(eventId) || !long.TryParse(eventId, out long eventIdLong))
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid or missing EventID in session: {EventID}",
+                        CLASSNAME, methodName, eventId);
+
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Session Expired";
                     TempData["ResponseMessage"] = "Event ID is missing or invalid. Please try again.";
@@ -47,11 +55,18 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 containers = await _service.GetContainersByEventIdAsync(eventIdLong);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {ContainerCount} containers for EventID: {EventID}",
+                    CLASSNAME, methodName, containers.Count, eventId);
+
                 ViewBag.EventId = eventId;
                 return View("Index", containers);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while fetching containers. EventID: {EventID}",
+                    CLASSNAME, methodName, HttpContext.Session.GetString("GlobalEventIdLong"));
+
                 ViewBag.EventIdList = new List<SelectListItem>();
                 TempData["ErrorMessage"] = "Failed to load data: " + ex.Message;
                 return View("Index", containers);
@@ -99,12 +114,19 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet("Add")]
         public async Task<IActionResult> Add(long eventId)
         {
+            const string methodName = "Add";
+
             try
             {
+                _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+
                 if (eventId <= 0)
                 {
-                    TempData["ErrorMessage"] = "Session expired.";
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid EventID: {EventID}. Session may have expired.",
+                        CLASSNAME, methodName, eventId);
 
+                    TempData["ErrorMessage"] = "Session expired.";
                     return View("Index");
                 }
 
@@ -117,10 +139,16 @@ namespace ExcelFilesCompiler.Controllers
                     StartDate = DateTime.Now.Date
                 };
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Add Container page loaded successfully for EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+
                 return View(model);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while loading Add Container page. EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+
                 TempData["ErrorMessage"] = "An unexpected error occurred while loading the Add Container page.";
                 return RedirectToAction("Index");
             }
@@ -131,8 +159,13 @@ namespace ExcelFilesCompiler.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(CreateContainerDto dto)
         {
+            const string methodName = "Add (POST)";
+
             try
             {
+                _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}, ContainerName: {ContainerName}",
+                    CLASSNAME, methodName, dto.EventId, dto.ContainerName);
+
                 var containerTypes = await _service.GetAllContainerTypesAsync();
                 ViewBag.ContainerTypes = containerTypes;
                 ViewBag.EventId = dto.EventId;
@@ -140,6 +173,9 @@ namespace ExcelFilesCompiler.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not found or not logged in while adding container. EventID: {EventID}",
+                        CLASSNAME, methodName, dto.EventId);
+
                     TempData["ErrorMessage"] = "Please login and try again.";
                     return RedirectToAction("Index");
                 }
@@ -149,15 +185,20 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (!result.Success)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Failed to add container. EventID: {EventID}, User: {UserName}, Error: {Error}",
+                        CLASSNAME, methodName, dto.EventId, user.UserName, result.Message);
+
                     TempData["ErrorMessage"] = result.Message;
                     return View(dto);
                 }
-
 
                 // Load event containers if needed
                 var containers = dto.EventId <= 0
                     ? new List<Container>()
                     : await _service.GetContainersByEventIdAsync(dto.EventId);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Container added successfully. EventID: {EventID}, User: {UserName}, ContainerName: {ContainerName}",
+                    CLASSNAME, methodName, dto.EventId, user.UserName, dto.ContainerName);
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
@@ -167,11 +208,17 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (ArgumentException ex)
             {
+                _logger.LogWarning(ex, "{ClassName}, {MethodName}, ArgumentException occurred while adding container. EventID: {EventID}, ContainerName: {ContainerName}",
+                    CLASSNAME, methodName, dto.EventId, dto.ContainerName);
+
                 TempData["ErrorMessage"] = ex.Message;
                 return View(dto);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while adding container. EventID: {EventID}, ContainerName: {ContainerName}",
+                    CLASSNAME, methodName, dto.EventId, dto.ContainerName);
+
                 TempData["ErrorMessage"] = "Unexpected error occurred while adding container.";
                 return View(dto);
             }
@@ -181,11 +228,19 @@ namespace ExcelFilesCompiler.Controllers
         [HttpGet("Monitor/{id}")]
         public async Task<IActionResult> Monitor(long id)
         {
+            const string methodName = "Monitor (GET)";
+
             try
             {
+                _logger.LogInformation("{ClassName}, {MethodName}, Called with ContainerID: {ContainerID}",
+                    CLASSNAME, methodName, id);
+
                 var container = await _service.GetContainerByIdAsync(id);
                 if (container == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Container not found. ContainerID: {ContainerID}",
+                        CLASSNAME, methodName, id);
+
                     TempData["ErrorMessage"] = "Container not found.";
                     return RedirectToAction("Index");
                 }
@@ -193,27 +248,41 @@ namespace ExcelFilesCompiler.Controllers
                 var readings = await _service.GetReadingsForContainer(container.Id);
                 ViewBag.Readings = readings;
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Monitor page loaded successfully. ContainerID: {ContainerID}, ReadingCount: {ReadingCount}",
+                    CLASSNAME, methodName, id, readings.Count);
+
                 return View(container);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while loading monitor page. ContainerID: {ContainerID}",
+                    CLASSNAME, methodName, id);
+
                 TempData["ErrorMessage"] = "An unexpected error occurred while loading the monitor page.";
                 return RedirectToAction("Index");
             }
         }
+
 
         [HttpPost("Monitor/{id}")]
         [ValidateAntiForgeryToken]
         [RoleAttributeAuthorizeFromConfig("Container_Save")]
         public async Task<IActionResult> Monitor(long id, CreateReadingDto dto)
         {
+            const string methodName = "Monitor (POST)";
+
             try
             {
+                _logger.LogInformation("{ClassName}, {MethodName}, Called with ContainerID: {ContainerID}",
+                    CLASSNAME, methodName, id);
+
                 dto.ContainerId = id;
                 var user = await _userManager.GetUserAsync(User);
-
                 if (user == null)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, User not logged in while adding reading. ContainerID: {ContainerID}",
+                        CLASSNAME, methodName, id);
+
                     TempData["ErrorMessage"] = "Please login and try again.";
                     return RedirectToAction("Index");
                 }
@@ -222,31 +291,52 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (!result.Success)
                 {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Failed to add reading. ContainerID: {ContainerID}, User: {UserName}, Error: {Error}",
+                        CLASSNAME, methodName, id, user.UserName, result.Message);
+
                     TempData["ErrorMessage"] = result.Message;
                     return RedirectToAction("Monitor", new { id });
                 }
 
+                _logger.LogInformation("{ClassName}, {MethodName}, Reading added successfully. ContainerID: {ContainerID}, User: {UserName}",
+                    CLASSNAME, methodName, id, user.UserName);
+
                 TempData["SuccessMessage"] = result.Message;
-                //return RedirectToAction("Monitor", new { id });
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving reading. ContainerID: {ContainerID}",
+                    CLASSNAME, methodName, id);
+
                 TempData["ErrorMessage"] = "An unexpected error occurred while saving the reading.";
                 return RedirectToAction("Index");
             }
         }
 
+
         [HttpPost]
         public async Task<IActionResult> AcknowledgeNotification([FromBody] long notificationId)
         {
+            const string methodName = "AcknowledgeNotification";
+
             try
             {
+                _logger.LogInformation("{ClassName}, {MethodName}, Called with NotificationID: {NotificationID}",
+                    CLASSNAME, methodName, notificationId);
+
                 await _service.AcknowledgeNotificationAsync(notificationId);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Notification acknowledged successfully. NotificationID: {NotificationID}",
+                    CLASSNAME, methodName, notificationId);
+
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while acknowledging notification. NotificationID: {NotificationID}",
+                    CLASSNAME, methodName, notificationId);
+
                 return StatusCode(500, new { message = ex.Message });
             }
         }
