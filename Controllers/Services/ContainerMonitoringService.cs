@@ -25,11 +25,10 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<IEnumerable<ContainerType>> GetAllContainerTypesAsync()
+        public IQueryable<ContainerType> GetAllContainerTypes()
         {
-            return await _unitOfWork.ContainerType.GetAllAsync();
+            return _unitOfWork.ContainerType.GetAllNoTracking();
         }
-
 
         public async Task<List<Container>> GetContainersByEventIdAsync(long eventId)
         {
@@ -54,7 +53,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
                 CLASSNAME, methodName, eventId);
 
-            var containers = await _unitOfWork.Container.FindForSearching(f => f.EventManagementId == eventId).ToListAsync();
+            var containers = await _unitOfWork.Container.GetAllWithConditionNoTracking(f => f.EventManagementId == eventId).ToListAsync();
 
             _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {ContainerCount} containers for EventID: {EventID}",
                 CLASSNAME, methodName, containers.Count, eventId);
@@ -96,8 +95,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var readings = await _unitOfWork.ContainerTemperatureReading
-                    .FindAllAsync(r => r.ContainerId == containerId);
+                var readings = _unitOfWork.ContainerTemperatureReading
+                    .GetAllWithConditionNoTracking(r => r.ContainerId == containerId);
 
                 var orderedReadings = readings.OrderByDescending(r => r.ReadingTimeUtc).ToList();
 
@@ -131,14 +130,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return tokenResult;
                 }
 
-                var containerType = await _unitOfWork.ContainerType.FindAsync(c => c.Id == dto.ContainerTypeId);
+                var containerType = await _unitOfWork.ContainerType.GetFirstOrDefaultWithConditionNoTracking(c => c.Id == dto.ContainerTypeId);
                 if (containerType == null)
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Invalid ContainerTypeId: {ContainerTypeId}", CLASSNAME, methodName, dto.ContainerTypeId);
                     return new ResponseDto { Success = false, Message = "Invalid container type selected." };
                 }
 
-                var existingContainer = await _unitOfWork.Container.FindAsync(c =>
+                var existingContainer = _unitOfWork.Container.GetAllWithConditionNoTracking(c =>
                     c.ContainerName.ToLower() == dto.ContainerName.ToLower().Trim() &&
                     c.EventManagementId == dto.EventId
                 );
@@ -272,7 +271,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                                     dto.Temperature > container?.ContainerType?.TemperatureToRange;
                 reading.IsOutOfRange = isOutOfRange;
 
-                var readings = await _unitOfWork.ContainerTemperatureReading.FindAllAsync(r => r.ContainerId == container.Id);
+                var readings = _unitOfWork.ContainerTemperatureReading.GetAllWithConditionNoTracking(r => r.ContainerId == container.Id);
                 var lastReading = readings.OrderByDescending(r => r.ReadingTimeUtc).FirstOrDefault();
                 int prevAttempt = lastReading?.AttemptNumber ?? 0;
 
@@ -322,7 +321,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var notification = await _unitOfWork.ContainerNotification.FindAsync(n => n.Id == notificationId);
+                var notification = await _unitOfWork.ContainerNotification.GetFirstOrDefaultWithConditionNoTracking(n => n.Id == notificationId);
                 if (notification != null && !notification.IsAcknowledged)
                 {
                     notification.IsAcknowledged = true;

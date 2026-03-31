@@ -203,7 +203,7 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var contracts = await _contractService.GetContractForSearchingByContractId(contractId);
+                var contracts = _contractService.GetContractForSearchingByContractId(contractId);
 
                 var result = contracts.Select(c => new
                 {

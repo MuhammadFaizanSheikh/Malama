@@ -52,7 +52,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     foreach (var affiliation in eventStaff.StaffContractAffiliation)
                     {
-                        var subContractor = await _unitOfWork.SubContractors.FindAsync(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
+                        var subContractor = await _unitOfWork.SubContractors.GetFirstOrDefaultWithConditionNoTracking(c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName);
                         affiliation.SubContractorId = subContractor?.Id ?? 0;
 
                         _logger.LogInformation("{ClassName}, {MethodName}, Affiliation mapped. ContractId: {ContractId}, SubContractorId: {SubContractorId}",
@@ -123,7 +123,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                eventStaff = (await _unitOfWork.EventStaff.GetAllAsync()).OrderByDescending(c => c.Id).ToList();
+                eventStaff = _unitOfWork.EventStaff.GetAllNoTracking().OrderByDescending(c => c.Id).ToList();
                 _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} EventStaff records.", CLASSNAME, methodName, eventStaff.Count);
             }
             catch (Exception ex)
@@ -160,7 +160,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} EventStaff records.", CLASSNAME, methodName, eventStaffList.Count);
 
                 // Fetch completed events
-                var completedEventList = (await _unitOfWork.EventManagement.FindForSearchingAsync(c => c.EventStatus == "Complete")).ToList();
+                var completedEventList = _unitOfWork.EventManagement.GetAllWithConditionNoTracking(c => c.EventStatus == "Complete").ToList();
                 var eventIds = completedEventList.Select(e => e.Id).ToList();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Found {Count} completed events.", CLASSNAME, methodName, eventIds.Count);
@@ -389,7 +389,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // Update sub-contractor IDs
                 foreach (var affiliation in eventStaff.StaffContractAffiliation)
                 {
-                    var subContractor = await _unitOfWork.SubContractors.FindAsync(
+                    var subContractor = await _unitOfWork.SubContractors.GetFirstOrDefaultWithConditionNoTracking(
                         c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName
                     );
 
@@ -414,7 +414,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     license.EventStaffId = eventStaff.Id;
                 }
-                _unitOfWork.StaffQualification.AddRange(eventStaff.StaffQualification);
+                await _unitOfWork.StaffQualification.AddRangeAsync(eventStaff.StaffQualification);
 
                 // Refresh StaffContractAffiliation
                 await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
@@ -422,7 +422,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     affiliation.EventStaffId = eventStaff.Id;
                 }
-                _unitOfWork.StaffContractAffiliation.AddRange(eventStaff.StaffContractAffiliation);
+                await _unitOfWork.StaffContractAffiliation.AddRangeAsync(eventStaff.StaffContractAffiliation);
 
                 // Refresh TravelHonorList
                 await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
@@ -430,7 +430,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     travelHonor.EventStaffId = eventStaff.Id;
                 }
-                _unitOfWork.TravelHonor.AddRange(eventStaff.TravelHonorList);
+                await _unitOfWork.TravelHonor.AddRangeAsync(eventStaff.TravelHonorList);
 
                 // Update related user roles / identity if needed
                 var result = await UpdateUser(eventStaff); // Or _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
@@ -462,7 +462,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                var allEventStaff = await _unitOfWork.EventStaff.GetAllAsync();
+                var allEventStaff = _unitOfWork.EventStaff.GetAllNoTracking();
 
                 if (allEventStaff == null || !allEventStaff.Any())
                 {
@@ -490,16 +490,16 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<IEnumerable<EventStaff>> GetEventStaffForSearchingByStaffId(string staffId)
+        public IQueryable<EventStaff> GetEventStaffForSearchingByStaffId(string staffId)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(staffId))
                 {
-                    return await _unitOfWork.EventStaff.FindForSearchingAsync(c => true);
+                    return _unitOfWork.EventStaff.GetAllWithConditionNoTracking(c => true);
                 }
 
-                return await _unitOfWork.EventStaff.FindForSearchingAsync(
+                return _unitOfWork.EventStaff.GetAllWithConditionNoTracking(
                     c => c.StaffID.ToLower().Contains(staffId.Trim().ToLower())
                 );
             }
@@ -542,7 +542,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var staff = await _unitOfWork.EventStaff.FindAsync(es => es.StaffSSN == ssn);
+                var staff = await _unitOfWork.EventStaff.GetFirstOrDefaultWithConditionNoTracking(es => es.StaffSSN == ssn);
                 return staff != null;
             }
             catch (Exception ex)

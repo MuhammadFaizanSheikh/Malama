@@ -73,7 +73,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return tokenResult;
                 }
 
-                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f => f.EventManagementId == immunizationVaccine.EventManagementId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetAllWithConditionNoTracking(f => f.EventManagementId == immunizationVaccine.EventManagementId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
 
                 if (records != null && records.Any())
                 {
@@ -92,6 +92,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 immunizationVaccine.AddedBy = loggedinUserName;
                 immunizationVaccine.AddedOn = DateTime.Now;
                 await _unitOfWork.ImmunizationVaccineInfo.AddAsync(immunizationVaccine);
+                await _unitOfWork.SaveAsync();
                 responseDto.Success = true;
                 responseDto.Message = "Immunization vaccine inventory added successfully!";
             }
@@ -111,7 +112,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var records = _unitOfWork.ImmunizationVaccineInfo.FindForSearching(f =>
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetAllWithConditionNoTracking(f =>
                 f.EventManagementId == immunizationVaccine.EventManagementId &&
                 f.ImmunizationType == immunizationVaccine.ImmunizationType &&
                 f.Vaccine == immunizationVaccine.Vaccine &&
@@ -162,7 +163,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     entry.ImmunizationVaccineInfoId = immunizationVaccine.Id;
                 }
 
-                _unitOfWork.ImmunizationVaccineLotEntry.AddRange(immunizationVaccine.Lots);
+                await _unitOfWork.ImmunizationVaccineLotEntry.AddRangeAsync(immunizationVaccine.Lots);
                 
                 // 4️⃣ Save changes
                 await _unitOfWork.SaveAsync();

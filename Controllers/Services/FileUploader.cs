@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using ExcelFilesCompiler.Interfaces;
-using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using NPOI.SS.UserModel;
@@ -9,9 +8,6 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ExcelFilesCompiler.Utilities;
-using static iTextSharp.text.pdf.AcroFields;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -121,18 +117,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                             CLASSNAME, methodName, existingParent.Id, eventId, addedBy);
                     }
 
-                    // Map FileDataDto to new parent + children
-                    //var newParent = MapToParentEntity(fileDataDtos, eventManagementId, addedBy);
                     var newServiceMembersParent = MapToServiceMembersParent(fileDataDtos.FirstOrDefault(), eventManagementId, addedBy);
                     newServiceMembersParent.ServiceMembersChildren = MapToServiceMembersChildren(fileDataDtos, addedBy);
-                    //var parentEntity = MapToServiceMembersParent(fileDataDtos.First(), eventId, updatedBy, childEntities);
 
                     await _unitOfWork.ServiceMembersParent.AddAsync(newServiceMembersParent);
+                    await _unitOfWork.SaveAsync();
 
                     _logger.LogInformation("{ClassName}, {MethodName}, Added new ServiceMembersParent (ID: {ParentId}) with {Count} children for EventID: {EventID} by User: {UserName}",
                         CLASSNAME, methodName, newServiceMembersParent.Id, newServiceMembersParent.ServiceMembersChildren.Count, eventId, addedBy);
 
-                    // Commit transaction
                     await transaction.CommitAsync();
 
                     _logger.LogInformation("{ClassName}, {MethodName}, Transaction committed successfully for EventID: {EventID} by User: {UserName}",
@@ -429,6 +422,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         child.ServiceMembersParentId = parent.Id;
 
                         await _unitOfWork.ServiceMembersChild.AddAsync(child);
+                        await _unitOfWork.SaveAsync();
 
                         isSaved = true;
 

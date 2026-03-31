@@ -130,7 +130,7 @@ namespace ExcelFilesCompiler.Controllers
                     return View("Index");
                 }
 
-                ViewBag.ContainerTypes = await _service.GetAllContainerTypesAsync();
+                ViewBag.ContainerTypes = _service.GetAllContainerTypes();
                 ViewBag.EventId = eventId;
 
                 var model = new CreateContainerDto
@@ -166,7 +166,7 @@ namespace ExcelFilesCompiler.Controllers
                 _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}, ContainerName: {ContainerName}",
                     CLASSNAME, methodName, dto.EventId, dto.ContainerName);
 
-                var containerTypes = await _service.GetAllContainerTypesAsync();
+                var containerTypes = _service.GetAllContainerTypes();
                 ViewBag.ContainerTypes = containerTypes;
                 ViewBag.EventId = dto.EventId;
 

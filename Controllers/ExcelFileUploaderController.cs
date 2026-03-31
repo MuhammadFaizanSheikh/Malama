@@ -1,15 +1,8 @@
-﻿using ExcelFilesCompiler.Controllers.Services;
-using ExcelFilesCompiler.Interfaces;
+﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Attributes;
 using Malama.Models;
-using Malama.Utilities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -111,15 +104,16 @@ namespace ExcelFilesCompiler.Controllers
 
         [RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
         [HttpPost]
-        public async Task<IActionResult> GetEventDataByEventIdForImmunization([FromBody] string eventId)
+        public async Task<IActionResult> GetEventDataByEventIdForImmunization([FromBody] long eventId)
         {
             try
             {
-                if (string.IsNullOrEmpty(eventId))
+                if (eventId <= 0)
+                {
                     return BadRequest("Event ID is required.");
+                }
 
-                //var data = _fileUploader.GetImmunizationsByEventIdAsync(eventId);
-                var data = string.Empty;
+                var data = _fileUploader.GetImmunizationsByEventIdAsync(eventId);
                 var result = new { success = true, data };
 
                 // 👇 Use custom JsonSerializerOptions with null naming policy (i.e., preserve PascalCase)

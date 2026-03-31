@@ -1,14 +1,6 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
-using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Org.BouncyCastle.Crypto;
-using System.ComponentModel.Design;
-using System.Diagnostics.Contracts;
-using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -45,7 +37,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     "{ClassName}, {MethodName}, Subcontractors fetched",
                     CLASSNAME, methodName);
 
-                var contracts = await _unitOfWork.ContractDetails.GetAllAsync();
+                var contracts = _unitOfWork.ContractDetails.GetAllNoTracking();
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Contracts fetched",
@@ -93,7 +85,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var existingCompany = await _unitOfWork.SubContractors.FindAsync(c => c.CompanyMainName == companyName);
+                var existingCompany = await _unitOfWork.SubContractors.GetFirstOrDefaultWithConditionNoTracking(c => c.CompanyMainName == companyName);
 
                 if (existingCompany != null)
                 {
@@ -105,7 +97,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 companyName = companyName.Replace(" ", "").ToUpper();
 
-                var allCompanies = await _unitOfWork.SubContractors.GetAllAsync();
+                var allCompanies = _unitOfWork.SubContractors.GetAllNoTracking();
 
                 if (allCompanies == null || !allCompanies.Any())
                 {
@@ -163,7 +155,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     throw new Exception("No contract detail found.");
                 }
 
-                var serviceTypes = await _unitOfWork.ServiceTypeProvided.GetAllAsync(c => c.SubContractorId == id);
+                var serviceTypes = _unitOfWork.ServiceTypeProvided.GetAllWithConditionNoTracking(c => c.SubContractorId == id);
                 if (serviceTypes == null)
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, No service types found for SubContractorId: {Id}",
@@ -213,6 +205,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 contractDetail.AddedBy = loggedinUserName;
                 contractDetail.AddedOn = DateTime.Now;
                 await _unitOfWork.SubContractors.AddAsync(contractDetail);
+                await _unitOfWork.SaveAsync();
 
                 responseDto.Success = true;
                 responseDto.Message = "SubContractor added successfully!";
@@ -256,7 +249,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     CLASSNAME, methodName, contract.Id);
 
                 await _unitOfWork.ServiceTypeProvided.DeleteAgainstFieldAsync(contract.Id, "SubContractorId");
-                _unitOfWork.ServiceTypeProvided.AddRange(contract.ServiceTypeProvided);
+                await _unitOfWork.ServiceTypeProvided.AddRangeAsync(contract.ServiceTypeProvided);
 
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -281,7 +274,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<IEnumerable<SubContractor>> GetSubContractorByCompanyNameForSearching(string companyName)
+        public IQueryable<SubContractor> GetSubContractorByCompanyNameForSearching(string companyName)
         {
             const string methodName = nameof(GetSubContractorByCompanyNameForSearching);
             _logger.LogInformation("{ClassName}, {MethodName}, Called at {Time}, CompanyName: {CompanyName}",
@@ -289,15 +282,15 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                IEnumerable<SubContractor> result;
+                IQueryable<SubContractor> result;
 
                 if (string.IsNullOrEmpty(companyName))
                 {
-                    result = await _unitOfWork.SubContractors.FindForSearchingAsync(c => true);
+                    result = _unitOfWork.SubContractors.GetAllWithConditionNoTracking(c => true);
                 }
                 else
                 {
-                    result = await _unitOfWork.SubContractors.FindForSearchingAsync(
+                    result = _unitOfWork.SubContractors.GetAllWithConditionNoTracking(
                         c => c.CompanyMainName.ToLower().Contains(companyName.ToLower())
                     );
                 }
@@ -326,7 +319,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var subcontractors = await _unitOfWork.SubContractors.FindForSearchingAsync(sc => sc.CompanyMainName == companyName);
+                var subcontractors = _unitOfWork.SubContractors.GetAllWithConditionNoTracking(sc => sc.CompanyMainName == companyName);
 
                 if (subcontractors == null || !subcontractors.Any())
                 {
@@ -349,7 +342,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 foreach (var id in contractIds)
                 {
-                    var contractDet = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.Id == id);
+                    var contractDet = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(sc => sc.Id == id);
                     if (contractDet != null && contractDet.Any())
                     {
                         contractDetails.AddRange(contractDet);
@@ -390,7 +383,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new List<SubContractor>();
                 }
 
-                var subcontractors = await _unitOfWork.SubContractors.GetAllAsync(c => c.CompanyMainName.Contains(term));
+                var subcontractors = _unitOfWork.SubContractors.GetAllWithConditionNoTracking(c => c.CompanyMainName.Contains(term));
 
                 var result = subcontractors
                     .Select(s => new SubContractor { CompanyMainName = s.CompanyMainName })

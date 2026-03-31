@@ -116,7 +116,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 // Fetch only the necessary data
                 var result = await _unitOfWork.EventManagement
-                    .FindForSearching(e => e.EventStatus != "Canceled") // filtered in DB
+                    .GetAllWithConditionNoTracking(e => e.EventStatus != "Canceled") // filtered in DB
                     .OrderByDescending(e => e.Id)
                     .Select(e => new EventManagementPreview
                     {
@@ -169,7 +169,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
-                //////////TO DO/////////
                 if (!ValidateEventStatus(eventManagement, loggedinUserName, false, out string statusError))
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Invalid EventStatus: {Status}, User: {UserName}, Error: {Error}",
@@ -184,6 +183,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 eventManagement.AddedOn = DateTime.Now;
 
                 await _unitOfWork.EventManagement.AddAsync(eventManagement);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Event added successfully. EventID: {EventID}, User: {UserName}",
                     CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
@@ -265,9 +265,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, Updating collections for EventID: {EventID}, User: {UserName}",
                     CLASSNAME, methodName, updatedModel.Id, loggedinUserName);
 
-                // =========================
-                // 4️⃣ Replace CHILD COLLECTIONS
-                // =========================
                 existing.EventServiceDetailList.Clear();
                 foreach (var item in updatedModel.EventServiceDetailList)
                 {
@@ -286,9 +283,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                     existing.EventManagementTaskforcesList.Add(item);
                 }
 
-                // =========================
-                // 5️⃣ EventStaffDetail (Nested Graph)
-                // =========================
                 existing.EventStaffDetailList.Clear();
 
                 foreach (var staff in updatedModel.EventStaffDetailList)
@@ -368,7 +362,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 // Step 1: Get all EventIDs from database
                 var eventIds = await _unitOfWork.EventManagement
-                    .GetAll()
+                    .GetAllNoTracking()
                     .Where(x => !string.IsNullOrEmpty(x.EventID))
                     .Select(x => x.EventID)
                     .ToListAsync(); // only EventID column
@@ -500,7 +494,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         throw new Exception("No contract detail found.");
                     }
 
-                    var eventStaff = await _unitOfWork.EventStaff.GetByNullableIdAsync(firstEventManagement.HIVDropOffStaffId);
+                    var eventStaff = await _unitOfWork.EventStaff.GetByIdAsync(firstEventManagement.HIVDropOffStaffId);
 
                     var EventStaffDetailAndAdditionalRoleslist = new List<EventStaffDetailAndAdditionalRoles>();
 
@@ -670,7 +664,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.Id == id);
+                var eventManagement = await _unitOfWork.EventManagement.GetFirstOrDefaultWithConditionNoTracking(x => x.Id == id);
 
                 if (eventManagement == null)
                 {
@@ -706,7 +700,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventManagement = await _unitOfWork.EventManagement.FindAsync(x => x.EventID == eventId);
+                var eventManagement = await _unitOfWork.EventManagement.GetFirstOrDefaultWithConditionNoTracking(x => x.EventID == eventId);
 
                 if (eventManagement == null)
                 {
@@ -743,7 +737,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var result = await _unitOfWork.EventManagement
-                    .FindForSearching(x => x.Id == eventId)
+                    .GetAllWithConditionNoTracking(x => x.Id == eventId)
                     .Select(x => new
                     {
                         x.EventStartDateUtc,
@@ -1132,7 +1126,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task<bool> HasServiceMembersAsync(string eventId)
         {
             return await _unitOfWork.ServiceMembersParent
-                .FindForSearching(x => x.EventManagement.EventID == eventId &&
+                .GetAllWithConditionNoTracking(x => x.EventManagement.EventID == eventId &&
                                        !x.isDeleted.GetValueOrDefault())
                 .AnyAsync();
         }

@@ -30,7 +30,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var existingToken = await _unitOfWork.SubmissionTokenRecord.FindAsync(t => t.Token == submissionToken);
+                var existingToken = await _unitOfWork.SubmissionTokenRecord.GetFirstOrDefaultWithConditionNoTracking(t => t.Token == submissionToken);
 
                 if (existingToken != null)
                 {
@@ -50,6 +50,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     Token = submissionToken,
                     CreatedAt = DateTime.Now
                 });
+
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Submission token saved: {Token}, User: {UserName}",
                     CLASSNAME, methodName, submissionToken, userName);

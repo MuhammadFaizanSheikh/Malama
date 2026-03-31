@@ -153,7 +153,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                             EventId = eventId
                         }).ToList();
 
-                        _unitOfWork.UserEventMapping.AddRange(userEventMappings);
+                        await _unitOfWork.UserEventMapping.AddRangeAsync(userEventMappings);
                         await _unitOfWork.SaveAsync();
 
                         _logger.LogInformation("{ClassName}, {MethodName}, Event mappings saved successfully, UserId: {UserId}, EventCount: {Count}",
@@ -580,7 +580,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var selectedEventIds = model.SelectedEventIds ?? new List<long>();
 
                     var existingMappings = await _unitOfWork.UserEventMapping
-                        .FindForSearching(x => x.UserId == user.Id)
+                        .GetAllWithConditionNoTracking(x => x.UserId == user.Id)
                         .ToListAsync();
 
                     var existingEventIds = existingMappings
@@ -631,7 +631,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 else
                 {
                     var mappings = await _unitOfWork.UserEventMapping
-                        .FindForSearching(x => x.UserId == user.Id)
+                        .GetAllWithConditionNoTracking(x => x.UserId == user.Id)
                         .ToListAsync();
 
                     if (mappings.Any())

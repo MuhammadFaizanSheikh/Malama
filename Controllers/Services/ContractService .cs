@@ -1,12 +1,6 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
-using ExcelFilesCompiler.Repositories.Interfaces;
-using ExcelFilesCompiler.Repositories.Services;
 using ExcelFilesCompiler.UnitOfWork;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -42,7 +36,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 // Check if contract already exists
-                var existingContractDetails = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.ContractID == contractDetail.ContractID);
+                var existingContractDetails = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(sc => sc.ContractID == contractDetail.ContractID);
                 if (existingContractDetails != null && existingContractDetails.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, ContractID already exists: {ContractID}, User: {UserName}",
@@ -58,6 +52,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 contractDetail.AddedOn = DateTime.Now;
 
                 await _unitOfWork.ContractDetails.AddAsync(contractDetail);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation("{ClassName}, {MethodName}, Contract added successfully: {ContractID}, User: {UserName}",
                     CLASSNAME, methodName, contractDetail.ContractID, loggedinUserName);
 
@@ -86,7 +81,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                contracts = (await _unitOfWork.ContractDetails.GetAllAsync())
+                contracts = _unitOfWork.ContractDetails.GetAllNoTracking()
                     .OrderByDescending(c => c.Id)
                     .ToList();
 
@@ -116,8 +111,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 if (checkIfContractAlreadyExist)
                 {
-                    var alreadyAssignedContract = await _unitOfWork.SubContractors
-                        .FindForSearchingAsync(sc => sc.ContractId == id && sc.CompanyMainName == companyName);
+                    var alreadyAssignedContract = _unitOfWork.SubContractors
+                        .GetAllWithConditionNoTracking(sc => sc.ContractId == id && sc.CompanyMainName == companyName);
 
                     if (alreadyAssignedContract != null && alreadyAssignedContract.Any())
                     {
@@ -190,7 +185,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 // Check if ContractID already exists in another record
-                var existingContractDetails = await _unitOfWork.ContractDetails.FindForSearchingAsync(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
+                var existingContractDetails = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
                 if (existingContractDetails != null && existingContractDetails.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, ContractID already exists in another record: {ContractID}, User: {UserName}",
@@ -231,7 +226,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<IEnumerable<ContractDetails>> GetContractForSearchingByContractId(string contractName)
+        public IQueryable<ContractDetails> GetContractForSearchingByContractId(string contractName)
         {
             string methodName = nameof(GetContractForSearchingByContractId);
 
@@ -241,7 +236,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                IEnumerable<ContractDetails> result;
+                IQueryable<ContractDetails> result;
 
                 if (string.IsNullOrEmpty(contractName))
                 {
@@ -249,11 +244,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Empty search term received. Returning all contracts.",
                         CLASSNAME, methodName);
 
-                    result = await _unitOfWork.ContractDetails.FindForSearchingAsync(c => true);
+                    result = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(c => true);
                 }
                 else
                 {
-                    result = await _unitOfWork.ContractDetails.FindForSearchingAsync(
+                    result = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(
                                 c => c.ContractName.ToLower().Contains(contractName.ToLower()));
 
                     _logger.LogInformation(
@@ -293,7 +288,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Checking by ContractID: {ContractId}",
                         CLASSNAME, methodName, contractId);
 
-                    result = await _unitOfWork.ContractDetails.FindAsync(c => c.ContractID == contractId);
+                    result = await _unitOfWork.ContractDetails.GetFirstOrDefaultWithConditionNoTracking(c => c.ContractID == contractId);
                 }
                 else
                 {
@@ -301,7 +296,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, Checking by ContractName: {ContractName}",
                         CLASSNAME, methodName, contractName);
 
-                    result = await _unitOfWork.ContractDetails.FindAsync(c => c.ContractName == contractName);
+                    result = await _unitOfWork.ContractDetails.GetFirstOrDefaultWithConditionNoTracking(c => c.ContractName == contractName);
                 }
 
                 _logger.LogInformation(

@@ -41,8 +41,8 @@ namespace Malama.Controllers.Services.ContainerTempMonitoringServices
             var now = DateTime.Now;
 
             // Get containers where temperature check is due
-            var dueContainers = await unitOfWork.Container
-                .FindAllAsync(c => c.NextExpectedReadingUtc <= now && c.FinalTemp  == false);
+            var dueContainers = unitOfWork.Container
+                .GetAllWithConditionNoTracking(c => c.NextExpectedReadingUtc <= now && c.FinalTemp  == false);
 
             foreach (var container in dueContainers)
             {
@@ -50,7 +50,7 @@ namespace Malama.Controllers.Services.ContainerTempMonitoringServices
 
                 // Check if a notification already exists for this monitoring attempt
                 var existingNotification = await unitOfWork.ContainerNotification
-                    .FindAsync(n => n.ContainerId == container.Id && n.DueAt == container.NextExpectedReadingUtc);
+                    .GetFirstOrDefaultWithConditionNoTracking(n => n.ContainerId == container.Id && n.DueAt == container.NextExpectedReadingUtc);
 
                 ContainerNotification notification;
 

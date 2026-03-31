@@ -5,7 +5,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IContainerMonitoringService
     {
         Task<Container?> GetContainerByIdAsync(long id);
-        Task<IEnumerable<ContainerType>> GetAllContainerTypesAsync();
+        IQueryable<ContainerType> GetAllContainerTypes();
         Task<List<Container>> GetContainersByEventIdAsync(long eventId);
         Task<List<Container>> GetOnlyContainersByEventIdAsync(long eventId);
         Task<List<ContainerTemperatureReading>> GetReadingsForContainer(long containerId);

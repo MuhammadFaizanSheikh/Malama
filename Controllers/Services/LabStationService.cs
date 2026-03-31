@@ -110,9 +110,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception($"LabStation record with Id={model.Id} not found.");
             }
 
-            // map all fields from model → existing
             MapToEntity(model, existing, userName);
-            //SetGivenDateTimes(existing);
 
             await _unitOfWork.LabStation.UpdateAsync(existing);
             await _unitOfWork.SaveAsync();

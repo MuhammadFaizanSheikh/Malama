@@ -305,7 +305,7 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var eventStaff = await _eventStaffService.GetEventStaffForSearchingByStaffId(staffId);
+                var eventStaff = _eventStaffService.GetEventStaffForSearchingByStaffId(staffId);
 
                 var result = eventStaff.Select(c => new
                 {

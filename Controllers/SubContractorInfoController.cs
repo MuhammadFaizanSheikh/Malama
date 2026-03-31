@@ -232,7 +232,7 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var contracts = await _subContractorService.GetSubContractorByCompanyNameForSearching(companyName);
+                var contracts = _subContractorService.GetSubContractorByCompanyNameForSearching(companyName);
 
                 // Distinct by CompanyMainName
                 var result = contracts

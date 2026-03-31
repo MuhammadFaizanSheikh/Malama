@@ -29,7 +29,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 bool isAssigned = await _unitOfWork.UserEventMapping
-                    .FindForSearching(u => u.UserId == userId && u.EventId == eventId)
+                    .GetAllWithConditionNoTracking(u => u.UserId == userId && u.EventId == eventId)
                     .AnyAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, User assignment result: {IsAssigned}",
@@ -53,7 +53,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventIds = await _unitOfWork.UserEventMapping.FindForSearching(x => x.UserId == userId)
+                var eventIds = await _unitOfWork.UserEventMapping.GetAllWithConditionNoTracking(x => x.UserId == userId)
                 .Select(x => x.EventId).ToListAsync();
 
                 if (!eventIds.Any())

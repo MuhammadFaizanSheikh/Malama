@@ -103,10 +103,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task UpdateAsync(ImmunizationStation model, string userName)
         {
-            //var existing = await _unitOfWork.ImmunizationStation
-            //    .GetWithInclude(x => x.Id == model.Id)
-            //    .FirstOrDefaultAsync();
-
             var existing = await _unitOfWork.ImmunizationStation.GetByIdAsync(model.Id);
 
             if (existing == null)
