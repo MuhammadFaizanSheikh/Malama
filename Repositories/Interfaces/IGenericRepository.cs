@@ -11,10 +11,8 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         Task<T?> GetByIdAsync(long? id);
         Task AddRangeAsync(IEnumerable<T> entities);
         Task AddAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task<IEnumerable<T>> GetWithIncludeAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
-        Task DeleteAgainstFieldAsync(object id, string idPropertyName);
-        IQueryable<T> GetWithInclude(Expression<Func<T, bool>> predicate = null,params Expression<Func<T, object>>[] includes);
+        IQueryable<T> GetWithIncludeTracking(Expression<Func<T, bool>> predicate = null, params Expression<Func<T, object>>[] includes);
+        IQueryable<T> GetWithIncludeNoTracking(Expression<Func<T, bool>> predicate = null,params Expression<Func<T, object>>[] includes);
         void RemoveRange(IEnumerable<T> entities);
 
     }

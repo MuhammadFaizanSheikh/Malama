@@ -75,7 +75,7 @@ namespace Malama.Controllers.Services
 
                 var listOfEventUsers = await _eventStaffService.GetAllEventStaffByEventId(selectedEventId);
 
-                if (listOfEventUsers == null || !listOfEventUsers.Any())
+                if (!listOfEventUsers.Any())
                     return new List<EventUserListDto>();
 
                 // 2️⃣ Extract distinct UserIds

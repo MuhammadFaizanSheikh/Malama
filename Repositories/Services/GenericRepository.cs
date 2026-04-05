@@ -50,57 +50,11 @@ namespace ExcelFilesCompiler.Repositories.Services
             _dbSet.RemoveRange(entities);
         }
 
-        public async Task UpdateAsync(T entity)
-        {
-            try
-            {
-                var keyProperty = typeof(T).GetProperty("Id"); // Access the primary key dynamically
-                if (keyProperty == null)
-                {
-                    throw new Exception("Entity does not have a property named 'Id'.");
-                }
-
-                var keyValue = keyProperty.GetValue(entity); // Get the value of the Id
-                var existingEntity = await _dbSet.FindAsync(keyValue);
-
-                if (existingEntity == null)
-                {
-                    throw new Exception("Entity does not exist in the database.");
-                }
-
-                _context.Entry(existingEntity).CurrentValues.SetValues(entity); // Update values
-                await _context.SaveChangesAsync(); // Save changes to database
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while updating the record.", ex);
-            }
-        }
-
-        public async Task<IEnumerable<T>> GetWithIncludeAsync(
-      Expression<Func<T, bool>> predicate = null,
-      params Expression<Func<T, object>>[] includes)
-        {
-            IQueryable<T> query = _dbSet;
-
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            return await query.ToListAsync();
-        }
-
-        public IQueryable<T> GetWithInclude(
+        public IQueryable<T> GetWithIncludeTracking(
     Expression<Func<T, bool>> predicate = null,
     params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.AsNoTracking();
+            IQueryable<T> query = _dbSet;
 
             foreach (var include in includes)
             {
@@ -115,14 +69,23 @@ namespace ExcelFilesCompiler.Repositories.Services
             return query; // Return IQueryable instead of executing ToListAsync()
         }
 
-        public async Task DeleteAgainstFieldAsync(object id, string idPropertyName)
+        public IQueryable<T> GetWithIncludeNoTracking(
+   Expression<Func<T, bool>> predicate = null,
+   params Expression<Func<T, object>>[] includes)
         {
-            // Fetch the entity using the non-primary key (idPropertyName)
-            var entities = await _dbSet.Where(e => EF.Property<object>(e, idPropertyName).Equals(id)).ToListAsync();
-            if (entities.Any())
+            IQueryable<T> query = _dbSet.AsNoTracking();
+
+            foreach (var include in includes)
             {
-                _dbSet.RemoveRange(entities);
+                query = query.Include(include);
             }
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return query; // Return IQueryable instead of executing ToListAsync()
         }
     }
 }

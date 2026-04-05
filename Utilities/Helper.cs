@@ -1,4 +1,6 @@
-﻿namespace Malama.Utilities
+﻿using AutoMapper;
+
+namespace Malama.Utilities
 {
     public static class Helper
     {
@@ -37,6 +39,75 @@
             }
 
             return default; // in case of error
+        }
+
+        //public static void UpdateCollection<TItem, TKey>(
+        //    ICollection<TItem> existingList,
+        //    ICollection<TItem> updatedList,
+        //    Func<TItem, TKey> keySelector,
+        //    IMapper mapper)
+        //{
+        //    if (existingList == null) throw new ArgumentNullException(nameof(existingList));
+        //    if (updatedList == null) throw new ArgumentNullException(nameof(updatedList));
+
+        //    // Remove deleted items
+        //    var toRemove = existingList
+        //        .Where(e => updatedList.All(u => !keySelector(u)!.Equals(keySelector(e))))
+        //        .ToList();
+
+        //    foreach (var item in toRemove)
+        //        existingList.Remove(item);
+
+        //    // Update existing items & add new ones
+        //    foreach (var updatedItem in updatedList)
+        //    {
+        //        var existingItem = existingList
+        //            .FirstOrDefault(e => keySelector(e)!.Equals(keySelector(updatedItem)));
+
+        //        if (existingItem != null)
+        //        {
+        //            mapper.Map(updatedItem, existingItem);
+        //        }
+        //        else
+        //        {
+        //            existingList.Add(updatedItem);
+        //        }
+        //    }
+        //}
+
+        public static void UpdateCollection<TItem, TKey>(
+    ICollection<TItem> existingList,
+    ICollection<TItem> updatedList,
+    Func<TItem, TKey> keySelector,
+    IMapper mapper,
+    Action<TItem, TItem>? updateChildren = null)
+        {
+            if (existingList == null) throw new ArgumentNullException(nameof(existingList));
+            if (updatedList == null) throw new ArgumentNullException(nameof(updatedList));
+
+            var toRemove = existingList
+                .Where(e => updatedList.All(u => !keySelector(u)!.Equals(keySelector(e))))
+                .ToList();
+
+            foreach (var item in toRemove)
+                existingList.Remove(item);
+
+            foreach (var updatedItem in updatedList)
+            {
+                var existingItem = existingList
+                    .FirstOrDefault(e => keySelector(e)!.Equals(keySelector(updatedItem)));
+
+                if (existingItem != null)
+                {
+                    mapper.Map(updatedItem, existingItem);
+
+                    updateChildren?.Invoke(existingItem, updatedItem);
+                }
+                else
+                {
+                    existingList.Add(updatedItem);
+                }
+            }
         }
     }
 }

@@ -848,7 +848,6 @@
                     value = value === '' || value == null ? null : parseInt(value);
                 } else if (fieldType === 'date') {
                     value = value ? new Date(value).toISOString() : null;
-                    // value = value ? getDateOnlyGlobal(value) : null;
                 } else if (fieldType === 'string') {
                     value = value != null ? String(value) : null;
                 }

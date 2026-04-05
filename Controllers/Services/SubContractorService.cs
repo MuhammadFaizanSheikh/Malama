@@ -1,22 +1,29 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
 using ExcelFilesCompiler.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
+using Malama.Utilities;
+using AutoMapper;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class SubContractorService : ISubContractorService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<SubContractorService> _logger;
         private const string CLASSNAME = "SubContractorService";
 
-        public SubContractorService(ILogger<SubContractorService> logger, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService)
+        public SubContractorService(ILogger<SubContractorService> logger, IMapper mapper, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _logger = logger;
             _submissionTokenService = submissionTokenService;
         }
+
+
 
         public async Task<List<SubContractorAndContractViewModel>> GetAllSubContractors()
         {
@@ -25,44 +32,41 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Fetching subcontractors",
+                    "{ClassName}, {MethodName}, Fetching subcontractors and contracts",
                     CLASSNAME, methodName);
 
-                var subcontractors = await _unitOfWork.SubContractors.GetWithIncludeAsync(
-                    null,
-                    x => x.ServiceTypeProvided
-                );
+                var data = await (
+                from sub in _unitOfWork.SubContractors
+                    .GetWithIncludeNoTracking(null, x => x.ServiceTypeProvided)
+                join contract in _unitOfWork.ContractDetails
+                    .GetAllNoTracking()
+                    on sub.ContractId equals contract.Id
+                select new
+                {
+                    sub,
+                    contract
+                }
+                ).ToListAsync();
+
+                var result = data.Select(x => new SubContractorAndContractViewModel
+                {
+                    Id = x.sub.Id,
+                    CompanyId = x.sub.CompanyId,
+                    CompanyMainName = x.sub.CompanyMainName,
+                    CompanyMainState = x.sub.CompanyMainState,
+                    CompanyMainCity = x.sub.CompanyMainCity,
+                    CompanyMainZip = x.sub.CompanyMainZip,
+                    ContractName = x.contract.ContractName,
+                    ContractId = x.contract.ContractID,
+                    ServiceTypeProvided = string.Join(", ",
+                        x.sub.ServiceTypeProvided.Select(stp => stp.ServiceTypeProvidedName))
+                }).ToList();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Subcontractors fetched",
-                    CLASSNAME, methodName);
+                    "{ClassName}, {MethodName}, Data fetched successfully, FinalCount: {Count}",
+                    CLASSNAME, methodName, result.Count);
 
-                var contracts = _unitOfWork.ContractDetails.GetAllNoTracking();
-
-                _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Contracts fetched",
-                    CLASSNAME, methodName);
-
-                var result = from sub in subcontractors
-                             join contract in contracts on sub.ContractId equals contract.Id
-                             select new SubContractorAndContractViewModel
-                             {
-                                 Id = sub.Id,
-                                 CompanyId = sub.CompanyId,
-                                 CompanyMainName = sub.CompanyMainName,
-                                 CompanyMainState = sub.CompanyMainState,
-                                 CompanyMainCity = sub.CompanyMainCity,
-                                 CompanyMainZip = sub.CompanyMainZip,
-                                 ContractName = contract.ContractName,
-                                 ContractId = contract.ContractID,
-                                 ServiceTypeProvided = string.Join(", ", sub.ServiceTypeProvided.Select(stp => stp.ServiceTypeProvidedName)),
-                             };
-
-                _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Mapping completed, FinalCount: {Count}",
-                    CLASSNAME, methodName, result.Count());
-
-                return result.ToList();
+                return result;
             }
             catch (Exception ex)
             {
@@ -74,8 +78,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw;
             }
         }
-
-
 
         public async Task<string> GetLastCompanyCode(string companyName)
         {
@@ -128,8 +130,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("An error occurred while retrieving the CompanyCode.", ex);
             }
         }
-
-
 
         public async Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id)
         {
@@ -184,10 +184,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-
-        public async Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string submissionToken, string loggedinUserName)
+        public async Task<ResponseDto> AddSubContractAsync(SubContractor contractDetail, string submissionToken, string loggedinUserName)
         {
-            const string methodName = nameof(AddContractAsync);
+            const string methodName = nameof(AddSubContractAsync);
             _logger.LogInformation("{ClassName}, {MethodName}, Adding SubContractor, User: {UserName}",
                 CLASSNAME, methodName, loggedinUserName);
 
@@ -226,30 +225,93 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
 
-        public async Task<ResponseDto> UpdateContract(SubContractor contract, string loggedinUserName)
+        //public async Task<ResponseDto> UpdateSubContractAsync(SubContractor contract, string loggedinUserName)
+        //{
+        //    const string methodName = nameof(UpdateSubContractAsync);
+        //    _logger.LogInformation("{ClassName}, {MethodName}, Updating SubContractor, User: {UserName}, Id: {SubContractorId}",
+        //        CLASSNAME, methodName, loggedinUserName, contract.Id);
+
+        //    var responseDto = new ResponseDto();
+        //    using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var existingEvent = await _unitOfWork.SubContractors.GetByIdAsync(contract.Id);
+        //        contract.AddedBy = existingEvent.AddedBy;
+        //        contract.AddedOn = existingEvent.AddedOn;
+        //        contract.UpdatedBy = loggedinUserName;
+        //        contract.UpdatedOn = DateTime.Now;
+
+        //        await _unitOfWork.SubContractors.UpdateAsync(contract);
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}, Updated SubContractor details in repository, Id: {SubContractorId}",
+        //            CLASSNAME, methodName, contract.Id);
+
+        //        await _unitOfWork.ServiceTypeProvided.DeleteAgainstFieldAsync(contract.Id, "SubContractorId");
+        //        await _unitOfWork.ServiceTypeProvided.AddRangeAsync(contract.ServiceTypeProvided);
+
+        //        await _unitOfWork.SaveAsync();
+        //        await transaction.CommitAsync();
+
+        //        responseDto.Success = true;
+        //        responseDto.Message = "SubContractor updated successfully!";
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}, Update transaction committed, Success: {Success}, Id: {SubContractorId}",
+        //            CLASSNAME, methodName, responseDto.Success, contract.Id);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        responseDto.Success = false;
+        //        responseDto.Message = $"An error occurred while updating SubContractor: {ex.Message}";
+
+        //        _logger.LogError(ex, "{ClassName}, {MethodName}, Failed to update SubContractor, Id: {SubContractorId}, User: {UserName}",
+        //            CLASSNAME, methodName, contract.Id, loggedinUserName);
+        //    }
+
+        //    return responseDto;
+        //}
+
+        public async Task<ResponseDto> UpdateSubContractAsync(SubContractor updatedContract, string loggedinUserName)
         {
-            const string methodName = nameof(UpdateContract);
+            const string methodName = nameof(UpdateSubContractAsync);
             _logger.LogInformation("{ClassName}, {MethodName}, Updating SubContractor, User: {UserName}, Id: {SubContractorId}",
-                CLASSNAME, methodName, loggedinUserName, contract.Id);
+                CLASSNAME, methodName, loggedinUserName, updatedContract.Id);
 
             var responseDto = new ResponseDto();
             using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var existingEvent = await _unitOfWork.SubContractors.GetByIdAsync(contract.Id);
-                contract.AddedBy = existingEvent.AddedBy;
-                contract.AddedOn = existingEvent.AddedOn;
-                contract.UpdatedBy = loggedinUserName;
-                contract.UpdatedOn = DateTime.Now;
+                var existingContract = await _unitOfWork.SubContractors.GetWithIncludeTracking(
+                    c => c.Id == updatedContract.Id,
+                    c => c.ServiceTypeProvided
+                ).FirstOrDefaultAsync();
 
-                await _unitOfWork.SubContractors.UpdateAsync(contract);
+                if (existingContract == null)
+                {
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "SubContractor not found."
+                    };
+                }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Updated SubContractor details in repository, Id: {SubContractorId}",
-                    CLASSNAME, methodName, contract.Id);
+                var addedBy = existingContract.AddedBy;
+                var addedOn = existingContract.AddedOn;
 
-                await _unitOfWork.ServiceTypeProvided.DeleteAgainstFieldAsync(contract.Id, "SubContractorId");
-                await _unitOfWork.ServiceTypeProvided.AddRangeAsync(contract.ServiceTypeProvided);
+                _mapper.Map(updatedContract, existingContract);
+
+                existingContract.AddedBy = addedBy;
+                existingContract.AddedOn = addedOn;
+                existingContract.UpdatedBy = loggedinUserName;
+                existingContract.UpdatedOn = DateTime.Now;
+
+                Helper.UpdateCollection(
+                existingContract.ServiceTypeProvided,
+                updatedContract.ServiceTypeProvided,
+                x => new { x.SubContractorId, x.ServiceTypeProvidedName },  // composite key
+                _mapper);
 
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -258,7 +320,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 responseDto.Message = "SubContractor updated successfully!";
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Update transaction committed, Success: {Success}, Id: {SubContractorId}",
-                    CLASSNAME, methodName, responseDto.Success, contract.Id);
+                    CLASSNAME, methodName, responseDto.Success, updatedContract.Id);
             }
             catch (Exception ex)
             {
@@ -267,7 +329,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 responseDto.Message = $"An error occurred while updating SubContractor: {ex.Message}";
 
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Failed to update SubContractor, Id: {SubContractorId}, User: {UserName}",
-                    CLASSNAME, methodName, contract.Id, loggedinUserName);
+                    CLASSNAME, methodName, updatedContract.Id, loggedinUserName);
             }
 
             return responseDto;

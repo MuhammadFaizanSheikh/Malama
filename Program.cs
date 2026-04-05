@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authorization;
 using Serilog;
 using Malama.Interfaces;
 using Malama.Controllers.Services;
+using Malama.AutoMapper;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,7 +53,7 @@ builder.Services.AddScoped<IEventUsersService, EventUsersService>();
 builder.Services.AddScoped<ISubmissionTokenService, SubmissionTokenService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromDays(365);

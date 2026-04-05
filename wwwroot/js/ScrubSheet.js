@@ -165,6 +165,8 @@ let smIdEditing = 0;
 let currentRow;
 let isAddingNewRow = false;
 let primaryKeyForEdit = 0;
+let checkedInTime = null;
+let checkedOutTime = null;
 
 //function editRow(button) {
 //    currentRow = $(button).closest('tr');  // Get the row clicked for editing
@@ -201,6 +203,8 @@ function editRow(button) {
     });
 
     smIdEditing = data[keys.indexOf('SM ID')];
+    checkedInTime = data[keys.indexOf('Checked In Time')];
+    checkedOutTime = data[keys.indexOf('Checked Out Time')];
     primaryKeyForEdit = currentRow.find('.row-id').val();
     populateModalForEdit(rowData);
     document.getElementById("editModalLabel").innerText = "Edit Service Member";
@@ -1428,7 +1432,6 @@ async function saveChangesButton() {
 
     const modalInputs = $('#editModal').find('input, select, textarea');
     const updatedData = {};
-    debugger;
     if (window.isCheckInOutPage) {
         const checkedInDropdown = document.getElementById("checkedIn");
         const checkedOutDropdown = document.getElementById("checkedOut");
@@ -1563,7 +1566,6 @@ async function saveChangesButton() {
         const checkedInTimeIndex = keys.indexOf('Checked In Time');
 
         if ($('#checkedIn').val() === "Yes") {
-            debugger;
             fullRowData[checkedInTimeIndex] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
         } else {
             fullRowData[checkedInTimeIndex] = "";
@@ -1598,7 +1600,6 @@ async function saveChangesButton() {
 
         if (window.userType === "client") {
             const dtoObject = prepareObjectToAddRecordInDatabase(fullRowData, keys);
-            debugger;
             const result = await addSingleRecordInDatabase('/ExcelFileUploader/InsertSingleRecord', dtoObject);
 
             if (result.success) {
@@ -1646,19 +1647,44 @@ async function saveChangesButton() {
         updatedData['Checked In By'] = $('#checkedInBy').val();
         updatedData['Checked Out By'] = $('#checkedOutBy').val();
 
-        if ($('#checkedIn').val() === "Yes") {
-            debugger;
-            updatedData['Checked In Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
+
+
+        if ($('#checkedIn').val() === "Yes")
+        {
+            if (!checkedInTime)
+            {
+                updatedData['Checked In Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
+            }
+            else
+            {
+                updatedData['Checked In Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());//this line will be comitted
+                //updatedData['Checked In Time'] = checkedInTime;//this will be used but need toformat it as per server dto 
+            }
         }
-        else {
+        else 
+        {
+            checkedInTime = "";
             updatedData['Checked In Time'] = "";
         }
-
+        
+        const checkedOutTimeIndex = keys.indexOf('Checked Out Time');
+        
         if ($('#checkedOut').val() === "Yes") {
-            updatedData['Checked Out Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
-
+        
+            if (!checkedOutTime)
+            {
+                updatedData['Checked Out Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());
+            }
+            else
+            {
+                updatedData['Checked Out Time'] = formatDateTimeToMMDDYYYY_HHMMSSGlobal(new Date());//this line will be comitted
+                //updatedData['Checked Out Time'] = checkedOutTime;//this will be used but need toformat it as per server dto 
+            }
+            
         }
-        else {
+        else
+        {
+            checkedOutTime = "";
             updatedData['Checked Out Time'] = "";
         }
 
@@ -2655,7 +2681,6 @@ function submitData() {
     $('#loader').removeClass('d-none');
     const table = $('#previewTable').DataTable();
     let tableRows = [];
-    debugger;
 
     table.rows().every(function () {
         const rowDataArray = this.data();
@@ -2673,7 +2698,6 @@ function submitData() {
                     row[mapping.key] = parseFloat(value) || 0.0;
                     break;
                 case "date":
-                    debugger;
                     row[mapping.key] = value ? new Date(value).toISOString() : null;
                     break;
                 default:
@@ -2697,12 +2721,20 @@ function submitData() {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function (response) {
+
+            debugger;
+
             if (response.success) {
                 submitDataToDatabase(tableRows, eventId);
-            } else {
+                return;
+            }
+
+            // 🔑 Handle based on response.code
+            if (response.code === "ALREADY_EXISTS") {
+                debugger;
                 Swal.fire({
                     title: 'Data Exists!',
-                    text: 'Data already exists for this Event ID. Do you want to overwrite it?',
+                    text: response.message,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, overwrite',
@@ -2714,11 +2746,29 @@ function submitData() {
                         Swal.fire('Cancelled', 'No changes were made.', 'info');
                     }
                 });
+
+            } else if (response.code === "NOT_FOUND") {
+
+                Swal.fire({
+                    title: 'Error',
+                    text: response.message,
+                    icon: 'error'
+                });
+
+            } else {
+                // 🧠 Fallback for any future/unknown cases
+                Swal.fire({
+                    title: 'Warning',
+                    text: response.message || 'Something went wrong.',
+                    icon: 'warning'
+                });
             }
         },
+
         error: function (xhr, status, error) {
             alert("Error: " + error);
         },
+
         complete: function () {
             isSubmitting = false;
             $('#loader').addClass('d-none');

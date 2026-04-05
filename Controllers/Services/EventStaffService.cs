@@ -3,12 +3,15 @@ using Malama.Models;
 using ExcelFilesCompiler.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Malama.Utilities;
+using AutoMapper;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class EventStaffService : IEventStaffService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IAccountRegistrationService _registrationService;
@@ -17,9 +20,10 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly ILogger<EventStaffService> _logger;
         private const string CLASSNAME = "EventStaffService";
 
-        public EventStaffService(ILogger<EventStaffService> logger, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService, ISubmissionTokenService submissionTokenService)
+        public EventStaffService(ILogger<EventStaffService> logger, IMapper mapper, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IAccountRegistrationService registrationService, RoleManager<ApplicationRole> roleManager, IRoleService roleService, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _userManager = userManager;
             _registrationService = registrationService;
             _roleManager = roleManager;
@@ -28,7 +32,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _logger = logger;
         }
 
-        public async Task<ResponseDto> AddContractAsync(EventStaff eventStaff, string submissionToken, string loggedinUserName)
+        public async Task<ResponseDto> AddEventStaffAsync(EventStaff eventStaff, string submissionToken, string loggedinUserName)
         {
             const string methodName = "AddContractAsync";
             _logger.LogInformation("{ClassName}, {MethodName}, Called by User: {UserName}, Email: {Email}",
@@ -142,7 +146,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventStaffList = await _unitOfWork.EventStaff.GetWithInclude()
+                var eventStaffList = await _unitOfWork.EventStaff.GetWithIncludeNoTracking()
                     .Include(x => x.StaffQualification)
                         .ThenInclude(l => l.StaffLicenseDetails)
                     .Include(x => x.StaffContractAffiliation)
@@ -151,7 +155,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         .ThenInclude(l => l.StaffAttributeDetails)
                     .ToListAsync();
 
-                if (eventStaffList == null || !eventStaffList.Any())
+                if (!eventStaffList.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, No Event Staff records found.", CLASSNAME, methodName);
                     return new List<CombinedEventStaffRolesNameAndLicense>();
@@ -171,7 +175,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 foreach (var eventId in eventIds)
                 {
                     var eventStaffDetailList = await _unitOfWork.EventStaffDetail
-                        .GetWithInclude()
+                        .GetWithIncludeNoTracking()
                         .Where(esd => esd.EventManagementId == eventId)
                         .ToListAsync();
 
@@ -273,7 +277,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventStaff = await _unitOfWork.EventStaff.GetWithInclude(
+                var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeNoTracking(
                         x => x.Id == id,
                         x => x.StaffQualification,
                         x => x.StaffContractAffiliation,
@@ -378,7 +382,87 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<ResponseDto> UpdateContract(EventStaff eventStaff, string loggedinUserName)
+        //public async Task<ResponseDto> UpdateEventStaffAsync(EventStaff eventStaff, string loggedinUserName)
+        //{
+        //    var responseDto = new ResponseDto();
+
+        //    using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        // Update sub-contractor IDs
+        //        foreach (var affiliation in eventStaff.StaffContractAffiliation)
+        //        {
+        //            var subContractor = await _unitOfWork.SubContractors.GetFirstOrDefaultWithConditionNoTracking(
+        //                c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName
+        //            );
+
+        //            if (subContractor != null)
+        //                affiliation.SubContractorId = subContractor.Id;
+        //        }
+
+        //        // Preserve original metadata
+        //        var existingEvent = await _unitOfWork.EventStaff.GetByIdAsync(eventStaff.Id);
+        //        eventStaff.AddedBy = existingEvent.AddedBy;
+        //        eventStaff.AddedOn = existingEvent.AddedOn;
+        //        eventStaff.UpdatedBy = loggedinUserName;
+        //        eventStaff.UpdatedOn = DateTime.Now;
+        //        eventStaff.UserId = existingEvent.UserId;
+
+        //        // Update EventStaff entity
+        //        await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
+
+        //        // Refresh StaffQualification
+        //        await _unitOfWork.StaffQualification.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+        //        foreach (var license in eventStaff.StaffQualification)
+        //        {
+        //            license.EventStaffId = eventStaff.Id;
+        //        }
+        //        await _unitOfWork.StaffQualification.AddRangeAsync(eventStaff.StaffQualification);
+
+        //        // Refresh StaffContractAffiliation
+        //        await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+        //        foreach (var affiliation in eventStaff.StaffContractAffiliation)
+        //        {
+        //            affiliation.EventStaffId = eventStaff.Id;
+        //        }
+        //        await _unitOfWork.StaffContractAffiliation.AddRangeAsync(eventStaff.StaffContractAffiliation);
+
+        //        // Refresh TravelHonorList
+        //        await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
+        //        foreach (var travelHonor in eventStaff.TravelHonorList)
+        //        {
+        //            travelHonor.EventStaffId = eventStaff.Id;
+        //        }
+        //        await _unitOfWork.TravelHonor.AddRangeAsync(eventStaff.TravelHonorList);
+
+        //        // Update related user roles / identity if needed
+        //        var result = await UpdateUser(eventStaff); // Or _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
+
+        //        if (!result.Success)
+        //        {
+        //            await transaction.RollbackAsync();
+        //            return result;
+        //        }
+
+        //        await _unitOfWork.SaveAsync();
+        //        await transaction.CommitAsync();
+
+        //        responseDto.Success = true;
+        //        responseDto.Message = "EventStaff updated successfully!";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        _logger.LogError(ex, "Error updating EventStaff with ID {EventStaffId}", eventStaff.Id);
+        //        responseDto.Success = false;
+        //        responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
+        //    }
+
+        //    return responseDto;
+        //}
+
+        public async Task<ResponseDto> UpdateEventStaffAsync(EventStaff updatedStaff, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
@@ -386,59 +470,74 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // Update sub-contractor IDs
-                foreach (var affiliation in eventStaff.StaffContractAffiliation)
+                // 1️⃣ Load tracked entity with related child collections
+                var existing = await _unitOfWork.EventStaff
+                    .GetWithIncludeTracking(
+                        e => e.Id == updatedStaff.Id,
+                        e => e.StaffQualification,
+                        e => e.StaffContractAffiliation,
+                        e => e.TravelHonorList)
+                    .FirstOrDefaultAsync();
+
+                if (existing == null)
                 {
-                    var subContractor = await _unitOfWork.SubContractors.GetFirstOrDefaultWithConditionNoTracking(
-                        c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName
-                    );
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "EventStaff not found."
+                    };
+                }
+
+                foreach (var affiliation in updatedStaff.StaffContractAffiliation)
+                {
+                    var subContractor = await _unitOfWork.SubContractors
+                        .GetFirstOrDefaultWithConditionNoTracking(
+                            c => c.ContractId == affiliation.ContractId && c.CompanyMainName == affiliation.SubContractorName
+                        );
 
                     if (subContractor != null)
                         affiliation.SubContractorId = subContractor.Id;
                 }
 
-                // Preserve original metadata
-                var existingEvent = await _unitOfWork.EventStaff.GetByIdAsync(eventStaff.Id);
-                eventStaff.AddedBy = existingEvent.AddedBy;
-                eventStaff.AddedOn = existingEvent.AddedOn;
-                eventStaff.UpdatedBy = loggedinUserName;
-                eventStaff.UpdatedOn = DateTime.UtcNow;
-                eventStaff.UserId = existingEvent.UserId;
+                string addedBy = existing.AddedBy;
+                DateTime addedOn = existing.AddedOn;
 
-                // Update EventStaff entity
-                await _unitOfWork.EventStaff.UpdateAsync(eventStaff);
+                
+                //updatedStaff.UserId = existing.UserId;
 
-                // Refresh StaffQualification
-                await _unitOfWork.StaffQualification.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-                foreach (var license in eventStaff.StaffQualification)
+                _mapper.Map(updatedStaff, existing);
+
+                existing.AddedBy = addedBy;
+                existing.AddedOn = addedOn;
+                existing.UpdatedBy = loggedinUserName;
+                existing.UpdatedOn = DateTime.Now;
+
+                //Helper.UpdateCollection(existing.StaffQualification, updatedStaff.StaffQualification, x => x.Id, _mapper);
+
+                Helper.UpdateCollection(existing.StaffQualification, updatedStaff.StaffQualification, x => x.QualificationId,_mapper,
+                (existingItem, updatedItem) =>
                 {
-                    license.EventStaffId = eventStaff.Id;
-                }
-                await _unitOfWork.StaffQualification.AddRangeAsync(eventStaff.StaffQualification);
+                    Helper.UpdateCollection(
+                        existingItem.StaffAttributeDetails,
+                        updatedItem.StaffAttributeDetails,
+                        x => x.Attribute,   // ✅ FIX
+                        _mapper);
 
-                // Refresh StaffContractAffiliation
-                await _unitOfWork.StaffContractAffiliation.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-                foreach (var affiliation in eventStaff.StaffContractAffiliation)
-                {
-                    affiliation.EventStaffId = eventStaff.Id;
-                }
-                await _unitOfWork.StaffContractAffiliation.AddRangeAsync(eventStaff.StaffContractAffiliation);
+                    Helper.UpdateCollection(
+                        existingItem.StaffLicenseDetails,
+                        updatedItem.StaffLicenseDetails,
+                        x => new { x.LicenseNumber, x.LicenseType, x.LicenseState }, // ✅ FIX
+                        _mapper);
+                });
+                Helper.UpdateCollection(existing.StaffContractAffiliation, updatedStaff.StaffContractAffiliation, x => new { x.ContractId, x.SubContractorId, x.SubContractorName },_mapper);
+                Helper.UpdateCollection(existing.TravelHonorList, updatedStaff.TravelHonorList, x => new { x.Type, x.Name, x.Rewards }, _mapper);
 
-                // Refresh TravelHonorList
-                await _unitOfWork.TravelHonor.DeleteAgainstFieldAsync(eventStaff.Id, "EventStaffId");
-                foreach (var travelHonor in eventStaff.TravelHonorList)
-                {
-                    travelHonor.EventStaffId = eventStaff.Id;
-                }
-                await _unitOfWork.TravelHonor.AddRangeAsync(eventStaff.TravelHonorList);
+                var userUpdateResult = await UpdateUser(existing);
 
-                // Update related user roles / identity if needed
-                var result = await UpdateUser(eventStaff); // Or _roleService.UpdateUserEventStaffRolesAsync(eventStaff);
-
-                if (!result.Success)
+                if (!userUpdateResult.Success)
                 {
                     await transaction.RollbackAsync();
-                    return result;
+                    return userUpdateResult;
                 }
 
                 await _unitOfWork.SaveAsync();
@@ -450,9 +549,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error updating EventStaff with ID {EventStaffId}", eventStaff.Id);
+                _logger.LogError(ex, "Error updating EventStaff with ID {EventStaffId}", updatedStaff.Id);
                 responseDto.Success = false;
-                responseDto.Message = $"An error occurred while updating contract: {ex.Message}";
+                responseDto.Message = $"An error occurred while updating EventStaff: {ex.Message}";
             }
 
             return responseDto;
@@ -514,7 +613,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             try
             {
-                var eventStaff = await _unitOfWork.EventStaff.GetWithInclude()
+                var eventStaff = await _unitOfWork.EventStaff.GetWithIncludeNoTracking()
                     .Include(es => es.StaffQualification)
                         .ThenInclude(sl => sl.StaffAttributeDetails)
                     .FirstOrDefaultAsync(es => es.UserId == userId);
@@ -593,7 +692,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 return await _unitOfWork.EventStaffDetail
-                    .GetWithInclude()
+                    .GetWithIncludeNoTracking()
                     .Where(x => x.EventManagementId == eventId)
                     .Include(x => x.EventStaff)
                         .ThenInclude(s => s.StaffQualification)

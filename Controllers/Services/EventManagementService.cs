@@ -5,34 +5,114 @@ using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Reflection;
+using AutoMapper;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class EventManagementService : IEventManagementService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly ISubmissionTokenService _submissionTokenService;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly ILogger<EventManagementService> _logger;
         private const string CLASSNAME = "ContractService";
 
-        public EventManagementService(ILogger<EventManagementService> logger, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService)
+        public EventManagementService(ILogger<EventManagementService> logger, IMapper mapper, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _roleManager = roleManager;
             _logger = logger;
             _submissionTokenService = submissionTokenService;
         }
 
+        //public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
+        //{
+        //    const string methodName = "GetAllEventManagements";
+
+        //    _logger.LogInformation("{ClassName}, {MethodName}, Called with EventIdFilter: {EventIdFilter}",
+        //        CLASSNAME, methodName, eventIdFilter);
+
+        //    List<EventManagementPreview> eventManagements = new();
+
+        //    try
+        //    {
+        //        Expression<Func<EventManagement, bool>> predicate = null;
+
+        //        if (eventIdFilter.HasValue)
+        //        {
+        //            long id = eventIdFilter.Value; // avoid closure issues
+        //            predicate = e => e.Id == id;
+
+        //            _logger.LogInformation("{ClassName}, {MethodName}, Applying filter for EventId: {EventId}",
+        //                CLASSNAME, methodName, id);
+        //        }
+
+        //        var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
+        //            predicate,
+        //            x => x.EventManagementTaskforcesList
+        //        );
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
+        //            CLASSNAME, methodName, eventData?.Count() ?? 0);
+
+        //        // Group by EventID to handle versions
+        //        eventManagements = eventData
+        //            .GroupBy(e => e.EventID)
+        //            .SelectMany(group =>
+        //            {
+        //                int maxVersion = group.Max(e => e.EventVersion);
+
+        //                return group.OrderByDescending(e => e.EventVersion)
+        //                    .Select(e => new EventManagementPreview
+        //                    {
+        //                        Id = e.Id,
+        //                        EventID = e.EventID,
+        //                        EventVersion = e.EventVersion,
+        //                        SubEventID = e.SubEventID,
+        //                        EventStatus = e.EventStatus,
+        //                        EventState = e.EventState,
+        //                        EventCity = e.EventCity,
+        //                        EventZipCode = e.EventZipCode,
+        //                        StatusDescription = e.StatusDescription,
+        //                        EventStartDateUtc = e.EventStartDateUtc,
+        //                        EventEndDateUtc = e.EventEndDateUtc,
+        //                        TaskForce = e.EventManagementTaskforcesList != null
+        //                            ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+        //                            : string.Empty,
+
+        //                        // Same CanEdit logic (unchanged)
+        //                        CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
+        //                                  || e.EventVersion == maxVersion
+        //                    })
+        //                    .ToList();
+        //            })
+        //            .OrderByDescending(e => e.Id)
+        //            .ToList();
+
+        //        _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
+        //            CLASSNAME, methodName, eventManagements.Count);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex,
+        //            "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements. EventIdFilter: {EventIdFilter}",
+        //            CLASSNAME, methodName, eventIdFilter);
+
+        //        throw;
+        //    }
+
+        //    return eventManagements;
+        //}
+
         public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
         {
             const string methodName = "GetAllEventManagements";
 
-            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventIdFilter: {EventIdFilter}",
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, Called with EventIdFilter: {EventIdFilter}",
                 CLASSNAME, methodName, eventIdFilter);
-
-            List<EventManagementPreview> eventManagements = new();
 
             try
             {
@@ -40,29 +120,33 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (eventIdFilter.HasValue)
                 {
-                    long id = eventIdFilter.Value; // avoid closure issues
+                    long id = eventIdFilter.Value;
+
                     predicate = e => e.Id == id;
 
-                    _logger.LogInformation("{ClassName}, {MethodName}, Applying filter for EventId: {EventId}",
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Applying filter for EventId: {EventId}",
                         CLASSNAME, methodName, id);
                 }
 
-                var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
-                    predicate,
-                    x => x.EventManagementTaskforcesList
-                );
+                // ✅ NoTracking + Include
+                var eventData = await _unitOfWork.EventManagement
+                    .GetWithIncludeNoTracking(predicate, x => x.EventManagementTaskforcesList)
+                    .ToListAsync();
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
-                    CLASSNAME, methodName, eventData?.Count() ?? 0);
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Retrieved records count: {Count}",
+                    CLASSNAME, methodName, eventData.Count);
 
-                // Group by EventID to handle versions
-                eventManagements = eventData
+                // ✅ In-memory grouping (needed due to Max + string.Join)
+                var eventManagements = eventData
                     .GroupBy(e => e.EventID)
                     .SelectMany(group =>
                     {
                         int maxVersion = group.Max(e => e.EventVersion);
 
-                        return group.OrderByDescending(e => e.EventVersion)
+                        return group
+                            .OrderByDescending(e => e.EventVersion)
                             .Select(e => new EventManagementPreview
                             {
                                 Id = e.Id,
@@ -76,32 +160,37 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 StatusDescription = e.StatusDescription,
                                 EventStartDateUtc = e.EventStartDateUtc,
                                 EventEndDateUtc = e.EventEndDateUtc,
+
+                                // ⚠️ Safe: executed in memory
                                 TaskForce = e.EventManagementTaskforcesList != null
-                                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                                    ? string.Join(", ",
+                                        e.EventManagementTaskforcesList
+                                            .Select(t => t.Taskforce))
                                     : string.Empty,
 
-                                // Same CanEdit logic (unchanged)
-                                CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
-                                          || e.EventVersion == maxVersion
-                            })
-                            .ToList();
+                                CanEdit =
+                                    !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
+                                    || e.EventVersion == maxVersion
+                            });
                     })
                     .OrderByDescending(e => e.Id)
                     .ToList();
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
                     CLASSNAME, methodName, eventManagements.Count);
+
+                return eventManagements;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
+                _logger.LogError(
+                    ex,
                     "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements. EventIdFilter: {EventIdFilter}",
                     CLASSNAME, methodName, eventIdFilter);
 
                 throw;
             }
-
-            return eventManagements;
         }
 
 
@@ -216,75 +305,56 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // 1️⃣ Load existing entity WITH children
-                var existing = (await _unitOfWork.EventManagement
-                    .GetWithIncludeAsync(
-                        e => e.Id == updatedModel.Id,
+                // 🔹 1. Load tracked entity with children
+                var existing = await _unitOfWork.EventManagement
+                    .GetWithIncludeTracking(e => e.Id == updatedModel.Id,
                         e => e.EventServiceDetailList,
                         e => e.EventStartEndTimeDayWiseList,
                         e => e.EventStaffDetailList,
-                        e => e.EventManagementTaskforcesList
-                    )).FirstOrDefault();
+                        e => e.EventManagementTaskforcesList)
+                    .FirstOrDefaultAsync();
 
                 if (existing == null)
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, Event not found. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, updatedModel.Id, loggedinUserName);
-
-                    responseDto.Success = false;
-                    responseDto.Message = "Event not found.";
-                    return responseDto;
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Event not found."
+                    };
                 }
 
+                // 🔹 2. Business validations
                 responseDto = ConvertEventTimesToUtc(updatedModel, loggedinUserName);
-
-                if (!responseDto.Success)
-                {
-                    return responseDto;
-                }
+                if (!responseDto.Success) return responseDto;
 
                 if (!ValidateEventStatus(updatedModel, loggedinUserName, true, out string statusError))
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid EventStatus: {Status}, EventID: {EventID}, User: {UserName}, Error: {Error}",
-                        CLASSNAME, methodName, updatedModel.EventStatus, updatedModel.Id, loggedinUserName, statusError);
-
-                    responseDto.Success = false;
-                    responseDto.Message = statusError;
-                    return responseDto;
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = statusError
+                    };
                 }
 
-                // 2️⃣ Preserve audit fields
-                updatedModel.AddedBy = existing.AddedBy;
-                updatedModel.AddedOn = existing.AddedOn;
-                updatedModel.UpdatedBy = loggedinUserName;
-                updatedModel.UpdatedOn = DateTime.Now;
+                // 🔹 3. Preserve audit fields
+                var addedBy = existing.AddedBy;
+                var addedOn = existing.AddedOn;
 
-                // 3️⃣ Update scalar properties
-                _unitOfWork.SetValues(existing, updatedModel);
+                // 🔹 4. Update parent properties
+                _mapper.Map(updatedModel, existing);
+                existing.AddedBy = addedBy;
+                existing.AddedOn = addedOn;
+                existing.UpdatedBy = loggedinUserName;
+                existing.UpdatedOn = DateTime.Now;
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Updating collections for EventID: {EventID}, User: {UserName}",
-                    CLASSNAME, methodName, updatedModel.Id, loggedinUserName);
+                // 🔹 5. Update child collections safely
+                Helper.UpdateCollection(existing.EventServiceDetailList, updatedModel.EventServiceDetailList, x => new { x.EventService, x.Type }, _mapper);
 
-                existing.EventServiceDetailList.Clear();
-                foreach (var item in updatedModel.EventServiceDetailList)
-                {
-                    existing.EventServiceDetailList.Add(item);
-                }
+                Helper.UpdateCollection(existing.EventStartEndTimeDayWiseList, updatedModel.EventStartEndTimeDayWiseList, x => new { x.EventDay, x.ServiceMemberPercentPerDay },_mapper);
 
-                existing.EventStartEndTimeDayWiseList.Clear();
-                foreach (var item in updatedModel.EventStartEndTimeDayWiseList)
-                {
-                    existing.EventStartEndTimeDayWiseList.Add(item);
-                }
-
-                existing.EventManagementTaskforcesList.Clear();
-                foreach (var item in updatedModel.EventManagementTaskforcesList)
-                {
-                    existing.EventManagementTaskforcesList.Add(item);
-                }
+                Helper.UpdateCollection(existing.EventManagementTaskforcesList, updatedModel.EventManagementTaskforcesList, x => x.Taskforce, _mapper);
 
                 existing.EventStaffDetailList.Clear();
-
                 foreach (var staff in updatedModel.EventStaffDetailList)
                 {
                     var newStaff = new EventStaffDetail
@@ -293,40 +363,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                         SelectedStation = staff.SelectedStation,
                         PreEventAvailability = staff.PreEventAvailability,
                         ProfileButtonAccess = staff.ProfileButtonAccess,
-                        SelectedSecondaryStation = staff.SelectedSecondaryStation
+                        SelectedSecondaryStation = staff.SelectedSecondaryStation,
+                        AvailabilityDatesList = staff.AvailabilityDatesList
+                            .Select(d => new EventManagementStaffAvailability
+                            {
+                                AvailabilityDate = d.AvailabilityDate
+                            }).ToList(),
+                        EventWiseStaffRoleList = staff.EventWiseStaffRoleList
+                            .Select(r => new EventWiseStaffRole { RoleId = r.RoleId })
+                            .ToList(),
+                        EventWiseStaffSecondaryRoleList = staff.EventWiseStaffSecondaryRoleList
+                            .Select(r => new EventWiseStaffSecondaryRole { RoleId = r.RoleId })
+                            .ToList()
                     };
-
-                    foreach (var date in staff.AvailabilityDatesList)
-                    {
-                        newStaff.AvailabilityDatesList.Add(
-                            new EventManagementStaffAvailability
-                            {
-                                AvailabilityDate = date.AvailabilityDate
-                            });
-                    }
-
-                    foreach (var role in staff.EventWiseStaffRoleList)
-                    {
-                        newStaff.EventWiseStaffRoleList.Add(
-                            new EventWiseStaffRole
-                            {
-                                RoleId = role.RoleId
-                            });
-                    }
-
-                    foreach (var role in staff.EventWiseStaffSecondaryRoleList)
-                    {
-                        newStaff.EventWiseStaffSecondaryRoleList.Add(
-                            new EventWiseStaffSecondaryRole
-                            {
-                                RoleId = role.RoleId
-                            });
-                    }
 
                     existing.EventStaffDetailList.Add(newStaff);
                 }
 
-                // 6️⃣ Save once
+                // 🔹 7. Save changes once
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
@@ -343,14 +397,26 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await transaction.RollbackAsync();
 
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while updating Event. EventID: {EventID}, Action: {Action}, User: {UserName}",
-                    CLASSNAME, methodName, updatedModel?.Id, action, loggedinUserName);
+                    "{ClassName}, {MethodName}, Error updating EventID: {EventID}, User: {UserName}",
+                    CLASSNAME, methodName, updatedModel?.Id, loggedinUserName);
 
                 responseDto.Success = false;
                 responseDto.Message = $"Error updating event: {ex.Message}";
             }
 
             return responseDto;
+        }
+
+        
+        private bool IsDefaultKey<TKey>(TKey key)
+        {
+            if (key == null) return true;
+
+            if (key is int i) return i == 0;
+            if (key is long l) return l == 0L;
+            if (key is Guid g) return g == Guid.Empty;
+
+            return false;
         }
 
         public async Task<string> GetNextEventIdNumber()
@@ -461,7 +527,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 string eventStatus = string.Empty;
 
-                var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
+                var eventManagement = await _unitOfWork.EventManagement.GetWithIncludeNoTracking(
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
                     x => x.EventStartEndTimeDayWiseList,
@@ -507,7 +573,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                         EventStaffDetailAndAdditionalRoles eventStaffDetailAndAdditionalRoles = new EventStaffDetailAndAdditionalRoles();
                         //var eventStaffDetail = await _unitOfWork.EventStaff.GetByNullableIdAsync(eventStaffDetails.EventStaffId);
-                        var eventStaffDetail = await _unitOfWork.EventStaff.GetWithInclude(
+                        var eventStaffDetail = await _unitOfWork.EventStaff.GetWithIncludeNoTracking(
                         x => x.Id == eventStaffDetails.EventStaffId,
                         x => x.StaffQualification).Include(x => x.StaffQualification).ThenInclude(l => l.StaffLicenseDetails)
                         .Include(x => x.StaffQualification)
@@ -619,7 +685,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var eventManagement = await _unitOfWork.EventManagement.GetWithInclude(
+                var eventManagement = await _unitOfWork.EventManagement.GetWithIncludeNoTracking(
                     x => x.Id == id,
                     x => x.EventServiceDetailList,
                     x => x.EventStartEndTimeDayWiseList,
@@ -1141,7 +1207,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     CLASSNAME, methodName, eventId);
 
                 var query = _unitOfWork.EventManagement
-    .GetWithInclude(em => em.Id == eventId);
+    .GetWithIncludeNoTracking(em => em.Id == eventId);
 
                 var data = await query
                     .SelectMany(em => em.ServiceMembersParents

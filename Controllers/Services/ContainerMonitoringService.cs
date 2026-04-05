@@ -37,7 +37,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 CLASSNAME, methodName, eventId);
 
             var containers = await _unitOfWork.Container
-                .GetWithInclude(x => x.EventManagementId == eventId, x => x.ContainerType)
+                .GetWithIncludeNoTracking(x => x.EventManagementId == eventId, x => x.ContainerType)
                 .ToListAsync();
 
             _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {ContainerCount} containers for EventID: {EventID}",
@@ -69,7 +69,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 CLASSNAME, methodName, id);
 
             var container = _unitOfWork.Container
-                .GetWithInclude(x => x.Id == id, x => x.ContainerType)
+                .GetWithIncludeNoTracking(x => x.Id == id, x => x.ContainerType)
                 .FirstOrDefault();
 
             if (container == null)
@@ -142,7 +142,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     c.EventManagementId == dto.EventId
                 );
 
-                if (existingContainer != null)
+                if (existingContainer.Any())
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Container already exists: {ContainerName}, EventID: {EventID}",
                         CLASSNAME, methodName, dto.ContainerName, dto.EventId);
@@ -232,23 +232,36 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 var container = await _unitOfWork.Container.GetByIdAsync(dto.ContainerId);
+
                 if (container == null)
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid ContainerID: {ContainerID}", CLASSNAME, methodName, dto.ContainerId);
-                    return new ResponseDto { Success = false, Message = "Invalid container ID." };
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid ContainerID: {ContainerID}",
+                        CLASSNAME, methodName, dto.ContainerId);
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid container ID."
+                    };
                 }
 
-                // Only update FinalTemp if no temperature provided
                 if (!dto.Temperature.HasValue)
                 {
                     if (container.FinalTemp != dto.IsFinalReading)
                     {
                         container.FinalTemp = dto.IsFinalReading;
-                        await _unitOfWork.Container.UpdateAsync(container);
+
+                        container.UpdatedBy = performedBy;
+                        container.UpdatedOn = DateTime.Now;
+
                         await _unitOfWork.SaveAsync();
                     }
 
-                    return new ResponseDto { Success = true, Message = "Final reading updated successfully (no temperature provided)." };
+                    return new ResponseDto
+                    {
+                        Success = true,
+                        Message = "Final reading updated successfully (no temperature provided)."
+                    };
                 }
 
                 var containerType = await _unitOfWork.ContainerType.GetByIdAsync(container.ContainerTypeId);

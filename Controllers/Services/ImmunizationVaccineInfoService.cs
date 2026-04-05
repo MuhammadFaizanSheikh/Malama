@@ -3,22 +3,24 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NPOI.HSSF.Record;
-using NPOI.SS.Formula.Functions;
+using Malama.Utilities;
+using AutoMapper;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class ImmunizationVaccineInfoService : IImmunizationVaccineInfoService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly ISubmissionTokenService _submissionTokenService;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IFileUploader _fileUploader;
         private readonly IContainerMonitoringService _containerMonitoringService;
 
-        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService, IFileUploader fileUploader, IContainerMonitoringService containerMonitoringService)
+        public ImmunizationVaccineInfoService(IUnitOfWork unitOfWork, IMapper mapper, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService, IFileUploader fileUploader, IContainerMonitoringService containerMonitoringService)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _roleManager = roleManager;
             _fileUploader = fileUploader;
             _containerMonitoringService = containerMonitoringService;
@@ -32,7 +34,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 //if (string.IsNullOrEmpty(eventId))
                 //    throw new ArgumentException("EventId cannot be null or empty.", nameof(eventId));
 
-                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(f => f.EventManagementId == eventId).Include(x => x.Lots).ThenInclude(l => l.Container);
+                var records = _unitOfWork.ImmunizationVaccineInfo.GetWithIncludeNoTracking(f => f.EventManagementId == eventId).Include(x => x.Lots).ThenInclude(l => l.Container);
 
                 return records.Select(x => new ImmunizationVaccineInfoForPreview
                 {
@@ -75,7 +77,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var records = _unitOfWork.ImmunizationVaccineInfo.GetAllWithConditionNoTracking(f => f.EventManagementId == immunizationVaccine.EventManagementId && f.ImmunizationType == immunizationVaccine.ImmunizationType && f.Vaccine == immunizationVaccine.Vaccine && f.Dose == immunizationVaccine.Dose);
 
-                if (records != null && records.Any())
+                if (records.Any())
                 {
                     responseDto.Success = false;
                     responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
@@ -106,73 +108,144 @@ namespace ExcelFilesCompiler.Controllers.Services
             return responseDto;
         }
 
+        //public async Task<ResponseDto> UpdateInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName)
+        //{
+        //    var responseDto = new ResponseDto();
+
+        //    try
+        //    {
+        //        var records = _unitOfWork.ImmunizationVaccineInfo.GetAllWithConditionNoTracking(f =>
+        //        f.EventManagementId == immunizationVaccine.EventManagementId &&
+        //        f.ImmunizationType == immunizationVaccine.ImmunizationType &&
+        //        f.Vaccine == immunizationVaccine.Vaccine &&
+        //        f.Dose == immunizationVaccine.Dose &&
+        //        f.Id != immunizationVaccine.Id // 👈 Exclude the record being updated
+        //        );
+
+        //        if (records != null && records.Any())
+        //        {
+        //            responseDto.Success = false;
+        //            responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
+        //            return responseDto;
+        //        }
+
+        //        if (immunizationVaccine.FinalDoses > immunizationVaccine.StartingDoses)
+        //        {
+        //            responseDto.Success = false;
+        //            responseDto.Message = "Final dose cannot be greater than starting dose!";
+        //            return responseDto;
+        //        }
+
+        //        var existingRecord = await _unitOfWork.ImmunizationVaccineInfo.GetByIdAsync(immunizationVaccine.Id);
+
+        //        if (existingRecord == null)
+        //        {
+        //            responseDto.Success = false;
+        //            responseDto.Message = "Record not found.";
+        //            return responseDto;
+        //        }
+
+        //        // 2️⃣ Update parent fields
+        //        existingRecord.ImmunizationType = immunizationVaccine.ImmunizationType;
+        //        existingRecord.Vaccine = immunizationVaccine.Vaccine;
+        //        existingRecord.Manufacturer = immunizationVaccine.Manufacturer;
+        //        existingRecord.EventDate = immunizationVaccine.EventDate;
+        //        existingRecord.StartingDoses = immunizationVaccine.StartingDoses;
+        //        existingRecord.FinalDoses = immunizationVaccine.FinalDoses;
+        //        existingRecord.UpdatedBy = loggedinUserName;
+        //        existingRecord.UpdatedOn = DateTime.Now;
+        //        existingRecord.Dose = immunizationVaccine.Dose;
+        //        existingRecord.Unit = immunizationVaccine.Unit;
+        //        await _unitOfWork.ImmunizationVaccineInfo.UpdateAsync(existingRecord);
+
+        //        await _unitOfWork.ImmunizationVaccineLotEntry.DeleteAgainstFieldAsync(immunizationVaccine.Id, "ImmunizationVaccineInfoId");
+
+        //        foreach (var entry in immunizationVaccine.Lots)
+        //        {
+        //            entry.ImmunizationVaccineInfoId = immunizationVaccine.Id;
+        //        }
+
+        //        await _unitOfWork.ImmunizationVaccineLotEntry.AddRangeAsync(immunizationVaccine.Lots);
+
+        //        // 4️⃣ Save changes
+        //        await _unitOfWork.SaveAsync();
+
+        //        responseDto.Success = true;
+        //        responseDto.Message = "Immunization vaccine inventory updated successfully!";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        responseDto.Success = false;
+        //        responseDto.Message = $"An error occurred while updating Immunization vaccine inventory: {ex.Message}";
+        //    }
+
+        //    return responseDto;
+        //}
+
         public async Task<ResponseDto> UpdateInventoryAsync(ImmunizationVaccineInfo immunizationVaccine, string loggedinUserName)
         {
             var responseDto = new ResponseDto();
 
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+
             try
             {
+                // 1️⃣ Validation: prevent duplicates
                 var records = _unitOfWork.ImmunizationVaccineInfo.GetAllWithConditionNoTracking(f =>
-                f.EventManagementId == immunizationVaccine.EventManagementId &&
-                f.ImmunizationType == immunizationVaccine.ImmunizationType &&
-                f.Vaccine == immunizationVaccine.Vaccine &&
-                f.Dose == immunizationVaccine.Dose &&
-                f.Id != immunizationVaccine.Id // 👈 Exclude the record being updated
+                    f.EventManagementId == immunizationVaccine.EventManagementId &&
+                    f.ImmunizationType == immunizationVaccine.ImmunizationType &&
+                    f.Vaccine == immunizationVaccine.Vaccine &&
+                    f.Dose == immunizationVaccine.Dose &&
+                    f.Id != immunizationVaccine.Id
                 );
 
-                if (records != null && records.Any())
-                {
-                    responseDto.Success = false;
-                    responseDto.Message = "This vaccine is already present in inventory, Please add different vaccine!";
-                    return responseDto;
-                }
+                if (records.Any())
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "This vaccine is already present in inventory, Please add different vaccine!"
+                    };
 
                 if (immunizationVaccine.FinalDoses > immunizationVaccine.StartingDoses)
-                {
-                    responseDto.Success = false;
-                    responseDto.Message = "Final dose cannot be greater than starting dose!";
-                    return responseDto;
-                }
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Final dose cannot be greater than starting dose!"
+                    };
 
                 var existingRecord = await _unitOfWork.ImmunizationVaccineInfo.GetByIdAsync(immunizationVaccine.Id);
-                
-                if (existingRecord == null)
-                {
-                    responseDto.Success = false;
-                    responseDto.Message = "Record not found.";
-                    return responseDto;
-                }
 
-                // 2️⃣ Update parent fields
-                existingRecord.ImmunizationType = immunizationVaccine.ImmunizationType;
-                existingRecord.Vaccine = immunizationVaccine.Vaccine;
-                existingRecord.Manufacturer = immunizationVaccine.Manufacturer;
-                existingRecord.EventDate = immunizationVaccine.EventDate;
-                existingRecord.StartingDoses = immunizationVaccine.StartingDoses;
-                existingRecord.FinalDoses = immunizationVaccine.FinalDoses;
+                if (existingRecord == null)
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Record not found."
+                    };
+
+                var addedBy = existingRecord.AddedBy;
+                var addedOn = existingRecord.AddedOn;
+
+                _mapper.Map(immunizationVaccine, existingRecord);
+
+                existingRecord.AddedBy = addedBy;
+                existingRecord.AddedOn = addedOn;
                 existingRecord.UpdatedBy = loggedinUserName;
                 existingRecord.UpdatedOn = DateTime.Now;
-                existingRecord.Dose = immunizationVaccine.Dose;
-                existingRecord.Unit = immunizationVaccine.Unit;
-                await _unitOfWork.ImmunizationVaccineInfo.UpdateAsync(existingRecord);
 
-                await _unitOfWork.ImmunizationVaccineLotEntry.DeleteAgainstFieldAsync(immunizationVaccine.Id, "ImmunizationVaccineInfoId");
+                Helper.UpdateCollection(existingRecord.Lots, immunizationVaccine.Lots, x => x.Id, _mapper);
 
-                foreach (var entry in immunizationVaccine.Lots)
-                {
-                    entry.ImmunizationVaccineInfoId = immunizationVaccine.Id;
-                }
-
-                await _unitOfWork.ImmunizationVaccineLotEntry.AddRangeAsync(immunizationVaccine.Lots);
-                
-                // 4️⃣ Save changes
                 await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
 
-                responseDto.Success = true;
-                responseDto.Message = "Immunization vaccine inventory updated successfully!";
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Immunization vaccine inventory updated successfully!"
+                };
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 responseDto.Success = false;
                 responseDto.Message = $"An error occurred while updating Immunization vaccine inventory: {ex.Message}";
             }
@@ -187,7 +260,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                var vaccineInfo = await _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(x => x.Id == immunizationId, x => x.Lots).FirstOrDefaultAsync();
+                var vaccineInfo = await _unitOfWork.ImmunizationVaccineInfo.GetWithIncludeNoTracking(x => x.Id == immunizationId, x => x.Lots).FirstOrDefaultAsync();
 
                 if (vaccineInfo == null)
                 {
@@ -260,9 +333,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return response;
                 }
 
-                var vaccineInfo = _unitOfWork.ImmunizationVaccineInfo.GetWithInclude(x => x.EventManagementId == eventId, x => x.Lots);
-                
-                if (vaccineInfo == null || !vaccineInfo.Any())
+                var vaccineInfo = _unitOfWork.ImmunizationVaccineInfo.GetWithIncludeNoTracking(x => x.EventManagementId == eventId, x => x.Lots);
+
+                if (!vaccineInfo.Any())
                 {
                     response.Success = false;
                     response.Message = "No immunization found.";

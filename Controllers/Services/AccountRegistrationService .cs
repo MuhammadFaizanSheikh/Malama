@@ -80,12 +80,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
 
-                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(model.SubmissionToken, addedBy);
+                //var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(model.SubmissionToken, addedBy);
 
-                if (!tokenResult.Success)
-                {
-                    return tokenResult;
-                }
+                //if (!tokenResult.Success)
+                //{
+                //    return tokenResult;
+                //}
 
                 if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
                 {

@@ -1789,6 +1789,7 @@
             url: '/EventStaff/GetEventStaffById/' + contractId,
             type: 'GET',
             success: function (response) {
+                debugger;
                 if (response.success) {
                     var combinedData = response.combinedData;
                     var eventStaff = combinedData.eventStaff;

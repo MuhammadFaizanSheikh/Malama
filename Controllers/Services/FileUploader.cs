@@ -8,6 +8,10 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ExcelFilesCompiler.Utilities;
+using System.Diagnostics.Contracts;
+using NPOI.POIFS.Properties;
+using iTextSharp.text.pdf;
+using static ExcelFilesCompiler.Utilities.AppConstants;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -110,8 +114,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         existingParent.isDeleted = true;
                         existingParent.UpdatedBy = addedBy;
                         existingParent.UpdatedOn = DateTime.Now;
-
-                        await _unitOfWork.ServiceMembersParent.UpdateAsync(existingParent);
+                        await _unitOfWork.SaveAsync();
 
                         _logger.LogInformation("{ClassName}, {MethodName}, Marked existing ServiceMembersParent (ID: {ParentId}) as deleted for EventID: {EventID} by User: {UserName}",
                             CLASSNAME, methodName, existingParent.Id, eventId, addedBy);
@@ -140,9 +143,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
                 catch
                 {
-                    // Rollback in case of any failure inside transaction
                     await transaction.RollbackAsync();
-                    throw; // outer catch will log the error
+                    throw;
                 }
             }
             catch (Exception ex)
@@ -186,7 +188,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         Success = false,
                         Message = fetchResponse.Message,
-                        Data = null
+                        Data = null,
+                        Code = fetchResponse.Code
                     };
                 }
 
@@ -199,8 +202,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return new ResponseDto
                     {
                         Success = false,
-                        Message = "Data already exists for this EventID.",
-                        Data = existingParent.Id
+                        Message = AppConstants.ResponseMessages.EventDataAlreadyExists,
+                        Data = existingParent.Id,
+                        Code = AppConstants.ResponseCodes.AlreadyExists
                     };
                 }
 
@@ -265,7 +269,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching ImmunizationRecords where Imm=Needed and CheckIn=Yes for EventID={EventId}", eventId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-                    .GetWithInclude(
+                    .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.Imm == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == "Yes",
@@ -291,7 +295,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching LabStation where LabNeeded=Needed and CheckIn=Yes for EventID={EventId}", eventId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-                    .GetWithInclude(
+                    .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == "Yes",
@@ -331,7 +335,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching LabStationRecords for EventID={EventId}", eventId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-            .GetWithInclude(
+            .GetWithIncludeNoTracking(
                 c => c.ServiceMembersParent.EventManagement.Id == eventId,
                 c => c.LabStationRecord,
                 c => c.ServiceMembersParent.EventManagement
@@ -401,26 +405,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                             }
                         }
 
-                        var singleDtoList = new List<FileDataDto> { dto };
-                        var childEntities = MapToServiceMembersChildren(singleDtoList, addedBy, isUpdate: false);
-
-                        var child = childEntities.FirstOrDefault();
-
-                        if (child == null)
-                        {
-                            _logger.LogError("{ClassName}, {MethodName}, Mapping resulted in null",
-                                CLASSNAME, methodName);
-
-                            return new ResponseDto
-                            {
-                                Success = false,
-                                Message = "Failed to map DTO to entity.",
-                                Data = null
-                            };
-                        }
+                        ServiceMembersChild child = new ServiceMembersChild();
+                        _logger.LogInformation("{ClassName}, {MethodName}, Auto Mapping Start, ServiceMembersParent Id: {Id}", CLASSNAME, methodName, parent.Id);
+                        _mapper.Map(dto, child);
+                        _logger.LogInformation("{ClassName}, {MethodName}, Auto Mapping Start, ServiceMembersParent Id: {Id}", CLASSNAME, methodName, parent.Id);
 
                         child.ServiceMembersParentId = parent.Id;
-
+                        child.AddedBy = addedBy;
+                        child.AddedOn = DateTime.Now;
                         await _unitOfWork.ServiceMembersChild.AddAsync(child);
                         await _unitOfWork.SaveAsync();
 
@@ -503,32 +495,19 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, Mapping DTO to existing record Id: {Id}",
                     CLASSNAME, methodName, dto.Id);
 
-                var singleDtoList = new List<FileDataDto> { dto };
-                var childEntities = MapToServiceMembersChildren(singleDtoList, addedBy: updatedBy, isUpdate: true, existingChild: existingChild);
-
-                var child = childEntities.FirstOrDefault();
                 
-                if (child == null)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Mapping resulted in null child for Id: {Id}",
-                        CLASSNAME, methodName, dto.Id);
 
-                    return new ResponseDto
-                    {
-                        Success = false,
-                        Message = "Failed to map DTO to entity.",
-                        Data = null
-                    };
-                }
-                child.ServiceMembersParentId = existingChild.ServiceMembersParentId;
-                child.Id = existingChild.Id;
-                child.WalkInServiceMember = existingChild.WalkInServiceMember;
-                child.Barcode = existingChild.Barcode;
+                string barcode = existingChild.Barcode;
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Calling UpdateAsync for Id: {Id}",
-                    CLASSNAME, methodName, dto.Id);
+                _logger.LogInformation("{ClassName}, {MethodName}, Auto Mapping Start, Record Id: {Id}", CLASSNAME, methodName, dto.Id);
+                _mapper.Map(dto, existingChild);
 
-                await _unitOfWork.ServiceMembersChild.UpdateAsync(child);
+                _logger.LogInformation("{ClassName}, {MethodName}, Auto Mapping End, Record Id: {Id}", CLASSNAME, methodName, dto.Id);
+                existingChild.Barcode = barcode;
+                existingChild.UpdatedBy = updatedBy;
+                existingChild.UpdatedOn = DateTime.Now;
+
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Successfully updated record Id: {Id}",
                     CLASSNAME, methodName, dto.Id);
@@ -537,7 +516,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     Success = true,
                     Message = Messages.DataUpdatedSuccesfully,
-                    Data = child
+                    //Data = child
+                    Data = existingChild
                 };
             }
             catch (Exception ex)
@@ -572,7 +552,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching ServiceMembersChild Id={Id} with EventID", serviceMemberChildId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-                    .GetWithInclude(
+                    .GetWithIncludeNoTracking(
                         c => c.Id == serviceMemberChildId,
                         c => c.ServiceMembersParent,
                         c => c.ServiceMembersParent.EventManagement
@@ -612,7 +592,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching ServiceMembersChild with Id: {Id}", id);
 
                 var childWithHierarchy = await _unitOfWork.ServiceMembersChild
-                .GetWithInclude(
+                .GetWithIncludeNoTracking(
                     c => c.Id == id,         // filter by child id
                     c => c.ServiceMembersParent,               // include parent
                     c => c.ServiceMembersParent.EventManagement, // include event from parent
@@ -2197,7 +2177,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 ServiceMembersChildren = children ?? new List<ServiceMembersChild>()
             };
         }
-        private List<ServiceMembersChild> MapToServiceMembersChildren(List<FileDataDto> fileDataDtos, string addedBy, bool isUpdate = false, ServiceMembersChild existingChild = null)
+        private List<ServiceMembersChild> MapToServiceMembersChildren(List<FileDataDto> fileDataDtos, string addedBy)
         {
             DateTime addedDateTime = DateTime.Now;
 
@@ -2276,10 +2256,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 CheckOutTime = Malama.Utilities.Helper.NormalizeDateTime(dto.CheckOutTime),
                 WalkInServiceMember = dto.WalkInServiceMember,
                 Barcode = dto.Barcode,
-                AddedBy = isUpdate ? existingChild?.AddedBy : addedBy,
-                AddedOn = isUpdate ? existingChild?.AddedOn ?? addedDateTime : addedDateTime,
-                UpdatedBy = isUpdate ? addedBy : null,
-                UpdatedOn = isUpdate ? addedDateTime : null
+                AddedBy = addedBy,
+                AddedOn = addedDateTime,
+                UpdatedBy = null,
+                UpdatedOn = null
             }).ToList();
         }
 
@@ -2295,7 +2275,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 // Fetch EventManagement with related parents
                 var eventManagement = await _unitOfWork.EventManagement
-                .GetWithInclude(
+                .GetWithIncludeTracking(
                     x => x.EventID == eventId,
                     x => x.ServiceMembersParents
                 )
@@ -2310,8 +2290,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return (new ResponseDto
                     {
                         Success = false,
-                        Message = $"EventManagement not found for EventID: {eventId}",
-                        Data = null
+                        Message = ResponseMessages.EventNotFound(eventId),
+                        Data = null,
+                        Code = ResponseCodes.NotFound
                     }, null, null);
                 }
 
@@ -2354,7 +2335,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     eventId);
 
                 var serviceMembersParent = await _unitOfWork.EventManagement
-                .GetWithInclude(
+                .GetWithIncludeNoTracking(
                     x => x.Id == eventId
                 )
                 .Include(x => x.ServiceMembersParents)

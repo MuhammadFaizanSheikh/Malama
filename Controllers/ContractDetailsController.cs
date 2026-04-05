@@ -1,12 +1,8 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Attributes;
 using Malama.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System.Diagnostics.Contracts;
 
 namespace ExcelFilesCompiler.Controllers
 {

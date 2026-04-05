@@ -59,7 +59,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogDebug("{ClassName}, {MethodName}, Fetching LabStation with Id: {Id}", labStationId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-                .GetWithInclude(
+                .GetWithIncludeNoTracking(
                     c => c.LabStationRecord != null && c.LabStationRecord.Id == labStationId,
                     c => c.LabStationRecord,                      // forward navigation
                     c => c.ServiceMembersParent.EventManagement
@@ -101,19 +101,43 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task UpdateAsync(LabStation model, string userName)
         {
-            var existing = await _unitOfWork.LabStation
-                .GetWithInclude(x => x.Id == model.Id)
-                .FirstOrDefaultAsync();
+            string methodName = nameof(UpdateAsync);
 
-            if (existing == null)
+            try
             {
-                throw new Exception($"LabStation record with Id={model.Id} not found.");
+                var existing = await _unitOfWork.LabStation.GetByIdAsync(model.Id);
+
+                if (existing == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Lab Station record with Id={Id} not found by user {User}",
+                        CLASSNAME, methodName, model.Id, userName);
+
+                    throw new KeyNotFoundException($"Lab Station record with Id={model.Id} not found.");
+                }
+
+                MapToEntity(model, existing, userName);
+
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Lab Station record with Id={Id} successfully updated by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
             }
+            catch (KeyNotFoundException knfEx)
+            {
+                _logger.LogError(knfEx,
+                    "{ClassName}, {MethodName}, KeyNotFoundException occurred while updating Lab Station record Id={Id} by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
 
-            MapToEntity(model, existing, userName);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while updating Lab Station record Id={Id} by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
 
-            await _unitOfWork.LabStation.UpdateAsync(existing);
-            await _unitOfWork.SaveAsync();
+                throw;
+            }
         }
 
         private void MapToEntity(LabStation source, LabStation target, string userName)

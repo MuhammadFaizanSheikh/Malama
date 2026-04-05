@@ -117,14 +117,14 @@ namespace ExcelFilesCompiler.Controllers
                         _logger.LogInformation("{ClassName}, {MethodName}, Adding new SubContractor, User: {UserName}",
                             CLASSNAME, methodName, user.UserName);
 
-                        res = await _subContractorService.AddContractAsync(contractDto.SingleSubContractor, contractDto.SubmissionToken, user.UserName);
+                        res = await _subContractorService.AddSubContractAsync(contractDto.SingleSubContractor, contractDto.SubmissionToken, user.UserName);
                     }
                     else if (action == "Update")
                     {
                         _logger.LogInformation("{ClassName}, {MethodName}, Updating SubContractor, User: {UserName}",
                             CLASSNAME, methodName, user.UserName);
 
-                        res = await _subContractorService.UpdateContract(contractDto.SingleSubContractor, user.UserName);
+                        res = await _subContractorService.UpdateSubContractAsync(contractDto.SingleSubContractor, user.UserName);
                     }
                 }
                 else
@@ -232,18 +232,15 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                var contracts = _subContractorService.GetSubContractorByCompanyNameForSearching(companyName);
-
-                // Distinct by CompanyMainName
-                var result = contracts
-                    .GroupBy(c => c.CompanyMainName)
-                    .Select(g => g.First())
-                    .Select(c => new
-                    {
-                        id = c.Id,
-                        text = c.CompanyMainName
-                    })
-                    .ToList();
+                var result = await _subContractorService
+                .GetSubContractorByCompanyNameForSearching(companyName)
+                .GroupBy(c => c.CompanyMainName)
+                .Select(g => new
+                {
+                    id = g.Min(x => x.Id),
+                    text = g.Key
+                })
+                .ToListAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, SubContractors fetched successfully, Count: {Count}",
                     CLASSNAME, methodName, result.Count);

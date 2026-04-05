@@ -783,6 +783,7 @@
                 url: '/SubContractorInfo/GetSubContractorById/' + contractId,  // Make sure the URL is correct
                 type: 'GET',
                 success: function (response) {
+                    debugger;
                     if (response.success) {
                         debugger;
                         var contract = response.combinedData;
@@ -802,8 +803,6 @@
                         $('#ContractType').val(contract.contractDetails.contractType);
                         $('#SmallBusinessType').val(contract.subContractor.smallBusinessType);
                         
-
-                        var serviceTypeProvided = contract.subContractor.serviceTypeProvided; // This is an array of service types
 
                         // Extract the ids of the service types that should be pre-selected
                         var selectedValues = serviceTypeProvided.map(function(serviceType) {

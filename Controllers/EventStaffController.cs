@@ -170,11 +170,11 @@ namespace ExcelFilesCompiler.Controllers
                 // Call service
                 if (action == "Add")
                 {
-                    res = await _eventStaffService.AddContractAsync(eventStaffDto.SingleEventStaff, eventStaffDto.SubmissionToken, user.UserName);
+                    res = await _eventStaffService.AddEventStaffAsync(eventStaffDto.SingleEventStaff, eventStaffDto.SubmissionToken, user.UserName);
                 }
                 else if (action == "Update")
                 {
-                    res = await _eventStaffService.UpdateContract(eventStaffDto.SingleEventStaff, user.UserName);
+                    res = await _eventStaffService.UpdateEventStaffAsync(eventStaffDto.SingleEventStaff, user.UserName);
                 }
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Service result: Success={Success}, Message={Message}",

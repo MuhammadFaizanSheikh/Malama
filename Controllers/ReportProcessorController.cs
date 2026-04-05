@@ -117,7 +117,7 @@ namespace ExcelFilesCompiler.Controllers
                     }
 
                     var existingData = await fileUploader.CheckForExistingDataAgainstEventIdAsync(eventId, user.UserName);
-                    return Json(new { success = existingData.Success, message = existingData.Message });
+                    return Json(new { success = existingData.Success, message = existingData.Message, code = existingData.Code});
                 }
                 return BadRequest("No data to check!");
             }

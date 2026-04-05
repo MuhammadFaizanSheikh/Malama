@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260326181640_Test1")]
+    [Migration("20260402182746_Test1")]
     partial class Test1
     {
         /// <inheritdoc />

@@ -3,10 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using NPOI.HSSF.Record;
-using NPOI.POIFS.Properties;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -56,7 +53,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogDebug("{ClassName}, {MethodName}, Fetching ImmunizationRecord with Id: {Id} and its EventId", immunizationId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-                .GetWithInclude(
+                .GetWithIncludeNoTracking(
                     c => c.ImmunizationRecord != null && c.ImmunizationRecord.Id == immunizationId,
                     c => c.ImmunizationRecord,                      // forward navigation
                     c => c.ServiceMembersParent.EventManagement
@@ -81,7 +78,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Error fetching ImmunizationRecord with Id: {Id}", immunizationId);
-                throw; // Let controller handle displaying generic error
+                throw;
             }
         }
 
@@ -92,29 +89,70 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task AddAsync(ImmunizationStation model, string userName)
         {
-            model.AddedOn = DateTime.Now;
-            model.AddedBy = userName;
+            string methodName = nameof(AddAsync);
 
-            SetGivenDateTimes(model);
+            try
+            {
+                model.AddedOn = DateTime.Now;
+                model.AddedBy = userName;
 
-            await _unitOfWork.ImmunizationStation.AddAsync(model);
-            await _unitOfWork.SaveAsync();
+                SetGivenDateTimes(model);
+
+                await _unitOfWork.ImmunizationStation.AddAsync(model);
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Immunization record successfully added with Id={Id} by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while adding immunization record by user {User}",
+                    CLASSNAME, methodName, userName);
+
+                throw;
+            }
         }
 
         public async Task UpdateAsync(ImmunizationStation model, string userName)
         {
-            var existing = await _unitOfWork.ImmunizationStation.GetByIdAsync(model.Id);
+            string methodName = nameof(UpdateAsync);
 
-            if (existing == null)
+            try
             {
-                throw new Exception($"Immunization record with Id={model.Id} not found.");
+                var existing = await _unitOfWork.ImmunizationStation.GetByIdAsync(model.Id);
+
+                if (existing == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Immunization record with Id={Id} not found by user {User}",
+                        CLASSNAME, methodName, model.Id, userName);
+
+                    throw new KeyNotFoundException($"Immunization record with Id={model.Id} not found.");
+                }
+
+                MapToEntity(model, existing, userName);
+
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Immunization record with Id={Id} successfully updated by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
             }
+            catch (KeyNotFoundException knfEx)
+            {
+                _logger.LogError(knfEx,
+                    "{ClassName}, {MethodName}, KeyNotFoundException occurred while updating Immunization record Id={Id} by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
 
-            // map all fields from model → existing
-            MapToEntity(model, existing, userName);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while updating Immunization record Id={Id} by user {User}",
+                    CLASSNAME, methodName, model.Id, userName);
 
-            await _unitOfWork.ImmunizationStation.UpdateAsync(existing);
-            await _unitOfWork.SaveAsync();
+                throw;
+            }
         }
 
         private void MapToEntity(ImmunizationStation source, ImmunizationStation target, string userName)

@@ -1,19 +1,23 @@
 ﻿using ExcelFilesCompiler.Interfaces;
 using Malama.Models;
 using ExcelFilesCompiler.UnitOfWork;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class ContractService : IContractService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<ContractService> _logger;
         private const string CLASSNAME = "ContractService";
 
-        public ContractService(ILogger<ContractService> logger, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService)
+        public ContractService(ILogger<ContractService> logger, IUnitOfWork unitOfWork, ISubmissionTokenService submissionTokenService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
             _logger = logger;
             _submissionTokenService = submissionTokenService;
         }
@@ -184,9 +188,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // Check if ContractID already exists in another record
                 var existingContractDetails = _unitOfWork.ContractDetails.GetAllWithConditionNoTracking(sc => sc.ContractID == contract.ContractID && sc.Id != contract.Id);
-                if (existingContractDetails != null && existingContractDetails.Any())
+
+                var exists = await existingContractDetails.AnyAsync();
+
+                if (exists)
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, ContractID already exists in another record: {ContractID}, User: {UserName}",
                         CLASSNAME, methodName, contract.ContractID, loggedinUserName);
@@ -196,16 +202,25 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return responseDto;
                 }
 
-                // Preserve original AddedBy / AddedOn
                 var existingContract = await _unitOfWork.ContractDetails.GetByIdAsync(contract.Id);
-                contract.AddedBy = existingContract.AddedBy;
-                contract.AddedOn = existingContract.AddedOn;
 
-                // Update contract
-                contract.UpdatedBy = loggedinUserName;
-                contract.UpdatedOn = DateTime.Now;
+                if (existingContract == null)
+                {
+                    responseDto.Success = false;
+                    responseDto.Message = "Contract not found!";
+                    return responseDto;
+                }
 
-                await _unitOfWork.ContractDetails.UpdateAsync(contract);
+                string addedBy = existingContract.AddedBy;
+                DateTime addedOn = existingContract.AddedOn;
+
+                _mapper.Map(contract, existingContract);
+                existingContract.AddedBy = addedBy;
+                existingContract.AddedOn = addedOn;
+                existingContract.UpdatedBy = loggedinUserName;
+                existingContract.UpdatedOn = DateTime.Now;
+
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Contract updated successfully: {ContractID}, User: {UserName}",
                     CLASSNAME, methodName, contract.ContractID, loggedinUserName);

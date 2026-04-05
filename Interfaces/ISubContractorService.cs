@@ -7,8 +7,8 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<SubContractorAndContractViewModel>> GetAllSubContractors();
         Task<string> GetLastCompanyCode(string companyName);
         Task<CombinedSubContractorAndContractDto> GetSubContractorById(long id);
-        Task<ResponseDto> AddContractAsync(SubContractor contractDetail, string submissionToken, string loggedinUserName);
-        Task<ResponseDto> UpdateContract(SubContractor contract, string loggedinUserName);
+        Task<ResponseDto> AddSubContractAsync(SubContractor contractDetail, string submissionToken, string loggedinUserName);
+        Task<ResponseDto> UpdateSubContractAsync(SubContractor contract, string loggedinUserName);
         IQueryable<SubContractor> GetSubContractorByCompanyNameForSearching(string companyName);
         Task<List<ContractDetails>> GetContractIdsBySubContractorCompanyName(string companyName);
         Task<IEnumerable<SubContractor>> GetCompanyNameByTermAsync(string term);
