@@ -1,0 +1,451 @@
+﻿@using Malama.Utilities
+@model Malama.Models.PostEventManagementDto
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Add Immunization Screening";
+}
+
+<style>
+    #page-heading {
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white; /* ensures text is visible */
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    h2, h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Aligns the text in the middle of the cell */
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table tbody tr {
+            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+        }
+
+            table tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            }
+
+        table td button,
+        table td a {
+            display: inline-block; /* Makes the buttons appear side by side */
+            margin-right: 5px; /* Optional: Adds space between the buttons */
+        }
+
+        table td .button-container {
+            display: flex;
+            justify-content: center; /* Aligns buttons horizontally in the center */
+        }
+
+            table td .button-container a {
+                margin-right: 5px; /* Optional: Adds space between the buttons */
+            }
+
+        table thead th {
+            background-color: rgba(120, 130, 221, 1); /* Header background color */
+            color: white; /* Header text color */
+            text-align: center; /* Center-align header text */
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+<h2 id="page-heading">Post Event Management</h2>
+
+<div class="container-fluid">
+
+    <!-- Top Right Dropdown -->
+    <div class="d-flex justify-content-end mb-3">
+        <select class="form-control w-auto" asp-for="PostEventStatus">
+            <option value="Post event processing">Post Event Complete</option>
+            @* <option value="Complete">Complete</option> *@
+        </select>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="postEventTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#tab1">Event Specific Details</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#tab2">Event Service Details</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+
+        <!-- ================= TAB 1 ================= -->
+        <div class="tab-pane fade show active" id="tab1">
+
+            <h3 class="mb-3">Event Specific Details</h3>
+
+            <div class="row">
+
+                <!-- LEFT COLUMN -->
+                <div class="col-md-6">
+
+                    <p><strong>Sub Event ID Number :</strong> @Model.SubEventID</p>
+                    <p><strong>Contract Name :</strong> @Model.ContractDetails?.ContractName</p>
+                    <p><strong>Contract Id :</strong> @Model.ContractDetails?.ContractID</p>
+                    <p><strong>Dawson Service Branch :</strong> @Model.ContractDetails?.ContractServiceBranch</p>
+                    <p><strong>Contract Client :</strong> @Model.ContractDetails?.ContractClient</p>
+                    <p><strong>Site ID :</strong> @Model.ContractDetails?.SiteId</p>
+                    <p><strong>Event Address 1 :</strong> @Model.EventAddress1</p>
+                    <p><strong>Event Address 2 :</strong> @Model.EventAddress2</p>
+                    <p><strong>Event Zip Code :</strong> @Model.EventZipCode</p>
+                    <p><strong>MOB Date :</strong> @Model.MOBDate?.ToString("MM-dd-yyyy")</p>
+                    <p><strong>Regarding Site Notes :</strong> @Model.RegardingSites</p>
+
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-md-6">
+
+                    <p><strong>Contract Agency :</strong> @Model.ContractDetails?.ContractAgency</p>
+                    <p><strong>Contract Component :</strong> @Model.ContractDetails?.ContractComponent</p>
+                    <p><strong>Client Name :</strong> @Model.ContractDetails?.ClientName</p>
+                    <p><strong>Contract Type :</strong> @Model.ContractDetails?.ContractType</p>
+                    <p><strong>Contract End :</strong> @Model.ContractDetails?.ContractEndDate.ToString("MM-dd-yyyy")</p>
+                    <p><strong>Contract Start :</strong> @Model.ContractDetails?.ContractStartDate.ToString("MM-dd-yyyy")</p>
+                    <p><strong>Dawson Project Manager :</strong> @Model.ContractDetails?.DawsonProjectManagerFirstName</p>
+                    <p><strong>Event City :</strong> @Model.EventCity</p>
+                    <p><strong>Event State :</strong> @Model.EventState</p>
+                    <p><strong>Event Timezone :</strong> @Model.Timezone</p>
+                    <p><strong>Taskforce :</strong> @Model.TaskForce</p>
+                    <p><strong>Event Help Line :</strong> @Model.EventHelpLine</p>
+
+                </div>
+
+            </div>
+
+            <hr />
+
+            <!-- ================= FORM SECTION ================= -->
+            <div class="row mt-3">
+
+                <!-- LEFT COLUMN -->
+                <div class="col-md-6">
+
+                    <div class="form-group mb-3">
+                        <label>Number of Service Member Completed</label>
+                        <input type="text" class="form-control" asp-for="TotalServiceMember" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Actual Event Start Date</label>
+                        <input type="text" id="EventStartDateUtc" class="form-control" asp-for="EventStartDateUtc" />
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-md-6">
+
+                    <!-- Spacer for alignment -->
+                    <div class="form-group mb-3" style="visibility:hidden;">
+                        <label>Spacer</label>
+                        <input class="form-control" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Actual Event End Date</label>
+                        <input type="text" id="EventEndDateUtc" class="form-control" asp-for="EventEndDateUtc" />
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================= DAY WISE TIME SECTION ================= -->
+
+            <div class="mt-4">
+
+                @if (Model.PostEventStartEndTimeDayWiseDto != null && Model.PostEventStartEndTimeDayWiseDto.Any())
+                {
+                    for (int i = 0; i < Model.PostEventStartEndTimeDayWiseDto.Count; i++)
+                    {
+                        <div class="row mb-3">
+
+                            <!-- LEFT: Start Time -->
+                            <div class="col-md-6">
+                                <label>
+                                    Actual Day @Model.PostEventStartEndTimeDayWiseDto[i].EventDay Start Time
+                                </label>
+
+                                <input type="text"
+                                       class="form-control timepicker"
+                                       id="StartTime_@i"
+                                       name="PostEventStartEndTimeDayWiseDto[@i].EventStartTime"
+                                       value="@(Model.PostEventStartEndTimeDayWiseDto[i].EventStartTime?.ToString(@"hh\:mm"))" />
+
+                                <!-- Hidden fields -->
+                                <input type="hidden"
+                                       name="PostEventStartEndTimeDayWiseDto[@i].Id"
+                                       value="@Model.PostEventStartEndTimeDayWiseDto[i].Id" />
+
+                                <input type="hidden"
+                                       name="PostEventStartEndTimeDayWiseDto[@i].EventDay"
+                                       value="@Model.PostEventStartEndTimeDayWiseDto[i].EventDay" />
+                            </div>
+
+                            <!-- RIGHT: End Time -->
+                            <div class="col-md-6">
+                                <label>
+                                    Actual Day @Model.PostEventStartEndTimeDayWiseDto[i].EventDay End Time
+                                </label>
+
+                                <input type="text"
+                                       class="form-control timepicker"
+                                       id="EndTime_@i"
+                                       name="PostEventStartEndTimeDayWiseDto[@i].EventEndTime"
+                                       value="@(Model.PostEventStartEndTimeDayWiseDto[i].EventEndTime?.ToString(@"hh\:mm"))" />
+                            </div>
+
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No day-wise data available</p>
+                }
+
+            </div>
+
+            <div class="row mt-3">
+                <div class="form-group mb-3">
+                    <label>Post Event Notes</label>
+                    <textarea class="form-control" rows="4" asp-for="PostEventNotes"></textarea>
+                </div>
+                </div>
+
+        </div>
+
+        <!-- ================= TAB 2 (EMPTY FOR NOW) ================= -->
+            <div class="tab-pane fade" id="tab2">
+
+                <h5 class="mb-3">Event Services</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Event Services</th>
+                                <th>DAWSON Final Pre-Event Numbers</th>
+                                <th>Post Event Numbers</th>
+                                <th>Completed</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.EventServices != null && Model.EventServices.Any())
+                            {
+                                for (int i = 0; i < Model.EventServices.Count; i++)
+                                {
+                                    <tr>
+                                        <!-- Event Service (Label) -->
+                                        <td>
+                                            @Model.EventServices[i].EventService
+
+                                            <input type="hidden"
+                                                   name="EventServices[@i].Id"
+                                                   value="@Model.EventServices[i].Id" />
+
+                                            <input type="hidden"
+                                                   name="EventServices[@i].EventService"
+                                                   value="@Model.EventServices[i].EventService" />
+                                        </td>
+
+                                        <!-- Final Pre Event Numbers -->
+                                    <td class="text-center">
+                                        <input type="text"
+                                               class="form-control text-center"
+                                               name="EventServices[@i].FinalPreEventConfirmedNumbers"
+                                               value="@Model.EventServices[i].FinalPreEventConfirmedNumbers"
+                                               readonly />
+                                    </td>
+
+                                        <!-- Post Event Numbers -->
+                                    <td class="text-center">
+                                            <input type="text"
+                                               class="form-control text-center"
+                                                   name="EventServices[@i].PostEventNumbers"
+                                                   value="@Model.EventServices[i].PostEventNumbers" />
+                                        </td>
+
+                                        <!-- Completed Checkbox -->
+                                        <td class="text-center">
+                                            <input type="checkbox"
+                                                   name="EventServices[@i].Completed"
+                                                   value="true"
+                                            @(Model.EventServices[i].Completed ? "checked" : "") />
+
+                                            <!-- Hidden for unchecked -->
+                                            <input type="hidden"
+                                                   name="EventServices[@i].Completed"
+                                                   value="false" />
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        No event services available
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Initialize Flatpickr
+        flatpickr("#EventStartDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        flatpickr("#EventEndDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        flatpickr(".timepicker", { enableTime: true, noCalendar: true, time_24hr: true, dateFormat: "H:i" });
+
+        function checkTabCompletion() {
+            let tab1Complete = true;
+            let tab2Complete = true;
+
+            // -------- TAB 1 --------
+            $('#tab1 input, #tab1 textarea').each(function() {
+                const $this = $(this);
+
+                // Skip hidden fields created by Flatpickr
+                if ($this.is(':hidden')) return;
+
+                // Consider trimmed value
+                if ($this.val().trim() === "") {
+                    tab1Complete = false;
+                    return false;
+                }
+            });
+
+            // -------- TAB 2 --------
+            $('#tab2 input[type="text"]').each(function() {
+                const $this = $(this);
+                if ($this.val().trim() === "") {
+                    tab2Complete = false;
+                    return false;
+                }
+            });
+
+            $('#tab2 input[type="checkbox"]').each(function() {
+                const $this = $(this);
+                if (!$this.is(':hidden') && !$this.is(":checked")) {
+                    tab2Complete = false;
+                    return false;
+                }
+            });
+
+            // -------- Update tab colors --------
+            $('#postEventTabs a[href="#tab1"]').css('background-color', tab1Complete ? '#28a745' : '');
+            $('#postEventTabs a[href="#tab2"]').css('background-color', tab2Complete ? '#28a745' : '');
+
+            // -------- Update dropdown --------
+            const statusDropdown = $('select[asp-for="PostEventStatus"]');
+            const completeOptionExists = statusDropdown.find('option[value="Complete"]').length > 0;
+
+            if (tab1Complete && tab2Complete) {
+                if (!completeOptionExists) {
+                    statusDropdown.append('<option value="Complete">Complete</option>');
+                }
+            } else {
+                if (completeOptionExists) {
+                    statusDropdown.find('option[value="Complete"]').remove();
+                }
+            }
+        }
+
+        // -------- Bind events --------
+        $('#tab1 input, #tab1 textarea, #tab2 input[type="text"], #tab2 input[type="checkbox"]')
+            .on('input change propertychange', checkTabCompletion);
+
+        // -------- Force initial evaluation after everything is rendered --------
+        setTimeout(function() {
+            checkTabCompletion(); // ensures pre-filled textareas and Flatpickr altInputs are detected
+        }, 200);
+
+    });
+</script>
+
+@* @if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+} *@
+
+
+
+
+
+
+
+

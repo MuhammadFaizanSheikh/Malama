@@ -77,6 +77,12 @@
         </a>
     }
 
+    <a asp-controller="PostEventManagement" asp-action="Index" class="icon-box">
+        <img src="/images/Post Event Management.jpg" alt="Event Management" />
+        <span>Post Event Management</span>
+    </a>
+
+
     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventStaff_View"))
     {
         <a asp-controller="EventStaff" asp-action="Index" class="icon-box">

@@ -34,6 +34,7 @@ namespace ExcelFilesCompiler
         public DbSet<ContainerTemperatureReading> ContainerTemperatureReading { get; set; }
         public DbSet<ContainerNotification> ContainerNotification { get; set; }
         public DbSet<UserEventMapping> UserEventMapping { get; set; }
+        public DbSet<PostEventManagement> PostEventManagement { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

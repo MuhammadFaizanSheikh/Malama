@@ -360,6 +360,9 @@
         public ICollection<ServiceMembersParent> ServiceMembersParents { get; set; } = new List<ServiceMembersParent>();
         public ICollection<Container> Container { get; set; } = new List<Container>();
         public ICollection<ImmunizationVaccineInfo> ImmunizationVaccineInfo { get; set; } = new List<ImmunizationVaccineInfo>();
+        [JsonIgnore]
+        [ValidateNever]
+        public virtual PostEventManagement PostEventManagement { get; set; }
     }
 
     [Table("EventServiceDetail")]
@@ -379,7 +382,8 @@
 
         public int? InitialReportNumbers { get; set; }
 
-        public int? FinalPreEventConfirmedNumbers { get; set; }
+        public int? FinalPreEventConfirmedNumbers
+        { get; set; }
         public bool IsConfirmed { get; set; }
 
     }

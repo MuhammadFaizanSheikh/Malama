@@ -51,6 +51,7 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 builder.Services.AddScoped<IEventUsersService, EventUsersService>();
 builder.Services.AddScoped<ISubmissionTokenService, SubmissionTokenService>();
+builder.Services.AddScoped<IPostEventManagementService, PostEventManagementService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));

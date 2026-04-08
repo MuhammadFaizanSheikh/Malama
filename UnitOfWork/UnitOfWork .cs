@@ -33,6 +33,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<LabStation> LabStation { get; private set; }
         public IGenericRepository<ServiceMembersParent> ServiceMembersParent { get; private set; }
         public IGenericRepository<ServiceMembersChild> ServiceMembersChild { get; private set; }
+        public IGenericRepository<PostEventManagement> PostEventManagement { get; private set; }
 
 
 
@@ -64,6 +65,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             LabStation = new GenericRepository<LabStation>(_context);
             ServiceMembersParent = new GenericRepository<ServiceMembersParent>(_context);
             ServiceMembersChild = new GenericRepository<ServiceMembersChild>(_context);
+            PostEventManagement = new GenericRepository<PostEventManagement>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

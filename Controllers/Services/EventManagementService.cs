@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using AutoMapper;
+using ExcelFilesCompiler.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -26,85 +28,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             _logger = logger;
             _submissionTokenService = submissionTokenService;
         }
-
-        //public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
-        //{
-        //    const string methodName = "GetAllEventManagements";
-
-        //    _logger.LogInformation("{ClassName}, {MethodName}, Called with EventIdFilter: {EventIdFilter}",
-        //        CLASSNAME, methodName, eventIdFilter);
-
-        //    List<EventManagementPreview> eventManagements = new();
-
-        //    try
-        //    {
-        //        Expression<Func<EventManagement, bool>> predicate = null;
-
-        //        if (eventIdFilter.HasValue)
-        //        {
-        //            long id = eventIdFilter.Value; // avoid closure issues
-        //            predicate = e => e.Id == id;
-
-        //            _logger.LogInformation("{ClassName}, {MethodName}, Applying filter for EventId: {EventId}",
-        //                CLASSNAME, methodName, id);
-        //        }
-
-        //        var eventData = await _unitOfWork.EventManagement.GetWithIncludeAsync(
-        //            predicate,
-        //            x => x.EventManagementTaskforcesList
-        //        );
-
-        //        _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
-        //            CLASSNAME, methodName, eventData?.Count() ?? 0);
-
-        //        // Group by EventID to handle versions
-        //        eventManagements = eventData
-        //            .GroupBy(e => e.EventID)
-        //            .SelectMany(group =>
-        //            {
-        //                int maxVersion = group.Max(e => e.EventVersion);
-
-        //                return group.OrderByDescending(e => e.EventVersion)
-        //                    .Select(e => new EventManagementPreview
-        //                    {
-        //                        Id = e.Id,
-        //                        EventID = e.EventID,
-        //                        EventVersion = e.EventVersion,
-        //                        SubEventID = e.SubEventID,
-        //                        EventStatus = e.EventStatus,
-        //                        EventState = e.EventState,
-        //                        EventCity = e.EventCity,
-        //                        EventZipCode = e.EventZipCode,
-        //                        StatusDescription = e.StatusDescription,
-        //                        EventStartDateUtc = e.EventStartDateUtc,
-        //                        EventEndDateUtc = e.EventEndDateUtc,
-        //                        TaskForce = e.EventManagementTaskforcesList != null
-        //                            ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
-        //                            : string.Empty,
-
-        //                        // Same CanEdit logic (unchanged)
-        //                        CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
-        //                                  || e.EventVersion == maxVersion
-        //                    })
-        //                    .ToList();
-        //            })
-        //            .OrderByDescending(e => e.Id)
-        //            .ToList();
-
-        //        _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
-        //            CLASSNAME, methodName, eventManagements.Count);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex,
-        //            "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements. EventIdFilter: {EventIdFilter}",
-        //            CLASSNAME, methodName, eventIdFilter);
-
-        //        throw;
-        //    }
-
-        //    return eventManagements;
-        //}
 
         public async Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null)
         {
@@ -191,6 +114,160 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 throw;
             }
+        }
+
+        public async Task<List<PostEventManagementPreview>> GetAllForPostEventManagements()
+        {
+            const string methodName = "GetAllEventManagements";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called.", CLASSNAME, methodName);
+
+            try
+            {
+                // 1️⃣ Get all EventManagement records with Taskforces (no tracking)
+                var eventData = await _unitOfWork.EventManagement
+                    .GetWithIncludeNoTracking(
+                        x => x.EventStatus == AppConstants.EventStatus.InProgressCompleted,
+                        x => x.EventManagementTaskforcesList,
+                        x => x.PostEventManagement // Include child table
+                    )
+                    .ToListAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
+                    CLASSNAME, methodName, eventData.Count);
+
+                // 2️⃣ Group by EventID to get latest version
+                var eventManagements = eventData
+                    .GroupBy(e => e.EventID)
+                    .SelectMany(group =>
+                    {
+                        int maxVersion = group.Max(e => e.EventVersion);
+
+                        return group
+                            .OrderByDescending(e => e.EventVersion)
+                            .Select(e => new PostEventManagementPreview
+                            {
+                                Id = e.Id,
+                                EventID = e.EventID,
+                                EventVersion = e.EventVersion,
+                                EventStatus = e.EventStatus,
+                                EventState = e.EventState,
+                                EventCity = e.EventCity,
+                                EventZipCode = e.EventZipCode,
+                                StatusDescription = e.StatusDescription,
+                                EventStartDateUtc = e.EventStartDateUtc,
+                                EventEndDateUtc = e.EventEndDateUtc,
+
+                                TaskForce = e.EventManagementTaskforcesList != null
+                                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                                    : string.Empty,
+
+                                CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
+                                          || e.EventVersion == maxVersion,
+
+                                // 3️⃣ Get PostEventManagementId from child table if exists
+                                PostEventManagementId = e.PostEventManagement != null
+                                    ? e.PostEventManagement.Id
+                                    : 0
+                            });
+                    })
+                    .OrderByDescending(e => e.Id)
+                    .ToList();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
+                    CLASSNAME, methodName, eventManagements.Count);
+
+                return eventManagements;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements.",
+                    CLASSNAME, methodName);
+
+                throw;
+            }
+        }
+
+        public async Task<PostEventManagementDto> GetForPostEventManagement(long eventManagementId)
+        {
+            var em = await _unitOfWork.EventManagement
+            .GetWithIncludeNoTracking(
+                x => x.Id == eventManagementId,
+                x => x.ContractDetails,
+                x => x.EventManagementTaskforcesList,
+                x => x.EventStartEndTimeDayWiseList,
+                x => x.EventServiceDetailList   // 👈 ADD THIS
+            )
+            .FirstOrDefaultAsync();
+
+            if (em == null)
+                throw new Exception("EventManagement record not found.");
+
+            return new PostEventManagementDto
+            {
+                Id = 0, // new PostEventManagement record
+                EventManagementId = em.Id,
+                EventStartDateUtc = em.EventStartDateUtc,
+                EventEndDateUtc = em.EventEndDateUtc,
+                PostEventNotes = null, // no PostEvent data yet
+
+                PostEventStartEndTimeDayWiseDto = em.EventStartEndTimeDayWiseList != null
+                ? em.EventStartEndTimeDayWiseList.Select(x => new PostEventStartEndTimeDayWiseDto
+                {
+                    Id = x.Id,
+                    EventDay = x.EventDay,
+                    EventStartTime = x.EventStartTime,
+                    EventEndTime = x.EventEndTime,
+                    ServiceMemberPercentPerDay = x.ServiceMemberPercentPerDay
+                }).ToList()
+                : new List<PostEventStartEndTimeDayWiseDto>(),
+                EventServices = em.EventServiceDetailList != null
+                ? em.EventServiceDetailList
+                    .Where(x => x.IsSelected)
+                    .Select(x => new PostEventServiceDetailDto
+                    {
+                        EventService = x.EventService,
+                        FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
+                    }).ToList()
+                : new List<PostEventServiceDetailDto>(),
+
+                ContractDetails = em.ContractDetails == null
+                    ? null
+                    : new ContractDetails
+                    {
+                        Id = em.ContractDetails.Id,
+                        ContractID = em.ContractDetails.ContractID,
+                        ContractName = em.ContractDetails.ContractName,
+                        ContractClient = em.ContractDetails.ContractClient,
+                        SiteId = em.ContractDetails.SiteId,
+                        ContractAgency = em.ContractDetails.ContractAgency,
+                        ContractComponent = em.ContractDetails.ContractComponent,
+                        ClientName = em.ContractDetails.ClientName,
+                        ContractType = em.ContractDetails.ContractType,
+                        ContractStartDate = em.ContractDetails.ContractStartDate,
+                        ContractEndDate = em.ContractDetails.ContractEndDate,
+                        DawsonProjectManagerFirstName = em.ContractDetails.DawsonProjectManagerFirstName,
+                        ContractServiceBranch = em.ContractDetails.ContractServiceBranch
+                    },
+
+                // EventManagement fields
+                SubEventID = em.SubEventID,
+                EventAddress1 = em.EventAddress1,
+                EventAddress2 = em.EventAddress2,
+                EventState = em.EventState,
+                EventCity = em.EventCity,
+                EventZipCode = em.EventZipCode,
+                MOBDate = em.MOBDate,
+                RegardingSites = em.RegardingSites,
+                Timezone = em.Timezone,
+                EventHelpLine = em.EventHelpLine,
+                TotalServiceMember = em.TotalRequestedServiceMembers,
+                TaskForce = em.EventManagementTaskforcesList != null
+                    ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                    : null
+            };
         }
 
 

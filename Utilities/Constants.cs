@@ -2,6 +2,12 @@
 {
     public static class AppConstants
     {
+        public static class EventStatus
+        {
+            public const string InProgressCompleted = "In Progress Completed";
+            public const string EventManagementRoles = "EventManagementRole";
+        }
+
         public static class RolesCategory
         {
             public const string BasicRoles = "BasicRole";
