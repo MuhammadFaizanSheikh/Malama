@@ -218,46 +218,92 @@ namespace ExcelFilesCompiler.Controllers.Services
                     _logger.LogWarning("{ClassName}, {MethodName}, Event not found. Id={Id}",
                         CLASSNAME, methodName, eventManagementId);
 
-                    throw new Exception("Event record not found.");
+                    throw new Exception("EventManagement record not found.");
                 }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Event found. Converting timezone. Timezone={Timezone}",
+                    CLASSNAME, methodName, em.Timezone);
 
                 Helper.ConvertEventToLocalTime(em, em.Timezone);
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Data prepared successfully. Id={Id}",
-                    CLASSNAME, methodName, eventManagementId);
-
-                return new PostEventManagementDto
+                var dto = new PostEventManagementDto
                 {
-                    Id = 0,
+                    Id = 0, // new PostEvent record
                     EventManagementId = em.Id,
+
                     EventStartDateUtc = em.EventStartDateUtc,
                     EventEndDateUtc = em.EventEndDateUtc,
-                    TotalServiceMember = em.TotalRequestedServiceMembers,
-                    Timezone = em.Timezone,
 
-                    PostEventStartEndTimeDayWiseDto = em.EventStartEndTimeDayWiseList?
-                        .Select(x => new PostEventStartEndTimeDayWiseDto
+                    PostEventNotes = null,
+
+                    // ✅ Day-wise mapping
+                    PostEventStartEndTimeDayWiseDto = em.EventStartEndTimeDayWiseList != null
+                        ? em.EventStartEndTimeDayWiseList.Select(x => new PostEventStartEndTimeDayWiseDto
                         {
                             Id = x.Id,
                             EventDay = x.EventDay,
                             EventStartTime = x.EventStartTime,
                             EventEndTime = x.EventEndTime,
                             ServiceMemberPercentPerDay = x.ServiceMemberPercentPerDay
-                        }).ToList(),
+                        }).ToList()
+                        : new List<PostEventStartEndTimeDayWiseDto>(),
 
-                    EventServices = em.EventServiceDetailList?
-                        .Where(x => x.IsSelected)
-                        .Select(x => new PostEventServiceDetailDto
+                    // ✅ Services mapping (ONLY selected)
+                    EventServices = em.EventServiceDetailList != null
+                        ? em.EventServiceDetailList
+                            .Where(x => x.IsSelected)
+                            .Select(x => new PostEventServiceDetailDto
+                            {
+                                EventServiceDetailId = x.Id,
+                                EventService = x.EventService,
+                                FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
+                            }).ToList()
+                        : new List<PostEventServiceDetailDto>(),
+
+                    // ✅ Contract details (FULL mapping restored)
+                    ContractDetails = em.ContractDetails == null
+                        ? null
+                        : new ContractDetails
                         {
-                            EventServiceDetailId = x.Id,
-                            EventService = x.EventService,
-                            FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
-                        }).ToList(),
+                            Id = em.ContractDetails.Id,
+                            ContractID = em.ContractDetails.ContractID,
+                            ContractName = em.ContractDetails.ContractName,
+                            ContractClient = em.ContractDetails.ContractClient,
+                            SiteId = em.ContractDetails.SiteId,
+                            ContractAgency = em.ContractDetails.ContractAgency,
+                            ContractComponent = em.ContractDetails.ContractComponent,
+                            ClientName = em.ContractDetails.ClientName,
+                            ContractType = em.ContractDetails.ContractType,
+                            ContractStartDate = em.ContractDetails.ContractStartDate,
+                            ContractEndDate = em.ContractDetails.ContractEndDate,
+                            DawsonProjectManagerFirstName = em.ContractDetails.DawsonProjectManagerFirstName,
+                            ContractServiceBranch = em.ContractDetails.ContractServiceBranch
+                        },
 
+                    // ✅ Event fields (FULL mapping restored)
+                    SubEventID = em.SubEventID,
+                    EventAddress1 = em.EventAddress1,
+                    EventAddress2 = em.EventAddress2,
+                    EventState = em.EventState,
+                    EventCity = em.EventCity,
+                    EventZipCode = em.EventZipCode,
+                    MOBDate = em.MOBDate,
+                    RegardingSites = em.RegardingSites,
+                    Timezone = em.Timezone,
+                    EventHelpLine = em.EventHelpLine,
+
+                    TotalServiceMember = em.TotalRequestedServiceMembers,
+
+                    // ✅ Taskforce mapping
                     TaskForce = em.EventManagementTaskforcesList != null
                         ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
                         : null
                 };
+
+                _logger.LogInformation("{ClassName}, {MethodName}, DTO prepared successfully. EventManagementId={Id}",
+                    CLASSNAME, methodName, eventManagementId);
+
+                return dto;
             }
             catch (Exception ex)
             {
