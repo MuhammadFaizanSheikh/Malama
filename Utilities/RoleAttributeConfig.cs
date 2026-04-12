@@ -220,6 +220,10 @@ namespace Malama.Utilities
             ("Vitals Staff", null),
             ("Event Manager", null)
         },
+            ["PostEventManagement_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
             ["ImmunizationStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
@@ -275,6 +279,10 @@ namespace Malama.Utilities
             ("Project Manager & Program Manager", null)
         },
             ["ReportProcessor_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null)
+        },
+            ["PostEventManagement_Save"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null)
         }

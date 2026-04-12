@@ -4,7 +4,7 @@
     {
         public static class EventStatus
         {
-            public const string InProgressCompleted = "In Progress Completed";
+            public const string InProgressComplete = "In Progress Complete";
             public const string EventManagementRoles = "EventManagementRole";
         }
 

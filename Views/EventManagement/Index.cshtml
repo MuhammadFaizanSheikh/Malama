@@ -483,8 +483,7 @@
                             <option value="Pre-Event Confirmed">Pre-Event Confirmed</option>
                             <option value="Pre-Event Complete">Pre-Event Complete</option>
                             <option value="In Progress">In Progress</option>
-                        <option value="Post Event Processing">Post Event Processing</option>
-                            <option value="Complete">Complete</option>
+                            <option value="In Progress Complete">In Progress Complete</option>
                             <option value="Canceled">Canceled</option>
                         </select>
                     </div>
@@ -2299,8 +2298,7 @@
             else if (eventRuntimeStatus === "Event Completed") {
 
                 enableOptions([
-                    "Post Event Processing",
-                    "Complete"
+                    "In Progress Complete"
                 ]);
 
             }
@@ -4654,15 +4652,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 SuggestedHourlyFlow: true,
                 TaskForce: true,
             },
-            "Post Event Processing": {
-                PickupDate: true,
-                PickupTime: true,
-                DeliveryFromDate: true,
-                DeliveryToDate: true,
-                SuggestedHourlyFlow: true,
-                TaskForce: true,
-            },
-            "Complete": {
+            "In Progress Complete": {
                 PickupDate: true,
                 PickupTime: true,
                 DeliveryFromDate: true,

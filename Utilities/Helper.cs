@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Malama.Models;
+using System;
 
 namespace Malama.Utilities
 {
@@ -41,39 +43,327 @@ namespace Malama.Utilities
             return default; // in case of error
         }
 
-        //public static void UpdateCollection<TItem, TKey>(
-        //    ICollection<TItem> existingList,
-        //    ICollection<TItem> updatedList,
-        //    Func<TItem, TKey> keySelector,
-        //    IMapper mapper)
-        //{
-        //    if (existingList == null) throw new ArgumentNullException(nameof(existingList));
-        //    if (updatedList == null) throw new ArgumentNullException(nameof(updatedList));
+        public static void ConvertEventToLocalTime(EventManagement eventManagement, string timezoneId)
+        {
+            try
+            {
+                if (eventManagement == null)
+                    throw new ArgumentNullException(nameof(eventManagement));
 
-        //    // Remove deleted items
-        //    var toRemove = existingList
-        //        .Where(e => updatedList.All(u => !keySelector(u)!.Equals(keySelector(e))))
-        //        .ToList();
+                TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+                DateTime eventStartUtc = eventManagement.EventStartDateUtc;
+                DateTime eventEndUtc = eventManagement.EventEndDateUtc;
 
-        //    foreach (var item in toRemove)
-        //        existingList.Remove(item);
+                eventManagement.EventStartDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventStartUtc, tz);
+                eventManagement.EventEndDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventEndUtc, tz);
 
-        //    // Update existing items & add new ones
-        //    foreach (var updatedItem in updatedList)
-        //    {
-        //        var existingItem = existingList
-        //            .FirstOrDefault(e => keySelector(e)!.Equals(keySelector(updatedItem)));
+                foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
+                {
+                    if (day.EventStartTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventStartTime.Value;
+                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        day.EventStartTime = dayLocal.TimeOfDay;
+                    }
 
-        //        if (existingItem != null)
-        //        {
-        //            mapper.Map(updatedItem, existingItem);
-        //        }
-        //        else
-        //        {
-        //            existingList.Add(updatedItem);
-        //        }
-        //    }
-        //}
+                    if (day.EventEndTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventEndTime.Value;
+                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        day.EventEndTime = dayLocal.TimeOfDay;
+                    }
+                }
+            }
+            catch (TimeZoneNotFoundException ex)
+            {
+                throw;
+            }
+            catch (InvalidTimeZoneException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public static void ConvertEventToLocalTime(PostEventManagement eventManagement, string timezoneId)
+        {
+            try
+            {
+                if (eventManagement == null)
+                    throw new ArgumentNullException(nameof(eventManagement));
+
+                TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+                DateTime eventStartUtc = eventManagement.EventStartDateUtc;
+                DateTime eventEndUtc = eventManagement.EventEndDateUtc;
+
+                eventManagement.EventStartDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventStartUtc, tz);
+                eventManagement.EventEndDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventEndUtc, tz);
+
+                foreach (var day in eventManagement.PostEventStartEndTimeDayWise)
+                {
+                    if (day.EventStartTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventStartTime.Value;
+                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        day.EventStartTime = dayLocal.TimeOfDay;
+                    }
+
+                    if (day.EventEndTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventEndTime.Value;
+                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        day.EventEndTime = dayLocal.TimeOfDay;
+                    }
+                }
+            }
+            catch (TimeZoneNotFoundException ex)
+            {
+                throw;
+            }
+            catch (InvalidTimeZoneException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public static ResponseDto ConvertEventTimesToUtc(EventManagement eventManagement, string timeZoneId)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                if (eventManagement == null)
+                {
+                    return new ResponseDto { Success = false, Message = "Event data is required." };
+                }
+
+                if (string.IsNullOrWhiteSpace(timeZoneId))
+                {
+                    return new ResponseDto { Success = false, Message = "Event timezone is required." };
+                }
+
+                if (!eventManagement.EventStartEndTimeDayWiseList.Any())
+                {
+                    return new ResponseDto { Success = false, Message = "Event must have at least one day with start/end time." };
+                }
+
+                // Validate first/last day times
+                if (!eventManagement.EventStartEndTimeDayWiseList.First().EventStartTime.HasValue)
+                {
+                    return new ResponseDto { Success = false, Message = "First day start time is required." };
+                }
+
+                if (!eventManagement.EventStartEndTimeDayWiseList.Last().EventEndTime.HasValue)
+                {
+                    return new ResponseDto { Success = false, Message = "Last day end time is required." };
+                }
+
+                DateTime localEventStartDate = eventManagement.EventStartDateUtc;
+
+                DateTime startUtc = Helper.ConvertToUtcBasedOnTimezone(
+                    localEventStartDate,
+                    eventManagement.EventStartEndTimeDayWiseList.First().EventStartTime,
+                    timeZoneId,
+                    out string startError
+                );
+                if (!string.IsNullOrEmpty(startError))
+                {
+                    return new ResponseDto { Success = false, Message = startError };
+                }
+
+                DateTime endUtc = Helper.ConvertToUtcBasedOnTimezone(
+                    eventManagement.EventEndDateUtc,
+                    eventManagement.EventStartEndTimeDayWiseList.Last().EventEndTime,
+                    timeZoneId,
+                    out string endError
+                );
+                if (!string.IsNullOrEmpty(endError))
+                {
+                    return new ResponseDto { Success = false, Message = endError };
+                }
+
+                eventManagement.EventStartDateUtc = Helper.NormalizeDateTime(startUtc);
+                eventManagement.EventEndDateUtc = Helper.NormalizeDateTime(endUtc);
+
+                // --- Convert per-day EventStartTime / EventEndTime ---
+                foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
+                {
+                    // Start time
+                    if (day.EventStartTime.HasValue)
+                    {
+                        DateTime utcStart = Helper.ConvertToUtcBasedOnTimezone(
+                            localEventStartDate.AddDays(day.EventDay - 1),
+                            day.EventStartTime,
+                            timeZoneId,
+                            out string dayStartError
+                        );
+
+                        if (!string.IsNullOrEmpty(dayStartError))
+                        {
+                            return new ResponseDto { Success = false, Message = dayStartError };
+                        }
+
+                        day.EventStartTime = utcStart.TimeOfDay;
+                    }
+
+                    // End time
+                    if (day.EventEndTime.HasValue)
+                    {
+                        DateTime utcEnd = Helper.ConvertToUtcBasedOnTimezone(
+                            localEventStartDate.AddDays(day.EventDay - 1),
+                            day.EventEndTime,
+                            timeZoneId,
+                            out string dayEndError
+                        );
+
+                        if (!string.IsNullOrEmpty(dayEndError))
+                        {
+                            return new ResponseDto { Success = false, Message = dayEndError };
+                        }
+
+                        day.EventEndTime = utcEnd.TimeOfDay;
+                    }
+                }
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Event times converted to UTC successfully.",
+                    Data = eventManagement
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred: " + ex.Message
+                };
+            }
+        }
+
+        public static ResponseDto ConvertEventTimesToUtc(PostEventManagement eventManagement, string timeZoneId)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                if (eventManagement == null)
+                {
+                    return new ResponseDto { Success = false, Message = "Event data is required." };
+                }
+
+                if (string.IsNullOrWhiteSpace(timeZoneId))
+                {
+                    return new ResponseDto { Success = false, Message = "Event timezone is required." };
+                }
+
+                if (!eventManagement.PostEventStartEndTimeDayWise.Any())
+                {
+                    return new ResponseDto { Success = false, Message = "Event must have at least one day with start/end time." };
+                }
+
+                // Validate first/last day times
+                if (!eventManagement.PostEventStartEndTimeDayWise.First().EventStartTime.HasValue)
+                {
+                    return new ResponseDto { Success = false, Message = "First day start time is required." };
+                }
+
+                if (!eventManagement.PostEventStartEndTimeDayWise.Last().EventEndTime.HasValue)
+                {
+                    return new ResponseDto { Success = false, Message = "Last day end time is required." };
+                }
+
+                DateTime localEventStartDate = eventManagement.EventStartDateUtc;
+
+                DateTime startUtc = Helper.ConvertToUtcBasedOnTimezone(
+                    localEventStartDate,
+                    eventManagement.PostEventStartEndTimeDayWise.First().EventStartTime,
+                    timeZoneId,
+                    out string startError
+                );
+                if (!string.IsNullOrEmpty(startError))
+                {
+                    return new ResponseDto { Success = false, Message = startError };
+                }
+
+                DateTime endUtc = Helper.ConvertToUtcBasedOnTimezone(
+                    eventManagement.EventEndDateUtc,
+                    eventManagement.PostEventStartEndTimeDayWise.Last().EventEndTime,
+                    timeZoneId,
+                    out string endError
+                );
+                if (!string.IsNullOrEmpty(endError))
+                {
+                    return new ResponseDto { Success = false, Message = endError };
+                }
+
+                eventManagement.EventStartDateUtc = Helper.NormalizeDateTime(startUtc);
+                eventManagement.EventEndDateUtc = Helper.NormalizeDateTime(endUtc);
+
+                // --- Convert per-day EventStartTime / EventEndTime ---
+                foreach (var day in eventManagement.PostEventStartEndTimeDayWise)
+                {
+                    // Start time
+                    if (day.EventStartTime.HasValue)
+                    {
+                        DateTime utcStart = Helper.ConvertToUtcBasedOnTimezone(
+                            localEventStartDate.AddDays(day.EventDay - 1),
+                            day.EventStartTime,
+                            timeZoneId,
+                            out string dayStartError
+                        );
+
+                        if (!string.IsNullOrEmpty(dayStartError))
+                        {
+                            return new ResponseDto { Success = false, Message = dayStartError };
+                        }
+
+                        day.EventStartTime = utcStart.TimeOfDay;
+                    }
+
+                    // End time
+                    if (day.EventEndTime.HasValue)
+                    {
+                        DateTime utcEnd = Helper.ConvertToUtcBasedOnTimezone(
+                            localEventStartDate.AddDays(day.EventDay - 1),
+                            day.EventEndTime,
+                            timeZoneId,
+                            out string dayEndError
+                        );
+
+                        if (!string.IsNullOrEmpty(dayEndError))
+                        {
+                            return new ResponseDto { Success = false, Message = dayEndError };
+                        }
+
+                        day.EventEndTime = utcEnd.TimeOfDay;
+                    }
+                }
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Event times converted to UTC successfully.",
+                    Data = eventManagement
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred: " + ex.Message
+                };
+            }
+        }
 
         public static void UpdateCollection<TItem, TKey>(
     ICollection<TItem> existingList,

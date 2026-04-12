@@ -48,45 +48,32 @@
         width: 100%;
     }
 
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center; /* Aligns the text in the middle of the cell */
-        }
-
-        table th {
-            background-color: #f4f4f4;
-        }
-
-        table tbody tr {
-            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
-        }
-
-            table tbody tr:hover {
-                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
-            }
-
-        table td button,
-        table td a {
-            display: inline-block; /* Makes the buttons appear side by side */
-            margin-right: 5px; /* Optional: Adds space between the buttons */
-        }
-
-        table td .button-container {
-            display: flex;
-            justify-content: center; /* Aligns buttons horizontally in the center */
-        }
-
-            table td .button-container a {
-                margin-right: 5px; /* Optional: Adds space between the buttons */
-            }
-
-        table thead th {
-            background-color: rgba(120, 130, 221, 1); /* Header background color */
-            color: white; /* Header text color */
-            text-align: center; /* Center-align header text */
-        }
+        #postEventTable {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    #postEventTable th,
+    #postEventTable td {
+        border: 1px solid #ddd !important;
+        padding: 8px;
+        text-align: center;
+    }
+    
+    #postEventTable thead th {
+        background-color: rgba(120, 130, 221, 1) !important;
+        color: white;
+        text-align: center;
+    }
+    
+    #postEventTable tbody tr {
+        background-color: rgba(240, 245, 255, 1);
+    }
+    
+    #postEventTable tbody tr:hover {
+        background-color: rgba(245, 250, 255, 1);
+    }
 
     .read-only-style {
         background-color: #f8f9fa; /* Light gray background */
@@ -95,28 +82,60 @@
     }
 </style>
 
-<h2 id="page-heading">Post Event Management</h2>
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
 
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+<h2 id="page-heading">Post Event Management</h2>
+<form asp-action="PostEventManagement" method="post">
 <div class="container-fluid">
 
     <!-- Top Right Dropdown -->
-    <div class="d-flex justify-content-end mb-3">
+    <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="EventManagementId" />
+    <div class="d-flex justify-content-end align-items-center mb-3">
+        <label class="me-2 mb-0">Post Event Status :</label>
         <select class="form-control w-auto" asp-for="PostEventStatus">
-            <option value="Post event processing">Post Event Complete</option>
-            @* <option value="Complete">Complete</option> *@
+            <option value="Post event processing">Post event processing</option>
+            <option value="Complete">Complete</option>
         </select>
     </div>
 
     <!-- Tabs -->
-    <ul class="nav nav-tabs" id="postEventTabs">
+   <ul class="nav nav-tabs" id="postEventTabs">
         <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab1">Event Specific Details</a>
+            <a class="nav-link active"
+               data-bs-toggle="tab"
+               href="#tab1"
+               style="color:black; font-weight:bold;">
+               Event Specific Details
+            </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab2">Event Service Details</a>
+            <a class="nav-link"
+               data-bs-toggle="tab"
+               href="#tab2"
+               style="color:black; font-weight:bold;">
+               Event Service Details
+            </a>
         </li>
     </ul>
-
     <div class="tab-content mt-3">
 
         <!-- ================= TAB 1 ================= -->
@@ -126,42 +145,86 @@
 
             <div class="row">
 
-                <!-- LEFT COLUMN -->
-                <div class="col-md-6">
+        <!-- LEFT COLUMN -->
+        <div class="col-md-6">
 
-                    <p><strong>Sub Event ID Number :</strong> @Model.SubEventID</p>
-                    <p><strong>Contract Name :</strong> @Model.ContractDetails?.ContractName</p>
-                    <p><strong>Contract Id :</strong> @Model.ContractDetails?.ContractID</p>
-                    <p><strong>Dawson Service Branch :</strong> @Model.ContractDetails?.ContractServiceBranch</p>
-                    <p><strong>Contract Client :</strong> @Model.ContractDetails?.ContractClient</p>
-                    <p><strong>Site ID :</strong> @Model.ContractDetails?.SiteId</p>
-                    <p><strong>Event Address 1 :</strong> @Model.EventAddress1</p>
-                    <p><strong>Event Address 2 :</strong> @Model.EventAddress2</p>
-                    <p><strong>Event Zip Code :</strong> @Model.EventZipCode</p>
-                    <p><strong>MOB Date :</strong> @Model.MOBDate?.ToString("MM-dd-yyyy")</p>
-                    <p><strong>Regarding Site Notes :</strong> @Model.RegardingSites</p>
+            <p><strong>Sub Event ID Number :</strong> @Model.SubEventID</p>
+            <input type="hidden" asp-for="SubEventID" />
 
-                </div>
+            <p><strong>Contract Name :</strong> @Model.ContractDetails?.ContractName</p>
+            <input type="hidden" asp-for="ContractDetails.ContractName" />
 
-                <!-- RIGHT COLUMN -->
-                <div class="col-md-6">
+            <p><strong>Contract Id :</strong> @Model.ContractDetails?.ContractID</p>
+            <input type="hidden" asp-for="ContractDetails.ContractID" />
 
-                    <p><strong>Contract Agency :</strong> @Model.ContractDetails?.ContractAgency</p>
-                    <p><strong>Contract Component :</strong> @Model.ContractDetails?.ContractComponent</p>
-                    <p><strong>Client Name :</strong> @Model.ContractDetails?.ClientName</p>
-                    <p><strong>Contract Type :</strong> @Model.ContractDetails?.ContractType</p>
-                    <p><strong>Contract End :</strong> @Model.ContractDetails?.ContractEndDate.ToString("MM-dd-yyyy")</p>
-                    <p><strong>Contract Start :</strong> @Model.ContractDetails?.ContractStartDate.ToString("MM-dd-yyyy")</p>
-                    <p><strong>Dawson Project Manager :</strong> @Model.ContractDetails?.DawsonProjectManagerFirstName</p>
-                    <p><strong>Event City :</strong> @Model.EventCity</p>
-                    <p><strong>Event State :</strong> @Model.EventState</p>
-                    <p><strong>Event Timezone :</strong> @Model.Timezone</p>
-                    <p><strong>Taskforce :</strong> @Model.TaskForce</p>
-                    <p><strong>Event Help Line :</strong> @Model.EventHelpLine</p>
+            <p><strong>Dawson Service Branch :</strong> @Model.ContractDetails?.ContractServiceBranch</p>
+            <input type="hidden" asp-for="ContractDetails.ContractServiceBranch" />
 
-                </div>
+            <p><strong>Contract Client :</strong> @Model.ContractDetails?.ContractClient</p>
+            <input type="hidden" asp-for="ContractDetails.ContractClient" />
 
-            </div>
+            <p><strong>Site ID :</strong> @Model.ContractDetails?.SiteId</p>
+            <input type="hidden" asp-for="ContractDetails.SiteId" />
+
+            <p><strong>Event Address 1 :</strong> @Model.EventAddress1</p>
+            <input type="hidden" asp-for="EventAddress1" />
+
+            <p><strong>Event Address 2 :</strong> @Model.EventAddress2</p>
+            <input type="hidden" asp-for="EventAddress2" />
+
+            <p><strong>Event Zip Code :</strong> @Model.EventZipCode</p>
+            <input type="hidden" asp-for="EventZipCode" />
+
+            <p><strong>MOB Date :</strong> @Model.MOBDate?.ToString("MM-dd-yyyy")</p>
+            <input type="hidden" asp-for="MOBDate" />
+
+            <p><strong>Regarding Site Notes :</strong> @Model.RegardingSites</p>
+            <input type="hidden" asp-for="RegardingSites" />
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-md-6">
+
+            <p><strong>Contract Agency :</strong> @Model.ContractDetails?.ContractAgency</p>
+            <input type="hidden" asp-for="ContractDetails.ContractAgency" />
+
+            <p><strong>Contract Component :</strong> @Model.ContractDetails?.ContractComponent</p>
+            <input type="hidden" asp-for="ContractDetails.ContractComponent" />
+
+            <p><strong>Client Name :</strong> @Model.ContractDetails?.ClientName</p>
+            <input type="hidden" asp-for="ContractDetails.ClientName" />
+
+            <p><strong>Contract Type :</strong> @Model.ContractDetails?.ContractType</p>
+            <input type="hidden" asp-for="ContractDetails.ContractType" />
+
+            <p><strong>Contract End :</strong> @Model.ContractDetails?.ContractEndDate.ToString("MM-dd-yyyy")</p>
+            <input type="hidden" asp-for="ContractDetails.ContractEndDate" />
+
+            <p><strong>Contract Start :</strong> @Model.ContractDetails?.ContractStartDate.ToString("MM-dd-yyyy")</p>
+            <input type="hidden" asp-for="ContractDetails.ContractStartDate" />
+
+            <p><strong>Dawson Project Manager :</strong> @Model.ContractDetails?.DawsonProjectManagerFirstName</p>
+            <input type="hidden" asp-for="ContractDetails.DawsonProjectManagerFirstName" />
+
+            <p><strong>Event City :</strong> @Model.EventCity</p>
+            <input type="hidden" asp-for="EventCity" />
+
+            <p><strong>Event State :</strong> @Model.EventState</p>
+            <input type="hidden" asp-for="EventState" />
+
+            <p><strong>Event Timezone :</strong> @Model.Timezone</p>
+            <input type="hidden" asp-for="Timezone" />
+
+            <p><strong>Taskforce :</strong> @Model.TaskForce</p>
+            <input type="hidden" asp-for="TaskForce" />
+
+            <p><strong>Event Help Line :</strong> @Model.EventHelpLine</p>
+            <input type="hidden" asp-for="EventHelpLine" />
+
+        </div>
+
+    </div>
 
             <hr />
 
@@ -173,12 +236,12 @@
 
                     <div class="form-group mb-3">
                         <label>Number of Service Member Completed</label>
-                        <input type="text" class="form-control" asp-for="TotalServiceMember" />
+                        <input type="text" class="form-control" asp-for="TotalServiceMember"/>
                     </div>
 
                     <div class="form-group mb-3">
                         <label>Actual Event Start Date</label>
-                        <input type="text" id="EventStartDateUtc" class="form-control" asp-for="EventStartDateUtc" />
+                        <input type="text" id="EventStartDateUtc" class="form-control" placeholder="MM/DD/YYYY" asp-for="EventStartDateUtc" value="@Model.EventStartDateUtc.ToString("yyyy-MM-dd")"/>
                     </div>
                 </div>
 
@@ -193,7 +256,7 @@
 
                     <div class="form-group mb-3">
                         <label>Actual Event End Date</label>
-                        <input type="text" id="EventEndDateUtc" class="form-control" asp-for="EventEndDateUtc" />
+                            <input type="text" id="EventEndDateUtc" class="form-control" placeholder="MM/DD/YYYY" asp-for="EventEndDateUtc" value="@Model.EventEndDateUtc.ToString("yyyy-MM-dd")" />
                     </div>
 
                 </div>
@@ -202,7 +265,7 @@
 
             <!-- ================= DAY WISE TIME SECTION ================= -->
 
-            <div class="mt-4">
+            <div id="dayWiseTimeContainer" class="mt-4">
 
                 @if (Model.PostEventStartEndTimeDayWiseDto != null && Model.PostEventStartEndTimeDayWiseDto.Any())
                 {
@@ -215,6 +278,8 @@
                                 <label>
                                     Actual Day @Model.PostEventStartEndTimeDayWiseDto[i].EventDay Start Time
                                 </label>
+
+                                <input type="hidden" name="PostEventStartEndTimeDayWiseDto[@i].Id" value="@Model.PostEventStartEndTimeDayWiseDto[i].Id" />
 
                                 <input type="text"
                                        class="form-control timepicker"
@@ -270,7 +335,7 @@
                 <h5 class="mb-3">Event Services</h5>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table id="postEventTable" class="table table-bordered">
 
                         <thead class="table-light">
                             <tr>
@@ -290,6 +355,10 @@
                                         <!-- Event Service (Label) -->
                                         <td>
                                             @Model.EventServices[i].EventService
+
+                                            <input type="hidden"
+                                                   name="EventServices[@i].EventServiceDetailId"
+                                                   value="@Model.EventServices[i].EventServiceDetailId" />
 
                                             <input type="hidden"
                                                    name="EventServices[@i].Id"
@@ -312,9 +381,9 @@
                                         <!-- Post Event Numbers -->
                                     <td class="text-center">
                                             <input type="text"
-                                               class="form-control text-center"
-                                                   name="EventServices[@i].PostEventNumbers"
-                                                   value="@Model.EventServices[i].PostEventNumbers" />
+                                            class="form-control text-center post-event-number"
+                                            name="EventServices[@i].PostEventNumbers"
+                                            value="@Model.EventServices[i].PostEventNumbers" />
                                         </td>
 
                                         <!-- Completed Checkbox -->
@@ -347,79 +416,241 @@
 
             </div>
     </div>
-</div>
 
+    <div class="d-flex justify-content-end mt-4">
+                    <button id="submitBtn" type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_Save") ? "" : "disabled")>
+                    <i class="bi bi-check-circle"></i> Save
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+
+            </div>
+</div>
+</form>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
         // Initialize Flatpickr
-        flatpickr("#EventStartDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
-        flatpickr("#EventEndDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+        const startPicker = flatpickr("#EventStartDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true, onChange: generateDayWiseFields });
+        const endPicker = flatpickr("#EventEndDateUtc", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true, onChange: generateDayWiseFields });
         flatpickr(".timepicker", { enableTime: true, noCalendar: true, time_24hr: true, dateFormat: "H:i" });
 
         function checkTabCompletion() {
+
             let tab1Complete = true;
             let tab2Complete = true;
 
-            // -------- TAB 1 --------
-            $('#tab1 input, #tab1 textarea').each(function() {
+            // ---------------- TAB 1 ----------------
+            $('#tab1 input[type="text"], #tab1 textarea').each(function () {
+
                 const $this = $(this);
 
-                // Skip hidden fields created by Flatpickr
-                if ($this.is(':hidden')) return;
+                // Skip spacer (visibility:hidden container)
+                if ($this.closest('[style*="visibility:hidden"]').length) return;
 
-                // Consider trimmed value
+                // Handle Flatpickr visible inputs
+                if ($this.hasClass('flatpickr-input')) {
+                    if ($this.val().trim() === "") {
+                        tab1Complete = false;
+                        return false;
+                    } else {
+                        $this.css('border', '');
+                    }
+                    return;
+                }
+
+                // Normal text inputs & textarea
                 if ($this.val().trim() === "") {
                     tab1Complete = false;
                     return false;
+                } else {
+                    $this.css('border', '');
                 }
             });
 
-            // -------- TAB 2 --------
-            $('#tab2 input[type="text"]').each(function() {
+            // Extra safety for Flatpickr actual values
+            function isFlatpickrFilled(selector) {
+                const fp = document.querySelector(selector)?._flatpickr;
+                return fp && fp.selectedDates.length > 0;
+            }
+
+            if (!isFlatpickrFilled('#EventStartDateUtc') ||
+                !isFlatpickrFilled('#EventEndDateUtc')) {
+
+                tab1Complete = false;
+            }
+
+            // ---------------- TAB 2 ----------------
+
+            // Post Event Numbers (text inputs only)
+            $('#tab2 input[name*="PostEventNumbers"]').each(function () {
+
                 const $this = $(this);
+
                 if ($this.val().trim() === "") {
                     tab2Complete = false;
                     return false;
+                } else {
+                    $this.css('border', '');
                 }
             });
 
-            $('#tab2 input[type="checkbox"]').each(function() {
-                const $this = $(this);
-                if (!$this.is(':hidden') && !$this.is(":checked")) {
+            // Each row must have checkbox checked
+            $('#tab2 tbody tr').each(function () {
+
+                const $checkbox = $(this).find('input[type="checkbox"]');
+
+                if ($checkbox.length && !$checkbox.is(':checked')) {
                     tab2Complete = false;
                     return false;
                 }
             });
 
-            // -------- Update tab colors --------
-            $('#postEventTabs a[href="#tab1"]').css('background-color', tab1Complete ? '#28a745' : '');
-            $('#postEventTabs a[href="#tab2"]').css('background-color', tab2Complete ? '#28a745' : '');
+            $('#postEventTabs a[href="#tab1"]')
+                .css('background-color', tab1Complete ? '#28a745' : '');
 
-            // -------- Update dropdown --------
-            const statusDropdown = $('select[asp-for="PostEventStatus"]');
-            const completeOptionExists = statusDropdown.find('option[value="Complete"]').length > 0;
+            $('#postEventTabs a[href="#tab2"]')
+                .css('background-color', tab2Complete ? '#28a745' : '');
+
+            // ---------------- UPDATE DROPDOWN ----------------
+            const statusDropdown = $('#PostEventStatus');
 
             if (tab1Complete && tab2Complete) {
-                if (!completeOptionExists) {
-                    statusDropdown.append('<option value="Complete">Complete</option>');
-                }
+            
+                // enable option
+                statusDropdown.find('option[value="Complete"]').prop('disabled', false);
+            
+                // optional: auto-set
+                statusDropdown.val('Complete');
+            
             } else {
-                if (completeOptionExists) {
-                    statusDropdown.find('option[value="Complete"]').remove();
-                }
+            
+                // disable option
+                statusDropdown.find('option[value="Complete"]').prop('disabled', true);
+            debugger;
+                statusDropdown.val('Post event processing');
+                @* if (statusDropdown.val() === 'Complete') {
+                    
+                } *@
             }
         }
 
-        // -------- Bind events --------
-        $('#tab1 input, #tab1 textarea, #tab2 input[type="text"], #tab2 input[type="checkbox"]')
-            .on('input change propertychange', checkTabCompletion);
+       $('#tab1 input[type="text"], #tab1 textarea, #tab2 input').on('input change', checkTabCompletion);
 
         // -------- Force initial evaluation after everything is rendered --------
         setTimeout(function() {
             checkTabCompletion(); // ensures pre-filled textareas and Flatpickr altInputs are detected
         }, 200);
 
+
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            window.location.href = url;
+        });
+
+        function generateDayWiseFields() {
+            const startDate = startPicker.selectedDates[0];
+            const endDate = endPicker.selectedDates[0];
+
+            if (!startDate || !endDate) return;
+
+            const container = $('#dayWiseTimeContainer');
+            container.empty();
+
+            // Calculate days
+            const diffTime = endDate - startDate;
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            // Max 14 days validation
+            if (days > 14) {
+                alert('Maximum allowed duration is 14 days');
+                return;
+            }
+
+            for (let i = 0; i < days; i++) {
+
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+
+                const formattedDay = currentDate.toLocaleDateString();
+
+                const html = `
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label>Day ${i + 1} Start Time</label>
+
+                            <input type="text"
+                                class="form-control timepicker"
+                                name="PostEventStartEndTimeDayWiseDto[${i}].EventStartTime" />
+
+                            <input type="hidden"
+                                name="PostEventStartEndTimeDayWiseDto[${i}].EventDay"
+                                value="${i + 1}" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Day ${i + 1} End Time</label>
+
+                            <input type="text"
+                                class="form-control timepicker"
+                                name="PostEventStartEndTimeDayWiseDto[${i}].EventEndTime" />
+                        </div>
+
+                    </div>
+                `;
+
+                container.append(html);
+            }
+
+            // Re-initialize timepickers
+            flatpickr(".timepicker", {
+                enableTime: true,
+                noCalendar: true,
+                time_24hr: true,
+                dateFormat: "H:i"
+            });
+        }
+
+        function restrictNumberInput(element, maxDigits, maxValue) {
+
+            let value = $(element).val();
+        
+            // Remove non-digits
+            value = value.replace(/\D/g, '');
+        
+            // Limit digits
+            if (value.length > maxDigits) {
+                value = value.slice(0, maxDigits);
+            }
+        
+            // Enforce max value
+            if (value && parseInt(value) > maxValue) {
+                value = maxValue.toString();
+            }
+        
+            $(element).val(value);
+        }
+
+        $('#TotalServiceMember').on('input', function () {
+            restrictNumberInput(this, 5, 99999);
+        });
+        
+        $(document).on('input', '.post-event-number', function () {
+            restrictNumberInput(this, 5, 99999);
+        });
     });
 </script>
 

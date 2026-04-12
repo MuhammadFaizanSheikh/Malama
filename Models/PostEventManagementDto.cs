@@ -9,24 +9,6 @@
     public class PostEventManagementViewModel
     {
         public List<PostEventManagementPreview>? EventManagements { get; set; }
-        //public EventManagement SingleEventManagement { get; set; }
-        //public string SubmissionToken { get; set; }
-    }
-
-    public class PostCombinedEventManagementAndContractDetails
-    {
-        public EventManagement EventManagement { get; set; }
-        public ContractDetails ContractDetails { get; set; }
-        public EventStaff EventStaffForHIVDropOff { get; set; }
-        public List<EventStaffDetailAndAdditionalRoles> EventStaffDetailAndAdditionalRoleslist { get; set; }
-        public string EventRuntimeStatus { get; set; }
-    }
-
-    public class PostEventStaffDetailAndAdditionalRoles
-    {
-        public CombinedEventStaffRolesNameAndLicense EventStaffRolesNameAndLicense { get; set; }
-        public EventStaffDetail EventStaffDetail { get; set; }
-
     }
 
     public class PostEventManagementPreview
@@ -55,26 +37,31 @@
         public DateTime EventStartDateUtc { get; set; }
         public DateTime EventEndDateUtc { get; set; }
 
-        public string PostEventNotes { get; set; }
+        public string? PostEventNotes { get; set; }
 
         public string PostEventStatus { get; set; }
         public string? SubEventID { get; set; }
-        public string EventAddress1 { get; set; }
+        public string? EventAddress1 { get; set; }
         public string? EventAddress2 { get; set; }
-        public string EventState { get; set; }
-        public string EventCity { get; set; }
-        public string EventZipCode { get; set; }
+        public string? EventState { get; set; }
+        public string? EventCity { get; set; }
+        public string? EventZipCode { get; set; }
         public DateTime? MOBDate { get; set; }
         public string? RegardingSites { get; set; }
-        public string Timezone { get; set; }
-        public string EventHelpLine { get; set; }
-        public string TaskForce { get; set; }
+        public string? Timezone { get; set; }
+        public string? EventHelpLine { get; set; }
+        public string? TaskForce { get; set; }
+
+        [Range(0, 99999, ErrorMessage = "Value must be between 0 and 99999")]
         public long TotalServiceMember { get; set; }
 
-        public ContractDetails ContractDetails { get; set; }
+        [ValidateNever]
+        public ContractDetails? ContractDetails { get; set; }
         public List<PostEventStartEndTimeDayWiseDto> PostEventStartEndTimeDayWiseDto { get; set; }
 
         public List<PostEventServiceDetailDto> EventServices { get; set; }
+
+        public string SubmissionToken { get; set; }
     }
 
     public class PostEventStartEndTimeDayWiseDto
@@ -92,6 +79,7 @@
     public class PostEventServiceDetailDto
     {
         public long Id { get; set; }
+        public long EventServiceDetailId { get; set; }
 
         public string EventService { get; set; }
 

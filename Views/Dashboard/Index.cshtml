@@ -73,15 +73,17 @@
     {
         <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
             <img src="/images/Event Management.png" alt="Event Management" />
-            <span>Event Management</span>
+            <span>Pre Event Management</span>
         </a>
     }
 
-    <a asp-controller="PostEventManagement" asp-action="Index" class="icon-box">
-        <img src="/images/Post Event Management.jpg" alt="Event Management" />
-        <span>Post Event Management</span>
-    </a>
-
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_View"))
+    {
+        <a asp-controller="PostEventManagement" asp-action="Index" class="icon-box">
+            <img src="/images/Post Event Management.jpg" alt="Post Event Management" />
+            <span>Post Event Management</span>
+        </a>
+    }
 
     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventStaff_View"))
     {

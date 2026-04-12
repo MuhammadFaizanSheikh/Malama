@@ -127,7 +127,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // 1️⃣ Get all EventManagement records with Taskforces (no tracking)
                 var eventData = await _unitOfWork.EventManagement
                     .GetWithIncludeNoTracking(
-                        x => x.EventStatus == AppConstants.EventStatus.InProgressCompleted,
+                        x => x.EventStatus == AppConstants.EventStatus.InProgressComplete,
                         x => x.EventManagementTaskforcesList,
                         x => x.PostEventManagement // Include child table
                     )
@@ -154,7 +154,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 EventState = e.EventState,
                                 EventCity = e.EventCity,
                                 EventZipCode = e.EventZipCode,
-                                StatusDescription = e.StatusDescription,
+                                StatusDescription = e.PostEventManagement == null
+                                ? "Pending"
+                                : string.Equals(e.PostEventManagement.PostEventStatus, "Complete", StringComparison.OrdinalIgnoreCase)
+                                    ? "Completed"
+                                    : "Pending",
                                 EventStartDateUtc = e.EventStartDateUtc,
                                 EventEndDateUtc = e.EventEndDateUtc,
 
@@ -192,82 +196,77 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<PostEventManagementDto> GetForPostEventManagement(long eventManagementId)
         {
-            var em = await _unitOfWork.EventManagement
-            .GetWithIncludeNoTracking(
-                x => x.Id == eventManagementId,
-                x => x.ContractDetails,
-                x => x.EventManagementTaskforcesList,
-                x => x.EventStartEndTimeDayWiseList,
-                x => x.EventServiceDetailList   // 👈 ADD THIS
-            )
-            .FirstOrDefaultAsync();
+            const string methodName = nameof(GetForPostEventManagement);
 
-            if (em == null)
-                throw new Exception("EventManagement record not found.");
+            _logger.LogInformation("{ClassName}, {MethodName}, Called. EventManagementId={Id}",
+                CLASSNAME, methodName, eventManagementId);
 
-            return new PostEventManagementDto
+            try
             {
-                Id = 0, // new PostEventManagement record
-                EventManagementId = em.Id,
-                EventStartDateUtc = em.EventStartDateUtc,
-                EventEndDateUtc = em.EventEndDateUtc,
-                PostEventNotes = null, // no PostEvent data yet
+                var em = await _unitOfWork.EventManagement
+                    .GetWithIncludeNoTracking(
+                        x => x.Id == eventManagementId,
+                        x => x.ContractDetails,
+                        x => x.EventManagementTaskforcesList,
+                        x => x.EventStartEndTimeDayWiseList,
+                        x => x.EventServiceDetailList.OrderBy(e => e.Id)
+                    )
+                    .FirstOrDefaultAsync();
 
-                PostEventStartEndTimeDayWiseDto = em.EventStartEndTimeDayWiseList != null
-                ? em.EventStartEndTimeDayWiseList.Select(x => new PostEventStartEndTimeDayWiseDto
+                if (em == null)
                 {
-                    Id = x.Id,
-                    EventDay = x.EventDay,
-                    EventStartTime = x.EventStartTime,
-                    EventEndTime = x.EventEndTime,
-                    ServiceMemberPercentPerDay = x.ServiceMemberPercentPerDay
-                }).ToList()
-                : new List<PostEventStartEndTimeDayWiseDto>(),
-                EventServices = em.EventServiceDetailList != null
-                ? em.EventServiceDetailList
-                    .Where(x => x.IsSelected)
-                    .Select(x => new PostEventServiceDetailDto
-                    {
-                        EventService = x.EventService,
-                        FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
-                    }).ToList()
-                : new List<PostEventServiceDetailDto>(),
+                    _logger.LogWarning("{ClassName}, {MethodName}, Event not found. Id={Id}",
+                        CLASSNAME, methodName, eventManagementId);
 
-                ContractDetails = em.ContractDetails == null
-                    ? null
-                    : new ContractDetails
-                    {
-                        Id = em.ContractDetails.Id,
-                        ContractID = em.ContractDetails.ContractID,
-                        ContractName = em.ContractDetails.ContractName,
-                        ContractClient = em.ContractDetails.ContractClient,
-                        SiteId = em.ContractDetails.SiteId,
-                        ContractAgency = em.ContractDetails.ContractAgency,
-                        ContractComponent = em.ContractDetails.ContractComponent,
-                        ClientName = em.ContractDetails.ClientName,
-                        ContractType = em.ContractDetails.ContractType,
-                        ContractStartDate = em.ContractDetails.ContractStartDate,
-                        ContractEndDate = em.ContractDetails.ContractEndDate,
-                        DawsonProjectManagerFirstName = em.ContractDetails.DawsonProjectManagerFirstName,
-                        ContractServiceBranch = em.ContractDetails.ContractServiceBranch
-                    },
+                    throw new Exception("Event record not found.");
+                }
 
-                // EventManagement fields
-                SubEventID = em.SubEventID,
-                EventAddress1 = em.EventAddress1,
-                EventAddress2 = em.EventAddress2,
-                EventState = em.EventState,
-                EventCity = em.EventCity,
-                EventZipCode = em.EventZipCode,
-                MOBDate = em.MOBDate,
-                RegardingSites = em.RegardingSites,
-                Timezone = em.Timezone,
-                EventHelpLine = em.EventHelpLine,
-                TotalServiceMember = em.TotalRequestedServiceMembers,
-                TaskForce = em.EventManagementTaskforcesList != null
-                    ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
-                    : null
-            };
+                Helper.ConvertEventToLocalTime(em, em.Timezone);
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Data prepared successfully. Id={Id}",
+                    CLASSNAME, methodName, eventManagementId);
+
+                return new PostEventManagementDto
+                {
+                    Id = 0,
+                    EventManagementId = em.Id,
+                    EventStartDateUtc = em.EventStartDateUtc,
+                    EventEndDateUtc = em.EventEndDateUtc,
+                    TotalServiceMember = em.TotalRequestedServiceMembers,
+                    Timezone = em.Timezone,
+
+                    PostEventStartEndTimeDayWiseDto = em.EventStartEndTimeDayWiseList?
+                        .Select(x => new PostEventStartEndTimeDayWiseDto
+                        {
+                            Id = x.Id,
+                            EventDay = x.EventDay,
+                            EventStartTime = x.EventStartTime,
+                            EventEndTime = x.EventEndTime,
+                            ServiceMemberPercentPerDay = x.ServiceMemberPercentPerDay
+                        }).ToList(),
+
+                    EventServices = em.EventServiceDetailList?
+                        .Where(x => x.IsSelected)
+                        .Select(x => new PostEventServiceDetailDto
+                        {
+                            EventServiceDetailId = x.Id,
+                            EventService = x.EventService,
+                            FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
+                        }).ToList(),
+
+                    TaskForce = em.EventManagementTaskforcesList != null
+                        ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                        : null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred. EventManagementId={Id}",
+                    CLASSNAME, methodName, eventManagementId);
+
+                throw;
+            }
         }
 
 
@@ -327,8 +326,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return tokenResult;
                 }
 
-
-                responseDto = ConvertEventTimesToUtc(eventManagement, loggedinUserName);
+                responseDto = Helper.ConvertEventTimesToUtc(eventManagement, eventManagement.Timezone);
 
                 if (!responseDto.Success)
                 {
@@ -400,8 +398,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     };
                 }
 
-                // 🔹 2. Business validations
-                responseDto = ConvertEventTimesToUtc(updatedModel, loggedinUserName);
+                responseDto = Helper.ConvertEventTimesToUtc(updatedModel, updatedModel.Timezone);
+
                 if (!responseDto.Success) return responseDto;
 
                 if (!ValidateEventStatus(updatedModel, loggedinUserName, true, out string statusError))
@@ -628,7 +626,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
 
                     eventStatus = GetEventStatus(firstEventManagement);//this method will be called before ConvertEventToLocalTime because date is being used before from TUC to localtime convertion
-                    ConvertEventToLocalTime(firstEventManagement);
+                    Helper.ConvertEventToLocalTime(firstEventManagement, firstEventManagement.Timezone);
 
                     var contractDetails = await _unitOfWork.ContractDetails.GetByIdAsync(firstEventManagement.ContractId);
 
@@ -974,8 +972,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         allowedStatuses.AddRange(new[]
                         {
-                    "Post Event Processing",
-                    "Complete"
+                    "In Progress Complete"
                 });
                     }
                 }
@@ -1005,233 +1002,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public ResponseDto ConvertEventTimesToUtc(EventManagement eventManagement, string loggedinUserName)
-        {
-            const string methodName = nameof(ConvertEventTimesToUtc);
-            var response = new ResponseDto();
-
-            try
-            {
-                if (eventManagement == null)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Event data is null. User: {UserName}",
-                        CLASSNAME, methodName, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = "Event data is required." };
-                }
-
-                if (string.IsNullOrWhiteSpace(eventManagement.Timezone))
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Event timezone is null or empty. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = "Event timezone is required." };
-                }
-
-                if (!eventManagement.EventStartEndTimeDayWiseList.Any())
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, EventStartEndTimeDayWiseList is empty. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = "Event must have at least one day with start/end time." };
-                }
-
-                // Validate first/last day times
-                if (!eventManagement.EventStartEndTimeDayWiseList.First().EventStartTime.HasValue)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, First day start time is null. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = "First day start time is required." };
-                }
-
-                if (!eventManagement.EventStartEndTimeDayWiseList.Last().EventEndTime.HasValue)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Last day end time is null. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = "Last day end time is required." };
-                }
-
-                string timeZoneId = eventManagement.Timezone;
-                DateTime localEventStartDate = eventManagement.EventStartDateUtc;
-
-                // --- Convert main EventStartDate ---
-                DateTime startUtc = Helper.ConvertToUtcBasedOnTimezone(
-                    localEventStartDate,
-                    eventManagement.EventStartEndTimeDayWiseList.First().EventStartTime,
-                    timeZoneId,
-                    out string startError
-                );
-                if (!string.IsNullOrEmpty(startError))
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Error converting EventStartDate to UTC: {ErrorMessage}. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, startError, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = startError };
-                }
-
-                // --- Convert main EventEndDate ---
-                DateTime endUtc = Helper.ConvertToUtcBasedOnTimezone(
-                    eventManagement.EventEndDateUtc,
-                    eventManagement.EventStartEndTimeDayWiseList.Last().EventEndTime,
-                    timeZoneId,
-                    out string endError
-                );
-                if (!string.IsNullOrEmpty(endError))
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Error converting EventEndDate to UTC: {ErrorMessage}. EventID: {EventID}, User: {UserName}",
-                        CLASSNAME, methodName, endError, eventManagement.EventID, loggedinUserName);
-                    return new ResponseDto { Success = false, Message = endError };
-                }
-
-                eventManagement.EventStartDateUtc = Helper.NormalizeDateTime(startUtc);
-                eventManagement.EventEndDateUtc = Helper.NormalizeDateTime(endUtc);
-
-                // --- Convert per-day EventStartTime / EventEndTime ---
-                foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
-                {
-                    // Start time
-                    if (day.EventStartTime.HasValue)
-                    {
-                        DateTime utcStart = Helper.ConvertToUtcBasedOnTimezone(
-                            localEventStartDate.AddDays(day.EventDay - 1),
-                            day.EventStartTime,
-                            timeZoneId,
-                            out string dayStartError
-                        );
-
-                        if (!string.IsNullOrEmpty(dayStartError))
-                        {
-                            _logger.LogError("{ClassName}, {MethodName}, Error converting Day {EventDay} StartTime: {ErrorMessage}. EventID: {EventID}, User: {UserName}",
-                                CLASSNAME, methodName, day.EventDay, dayStartError, eventManagement.EventID, loggedinUserName);
-                            return new ResponseDto { Success = false, Message = dayStartError };
-                        }
-
-                        day.EventStartTime = utcStart.TimeOfDay;
-                        _logger.LogInformation("{ClassName}, {MethodName}, Day {EventDay} StartTime converted to UTC successfully. EventID: {EventID}, User: {UserName}",
-                            CLASSNAME, methodName, day.EventDay, eventManagement.EventID, loggedinUserName);
-                    }
-
-                    // End time
-                    if (day.EventEndTime.HasValue)
-                    {
-                        DateTime utcEnd = Helper.ConvertToUtcBasedOnTimezone(
-                            localEventStartDate.AddDays(day.EventDay - 1),
-                            day.EventEndTime,
-                            timeZoneId,
-                            out string dayEndError
-                        );
-
-                        if (!string.IsNullOrEmpty(dayEndError))
-                        {
-                            _logger.LogError("{ClassName}, {MethodName}, Error converting Day {EventDay} EndTime: {ErrorMessage}. EventID: {EventID}, User: {UserName}",
-                                CLASSNAME, methodName, day.EventDay, dayEndError, eventManagement.EventID, loggedinUserName);
-                            return new ResponseDto { Success = false, Message = dayEndError };
-                        }
-
-                        day.EventEndTime = utcEnd.TimeOfDay;
-                        _logger.LogInformation("{ClassName}, {MethodName}, Day {EventDay} EndTime converted to UTC successfully. EventID: {EventID}, User: {UserName}",
-                            CLASSNAME, methodName, day.EventDay, eventManagement.EventID, loggedinUserName);
-                    }
-                }
-
-                _logger.LogInformation("{ClassName}, {MethodName}, All event times converted to UTC successfully. EventID: {EventID}, User: {UserName}",
-                    CLASSNAME, methodName, eventManagement.EventID, loggedinUserName);
-
-                return new ResponseDto
-                {
-                    Success = true,
-                    Message = "Event times converted to UTC successfully.",
-                    Data = eventManagement
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception during UTC conversion. EventID: {EventID}, User: {UserName}",
-                    CLASSNAME, methodName, eventManagement?.EventID, loggedinUserName);
-
-                return new ResponseDto
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred: " + ex.Message
-                };
-            }
-        }
-
-        public void ConvertEventToLocalTime(EventManagement eventManagement)
-        {
-            const string methodName = nameof(ConvertEventToLocalTime);
-
-            try
-            {
-                if (eventManagement == null)
-                    throw new ArgumentNullException(nameof(eventManagement));
-
-                string timezoneId = eventManagement.Timezone;
-                if (string.IsNullOrWhiteSpace(timezoneId))
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, Timezone is null or empty. EventID: {EventID}",
-                        CLASSNAME, methodName, eventManagement?.EventID);
-                    throw new ArgumentException("Target timezone is required.", nameof(timezoneId));
-                }
-
-                _logger.LogInformation("{ClassName}, {MethodName}, Starting conversion to local time. EventID: {EventID}, Timezone: {Timezone}",
-                    CLASSNAME, methodName, eventManagement.EventID, timezoneId);
-
-                // Get TimeZoneInfo for conversion
-                TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
-
-                // Keep original UTC values from DB
-                DateTime eventStartUtc = eventManagement.EventStartDateUtc;
-                DateTime eventEndUtc = eventManagement.EventEndDateUtc;
-
-                // Convert main event dates from UTC → target timezone for UI
-                eventManagement.EventStartDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventStartUtc, tz);
-                eventManagement.EventEndDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventEndUtc, tz);
-
-                // Convert per-day EventStartTime / EventEndTime
-                foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
-                {
-                    if (day.EventStartTime.HasValue)
-                    {
-                        // Reconstruct full UTC datetime for this day
-                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventStartTime.Value;
-                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
-                        day.EventStartTime = dayLocal.TimeOfDay;
-
-                        _logger.LogInformation("{ClassName}, {MethodName}, EventDay: {EventDay}, StartLocal: {StartLocal}, DST: {IsDST}",
-                            CLASSNAME, methodName, day.EventDay, dayLocal, tz.IsDaylightSavingTime(dayLocal));
-                    }
-
-                    if (day.EventEndTime.HasValue)
-                    {
-                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventEndTime.Value;
-                        DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
-                        day.EventEndTime = dayLocal.TimeOfDay;
-
-                        _logger.LogInformation("{ClassName}, {MethodName}, EventDay: {EventDay}, EndLocal: {EndLocal}, DST: {IsDST}",
-                            CLASSNAME, methodName, day.EventDay, dayLocal, tz.IsDaylightSavingTime(dayLocal));
-                    }
-                }
-
-                _logger.LogInformation("{ClassName}, {MethodName}, Conversion to local time completed successfully. EventID: {EventID}, Timezone: {Timezone}",
-                    CLASSNAME, methodName, eventManagement.EventID, timezoneId);
-            }
-            catch (TimeZoneNotFoundException ex)
-            {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Invalid timezone. EventID: {EventID}, Timezone: {Timezone}",
-                    CLASSNAME, methodName, eventManagement?.EventID, eventManagement?.Timezone);
-                throw;
-            }
-            catch (InvalidTimeZoneException ex)
-            {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Corrupt timezone data. EventID: {EventID}, Timezone: {Timezone}",
-                    CLASSNAME, methodName, eventManagement?.EventID, eventManagement?.Timezone);
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception during conversion to local time. EventID: {EventID}",
-                    CLASSNAME, methodName, eventManagement?.EventID);
-                throw;
-            }
-        }
-
         public static string GetEventStatus(EventManagement eventManagement)
         {
             if (eventManagement == null)
@@ -1242,16 +1012,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // TimeZone for event
-                //TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(eventManagement.Timezone);
-
-                //// Current time in event's timezone
-                //DateTime currentEventTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-
                 DateTime currentEventTime = DateTime.UtcNow;
-                //// Event start and end in event's timezone
-                //DateTime eventStartLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventStartDateUtc, tz);
-                //DateTime eventEndLocal = TimeZoneInfo.ConvertTimeFromUtc(eventManagement.EventEndDateUtc, tz);
 
                 if (currentEventTime < eventManagement.EventStartDateUtc)
                     return "Event Not Started";

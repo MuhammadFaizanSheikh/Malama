@@ -105,6 +105,43 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.UpdatedOn, opt => opt.Ignore());
 
             CreateMap<ImmunizationVaccineLotEntry, ImmunizationVaccineLotEntry>();
+
+            //Post Event Management
+            CreateMap<PostEventManagementDto, PostEventManagement>()
+            .ForMember(dest => dest.PostEventStartEndTimeDayWise,
+                opt => opt.MapFrom(src => src.PostEventStartEndTimeDayWiseDto))
+
+            .ForMember(dest => dest.PostEventServiceDetails,
+                opt => opt.MapFrom(src => src.EventServices))
+
+            // Ignore navigation (handled by EF)
+            .ForMember(dest => dest.EventManagement, opt => opt.Ignore())
+
+            // Ignore properties not in entity
+            .ForSourceMember(src => src.PostEventStatus, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.SubEventID, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventAddress1, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventAddress2, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventState, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventCity, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventZipCode, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.MOBDate, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.RegardingSites, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.Timezone, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.EventHelpLine, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.TaskForce, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.TotalServiceMember, opt => opt.DoNotValidate())
+            .ForSourceMember(src => src.ContractDetails, opt => opt.DoNotValidate());
+
+            // Child 1 Mapping
+            CreateMap<PostEventStartEndTimeDayWiseDto, PostEventStartEndTimeDayWise>()
+                .ForMember(dest => dest.PostEventManagementId, opt => opt.Ignore()) // set by EF
+                .ForMember(dest => dest.PostEventManagement, opt => opt.Ignore());
+
+            // Child 2 Mapping
+            CreateMap<PostEventServiceDetailDto, PostEventServiceDetail>()
+                .ForMember(dest => dest.PostEventManagementId, opt => opt.Ignore())
+                .ForMember(dest => dest.EventServiceDetail, opt => opt.Ignore());
         }
     }
 }

@@ -97,7 +97,7 @@
 
 <h2 id="page-heading" >Post Event Management</h2>
 
-@* @if (TempData["ResponseMessage"] != null)
+@if (TempData["ResponseMessage"] != null)
 {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -114,7 +114,7 @@
             });
         });
     </script>
-} *@
+}
 
 
  
@@ -188,7 +188,7 @@
                             </div>
                         </td> *@
                         <td>
-                            <a asp-action="PostEventManagement" asp-route-eventManagementId="@contract.Id" asp-route-postEventManagementId="contract.PostEventManagementId" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            <a asp-action="PostEventManagement" asp-route-eventManagementId="@contract.Id" asp-route-postEventManagementId="@contract.PostEventManagementId" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
 
                     </tr>

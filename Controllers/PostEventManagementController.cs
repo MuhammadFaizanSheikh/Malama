@@ -25,7 +25,7 @@ namespace ExcelFilesCompiler.Controllers
             _userManager = userManager;
         }
 
-        //[RoleAttributeAuthorizeFromConfig("EventManagement_View")]
+        [RoleAttributeAuthorizeFromConfig("PostEventManagement_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -61,7 +61,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
 
-        //[RoleAttributeAuthorizeFromConfig("ImmunizationStation_View")]
+        [RoleAttributeAuthorizeFromConfig("PostEventManagement_View")]
         public async Task<IActionResult> PostEventManagement(long eventManagementId, long postEventManagementId)
         {
             const string methodName = "PostEventManagement";
@@ -72,28 +72,18 @@ namespace ExcelFilesCompiler.Controllers
                 PostEventManagementDto model;
                 long eventId = 0;
 
-                if (eventManagementId > 0)
-                {
-                    _logger.LogInformation(
+                _logger.LogInformation(
                         "{ClassName}, {MethodName}, Edit. eventManagementId={eventManagementId}, postEventManagementId={postEventManagementId}",
                         CLASSNAME, methodName, eventManagementId, postEventManagementId
                     );
 
-                    // Edit mode → get child record including parent
-                    model = await _eventManagementService.GetForPostEventManagement(eventManagementId);
-                    //model = result.Immunization;
-                    //eventId = result.EventId;
+                if (postEventManagementId > 0)
+                {
+                    model = await _postEventManagementService.GetById(postEventManagementId);
                 }
                 else
                 {
-                    //_logger.LogInformation(
-                    //    "{ClassName}, {MethodName}, Add mode. FileDataId={FileDataId}",
-                    //    CLASSNAME, methodName, serviceMembersChildId
-                    //);
-
-                    // Add mode → create empty child but attach parent
-                    model = await _postEventManagementService.GetById(postEventManagementId);
-
+                    model = await _eventManagementService.GetForPostEventManagement(eventManagementId);
                 }
 
 
@@ -113,147 +103,122 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "{ClassName}, {MethodName}, Exception occurred while loading ImmunizationStation",
-                    CLASSNAME, methodName
-                );
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred",
+                    CLASSNAME, methodName);
 
-                throw;
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = "Something went wrong while loading data.";
+
+                return RedirectToAction("Index"); // or wherever
             }
         }
 
-        //[RoleAttributeAuthorizeFromConfig("ImmunizationStation_Save")]
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> SaveImmunization(ImmunizationStation model)
-        //{
-        //    const string methodName = "SaveImmunization";
-        //    _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+        [RoleAttributeAuthorizeFromConfig("PostEventManagement_Save")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostEventManagement(PostEventManagementDto model)
+        {
+            const string methodName = "PostEventManagement";
+            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
-        //    try
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            _logger.LogWarning(
-        //                "{ClassName}, {MethodName}, ModelState is invalid",
-        //                CLASSNAME, methodName
-        //            );
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, ModelState is invalid",
+                        CLASSNAME, methodName
+                    );
 
-        //            var allErrors = ModelState.Values
-        //                .SelectMany(v => v.Errors)
-        //                .Select(e => e.ErrorMessage)
-        //                .ToList();
+                    var allErrors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
 
-        //            var message = string.Join(" | ", allErrors);
+                    var message = string.Join(" | ", allErrors);
 
-        //            _logger.LogError(
-        //                "{ClassName}, {MethodName}, Validation failed with errors: {Errors}",
-        //                CLASSNAME, methodName, message
-        //            );
+                    _logger.LogError(
+                        "{ClassName}, {MethodName}, Validation failed with errors: {Errors}",
+                        CLASSNAME, methodName, message
+                    );
 
-        //            TempData["ResponseStatus"] = "error";
-        //            TempData["ResponseTitle"] = "Invalid Data";
-        //            TempData["ResponseMessage"] = message;
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = message;
 
-        //            var result = await _immunizationStationService.GetImmunizationByIdWithEventIdAsync(model.Id);
-        //            if (result.Immunization == null)
-        //            {
-        //                TempData["ResponseStatus"] = "error";
-        //                TempData["ResponseTitle"] = "Not Found";
-        //                TempData["ResponseMessage"] = "Immunization record not found.";
-        //                return RedirectToAction("Index");
-        //            }
-        //            model = result.Immunization;
-        //            long eventId = result.EventId;
-        //            ViewBag.EventId = eventId;
+                    return View("PostEventManagement", model);
+                }
 
-        //            _logger.LogDebug("{ClassName}, {MethodName}: Reloading view for EventId={EventId}", CLASSNAME, methodName, eventId);
+                var user = await _userManager.GetUserAsync(User);
 
-        //            var immunizationData = await _immunizationStationService.GetImmunizationManufacturer(eventId);
+                if (user == null)
+                {
+                    _logger.LogError(
+                        "{ClassName}, {MethodName}, User not found / unauthorized access",
+                        CLASSNAME, methodName
+                    );
 
-        //            if (immunizationData.Success && immunizationData.Data != null)
-        //            {
-        //                ViewBag.ImmunizationData = immunizationData.Data;
-        //            }
-        //            else
-        //            {
-        //                _logger.LogError(
-        //                    "{ClassName}, {MethodName}, Failed to load immunization manufacturer data. Success={Success}",
-        //                    CLASSNAME, methodName, immunizationData.Success
-        //                );
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Unauthorized";
+                    TempData["ResponseMessage"] = "Please login and try again.";
 
-        //                ViewBag.ImmunizationData = new List<object>();
-        //            }
+                    return RedirectToAction("Index");
+                }
 
-        //            return View("ImmunizationStation", model);
-        //        }
+                if (model.Id == 0)
+                {
+                    var result = await _postEventManagementService.AddAsync(model, user.UserName);
 
-        //        var user = await _userManager.GetUserAsync(User);
+                    if (!result.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = result.Message;
 
-        //        if (user == null)
-        //        {
-        //            _logger.LogError(
-        //                "{ClassName}, {MethodName}, User not found / unauthorized access",
-        //                CLASSNAME, methodName
-        //            );
+                        return View("PostEventManagement", model);
+                    }
 
-        //            TempData["ResponseStatus"] = "error";
-        //            TempData["ResponseTitle"] = "Unauthorized";
-        //            TempData["ResponseMessage"] = "Please login and try again.";
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = result.Message;
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Update operation started for PostEventManagementId={PostEventManagementId} by User={UserName}",
+                        CLASSNAME, methodName, model.Id, user.UserName
+                    );
 
-        //            return RedirectToAction("Index");
-        //        }
+                    await _postEventManagementService.UpdateAsync(model, user.UserName);
 
-        //        if (model.Id == 0)
-        //        {
-        //            _logger.LogInformation(
-        //                "{ClassName}, {MethodName}, Add operation started by User={UserName}",
-        //                CLASSNAME, methodName, user.UserName
-        //            );
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = "PostEventManagement record updated successfully.";
+                }
 
-        //            await _immunizationStationService.AddAsync(model, user.UserName);
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index",
+                    CLASSNAME, methodName
+                );
 
-        //            TempData["ResponseStatus"] = "success";
-        //            TempData["ResponseTitle"] = "Success";
-        //            TempData["ResponseMessage"] = "Immunization record added successfully.";
-        //        }
-        //        else
-        //        {
-        //            _logger.LogInformation(
-        //                "{ClassName}, {MethodName}, Update operation started for ImmunizationId={ImmunizationId} by User={UserName}",
-        //                CLASSNAME, methodName, model.Id, user.UserName
-        //            );
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception occurred while saving PostEventManagement record",
+                    CLASSNAME, methodName
+                );
 
-        //            await _immunizationStationService.UpdateAsync(model, user.UserName);
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = ex.Message;
 
-        //            TempData["ResponseStatus"] = "success";
-        //            TempData["ResponseTitle"] = "Success";
-        //            TempData["ResponseMessage"] = "Immunization record updated successfully.";
-        //        }
-
-        //        _logger.LogInformation(
-        //            "{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index",
-        //            CLASSNAME, methodName
-        //        );
-
-        //        return RedirectToAction("Index");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(
-        //            ex,
-        //            "{ClassName}, {MethodName}, Exception occurred while saving immunization record",
-        //            CLASSNAME, methodName
-        //        );
-
-        //        TempData["ResponseStatus"] = "error";
-        //        TempData["ResponseTitle"] = "Error";
-        //        TempData["ResponseMessage"] = ex.Message;
-
-        //        return View("ImmunizationStation", model);
-        //    }
-        //}
-
+                return View("PostEventManagement", model);
+            }
+        }
     }
 }
