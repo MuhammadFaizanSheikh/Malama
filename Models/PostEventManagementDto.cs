@@ -40,6 +40,7 @@
         public string? PostEventNotes { get; set; }
 
         public string PostEventStatus { get; set; }
+        public string? EventID { get; set; }
         public string? SubEventID { get; set; }
         public string? EventAddress1 { get; set; }
         public string? EventAddress2 { get; set; }

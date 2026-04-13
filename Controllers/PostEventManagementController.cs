@@ -77,16 +77,22 @@ namespace ExcelFilesCompiler.Controllers
                         CLASSNAME, methodName, eventManagementId, postEventManagementId
                     );
 
+                string eventID = string.Empty;
+
                 if (postEventManagementId > 0)
                 {
-                    model = await _postEventManagementService.GetById(postEventManagementId);
+                    var result = await _postEventManagementService.GetById(postEventManagementId);
+                    model = result.Data;
+                    eventID = result.EventID;
                 }
                 else
                 {
-                    model = await _eventManagementService.GetForPostEventManagement(eventManagementId);
+                    var result = await _eventManagementService.GetForPostEventManagement(eventManagementId);
+                    model = result.Data;
+                    eventID = result.EventID;
                 }
 
-
+                ViewBag.EventID = eventID;
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Using EventId={EventId}",
                     CLASSNAME, methodName, eventId
@@ -125,6 +131,8 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
+                ViewBag.EventID = model.EventID;
+
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning(
@@ -148,6 +156,7 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
+                    
                     return View("PostEventManagement", model);
                 }
 

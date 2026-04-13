@@ -194,7 +194,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<PostEventManagementDto> GetForPostEventManagement(long eventManagementId)
+        public async Task<(PostEventManagementDto Data, string EventID)> GetForPostEventManagement(long eventManagementId)
         {
             const string methodName = nameof(GetForPostEventManagement);
 
@@ -303,7 +303,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, DTO prepared successfully. EventManagementId={Id}",
                     CLASSNAME, methodName, eventManagementId);
 
-                return dto;
+                return (dto, em.EventID);
             }
             catch (Exception ex)
             {
