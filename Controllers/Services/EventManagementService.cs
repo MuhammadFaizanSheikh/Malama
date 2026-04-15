@@ -83,6 +83,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 StatusDescription = e.StatusDescription,
                                 EventStartDateUtc = e.EventStartDateUtc,
                                 EventEndDateUtc = e.EventEndDateUtc,
+                                Timezone = e.Timezone,
+                                EventStartEndTimeDayWiseList = e.EventStartEndTimeDayWiseList,
 
                                 // ⚠️ Safe: executed in memory
                                 TaskForce = e.EventManagementTaskforcesList != null
@@ -98,6 +100,18 @@ namespace ExcelFilesCompiler.Controllers.Services
                     })
                     .OrderByDescending(e => e.Id)
                     .ToList();
+
+                foreach (var em in eventManagements)
+                {
+                    if (!string.IsNullOrEmpty(em.Timezone))
+                    {
+                        var local = Helper.ConvertEventToLocalTime(em.EventStartDateUtc, em.EventEndDateUtc, em.Timezone, em.EventStartEndTimeDayWiseList);
+
+                        em.EventStartDateUtc = local.EventStartLocal;
+                        em.EventEndDateUtc = local.EventEndLocal;
+                    }
+                }
+
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
@@ -129,7 +143,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         x => x.EventStatus == AppConstants.EventStatus.InProgressComplete,
                         x => x.EventManagementTaskforcesList,
-                        x => x.PostEventManagement // Include child table
+                        x => x.PostEventManagement
                     )
                     .ToListAsync();
 
@@ -154,14 +168,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 EventState = e.EventState,
                                 EventCity = e.EventCity,
                                 EventZipCode = e.EventZipCode,
+
                                 StatusDescription = e.PostEventManagement == null
-                                ? "Pending"
-                                : string.Equals(e.PostEventManagement.PostEventStatus, "Complete", StringComparison.OrdinalIgnoreCase)
-                                    ? "Completed"
-                                    : "Pending",
+                                    ? "Pending"
+                                    : string.Equals(e.PostEventManagement.PostEventStatus, "Complete", StringComparison.OrdinalIgnoreCase)
+                                        ? "Completed"
+                                        : "Pending",
+
+                                // ✅ UTC values from DB
                                 EventStartDateUtc = e.EventStartDateUtc,
                                 EventEndDateUtc = e.EventEndDateUtc,
 
+                                // ✅ Add timezone (IMPORTANT)
+                                Timezone = e.Timezone,
+                                EventStartEndTimeDayWiseList = e.EventStartEndTimeDayWiseList,
                                 TaskForce = e.EventManagementTaskforcesList != null
                                     ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
                                     : string.Empty,
@@ -169,7 +189,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
                                           || e.EventVersion == maxVersion,
 
-                                // 3️⃣ Get PostEventManagementId from child table if exists
                                 PostEventManagementId = e.PostEventManagement != null
                                     ? e.PostEventManagement.Id
                                     : 0
@@ -178,8 +197,23 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .OrderByDescending(e => e.Id)
                     .ToList();
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Returning preview count: {PreviewCount}",
+                _logger.LogInformation("{ClassName}, {MethodName}, Preview count before conversion: {PreviewCount}",
                     CLASSNAME, methodName, eventManagements.Count);
+
+                // 3️⃣ Convert UTC → Event Local Time using helper
+                foreach (var em in eventManagements)
+                {
+                    if (!string.IsNullOrEmpty(em.Timezone))
+                    {
+                        var local = Helper.ConvertEventToLocalTime(em.EventStartDateUtc, em.EventEndDateUtc, em.Timezone, em.EventStartEndTimeDayWiseList);
+
+                        em.EventStartDateUtc = local.EventStartLocal;
+                        em.EventEndDateUtc = local.EventEndLocal;
+                    }
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Timezone conversion completed.",
+                    CLASSNAME, methodName);
 
                 return eventManagements;
             }
@@ -204,14 +238,17 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var em = await _unitOfWork.EventManagement
-                    .GetWithIncludeNoTracking(
-                        x => x.Id == eventManagementId,
-                        x => x.ContractDetails,
-                        x => x.EventManagementTaskforcesList,
-                        x => x.EventStartEndTimeDayWiseList,
-                        x => x.EventServiceDetailList.OrderBy(e => e.Id)
-                    )
-                    .FirstOrDefaultAsync();
+                .GetWithIncludeNoTracking(
+                    x => x.Id == eventManagementId,
+                    x => x.ContractDetails,
+                    x => x.EventManagementTaskforcesList,
+                    x => x.EventStartEndTimeDayWiseList,
+                    x => x.EventServiceDetailList.OrderBy(e => e.Id)
+                )
+                .Include(x => x.ServiceMembersParents)
+                    .ThenInclude(p => p.ServiceMembersChildren)
+                    .AsSplitQuery()
+                .FirstOrDefaultAsync();
 
                 if (em == null)
                 {
@@ -220,6 +257,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     throw new Exception("EventManagement record not found.");
                 }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Event found. Checking ServiceMembersChildren count",
+                    CLASSNAME, methodName);
+
+                int totalServiceMembers = em.ServiceMembersParents?.SelectMany(p => p.ServiceMembersChildren ?? new List<ServiceMembersChild>()).Count() ?? 0;
+
+                _logger.LogInformation("{ClassName}, {MethodName}, ServiceMembersChildren count : {totalServiceMembers}",
+                    CLASSNAME, methodName, totalServiceMembers);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Event found. Converting timezone. Timezone={Timezone}",
                     CLASSNAME, methodName, em.Timezone);
@@ -292,7 +337,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     Timezone = em.Timezone,
                     EventHelpLine = em.EventHelpLine,
 
-                    TotalServiceMember = em.TotalRequestedServiceMembers,
+                    TotalServiceMember = totalServiceMembers,
 
                     // ✅ Taskforce mapping
                     TaskForce = em.EventManagementTaskforcesList != null

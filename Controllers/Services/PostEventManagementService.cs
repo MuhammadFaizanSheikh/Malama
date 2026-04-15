@@ -125,15 +125,18 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 var postEvent = await _unitOfWork.PostEventManagement
-                    .GetWithIncludeNoTracking(
-                        x => x.Id == postEventManagementId,
-                        x => x.PostEventStartEndTimeDayWise,
-                        x => x.EventManagement.ContractDetails,
-                        x => x.EventManagement.EventManagementTaskforcesList,
-                        x => x.EventManagement.EventServiceDetailList,
-                        x => x.PostEventServiceDetails.OrderBy(p => p.EventServiceDetailId)
-                    )
-                    .FirstOrDefaultAsync();
+                .GetWithIncludeNoTracking(
+                    x => x.Id == postEventManagementId,
+                    x => x.PostEventStartEndTimeDayWise,
+                    x => x.EventManagement.ContractDetails,
+                    x => x.EventManagement.EventManagementTaskforcesList,
+                    x => x.EventManagement.EventServiceDetailList,
+                    x => x.PostEventServiceDetails.OrderBy(p => p.EventServiceDetailId)
+                )
+                .Include(x => x.EventManagement.ServiceMembersParents)
+                    .ThenInclude(p => p.ServiceMembersChildren)
+                    .AsSplitQuery()
+                .FirstOrDefaultAsync();
 
                 if (postEvent == null)
                 {
@@ -142,6 +145,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     throw new Exception("PostEventManagement record not found.");
                 }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Event found. Checking ServiceMembersChildren count",
+                    CLASSNAME, methodName);
+
+                int totalServiceMembers = postEvent?.EventManagement?.ServiceMembersParents?
+                .SelectMany(p => p.ServiceMembersChildren ?? new List<ServiceMembersChild>())
+                .Count() ?? 0;
+
+                _logger.LogInformation("{ClassName}, {MethodName}, ServiceMembersChildren count : {totalServiceMembers}",
+                    CLASSNAME, methodName, totalServiceMembers);
 
                 // ✅ Load missing EventServiceDetail (manual include fix)
                 var serviceDetailIds = postEvent.PostEventServiceDetails?
@@ -177,7 +190,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                     PostEventNotes = postEvent.PostEventNotes,
                     PostEventStatus = postEvent.PostEventStatus,
-                    TotalServiceMember = postEvent.TotalServiceMember,
+                    TotalServiceMember = totalServiceMembers,
 
                     // ✅ Day-wise mapping
                     PostEventStartEndTimeDayWiseDto = postEvent.PostEventStartEndTimeDayWise != null

@@ -88,6 +88,55 @@ namespace Malama.Utilities
             }
         }
 
+        public static EventLocalTimeResult ConvertEventToLocalTime(DateTime eventStartUtc, DateTime eventEndUtc, string timezoneId, List<EventStartEndTimeDayWise> dayWiseList)
+        {
+            if (string.IsNullOrEmpty(timezoneId))
+                throw new ArgumentException("Timezone is required");
+
+            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+
+            var result = new EventLocalTimeResult
+            {
+                EventStartLocal = TimeZoneInfo.ConvertTimeFromUtc(eventStartUtc, tz),
+                EventEndLocal = TimeZoneInfo.ConvertTimeFromUtc(eventEndUtc, tz)
+            };
+
+            if (dayWiseList != null)
+            {
+                foreach (var day in dayWiseList)
+                {
+                    var dayResult = new DayTimeResult
+                    {
+                        EventDay = day.EventDay
+                    };
+
+                    if (day.EventStartTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.Date
+                            .AddDays(day.EventDay - 1)
+                            .Add(day.EventStartTime.Value);
+
+                        var local = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        dayResult.StartTimeLocal = local.TimeOfDay;
+                    }
+
+                    if (day.EventEndTime.HasValue)
+                    {
+                        DateTime dayUtc = eventStartUtc.Date
+                            .AddDays(day.EventDay - 1)
+                            .Add(day.EventEndTime.Value);
+
+                        var local = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
+                        dayResult.EndTimeLocal = local.TimeOfDay;
+                    }
+
+                    result.DayWise.Add(dayResult);
+                }
+            }
+
+            return result;
+        }
+
         public static void ConvertEventToLocalTime(PostEventManagement eventManagement, string timezoneId)
         {
             try

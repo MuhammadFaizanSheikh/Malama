@@ -204,7 +204,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "PostEventManagement record updated successfully.";
+                    TempData["ResponseMessage"] = "Post Event Management record updated successfully.";
                 }
 
                 _logger.LogInformation(

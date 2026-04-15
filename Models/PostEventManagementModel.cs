@@ -14,8 +14,6 @@
 
         // FK to EventManagement
         public long EventManagementId { get; set; }
-        public long TotalServiceMember { get; set; }
-
         public string PostEventStatus { get; set; }
         public DateTime EventStartDateUtc { get; set; }
         public DateTime EventEndDateUtc { get; set; }

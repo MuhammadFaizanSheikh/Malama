@@ -2696,7 +2696,6 @@
         });
 
         $('#ContractId').on('select2:select', function (e) {
-            debugger;
             const selectedContractId = e.params.data.id;
             $.ajax({
                 url: '/ContractDetails/GetContractById',
@@ -3167,7 +3166,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             // Build availability checkboxes
             let currentDate = new Date(eventStartDate.getTime());
 
-            debugger;
             let availabilityCheckboxes = "";
             // while (currentDate <= eventEndDate) {
             //     let yyyyMMdd = toYYYYMMDD(currentDate);                 // For comparison
@@ -3631,6 +3629,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     $('#StaffRequirementTable').DataTable().clear().destroy();
                 }
 
+                debugger;
+
                 let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
                 let dayIndex = 1;
                 const checkedRows = [];
@@ -3711,6 +3711,20 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     finalTableHtml += renderRow(rateDataImmunizations?.roles, "Immunizations", immunizationsTotalMembers);
                 }
 
+                const doerhsEvent = "DOEHRS Entry";
+                const doerhsRole = ratePerHourData[doerhsEvent]?.roles;
+                const doerhsRate = ratePerHourData[doerhsEvent]?.rate;
+                if (doerhsRole && doerhsRate) {
+                    finalTableHtml += renderRow(doerhsRole, doerhsEvent, 1);
+                }
+
+                const checkInOutEvent = "Check-In/Out";
+                const checkInOutRole = ratePerHourData[checkInOutEvent]?.roles;
+                const checkInOutRate = ratePerHourData[checkInOutEvent]?.rate;
+                if (checkInOutRole && checkInOutRate) {
+                    finalTableHtml += renderRow(checkInOutRole, checkInOutEvent, 1);
+                }
+
                 // Insert HTML
                 $('#StaffRequirementTable').html(finalTableHtml);
 
@@ -3736,7 +3750,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const eventService = row.find('td:nth-child(2)').text().trim();
                         const totalMembers = parseInt(row.data('total-members')) || 0;
                         const ratePerHour = ratePerHourData[eventService]?.rate;
-
+                        debugger;
                         const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
 
                         const tds = row.find('td');
@@ -4842,10 +4856,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         loadStatesAndCities().done(function () {
             var editId = '@ViewBag.EditId';
             if (editId && editId !== '') {
-                debugger;
                 loadEventManagementForEdit(editId, false, true).then(() => {
                     // This executes after all staff is loaded and tables updated
-                    debugger;
                     startDatePicker.clear();
                     endDatePicker.clear();
                 });
@@ -4918,11 +4930,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('#EventState').val(combinedData.eventManagement.eventState).trigger('change');
                         $('#EventCity').val(combinedData.eventManagement.eventCity).trigger('change');
                         $('#EventZipCode').val(combinedData.eventManagement.eventZipCode);
-                        debugger;
                         $('#Timezone').val(combinedData.eventManagement.timezone.trim());
                         $('#TotalRequestedServiceMembers').val(combinedData.eventManagement.totalRequestedServiceMembers);
-
-                        debugger;
 
                         if (combinedData.eventManagement.eventStartDateUtc && combinedData.eventManagement.eventEndDateUtc) {
                             startDatePicker.setDate(getDateOnlyGlobal(combinedData.eventManagement.eventStartDateUtc));
@@ -5123,12 +5132,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             if (combinedData.eventStaffDetailAndAdditionalRoleslist) {
                                 loadStaffForEditMode(combinedData.eventStaffDetailAndAdditionalRoleslist).then(() => {
 
-                                    debugger;
                                     resolve(); // All staff loaded, resolve the main Promise
                                 });
                             } else {
 
-                                debugger;
                                 resolve(); // No staff, resolve immediately
                             }
 
@@ -5153,7 +5160,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         $('[id^="section"]').hide();
                         $(`#section1`).show();
 
-                        debugger;
                         if (isViewButton) {
                             $('input[type="text"], input[type="radio"], input[type="checkbox"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"]').prop('disabled', true);
                             $('select').prop('disabled', true);

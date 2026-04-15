@@ -44,6 +44,22 @@
         public DateTime EventStartDateUtc { get; set; }
         public DateTime EventEndDateUtc { get; set; }
         public Boolean CanEdit { get; set; }
+        public string? Timezone { get; set; }
+        public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList = new List<EventStartEndTimeDayWise>();
+    }
+
+    public class EventLocalTimeResult
+    {
+        public DateTime EventStartLocal { get; set; }
+        public DateTime EventEndLocal { get; set; }
+        public List<DayTimeResult> DayWise { get; set; } = new();
+    }
+
+    public class DayTimeResult
+    {
+        public int EventDay { get; set; }
+        public TimeSpan? StartTimeLocal { get; set; }
+        public TimeSpan? EndTimeLocal { get; set; }
     }
 
     [Table("EventManagement")]

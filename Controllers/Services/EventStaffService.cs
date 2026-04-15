@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Malama.Utilities;
 using AutoMapper;
+using ExcelFilesCompiler.Utilities;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -164,7 +165,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, Retrieved {Count} EventStaff records.", CLASSNAME, methodName, eventStaffList.Count);
 
                 // Fetch completed events
-                var completedEventList = _unitOfWork.EventManagement.GetAllWithConditionNoTracking(c => c.EventStatus == "Complete").ToList();
+                var completedEventList = _unitOfWork.EventManagement.GetAllWithConditionNoTracking(c => c.EventStatus == AppConstants.EventStatus.InProgressComplete).ToList();
                 var eventIds = completedEventList.Select(e => e.Id).ToList();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Found {Count} completed events.", CLASSNAME, methodName, eventIds.Count);

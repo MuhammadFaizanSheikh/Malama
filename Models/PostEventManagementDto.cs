@@ -26,7 +26,10 @@
         public DateTime EventStartDateUtc { get; set; }
         public DateTime EventEndDateUtc { get; set; }
         public Boolean CanEdit { get; set; }
-        
+        public string? Timezone { get; set; }
+        public List<EventStartEndTimeDayWise> EventStartEndTimeDayWiseList = new List<EventStartEndTimeDayWise>();
+
+
     }
 
     public class PostEventManagementDto
