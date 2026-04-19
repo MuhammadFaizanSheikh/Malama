@@ -2247,11 +2247,11 @@
         
 
         fetchRolesByCategory("");
-        
-        applyStatusRules(null, false);
+        var eventStatusToEnableOptions = '';
+        applyStatusRules(null, false, false);
 
-        function applyStatusRules(eventRuntimeStatus, isEdit) {
-
+        function applyStatusRules(eventRuntimeStatus, isEdit, isDuplicateEvent) {
+            debugger;
             var dropdown = document.getElementById("EventStatus");
             var options = dropdown.options;
 
@@ -2280,7 +2280,7 @@
 
             // ===== EDIT MODE =====
 
-            if (eventRuntimeStatus === "Event Not Started") {
+            @* if (eventRuntimeStatus === "Event Not Started") {
 
                 enableOptions([
                     "Initial Pre-event",
@@ -2289,13 +2289,28 @@
                     "Canceled"
                 ]);
 
+            } *@
+            if (eventRuntimeStatus === "Event Not Started") {
+
+                if (isDuplicateEvent) {
+                    enableOptions([
+                        "Initial Pre-event"
+                    ]);
+                }
+                else
+                {
+                    enableOptions([
+                        "Initial Pre-event",
+                        "Canceled"
+                    ]);
+                }
+
             }
             else if (eventRuntimeStatus === "Event In Progress") {
 
                 enableOptions(["In Progress"]);
-
             }
-            else if (eventRuntimeStatus === "Event Completed") {
+            else if (eventRuntimeStatus === "Event In Progress Completed") {
 
                 enableOptions([
                     "In Progress Complete"
@@ -3629,8 +3644,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     $('#StaffRequirementTable').DataTable().clear().destroy();
                 }
 
-                debugger;
-
                 let finalTableHtml = '<thead><tr><th name="Qualifications">Qualifications</th><th name="Event Service">Event Service</th>';
                 let dayIndex = 1;
                 const checkedRows = [];
@@ -3750,7 +3763,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         const eventService = row.find('td:nth-child(2)').text().trim();
                         const totalMembers = parseInt(row.data('total-members')) || 0;
                         const ratePerHour = ratePerHourData[eventService]?.rate;
-                        debugger;
                         const staffCountHtml = generateStaffCountCells(ratePerHour, totalMembers, eventService);
 
                         const tds = row.find('td');
@@ -3850,7 +3862,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         $("#submitBtn").click(function (e) {
             // e.preventDefault();
-
             const section = $(this).data("section");
 
             if (section !== 7)
@@ -3879,10 +3890,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return; // Stop form submission
             }
 
-            if (!validateEventStatusDependantFields(requirements)) {
+            @* if (!validateEventStatusDependantFields(requirements)) {
                 e.preventDefault();
                 return;
-            }
+            } *@
 
             // if (!validateTableRequiredFields()) {
             //     return;
@@ -3940,10 +3951,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return; // Stop form submission
             }
 
-            if (!validateEventStatusDependantFields(requirements)) {
+            @* if (!validateEventStatusDependantFields(requirements)) {
                 e.preventDefault();
                 return;
-            }
+            } *@
 
             // if (!validateTableRequiredFields()) {
             //     return;
@@ -4068,7 +4079,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         function getCompletedProgressSections() {
             const completedSections = [];
-
             $("#progressBar span.completed").each(function () {
                 const sectionNumber = $(this).data("target"); // Get data-target attribute
                 if (sectionNumber) {
@@ -4170,6 +4180,19 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             updateProgressBar(section); // Update progress bar when user fills required fields
         });
 
+        function updateEventStatusOptions() {
+            const total = $('#progressBar span').length;
+            const completed = $('#progressBar span.completed').length;
+
+            const allDone = total === completed;
+
+                const allowOptions = allDone && (!eventStatusToEnableOptions || eventStatusToEnableOptions === "Event Not Started");
+
+            $('#EventStatus')
+                .find('option[value="Pre-Event Confirmed"], option[value="Pre-Event Complete"]')
+                .prop('disabled', !allowOptions);
+        }
+
         function updateProgressBar(sectionNumber) {
             const section = $(`#section${sectionNumber}`);
 
@@ -4219,12 +4242,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 } else {
                     $(`#progress${sectionNumber}`).removeClass("completed");
                 }
+
+                updateEventStatusOptions();
+
                 return;
             }
-
-
-
-
 
             if (sectionNumber == 7) {
                 const selectedStaffCount = $('#eventStaffSelectedTable').DataTable().rows().count();
@@ -4233,6 +4255,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 } else {
                     $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
                 }
+
+                updateEventStatusOptions();
+
                 return;
             }
 
@@ -4254,6 +4279,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             } else {
                 $(`#progress${sectionNumber}`).removeClass("completed"); // Reset color
             }
+
+                updateEventStatusOptions();
         }
 
         $('#addContractBtn').click(function () {
@@ -4284,6 +4311,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $('#addContractBtn').show();
             $("#submitBtn").data("section", 1);
             $("#updateBtn").data("section", 1);
+            isEditMode = false;            
         });
 
         $('#resetBtn').on('click', async function (e) {
@@ -4633,7 +4661,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         }
 
         // Centralized requirements object
-        const requirements = {
+        @* const requirements = {
             "Initial Pre-event": {
                 PickupDate: false,
                 PickupTime: false,
@@ -4682,10 +4710,10 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 SuggestedHourlyFlow: false,
                 TaskForce: false,
             },
-        };
+        }; *@
 
         $("#EventStatus").change(function () {
-            updateFieldRequirements(requirements);
+            @* updateFieldRequirements(requirements); *@
             toggleTaskForceRequired();
             toggleCancelReason();
         });
@@ -4706,7 +4734,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
     }
 
         // Update field requirements based on EventStatus
-        function updateFieldRequirements(requirements) {
+        @* function updateFieldRequirements(requirements) {
             const eventStatus = document.getElementById("EventStatus").value;
             const currentSettings = requirements[eventStatus] || {};
 
@@ -4720,10 +4748,11 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     }
                 }
             }
-        }
+        } *@
 
         // Validate fields on form submission
-        function validateEventStatusDependantFields(requirements) {
+        @* function validateEventStatusDependantFields(requirements) {
+            debugger;
             const eventStatus = document.getElementById("EventStatus").value;
             const currentSettings = requirements[eventStatus] || {};
             let isValid = true;
@@ -4738,7 +4767,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             }
 
             return isValid;
-        }
+        } *@
 
         const phoneFields = ['EventHelpLine', 'MainPocPhonePrimary', 'MainPocPhoneSecondary', 'SecondaryPocPhonePrimary', 'SecondaryPocPhoneSecondary', 'AddtionalAlternatePocPhonePrimary', 'AddtionalAlternatePocPhoneSecondary', 'ShippingPocPrimaryPhone', 'ShippingPocSecondaryPhone', 'PharmacyPhoneNumber', 'HIVSupplyMilitaryContactPOCPhonePrimary', 'HIVSupplyMilitaryContactPOCPhoneSecondary', 'ImmVaccineSupplyMilitaryContactPOCPhonePrimary', 'ImmVaccineSupplyMilitaryContactPOCPhoneSecondary'];
 
@@ -4877,7 +4906,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         
                         var combinedData = response.combinedData;
                         var eventRuntimeStatus = combinedData.eventRuntimeStatus;
-                        setProgressFromServer(combinedData.eventManagement.completedSections);
+                            eventStatusToEnableOptions = eventRuntimeStatus;
+                        //setProgressFromServer(combinedData.eventManagement.completedSections);
 
                         if (!isDuplicateEvent)
                         {
@@ -4946,8 +4976,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                                 combinedData.eventManagement.eventStartEndTimeDayWiseList
                             );
 
-                            
-                            applyStatusRules(eventRuntimeStatus ,isEditMode);
+
+                                applyStatusRules(eventRuntimeStatus, isEditMode, isDuplicateEvent);
                         }
 
                         if (combinedData.eventManagement.deploy === 'Deploying') {
@@ -5128,10 +5158,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             updateTableRows('eventServicesTable', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Event Services'));
                             updateTableRows('eventServicesTable2', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Labs'));
                             updateTableRows('eventServicesTable3', combinedData.eventManagement.eventServiceDetailList.filter(item => item.type === 'Immunizations'));
-                            
+                            updateProgressBar(6);
+
                             if (combinedData.eventStaffDetailAndAdditionalRoleslist) {
                                 loadStaffForEditMode(combinedData.eventStaffDetailAndAdditionalRoleslist).then(() => {
+                                    debugger;
 
+                                    updateProgressBar(7);
                                     resolve(); // All staff loaded, resolve the main Promise
                                 });
                             } else {
@@ -5203,7 +5236,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                             {
                                 setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6', true);
                             }
-                            else if (eventRuntimeStatus === 'Event Completed')
+                                else if (eventRuntimeStatus === 'Event In Progress Completed')
                             {
                                 setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6, #section7', true);
                             }
@@ -5229,12 +5262,20 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                                 setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6', false);
                                 $('#updateBtn').show(); 
                             }
-                            else if (eventRuntimeStatus === 'Event Completed')
+                                else if (eventRuntimeStatus === 'Event In Progress Completed')
                             {
                                 setFormReadonly('#section1, #section2, #section3, #section4, #section5, #section6, #section7', false);
                                 $('#updateBtn').hide();
                             }
                         }
+
+                        updateProgressBar(1);
+                        updateProgressBar(2);
+                        updateProgressBar(3);
+                        updateProgressBar(4);
+                        updateProgressBar(5);
+                        
+
 
                     } else {
                         alert(response.message);
@@ -5339,72 +5380,9 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 }
             });
         }
-
-        @* function updateTableRows(tableId, data) {
-            const table = document.getElementById(tableId);
-            const rows = table.querySelectorAll('tbody tr');
-
-            debugger;
-            rows.forEach(row => {
-                const eventService = row.getAttribute('data-event-service');
-                const matchingData = data.find(item => item.eventService === eventService);
-
-                if (matchingData) {
-                    const checkbox = row.querySelector('input.is-selected-checkbox');
-                    const clientRequestInput = row.querySelector('td:nth-of-type(2) input[type="number"]');
-                    const initialReportInput = row.querySelector('td:nth-of-type(3) input[type="number"]');
-                    const finalPreEventInput = row.querySelector('td:nth-of-type(4) input[type="number"]');
-                    const isConfirmedCheckbox = row.querySelector('input.is-confirmed-checkbox');
-                    const eventServiceHidden = row.querySelector('input[type="hidden"][name$=".EventService"]');
-                    const typeHidden = row.querySelector('input[type="hidden"][name$=".Type"]');
-
-                    if (checkbox) {
-                        checkbox.checked = matchingData.isSelected || false;
-
-                        // Enable/disable fields based on checkbox state
-                        const isEnabled = checkbox.checked;
-
-                        if (clientRequestInput) {
-                            clientRequestInput.value = matchingData.clientRequestInitial ?? '';
-                            clientRequestInput.disabled = !isEnabled;
-                        }
-                        if (initialReportInput) {
-                            initialReportInput.value = matchingData.initialReportNumbers ?? '';
-                            initialReportInput.disabled = !isEnabled;
-                        }
-                        if (finalPreEventInput) {
-                            finalPreEventInput.value = matchingData.finalPreEventConfirmedNumbers ?? '';
-                            finalPreEventInput.disabled = !isEnabled;
-                        }
-
-                        if (isConfirmedCheckbox) {
-                            isConfirmedCheckbox.checked = matchingData.isConfirmed || false;
-
-                            const clientRequestValue = parseInt(clientRequestInput?.value) || 0;
-                            const initialReportValue = parseInt(initialReportInput?.value) || 0;
-                            const finalPreEventValue = parseInt(finalPreEventInput?.value) || 0;
-
-                            if (clientRequestValue > 0 && initialReportValue > 0 && finalPreEventValue > 0) {
-                                isConfirmedCheckbox.disabled = false;
-                            } else {
-                                isConfirmedCheckbox.disabled = true;
-                            }
-                        }
-
-                        if (eventServiceHidden) {
-                            eventServiceHidden.value = matchingData.eventService ?? '';
-                        }
-                        if (typeHidden) {
-                            typeHidden.value = matchingData.type ?? '';
-                        }
-                    }
-                }
-            });
-        } *@
-        
     });
 
-    function setProgressFromServer(completedSections) {
+    @* function setProgressFromServer(completedSections) {
         if (typeof completedSections === "string") {
             try {
                 completedSections = JSON.parse(completedSections); // Convert JSON string to array
@@ -5423,7 +5401,7 @@ function populateFilterRolesAndLicenseTypeDropdown() {
         completedSections.forEach(sectionNumber => {
             $(`#progress${sectionNumber}`).addClass("completed");
         });
-    }
+    } *@
 
     function generateControlsForDateRange(startDate, endDate, existingData = []) {
        

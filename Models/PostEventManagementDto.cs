@@ -66,6 +66,9 @@
         public List<PostEventServiceDetailDto> EventServices { get; set; }
 
         public string SubmissionToken { get; set; }
+
+        public DateTime EventStartDateUtcForDisplay { get; set; }
+        public DateTime EventEndDateUtcForDisplay { get; set; }
     }
 
     public class PostEventStartEndTimeDayWiseDto

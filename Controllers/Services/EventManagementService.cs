@@ -338,6 +338,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     EventHelpLine = em.EventHelpLine,
 
                     TotalServiceMember = totalServiceMembers,
+                    EventStartDateUtcForDisplay = em.EventStartDateUtc,
+                    EventEndDateUtcForDisplay = em.EventEndDateUtc,
 
                     // ✅ Taskforce mapping
                     TaskForce = em.EventManagementTaskforcesList != null
@@ -1041,7 +1043,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (!isUpdate)
                 {
-                    allowedStatuses.Add("Initial Pre-event");
+                    allowedStatuses.AddRange(new[]
+                        {
+                            "Initial Pre-event",
+                            "Pre-Event Confirmed",
+                            "Pre-Event Complete"
+                        });
                 }
                 else
                 {
@@ -1049,11 +1056,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         allowedStatuses.AddRange(new[]
                         {
-                    "Initial Pre-event",
-                    "Pre-Event Confirmed",
-                    "Pre-Event Complete",
-                    "Canceled"
-                });
+                            "Initial Pre-event",
+                            "Pre-Event Confirmed",
+                            "Pre-Event Complete",
+                            "Canceled"
+                        });
                     }
                     else if (nowUtc >= eventStartUtc && nowUtc <= eventEndUtc)
                     {
@@ -1063,8 +1070,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         allowedStatuses.AddRange(new[]
                         {
-                    "In Progress Complete"
-                });
+                            "In Progress Complete"
+                        });
                     }
                 }
 
@@ -1110,7 +1117,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 else if (currentEventTime >= eventManagement.EventStartDateUtc && currentEventTime < eventManagement.EventEndDateUtc)
                     return "Event In Progress";
                 else
-                    return "Event Completed";
+                    return "Event In Progress Completed";
             }
             catch
             {

@@ -197,6 +197,12 @@
             <p><strong>Regarding Site Notes :</strong> @Model.RegardingSites</p>
             <input type="hidden" asp-for="RegardingSites" />
 
+                        <p><strong>Event Start Date :</strong> @Model.EventStartDateUtcForDisplay.ToString("MM-dd-yyyy")</p>
+                        <input type="hidden" asp-for="EventStartDateUtcForDisplay" />
+
+                        <p><strong>Event End Date :</strong> @Model.EventEndDateUtcForDisplay.ToString("MM-dd-yyyy")</p>
+                        <input type="hidden" asp-for="EventEndDateUtcForDisplay" />
+
         </div>
 
         <!-- RIGHT COLUMN -->

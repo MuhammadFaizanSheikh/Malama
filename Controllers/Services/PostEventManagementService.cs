@@ -179,6 +179,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     CLASSNAME, methodName, em?.Timezone);
 
                 Helper.ConvertEventToLocalTime(postEvent, em.Timezone);
+                Helper.ConvertEventToLocalTime(em, em.Timezone);
 
                 var dto = new PostEventManagementDto
                 {
@@ -248,8 +249,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     RegardingSites = em?.RegardingSites,
                     Timezone = em?.Timezone,
                     EventHelpLine = em?.EventHelpLine,
-
-                    // ✅ Taskforce
+                    EventStartDateUtcForDisplay = em.EventStartDateUtc,
+                    EventEndDateUtcForDisplay = em.EventEndDateUtc,
                     TaskForce = em?.EventManagementTaskforcesList != null
                         ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
                         : null

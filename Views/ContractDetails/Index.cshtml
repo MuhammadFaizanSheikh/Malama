@@ -912,6 +912,13 @@
                                 control.addClass('read-only-style'); // Optional: Add a class for read-only styling
                             });
 
+                            ['ContractStartDate', 'ContractEndDate'].forEach(function (id) {
+                                const input = document.getElementById(id);
+                                if (input._flatpickr) {
+                                    input._flatpickr.set('clickOpens', false);
+                                }
+                            });
+
                             $('#updateBtn').hide();  // Hide the Update button when View button is clicked
                         } else {
                             const controlIds = [
@@ -931,6 +938,13 @@
                                 const control = $('#' + id);
                                 control.prop('readonly', false); // Remove readonly property
                                 control.removeClass('read-only-style'); // Remove read-only styling class if applied
+                            });
+
+                            ['ContractStartDate', 'ContractEndDate'].forEach(function (id) {
+                                const input = document.getElementById(id);
+                                if (input._flatpickr) {
+                                    input._flatpickr.set('clickOpens', true);
+                                }
                             });
 
                             var control = $('#ContractID');
