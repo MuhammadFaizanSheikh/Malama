@@ -1,0 +1,169 @@
+﻿@using Malama.Utilities
+@model Malama.Models.PostEventDataAnalysisViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Add Immunization Screening";
+}
+
+<style>
+    #page-heading {
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white; /* ensures text is visible */
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    h2, h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        #postEventTable {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    #postEventTable th,
+    #postEventTable td {
+        border: 1px solid #ddd !important;
+        padding: 8px;
+        text-align: center;
+    }
+    
+    #postEventTable thead th {
+        background-color: rgba(120, 130, 221, 1) !important;
+        color: white;
+        text-align: center;
+    }
+    
+    #postEventTable tbody tr {
+        background-color: rgba(240, 245, 255, 1);
+    }
+    
+    #postEventTable tbody tr:hover {
+        background-color: rgba(245, 250, 255, 1);
+    }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor, // Conditional button color
+                iconColor: iconColor // Conditional icon color
+            });
+        });
+    </script>
+}
+
+<h2 id="page-heading">Post Event Data</h2>
+
+<form method="get" asp-action="PostEventDataAnalysis">
+    <input type="hidden" name="eventManagementId" value="@Model.EventId" />
+
+    <select name="selectedStation" class="form-control" onchange="this.form.submit()">
+        <option value="">Select Station</option>
+
+        <option value="Labs" selected="@(Model.SelectedStation == "Labs")">Labs</option>
+        <option value="Immunization" selected="@(Model.SelectedStation == "Immunization")">Immunization</option>
+        <option value="Dental" selected="@(Model.SelectedStation == "Dental")">Dental</option>
+        <option value="Hearing" selected="@(Model.SelectedStation == "Hearing")">Hearing</option>
+        <option value="Vision" selected="@(Model.SelectedStation == "Vision")">Vision</option>
+        <option value="EKG" selected="@(Model.SelectedStation == "EKG")">EKG</option>
+    </select>
+</form>
+
+
+@if (!string.IsNullOrEmpty(Model.SelectedStation))
+{
+    if (Model.ServiceMembersChild != null && Model.ServiceMembersChild.Any())
+    {
+        if (Model.SelectedStation == "Labs")
+        {
+            @await Html.PartialAsync("_LabsTable", Model.ServiceMembersChild)
+        }
+        else if (Model.SelectedStation == "Immunization")
+        {
+            @await Html.PartialAsync("_ImmunizationTable", Model.ServiceMembersChild)
+        }
+        else if (Model.SelectedStation == "Dental")
+        {
+            @await Html.PartialAsync("_DentalTable", Model.ServiceMembersChild)
+        }
+        else if (Model.SelectedStation == "Hearing")
+        {
+            @await Html.PartialAsync("_HearingTable", Model.ServiceMembersChild)
+        }
+        else if (Model.SelectedStation == "Vision")
+        {
+            @await Html.PartialAsync("_VisionTable", Model.ServiceMembersChild)
+        }
+        else if (Model.SelectedStation == "EKG")
+        {
+            @await Html.PartialAsync("_EKGTable", Model.ServiceMembersChild)
+        }
+    }
+    else
+    {
+        <div class="mt-3">
+            <p>No data found for @Model.SelectedStation.</p>
+        </div>
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+

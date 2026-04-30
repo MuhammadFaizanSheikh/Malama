@@ -130,7 +130,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<List<PostEventManagementPreview>> GetAllForPostEventManagements()
+        public async Task<List<PostEventManagementPreview>> GetAllForPostEventManagements(long? eventId = null)
         {
             const string methodName = "GetAllEventManagements";
 
@@ -138,14 +138,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                // 1️⃣ Get all EventManagement records with Taskforces (no tracking)
                 var eventData = await _unitOfWork.EventManagement
-                    .GetWithIncludeNoTracking(
-                        x => x.EventStatus == AppConstants.EventStatus.InProgressComplete,
-                        x => x.EventManagementTaskforcesList,
-                        x => x.PostEventManagement
-                    )
-                    .ToListAsync();
+                .GetWithIncludeNoTracking(
+                    x => x.EventStatus == AppConstants.EventStatus.InProgressComplete
+                         && (!eventId.HasValue || x.Id == eventId.Value),
+                    x => x.EventManagementTaskforcesList,
+                    x => x.PostEventManagement
+                )
+                .ToListAsync();
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
                     CLASSNAME, methodName, eventData.Count);
@@ -180,6 +180,96 @@ namespace ExcelFilesCompiler.Controllers.Services
                                 EventEndDateUtc = e.EventEndDateUtc,
 
                                 // ✅ Add timezone (IMPORTANT)
+                                Timezone = e.Timezone,
+                                EventStartEndTimeDayWiseList = e.EventStartEndTimeDayWiseList,
+                                TaskForce = e.EventManagementTaskforcesList != null
+                                    ? string.Join(", ", e.EventManagementTaskforcesList.Select(t => t.Taskforce))
+                                    : string.Empty,
+
+                                CanEdit = !string.Equals(e.EventStatus, "Canceled", StringComparison.OrdinalIgnoreCase)
+                                          || e.EventVersion == maxVersion,
+
+                                PostEventManagementId = e.PostEventManagement != null
+                                    ? e.PostEventManagement.Id
+                                    : 0
+                            });
+                    })
+                    .OrderByDescending(e => e.Id)
+                    .ToList();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Preview count before conversion: {PreviewCount}",
+                    CLASSNAME, methodName, eventManagements.Count);
+
+                // 3️⃣ Convert UTC → Event Local Time using helper
+                foreach (var em in eventManagements)
+                {
+                    if (!string.IsNullOrEmpty(em.Timezone))
+                    {
+                        var local = Helper.ConvertEventToLocalTime(em.EventStartDateUtc, em.EventEndDateUtc, em.Timezone, em.EventStartEndTimeDayWiseList);
+
+                        em.EventStartDateUtc = local.EventStartLocal;
+                        em.EventEndDateUtc = local.EventEndLocal;
+                    }
+                }
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Timezone conversion completed.",
+                    CLASSNAME, methodName);
+
+                return eventManagements;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception occurred while retrieving EventManagements.",
+                    CLASSNAME, methodName);
+
+                throw;
+            }
+        }
+
+        public async Task<List<PostEventManagementPreview>> GetAllForPostEventDataAnalysis(long? eventId = null)
+        {
+            const string methodName = "GetAllForPostEventDataAnalysis";
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called.", CLASSNAME, methodName);
+
+            try
+            {
+                var eventData = await _unitOfWork.EventManagement
+                .GetWithIncludeNoTracking(
+                    x => x.EventStatus == AppConstants.EventStatus.InProgressComplete
+                         && (!eventId.HasValue || x.Id == eventId.Value)
+                         && x.PostEventManagement != null,
+                    x => x.EventManagementTaskforcesList,
+                    x => x.PostEventManagement
+                )
+                .ToListAsync();
+
+                _logger.LogInformation("{ClassName}, {MethodName}, Retrieved records count: {Count}",
+                    CLASSNAME, methodName, eventData.Count);
+
+                // 2️⃣ Group by EventID to get latest version
+                var eventManagements = eventData
+                    .GroupBy(e => e.EventID)
+                    .SelectMany(group =>
+                    {
+                        int maxVersion = group.Max(e => e.EventVersion);
+
+                        return group
+                            .OrderByDescending(e => e.EventVersion)
+                            .Select(e => new PostEventManagementPreview
+                            {
+                                Id = e.Id,
+                                EventID = e.EventID,
+                                EventVersion = e.EventVersion,
+                                EventStatus = e.EventStatus,
+                                EventState = e.EventState,
+                                EventCity = e.EventCity,
+                                EventZipCode = e.EventZipCode,
+                                // ✅ UTC values from DB
+                                EventStartDateUtc = e.EventStartDateUtc,
+                                EventEndDateUtc = e.EventEndDateUtc,
                                 Timezone = e.Timezone,
                                 EventStartEndTimeDayWiseList = e.EventStartEndTimeDayWiseList,
                                 TaskForce = e.EventManagementTaskforcesList != null

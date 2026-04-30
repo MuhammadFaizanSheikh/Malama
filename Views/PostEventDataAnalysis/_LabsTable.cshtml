@@ -1,0 +1,250 @@
+﻿@model List<ServiceMembersChild>
+
+<h4>Labs Data</h4>
+
+<!-- 🔹 Filters (we will expand later) -->
+<div class="card p-3 mb-4">
+    <div class="container">
+        <div class="row g-2">
+
+            <!-- 🔹 NEW ROW (Your 3 new filters) -->
+            <div class="col-md-3">
+                <label for="filterLab" class="form-label">Select Lab</label>
+                <select id="filterLab" class="form-control">
+                    <option value="">All</option>
+                    <option value="G6PD">G6PD</option>
+                    <option value="Lipid Panel">Lipid Panel</option>
+                    <option value="HIV">HIV</option>
+                    <option value="ABO">ABO</option>
+                    <option value="Sickle Cell">Sickle Cell</option>
+                    <option value="DNA">DNA</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterLabStatus" class="form-label">Status</label>
+                <select id="filterLabStatus" class="form-control">
+                    <option value="">All</option>
+                    <option value="C">C</option>
+                    <option value="P">P</option>
+                    <option value="I">I</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterReport" class="form-label">Report</label>
+                <select id="filterReport" class="form-control">
+                    <option value="">All</option>
+                </select>
+            </div>
+
+            <!-- (Optional spacing column for alignment) -->
+            <div class="col-md-3"></div>
+
+
+            <!-- 🔹 EXISTING FILTERS (UNCHANGED) -->
+            <div class="col-md-3">
+                <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
+                <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterFullName" class="form-label">Full Name</label>
+                <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterDodId" class="form-label">DoD ID</label>
+                <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterDob" class="form-label">DOB</label>
+                <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
+                <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
+            </div>
+
+            <div class="col-md-3">
+                <label for="filterStatus" class="form-label">Lab Station SMs status</label>
+                <select id="filterStatus" class="form-control">
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+            <!-- 🔹 Buttons -->
+            <div class="col-12 text-center mt-3">
+                <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<table id="postEventTable">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Post Event Status</th>
+            <th>SM ID</th>
+            <th>FULL NAME</th>
+            <th>Last 4 SSN</th>
+            <th>DOD Id</th>
+            <th>Sex</th>
+            <th>DOB</th>
+            <th>Barcode</th>
+            <th>G6PD</th>
+            <th>Lipid Panel</th>
+            <th>Hiv</th>
+            <th>ABO</th>
+            <th>Sickle Cell</th>
+            <th>DNA</th>
+            <th>Pregnancy</th>
+            <th>Post Event Data Entered Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @* <a asp-action="PostEventDataAnalysis" asp-route-postLabStationId="@c.LabStationRecord?.Id" asp-route-serviceMembersChildId="@item.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a> *@
+                </td>
+                <td>Incomplete</td>
+                <td>@item.SmId</td>
+                <td>@item.FullName</td>
+                <td>@item.Last4</td>
+                <td>@item.DodId</td>
+                <td>@item.Sex</td>
+                <td>@item.Dob</td>
+                <td>@item.Barcode</td>
+                <td>
+                    <span class="badge" style="background-color:#198754; color:#ffffff;">C</span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:#fd7e14; color:#ffffff;">P</span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:#ffc107; color:#000000;">I</span>
+                </td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+        var table;
+
+    $(document).ready(function () {
+
+        table = $('#postEventTable').DataTable();
+
+        // 🔹 Map Lab names to column indexes (UPDATE indexes as per your table)
+        const labColumnMap = {
+            "G6PD": 9,
+            "Lipid Panel": 10,
+            "HIV": 11,
+            "ABO": 12,
+            "Sickle Cell": 13,
+            "DNA": 14
+        };
+
+        let filterDobPicker = flatpickr("#filterDob", {
+            altInput: true,
+            altFormat: 'm/d/Y',
+            dateFormat: 'Y-m-d',
+            allowInput: true
+        });
+
+        $('#searchStaffBtn').on('click', function () {
+
+            var barcode = $('#filterBarcode').val().trim().toLowerCase();
+            var fullName = $('#filterFullName').val().trim().toLowerCase();
+            var dodId = $('#filterDodId').val().trim();
+            var last4Ssn = $('#filterLast4Ssn').val().trim();
+            var status = $('#filterStatus').val().trim().toLowerCase();
+
+            var lab = $('#filterLab').val();
+            var labStatus = $('#filterLabStatus').val();
+
+            let dobPicker = $('#filterDob')[0]?._flatpickr;
+            let dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            // 🔹 Clear previous filters
+            table.columns().search('');
+
+            if (barcode) {
+                table.column(8).search(barcode, true, false, true);
+            }
+
+            if (fullName) {
+                const escaped = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                table.column(3).search(escaped, true, false, true);
+            }
+
+            if (dodId) {
+                table.column(5).search('^' + dodId + '$', true, false);
+            }
+
+            if (dobDate) {
+                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = dobDate.getDate().toString().padStart(2, '0');
+                const year = dobDate.getFullYear();
+
+                const formatted = `${month}/${day}/${year}`;
+                table.column(7).search('^' + formatted + '$', true, false);
+            }
+
+            if (last4Ssn) {
+                table.column(4).search('^' + last4Ssn + '$', true, false);
+            }
+
+            if (status) {
+                table.column(1).search(status, true, false, true);
+            }
+
+            // 🔹 NEW: Lab + Status dynamic filtering
+            if (lab && labStatus) {
+                let columnIndex = labColumnMap[lab];
+
+                if (columnIndex !== undefined) {
+                    table.column(columnIndex).search('^' + labStatus + '$', true, false);
+                }
+            }
+
+            // 🔹 Optional: If only Lab selected (no status)
+            else if (lab && !labStatus) {
+                let columnIndex = labColumnMap[lab];
+
+                if (columnIndex !== undefined) {
+                    table.column(columnIndex).search('.', true, false); // any non-empty
+                }
+            }
+
+            table.draw();
+        });
+
+        // 🔹 Reset Filters
+        $('#resetFiltersBtn').on('click', function () {
+            $('input').val('');
+            $('select').val('');
+
+            let dobPicker = $('#filterDob')[0]?._flatpickr;
+            if (dobPicker) dobPicker.clear();
+
+            table.columns().search('');
+            table.draw();
+        });
+
+    });
+</script>

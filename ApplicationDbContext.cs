@@ -35,6 +35,7 @@ namespace ExcelFilesCompiler
         public DbSet<ContainerNotification> ContainerNotification { get; set; }
         public DbSet<UserEventMapping> UserEventMapping { get; set; }
         public DbSet<PostEventManagement> PostEventManagement { get; set; }
+        public DbSet<PostEventLabStation> PostEventLabStation { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

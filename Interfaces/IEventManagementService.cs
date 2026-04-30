@@ -6,7 +6,9 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<ResponseDto> AddEventManagementAsync(EventManagement eventManagement, string submissionToken, string loggedinUserName);
         Task<List<EventManagementPreview>> GetAllEventManagements(long? eventIdFilter = null);
-        Task<List<PostEventManagementPreview>> GetAllForPostEventManagements();
+        Task<List<PostEventManagementPreview>> GetAllForPostEventManagements(long? eventId = null);
+
+        Task<List<PostEventManagementPreview>> GetAllForPostEventDataAnalysis(long? eventId = null);
         Task<(PostEventManagementDto Data, string EventID)> GetForPostEventManagement(long eventManagementId);
         Task<List<EventManagementPreview>> GetAllEventID(bool includeVersion = true);
         Task<string> GetNextEventIdNumber();
