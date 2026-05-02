@@ -1,0 +1,373 @@
+﻿@model PostEventLabStationAnalysisDto
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+    ViewData["Title"] = "Post Event Management";
+}
+
+<style>
+    #page-heading {
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white; /* ensures text is visible */
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
+    h2, h3 {
+        color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Aligns the text in the middle of the cell */
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table tbody tr {
+            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
+        }
+
+            table tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
+            }
+
+        table td button,
+        table td a {
+            display: inline-block; /* Makes the buttons appear side by side */
+            margin-right: 5px; /* Optional: Adds space between the buttons */
+        }
+
+        table td .button-container {
+            display: flex;
+            justify-content: center; /* Aligns buttons horizontally in the center */
+        }
+
+            table td .button-container a {
+                margin-right: 5px; /* Optional: Adds space between the buttons */
+            }
+
+        table thead th {
+            background-color: rgba(120, 130, 221, 1); /* Header background color */
+            color: white; /* Header text color */
+            text-align: center; /* Center-align header text */
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa; /* Light gray background */
+        pointer-events: none; /* Disable click and focus */
+        border-color: #ced4da; /* Light border color */
+    }
+</style>
+
+<h2 id="page-heading" class="text-center mb-3">Post Event Lab Station</h2>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]',
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor,
+                iconColor: iconColor
+            });
+        });
+    </script>
+}
+
+<!-- ================= MEMBER INFO ================= -->
+<div class="card mb-4">
+    <div class="card-body">
+
+        <div class="row mb-3">
+            <div class="col-md-4"><strong>Full Name:</strong> @Model.ServiceMember?.FullName</div>
+            <div class="col-md-4"><strong>DOD ID:</strong> @Model.ServiceMember?.DodId</div>
+            <div class="col-md-4"><strong>Barcode:</strong> @Model.ServiceMember?.Barcode</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4"><strong>DOB:</strong> @Model.ServiceMember?.Dob</div>
+            <div class="col-md-4"><strong>Age:</strong> @Model.ServiceMember?.Age</div>
+            <div class="col-md-4"><strong>Sex:</strong> @Model.ServiceMember?.Sex</div>
+        </div>
+
+    </div>
+</div>
+
+<h4 class="mb-3">Required Lab(s)</h4>
+
+<form asp-action="PostEventLabStationAnalysis" method="post">
+
+    <input asp-for="ServiceMembersChildId" type="hidden" />
+    <input asp-for="PostEventLabStation.Id" type="hidden" />
+
+    <!-- ================= G6PD ================= -->
+    @if (Model.ShowG6pdSection)
+    {
+        <div class="card mb-3">
+            <div class="card-header fw-bold">G6PD</div>
+
+            <div class="card-body">
+
+                <!-- GIVEN DATE -->
+                <div class="row g-2 mb-3 align-items-end">
+
+                    <!-- Given Date -->
+                    <div class="col-md-4">
+                        <label class="form-label">Collection Date/Time</label>
+                        <input class="form-control w-auto"
+                               value="@Model.G6pdGivenDateTime?.ToString("MM-dd-yyyy HH:mm")"
+                               readonly />
+                    </div>
+
+                    <!-- Lab Result Received -->
+                    <div class="col-md-8">
+                        <label class="form-label">Lab Result Received</label>
+
+                        <div class="mt-1">
+
+                            <input type="radio"
+                                   asp-for="PostEventLabStation.G6pdResultReceived"
+                                   value="true"
+                                   onchange="toggleG6pd(true)" />
+                            <label class="me-3">Yes</label>
+
+                            <input type="radio"
+                                   asp-for="PostEventLabStation.G6pdResultReceived"
+                                   value="false"
+                                   onchange="toggleG6pd(false)" />
+                            <label>No</label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div id="g6pdYesSection"
+                     style="display:@(Model.PostEventLabStation.G6pdResultReceived ? "block" : "none");">
+
+                    <div class="row g-2 mb-3">
+
+                        <div class="col-md-3">
+                            <label class="form-label">Lab Result Received Date/Time</label>
+                            <input asp-for="PostEventLabStation.G6pdResultReceivedDateTime"
+                                   id="g6pdReceivedDate"
+                                   class="form-control flatpickr" />
+                        </div>
+
+                        <!-- Upload -->
+                        <div class="col-md-3">
+                            <label class="form-label">Upload Lab Result (Malama)</label>
+                            <input type="file" name="G6pdFile" class="form-control" />
+
+                            <input asp-for="PostEventLabStation.G6pdResultMalamaUploadedDateTime"
+                                   class="form-control mt-1" placeholder="MM-dd-yyyy HH:mm"
+                                   readonly />
+                        </div>
+
+                        <!-- EMR -->
+                        <div class="col-md-3">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input"
+                                       asp-for="PostEventLabStation.G6pdResultEMRUploaded"
+                                       onchange="toggleG6pdEMR(this.checked)" />
+                                <label class="form-check-label">EMR Uploaded</label>
+                            </div>
+
+                            <input asp-for="PostEventLabStation.G6pdResultEMRUploadedDateTime"
+                                   id="g6pdEmrDate"
+                                   class="form-control flatpickr" placeholder="MM-dd-yyyy HH:mm" 
+                                   style="display:@(Model.PostEventLabStation.G6pdResultEMRUploaded ? "block" : "none");" />
+                        </div>
+
+                        <!-- SOR -->
+                        <div class="col-md-3">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input"
+                                       asp-for="PostEventLabStation.G6pdResultSORUploaded"
+                                       onchange="toggleG6pdSOR(this.checked)" />
+                                <label class="form-check-label">SOR Uploaded</label>
+                            </div>
+
+                            <input asp-for="PostEventLabStation.G6pdResultSORUploadedDateTime"
+                                   id="g6pdSorDate"
+                                   class="form-control flatpickr" placeholder="MM-dd-yyyy HH:mm"
+                                   style="display:@(Model.PostEventLabStation.G6pdResultSORUploaded ? "block" : "none");" />
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- NO SECTION -->
+                <div id="g6pdNoSection"
+                     style="display:@(Model.PostEventLabStation.G6pdResultReceived ? "none" : "block");">
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label>Provide Reason</label>
+                            <select class="form-control w-auto" asp-for="PostEventLabStation.G6pdResultReason">
+
+                                <option value="">-- Select Reason --</option>
+                                <option value="Still waiting">Still waiting</option>
+                                <option value="Insufficient blood sample">Insufficient blood sample</option>
+
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    }
+
+    <!-- SAVE -->
+    <div class="text-end">
+        <button type="submit" class="btn btn-success">Save</button>
+    </div>
+
+</form>
+
+<script>
+    flatpickr(".flatpickr", {
+        altInput: true,
+        altFormat: "m/d/Y h:i K",
+        dateFormat: "Y-m-d H:i",
+        allowInput: true,
+        enableTime: true,
+        time_24hr: true
+    });
+
+    function toggleG6pd(isYes) {
+
+        const yes = document.getElementById("g6pdYesSection");
+        const no = document.getElementById("g6pdNoSection");
+        const receivedDate = document.getElementById("g6pdReceivedDate");
+
+        if (!yes || !no || !receivedDate) return;
+
+        yes.style.display = isYes ? "block" : "none";
+        no.style.display = isYes ? "none" : "block";
+
+        if (isYes) {
+            receivedDate.setAttribute("required", "required");
+        } else {
+            receivedDate.removeAttribute("required");
+            receivedDate.value = "";
+        }
+    }
+
+    function toggleG6pdEMR(show) {
+        const el = document.getElementById("g6pdEmrDate");
+
+        if (!el) return;
+
+        el.style.display = show ? "block" : "none";
+
+        if (show) {
+            el.setAttribute("required", "required");
+        } else {
+            el.removeAttribute("required");
+            el.value = "";
+        }
+    }
+
+    function toggleG6pdSOR(show) {
+        const el = document.getElementById("g6pdSorDate");
+
+        if (!el) return;
+
+        el.style.display = show ? "block" : "none";
+
+        if (show) {
+            el.setAttribute("required", "required");
+        } else {
+            el.removeAttribute("required");
+            el.value = "";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const selected = document.querySelector('input[name="PostEventLabStation.G6pdResultReceived"]:checked');
+
+        if (selected) {
+            toggleG6pd(selected.value === "true");
+        }
+    });
+
+    document.querySelector("form").addEventListener("submit", function (e) {
+
+        const isYes = document.querySelector(
+            'input[name="PostEventLabStation.G6pdResultReceived"]:checked'
+        )?.value === "true";
+
+        const receivedDate = document.getElementById("g6pdReceivedDate").value;
+
+        if (isYes && !receivedDate) {
+            alert("G6PD Received Date is required when Lab Result is Yes.");
+            e.preventDefault();
+            return;
+        }
+        
+        const emrChecked = document.querySelector('[name="PostEventLabStation.G6pdResultEMRUploaded"]').checked;
+        const emrDate = document.getElementById("g6pdEmrDate").value;
+
+        const sorChecked = document.querySelector('[name="PostEventLabStation.G6pdResultSORUploaded"]').checked;
+        const sorDate = document.getElementById("g6pdSorDate").value;
+
+        if (emrChecked && !emrDate) {
+            alert("EMR Uploaded date is required");
+            e.preventDefault();
+            return;
+        }
+
+        if (sorChecked && !sorDate) {
+            alert("SOR Uploaded date is required");
+            e.preventDefault();
+            return;
+        }
+    });
+</script>

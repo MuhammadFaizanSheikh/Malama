@@ -12,6 +12,8 @@ using System.Diagnostics.Contracts;
 using NPOI.POIFS.Properties;
 using iTextSharp.text.pdf;
 using static ExcelFilesCompiler.Utilities.AppConstants;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -264,9 +266,13 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<List<ServiceMembersChild>> GetImmunizationsByEventIdAsync(long eventId)
         {
+            const string methodName = nameof(GetImmunizationsByEventIdAsync);
+
             try
             {
-                _logger.LogInformation("Fetching ImmunizationRecords where Imm=Needed and CheckIn=Yes for EventID={EventId}", eventId);
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching ImmunizationRecords where Imm=Needed and CheckIn=Yes for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
 
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
@@ -277,39 +283,249 @@ namespace ExcelFilesCompiler.Controllers.Services
                     )
                     .ToListAsync();
 
-                _logger.LogInformation("Found {Count} ImmunizationRecords for EventID={EventId}", result.Count, eventId);
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} ImmunizationRecords for EventId={EventId}",
+                    CLASSNAME, methodName, result.Count, eventId);
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching needed ImmunizationRecords for EventID={EventId}", eventId);
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching ImmunizationRecords for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
                 throw;
             }
         }
 
-        public async Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId)
+        public async Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId, string? status = null)
         {
+            const string methodName = nameof(GetLabStationByEventIdAsync);
+
             try
             {
-                _logger.LogInformation("Fetching LabStation where LabNeeded=Needed and CheckIn=Yes for EventID={EventId}", eventId);
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching LabStation where LabNeeded=Needed, CheckIn=Yes, EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
 
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes",
+                             c.CheckIn == "Yes" &&
+                             (status == null ||
+                              (c.LabStationRecord != null && c.LabStationRecord.Status == status)),
                         c => c.LabStationRecord
                     )
                     .ToListAsync();
 
-                _logger.LogInformation("Found {Count} LabStation for EventID={EventId}", result.Count, eventId);
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} LabStation records for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, result.Count, eventId, status);
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching needed LabStation for EventID={EventId}", eventId);
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching LabStation data for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
+
+                throw;
+            }
+        }
+
+        public async Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetPreAndPostLabStationByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching pre & post lab data for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.LabNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes" &&
+                             c.LabStationRecord != null &&
+                             c.LabStationRecord.Status == AppConstants.Status.Completed,
+                        c => c.LabStationRecord,
+                        c => c.PostEventLabStation  // ✅ fixed
+                    )
+                    .ToListAsync();
+
+                if (result == null || !result.Any())
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No lab data found for EventId={EventId}",
+                        CLASSNAME, methodName, eventId);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "{ClassName}.{MethodName} - Retrieved {Count} records for EventId={EventId}",
+                        CLASSNAME, methodName, result.Count, eventId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching lab data for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw;
+            }
+        }
+
+        public async Task<PostEventLabStationAnalysisDto?>GetPostEventLabStationAnalysisDtoAsync(long serviceMembersChildId)
+        {
+            const string methodName = nameof(GetPostEventLabStationAnalysisDtoAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                var entity = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.Id == serviceMembersChildId &&
+                             c.LabNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes" &&
+                             c.LabStationRecord != null &&
+                             c.LabStationRecord.Status == AppConstants.Status.Completed,
+                        c => c.LabStationRecord,
+                        c => c.PostEventLabStation,
+                        c => c.ServiceMembersParent.EventManagement
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (entity == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No data found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+
+                    return null;
+                }
+
+                var dto = new PostEventLabStationAnalysisDto
+                {
+                    ServiceMembersChildId = entity.Id,
+
+                    EventID = entity.ServiceMembersParent?.EventManagement?.EventID,
+
+                    // 🔹 Service Member (Display)
+                    ServiceMember = new ServiceMembersChildDto
+                    {
+                        FullName = entity.FullName,
+                        DodId = entity.DodId,
+                        Barcode = entity.Barcode,
+                        Dob = entity.Dob,
+                        Age = entity.Age,
+                        Sex = entity.Sex
+                    },
+
+                    // 🔹 LabStation (Pre-Lab)
+                    LabStation = new LabStationDto
+                    {
+                        G6pdNeeded = entity.LabStationRecord.G6pdNeeded,
+                        AboNeeded = entity.LabStationRecord.AboNeeded,
+                        HivNeeded = entity.LabStationRecord.HivNeeded,
+                        PregnancyTestNeeded = entity.LabStationRecord.PregnancyTestNeeded,
+                        LipidPanelNeeded = entity.LabStationRecord.LipidPanelNeeded,
+
+                        G6pdGivenDateTime = entity.LabStationRecord.G6pdGivenDateTime,
+                        AboGivenDateTime = entity.LabStationRecord.AboGivenDateTime,
+                        HivGivenDateTime = entity.LabStationRecord.HivGivenDateTime,
+                        PregnancyTestGivenDateTime = entity.LabStationRecord.PregnancyTestGivenDateTime,
+                        LipidPanelGivenDateTime = entity.LabStationRecord.LipidPanelGivenDateTime,
+
+                        LipidPanelRapidTesting = entity.LabStationRecord.LipidPanelRapidTesting,
+                        HivBarcodeCarebill = entity.LabStationRecord.HivBarcodeCarebill,
+                        FedExTrackingNo = entity.LabStationRecord.FedExTrackingNo
+                    },
+
+                    // 🔹 Post Event Lab (Editable)
+                    PostEventLabStation = entity.PostEventLabStation != null
+                        ? new PostEventLabStationDto
+                        {
+                            Id = entity.PostEventLabStation.Id,
+                            ServiceMembersChildId = entity.Id,
+                            Status = entity.PostEventLabStation.Status,
+
+                            // G6PD
+                            G6pdResultReceived = entity.PostEventLabStation.G6pdResultReceived,
+                            G6pdResultReason = entity.PostEventLabStation.G6pdResultReason,
+                            G6pdResultReceivedDateTime = entity.PostEventLabStation.G6pdResultReceivedDateTime,
+                            G6pdResultMalamaUploaded = entity.PostEventLabStation.G6pdResultMalamaUploaded,
+                            G6pdResultMalamaUploadedDateTime = entity.PostEventLabStation.G6pdResultMalamaUploadedDateTime,
+                            G6pdResultEMRUploaded = entity.PostEventLabStation.G6pdResultEMRUploaded,
+                            G6pdResultEMRUploadedDateTime = entity.PostEventLabStation.G6pdResultEMRUploadedDateTime,
+                            G6pdResultSORUploaded = entity.PostEventLabStation.G6pdResultSORUploaded,
+                            G6pdResultSORUploadedDateTime = entity.PostEventLabStation.G6pdResultSORUploadedDateTime,
+
+                            // ABO
+                            AboResultReceived = entity.PostEventLabStation.AboResultReceived,
+                            AboResultReason = entity.PostEventLabStation.AboResultReason,
+                            AboResultReceivedDateTime = entity.PostEventLabStation.AboResultReceivedDateTime,
+                            AboResultMalamaUploaded = entity.PostEventLabStation.AboResultMalamaUploaded,
+                            AboResultMalamaUploadedDateTime = entity.PostEventLabStation.AboResultMalamaUploadedDateTime,
+                            AboResultEMRUploaded = entity.PostEventLabStation.AboResultEMRUploaded,
+                            AboResultEMRUploadedDateTime = entity.PostEventLabStation.AboResultEMRUploadedDateTime,
+                            AboResultSORUploaded = entity.PostEventLabStation.AboResultSORUploaded,
+                            AboResultSORUploadedDateTime = entity.PostEventLabStation.AboResultSORUploadedDateTime,
+
+                            // HIV
+                            HivResultReceived = entity.PostEventLabStation.HivResultReceived,
+                            HivResultReason = entity.PostEventLabStation.HivResultReason,
+                            HivResultReceivedDateTime = entity.PostEventLabStation.HivResultReceivedDateTime,
+                            HivResultMalamaUploaded = entity.PostEventLabStation.HivResultMalamaUploaded,
+                            HivResultMalamaUploadedDateTime = entity.PostEventLabStation.HivResultMalamaUploadedDateTime,
+                            HivResultEMRUploaded = entity.PostEventLabStation.HivResultEMRUploaded,
+                            HivResultEMRUploadedDateTime = entity.PostEventLabStation.HivResultEMRUploadedDateTime,
+                            HivResultSORUploaded = entity.PostEventLabStation.HivResultSORUploaded,
+                            HivResultSORUploadedDateTime = entity.PostEventLabStation.HivResultSORUploadedDateTime,
+
+                            // Pregnancy
+                            PregnancyResultReceived = entity.PostEventLabStation.PregnancyResultReceived,
+                            PregnancyResultReason = entity.PostEventLabStation.PregnancyResultReason,
+                            PregnancyResultReceivedDateTime = entity.PostEventLabStation.PregnancyResultReceivedDateTime,
+                            PregnancyResultMalamaUploaded = entity.PostEventLabStation.PregnancyResultMalamaUploaded,
+                            PregnancyResultMalamaUploadedDateTime = entity.PostEventLabStation.PregnancyResultMalamaUploadedDateTime,
+                            PregnancyResultEMRUploaded = entity.PostEventLabStation.PregnancyResultEMRUploaded,
+                            PregnancyResultEMRUploadedDateTime = entity.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
+                            PregnancyResultSORUploaded = entity.PostEventLabStation.PregnancyResultSORUploaded,
+                            PregnancyResultSORUploadedDateTime = entity.PostEventLabStation.PregnancyResultSORUploadedDateTime
+                        }
+                        : new PostEventLabStationDto
+                        {
+                            ServiceMembersChildId = entity.Id
+                        }
+                };
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - DTO prepared successfully for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error building DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
                 throw;
             }
         }

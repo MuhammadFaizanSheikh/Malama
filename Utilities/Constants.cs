@@ -20,6 +20,12 @@
             public const string NotApplicable = "N/A";
         }
 
+        public static class Status
+        {
+            public const string Pending = "Pending";
+            public const string Completed = "Completed";
+        }
+
         public static class ResponseCodes
         {
             public const string NotFound = "NOT_FOUND";

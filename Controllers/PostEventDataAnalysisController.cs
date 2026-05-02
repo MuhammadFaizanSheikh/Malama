@@ -1,5 +1,6 @@
 ﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
+using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
 using Malama.Models;
 using Malama.Utilities;
@@ -82,7 +83,10 @@ namespace ExcelFilesCompiler.Controllers
         public async Task<IActionResult> PostEventDataAnalysis(long eventManagementId, string selectedStation)
         {
             const string methodName = "PostEventDataAnalysis";
-            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Called with EventManagementId={EventManagementId}, SelectedStation={SelectedStation}",
+                CLASSNAME, methodName, eventManagementId, selectedStation);
 
             try
             {
@@ -92,31 +96,105 @@ namespace ExcelFilesCompiler.Controllers
                     SelectedStation = selectedStation
                 };
 
-                var data = await _fileUploader.GetLabStationByEventIdAsync(model.EventId);
+                // 🔹 Fetch Event Management (to get business EventID like ABC0001)
+                var eventManagement = await _eventManagementService
+                    .GetEventManagementForEventSelectionByIdWithoutInclude(eventManagementId);
 
+                if (eventManagement == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - EventManagement not found for EventManagementId={EventManagementId}",
+                        CLASSNAME, methodName, eventManagementId);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Found";
+                    TempData["ResponseMessage"] = "Event not found.";
+
+                    return RedirectToAction("Index");
+                }
+
+                // ✅ Set EventID in ViewBag
+                ViewBag.EventID = eventManagement.EventID;
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Loaded EventID={EventID} for EventManagementId={EventManagementId}",
+                    CLASSNAME, methodName, eventManagement.EventID, eventManagementId);
+
+                // 🔹 Load station data
                 if (!string.IsNullOrEmpty(selectedStation))
                 {
                     model.ServiceMembersChild = selectedStation switch
                     {
-                        "Labs" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
-                        //"Immunization" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
-                        //"Dental" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
-                        //"Hearing" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
-                        //"Vision" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
-                        //"EKG" => await _fileUploader.GetLabStationByEventIdAsync(model.EventId),
+                        "Labs" => await _fileUploader.GetPreAndPostLabStationByEventIdAsync(model.EventId),
+                        //"Immunization",
+                        //"Dental",
+                        //"XYZ",
                         _ => new List<ServiceMembersChild>()
                     };
+
+                    _logger.LogInformation(
+                        "{ClassName}.{MethodName} - Loaded data for SelectedStation={SelectedStation}, Count={Count}",
+                        CLASSNAME, methodName, selectedStation, model.ServiceMembersChild?.Count ?? 0);
                 }
 
                 return View(model);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred", CLASSNAME, methodName);
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Exception occurred for EventManagementId={EventManagementId}",
+                    CLASSNAME, methodName, eventManagementId);
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "Something went wrong while loading data.";
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PostEventLabStationAnalysis(long? postLabStationId, long serviceMembersChildId)
+        {
+            const string methodName = nameof(PostEventLabStationAnalysis);
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Called with PostLabStationId={PostLabStationId}, ServiceMembersChildId={ServiceMembersChildId}",
+                CLASSNAME, methodName, postLabStationId, serviceMembersChildId);
+
+            try
+            {
+                var model = await _fileUploader
+                    .GetPostEventLabStationAnalysisDtoAsync(serviceMembersChildId);
+
+                if (model == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No data found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseMessage"] = "Record not found.";
+
+                    return RedirectToAction("Index");
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Successfully prepared DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                return View(model); // ✅ now sending DTO
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error occurred for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseMessage"] = "Something went wrong.";
 
                 return RedirectToAction("Index");
             }

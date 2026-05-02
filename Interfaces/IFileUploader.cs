@@ -10,7 +10,9 @@ namespace ExcelFilesCompiler.Interfaces
         Task<ResponseDto> AddRecordsBulkAsync(List<FileDataDto> fileDataDtos, string eventId, string addedBy);
         //Task<List<string>> GetDistinctEventIdsAsync();
         Task<List<ServiceMembersChild>> GetImmunizationsByEventIdAsync(long eventId);
-        Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId);
+        Task<List<ServiceMembersChild>> GetLabStationByEventIdAsync(long eventId, string? status = null);
+        Task<PostEventLabStationAnalysisDto?> GetPostEventLabStationAnalysisDtoAsync(long serviceMembersChildId);
+        Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId);
         Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(long eventId);
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, long eventId, string addedBy);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string addedBy);

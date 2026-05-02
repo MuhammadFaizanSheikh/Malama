@@ -101,7 +101,24 @@
     </script>
 }
 
-<h2 id="page-heading">Post Event Data</h2>
+<div class="d-flex align-items-center mb-3">
+
+    <div style="flex: 1;">
+        <label class="fw-bold me-2" style="font-size: 1.2rem;">
+            Event ID:
+        </label>
+        <span style="font-size: 1.2rem;">
+            @ViewBag.EventID
+        </span>
+    </div>
+
+    <div style="flex: 1; text-align: center;">
+        <h2 id="page-heading" class="m-0">Post Event Data</h2>
+    </div>
+
+    <div style="flex: 1;"></div>
+
+</div>
 
 <form method="get" asp-action="PostEventDataAnalysis">
     <input type="hidden" name="eventManagementId" value="@Model.EventId" />

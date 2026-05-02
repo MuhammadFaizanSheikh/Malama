@@ -114,7 +114,7 @@
         {
             <tr>
                 <td>
-                    @* <a asp-action="PostEventDataAnalysis" asp-route-postLabStationId="@c.LabStationRecord?.Id" asp-route-serviceMembersChildId="@item.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a> *@
+                    <a asp-action="PostEventLabStationAnalysis" asp-route-postLabStationId="@item.PostEventLabStation?.Id" asp-route-serviceMembersChildId="@item.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                 </td>
                 <td>Incomplete</td>
                 <td>@item.SmId</td>
@@ -125,7 +125,48 @@
                 <td>@item.Dob</td>
                 <td>@item.Barcode</td>
                 <td>
-                    <span class="badge" style="background-color:#198754; color:#ffffff;">C</span>
+                    @{
+                        string text = "N/A";
+                        string bgColor = "#6c757d"; // default (gray)
+                        string textColor = "#ffffff";
+
+                        if (@item.LabStationRecord?.G6pdNeeded == "Completed")
+                        {
+                            if (@item.PostEventLabStation == null)
+                            {
+                                text = "I";
+                                bgColor = "#ffc107";   // yellow
+                                textColor = "#000000"; // black text
+                            }
+                            else
+                            {
+                                bool malama = @item.PostEventLabStation.G6pdResultMalamaUploaded;
+                                bool emr = @item.PostEventLabStation.G6pdResultEMRUploaded;
+                                bool sor = @item.PostEventLabStation.G6pdResultSORUploaded;
+
+                                if (malama && emr && sor)
+                                {
+                                    text = "C";
+                                    bgColor = "#198754"; // green
+                                    textColor = "#ffffff";
+                                }
+                                else if (!malama && !emr && !sor)
+                                {
+                                    text = "I";
+                                    bgColor = "#ffc107";   // yellow
+                                    textColor = "#000000"; // black text
+                                }
+                                else
+                                {
+                                    text = "P";
+                                    bgColor = "#fd7e14"; // orange
+                                    textColor = "#ffffff";
+                                }
+                            }
+                        }
+                    }
+
+                    <span class="badge" style="background-color:@bgColor; color:@textColor;">@text</span>
                 </td>
                 <td>
                     <span class="badge" style="background-color:#fd7e14; color:#ffffff;">P</span>
