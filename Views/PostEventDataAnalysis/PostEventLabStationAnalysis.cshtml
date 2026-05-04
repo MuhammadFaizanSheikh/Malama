@@ -137,10 +137,12 @@
 
 <h3 class="mb-3">Required Lab(s)</h3>
 
-<form asp-action="PostEventLabStationAnalysis" method="post">
+<form asp-action="SavePostEventLabStation" method="post">
 
-    <input asp-for="ServiceMembersChildId" type="hidden" />
     <input asp-for="PostEventLabStation.Id" type="hidden" />
+    <input asp-for="PostEventLabStation.ServiceMembersChildId" type="hidden" />
+    <input asp-for="PostEventLabStation.PostEventManagementId" type="hidden" />
+    
 
     <!-- ================= G6PD ================= -->
     <!-- ================= G6PD ================= -->
@@ -201,6 +203,37 @@
 })
     }
 
+    <!-- ================= LIPID ================= -->
+    @if (Model.ShowLipidPanelSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "lipid",
+    Title = "Lipid Panel",
+    GivenDate = Model.LipidPanelGivenDateTime,
+
+    ResultReceivedName = "PostEventLabStation.LipidPanelResultReceived",
+    ReasonName = "PostEventLabStation.LipidPanelResultReason",
+    ReceivedDateName = "PostEventLabStation.LipidPanelResultReceivedDateTime",
+    MalamaDateName = "PostEventLabStation.LipidPanelResultMalamaUploadedDateTime",
+    EMRName = "PostEventLabStation.LipidPanelResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.LipidPanelResultEMRUploadedDateTime",
+    SORName = "PostEventLabStation.LipidPanelResultSORUploaded",
+    SORDateName = "PostEventLabStation.LipidPanelResultSORUploadedDateTime",
+    IsLipidRapidName = "PostEventLabStation.IsLipidRapid",
+
+    ResultReceived = Model.PostEventLabStation.LipidPanelResultReceived,
+    Reason = Model.PostEventLabStation.LipidPanelResultReason,
+    ReceivedDate = Model.PostEventLabStation.LipidPanelResultReceivedDateTime,
+    MalamaDate = Model.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
+    EMR = Model.PostEventLabStation.LipidPanelResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.LipidPanelResultEMRUploadedDateTime,
+    SOR = Model.PostEventLabStation.LipidPanelResultSORUploaded,
+    SORDate = Model.PostEventLabStation.LipidPanelResultSORUploadedDateTime,
+    IsLipidRapid = Model.IsLipidRapid
+})
+    }
+
     <!-- ================= HIV ================= -->
     @if (Model.ShowHivSection)
     {
@@ -218,6 +251,7 @@
     EMRDateName = "PostEventLabStation.HivResultEMRUploadedDateTime",
     SORName = "PostEventLabStation.HivResultSORUploaded",
     SORDateName = "PostEventLabStation.HivResultSORUploadedDateTime",
+    HivBarcodeCarebillName = "PostEventLabStation.HivBarcodeCarebill",
 
     ResultReceived = Model.PostEventLabStation.HivResultReceived,
     Reason = Model.PostEventLabStation.HivResultReason,
@@ -226,7 +260,8 @@
     EMR = Model.PostEventLabStation.HivResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.HivResultEMRUploadedDateTime,
     SOR = Model.PostEventLabStation.HivResultSORUploaded,
-    SORDate = Model.PostEventLabStation.HivResultSORUploadedDateTime
+    SORDate = Model.PostEventLabStation.HivResultSORUploadedDateTime,
+    HivBarcodeCarebill = Model.HivBarcodeCarebill
 })
     }
 
@@ -247,6 +282,7 @@
     EMRDateName = "PostEventLabStation.PregnancyResultEMRUploadedDateTime",
     SORName = "PostEventLabStation.PregnancyResultSORUploaded",
     SORDateName = "PostEventLabStation.PregnancyResultSORUploadedDateTime",
+    PregnancyTestResultName = "PostEventLabStation.PregnancyTestResult",
 
     ResultReceived = Model.PostEventLabStation.PregnancyResultReceived,
     Reason = Model.PostEventLabStation.PregnancyResultReason,
@@ -255,38 +291,27 @@
     EMR = Model.PostEventLabStation.PregnancyResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
     SOR = Model.PostEventLabStation.PregnancyResultSORUploaded,
-    SORDate = Model.PostEventLabStation.PregnancyResultSORUploadedDateTime
+    SORDate = Model.PostEventLabStation.PregnancyResultSORUploadedDateTime,
+    PregnancyTestResult = Model.PregnancyTestResult
 })
     }
 
-    <!-- ================= LIPID ================= -->
-    @if (Model.ShowLipidPanelSection)
-    {
-        @await Html.PartialAsync("_LabSection", new LabUIModel
-        {
-            Prefix = "lipid",
-            Title = "Lipid Panel",
-            GivenDate = Model.LipidPanelGivenDateTime,
+    
 
-            ResultReceivedName = "PostEventLabStation.LipidPanelResultReceived",
-            ReasonName = "PostEventLabStation.LipidPanelResultReason",
-            ReceivedDateName = "PostEventLabStation.LipidPanelResultReceivedDateTime",
-            MalamaDateName = "PostEventLabStation.LipidPanelResultMalamaUploadedDateTime",
-            EMRName = "PostEventLabStation.LipidPanelResultEMRUploaded",
-            EMRDateName = "PostEventLabStation.LipidPanelResultEMRUploadedDateTime",
-            SORName = "PostEventLabStation.LipidPanelResultSORUploaded",
-            SORDateName = "PostEventLabStation.LipidPanelResultSORUploadedDateTime",
-        
-            ResultReceived = Model.PostEventLabStation.LipidPanelResultReceived,
-            Reason = Model.PostEventLabStation.LipidPanelResultReason,
-            ReceivedDate = Model.PostEventLabStation.LipidPanelResultReceivedDateTime,
-            MalamaDate = Model.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
-            EMR = Model.PostEventLabStation.LipidPanelResultEMRUploaded,
-            EMRDate = Model.PostEventLabStation.LipidPanelResultEMRUploadedDateTime,
-            SOR = Model.PostEventLabStation.LipidPanelResultSORUploaded,
-            SORDate = Model.PostEventLabStation.LipidPanelResultSORUploadedDateTime
-        })
-    }
+
+    <div class="card-body">
+        <div class="row g-2">
+
+            <div class="col-md-4">
+                <label class="form-label">FedEx Tracking No</label>
+                <input class="form-control"
+                       name="FedExTrackingNo"
+                       value="@Model.FedExTrackingNo"
+                       readonly /> <!-- remove readonly if editable -->
+            </div>
+
+        </div>
+    </div>
 
     <!-- SAVE -->
     <div class="text-end">

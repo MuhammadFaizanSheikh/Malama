@@ -405,7 +405,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                              c.LabStationRecord.Status == AppConstants.Status.Completed,
                         c => c.LabStationRecord,
                         c => c.PostEventLabStation,
-                        c => c.ServiceMembersParent.EventManagement
+                        c => c.ServiceMembersParent.EventManagement,
+                        c => c.ServiceMembersParent.EventManagement.PostEventManagement
                     )
                     .FirstOrDefaultAsync();
 
@@ -423,6 +424,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ServiceMembersChildId = entity.Id,
 
                     EventID = entity.ServiceMembersParent?.EventManagement?.EventID,
+                    PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
 
                     // 🔹 Service Member (Display)
                     ServiceMember = new ServiceMembersChildDto
@@ -452,7 +454,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                         LipidPanelRapidTesting = entity.LabStationRecord.LipidPanelRapidTesting,
                         HivBarcodeCarebill = entity.LabStationRecord.HivBarcodeCarebill,
-                        FedExTrackingNo = entity.LabStationRecord.FedExTrackingNo
+                        FedExTrackingNo = entity.LabStationRecord.FedExTrackingNo,
+                        PregnancyTestResult = entity.LabStationRecord.PregnancyTestResult
                     },
 
                     // 🔹 Post Event Lab (Editable)
@@ -461,6 +464,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         {
                             Id = entity.PostEventLabStation.Id,
                             ServiceMembersChildId = entity.Id,
+                            PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
                             Status = entity.PostEventLabStation.Status,
 
                             // G6PD

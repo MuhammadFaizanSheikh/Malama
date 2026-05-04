@@ -1,4 +1,5 @@
 ﻿using ExcelFilesCompiler.Utilities;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Malama.Models
 {
@@ -15,11 +16,11 @@ namespace Malama.Models
 
     public class LabStationDto
     {
-        public string G6pdNeeded { get; set; }
-        public string AboNeeded { get; set; }
-        public string HivNeeded { get; set; }
-        public string PregnancyTestNeeded { get; set; }
-        public string LipidPanelNeeded { get; set; }
+        public string? G6pdNeeded { get; set; }
+        public string? AboNeeded { get; set; }
+        public string? HivNeeded { get; set; }
+        public string? PregnancyTestNeeded { get; set; }
+        public string? LipidPanelNeeded { get; set; }
 
         public DateTime? G6pdGivenDateTime { get; set; }
         public DateTime? AboGivenDateTime { get; set; }
@@ -30,18 +31,20 @@ namespace Malama.Models
         public bool? LipidPanelRapidTesting { get; set; }
         public string? HivBarcodeCarebill { get; set; }
         public string? FedExTrackingNo { get; set; }
+        public string? PregnancyTestResult { get; set; }
     }
 
     public class PostEventLabStationAnalysisDto
     {
         public long ServiceMembersChildId { get; set; }
+        public long PostEventManagementId { get; set; }
 
-        public string EventID { get; set; }
+        public string? EventID { get; set; }
 
-        // 🔹 Display
+        [ValidateNever]
         public ServiceMembersChildDto ServiceMember { get; set; }
 
-        // 🔹 Pre-Lab (logic only)
+        [ValidateNever]
         public LabStationDto LabStation { get; set; }
 
         // 🔹 Editable (never null)
@@ -63,17 +66,16 @@ namespace Malama.Models
 
         // 🔹 Extra Info
         public bool? IsLipidRapid => LabStation?.LipidPanelRapidTesting;
-        public string? HivBarcode => LabStation?.HivBarcodeCarebill;
+        public string? HivBarcodeCarebill => LabStation?.HivBarcodeCarebill;
         public string? FedExTrackingNo => LabStation?.FedExTrackingNo;
-
-        // 🔹 Optional formatted helpers (very useful in UI)
-        public string G6pdGivenDateTimeText => G6pdGivenDateTime?.ToString("dd-MMM-yyyy HH:mm") ?? "N/A";
+        public string? PregnancyTestResult => LabStation?.PregnancyTestResult;
     }
 
     public class PostEventLabStationDto
     {
         public long Id { get; set; }
         public long ServiceMembersChildId { get; set; }
+        public long PostEventManagementId { get; set; }
 
         public string Status { get; set; } = AppConstants.Status.Pending;
 
@@ -149,6 +151,10 @@ namespace Malama.Models
         public string EMRDateName { get; set; }
         public string SORName { get; set; }
         public string SORDateName { get; set; }
+        public string IsLipidRapidName { get; set; }
+        public string HivBarcodeCarebillName { get; set; }
+        public string FedExTrackingNoName { get; set; }
+        public string PregnancyTestResultName { get; set; }
 
         public bool ResultReceived { get; set; }
         public string? Reason { get; set; }
@@ -158,5 +164,8 @@ namespace Malama.Models
         public DateTime? EMRDate { get; set; }
         public bool SOR { get; set; }
         public DateTime? SORDate { get; set; }
+        public bool? IsLipidRapid { get; set; }
+        public string? HivBarcodeCarebill { get; set; }
+        public string? PregnancyTestResult { get; set; }
     }
 }

@@ -8,18 +8,59 @@
         <!-- GIVEN DATE + RESULT -->
         <div class="row g-2 mb-3 align-items-end">
 
-            <div class="col-md-4">
+            <!-- DATE -->
+            <div class="col-md-3">
                 <label class="form-label">Collection Date/Time</label>
                 <input class="form-control w-auto"
                        value="@Model.GivenDate?.ToString("MM-dd-yyyy HH:mm")"
                        readonly />
             </div>
 
-            <div class="col-md-8">
+            <!-- LIPID RAPID -->
+            @if (Model.Prefix.Equals("lipid", StringComparison.OrdinalIgnoreCase))
+            {
+                <div class="col-md-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input"
+                               type="checkbox"
+                        @(Model.IsLipidRapid == true ? "checked" : "")
+                               disabled />
+                        <label class="form-check-label">Rapid Testing</label>
+                    </div>
+                </div>
+            }
+
+            <!-- HIV BARCODE -->
+            @if (Model.Prefix.Equals("hiv", StringComparison.OrdinalIgnoreCase))
+            {
+                <div class="col-md-3">
+                    <label class="form-label">Barcode Carebill</label>
+                    <input class="form-control"
+                           value="@Model.HivBarcodeCarebill"
+                           readonly />
+                </div>
+            }
+            <!-- PREGNANCY RESULT -->
+            @if (Model.Prefix.Equals("preg", StringComparison.OrdinalIgnoreCase))
+            {
+                <div class="col-md-3">
+                    <label class="form-label">Pregnancy Test Result</label>
+                    <input class="form-control"
+                           value="@Model.PregnancyTestResult"
+                           readonly />
+                </div>
+            }
+
+            <!-- RESULT RECEIVED -->
+            <div class="col-md-@(
+    Model.Prefix.Equals("lipid", StringComparison.OrdinalIgnoreCase) ||
+    Model.Prefix.Equals("hiv", StringComparison.OrdinalIgnoreCase) ||
+    Model.Prefix.Equals("preg", StringComparison.OrdinalIgnoreCase)
+    ? "6" : "9")">
+
                 <label class="form-label">Lab Result Received</label>
 
                 <div class="mt-1">
-
                     <input type="radio"
                            name="@Model.ResultReceivedName"
                            value="true"
@@ -33,7 +74,6 @@
                     @(!Model.ResultReceived ? "checked" : "")
                            onchange="toggleLab('@Model.Prefix', false)" />
                     <label>No</label>
-
                 </div>
             </div>
 
