@@ -88,6 +88,18 @@ namespace Malama.Models
         public bool G6pdResultSORUploaded { get; set; }
         public DateTime? G6pdResultSORUploadedDateTime { get; set; }
 
+        // Lipid
+
+        public bool LipidPanelResultReceived { get; set; }
+        public string? LipidPanelResultReason { get; set; }
+        public DateTime? LipidPanelResultReceivedDateTime { get; set; }
+        public bool LipidPanelResultMalamaUploaded { get; set; }
+        public DateTime? LipidPanelResultMalamaUploadedDateTime { get; set; }
+        public bool LipidPanelResultEMRUploaded { get; set; }
+        public DateTime? LipidPanelResultEMRUploadedDateTime { get; set; }
+        public bool LipidPanelResultSORUploaded { get; set; }
+        public DateTime? LipidPanelResultSORUploadedDateTime { get; set; }
+
         // ABO
         public bool AboResultReceived { get; set; }
         public string? AboResultReason { get; set; }
@@ -120,5 +132,31 @@ namespace Malama.Models
         public DateTime? PregnancyResultEMRUploadedDateTime { get; set; }
         public bool PregnancyResultSORUploaded { get; set; }
         public DateTime? PregnancyResultSORUploadedDateTime { get; set; }
+    }
+
+    public class LabUIModel
+    {
+        public string Prefix { get; set; }
+        public string Title { get; set; }
+
+        public DateTime? GivenDate { get; set; }
+
+        public string ResultReceivedName { get; set; }
+        public string ReasonName { get; set; }
+        public string ReceivedDateName { get; set; }
+        public string MalamaDateName { get; set; }
+        public string EMRName { get; set; }
+        public string EMRDateName { get; set; }
+        public string SORName { get; set; }
+        public string SORDateName { get; set; }
+
+        public bool ResultReceived { get; set; }
+        public string? Reason { get; set; }
+        public DateTime? ReceivedDate { get; set; }
+        public DateTime? MalamaDate { get; set; }
+        public bool EMR { get; set; }
+        public DateTime? EMRDate { get; set; }
+        public bool SOR { get; set; }
+        public DateTime? SORDate { get; set; }
     }
 }

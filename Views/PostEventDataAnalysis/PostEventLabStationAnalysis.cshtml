@@ -135,7 +135,7 @@
     </div>
 </div>
 
-<h4 class="mb-3">Required Lab(s)</h4>
+<h3 class="mb-3">Required Lab(s)</h3>
 
 <form asp-action="PostEventLabStationAnalysis" method="post">
 
@@ -143,125 +143,149 @@
     <input asp-for="PostEventLabStation.Id" type="hidden" />
 
     <!-- ================= G6PD ================= -->
+    <!-- ================= G6PD ================= -->
     @if (Model.ShowG6pdSection)
     {
-        <div class="card mb-3">
-            <div class="card-header fw-bold">G6PD</div>
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "g6pd",
+    Title = "G6PD",
+    GivenDate = Model.G6pdGivenDateTime,
 
-            <div class="card-body">
+    ResultReceivedName = "PostEventLabStation.G6pdResultReceived",
+    ReasonName = "PostEventLabStation.G6pdResultReason",
+    ReceivedDateName = "PostEventLabStation.G6pdResultReceivedDateTime",
+    MalamaDateName = "PostEventLabStation.G6pdResultMalamaUploadedDateTime",
+    EMRName = "PostEventLabStation.G6pdResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.G6pdResultEMRUploadedDateTime",
+    SORName = "PostEventLabStation.G6pdResultSORUploaded",
+    SORDateName = "PostEventLabStation.G6pdResultSORUploadedDateTime",
 
-                <!-- GIVEN DATE -->
-                <div class="row g-2 mb-3 align-items-end">
+    ResultReceived = Model.PostEventLabStation.G6pdResultReceived,
+    Reason = Model.PostEventLabStation.G6pdResultReason,
+    ReceivedDate = Model.PostEventLabStation.G6pdResultReceivedDateTime,
+    MalamaDate = Model.PostEventLabStation.G6pdResultMalamaUploadedDateTime,
+    EMR = Model.PostEventLabStation.G6pdResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.G6pdResultEMRUploadedDateTime,
+    SOR = Model.PostEventLabStation.G6pdResultSORUploaded,
+    SORDate = Model.PostEventLabStation.G6pdResultSORUploadedDateTime
+})
+    }
 
-                    <!-- Given Date -->
-                    <div class="col-md-4">
-                        <label class="form-label">Collection Date/Time</label>
-                        <input class="form-control w-auto"
-                               value="@Model.G6pdGivenDateTime?.ToString("MM-dd-yyyy HH:mm")"
-                               readonly />
-                    </div>
+    <!-- ================= ABO ================= -->
+    @if (Model.ShowAboSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "abo",
+    Title = "ABO",
+    GivenDate = Model.AboGivenDateTime,
 
-                    <!-- Lab Result Received -->
-                    <div class="col-md-8">
-                        <label class="form-label">Lab Result Received</label>
+    ResultReceivedName = "PostEventLabStation.AboResultReceived",
+    ReasonName = "PostEventLabStation.AboResultReason",
+    ReceivedDateName = "PostEventLabStation.AboResultReceivedDateTime",
+    MalamaDateName = "PostEventLabStation.AboResultMalamaUploadedDateTime",
+    EMRName = "PostEventLabStation.AboResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.AboResultEMRUploadedDateTime",
+    SORName = "PostEventLabStation.AboResultSORUploaded",
+    SORDateName = "PostEventLabStation.AboResultSORUploadedDateTime",
 
-                        <div class="mt-1">
+    ResultReceived = Model.PostEventLabStation.AboResultReceived,
+    Reason = Model.PostEventLabStation.AboResultReason,
+    ReceivedDate = Model.PostEventLabStation.AboResultReceivedDateTime,
+    MalamaDate = Model.PostEventLabStation.AboResultMalamaUploadedDateTime,
+    EMR = Model.PostEventLabStation.AboResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.AboResultEMRUploadedDateTime,
+    SOR = Model.PostEventLabStation.AboResultSORUploaded,
+    SORDate = Model.PostEventLabStation.AboResultSORUploadedDateTime
+})
+    }
 
-                            <input type="radio"
-                                   asp-for="PostEventLabStation.G6pdResultReceived"
-                                   value="true"
-                                   onchange="toggleG6pd(true)" />
-                            <label class="me-3">Yes</label>
+    <!-- ================= HIV ================= -->
+    @if (Model.ShowHivSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "hiv",
+    Title = "HIV",
+    GivenDate = Model.HivGivenDateTime,
 
-                            <input type="radio"
-                                   asp-for="PostEventLabStation.G6pdResultReceived"
-                                   value="false"
-                                   onchange="toggleG6pd(false)" />
-                            <label>No</label>
+    ResultReceivedName = "PostEventLabStation.HivResultReceived",
+    ReasonName = "PostEventLabStation.HivResultReason",
+    ReceivedDateName = "PostEventLabStation.HivResultReceivedDateTime",
+    MalamaDateName = "PostEventLabStation.HivResultMalamaUploadedDateTime",
+    EMRName = "PostEventLabStation.HivResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.HivResultEMRUploadedDateTime",
+    SORName = "PostEventLabStation.HivResultSORUploaded",
+    SORDateName = "PostEventLabStation.HivResultSORUploadedDateTime",
 
-                        </div>
+    ResultReceived = Model.PostEventLabStation.HivResultReceived,
+    Reason = Model.PostEventLabStation.HivResultReason,
+    ReceivedDate = Model.PostEventLabStation.HivResultReceivedDateTime,
+    MalamaDate = Model.PostEventLabStation.HivResultMalamaUploadedDateTime,
+    EMR = Model.PostEventLabStation.HivResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.HivResultEMRUploadedDateTime,
+    SOR = Model.PostEventLabStation.HivResultSORUploaded,
+    SORDate = Model.PostEventLabStation.HivResultSORUploadedDateTime
+})
+    }
 
-                    </div>
+    <!-- ================= PREGNANCY ================= -->
+    @if (Model.ShowPregnancySection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "preg",
+    Title = "Pregnancy",
+    GivenDate = Model.PregnancyGivenDateTime,
 
-                </div>
-                <div id="g6pdYesSection"
-                     style="display:@(Model.PostEventLabStation.G6pdResultReceived ? "block" : "none");">
+    ResultReceivedName = "PostEventLabStation.PregnancyResultReceived",
+    ReasonName = "PostEventLabStation.PregnancyResultReason",
+    ReceivedDateName = "PostEventLabStation.PregnancyResultReceivedDateTime",
+    MalamaDateName = "PostEventLabStation.PregnancyResultMalamaUploadedDateTime",
+    EMRName = "PostEventLabStation.PregnancyResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.PregnancyResultEMRUploadedDateTime",
+    SORName = "PostEventLabStation.PregnancyResultSORUploaded",
+    SORDateName = "PostEventLabStation.PregnancyResultSORUploadedDateTime",
 
-                    <div class="row g-2 mb-3">
+    ResultReceived = Model.PostEventLabStation.PregnancyResultReceived,
+    Reason = Model.PostEventLabStation.PregnancyResultReason,
+    ReceivedDate = Model.PostEventLabStation.PregnancyResultReceivedDateTime,
+    MalamaDate = Model.PostEventLabStation.PregnancyResultMalamaUploadedDateTime,
+    EMR = Model.PostEventLabStation.PregnancyResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
+    SOR = Model.PostEventLabStation.PregnancyResultSORUploaded,
+    SORDate = Model.PostEventLabStation.PregnancyResultSORUploadedDateTime
+})
+    }
 
-                        <div class="col-md-3">
-                            <label class="form-label">Lab Result Received Date/Time</label>
-                            <input asp-for="PostEventLabStation.G6pdResultReceivedDateTime"
-                                   id="g6pdReceivedDate"
-                                   class="form-control flatpickr" />
-                        </div>
+    <!-- ================= LIPID ================= -->
+    @if (Model.ShowLipidPanelSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+        {
+            Prefix = "lipid",
+            Title = "Lipid Panel",
+            GivenDate = Model.LipidPanelGivenDateTime,
 
-                        <!-- Upload -->
-                        <div class="col-md-3">
-                            <label class="form-label">Upload Lab Result (Malama)</label>
-                            <input type="file" name="G6pdFile" class="form-control" />
-
-                            <input asp-for="PostEventLabStation.G6pdResultMalamaUploadedDateTime"
-                                   class="form-control mt-1" placeholder="MM-dd-yyyy HH:mm"
-                                   readonly />
-                        </div>
-
-                        <!-- EMR -->
-                        <div class="col-md-3">
-                            <div class="form-check mb-1">
-                                <input class="form-check-input"
-                                       asp-for="PostEventLabStation.G6pdResultEMRUploaded"
-                                       onchange="toggleG6pdEMR(this.checked)" />
-                                <label class="form-check-label">EMR Uploaded</label>
-                            </div>
-
-                            <input asp-for="PostEventLabStation.G6pdResultEMRUploadedDateTime"
-                                   id="g6pdEmrDate"
-                                   class="form-control flatpickr" placeholder="MM-dd-yyyy HH:mm" 
-                                   style="display:@(Model.PostEventLabStation.G6pdResultEMRUploaded ? "block" : "none");" />
-                        </div>
-
-                        <!-- SOR -->
-                        <div class="col-md-3">
-                            <div class="form-check mb-1">
-                                <input class="form-check-input"
-                                       asp-for="PostEventLabStation.G6pdResultSORUploaded"
-                                       onchange="toggleG6pdSOR(this.checked)" />
-                                <label class="form-check-label">SOR Uploaded</label>
-                            </div>
-
-                            <input asp-for="PostEventLabStation.G6pdResultSORUploadedDateTime"
-                                   id="g6pdSorDate"
-                                   class="form-control flatpickr" placeholder="MM-dd-yyyy HH:mm"
-                                   style="display:@(Model.PostEventLabStation.G6pdResultSORUploaded ? "block" : "none");" />
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- NO SECTION -->
-                <div id="g6pdNoSection"
-                     style="display:@(Model.PostEventLabStation.G6pdResultReceived ? "none" : "block");">
-
-                    <div class="row mb-3">
-
-                        <div class="col-md-6">
-                            <label>Provide Reason</label>
-                            <select class="form-control w-auto" asp-for="PostEventLabStation.G6pdResultReason">
-
-                                <option value="">-- Select Reason --</option>
-                                <option value="Still waiting">Still waiting</option>
-                                <option value="Insufficient blood sample">Insufficient blood sample</option>
-
-                            </select>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
+            ResultReceivedName = "PostEventLabStation.LipidPanelResultReceived",
+            ReasonName = "PostEventLabStation.LipidPanelResultReason",
+            ReceivedDateName = "PostEventLabStation.LipidPanelResultReceivedDateTime",
+            MalamaDateName = "PostEventLabStation.LipidPanelResultMalamaUploadedDateTime",
+            EMRName = "PostEventLabStation.LipidPanelResultEMRUploaded",
+            EMRDateName = "PostEventLabStation.LipidPanelResultEMRUploadedDateTime",
+            SORName = "PostEventLabStation.LipidPanelResultSORUploaded",
+            SORDateName = "PostEventLabStation.LipidPanelResultSORUploadedDateTime",
+        
+            ResultReceived = Model.PostEventLabStation.LipidPanelResultReceived,
+            Reason = Model.PostEventLabStation.LipidPanelResultReason,
+            ReceivedDate = Model.PostEventLabStation.LipidPanelResultReceivedDateTime,
+            MalamaDate = Model.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
+            EMR = Model.PostEventLabStation.LipidPanelResultEMRUploaded,
+            EMRDate = Model.PostEventLabStation.LipidPanelResultEMRUploadedDateTime,
+            SOR = Model.PostEventLabStation.LipidPanelResultSORUploaded,
+            SORDate = Model.PostEventLabStation.LipidPanelResultSORUploadedDateTime
+        })
     }
 
     <!-- SAVE -->
@@ -272,102 +296,152 @@
 </form>
 
 <script>
-    flatpickr(".flatpickr", {
-        altInput: true,
-        altFormat: "m/d/Y h:i K",
-        dateFormat: "Y-m-d H:i",
-        allowInput: true,
-        enableTime: true,
-        time_24hr: true
+    
+        document.addEventListener("DOMContentLoaded", function () {
+
+            document.querySelectorAll(".flatpickr").forEach(function (el) {
+
+                if (!el._flatpickr) { // prevent double init
+                    flatpickr(el, {
+                        altInput: true,
+                        altFormat: "m/d/Y h:i K",
+                        dateFormat: "Y-m-d H:i",
+                        allowInput: true,
+                        enableTime: true,
+                        time_24hr: true
+                    });
+                }
+
+            });
+        });
+
+                document.addEventListener("submit", function (e) {
+
+        const form = e.target;
+        if (form.tagName !== "FORM") return;
+
+        const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid"];
+
+        for (let p of prefixes) {
+
+            const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
+
+            // =========================
+            // RECEIVED VALIDATION
+            // =========================
+            const receivedRadio = form.querySelector(
+                `input[name*='${namePrefix}ResultReceived']:checked`
+            );
+
+            if (receivedRadio) {
+
+                const isYes = receivedRadio.value === "true";
+
+                const receivedInput = form.querySelector(`#${p}_received`);
+                const receivedValue = receivedInput?.value;
+
+                if (isYes && !receivedValue) {
+
+                    const visibleInput = receivedInput?._flatpickr?.altInput || receivedInput;
+                    visibleInput?.focus();
+
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            // =========================
+            // EMR VALIDATION
+            // =========================
+            const emrCheckbox = form.querySelector(
+                `input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`
+            );
+
+            const emrInput = form.querySelector(`#${p}_emr`);
+            const emrValue = emrInput?.value;
+
+            const emrChecked = emrCheckbox?.checked === true;
+
+            if (emrChecked && !emrValue) {
+
+                const visibleInput = emrInput?._flatpickr?.altInput || emrInput;
+                visibleInput?.focus();
+
+                e.preventDefault();
+                return;
+            }
+
+            // =========================
+            // SOR VALIDATION
+            // =========================
+            const sorCheckbox = form.querySelector(
+                `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
+            );
+
+            const sorInput = form.querySelector(`#${p}_sor`);
+            const sorValue = sorInput?.value;
+
+            const sorChecked = sorCheckbox?.checked === true;
+
+            if (sorChecked && !sorValue) {
+
+                const visibleInput = sorInput?._flatpickr?.altInput || sorInput;
+                visibleInput?.focus();
+
+                e.preventDefault();
+                return;
+            }
+        }
     });
 
-    function toggleG6pd(isYes) {
+        function toggleLab(prefix, isYes) {
 
-        const yes = document.getElementById("g6pdYesSection");
-        const no = document.getElementById("g6pdNoSection");
-        const receivedDate = document.getElementById("g6pdReceivedDate");
+        const yes = document.getElementById(prefix + "_yes");
+        const no = document.getElementById(prefix + "_no");
+        const received = document.getElementById(prefix + "_received");
 
-        if (!yes || !no || !receivedDate) return;
+        if (!yes || !no) return;
 
         yes.style.display = isYes ? "block" : "none";
         no.style.display = isYes ? "none" : "block";
 
-        if (isYes) {
-            receivedDate.setAttribute("required", "required");
-        } else {
-            receivedDate.removeAttribute("required");
-            receivedDate.value = "";
+        if (received) {
+            if (isYes) {
+                received.setAttribute("required", "required");
+            } else {
+                received.removeAttribute("required");
+                received.value = "";
+            }
         }
     }
 
-    function toggleG6pdEMR(show) {
-        const el = document.getElementById("g6pdEmrDate");
+    function toggleLabEMR(prefix, show) {
+        const el = document.getElementById(prefix + "_emr");
 
         if (!el) return;
 
         el.style.display = show ? "block" : "none";
 
-        if (show) {
-            el.setAttribute("required", "required");
-        } else {
+        if (show) el.setAttribute("required", "required");
+        else {
             el.removeAttribute("required");
             el.value = "";
         }
     }
 
-    function toggleG6pdSOR(show) {
-        const el = document.getElementById("g6pdSorDate");
+    function toggleLabSOR(prefix, show) {
+        const el = document.getElementById(prefix + "_sor");
 
         if (!el) return;
 
         el.style.display = show ? "block" : "none";
 
-        if (show) {
-            el.setAttribute("required", "required");
-        } else {
+        if (show) el.setAttribute("required", "required");
+        else {
             el.removeAttribute("required");
             el.value = "";
         }
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const selected = document.querySelector('input[name="PostEventLabStation.G6pdResultReceived"]:checked');
-
-        if (selected) {
-            toggleG6pd(selected.value === "true");
-        }
-    });
-
-    document.querySelector("form").addEventListener("submit", function (e) {
-
-        const isYes = document.querySelector(
-            'input[name="PostEventLabStation.G6pdResultReceived"]:checked'
-        )?.value === "true";
-
-        const receivedDate = document.getElementById("g6pdReceivedDate").value;
-
-        if (isYes && !receivedDate) {
-            alert("G6PD Received Date is required when Lab Result is Yes.");
-            e.preventDefault();
-            return;
-        }
         
-        const emrChecked = document.querySelector('[name="PostEventLabStation.G6pdResultEMRUploaded"]').checked;
-        const emrDate = document.getElementById("g6pdEmrDate").value;
-
-        const sorChecked = document.querySelector('[name="PostEventLabStation.G6pdResultSORUploaded"]').checked;
-        const sorDate = document.getElementById("g6pdSorDate").value;
-
-        if (emrChecked && !emrDate) {
-            alert("EMR Uploaded date is required");
-            e.preventDefault();
-            return;
-        }
-
-        if (sorChecked && !sorDate) {
-            alert("SOR Uploaded date is required");
-            e.preventDefault();
-            return;
-        }
-    });
 </script>
