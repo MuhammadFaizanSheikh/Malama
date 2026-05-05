@@ -82,9 +82,9 @@ namespace ExcelFilesCompiler.Controllers
 
         //[RoleAttributeAuthorizeFromConfig("PostEventManagement_View")]
         [HttpGet]
-        public async Task<IActionResult> PostEventDataAnalysis(long eventManagementId, string selectedStation)
+        public async Task<IActionResult> SelectStation(long eventManagementId, string selectedStation)
         {
-            const string methodName = "PostEventDataAnalysis";
+            const string methodName = "SelectStation";
 
             _logger.LogInformation(
                 "{ClassName}.{MethodName} - Called with EventManagementId={EventManagementId}, SelectedStation={SelectedStation}",
@@ -157,9 +157,9 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> PostEventLabStationAnalysis(long? postLabStationId, long serviceMembersChildId)
+        public async Task<IActionResult> SpecificServiceMemberLabStation(long? postLabStationId, long serviceMembersChildId)
         {
-            const string methodName = nameof(PostEventLabStationAnalysis);
+            const string methodName = nameof(SpecificServiceMemberLabStation);
 
             _logger.LogInformation(
                 "{ClassName}.{MethodName} - Called with PostLabStationId={PostLabStationId}, ServiceMembersChildId={ServiceMembersChildId}",
@@ -186,6 +186,8 @@ namespace ExcelFilesCompiler.Controllers
                     "{ClassName}.{MethodName} - Successfully prepared DTO for ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, serviceMembersChildId);
 
+                ViewBag.EventID = model.EventID;
+
                 return View(model); // ✅ now sending DTO
             }
             catch (Exception ex)
@@ -208,34 +210,30 @@ namespace ExcelFilesCompiler.Controllers
         public async Task<IActionResult> SavePostEventLabStation(PostEventLabStationAnalysisDto model)
         {
             const string methodName = "SavePostEventLabStation";
+
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, ModelState is invalid", CLASSNAME, methodName);
+                    _logger.LogWarning("{ClassName}, {MethodName}, ModelState invalid", CLASSNAME, methodName);
 
-                    var allErrors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-
-                    var message = string.Join(" | ", allErrors);
-
-                    _logger.LogError("{ClassName}, {MethodName}, Validation failed with errors: {Errors}", CLASSNAME, methodName, message);
+                    var message = string.Join(" | ",
+                        ModelState.Values.SelectMany(v => v.Errors)
+                                         .Select(e => e.ErrorMessage));
 
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
-                    return View("SavePostEventLabStation", model);
+                    return View("SpecificServiceMemberLabStation", model);
                 }
 
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    _logger.LogError("{ClassName}, {MethodName}, User not found / unauthorized access", CLASSNAME, methodName);
+                    _logger.LogWarning("{ClassName}, {MethodName}, Unauthorized access", CLASSNAME, methodName);
 
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Unauthorized";
@@ -244,41 +242,67 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction("Index");
                 }
 
+                if (model.PostEventLabStation == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = "Invalid form data.";
+
+                    return View("SpecificServiceMemberLabStation", model);
+                }
+
                 if (model.PostEventLabStation.Id == 0)
                 {
-                    _logger.LogInformation("{ClassName}, {MethodName}, Add operation started by User={UserName}", CLASSNAME, methodName, user.UserName);
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Add operation started. User={User}",
+                        CLASSNAME, methodName, user.UserName);
 
-                    await _postEventLabStationService.AddAsync(model.PostEventLabStation, user.UserName);
+                    var result = await _postEventLabStationService
+                        .AddAsync(model.PostEventLabStation, user.UserName);
 
+                    if (!result.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = result.Message;
 
-                    //if (success)
+                        return View("SpecificServiceMemberLabStation", model);
+                    }
+
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Lab record added successfully.";
+                    TempData["ResponseMessage"] = result.Message;
                 }
                 else
                 {
-                    //_logger.LogInformation("{ClassName}, {MethodName}, Update operation started for LabId={LabId} by User={UserName}", CLASSNAME, methodName, model.Id, user.UserName);
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Update operation started. Id={Id}, User={User}",
+                        CLASSNAME, methodName, model.PostEventLabStation.Id, user.UserName);
 
-                    //await _labStationService.UpdateAsync(model, user.UserName);
+                    // var result = await _postEventLabStationService.UpdateAsync(...);
 
-                    //TempData["ResponseStatus"] = "success";
-                    //TempData["ResponseTitle"] = "Success";
-                    //TempData["ResponseMessage"] = "Lab record updated successfully.";
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = "Record updated successfully.";
                 }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index", CLASSNAME, methodName);
-                return RedirectToAction("Index");
+                return RedirectToAction("SelectStation", new
+                {
+                    eventManagementId = model.EventId,
+                    selectedStation = "Labs"
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving lab record", CLASSNAME, methodName);
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred",
+                    CLASSNAME, methodName);
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
-                TempData["ResponseMessage"] = ex.Message;
+                TempData["ResponseMessage"] = "An unexpected error occurred.";
 
-                return View("LabStation", model);
+                return View("SavePostEventLabStation", model);
             }
         }
     }

@@ -138,26 +138,26 @@
         <tbody>
             @if (Model != null && Model.EventManagements != null && Model.EventManagements.Any())
             {
-                @foreach (var contract in Model.EventManagements)
+                @foreach (var eventManagement in Model.EventManagements)
                 {
-                    <tr data-id="@contract.Id">
-                        <td>@contract.EventID</td>
+                    <tr data-id="@eventManagement.Id">
+                        <td>@eventManagement.EventID</td>
                         <td>
-                            @if (contract.EventVersion != 0)
+                            @if (eventManagement.EventVersion != 0)
                             {
-                                @contract.EventVersion
+                                @eventManagement.EventVersion
                             }
                         </td>
 
-                        <td>@contract.TaskForce</td>
-                        <td>@contract.EventStatus</td>
-                        <td>@contract.EventState</td>
-                        <td>@contract.EventCity</td>
-                        <td>@contract.EventZipCode</td>
-                        <td>@contract.EventStartDateUtc.ToString("MM-dd-yyyy")</td>
-                        <td>@contract.EventEndDateUtc.ToString("MM-dd-yyyy")</td>
+                        <td>@eventManagement.TaskForce</td>
+                        <td>@eventManagement.EventStatus</td>
+                        <td>@eventManagement.EventState</td>
+                        <td>@eventManagement.EventCity</td>
+                        <td>@eventManagement.EventZipCode</td>
+                        <td>@eventManagement.EventStartDateUtc.ToString("MM-dd-yyyy")</td>
+                        <td>@eventManagement.EventEndDateUtc.ToString("MM-dd-yyyy")</td>
                         <td>
-                            <a asp-action="PostEventDataAnalysis" asp-route-eventManagementId="@contract.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            <a asp-action="SelectStation" asp-route-eventManagementId="@eventManagement.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
 
                     </tr>

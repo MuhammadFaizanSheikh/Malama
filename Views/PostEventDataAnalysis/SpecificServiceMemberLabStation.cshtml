@@ -94,7 +94,24 @@
     }
 </style>
 
-<h2 id="page-heading" class="text-center mb-3">Post Event Lab Station</h2>
+<div class="d-flex align-items-center mb-3">
+
+    <div style="flex: 1;">
+        <label class="fw-bold me-2" style="font-size: 1.2rem;">
+            Event ID:
+        </label>
+        <span style="font-size: 1.2rem;">
+            @ViewBag.EventID
+        </span>
+    </div>
+
+    <div style="flex: 1; text-align: center;">
+        <h2 id="page-heading" class="m-0">Post Event Lab Station</h2>
+    </div>
+
+    <div style="flex: 1;"></div>
+
+</div>
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -142,6 +159,9 @@
     <input asp-for="PostEventLabStation.Id" type="hidden" />
     <input asp-for="PostEventLabStation.ServiceMembersChildId" type="hidden" />
     <input asp-for="PostEventLabStation.PostEventManagementId" type="hidden" />
+    <input asp-for="EventId" type="hidden" />
+    <input asp-for="EventID" type="hidden" />
+    <input type="hidden" asp-for="PostEventLabStation.SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     
 
     <!-- ================= G6PD ================= -->

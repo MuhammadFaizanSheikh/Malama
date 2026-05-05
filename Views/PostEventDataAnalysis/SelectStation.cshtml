@@ -120,7 +120,7 @@
 
 </div>
 
-<form method="get" asp-action="PostEventDataAnalysis">
+<form method="get" asp-action="SelectStation">
     <input type="hidden" name="eventManagementId" value="@Model.EventId" />
 
     <select name="selectedStation" class="form-control" onchange="this.form.submit()">
@@ -142,7 +142,7 @@
     {
         if (Model.SelectedStation == "Labs")
         {
-            @await Html.PartialAsync("_LabsTable", Model.ServiceMembersChild)
+            @await Html.PartialAsync("ServiceMembersLabStationTable", Model.ServiceMembersChild)
         }
         else if (Model.SelectedStation == "Immunization")
         {

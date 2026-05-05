@@ -421,12 +421,9 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var dto = new PostEventLabStationAnalysisDto
                 {
-                    ServiceMembersChildId = entity.Id,
-
                     EventID = entity.ServiceMembersParent?.EventManagement?.EventID,
-                    PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
+                    EventId = entity.ServiceMembersParent.EventManagement.Id,
 
-                    // 🔹 Service Member (Display)
                     ServiceMember = new ServiceMembersChildDto
                     {
                         FullName = entity.FullName,
@@ -437,8 +434,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         Sex = entity.Sex
                     },
 
-                    // 🔹 LabStation (Pre-Lab)
-                    LabStation = new LabStationDto
+                    // LabStation (Pre-Lab)
+                    LabStation = new PreEventLabStationDto
                     {
                         G6pdNeeded = entity.LabStationRecord.G6pdNeeded,
                         AboNeeded = entity.LabStationRecord.AboNeeded,
@@ -458,11 +455,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                         PregnancyTestResult = entity.LabStationRecord.PregnancyTestResult
                     },
 
-                    // 🔹 Post Event Lab (Editable)
+                    // Post Event Lab (Editable)
                     PostEventLabStation = entity.PostEventLabStation != null
                         ? new PostEventLabStationDto
                         {
-                            Id = entity.PostEventLabStation.Id,
+                            Id = entity.PostEventLabStation?.Id ?? 0,
                             ServiceMembersChildId = entity.Id,
                             PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
                             Status = entity.PostEventLabStation.Status,
@@ -513,7 +510,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         }
                         : new PostEventLabStationDto
                         {
-                            ServiceMembersChildId = entity.Id
+                            ServiceMembersChildId = entity.Id,
+                            PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
                         }
                 };
 

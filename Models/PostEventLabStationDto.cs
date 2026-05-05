@@ -14,7 +14,7 @@ namespace Malama.Models
         public string Sex { get; set; }
     }
 
-    public class LabStationDto
+    public class PreEventLabStationDto
     {
         public string? G6pdNeeded { get; set; }
         public string? AboNeeded { get; set; }
@@ -36,16 +36,14 @@ namespace Malama.Models
 
     public class PostEventLabStationAnalysisDto
     {
-        public long ServiceMembersChildId { get; set; }
-        public long PostEventManagementId { get; set; }
-
+        public long EventId { get; set; }
         public string? EventID { get; set; }
 
         [ValidateNever]
         public ServiceMembersChildDto ServiceMember { get; set; }
 
         [ValidateNever]
-        public LabStationDto LabStation { get; set; }
+        public PreEventLabStationDto LabStation { get; set; }
 
         // 🔹 Editable (never null)
         public PostEventLabStationDto PostEventLabStation { get; set; } = new();
@@ -73,6 +71,7 @@ namespace Malama.Models
 
     public class PostEventLabStationDto
     {
+        public string SubmissionToken { get; set; }
         public long Id { get; set; }
         public long ServiceMembersChildId { get; set; }
         public long PostEventManagementId { get; set; }

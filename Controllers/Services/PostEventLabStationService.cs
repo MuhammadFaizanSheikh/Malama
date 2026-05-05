@@ -2,96 +2,26 @@
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
-using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NPOI.HSSF.Record;
-using NPOI.SS.Formula.Functions;
-using System.Reflection;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
     public class PostEventLabStationService : IPostEventLabStationService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly IMapper _mapper;
-        private readonly RoleManager<ApplicationRole> _roleManager;
-        private readonly IFileUploader _fileUploader;
-        private readonly IPdfGeneratorService _pdfGenerator;
         private readonly ILogger<LabStationService> _logger;
-        private readonly IEventManagementService _eventManagementService;
-        private readonly IContractService _contractService;
         private const string CLASSNAME = "LabStationService";
 
 
-        public PostEventLabStationService(ILogger<LabStationService> logger, IUnitOfWork unitOfWork, IMapper mapper, RoleManager<ApplicationRole> roleManager, IPdfGeneratorService pdfGenerator, IEventManagementService eventManagementService, IFileUploader fileUploader, IContractService contractService)
+        public PostEventLabStationService(ILogger<LabStationService> logger, IUnitOfWork unitOfWork, IMapper mapper, ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
-            _roleManager = roleManager;
-            _fileUploader = fileUploader;
             _mapper = mapper;
-            _eventManagementService = eventManagementService;
-            _contractService = contractService;
-            _pdfGenerator = pdfGenerator;
             _logger = logger;
+            _submissionTokenService = submissionTokenService;
         }
-
-        //public async Task<LabStation?> GetByIdAsync(long id)
-        //{
-        //    try
-        //    {
-        //        return await _unitOfWork.LabStation.GetByIdAsync(id);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // optional: log error here
-        //        throw new Exception($"Service error in GetByIdAsync: {ex.Message}", ex);
-        //    }
-        //}
-
-        //public async Task<LabStation> GetByIdWithParentAsync(long id)
-        //{
-        //    return await _unitOfWork.LabStation.GetWithInclude(x => x.Id == id, x => x.FileData).FirstOrDefaultAsync();
-        //}
-
-        //public async Task<(LabStation LabStation, long EventId)> GetLabStationByIdWithEventIdAsync(long labStationId)
-        //{
-        //    const string methodName = "GetLabStationByIdWithEventIdAsync";
-
-        //    try
-        //    {
-        //        _logger.LogDebug("{ClassName}, {MethodName}, Fetching LabStation with Id: {Id}", labStationId);
-
-        //        var result = await _unitOfWork.ServiceMembersChild
-        //        .GetWithIncludeNoTracking(
-        //            c => c.LabStationRecord != null && c.LabStationRecord.Id == labStationId,
-        //            c => c.LabStationRecord,                      // forward navigation
-        //            c => c.ServiceMembersParent.EventManagement
-        //        )
-        //        .Include(c => c.LabStationRecord)               // ensure tracking
-        //            .ThenInclude(ir => ir.ServiceMembersChild)   // include back navigation
-        //        .Select(c => new
-        //        {
-        //            LabStation = c.LabStationRecord,
-        //            EventId = c.ServiceMembersParent.EventManagement.Id
-        //        })
-        //        .FirstOrDefaultAsync();
-
-        //        if (result == null || result.LabStation == null)
-        //        {
-        //            _logger.LogInformation("No LabStationRecord found with Id: {Id}", labStationId);
-        //            return (null, 0);
-        //        }
-
-        //        return (result.LabStation, result.EventId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error fetching LabStationRecord with Id: {Id}", labStationId);
-        //        throw; // Let controller handle displaying generic error
-        //    }
-        //}
 
         public async Task<ResponseDto> AddAsync(PostEventLabStationDto model, string userName)
         {
@@ -99,33 +29,51 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                //var tokenResult = await _submissionTokenService
-                //    .ValidateAndSaveAsync(model.SubmissionToken, userName);
+                var tokenResult = await _submissionTokenService
+                    .ValidateAndSaveAsync(model.SubmissionToken, userName);
 
-                //// ✅ HANDLE TOKEN FAILURE
-                //if (!tokenResult.Success)
-                //{
-                //    _logger.LogWarning("{ClassName}, {MethodName}, Token validation failed. Message={Message}, User={User}",
-                //        CLASSNAME, methodName, tokenResult.Message, userName);
+                if (!tokenResult.Success)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Token validation failed. Message={Message}, User={User}",
+                        CLASSNAME, methodName, tokenResult.Message, userName);
 
-                //    return tokenResult;
-                //}
+                    return tokenResult;
+                }
 
-                PostEventLabStation postEventLabStation = new();
-                _mapper.Map(model, postEventLabStation);
 
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Adding PostEventLabStation. ChildId={ChildId}, User={User}",
+                    CLASSNAME, methodName, model.ServiceMembersChildId, userName);
+
+                // Map DTO → Entity (now safe since profile is fixed)
+                var postEventLabStation = _mapper.Map<PostEventLabStation>(model);
+
+                // Safety checks (recommended even with mapping)
+                if (postEventLabStation.ServiceMembersChildId == 0 ||
+                    postEventLabStation.PostEventManagementId == 0)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Invalid FK values. ChildId={ChildId}, PostEventManagementId={PostEventManagementId}",
+                        CLASSNAME, methodName,
+                        postEventLabStation.ServiceMembersChildId,
+                        postEventLabStation.PostEventManagementId);
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid reference data. Please reload and try again."
+                    };
+                }
+
+                // Audit fields
                 postEventLabStation.AddedOn = DateTime.Now;
                 postEventLabStation.AddedBy = userName;
-
-                //var responseDto = Helper.ConvertEventTimesToUtc(postEventManagement, model.Timezone);
-
-                // (optional) if this also returns response
-                // if (!responseDto.Success) return responseDto;
 
                 await _unitOfWork.PostEventLabStation.AddAsync(postEventLabStation);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Record added successfully. Id={Id}, User={User}",
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Record added successfully. Id={Id}, User={User}",
                     CLASSNAME, methodName, postEventLabStation.Id, userName);
 
                 return new ResponseDto
@@ -136,8 +84,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while adding record. User={User}",
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception while adding PostEventLabStation. User={User}",
                     CLASSNAME, methodName, userName);
 
                 return new ResponseDto
@@ -189,302 +138,232 @@ namespace ExcelFilesCompiler.Controllers.Services
         //    }
         //}
 
-        private void MapToEntity(LabStation source, LabStation target, string userName)
-        {
-            //G6pd
+        //private void MapToEntity(LabStation source, LabStation target, string userName)
+        //{
+        //    //G6pd
 
-            if (source.G6pdNeeded.IsNullOrEmpty())
-            {
-                target.G6pdGivenDateTime = null;
-                target.G6pdReason = null;
-            }
-            else if (source.G6pdNeeded == "Not Completed")
-            {
-                target.G6pdGivenDateTime = null;
-                target.G6pdReason = source.G6pdReason;
-            }
-            else
-            {
-                if (source.G6pdNeeded != target.G6pdNeeded)
-                {
-                    target.G6pdGivenDateTime = DateTime.Now;
-                }
-            }
+        //    if (source.G6pdNeeded.IsNullOrEmpty())
+        //    {
+        //        target.G6pdGivenDateTime = null;
+        //        target.G6pdReason = null;
+        //    }
+        //    else if (source.G6pdNeeded == "Not Completed")
+        //    {
+        //        target.G6pdGivenDateTime = null;
+        //        target.G6pdReason = source.G6pdReason;
+        //    }
+        //    else
+        //    {
+        //        if (source.G6pdNeeded != target.G6pdNeeded)
+        //        {
+        //            target.G6pdGivenDateTime = DateTime.Now;
+        //        }
+        //    }
 
-            //ABO 
+        //    //ABO 
 
-            if (source.AboNeeded.IsNullOrEmpty())
-            {
-                target.AboGivenDateTime = null;
-                target.AboGrouping = null;
-                target.AboRhFactor = null;
-                target.AboReason = null;
-            }
-            else if (source.AboNeeded == "Not Completed")
-            {
-                target.AboGivenDateTime = null;
-                target.AboGrouping = null;
-                target.AboRhFactor = null;
-                target.AboReason = source.AboReason;
-            }
-            else
-            {
-                if (source.AboNeeded != target.AboNeeded)
-                {
-                    target.AboGivenDateTime = DateTime.Now;
-                }
+        //    if (source.AboNeeded.IsNullOrEmpty())
+        //    {
+        //        target.AboGivenDateTime = null;
+        //        target.AboGrouping = null;
+        //        target.AboRhFactor = null;
+        //        target.AboReason = null;
+        //    }
+        //    else if (source.AboNeeded == "Not Completed")
+        //    {
+        //        target.AboGivenDateTime = null;
+        //        target.AboGrouping = null;
+        //        target.AboRhFactor = null;
+        //        target.AboReason = source.AboReason;
+        //    }
+        //    else
+        //    {
+        //        if (source.AboNeeded != target.AboNeeded)
+        //        {
+        //            target.AboGivenDateTime = DateTime.Now;
+        //        }
 
-                target.AboReason = null;
-                target.AboGrouping = source.AboGrouping;
-                target.AboRhFactor = source.AboRhFactor;
-            }
+        //        target.AboReason = null;
+        //        target.AboGrouping = source.AboGrouping;
+        //        target.AboRhFactor = source.AboRhFactor;
+        //    }
 
-            //Lipid
+        //    //Lipid
 
-            if (source.LipidPanelNeeded.IsNullOrEmpty())
-            {
-                target.LipidPanelGivenDateTime = null;
-                target.LipidPanelReason = null;
-                target.LipidPanelRapidTesting = false;
-                target.TotalCholesterol = null;
-                target.TotalCholesterol_LessThan100 = false;
-                target.TotalCholesterol_GreaterThan400 = false;
-                target.HdlCholesterol = null;
-                target.HdlCholesterol_LessThan20 = false;
-                target.HdlCholesterol_GreaterThan120 = false;
-                target.Triglycerides = null;
-                target.Triglycerides_LessThan50 = false;
-                target.Triglycerides_GreaterThan500 = false;
-                target.Glucose = null;
-                target.Glucose_LessThan20 = false;
-                target.Glucose_GreaterThan600 = false;
-                target.LdlCholesterol = null;
-                target.TotalCholesterolHdlRatio = null;
-                target.NonHdlCholesterol = null;
-                target.LdlHdlLipoprotiens = null;
-                target.A1C = null;
-            }
-            else if (source.LipidPanelNeeded == "Not Completed")
-            {
-                target.LipidPanelReason = source.LipidPanelReason;
-                target.LipidPanelGivenDateTime = null;
-                target.LipidPanelRapidTesting = false;
-                target.TotalCholesterol = null;
-                target.TotalCholesterol_LessThan100 = false;
-                target.TotalCholesterol_GreaterThan400 = false;
-                target.HdlCholesterol = null;
-                target.HdlCholesterol_LessThan20 = false;
-                target.HdlCholesterol_GreaterThan120 = false;
-                target.Triglycerides = null;
-                target.Triglycerides_LessThan50 = false;
-                target.Triglycerides_GreaterThan500 = false;
-                target.Glucose = null;
-                target.Glucose_LessThan20 = false;
-                target.Glucose_GreaterThan600 = false;
-                target.LdlCholesterol = null;
-                target.TotalCholesterolHdlRatio = null;
-                target.NonHdlCholesterol = null;
-                target.LdlHdlLipoprotiens = null;
-                target.A1C = null;
-            }
-            else
-            {
-                if (source.LipidPanelNeeded != target.LipidPanelNeeded)
-                {
-                    target.LipidPanelGivenDateTime = DateTime.Now;
-                }
+        //    if (source.LipidPanelNeeded.IsNullOrEmpty())
+        //    {
+        //        target.LipidPanelGivenDateTime = null;
+        //        target.LipidPanelReason = null;
+        //        target.LipidPanelRapidTesting = false;
+        //        target.TotalCholesterol = null;
+        //        target.TotalCholesterol_LessThan100 = false;
+        //        target.TotalCholesterol_GreaterThan400 = false;
+        //        target.HdlCholesterol = null;
+        //        target.HdlCholesterol_LessThan20 = false;
+        //        target.HdlCholesterol_GreaterThan120 = false;
+        //        target.Triglycerides = null;
+        //        target.Triglycerides_LessThan50 = false;
+        //        target.Triglycerides_GreaterThan500 = false;
+        //        target.Glucose = null;
+        //        target.Glucose_LessThan20 = false;
+        //        target.Glucose_GreaterThan600 = false;
+        //        target.LdlCholesterol = null;
+        //        target.TotalCholesterolHdlRatio = null;
+        //        target.NonHdlCholesterol = null;
+        //        target.LdlHdlLipoprotiens = null;
+        //        target.A1C = null;
+        //    }
+        //    else if (source.LipidPanelNeeded == "Not Completed")
+        //    {
+        //        target.LipidPanelReason = source.LipidPanelReason;
+        //        target.LipidPanelGivenDateTime = null;
+        //        target.LipidPanelRapidTesting = false;
+        //        target.TotalCholesterol = null;
+        //        target.TotalCholesterol_LessThan100 = false;
+        //        target.TotalCholesterol_GreaterThan400 = false;
+        //        target.HdlCholesterol = null;
+        //        target.HdlCholesterol_LessThan20 = false;
+        //        target.HdlCholesterol_GreaterThan120 = false;
+        //        target.Triglycerides = null;
+        //        target.Triglycerides_LessThan50 = false;
+        //        target.Triglycerides_GreaterThan500 = false;
+        //        target.Glucose = null;
+        //        target.Glucose_LessThan20 = false;
+        //        target.Glucose_GreaterThan600 = false;
+        //        target.LdlCholesterol = null;
+        //        target.TotalCholesterolHdlRatio = null;
+        //        target.NonHdlCholesterol = null;
+        //        target.LdlHdlLipoprotiens = null;
+        //        target.A1C = null;
+        //    }
+        //    else
+        //    {
+        //        if (source.LipidPanelNeeded != target.LipidPanelNeeded)
+        //        {
+        //            target.LipidPanelGivenDateTime = DateTime.Now;
+        //        }
 
-                if (source.LipidPanelRapidTesting)
-                {
-                    target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
-                    target.TotalCholesterol = source.TotalCholesterol;
-                    target.TotalCholesterol_LessThan100 = source.TotalCholesterol_LessThan100;
-                    target.TotalCholesterol_GreaterThan400 = source.TotalCholesterol_GreaterThan400;
-                    target.HdlCholesterol = source.HdlCholesterol;
-                    target.HdlCholesterol_LessThan20 = source.HdlCholesterol_LessThan20;
-                    target.HdlCholesterol_GreaterThan120 = source.HdlCholesterol_GreaterThan120;
-                    target.Triglycerides = source.Triglycerides;
-                    target.Triglycerides_LessThan50 = source.Triglycerides_LessThan50;
-                    target.Triglycerides_GreaterThan500 = source.Triglycerides_GreaterThan500;
-                    target.Glucose = source.Glucose;
-                    target.Glucose_LessThan20 = source.Glucose_LessThan20;
-                    target.Glucose_GreaterThan600 = source.Glucose_GreaterThan600;
-                    target.LdlCholesterol = source.LdlCholesterol;
-                    target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
-                    target.NonHdlCholesterol = source.NonHdlCholesterol;
-                    target.LdlHdlLipoprotiens = source.LdlHdlLipoprotiens;
-                    target.A1C = source.A1C;
-                    target.LipidPanelReason = null;
-                }
-                else
-                {
-                    target.LipidPanelRapidTesting = false;
-                    target.TotalCholesterol = null;
-                    target.TotalCholesterol_LessThan100 = false;
-                    target.TotalCholesterol_GreaterThan400 = false;
-                    target.HdlCholesterol = null;
-                    target.HdlCholesterol_LessThan20 = false;
-                    target.HdlCholesterol_GreaterThan120 = false;
-                    target.Triglycerides = null;
-                    target.Triglycerides_LessThan50 = false;
-                    target.Triglycerides_GreaterThan500 = false;
-                    target.Glucose = null;
-                    target.Glucose_LessThan20 = false;
-                    target.Glucose_GreaterThan600 = false;
-                    target.LdlCholesterol = null;
-                    target.TotalCholesterolHdlRatio = null;
-                    target.NonHdlCholesterol = null;
-                    target.LdlHdlLipoprotiens = null;
-                    target.A1C = null;
-                }
-            }
+        //        if (source.LipidPanelRapidTesting)
+        //        {
+        //            target.LipidPanelRapidTesting = source.LipidPanelRapidTesting;
+        //            target.TotalCholesterol = source.TotalCholesterol;
+        //            target.TotalCholesterol_LessThan100 = source.TotalCholesterol_LessThan100;
+        //            target.TotalCholesterol_GreaterThan400 = source.TotalCholesterol_GreaterThan400;
+        //            target.HdlCholesterol = source.HdlCholesterol;
+        //            target.HdlCholesterol_LessThan20 = source.HdlCholesterol_LessThan20;
+        //            target.HdlCholesterol_GreaterThan120 = source.HdlCholesterol_GreaterThan120;
+        //            target.Triglycerides = source.Triglycerides;
+        //            target.Triglycerides_LessThan50 = source.Triglycerides_LessThan50;
+        //            target.Triglycerides_GreaterThan500 = source.Triglycerides_GreaterThan500;
+        //            target.Glucose = source.Glucose;
+        //            target.Glucose_LessThan20 = source.Glucose_LessThan20;
+        //            target.Glucose_GreaterThan600 = source.Glucose_GreaterThan600;
+        //            target.LdlCholesterol = source.LdlCholesterol;
+        //            target.TotalCholesterolHdlRatio = source.TotalCholesterolHdlRatio;
+        //            target.NonHdlCholesterol = source.NonHdlCholesterol;
+        //            target.LdlHdlLipoprotiens = source.LdlHdlLipoprotiens;
+        //            target.A1C = source.A1C;
+        //            target.LipidPanelReason = null;
+        //        }
+        //        else
+        //        {
+        //            target.LipidPanelRapidTesting = false;
+        //            target.TotalCholesterol = null;
+        //            target.TotalCholesterol_LessThan100 = false;
+        //            target.TotalCholesterol_GreaterThan400 = false;
+        //            target.HdlCholesterol = null;
+        //            target.HdlCholesterol_LessThan20 = false;
+        //            target.HdlCholesterol_GreaterThan120 = false;
+        //            target.Triglycerides = null;
+        //            target.Triglycerides_LessThan50 = false;
+        //            target.Triglycerides_GreaterThan500 = false;
+        //            target.Glucose = null;
+        //            target.Glucose_LessThan20 = false;
+        //            target.Glucose_GreaterThan600 = false;
+        //            target.LdlCholesterol = null;
+        //            target.TotalCholesterolHdlRatio = null;
+        //            target.NonHdlCholesterol = null;
+        //            target.LdlHdlLipoprotiens = null;
+        //            target.A1C = null;
+        //        }
+        //    }
 
-            //HIV
+        //    //HIV
 
-            if (source.HivNeeded.IsNullOrEmpty())
-            {
-                target.HivGivenDateTime = null;
-                target.HivReason = null;
-                target.HivBarcodeCarebill = null;
-            }
-            else if (source.HivNeeded == "Not Completed")
-            {
-                target.HivGivenDateTime = null;
-                target.HivBarcodeCarebill = null;
-                target.HivReason = source.HivReason;
-            }
-            else
-            {
-                if (source.HivNeeded != target.HivNeeded)
-                {
-                    target.HivGivenDateTime = DateTime.Now;
-                }
+        //    if (source.HivNeeded.IsNullOrEmpty())
+        //    {
+        //        target.HivGivenDateTime = null;
+        //        target.HivReason = null;
+        //        target.HivBarcodeCarebill = null;
+        //    }
+        //    else if (source.HivNeeded == "Not Completed")
+        //    {
+        //        target.HivGivenDateTime = null;
+        //        target.HivBarcodeCarebill = null;
+        //        target.HivReason = source.HivReason;
+        //    }
+        //    else
+        //    {
+        //        if (source.HivNeeded != target.HivNeeded)
+        //        {
+        //            target.HivGivenDateTime = DateTime.Now;
+        //        }
 
-                target.HivReason = null;
-                target.HivBarcodeCarebill = source.HivBarcodeCarebill;
-            }
+        //        target.HivReason = null;
+        //        target.HivBarcodeCarebill = source.HivBarcodeCarebill;
+        //    }
 
-            //Pregnancy
+        //    //Pregnancy
 
-            if (source.PregnancyTestNeeded.IsNullOrEmpty())
-            {
-                target.PregnancyTestGivenDateTime = null;
-                target.PregnancyTestResult = null;
-                target.PregnancyTestReason = null;
-            }
-            else if (source.PregnancyTestNeeded == "Not Completed")
-            {
-                target.PregnancyTestGivenDateTime = null;
-                target.PregnancyTestResult = null;
-                target.PregnancyTestReason = source.PregnancyTestReason;
-            }
-            else
-            {
-                if (source.PregnancyTestNeeded != target.PregnancyTestNeeded)
-                {
-                    target.PregnancyTestGivenDateTime = DateTime.Now;
-                }
+        //    if (source.PregnancyTestNeeded.IsNullOrEmpty())
+        //    {
+        //        target.PregnancyTestGivenDateTime = null;
+        //        target.PregnancyTestResult = null;
+        //        target.PregnancyTestReason = null;
+        //    }
+        //    else if (source.PregnancyTestNeeded == "Not Completed")
+        //    {
+        //        target.PregnancyTestGivenDateTime = null;
+        //        target.PregnancyTestResult = null;
+        //        target.PregnancyTestReason = source.PregnancyTestReason;
+        //    }
+        //    else
+        //    {
+        //        if (source.PregnancyTestNeeded != target.PregnancyTestNeeded)
+        //        {
+        //            target.PregnancyTestGivenDateTime = DateTime.Now;
+        //        }
 
-                target.PregnancyTestResult = source.PregnancyTestResult;
-                target.PregnancyTestReason = null;
-            }
+        //        target.PregnancyTestResult = source.PregnancyTestResult;
+        //        target.PregnancyTestReason = null;
+        //    }
 
-            target.AreYouFasting = source.AreYouFasting;
-            target.AnyComplicationInBloodDrawn = source.AnyComplicationInBloodDrawn;
-            target.AllergicToLatex = source.AllergicToLatex;
-            target.FeelAlright = source.FeelAlright;
-            target.G6pdNeeded = source.G6pdNeeded;
-            target.AboNeeded = source.AboNeeded;
-            target.LipidPanelNeeded = source.LipidPanelNeeded;
-            target.HivNeeded = source.HivNeeded;
-            target.PregnancyTestNeeded = source.PregnancyTestNeeded;
-            target.FedExTrackingNo = source.FedExTrackingNo;
-            target.Status = source.Status;
-            target.UpdatedOn = DateTime.Now;
-            target.UpdatedBy = userName;
+        //    target.AreYouFasting = source.AreYouFasting;
+        //    target.AnyComplicationInBloodDrawn = source.AnyComplicationInBloodDrawn;
+        //    target.AllergicToLatex = source.AllergicToLatex;
+        //    target.FeelAlright = source.FeelAlright;
+        //    target.G6pdNeeded = source.G6pdNeeded;
+        //    target.AboNeeded = source.AboNeeded;
+        //    target.LipidPanelNeeded = source.LipidPanelNeeded;
+        //    target.HivNeeded = source.HivNeeded;
+        //    target.PregnancyTestNeeded = source.PregnancyTestNeeded;
+        //    target.FedExTrackingNo = source.FedExTrackingNo;
+        //    target.Status = source.Status;
+        //    target.UpdatedOn = DateTime.Now;
+        //    target.UpdatedBy = userName;
 
             
-        }
+        //}
 
-        public void SetGivenDateTimes(LabStation model)
-        {
-            if (model == null) return;
+        //public void SetGivenDateTimes(LabStation model)
+        //{
+        //    if (model == null) return;
 
-            model.G6pdGivenDateTime = model.G6pdNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
-            model.AboGivenDateTime = model.AboNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
-            model.LipidPanelGivenDateTime = model.LipidPanelNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
-            model.HivGivenDateTime = model.HivNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
-            model.PregnancyTestGivenDateTime = model.PregnancyTestNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
-        }
-
-        public async Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(long eventId)
-        {
-            const string methodName = "GetLabDataAgainstEventIdAndGenerateHivPdf";
-            _logger.LogInformation("{ClassName}, {MethodName}, Started for EventId={EventId}",
-                CLASSNAME, methodName, eventId);
-
-            try
-            {
-                // 🔹 Fetch HIV lab data
-                var serviceMembersChild = await _fileUploader
-                    .GetEventDataByEventIdForLabHivReport(eventId);
-
-                if (serviceMembersChild == null || !serviceMembersChild.Any())
-                {
-                    _logger.LogWarning("{ClassName}, {MethodName}, No HIV lab records found for EventId={EventId}",
-                        CLASSNAME, methodName, eventId);
-
-                    return Array.Empty<byte>();
-                }
-
-                var eventDto = serviceMembersChild.FirstOrDefault()?.ServiceMembersParent?.EventManagement;
-
-                if (eventDto == null)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, EventManagement returned null for EventId={EventId}",
-                        CLASSNAME, methodName, eventId);
-
-                    throw new KeyNotFoundException($"Event {eventId} not found.");
-                }
-
-                var contractDetail = await _contractService.GetContractById(eventDto.ContractId, string.Empty, false);
-
-                if (!contractDetail.Success)
-                {
-                    _logger.LogError("{ClassName}, {MethodName}, {Message}",
-                        CLASSNAME, methodName, contractDetail.Message);
-
-                    throw new KeyNotFoundException($"{contractDetail.Message}");
-                }
-
-                // 🔹 Generate PDF
-                var pdfBytes = await _pdfGenerator
-                    .GenerateHivSignInSheetPdfAsync(serviceMembersChild, eventDto, contractDetail.Data as ContractDetails);
-
-                _logger.LogInformation("{ClassName}, {MethodName}, PDF generation completed for EventId={EventId}",
-                    CLASSNAME, methodName, eventId);
-
-                return pdfBytes;
-            }
-            catch (KeyNotFoundException)
-            {
-                // Known, meaningful exception → rethrow
-                throw;
-            }
-            catch (ArgumentException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Unexpected error for EventId={EventId}",
-                    CLASSNAME, methodName, eventId);
-
-                throw new ApplicationException(
-                    "Failed to generate HIV Sign-In Sheet PDF.", ex);
-            }
-        }
-
+        //    model.G6pdGivenDateTime = model.G6pdNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        //    model.AboGivenDateTime = model.AboNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        //    model.LipidPanelGivenDateTime = model.LipidPanelNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        //    model.HivGivenDateTime = model.HivNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        //    model.PregnancyTestGivenDateTime = model.PregnancyTestNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+        //}
     }
 }

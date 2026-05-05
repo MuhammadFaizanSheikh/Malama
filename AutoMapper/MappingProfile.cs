@@ -145,9 +145,7 @@ namespace Malama.AutoMapper
 
             //Post Event Lab Station
             CreateMap<PostEventLabStationDto, PostEventLabStation>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.PostEventManagementId, opt => opt.Ignore())
-            .ForMember(dest => dest.ServiceMembersChildId, opt => opt.Ignore());
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
         }
     }
 }
