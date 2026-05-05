@@ -87,6 +87,58 @@
     </div>
 </div>
 
+@functions {
+    public (string text, string bgColor, string textColor) GetLabStatus(
+        string labNeeded,
+        bool? malama,
+        bool? emr,
+        bool? sor,
+        object postEventLabStation,
+        bool? resultReceived,
+        string resultReason
+    )
+    {
+        string text = "N/A";
+        string bgColor = "#6c757d";
+        string textColor = "#ffffff";
+
+        if (labNeeded == "Completed")
+        {
+            // ❗ CASE 1: Result NOT received
+            if (resultReceived == false)
+            {
+                if (resultReason == "Insufficient blood sample")
+                {
+                    return ("CR", "#dc3545", "#ffffff"); // Red
+                }
+
+                return ("I", "#ffc107", "#000000"); // Yellow
+            }
+
+            // ❗ CASE 2: Result received = true
+            if (postEventLabStation == null)
+            {
+                return ("I", "#ffc107", "#000000");
+            }
+
+            if (malama == true && emr == true && sor == true)
+            {
+                return ("C", "#198754", "#ffffff"); // Green
+            }
+            else if (malama == false && emr == false && sor == false)
+            {
+                return ("I", "#ffc107", "#000000"); // Yellow
+            }
+            else
+            {
+                return ("P", "#fd7e14", "#ffffff"); // Orange
+            }
+        }
+
+        return (text, bgColor, textColor);
+    }
+}
+
 <table id="postEventTable">
     <thead>
         <tr>
@@ -114,9 +166,16 @@
         {
             <tr>
                 <td>
-                    <a asp-action="SpecificServiceMemberLabStation" asp-route-postLabStationId="@item.PostEventLabStation?.Id" asp-route-serviceMembersChildId="@item.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                    <a asp-action="SpecificServiceMemberLabStation"
+                       asp-route-postLabStationId="@item.PostEventLabStation?.Id"
+                       asp-route-serviceMembersChildId="@item.Id"
+                       class="btn btn-primary edit-btn"
+                       style="background-color: rgba(80, 90, 201, 1);">
+                        Edit
+                    </a>
                 </td>
-                <td>Incomplete</td>
+
+                <td>Pending</td>
                 <td>@item.SmId</td>
                 <td>@item.FullName</td>
                 <td>@item.Last4</td>
@@ -124,60 +183,108 @@
                 <td>@item.Sex</td>
                 <td>@item.Dob</td>
                 <td>@item.Barcode</td>
-                <td>
-                    @{
-                        string text = "N/A";
-                        string bgColor = "#6c757d"; // default (gray)
-                        string textColor = "#ffffff";
 
-                        if (@item.LabStationRecord?.G6pdNeeded == "Completed")
-                        {
-                            if (@item.PostEventLabStation == null)
-                            {
-                                text = "I";
-                                bgColor = "#ffc107";   // yellow
-                                textColor = "#000000"; // black text
-                            }
-                            else
-                            {
-                                bool malama = @item.PostEventLabStation.G6pdResultMalamaUploaded;
-                                bool emr = @item.PostEventLabStation.G6pdResultEMRUploaded;
-                                bool sor = @item.PostEventLabStation.G6pdResultSORUploaded;
+                <!-- G6PD -->
+                @{
+                    var g6pd = GetLabStatus(
+                    item.LabStationRecord?.G6pdNeeded,
+                    item.PostEventLabStation?.G6pdResultMalamaUploaded,
+                    item.PostEventLabStation?.G6pdResultEMRUploaded,
+                    item.PostEventLabStation?.G6pdResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.G6pdResultReceived,
+                    item.PostEventLabStation?.G6pdResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@g6pd.bgColor; color:@g6pd.textColor;">@g6pd.text</span></td>
 
-                                if (malama && emr && sor)
-                                {
-                                    text = "C";
-                                    bgColor = "#198754"; // green
-                                    textColor = "#ffffff";
-                                }
-                                else if (!malama && !emr && !sor)
-                                {
-                                    text = "I";
-                                    bgColor = "#ffc107";   // yellow
-                                    textColor = "#000000"; // black text
-                                }
-                                else
-                                {
-                                    text = "P";
-                                    bgColor = "#fd7e14"; // orange
-                                    textColor = "#ffffff";
-                                }
-                            }
-                        }
-                    }
+                <!-- Lipid -->
+                @{
+                    var lipid = GetLabStatus(
+                    item.LabStationRecord?.LipidPanelNeeded,
+                    item.PostEventLabStation?.LipidPanelResultMalamaUploaded,
+                    item.PostEventLabStation?.LipidPanelResultEMRUploaded,
+                    item.PostEventLabStation?.LipidPanelResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.LipidPanelResultReceived,
+                    item.PostEventLabStation?.LipidPanelResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@lipid.bgColor; color:@lipid.textColor;">@lipid.text</span></td>
 
-                    <span class="badge" style="background-color:@bgColor; color:@textColor;">@text</span>
-                </td>
-                <td>
-                    <span class="badge" style="background-color:#fd7e14; color:#ffffff;">P</span>
-                </td>
-                <td>
-                    <span class="badge" style="background-color:#ffc107; color:#000000;">I</span>
-                </td>
+                <!-- HIV -->
+                @{
+                    var hiv = GetLabStatus(
+                    item.LabStationRecord?.HivNeeded,
+                    item.PostEventLabStation?.HivResultMalamaUploaded,
+                    item.PostEventLabStation?.HivResultEMRUploaded,
+                    item.PostEventLabStation?.HivResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.HivResultReceived,
+                    item.PostEventLabStation?.HivResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@hiv.bgColor; color:@hiv.textColor;">@hiv.text</span></td>
+
+                <!-- ABO -->
+                @{
+                    var abo = GetLabStatus(
+                    item.LabStationRecord?.AboNeeded,
+                    item.PostEventLabStation?.AboResultMalamaUploaded,
+                    item.PostEventLabStation?.AboResultEMRUploaded,
+                    item.PostEventLabStation?.AboResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.AboResultReceived,
+                    item.PostEventLabStation?.AboResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@abo.bgColor; color:@abo.textColor;">@abo.text</span></td>
+
+                @* <!-- Sickle Cell -->
+                @{
+                    var sickle = GetLabStatus(
+                    item.LabStationRecord?.SickleCellNeeded,
+                    item.PostEventLabStation?.SickleCellResultMalamaUploaded,
+                    item.PostEventLabStation?.SickleCellResultEMRUploaded,
+                    item.PostEventLabStation?.SickleCellResultSORUploaded,
+            item.PostEventLabStation,
+            item.PostEventLabStation?.SickleCellResultReceived,
+            item.PostEventLabStation?.SickleCellResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@sickle.bgColor; color:@sickle.textColor;">@sickle.text</span></td>
+
+                <!-- DNA -->
+                @{
+                    var dna = GetLabStatus(
+                    item.LabStationRecord?.DnaNeeded,
+                    item.PostEventLabStation?.DnaResultMalamaUploaded,
+                    item.PostEventLabStation?.DnaResultEMRUploaded,
+                    item.PostEventLabStation?.DnaResultSORUploaded,
+            item.PostEventLabStation,
+            item.PostEventLabStation?.DnaResultReceived,
+            item.PostEventLabStation?.DnaResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@dna.bgColor; color:@dna.textColor;">@dna.text</span></td>
+ *@
+
                 <td>N/A</td>
                 <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
+                <!-- Pregnancy -->
+                @{
+                    var preg = GetLabStatus(
+                    item.LabStationRecord?.PregnancyTestNeeded,
+                    item.PostEventLabStation?.PregnancyResultMalamaUploaded,
+                    item.PostEventLabStation?.PregnancyResultEMRUploaded,
+                    item.PostEventLabStation?.PregnancyResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.PregnancyResultReceived,
+                    item.PostEventLabStation?.PregnancyResultReason
+                    );
+                }
+                <td><span class="badge" style="background-color:@preg.bgColor; color:@preg.textColor;">@preg.text</span></td>
+
                 <td></td>
             </tr>
         }

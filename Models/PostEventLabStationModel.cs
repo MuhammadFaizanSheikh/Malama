@@ -53,6 +53,39 @@
         public bool PregnancyResultSORUploaded { get; set; }
         public DateTime? PregnancyResultSORUploadedDateTime { get; set; }
 
+        // LIPID PANEL
+        public bool LipidPanelResultReceived { get; set; }
+        public string? LipidPanelResultReason { get; set; }
+        public DateTime? LipidPanelResultReceivedDateTime { get; set; }
+        public bool LipidPanelResultMalamaUploaded { get; set; }
+        public DateTime? LipidPanelResultMalamaUploadedDateTime { get; set; }
+        public bool LipidPanelResultEMRUploaded { get; set; }
+        public DateTime? LipidPanelResultEMRUploadedDateTime { get; set; }
+        public bool LipidPanelResultSORUploaded { get; set; }
+        public DateTime? LipidPanelResultSORUploadedDateTime { get; set; }
+
+        // SICKLE CELL
+        public bool SickleCellResultReceived { get; set; }
+        public string? SickleCellResultReason { get; set; }
+        public DateTime? SickleCellResultReceivedDateTime { get; set; }
+        public bool SickleCellResultMalamaUploaded { get; set; }
+        public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
+        public bool SickleCellResultEMRUploaded { get; set; }
+        public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
+        public bool SickleCellResultSORUploaded { get; set; }
+        public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
+
+        // DNA
+        public bool DNAResultReceived { get; set; }
+        public string? DNAResultReason { get; set; }
+        public DateTime? DNAResultReceivedDateTime { get; set; }
+        public bool DNAResultMalamaUploaded { get; set; }
+        public DateTime? DNAResultMalamaUploadedDateTime { get; set; }
+        public bool DNAResultEMRUploaded { get; set; }
+        public DateTime? DNAResultEMRUploadedDateTime { get; set; }
+        public bool DNAResultSORUploaded { get; set; }
+        public DateTime? DNAResultSORUploadedDateTime { get; set; }
+
         public string Status { get; set; }
     }
 }
