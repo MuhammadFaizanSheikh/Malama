@@ -14,6 +14,7 @@
         public string? G6pdResultReason { get; set; }
         public DateTime? G6pdResultReceivedDateTime { get; set; }
         public bool G6pdResultMalamaUploaded { get; set; }
+        public string? G6pdResultMalamaUploadedFileName { get; set; }
         public DateTime? G6pdResultMalamaUploadedDateTime { get; set; }
         public bool G6pdResultEMRUploaded { get; set; }
         public DateTime? G6pdResultEMRUploadedDateTime { get; set; }
@@ -25,6 +26,7 @@
         public string? AboResultReason { get; set; }
         public DateTime? AboResultReceivedDateTime { get; set; }
         public bool AboResultMalamaUploaded { get; set; }
+        public string? AboResultMalamaUploadedFileName { get; set; }
         public DateTime? AboResultMalamaUploadedDateTime { get; set; }
         public bool AboResultEMRUploaded { get; set; }
         public DateTime? AboResultEMRUploadedDateTime { get; set; }
@@ -36,6 +38,7 @@
         public string? HivResultReason { get; set; }
         public DateTime? HivResultReceivedDateTime { get; set; }
         public bool HivResultMalamaUploaded { get; set; }
+        public string? HivResultMalamaUploadedFileName { get; set; }
         public DateTime? HivResultMalamaUploadedDateTime { get; set; }
         public bool HivResultEMRUploaded { get; set; }
         public DateTime? HivResultEMRUploadedDateTime { get; set; }
@@ -47,6 +50,7 @@
         public string? PregnancyResultReason { get; set; }
         public DateTime? PregnancyResultReceivedDateTime { get; set; }
         public bool PregnancyResultMalamaUploaded { get; set; }
+        public string? PregnancyResultMalamaUploadedFileName { get; set; }
         public DateTime? PregnancyResultMalamaUploadedDateTime { get; set; }
         public bool PregnancyResultEMRUploaded { get; set; }
         public DateTime? PregnancyResultEMRUploadedDateTime { get; set; }
@@ -58,6 +62,7 @@
         public string? LipidPanelResultReason { get; set; }
         public DateTime? LipidPanelResultReceivedDateTime { get; set; }
         public bool LipidPanelResultMalamaUploaded { get; set; }
+        public string? LipidPanelResultMalamaUploadedFileName { get; set; }
         public DateTime? LipidPanelResultMalamaUploadedDateTime { get; set; }
         public bool LipidPanelResultEMRUploaded { get; set; }
         public DateTime? LipidPanelResultEMRUploadedDateTime { get; set; }
@@ -69,6 +74,7 @@
         public string? SickleCellResultReason { get; set; }
         public DateTime? SickleCellResultReceivedDateTime { get; set; }
         public bool SickleCellResultMalamaUploaded { get; set; }
+        public string? SickleCellResultMalamaUploadedFileName { get; set; }
         public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
         public bool SickleCellResultEMRUploaded { get; set; }
         public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
@@ -80,6 +86,7 @@
         public string? DNAResultReason { get; set; }
         public DateTime? DNAResultReceivedDateTime { get; set; }
         public bool DNAResultMalamaUploaded { get; set; }
+        public string? DNAResultMalamaUploadedFileName { get; set; }
         public DateTime? DNAResultMalamaUploadedDateTime { get; set; }
         public bool DNAResultEMRUploaded { get; set; }
         public DateTime? DNAResultEMRUploadedDateTime { get; set; }

@@ -80,6 +80,19 @@
         pointer-events: none; /* Disable click and focus */
         border-color: #ced4da; /* Light border color */
     }
+
+    .lab-details label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0;
+    }
+
+    .lab-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
 </style>
 
 @if (TempData["ResponseMessage"] != null)

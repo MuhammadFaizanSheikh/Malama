@@ -21,16 +21,16 @@ namespace Malama.Models
         public string? HivNeeded { get; set; }
         public string? PregnancyTestNeeded { get; set; }
         public string? LipidPanelNeeded { get; set; }
-        public string? SickleCellNeeded { get; set; }
-        public string? DnaNeeded { get; set; }
+        //public string? SickleCellNeeded { get; set; }
+        //public string? DnaNeeded { get; set; }
 
         public DateTime? G6pdGivenDateTime { get; set; }
         public DateTime? AboGivenDateTime { get; set; }
         public DateTime? HivGivenDateTime { get; set; }
         public DateTime? PregnancyTestGivenDateTime { get; set; }
         public DateTime? LipidPanelGivenDateTime { get; set; }
-        public DateTime? SickleCellGivenDateTime { get; set; }
-        public DateTime? DnaGivenDateTime { get; set; }
+        //public DateTime? SickleCellGivenDateTime { get; set; }
+        //public DateTime? DnaGivenDateTime { get; set; }
 
         public bool? LipidPanelRapidTesting { get; set; }
         public string? HivBarcodeCarebill { get; set; }
@@ -58,8 +58,8 @@ namespace Malama.Models
         public bool ShowHivSection => LabStation?.HivNeeded == AppConstants.Status.Completed;
         public bool ShowPregnancySection => LabStation?.PregnancyTestNeeded == AppConstants.Status.Completed;
         public bool ShowLipidPanelSection => LabStation?.LipidPanelNeeded == AppConstants.Status.Completed;
-        public bool ShowSickleCellSection => LabStation?.SickleCellNeeded == AppConstants.Status.Completed;
-        public bool ShowDnaSection => LabStation?.DnaNeeded == AppConstants.Status.Completed;
+        //public bool ShowSickleCellSection => LabStation?.SickleCellNeeded == AppConstants.Status.Completed;
+        //public bool ShowDnaSection => LabStation?.DnaNeeded == AppConstants.Status.Completed;
 
         // 🔹 Given DateTimes
         public DateTime? G6pdGivenDateTime => LabStation?.G6pdGivenDateTime;
@@ -67,8 +67,8 @@ namespace Malama.Models
         public DateTime? HivGivenDateTime => LabStation?.HivGivenDateTime;
         public DateTime? PregnancyGivenDateTime => LabStation?.PregnancyTestGivenDateTime;
         public DateTime? LipidPanelGivenDateTime => LabStation?.LipidPanelGivenDateTime;
-        public DateTime? SickleCellGivenDateTime => LabStation?.SickleCellGivenDateTime;
-        public DateTime? DnaGivenDateTime => LabStation?.DnaGivenDateTime;
+        //public DateTime? SickleCellGivenDateTime => LabStation?.SickleCellGivenDateTime;
+        //public DateTime? DnaGivenDateTime => LabStation?.DnaGivenDateTime;
 
         // 🔹 Extra Info
         public bool? IsLipidRapid => LabStation?.LipidPanelRapidTesting;
@@ -91,6 +91,7 @@ namespace Malama.Models
         public string? G6pdResultReason { get; set; }
         public DateTime? G6pdResultReceivedDateTime { get; set; }
         public bool G6pdResultMalamaUploaded { get; set; }
+        public string? G6pdResultMalamaUploadedFileName { get; set; }
         public DateTime? G6pdResultMalamaUploadedDateTime { get; set; }
         public bool G6pdResultEMRUploaded { get; set; }
         public DateTime? G6pdResultEMRUploadedDateTime { get; set; }
@@ -103,6 +104,7 @@ namespace Malama.Models
         public string? LipidPanelResultReason { get; set; }
         public DateTime? LipidPanelResultReceivedDateTime { get; set; }
         public bool LipidPanelResultMalamaUploaded { get; set; }
+        public string? LipidPanelResultMalamaUploadedFileName { get; set; }
         public DateTime? LipidPanelResultMalamaUploadedDateTime { get; set; }
         public bool LipidPanelResultEMRUploaded { get; set; }
         public DateTime? LipidPanelResultEMRUploadedDateTime { get; set; }
@@ -114,6 +116,7 @@ namespace Malama.Models
         public string? AboResultReason { get; set; }
         public DateTime? AboResultReceivedDateTime { get; set; }
         public bool AboResultMalamaUploaded { get; set; }
+        public string? AboResultMalamaUploadedFileName { get; set; }
         public DateTime? AboResultMalamaUploadedDateTime { get; set; }
         public bool AboResultEMRUploaded { get; set; }
         public DateTime? AboResultEMRUploadedDateTime { get; set; }
@@ -125,6 +128,7 @@ namespace Malama.Models
         public string? HivResultReason { get; set; }
         public DateTime? HivResultReceivedDateTime { get; set; }
         public bool HivResultMalamaUploaded { get; set; }
+        public string? HivResultMalamaUploadedFileName { get; set; }
         public DateTime? HivResultMalamaUploadedDateTime { get; set; }
         public bool HivResultEMRUploaded { get; set; }
         public DateTime? HivResultEMRUploadedDateTime { get; set; }
@@ -136,33 +140,34 @@ namespace Malama.Models
         public string? PregnancyResultReason { get; set; }
         public DateTime? PregnancyResultReceivedDateTime { get; set; }
         public bool PregnancyResultMalamaUploaded { get; set; }
+        public string? PregnancyResultMalamaUploadedFileName { get; set; }
         public DateTime? PregnancyResultMalamaUploadedDateTime { get; set; }
         public bool PregnancyResultEMRUploaded { get; set; }
         public DateTime? PregnancyResultEMRUploadedDateTime { get; set; }
         public bool PregnancyResultSORUploaded { get; set; }
         public DateTime? PregnancyResultSORUploadedDateTime { get; set; }
 
-        // Sickle Cell
-        public bool SickleCellResultReceived { get; set; }
-        public string? SickleCellResultReason { get; set; }
-        public DateTime? SickleCellResultReceivedDateTime { get; set; }
-        public bool SickleCellResultMalamaUploaded { get; set; }
-        public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
-        public bool SickleCellResultEMRUploaded { get; set; }
-        public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
-        public bool SickleCellResultSORUploaded { get; set; }
-        public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
+        //// Sickle Cell
+        //public bool SickleCellResultReceived { get; set; }
+        //public string? SickleCellResultReason { get; set; }
+        //public DateTime? SickleCellResultReceivedDateTime { get; set; }
+        //public bool SickleCellResultMalamaUploaded { get; set; }
+        //public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
+        //public bool SickleCellResultEMRUploaded { get; set; }
+        //public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
+        //public bool SickleCellResultSORUploaded { get; set; }
+        //public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
 
-        // Dna
-        public bool DnaResultReceived { get; set; }
-        public string? DnaResultReason { get; set; }
-        public DateTime? DnaResultReceivedDateTime { get; set; }
-        public bool DnaResultMalamaUploaded { get; set; }
-        public DateTime? DnaResultMalamaUploadedDateTime { get; set; }
-        public bool DnaResultEMRUploaded { get; set; }
-        public DateTime? DnaResultEMRUploadedDateTime { get; set; }
-        public bool DnaResultSORUploaded { get; set; }
-        public DateTime? DnaResultSORUploadedDateTime { get; set; }
+        //// Dna
+        //public bool DnaResultReceived { get; set; }
+        //public string? DnaResultReason { get; set; }
+        //public DateTime? DnaResultReceivedDateTime { get; set; }
+        //public bool DnaResultMalamaUploaded { get; set; }
+        //public DateTime? DnaResultMalamaUploadedDateTime { get; set; }
+        //public bool DnaResultEMRUploaded { get; set; }
+        //public DateTime? DnaResultEMRUploadedDateTime { get; set; }
+        //public bool DnaResultSORUploaded { get; set; }
+        //public DateTime? DnaResultSORUploadedDateTime { get; set; }
     }
 
     public class LabUIModel
@@ -175,6 +180,8 @@ namespace Malama.Models
         public string ResultReceivedName { get; set; }
         public string ReasonName { get; set; }
         public string ReceivedDateName { get; set; }
+        public string MalamaName { get; set; }
+        public string MalamaResultFileNameName { get; set; }
         public string MalamaDateName { get; set; }
         public string EMRName { get; set; }
         public string EMRDateName { get; set; }
@@ -188,6 +195,8 @@ namespace Malama.Models
         public bool ResultReceived { get; set; }
         public string? Reason { get; set; }
         public DateTime? ReceivedDate { get; set; }
+        public bool Malama { get; set; }
+        public string? MalamaFileName { get; set; }
         public DateTime? MalamaDate { get; set; }
         public bool EMR { get; set; }
         public DateTime? EMRDate { get; set; }

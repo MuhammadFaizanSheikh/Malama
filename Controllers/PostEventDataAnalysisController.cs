@@ -14,19 +14,21 @@ namespace ExcelFilesCompiler.Controllers
     public class PostEventDataAnalysisController : Controller
     {
         private readonly IEventManagementService _eventManagementService;
+        private readonly IFileUploadDownloadService _fileService;
         private readonly IFileUploader _fileUploader;
         private readonly IPostEventLabStationService _postEventLabStationService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<PostEventDataAnalysisController> _logger;
-        private const string CLASSNAME = "EventManagementController";
+        private const string CLASSNAME = "PostEventDataAnalysisController";
 
-        public PostEventDataAnalysisController(ILogger<PostEventDataAnalysisController> logger, IPostEventLabStationService postEventLabStationService, IFileUploader fileUploader, IEventManagementService eventManagementService, UserManager<ApplicationUser> userManager)
+        public PostEventDataAnalysisController(IFileUploadDownloadService fileService, ILogger<PostEventDataAnalysisController> logger, IPostEventLabStationService postEventLabStationService, IFileUploader fileUploader, IEventManagementService eventManagementService, UserManager<ApplicationUser> userManager)
         {
             _eventManagementService = eventManagementService;
             _postEventLabStationService = postEventLabStationService;
             _fileUploader = fileUploader;
             _userManager = userManager;
             _logger = logger;
+            _fileService = fileService;
         }
 
         //[RoleAttributeAuthorizeFromConfig("EventManagement_View")]
@@ -303,6 +305,85 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
 
                 return View("SavePostEventLabStation", model);
+            }
+        }
+
+        public async Task<IActionResult> UploadMalamaFile(IFormFile file, string station, string prefix, string barcode)
+        {
+            const string METHOD = nameof(UploadMalamaFile);
+
+            try
+            {
+                _logger.LogInformation("{Class}.{Method} - Request received | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
+                    CLASSNAME, METHOD, station, prefix, barcode);
+
+                var result = await _fileService.UploadFile(file, station, prefix, barcode);
+
+                if (!result.Success)
+                {
+                    _logger.LogWarning("{Class}.{Method} - Upload failed | Message: {Message}",
+                        CLASSNAME, METHOD, result.Message);
+
+                    return Json(result);
+                }
+
+                // OPTIONAL: update DB here (Malama flag + filename)
+                // Example:
+                // await _labService.UpdateMalamaFile(barcode, prefix, result.FileName);
+
+                _logger.LogInformation("{Class}.{Method} - Upload successful | FileName: {FileName}",
+                    CLASSNAME, METHOD, result.FileName);
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Exception occurred | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
+                    CLASSNAME, METHOD, station, prefix, barcode);
+
+                return Json(new
+                {
+                    success = false,
+                    message = "Unexpected error occurred while uploading file"
+                });
+            }
+        }
+
+        public IActionResult DownloadMalamaFile(
+            string station,
+            string prefix,
+            string fileName)
+        {
+            const string METHOD = nameof(DownloadMalamaFile);
+
+            try
+            {
+                _logger.LogInformation("{Class}.{Method} - Download request | Station: {Station}, Prefix: {Prefix}, FileName: {FileName}",
+                    CLASSNAME, METHOD, station, prefix, fileName);
+
+                var file = _fileService.GetFile(station, prefix, fileName);
+
+                if (file == null)
+                {
+                    _logger.LogWarning("{Class}.{Method} - File not found | FileName: {FileName}",
+                        CLASSNAME, METHOD, fileName);
+
+                    return NotFound();
+                }
+
+                _logger.LogInformation("{Class}.{Method} - File returned successfully | FileName: {FileName}",
+                    CLASSNAME, METHOD, fileName);
+
+                return File(file.Bytes, file.ContentType, file.FileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Exception occurred while downloading | FileName: {FileName}",
+                    CLASSNAME, METHOD, fileName);
+
+                return StatusCode(500, "Error while downloading file");
             }
         }
     }

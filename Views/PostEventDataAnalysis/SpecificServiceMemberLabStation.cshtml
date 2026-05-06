@@ -1,4 +1,5 @@
-﻿@model PostEventLabStationAnalysisDto
+﻿@using Malama.Utilities
+@model PostEventLabStationAnalysisDto
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
@@ -177,6 +178,8 @@
     ResultReceivedName = "PostEventLabStation.G6pdResultReceived",
     ReasonName = "PostEventLabStation.G6pdResultReason",
     ReceivedDateName = "PostEventLabStation.G6pdResultReceivedDateTime",
+    MalamaName = "PostEventLabStation.G6pdResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.G6pdResultMalamaUploadedFileName",
     MalamaDateName = "PostEventLabStation.G6pdResultMalamaUploadedDateTime",
     EMRName = "PostEventLabStation.G6pdResultEMRUploaded",
     EMRDateName = "PostEventLabStation.G6pdResultEMRUploadedDateTime",
@@ -186,6 +189,8 @@
     ResultReceived = Model.PostEventLabStation.G6pdResultReceived,
     Reason = Model.PostEventLabStation.G6pdResultReason,
     ReceivedDate = Model.PostEventLabStation.G6pdResultReceivedDateTime,
+    Malama = Model.PostEventLabStation.G6pdResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.G6pdResultMalamaUploadedFileName,
     MalamaDate = Model.PostEventLabStation.G6pdResultMalamaUploadedDateTime,
     EMR = Model.PostEventLabStation.G6pdResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.G6pdResultEMRUploadedDateTime,
@@ -206,23 +211,33 @@
     ResultReceivedName = "PostEventLabStation.AboResultReceived",
     ReasonName = "PostEventLabStation.AboResultReason",
     ReceivedDateName = "PostEventLabStation.AboResultReceivedDateTime",
+
+    MalamaName = "PostEventLabStation.AboResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.AboResultMalamaUploadedFileName",
     MalamaDateName = "PostEventLabStation.AboResultMalamaUploadedDateTime",
+
     EMRName = "PostEventLabStation.AboResultEMRUploaded",
     EMRDateName = "PostEventLabStation.AboResultEMRUploadedDateTime",
+
     SORName = "PostEventLabStation.AboResultSORUploaded",
     SORDateName = "PostEventLabStation.AboResultSORUploadedDateTime",
 
     ResultReceived = Model.PostEventLabStation.AboResultReceived,
     Reason = Model.PostEventLabStation.AboResultReason,
     ReceivedDate = Model.PostEventLabStation.AboResultReceivedDateTime,
+
+    Malama = Model.PostEventLabStation.AboResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.AboResultMalamaUploadedFileName,
     MalamaDate = Model.PostEventLabStation.AboResultMalamaUploadedDateTime,
+
     EMR = Model.PostEventLabStation.AboResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.AboResultEMRUploadedDateTime,
+
     SOR = Model.PostEventLabStation.AboResultSORUploaded,
     SORDate = Model.PostEventLabStation.AboResultSORUploadedDateTime
 })
     }
-    <!-- ================= Sickle Cell ================= -->
+    @* <!-- ================= Sickle Cell ================= -->
     @if (Model.ShowSickleCellSection)
     {
         @await Html.PartialAsync("_LabSection", new LabUIModel
@@ -278,7 +293,7 @@
     SOR = Model.PostEventLabStation.DnaResultSORUploaded,
     SORDate = Model.PostEventLabStation.DnaResultSORUploadedDateTime
 })
-    }
+    } *@
 
     <!-- ================= LIPID ================= -->
     @if (Model.ShowLipidPanelSection)
@@ -292,21 +307,33 @@
     ResultReceivedName = "PostEventLabStation.LipidPanelResultReceived",
     ReasonName = "PostEventLabStation.LipidPanelResultReason",
     ReceivedDateName = "PostEventLabStation.LipidPanelResultReceivedDateTime",
+
+    MalamaName = "PostEventLabStation.LipidPanelResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.LipidPanelResultMalamaUploadedFileName",
     MalamaDateName = "PostEventLabStation.LipidPanelResultMalamaUploadedDateTime",
+
     EMRName = "PostEventLabStation.LipidPanelResultEMRUploaded",
     EMRDateName = "PostEventLabStation.LipidPanelResultEMRUploadedDateTime",
+
     SORName = "PostEventLabStation.LipidPanelResultSORUploaded",
     SORDateName = "PostEventLabStation.LipidPanelResultSORUploadedDateTime",
+
     IsLipidRapidName = "PostEventLabStation.IsLipidRapid",
 
     ResultReceived = Model.PostEventLabStation.LipidPanelResultReceived,
     Reason = Model.PostEventLabStation.LipidPanelResultReason,
     ReceivedDate = Model.PostEventLabStation.LipidPanelResultReceivedDateTime,
+
+    Malama = Model.PostEventLabStation.LipidPanelResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.LipidPanelResultMalamaUploadedFileName,
     MalamaDate = Model.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
+
     EMR = Model.PostEventLabStation.LipidPanelResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.LipidPanelResultEMRUploadedDateTime,
+
     SOR = Model.PostEventLabStation.LipidPanelResultSORUploaded,
     SORDate = Model.PostEventLabStation.LipidPanelResultSORUploadedDateTime,
+
     IsLipidRapid = Model.IsLipidRapid
 })
     }
@@ -323,21 +350,33 @@
     ResultReceivedName = "PostEventLabStation.HivResultReceived",
     ReasonName = "PostEventLabStation.HivResultReason",
     ReceivedDateName = "PostEventLabStation.HivResultReceivedDateTime",
+
+    MalamaName = "PostEventLabStation.HivResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.HivResultMalamaUploadedFileName",
     MalamaDateName = "PostEventLabStation.HivResultMalamaUploadedDateTime",
+
     EMRName = "PostEventLabStation.HivResultEMRUploaded",
     EMRDateName = "PostEventLabStation.HivResultEMRUploadedDateTime",
+
     SORName = "PostEventLabStation.HivResultSORUploaded",
     SORDateName = "PostEventLabStation.HivResultSORUploadedDateTime",
+
     HivBarcodeCarebillName = "PostEventLabStation.HivBarcodeCarebill",
 
     ResultReceived = Model.PostEventLabStation.HivResultReceived,
     Reason = Model.PostEventLabStation.HivResultReason,
     ReceivedDate = Model.PostEventLabStation.HivResultReceivedDateTime,
+
+    Malama = Model.PostEventLabStation.HivResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.HivResultMalamaUploadedFileName,
     MalamaDate = Model.PostEventLabStation.HivResultMalamaUploadedDateTime,
+
     EMR = Model.PostEventLabStation.HivResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.HivResultEMRUploadedDateTime,
+
     SOR = Model.PostEventLabStation.HivResultSORUploaded,
     SORDate = Model.PostEventLabStation.HivResultSORUploadedDateTime,
+
     HivBarcodeCarebill = Model.HivBarcodeCarebill
 })
     }
@@ -354,21 +393,33 @@
     ResultReceivedName = "PostEventLabStation.PregnancyResultReceived",
     ReasonName = "PostEventLabStation.PregnancyResultReason",
     ReceivedDateName = "PostEventLabStation.PregnancyResultReceivedDateTime",
+
+    MalamaName = "PostEventLabStation.PregnancyResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.PregnancyResultMalamaUploadedFileName",
     MalamaDateName = "PostEventLabStation.PregnancyResultMalamaUploadedDateTime",
+
     EMRName = "PostEventLabStation.PregnancyResultEMRUploaded",
     EMRDateName = "PostEventLabStation.PregnancyResultEMRUploadedDateTime",
+
     SORName = "PostEventLabStation.PregnancyResultSORUploaded",
     SORDateName = "PostEventLabStation.PregnancyResultSORUploadedDateTime",
+
     PregnancyTestResultName = "PostEventLabStation.PregnancyTestResult",
 
     ResultReceived = Model.PostEventLabStation.PregnancyResultReceived,
     Reason = Model.PostEventLabStation.PregnancyResultReason,
     ReceivedDate = Model.PostEventLabStation.PregnancyResultReceivedDateTime,
+
+    Malama = Model.PostEventLabStation.PregnancyResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.PregnancyResultMalamaUploadedFileName,
     MalamaDate = Model.PostEventLabStation.PregnancyResultMalamaUploadedDateTime,
+
     EMR = Model.PostEventLabStation.PregnancyResultEMRUploaded,
     EMRDate = Model.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
+
     SOR = Model.PostEventLabStation.PregnancyResultSORUploaded,
     SORDate = Model.PostEventLabStation.PregnancyResultSORUploadedDateTime,
+
     PregnancyTestResult = Model.PregnancyTestResult
 })
     }
@@ -390,9 +441,18 @@
         </div>
     </div>
 
-    <!-- SAVE -->
-    <div class="text-end">
-        <button type="submit" class="btn btn-success">Save</button>
+    <!-- Submit Buttons -->
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_Save") ? "" : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
+
+        <a asp-action="SelectStation"
+           asp-route-eventManagementId="@Model.EventId"
+           asp-route-selectedStation="Labs"
+           class="btn btn-secondary btn-lg btn-back-confirm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
     </div>
 
 </form>
@@ -417,84 +477,99 @@
             });
         });
 
-                document.addEventListener("submit", function (e) {
+        document.addEventListener("submit", function (e) {
+            const form = e.target;
+            if (form.tagName !== "FORM") return;
 
-        const form = e.target;
-        if (form.tagName !== "FORM") return;
+            const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
 
-        const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
+            for (let p of prefixes) {
 
-        for (let p of prefixes) {
+                const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
 
-            const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
+                // =========================
+                // RECEIVED VALIDATION
+                // =========================
+                const receivedRadio = form.querySelector(
+                    `input[name*='${namePrefix}ResultReceived']:checked`
+                );
 
-            // =========================
-            // RECEIVED VALIDATION
-            // =========================
-            const receivedRadio = form.querySelector(
-                `input[name*='${namePrefix}ResultReceived']:checked`
-            );
+                if (receivedRadio) {
 
-            if (receivedRadio) {
+                    const isYes = receivedRadio.value === "true";
 
-                const isYes = receivedRadio.value === "true";
+                    const receivedInput = form.querySelector(`#${p}_received`);
+                    const receivedValue = receivedInput?.value;
 
-                const receivedInput = form.querySelector(`#${p}_received`);
-                const receivedValue = receivedInput?.value;
+                    if (isYes && !receivedValue) {
 
-                if (isYes && !receivedValue) {
+                        const visibleInput = receivedInput?._flatpickr?.altInput || receivedInput;
+                        visibleInput?.focus();
 
-                    const visibleInput = receivedInput?._flatpickr?.altInput || receivedInput;
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                // =========================
+                // EMR VALIDATION
+                // =========================
+                const emrCheckbox = form.querySelector(
+                    `input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`
+                );
+
+                const emrInput = form.querySelector(`#${p}_emr`);
+                const emrValue = emrInput?.value;
+
+                const emrChecked = emrCheckbox?.checked === true;
+
+                if (emrChecked && !emrValue) {
+
+                    const visibleInput = emrInput?._flatpickr?.altInput || emrInput;
+                    visibleInput?.focus();
+
+                    e.preventDefault();
+                    return;
+                }
+
+                // =========================
+                // SOR VALIDATION
+                // =========================
+                const sorCheckbox = form.querySelector(
+                    `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
+                );
+
+                const sorInput = form.querySelector(`#${p}_sor`);
+                const sorValue = sorInput?.value;
+
+                const sorChecked = sorCheckbox?.checked === true;
+
+                if (sorChecked && !sorValue) {
+
+                    const visibleInput = sorInput?._flatpickr?.altInput || sorInput;
                     visibleInput?.focus();
 
                     e.preventDefault();
                     return;
                 }
             }
+        });
 
-            // =========================
-            // EMR VALIDATION
-            // =========================
-            const emrCheckbox = form.querySelector(
-                `input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to go back to main screen without saving changes?"
             );
 
-            const emrInput = form.querySelector(`#${p}_emr`);
-            const emrValue = emrInput?.value;
-
-            const emrChecked = emrCheckbox?.checked === true;
-
-            if (emrChecked && !emrValue) {
-
-                const visibleInput = emrInput?._flatpickr?.altInput || emrInput;
-                visibleInput?.focus();
-
-                e.preventDefault();
+            if (!confirmed) {
                 return;
             }
 
-            // =========================
-            // SOR VALIDATION
-            // =========================
-            const sorCheckbox = form.querySelector(
-                `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
-            );
-
-            const sorInput = form.querySelector(`#${p}_sor`);
-            const sorValue = sorInput?.value;
-
-            const sorChecked = sorCheckbox?.checked === true;
-
-            if (sorChecked && !sorValue) {
-
-                const visibleInput = sorInput?._flatpickr?.altInput || sorInput;
-                visibleInput?.focus();
-
-                e.preventDefault();
-                return;
-            }
-        }
-    });
+            window.location.href = url;
+        });
 
         function toggleLab(prefix, isYes) {
 
@@ -544,6 +619,75 @@
             el.value = "";
         }
     }
+
+            function toggleFlatpicker(input, prefix) {
+
+        const datePicker = document.getElementById(prefix + "_malamaDate");
+        const hiddenField = document.getElementById(prefix + "_malamaUploaded");
+
+        if (input.files && input.files.length > 0) {
+            datePicker.style.display = "block";
+            hiddenField.value = "true";
+        } else {
+            datePicker.style.display = "none";
+            hiddenField.value = "false";
+            datePicker.value = "";
+        }
+    }
+
+        $(document).on("change", ".malama-file", function () {
+
+        var fileInput = this;
+        var file = fileInput.files[0];
+
+        if (!file) return;
+
+        var prefix = $(this).data("prefix");
+        var barcode = $(this).data("barcode");
+
+        var formData = new FormData();
+        formData.append("file", file);
+        formData.append("prefix", prefix);
+        formData.append("barcode", barcode);
+
+        $.ajax({
+            url: "/PostEventDataAnalysis/UploadMalamaFile",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+
+                if (res.success) {
+
+                    // set hidden values
+                    $("#" + prefix + "_malamaUploaded").val(true);
+                    $("#" + prefix + "_malamaFileName").val(res.fileName);
+
+                    // show preview button
+                    $("#" + prefix + "_previewContainer").show();
+
+                    $("#" + prefix + "_previewContainer button")
+                        .attr("data-filename", res.fileName);
+                }
+                else {
+                    alert(res.message);
+                }
+            }
+        });
+    });
+
+    $(document).on("click", ".preview-file", function () {
+
+        var prefix = $(this).data("prefix");
+        var fileName = $(this).data("filename");
+
+        if (!fileName) return;
+
+        var url = "/PostEventDataAnalysis/DownloadLabFile?fileName=" + encodeURIComponent(fileName);
+
+        window.open(url, "_blank");
+    });
 
         
 </script>

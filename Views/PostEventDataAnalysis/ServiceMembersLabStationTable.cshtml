@@ -88,7 +88,21 @@
 </div>
 
 @functions {
-    public (string text, string bgColor, string textColor) GetLabStatus(
+
+    public class LabStatusVm
+    {
+        public string Text { get; set; }
+        public string BgColor { get; set; }
+        public string TextColor { get; set; }
+
+        public bool ShowDetails { get; set; }
+
+        public bool? Malama { get; set; }
+        public bool? Emr { get; set; }
+        public bool? Sor { get; set; }
+    }
+
+    public LabStatusVm GetLabStatus(
         string labNeeded,
         bool? malama,
         bool? emr,
@@ -98,44 +112,77 @@
         string resultReason
     )
     {
-        string text = "N/A";
-        string bgColor = "#6c757d";
-        string textColor = "#ffffff";
-
         if (labNeeded == "Completed")
         {
-            // ❗ CASE 1: Result NOT received
             if (resultReceived == false)
             {
                 if (resultReason == "Insufficient blood sample")
                 {
-                    return ("CR", "#dc3545", "#ffffff"); // Red
+                    return new LabStatusVm
+                        {
+                            Text = "CR",
+                            BgColor = "#dc3545",
+                            TextColor = "#ffffff"
+                        };
                 }
 
-                return ("I", "#ffc107", "#000000"); // Yellow
+                return new LabStatusVm
+                    {
+                        Text = "I",
+                        BgColor = "#ffc107",
+                        TextColor = "#000000"
+                    };
             }
 
-            // ❗ CASE 2: Result received = true
             if (postEventLabStation == null)
             {
-                return ("I", "#ffc107", "#000000");
+                return new LabStatusVm
+                    {
+                        Text = "I",
+                        BgColor = "#ffc107",
+                        TextColor = "#000000"
+                    };
             }
 
             if (malama == true && emr == true && sor == true)
             {
-                return ("C", "#198754", "#ffffff"); // Green
+                return new LabStatusVm
+                    {
+                        Text = "C",
+                        BgColor = "#198754",
+                        TextColor = "#ffffff"
+                    };
             }
             else if (malama == false && emr == false && sor == false)
             {
-                return ("I", "#ffc107", "#000000"); // Yellow
+                return new LabStatusVm
+                    {
+                        Text = "I",
+                        BgColor = "#ffc107",
+                        TextColor = "#000000"
+                    };
             }
             else
             {
-                return ("P", "#fd7e14", "#ffffff"); // Orange
+                return new LabStatusVm
+                    {
+                        Text = "P",
+                        BgColor = "#fd7e14",
+                        TextColor = "#ffffff",
+                        ShowDetails = true,
+                        Malama = malama,
+                        Emr = emr,
+                        Sor = sor
+                    };
             }
         }
 
-        return (text, bgColor, textColor);
+        return new LabStatusVm
+            {
+                Text = "N/A",
+                BgColor = "#6c757d",
+                TextColor = "#ffffff"
+            };
     }
 }
 
@@ -161,6 +208,9 @@
             <th>Post Event Data Entered Status</th>
         </tr>
     </thead>
+
+    
+
     <tbody>
         @foreach (var item in Model)
         {
@@ -196,7 +246,31 @@
                     item.PostEventLabStation?.G6pdResultReason
                     );
                 }
-                <td><span class="badge" style="background-color:@g6pd.bgColor; color:@g6pd.textColor;">@g6pd.text</span></td>
+                <td style="min-width:70px;">
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@g6pd.BgColor; color:@g6pd.TextColor;">
+                            @g6pd.Text
+                        </span>
+                        @if (g6pd.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
+
+                                <span style="color:@(g6pd.Malama == true ? "green" : "red")">
+                                    @(g6pd.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(g6pd.Emr == true ? "green" : "red")">
+                                    @(g6pd.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(g6pd.Sor == true ? "green" : "red")">
+                                    @(g6pd.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
 
                 <!-- Lipid -->
                 @{
@@ -210,7 +284,31 @@
                     item.PostEventLabStation?.LipidPanelResultReason
                     );
                 }
-                <td><span class="badge" style="background-color:@lipid.bgColor; color:@lipid.textColor;">@lipid.text</span></td>
+                <td>
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@lipid.BgColor; color:@lipid.TextColor;">
+                            @lipid.Text
+                        </span>
+                        @if (lipid.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
+
+                                <span style="color:@(lipid.Malama == true ? "green" : "red")">
+                                    @(lipid.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(lipid.Emr == true ? "green" : "red")">
+                                    @(lipid.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(lipid.Sor == true ? "green" : "red")">
+                                    @(lipid.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
 
                 <!-- HIV -->
                 @{
@@ -224,7 +322,31 @@
                     item.PostEventLabStation?.HivResultReason
                     );
                 }
-                <td><span class="badge" style="background-color:@hiv.bgColor; color:@hiv.textColor;">@hiv.text</span></td>
+                <td>
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@hiv.BgColor; color:@hiv.TextColor;">
+                            @hiv.Text
+                        </span>
+                        @if (hiv.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
+
+                                <span style="color:@(hiv.Malama == true ? "green" : "red")">
+                                    @(hiv.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(hiv.Emr == true ? "green" : "red")">
+                                    @(hiv.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(hiv.Sor == true ? "green" : "red")">
+                                    @(hiv.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
 
                 <!-- ABO -->
                 @{
@@ -238,9 +360,79 @@
                     item.PostEventLabStation?.AboResultReason
                     );
                 }
-                <td><span class="badge" style="background-color:@abo.bgColor; color:@abo.textColor;">@abo.text</span></td>
+                <td>
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@abo.BgColor; color:@abo.TextColor;">
+                            @abo.Text
+                        </span>
+                        @if (abo.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
 
-                @* <!-- Sickle Cell -->
+                                <span style="color:@(abo.Malama == true ? "green" : "red")">
+                                    @(abo.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(abo.Emr == true ? "green" : "red")">
+                                    @(abo.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(abo.Sor == true ? "green" : "red")">
+                                    @(abo.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
+
+                <!-- Pregnancy -->
+                @{
+                    var preg = GetLabStatus(
+                    item.LabStationRecord?.PregnancyTestNeeded,
+                    item.PostEventLabStation?.PregnancyResultMalamaUploaded,
+                    item.PostEventLabStation?.PregnancyResultEMRUploaded,
+                    item.PostEventLabStation?.PregnancyResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.PregnancyResultReceived,
+                    item.PostEventLabStation?.PregnancyResultReason
+                    );
+                }
+                <td>
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@preg.BgColor; color:@preg.TextColor;">
+                            @preg.Text
+                        </span>
+                        @if (preg.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
+
+                                <span style="color:@(preg.Malama == true ? "green" : "red")">
+                                    @(preg.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(preg.Emr == true ? "green" : "red")">
+                                    @(preg.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(preg.Sor == true ? "green" : "red")">
+                                    @(preg.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
+
+                <td>N/A</td>
+                <td>N/A</td>
+                <td></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@* <!-- Sickle Cell -->
                 @{
                     var sickle = GetLabStatus(
                     item.LabStationRecord?.SickleCellNeeded,
@@ -269,27 +461,6 @@
                 <td><span class="badge" style="background-color:@dna.bgColor; color:@dna.textColor;">@dna.text</span></td>
  *@
 
-                <td>N/A</td>
-                <td>N/A</td>
-                <!-- Pregnancy -->
-                @{
-                    var preg = GetLabStatus(
-                    item.LabStationRecord?.PregnancyTestNeeded,
-                    item.PostEventLabStation?.PregnancyResultMalamaUploaded,
-                    item.PostEventLabStation?.PregnancyResultEMRUploaded,
-                    item.PostEventLabStation?.PregnancyResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.PregnancyResultReceived,
-                    item.PostEventLabStation?.PregnancyResultReason
-                    );
-                }
-                <td><span class="badge" style="background-color:@preg.bgColor; color:@preg.textColor;">@preg.text</span></td>
-
-                <td></td>
-            </tr>
-        }
-    </tbody>
-</table>
 <script>
         var table;
 

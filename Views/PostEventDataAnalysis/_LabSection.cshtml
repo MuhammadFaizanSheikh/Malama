@@ -96,15 +96,76 @@
                 </div>
 
                 <!-- MALAMA -->
-                <div class="col-md-3">
+                @* <div class="col-md-3">
                     <label>Upload Lab Result (Malama)</label>
-                    <input type="file" name="@($"{Model.Prefix}File")" class="form-control" />
+
+                    <input type="file"
+                           name="@($"{Model.Prefix}File")"
+                           class="form-control"
+                           onchange="toggleFlatpicker(this, '@Model.Prefix')" />
 
                     <input name="@Model.MalamaDateName"
                            value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
-                           class="form-control mt-1"
-                           placeholder="MM-dd-yyyy HH:mm"
+                           class="form-control flatpickr mt-2"
+                           id="@($"{Model.Prefix}_malamaDate")"
+                           style="display:none;"
                            readonly />
+
+                    <input type="hidden"
+                           id="@($"{Model.Prefix}_malamaUploaded")"
+                           name="@Model.MalamaName"
+                           value="false" />
+
+                    @if (!string.IsNullOrEmpty(Model.MalamaFileName))
+                    {
+                        <div class="mt-2">
+                            <small class="text-muted">Uploaded File:</small><br />
+
+                            <a href="@Url.Action("DownloadLabFile", "Lab", new { prefix = Model.Prefix, fileName = Model.MalamaFileName })"
+                               target="_blank"
+                               class="text-primary">
+                                @Model.MalamaFileName
+                            </a>
+                        </div>
+                    }
+                </div> *@
+
+                <div class="col-md-3">
+                    <label>Upload Lab Result (Malama)</label>
+
+                    <input type="file"
+                           class="form-control malama-file"
+                           data-prefix="@Model.Prefix"
+                           data-barcode="123" />
+
+                    <input name="@Model.MalamaDateName"
+                           value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
+                           class="form-control flatpickr mt-2"
+                           id="@($"{Model.Prefix}_malamaDate")"
+                           style="display:none;"
+                           readonly />
+
+                    @* <input type="hidden"
+                           id="@($"{Model.Prefix}_malamaUploaded")"
+                           name="@Model.MalamaName"
+                           value="@Model.Malama" /> *@
+
+                    <input type="hidden"
+                           id="@($"{Model.Prefix}_malamaFileName")"
+                           name="@Model.MalamaResultFileNameName"
+                           value="@Model.MalamaFileName" />
+
+                    <!-- Preview Button -->
+                    <div class="mt-2" id="@($"{Model.Prefix}_previewContainer")"
+                         style="display:@(!string.IsNullOrEmpty(Model.MalamaFileName) ? "block" : "none");">
+
+                        <button type="button"
+                                class="btn btn-sm btn-primary preview-file"
+                                data-prefix="@Model.Prefix"
+                                data-filename="@Model.MalamaFileName">
+                            Preview File
+                        </button>
+                    </div>
                 </div>
 
                 <!-- EMR -->
