@@ -63,6 +63,13 @@ namespace Malama.Models
         public string? HivReason { get; set; }
         public string? HivBarcodeCarebill { get; set; }
 
+        public string? DnaNeeded { get; set; }
+        public string? DnaReason { get; set; }
+        public string? DnaSerialNo { get; set; }
+
+        public string? SickleCellNeeded { get; set; }
+        public string? SickleCellReason { get; set; }
+
         // Pregnancy Test
         public string? PregnancyTestNeeded { get; set; }
         public string? PregnancyTestResult { get; set; }
@@ -74,6 +81,8 @@ namespace Malama.Models
         public DateTime? LipidPanelGivenDateTime { get; set; }
         public DateTime? HivGivenDateTime { get; set; }
         public DateTime? PregnancyTestGivenDateTime { get; set; }
+        public DateTime? DnaGivenDateTime { get; set; }
+        public DateTime? SickleCellGivenDateTime { get; set; }
 
 
         public string Status { get; set; }

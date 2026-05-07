@@ -168,28 +168,6 @@
                     </div>
                 </div>
 
-                <!-- EMR -->
-                <div class="col-md-3">
-                    @* <input type="hidden" name="@Model.EMRName" value="false" /> *@
-
-                    <div class="form-check mb-1">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="@Model.EMRName"
-                               value="true"
-                        @(Model.EMR ? "checked" : "")
-                               onchange="toggleLabEMR('@Model.Prefix', this.checked)" />
-                        <label class="form-check-label">EMR Uploaded</label>
-                    </div>
-
-                    <input name="@Model.EMRDateName"
-                           id="@($"{Model.Prefix}_emr")"
-                           value="@(Model.EMRDate?.ToString("yyyy-MM-dd HH:mm"))"
-                           class="form-control flatpickr"
-                           placeholder="MM-dd-yyyy HH:mm"
-                           style="display:@(Model.EMR ? "block" : "none");" />
-                </div>
-
                 <!-- SOR -->
                 <div class="col-md-3">
                     @* <input type="hidden" name="@Model.SORName" value="false" /> *@
@@ -201,7 +179,7 @@
                                value="true"
                         @(Model.SOR ? "checked" : "")
                                onchange="toggleLabSOR('@Model.Prefix', this.checked)" />
-                        <label class="form-check-label">SOR Uploaded</label>
+                        <label class="form-check-label">Upload System of Records (SOR)</label>
                     </div>
 
                     <input name="@Model.SORDateName"
@@ -211,6 +189,30 @@
                            placeholder="MM-dd-yyyy HH:mm"
                            style="display:@(Model.SOR ? "block" : "none");" />
                 </div>
+
+                <!-- EMR -->
+                <div class="col-md-3">
+                    @* <input type="hidden" name="@Model.EMRName" value="false" /> *@
+
+                    <div class="form-check mb-1">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="@Model.EMRName"
+                               value="true"
+                        @(Model.EMR ? "checked" : "")
+                               onchange="toggleLabEMR('@Model.Prefix', this.checked)" />
+                        <label class="form-check-label">Upload to client database (EMR)</label>
+                    </div>
+
+                    <input name="@Model.EMRDateName"
+                           id="@($"{Model.Prefix}_emr")"
+                           value="@(Model.EMRDate?.ToString("yyyy-MM-dd HH:mm"))"
+                           class="form-control flatpickr"
+                           placeholder="MM-dd-yyyy HH:mm"
+                           style="display:@(Model.EMR ? "block" : "none");" />
+                </div>
+
+                
 
             </div>
         </div>

@@ -569,13 +569,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("Fetching LabStationRecords for EventID={EventId}", eventId);
 
                 var result = await _unitOfWork.ServiceMembersChild
-            .GetWithIncludeNoTracking(
-                c => c.ServiceMembersParent.EventManagement.Id == eventId,
-                c => c.LabStationRecord,
-                c => c.ServiceMembersParent.EventManagement
-            )
-            .Where(c => c.LabStationRecord != null) // only those having lab data
-            .ToListAsync();
+                .GetWithIncludeNoTracking(
+                    c => c.ServiceMembersParent.EventManagement.Id == eventId,
+                    c => c.LabStationRecord,
+                    c => c.ServiceMembersParent.EventManagement
+                )
+                .Where(c => c.LabStationRecord != null &&
+                            c.LabStationRecord.HivNeeded == AppConstants.Status.Completed)
+                .ToListAsync();
 
                 _logger.LogInformation("Found {Count} LabStationRecords for EventID={EventId}", result.Count, eventId);
 

@@ -340,6 +340,51 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.PregnancyTestReason = null;
             }
 
+            //SickleCell
+
+            if (source.SickleCellNeeded.IsNullOrEmpty())
+            {
+                target.SickleCellGivenDateTime = null;
+                target.SickleCellReason = null;
+            }
+            else if (source.SickleCellNeeded == "Not Completed")
+            {
+                target.SickleCellGivenDateTime = null;
+                target.SickleCellReason = source.SickleCellReason;
+            }
+            else
+            {
+                if (source.SickleCellNeeded != target.SickleCellNeeded)
+                {
+                    target.SickleCellGivenDateTime = DateTime.Now;
+                }
+            }
+
+            //DNA
+
+            if (source.DnaNeeded.IsNullOrEmpty())
+            {
+                target.DnaGivenDateTime = null;
+                target.DnaReason = null;
+                target.DnaSerialNo = null;
+            }
+            else if (source.DnaNeeded == "Not Completed")
+            {
+                target.DnaGivenDateTime = null;
+                target.DnaSerialNo = null;
+                target.DnaReason = source.DnaReason;
+            }
+            else
+            {
+                if (source.DnaNeeded != target.DnaNeeded)
+                {
+                    target.DnaGivenDateTime = DateTime.Now;
+                }
+
+                target.DnaReason = null;
+                target.DnaSerialNo = source.DnaSerialNo;
+            }
+
             target.AreYouFasting = source.AreYouFasting;
             target.AnyComplicationInBloodDrawn = source.AnyComplicationInBloodDrawn;
             target.AllergicToLatex = source.AllergicToLatex;
@@ -349,6 +394,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.LipidPanelNeeded = source.LipidPanelNeeded;
             target.HivNeeded = source.HivNeeded;
             target.PregnancyTestNeeded = source.PregnancyTestNeeded;
+            target.SickleCellNeeded = source.SickleCellNeeded;
+            target.DnaNeeded = source.DnaNeeded;
             target.FedExTrackingNo = source.FedExTrackingNo;
             target.Status = source.Status;
             target.UpdatedOn = DateTime.Now;
@@ -366,6 +413,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             model.LipidPanelGivenDateTime = model.LipidPanelNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
             model.HivGivenDateTime = model.HivNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
             model.PregnancyTestGivenDateTime = model.PregnancyTestNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.SickleCellGivenDateTime = model.SickleCellNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
+            model.DnaGivenDateTime = model.DnaNeeded == "Completed" ? DateTime.Now : (DateTime?)null;
         }
 
         public async Task<byte[]> GetLabDataAgainstEventIdAndGenerateHivPdf(long eventId)

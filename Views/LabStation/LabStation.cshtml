@@ -710,6 +710,102 @@
             <hr class="my-4" />
         }
 
+        @if (string.Equals(Model.ServiceMembersChild?.Dna?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="card-body">
+
+                <div class="row mb-2">
+
+                    <!-- Dna Needed Status -->
+                    <div class="col-md-2">
+                        <label>Dna Needed Status</label>
+                        <select asp-for="DnaNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Reason (only if Not Completed) -->
+                    <div class="col-md-2" id="dnaReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="DnaReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2" id="dnaSerialNoContainer" style="display:none;">
+                        <label>Serial No.</label>
+                        <input asp-for="DnaSerialNo"
+                               class="form-control dna-serial"
+                               maxlength="14"
+                               minlength="12" />
+                    </div>
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.DnaNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>Collection Date/Time</label>
+                                <input asp-for="DnaGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.DnaGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+        }
+
+        @if (string.Equals(Model.ServiceMembersChild?.Sickle?.Trim(), "NEEDED", StringComparison.OrdinalIgnoreCase))
+        {
+            <!-- Hepatitis B -->
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-md-2">
+                        <label>Sickle Cell Needed Status</label>
+                        <select asp-for="SickleCellNeeded" class="form-control">
+                            <option value=""></option>
+                            <option value="Completed">Completed</option>
+                            <option value="Not Completed">Not Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2" id="sickleCellReasonContainer" style="display:none;">
+                        <label>Reason</label>
+                        <select asp-for="SickleCellReason" class="form-control">
+                            <option value=""></option>
+                            <option value="Insufficient Supplies">Insufficient Supplies</option>
+                            <option value="Refused">Refused</option>
+                            <option value="Contraindication">Contraindication</option>
+                            <option value="Excused">Excused</option>
+                            <option value="Proof of Service">Proof of Service</option>
+                        </select>
+                    </div>
+                    @if (Model.Id != 0)
+                    {
+                        @if (Model.SickleCellNeeded == "Completed")
+                        {
+                            <div class="col-md-2">
+                                <label>Collection Date/Time</label>
+                                <input asp-for="SickleCellGivenDateTime" class="form-control givendatetime-input" type="text"
+                                       value="@(Model.SickleCellGivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")" readonly />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <hr class="my-4" />
+        }
+
         <div class="card-body">
             <div class="row mb-2">
                 <div class="col-md-2">
@@ -920,6 +1016,24 @@
                 }
             });
 
+            $(".dna-serial").each(function () {
+
+                // validate only if visible
+                if (!$(this).is(":visible")) return true;
+
+                const val = this.value.trim();
+
+                // allow empty if not required
+                if (val === "") return true;
+
+                if (!/^[A-Za-z0-9]{12}$|^[A-Za-z0-9]{14}$/.test(val)) {
+                    alert("DNA Serial No must be alphanumeric and contain exactly 12 or 14 characters.");
+                    $(this).focus();
+                    isValid = false;
+                    return false;
+                }
+            });
+
             if (!isValid) {
                 e.preventDefault(); // stop submit
             }
@@ -1062,6 +1176,48 @@
             }
         }
 
+        function toggleSickleCellReason() {
+            var status = $('#SickleCellNeeded').val();
+            var reason = $('#SickleCellReason');
+
+            if (status === 'Not Completed') {
+                $('#sickleCellReasonContainer').show();
+
+                // HTML5 required → browser will focus automatically on Save
+                reason.prop('required', true);
+
+            } else {
+                $('#sickleCellReasonContainer').hide();
+
+                reason.prop('required', false);
+                reason.val('');
+            }
+        }
+
+        function toggleDnaFields() {
+            var status = $('#DnaNeeded').val();
+
+            // Reset
+            $('#dnaReasonContainer').hide();
+            $('#dnaSerialNoContainer').hide();
+
+            $('#DnaReason')
+                .prop('required', false);
+
+            $('#DnaSerialNo')
+                .prop('required', false);
+
+            if (status === 'Not Completed') {
+                $('#dnaReasonContainer').show();
+                $('#DnaReason').prop('required', true);
+            }
+
+            if (status === 'Completed') {
+                $('#dnaSerialNoContainer').show();
+                $('#DnaSerialNo').prop('required', true);
+            }
+        }
+
         function updateOverallStatus() {
             var allSelected = true;
 
@@ -1071,7 +1227,9 @@
                 '#AboNeeded',
                 '#LipidPanelNeeded',
                 '#HivNeeded',
-                '#PregnancyTestNeeded'
+                '#PregnancyTestNeeded',
+                '#SickleCellNeeded',
+                '#DnaNeeded'
             ];
 
             dropdowns.forEach(function (selector) {
@@ -1092,7 +1250,7 @@
                 $('#Status').val('Pending');
             }
         }
-
+        debugger;
         $('#AboNeeded').on('change', toggleAboFields);
         $('#G6pdNeeded').on('change', function () {
             toggleG6pdReason();
@@ -1101,13 +1259,17 @@
         $('#LipidPanelRapidTesting').on('change', toggleLipidPanel);
         $('#HivNeeded').on('change', toggleHivFields);
         $('#PregnancyTestNeeded').on('change', togglePregnancyTestFields);
-        $('#G6pdNeeded, #AboNeeded, #LipidPanelNeeded, #HivNeeded, #PregnancyTestNeeded').on('change', updateOverallStatus);
+        $('#SickleCellNeeded').on('change', toggleSickleCellReason);
+        $('#DnaNeeded').on('change', toggleDnaFields);
 
+        $('#G6pdNeeded, #AboNeeded, #LipidPanelNeeded, #HivNeeded, #PregnancyTestNeeded, #SickleCellNeeded, #DnaNeeded').on('change', updateOverallStatus);
         toggleG6pdReason();
         toggleAboFields();
         toggleLipidPanel();
         toggleHivFields();
         togglePregnancyTestFields();
+        toggleSickleCellReason();
+        toggleDnaFields();
         @* updateOverallStatus(); *@
     });
 </script>
