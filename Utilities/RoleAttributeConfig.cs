@@ -224,6 +224,11 @@ namespace Malama.Utilities
         {
             ("Project Manager & Program Manager", null)
         },
+            ["PostEventDataAnalysis_View"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+            ("Event Manager", null)
+        },
             ["ImmunizationStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Imm RN", "Cold Chain Cert"),
@@ -285,6 +290,11 @@ namespace Malama.Utilities
             ["PostEventManagement_Save"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null)
+        },
+            ["PostEventDataAnalysis_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Project Manager & Program Manager", null),
+            ("Event Manager", null)
         }
         };
 
@@ -315,7 +325,9 @@ namespace Malama.Utilities
             ["PanoramicDentalXRay"] = "Panoramic Dental X-Ray",
             ["RecordsReview"] = "Records Review",
             ["VisionScreening"] = "Vision Screening",
-            ["Vitals"] = "Vitals"
+            ["Vitals"] = "Vitals",
+            ["PostEventManagement"] = "Post Event Management",
+            ["PostEventDataAnalysis"] = "Post Event Data Analysis"
         };
 
         public static class PagePermissionResolver

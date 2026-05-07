@@ -145,10 +145,10 @@
                            style="display:none;"
                            readonly />
 
-                    @* <input type="hidden"
+                    <input type="hidden"
                            id="@($"{Model.Prefix}_malamaUploaded")"
                            name="@Model.MalamaName"
-                           value="@Model.Malama" /> *@
+                           value="@(Model.Malama ? "true" : "false")" />
 
                     <input type="hidden"
                            id="@($"{Model.Prefix}_malamaFileName")"

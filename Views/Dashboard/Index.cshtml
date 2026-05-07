@@ -85,10 +85,13 @@
         </a>
     }
 
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_View"))
+    {
     <a asp-controller="PostEventDataAnalysis" asp-action="Index" class="icon-box">
             <img src="/images/Post Event Data Analysis.jpg" alt="Post Event Data Analysis" />
         <span>Post Event Data Analysis</span>
         </a>
+    }
 
     @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventStaff_View"))
     {

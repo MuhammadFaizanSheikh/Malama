@@ -443,7 +443,7 @@
 
     <!-- Submit Buttons -->
     <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_Save") ? "" : "disabled")>
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_Save") ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
         </button>
 
@@ -661,7 +661,7 @@
                 if (res.success) {
 
                     // set hidden values
-                    $("#" + prefix + "_malamaUploaded").val(true);
+                    $("#" + prefix + "_malamaUploaded").val("true");
                     $("#" + prefix + "_malamaFileName").val(res.fileName);
 
                     // show preview button
