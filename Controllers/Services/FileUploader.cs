@@ -442,15 +442,20 @@ namespace ExcelFilesCompiler.Controllers.Services
                         HivNeeded = entity.LabStationRecord.HivNeeded,
                         PregnancyTestNeeded = entity.LabStationRecord.PregnancyTestNeeded,
                         LipidPanelNeeded = entity.LabStationRecord.LipidPanelNeeded,
+                        SickleCellNeeded = entity.LabStationRecord.SickleCellNeeded,
+                        DnaNeeded = entity.LabStationRecord.DnaNeeded,
 
                         G6pdGivenDateTime = entity.LabStationRecord.G6pdGivenDateTime,
                         AboGivenDateTime = entity.LabStationRecord.AboGivenDateTime,
                         HivGivenDateTime = entity.LabStationRecord.HivGivenDateTime,
                         PregnancyTestGivenDateTime = entity.LabStationRecord.PregnancyTestGivenDateTime,
                         LipidPanelGivenDateTime = entity.LabStationRecord.LipidPanelGivenDateTime,
+                        SickleCellGivenDateTime = entity.LabStationRecord.SickleCellGivenDateTime,
+                        DnaGivenDateTime = entity.LabStationRecord.DnaGivenDateTime,
 
                         LipidPanelRapidTesting = entity.LabStationRecord.LipidPanelRapidTesting,
                         HivBarcodeCarebill = entity.LabStationRecord.HivBarcodeCarebill,
+                        DnaSerialNo = entity.LabStationRecord.DnaSerialNo,
                         FedExTrackingNo = entity.LabStationRecord.FedExTrackingNo,
                         PregnancyTestResult = entity.LabStationRecord.PregnancyTestResult
                     },
@@ -522,7 +527,19 @@ namespace ExcelFilesCompiler.Controllers.Services
                             PregnancyResultEMRUploaded = entity.PostEventLabStation.PregnancyResultEMRUploaded,
                             PregnancyResultEMRUploadedDateTime = entity.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
                             PregnancyResultSORUploaded = entity.PostEventLabStation.PregnancyResultSORUploaded,
-                            PregnancyResultSORUploadedDateTime = entity.PostEventLabStation.PregnancyResultSORUploadedDateTime
+                            PregnancyResultSORUploadedDateTime = entity.PostEventLabStation.PregnancyResultSORUploadedDateTime,
+
+                            // SickleCell
+                            SickleCellResultReceived = entity.PostEventLabStation.SickleCellResultReceived,
+                            SickleCellResultReason = entity.PostEventLabStation.SickleCellResultReason,
+                            SickleCellResultReceivedDateTime = entity.PostEventLabStation.SickleCellResultReceivedDateTime,
+                            SickleCellResultMalamaUploaded = entity.PostEventLabStation.SickleCellResultMalamaUploaded,
+                            SickleCellResultMalamaUploadedFileName = entity.PostEventLabStation.SickleCellResultMalamaUploadedFileName,
+                            SickleCellResultMalamaUploadedDateTime = entity.PostEventLabStation.SickleCellResultMalamaUploadedDateTime,
+                            SickleCellResultEMRUploaded = entity.PostEventLabStation.SickleCellResultEMRUploaded,
+                            SickleCellResultEMRUploadedDateTime = entity.PostEventLabStation.SickleCellResultEMRUploadedDateTime,
+                            SickleCellResultSORUploaded = entity.PostEventLabStation.SickleCellResultSORUploaded,
+                            SickleCellResultSORUploadedDateTime = entity.PostEventLabStation.SickleCellResultSORUploadedDateTime
                         }
                         : new PostEventLabStationDto
                         {

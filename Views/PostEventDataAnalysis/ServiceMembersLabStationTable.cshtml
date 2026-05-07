@@ -385,8 +385,56 @@
                         }
                     </div>
                 </td>
-                <td>N/A</td>
-                <td>N/A</td>
+                <!-- Sickle -->
+                @{
+                    var sickle = GetLabStatus(
+                    item.LabStationRecord?.SickleCellNeeded,
+                    item.PostEventLabStation?.SickleCellResultMalamaUploaded,
+                    item.PostEventLabStation?.SickleCellResultEMRUploaded,
+                    item.PostEventLabStation?.SickleCellResultSORUploaded,
+                    item.PostEventLabStation,
+                    item.PostEventLabStation?.SickleCellResultReceived,
+                    item.PostEventLabStation?.SickleCellResultReason
+                    );
+                }
+                <td style="min-width:70px;">
+                    <div style="text-align:center;">
+                        <span class="badge" style="background-color:@sickle.BgColor; color:@sickle.TextColor;">
+                            @sickle.Text
+                        </span>
+                        @if (sickle.ShowDetails)
+                        {
+                            <div class="lab-details" style="margin-top:5px; font-size:12px; text-align:center;">
+
+                                <span style="color:@(sickle.Malama == true ? "green" : "red")">
+                                    @(sickle.Malama == true ? "✔" : "✖") Malama
+                                </span>
+
+                                <span style="color:@(sickle.Emr == true ? "green" : "red")">
+                                    @(sickle.Emr == true ? "✔" : "✖") EMR
+                                </span>
+
+                                <span style="color:@(sickle.Sor == true ? "green" : "red")">
+                                    @(sickle.Sor == true ? "✔" : "✖") SOR
+                                </span>
+
+                            </div>
+                        }
+                    </div>
+                </td>
+                @{
+                    var dnaCompleted = item.LabStationRecord?.DnaNeeded == "Completed";
+                }
+
+                <td>
+                    <div style="text-align:center;">
+                        <span class="badge"
+                              style="background-color:@(dnaCompleted ? "#198754" : "#6c757d");
+                     color:#ffffff;">
+                            @(dnaCompleted ? "C" : "N/A")
+                        </span>
+                    </div>
+                </td>
                 <!-- Pregnancy -->
                 @{
                     var preg = GetLabStatus(
@@ -431,35 +479,6 @@
         }
     </tbody>
 </table>
-
-@* <!-- Sickle Cell -->
-                @{
-                    var sickle = GetLabStatus(
-                    item.LabStationRecord?.SickleCellNeeded,
-                    item.PostEventLabStation?.SickleCellResultMalamaUploaded,
-                    item.PostEventLabStation?.SickleCellResultEMRUploaded,
-                    item.PostEventLabStation?.SickleCellResultSORUploaded,
-            item.PostEventLabStation,
-            item.PostEventLabStation?.SickleCellResultReceived,
-            item.PostEventLabStation?.SickleCellResultReason
-                    );
-                }
-                <td><span class="badge" style="background-color:@sickle.bgColor; color:@sickle.textColor;">@sickle.text</span></td>
-
-                <!-- DNA -->
-                @{
-                    var dna = GetLabStatus(
-                    item.LabStationRecord?.DnaNeeded,
-                    item.PostEventLabStation?.DnaResultMalamaUploaded,
-                    item.PostEventLabStation?.DnaResultEMRUploaded,
-                    item.PostEventLabStation?.DnaResultSORUploaded,
-            item.PostEventLabStation,
-            item.PostEventLabStation?.DnaResultReceived,
-            item.PostEventLabStation?.DnaResultReason
-                    );
-                }
-                <td><span class="badge" style="background-color:@dna.bgColor; color:@dna.textColor;">@dna.text</span></td>
- *@
 
 <script>
         var table;

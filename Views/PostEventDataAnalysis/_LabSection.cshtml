@@ -5,6 +5,34 @@
 
     <div class="card-body">
 
+        @if (Model.Prefix.Equals("dna", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="row g-2 mb-3 align-items-end">
+
+                <!-- COLLECTION DATE -->
+                <div class="col-md-3">
+                    <label class="form-label">Collection Date/Time</label>
+
+                    <input class="form-control w-auto"
+                           value="@Model.GivenDate?.ToString("MM-dd-yyyy HH:mm")"
+                           readonly />
+                </div>
+
+                <!-- DNA SERIAL -->
+                <div class="col-md-3">
+                    <label class="form-label">Serial No.</label>
+
+                    <input class="form-control"
+                           name="@Model.DnaSerialNoName"
+                           value="@Model.DnaSerialNo"
+                           readonly />
+                </div>
+
+            </div>
+
+        }
+        else
+        {
         <!-- GIVEN DATE + RESULT -->
         <div class="row g-2 mb-3 align-items-end">
 
@@ -53,10 +81,10 @@
 
             <!-- RESULT RECEIVED -->
             <div class="col-md-@(
-    Model.Prefix.Equals("lipid", StringComparison.OrdinalIgnoreCase) ||
-    Model.Prefix.Equals("hiv", StringComparison.OrdinalIgnoreCase) ||
-    Model.Prefix.Equals("preg", StringComparison.OrdinalIgnoreCase)
-    ? "6" : "9")">
+            Model.Prefix.Equals("lipid", StringComparison.OrdinalIgnoreCase) ||
+            Model.Prefix.Equals("hiv", StringComparison.OrdinalIgnoreCase) ||
+            Model.Prefix.Equals("preg", StringComparison.OrdinalIgnoreCase)
+            ? "6" : "9")">
 
                 <label class="form-label">Lab Result Received</label>
 
@@ -96,40 +124,7 @@
                 </div>
 
                 <!-- MALAMA -->
-                @* <div class="col-md-3">
-                    <label>Upload Lab Result (Malama)</label>
-
-                    <input type="file"
-                           name="@($"{Model.Prefix}File")"
-                           class="form-control"
-                           onchange="toggleFlatpicker(this, '@Model.Prefix')" />
-
-                    <input name="@Model.MalamaDateName"
-                           value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
-                           class="form-control flatpickr mt-2"
-                           id="@($"{Model.Prefix}_malamaDate")"
-                           style="display:none;"
-                           readonly />
-
-                    <input type="hidden"
-                           id="@($"{Model.Prefix}_malamaUploaded")"
-                           name="@Model.MalamaName"
-                           value="false" />
-
-                    @if (!string.IsNullOrEmpty(Model.MalamaFileName))
-                    {
-                        <div class="mt-2">
-                            <small class="text-muted">Uploaded File:</small><br />
-
-                            <a href="@Url.Action("DownloadLabFile", "Lab", new { prefix = Model.Prefix, fileName = Model.MalamaFileName })"
-                               target="_blank"
-                               class="text-primary">
-                                @Model.MalamaFileName
-                            </a>
-                        </div>
-                    }
-                </div> *@
-
+                
                 <div class="col-md-3">
                     <label>Upload Lab Result (Malama)</label>
 
@@ -170,8 +165,6 @@
 
                 <!-- SOR -->
                 <div class="col-md-3">
-                    @* <input type="hidden" name="@Model.SORName" value="false" /> *@
-
                     <div class="form-check mb-1">
                         <input class="form-check-input"
                                type="checkbox"
@@ -192,8 +185,6 @@
 
                 <!-- EMR -->
                 <div class="col-md-3">
-                    @* <input type="hidden" name="@Model.EMRName" value="false" /> *@
-
                     <div class="form-check mb-1">
                         <input class="form-check-input"
                                type="checkbox"
@@ -236,6 +227,6 @@
             </div>
 
         </div>
-
+        }
     </div>
 </div>

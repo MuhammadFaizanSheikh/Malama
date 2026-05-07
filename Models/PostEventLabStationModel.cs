@@ -81,18 +81,6 @@
         public bool SickleCellResultSORUploaded { get; set; }
         public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
 
-        // DNA
-        public bool DNAResultReceived { get; set; }
-        public string? DNAResultReason { get; set; }
-        public DateTime? DNAResultReceivedDateTime { get; set; }
-        public bool DNAResultMalamaUploaded { get; set; }
-        public string? DNAResultMalamaUploadedFileName { get; set; }
-        public DateTime? DNAResultMalamaUploadedDateTime { get; set; }
-        public bool DNAResultEMRUploaded { get; set; }
-        public DateTime? DNAResultEMRUploadedDateTime { get; set; }
-        public bool DNAResultSORUploaded { get; set; }
-        public DateTime? DNAResultSORUploadedDateTime { get; set; }
-
         public string Status { get; set; }
     }
 }

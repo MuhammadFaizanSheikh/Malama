@@ -21,19 +21,20 @@ namespace Malama.Models
         public string? HivNeeded { get; set; }
         public string? PregnancyTestNeeded { get; set; }
         public string? LipidPanelNeeded { get; set; }
-        //public string? SickleCellNeeded { get; set; }
-        //public string? DnaNeeded { get; set; }
+        public string? SickleCellNeeded { get; set; }
+        public string? DnaNeeded { get; set; }
 
         public DateTime? G6pdGivenDateTime { get; set; }
         public DateTime? AboGivenDateTime { get; set; }
         public DateTime? HivGivenDateTime { get; set; }
         public DateTime? PregnancyTestGivenDateTime { get; set; }
         public DateTime? LipidPanelGivenDateTime { get; set; }
-        //public DateTime? SickleCellGivenDateTime { get; set; }
-        //public DateTime? DnaGivenDateTime { get; set; }
+        public DateTime? SickleCellGivenDateTime { get; set; }
+        public DateTime? DnaGivenDateTime { get; set; }
 
         public bool? LipidPanelRapidTesting { get; set; }
         public string? HivBarcodeCarebill { get; set; }
+        public string? DnaSerialNo { get; set; }
         public string? FedExTrackingNo { get; set; }
         public string? PregnancyTestResult { get; set; }
     }
@@ -58,8 +59,8 @@ namespace Malama.Models
         public bool ShowHivSection => LabStation?.HivNeeded == AppConstants.Status.Completed;
         public bool ShowPregnancySection => LabStation?.PregnancyTestNeeded == AppConstants.Status.Completed;
         public bool ShowLipidPanelSection => LabStation?.LipidPanelNeeded == AppConstants.Status.Completed;
-        //public bool ShowSickleCellSection => LabStation?.SickleCellNeeded == AppConstants.Status.Completed;
-        //public bool ShowDnaSection => LabStation?.DnaNeeded == AppConstants.Status.Completed;
+        public bool ShowSickleCellSection => LabStation?.SickleCellNeeded == AppConstants.Status.Completed;
+        public bool ShowDnaSection => LabStation?.DnaNeeded == AppConstants.Status.Completed;
 
         // 🔹 Given DateTimes
         public DateTime? G6pdGivenDateTime => LabStation?.G6pdGivenDateTime;
@@ -67,14 +68,15 @@ namespace Malama.Models
         public DateTime? HivGivenDateTime => LabStation?.HivGivenDateTime;
         public DateTime? PregnancyGivenDateTime => LabStation?.PregnancyTestGivenDateTime;
         public DateTime? LipidPanelGivenDateTime => LabStation?.LipidPanelGivenDateTime;
-        //public DateTime? SickleCellGivenDateTime => LabStation?.SickleCellGivenDateTime;
-        //public DateTime? DnaGivenDateTime => LabStation?.DnaGivenDateTime;
+        public DateTime? SickleCellGivenDateTime => LabStation?.SickleCellGivenDateTime;
+        public DateTime? DnaGivenDateTime => LabStation?.DnaGivenDateTime;
 
         // 🔹 Extra Info
         public bool? IsLipidRapid => LabStation?.LipidPanelRapidTesting;
         public string? HivBarcodeCarebill => LabStation?.HivBarcodeCarebill;
         public string? FedExTrackingNo => LabStation?.FedExTrackingNo;
         public string? PregnancyTestResult => LabStation?.PregnancyTestResult;
+        public string? DnaSerialNo => LabStation?.DnaSerialNo;
     }
 
     public class PostEventLabStationDto
@@ -147,27 +149,17 @@ namespace Malama.Models
         public bool PregnancyResultSORUploaded { get; set; }
         public DateTime? PregnancyResultSORUploadedDateTime { get; set; }
 
-        //// Sickle Cell
-        //public bool SickleCellResultReceived { get; set; }
-        //public string? SickleCellResultReason { get; set; }
-        //public DateTime? SickleCellResultReceivedDateTime { get; set; }
-        //public bool SickleCellResultMalamaUploaded { get; set; }
-        //public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
-        //public bool SickleCellResultEMRUploaded { get; set; }
-        //public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
-        //public bool SickleCellResultSORUploaded { get; set; }
-        //public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
-
-        //// Dna
-        //public bool DnaResultReceived { get; set; }
-        //public string? DnaResultReason { get; set; }
-        //public DateTime? DnaResultReceivedDateTime { get; set; }
-        //public bool DnaResultMalamaUploaded { get; set; }
-        //public DateTime? DnaResultMalamaUploadedDateTime { get; set; }
-        //public bool DnaResultEMRUploaded { get; set; }
-        //public DateTime? DnaResultEMRUploadedDateTime { get; set; }
-        //public bool DnaResultSORUploaded { get; set; }
-        //public DateTime? DnaResultSORUploadedDateTime { get; set; }
+        // Sickle Cell
+        public bool SickleCellResultReceived { get; set; }
+        public string? SickleCellResultReason { get; set; }
+        public DateTime? SickleCellResultReceivedDateTime { get; set; }
+        public bool SickleCellResultMalamaUploaded { get; set; }
+        public string? SickleCellResultMalamaUploadedFileName { get; set; }
+        public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
+        public bool SickleCellResultEMRUploaded { get; set; }
+        public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
+        public bool SickleCellResultSORUploaded { get; set; }
+        public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
     }
 
     public class LabUIModel
@@ -191,6 +183,7 @@ namespace Malama.Models
         public string HivBarcodeCarebillName { get; set; }
         public string FedExTrackingNoName { get; set; }
         public string PregnancyTestResultName { get; set; }
+        public string DnaSerialNoName { get; set; }
 
         public bool ResultReceived { get; set; }
         public string? Reason { get; set; }
@@ -205,5 +198,6 @@ namespace Malama.Models
         public bool? IsLipidRapid { get; set; }
         public string? HivBarcodeCarebill { get; set; }
         public string? PregnancyTestResult { get; set; }
+        public string? DnaSerialNo { get; set; }
     }
 }

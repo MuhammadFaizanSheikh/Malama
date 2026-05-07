@@ -166,7 +166,6 @@
     
 
     <!-- ================= G6PD ================= -->
-    <!-- ================= G6PD ================= -->
     @if (Model.ShowG6pdSection)
     {
         @await Html.PartialAsync("_LabSection", new LabUIModel
@@ -237,64 +236,7 @@
     SORDate = Model.PostEventLabStation.AboResultSORUploadedDateTime
 })
     }
-    @* <!-- ================= Sickle Cell ================= -->
-    @if (Model.ShowSickleCellSection)
-    {
-        @await Html.PartialAsync("_LabSection", new LabUIModel
-{
-    Prefix = "sickle",
-    Title = "Sickle Cell",
-    GivenDate = Model.SickleCellGivenDateTime,
-
-    ResultReceivedName = "PostEventLabStation.SickleCellResultReceived",
-    ReasonName = "PostEventLabStation.SickleCellResultReason",
-    ReceivedDateName = "PostEventLabStation.SickleCellResultReceivedDateTime",
-    MalamaDateName = "PostEventLabStation.SickleCellResultMalamaUploadedDateTime",
-    EMRName = "PostEventLabStation.SickleCellResultEMRUploaded",
-    EMRDateName = "PostEventLabStation.SickleCellResultEMRUploadedDateTime",
-    SORName = "PostEventLabStation.SickleCellResultSORUploaded",
-    SORDateName = "PostEventLabStation.SickleCellResultSORUploadedDateTime",
-
-    ResultReceived = Model.PostEventLabStation.SickleCellResultReceived,
-    Reason = Model.PostEventLabStation.SickleCellResultReason,
-    ReceivedDate = Model.PostEventLabStation.SickleCellResultReceivedDateTime,
-    MalamaDate = Model.PostEventLabStation.SickleCellResultMalamaUploadedDateTime,
-    EMR = Model.PostEventLabStation.SickleCellResultEMRUploaded,
-    EMRDate = Model.PostEventLabStation.SickleCellResultEMRUploadedDateTime,
-    SOR = Model.PostEventLabStation.SickleCellResultSORUploaded,
-    SORDate = Model.PostEventLabStation.SickleCellResultSORUploadedDateTime
-})
-    }
-
-    <!-- ================= DNA ================= -->
-    @if (Model.ShowDnaSection)
-    {
-        @await Html.PartialAsync("_LabSection", new LabUIModel
-{
-    Prefix = "dna",
-    Title = "Dna",
-    GivenDate = Model.DnaGivenDateTime,
-
-    ResultReceivedName = "PostEventLabStation.DnaResultReceived",
-    ReasonName = "PostEventLabStation.DnaResultReason",
-    ReceivedDateName = "PostEventLabStation.DnaResultReceivedDateTime",
-    MalamaDateName = "PostEventLabStation.DnaResultMalamaUploadedDateTime",
-    EMRName = "PostEventLabStation.DnaResultEMRUploaded",
-    EMRDateName = "PostEventLabStation.DnaResultEMRUploadedDateTime",
-    SORName = "PostEventLabStation.DnaResultSORUploaded",
-    SORDateName = "PostEventLabStation.DnaResultSORUploadedDateTime",
-
-    ResultReceived = Model.PostEventLabStation.DnaResultReceived,
-    Reason = Model.PostEventLabStation.DnaResultReason,
-    ReceivedDate = Model.PostEventLabStation.DnaResultReceivedDateTime,
-    MalamaDate = Model.PostEventLabStation.DnaResultMalamaUploadedDateTime,
-    EMR = Model.PostEventLabStation.DnaResultEMRUploaded,
-    EMRDate = Model.PostEventLabStation.DnaResultEMRUploadedDateTime,
-    SOR = Model.PostEventLabStation.DnaResultSORUploaded,
-    SORDate = Model.PostEventLabStation.DnaResultSORUploadedDateTime
-})
-    } *@
-
+     
     <!-- ================= LIPID ================= -->
     @if (Model.ShowLipidPanelSection)
     {
@@ -424,6 +366,57 @@
 })
     }
 
+    <!-- ================= Sickle Cell ================= -->
+    @if (Model.ShowSickleCellSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "sickle",
+    Title = "Sickle",
+    GivenDate = Model.SickleCellGivenDateTime,
+
+    ResultReceivedName = "PostEventLabStation.SickleCellResultReceived",
+    ReasonName = "PostEventLabStation.SickleCellResultReason",
+    ReceivedDateName = "PostEventLabStation.SickleCellResultReceivedDateTime",
+
+    MalamaName = "PostEventLabStation.SickleCellResultMalamaUploaded",
+    MalamaResultFileNameName = "PostEventLabStation.SickleCellResultMalamaUploadedFileName",
+    MalamaDateName = "PostEventLabStation.SickleCellResultMalamaUploadedDateTime",
+
+    EMRName = "PostEventLabStation.SickleCellResultEMRUploaded",
+    EMRDateName = "PostEventLabStation.SickleCellResultEMRUploadedDateTime",
+
+    SORName = "PostEventLabStation.SickleCellResultSORUploaded",
+    SORDateName = "PostEventLabStation.SickleCellResultSORUploadedDateTime",
+
+    ResultReceived = Model.PostEventLabStation.SickleCellResultReceived,
+    Reason = Model.PostEventLabStation.SickleCellResultReason,
+    ReceivedDate = Model.PostEventLabStation.SickleCellResultReceivedDateTime,
+
+    Malama = Model.PostEventLabStation.SickleCellResultMalamaUploaded,
+    MalamaFileName = Model.PostEventLabStation.SickleCellResultMalamaUploadedFileName,
+    MalamaDate = Model.PostEventLabStation.SickleCellResultMalamaUploadedDateTime,
+
+    EMR = Model.PostEventLabStation.SickleCellResultEMRUploaded,
+    EMRDate = Model.PostEventLabStation.SickleCellResultEMRUploadedDateTime,
+
+    SOR = Model.PostEventLabStation.SickleCellResultSORUploaded,
+    SORDate = Model.PostEventLabStation.SickleCellResultSORUploadedDateTime
+})
+    }
+
+    <!-- ================= DNA ================= -->
+    @if (Model.ShowDnaSection)
+    {
+        @await Html.PartialAsync("_LabSection", new LabUIModel
+{
+    Prefix = "dna",
+    Title = "Dna",
+    GivenDate = Model.DnaGivenDateTime,
+    DnaSerialNoName = "PostEventLabStation.DnaSerialNo",
+    DnaSerialNo = Model.DnaSerialNo
+})
+    }
     
 
 
