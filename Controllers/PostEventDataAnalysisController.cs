@@ -369,6 +369,17 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
+                if (string.IsNullOrWhiteSpace(station) ||
+                    string.IsNullOrWhiteSpace(prefix) ||
+                    string.IsNullOrWhiteSpace(fileName))
+                {
+                    _logger.LogWarning(
+                        "{Class}.{Method} - Invalid download request parameters | Station: {Station}, Prefix: {Prefix}, FileName: {FileName}",
+                        CLASSNAME, METHOD, station, prefix, fileName);
+
+                    return BadRequest("Invalid file download request. Station, prefix, and file name are required.");
+                }
+
                 _logger.LogInformation("{Class}.{Method} - Download request | Station: {Station}, Prefix: {Prefix}, FileName: {FileName}",
                     CLASSNAME, METHOD, station, prefix, fileName);
 
@@ -384,8 +395,8 @@ namespace ExcelFilesCompiler.Controllers
 
                 _logger.LogInformation("{Class}.{Method} - File returned successfully | FileName: {FileName}",
                     CLASSNAME, METHOD, fileName);
-
-                return File(file.Bytes, file.ContentType, file.FileName);
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{file.FileName}\"";
+                return File(file.Bytes, file.ContentType);
             }
             catch (Exception ex)
             {

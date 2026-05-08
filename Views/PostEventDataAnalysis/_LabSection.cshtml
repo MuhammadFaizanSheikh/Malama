@@ -134,11 +134,34 @@
                            data-prefix="@Model.Prefix"
                            onchange="toggleFlatpicker(this, '@Model.Prefix')" />
 
+                    <div class="d-flex align-items-center gap-2 mt-2 malama-file-status"
+                         id="@($"{Model.Prefix}_fileStatus")"
+                         data-prefix="@Model.Prefix"
+                         data-existing-filename="@Model.MalamaFileName"
+                         style="display:none;">
+                        <span class="text-success fs-6" title="File selected">
+                            <i class="bi bi-file-earmark-check-fill"></i>
+                        </span>
+                        <span class="small text-truncate"
+                              id="@($"{Model.Prefix}_fileNameDisplay")"
+                              style="max-width: 150px;"></span>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary preview-selected-file"
+                                data-prefix="@Model.Prefix">
+                            Preview
+                        </button>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger cancel-selected-file"
+                                data-prefix="@Model.Prefix">
+                            Cancel
+                        </button>
+                    </div>
+
                     <input name="@Model.MalamaDateName"
                            value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
                            class="form-control flatpickr mt-2"
                            id="@($"{Model.Prefix}_malamaDate")"
-                           style="display:@(Model.Malama ? "block" : "none");"
+                               style="display:@(Model.Malama ? "block" : "none");"
                            readonly />
 
                     <input type="hidden"
@@ -151,17 +174,6 @@
                            name="@Model.MalamaResultFileNameName"
                            value="@Model.MalamaFileName" />
 
-                    <!-- Preview Button -->
-                    <div class="mt-2" id="@($"{Model.Prefix}_previewContainer")"
-                         style="display:@(!string.IsNullOrEmpty(Model.MalamaFileName) ? "block" : "none");">
-
-                        <button type="button"
-                                class="btn btn-sm btn-primary preview-file"
-                                data-prefix="@Model.Prefix"
-                                data-filename="@Model.MalamaFileName">
-                            Preview File
-                        </button>
-                    </div>
                 </div>
 
                 <!-- SOR -->

@@ -93,6 +93,10 @@
         pointer-events: none; /* Disable click and focus */
         border-color: #ced4da; /* Light border color */
     }
+
+    .malama-file-status .btn {
+        line-height: 1.1;
+    }
 </style>
 
 <div class="d-flex align-items-center mb-3">
@@ -472,8 +476,13 @@
 
             document.querySelectorAll("input[id$='_malamaDate']").forEach(function (el) {
                 el.setAttribute("readonly", "readonly");
+                if (el._flatpickr) {
+                    el._flatpickr.set("allowInput", false);
+                    el._flatpickr.set("clickOpens", false);
+                }
                 if (el._flatpickr?.altInput) {
                     el._flatpickr.altInput.setAttribute("readonly", "readonly");
+                    el._flatpickr.altInput.setAttribute("disabled", "disabled");
                 }
             });
 
@@ -482,9 +491,16 @@
                 const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
                 const sorCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`);
                 const emrCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`);
+                const malamaDateInput = document.getElementById(p + "_malamaDate");
+
+                if (malamaDateInput) {
+                    malamaDateInput.dataset.originalValue = malamaDateInput.value || "";
+                }
 
                 toggleLabSOR(p, sorCheckbox?.checked === true);
                 toggleLabEMR(p, emrCheckbox?.checked === true);
+                updateMalamaFileUI(p);
+                syncMalamaDateVisibility(p);
             }
         });
 
@@ -601,6 +617,9 @@
                 received.value = "";
             }
         }
+
+        // Keep Malama datetime hidden unless an actual file is selected.
+        syncMalamaDateVisibility(prefix);
     }
 
     function toggleLabEMR(prefix, show) {
@@ -651,11 +670,27 @@
                 datePicker._flatpickr.setDate(now, true, "Y-m-d H:i");
             }
         } else {
-            setFlatpickrVisibility(datePicker, false);
-            hiddenField.value = "false";
-            datePicker.value = "";
-            if (datePicker._flatpickr) {
-                datePicker._flatpickr.clear();
+            const status = document.getElementById(prefix + "_fileStatus");
+            const hasExistingServerFile = !!(status?.dataset?.existingFilename || "").trim();
+            const originalValue = datePicker?.dataset?.originalValue || "";
+
+            if (hasExistingServerFile) {
+                // Keep original persisted state but keep datetime hidden until a new file is selected.
+                setFlatpickrVisibility(datePicker, false);
+                hiddenField.value = "true";
+                datePicker.value = originalValue;
+                if (datePicker._flatpickr && originalValue) {
+                    datePicker._flatpickr.setDate(originalValue, true, "Y-m-d H:i");
+                } else if (datePicker._flatpickr) {
+                    datePicker._flatpickr.clear();
+                }
+            } else {
+                setFlatpickrVisibility(datePicker, false);
+                hiddenField.value = "false";
+                datePicker.value = "";
+                if (datePicker._flatpickr) {
+                    datePicker._flatpickr.clear();
+                }
             }
         }
     }
@@ -682,31 +717,104 @@
         return `${year}-${month}-${day} ${hour}:${minute}`;
     }
 
+    function syncMalamaDateVisibility(prefix) {
+        const fileInput = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
+        const datePicker = document.getElementById(prefix + "_malamaDate");
+        if (!fileInput || !datePicker) return;
+
+        const hasSelectedFile = fileInput.files && fileInput.files.length > 0;
+        setFlatpickrVisibility(datePicker, hasSelectedFile);
+    }
+
+    function updateMalamaFileUI(prefix) {
+        const fileInput = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
+        const status = document.getElementById(prefix + "_fileStatus");
+        const fileNameDisplay = document.getElementById(prefix + "_fileNameDisplay");
+        const hiddenUploaded = document.getElementById(prefix + "_malamaUploaded");
+        const hiddenFileName = document.getElementById(prefix + "_malamaFileName");
+
+        if (!fileInput || !status || !fileNameDisplay || !hiddenUploaded || !hiddenFileName) return;
+
+        const selectedFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+        const existingFileName = (status.dataset.existingFilename || "").trim();
+        const selectedPreviewUrl = status.dataset.selectedPreviewUrl || "";
+
+        if (selectedFile) {
+            fileNameDisplay.textContent = selectedFile.name;
+            status.style.display = "flex";
+
+            hiddenUploaded.value = "true";
+            hiddenFileName.value = "";
+
+            if (selectedPreviewUrl) {
+                URL.revokeObjectURL(selectedPreviewUrl);
+            }
+            status.dataset.selectedPreviewUrl = URL.createObjectURL(selectedFile);
+            status.dataset.previewMode = "selected";
+            return;
+        }
+
+        if (selectedPreviewUrl) {
+            URL.revokeObjectURL(selectedPreviewUrl);
+        }
+        status.dataset.selectedPreviewUrl = "";
+
+        if (existingFileName) {
+            fileNameDisplay.textContent = existingFileName;
+            status.style.display = "flex";
+            hiddenUploaded.value = "true";
+            hiddenFileName.value = existingFileName;
+            status.dataset.previewMode = "server";
+            return;
+        }
+
+        fileNameDisplay.textContent = "";
+        status.style.display = "none";
+        hiddenUploaded.value = "false";
+        hiddenFileName.value = "";
+        status.dataset.previewMode = "";
+    }
+
     $(document).on("change", ".malama-file", function () {
         const prefix = $(this).data("prefix");
         if (!prefix) return;
-
-        const file = this.files && this.files.length > 0 ? this.files[0] : null;
-        const hasFile = !!file;
-
-        $("#" + prefix + "_malamaUploaded").val(hasFile ? "true" : "false");
-
-        if (hasFile) {
-            // File is now uploaded on Save; clear server filename until submit completes.
-            $("#" + prefix + "_malamaFileName").val("");
-            $("#" + prefix + "_previewContainer").hide();
-        }
+        updateMalamaFileUI(prefix);
     });
 
-    $(document).on("click", ".preview-file", function () {
+    $(document).on("click", ".cancel-selected-file", function () {
+        debugger;
+        const prefix = $(this).data("prefix");
+        if (!prefix) return;
 
-        var prefix = $(this).data("prefix");
-        var fileName = $(this).data("filename");
+        const input = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
+        if (!input) return;
 
+        input.value = "";
+        toggleFlatpicker(input, prefix);
+        updateMalamaFileUI(prefix);
+    });
+
+    $(document).on("click", ".preview-selected-file", function () {
+        const prefix = $(this).data("prefix");
+        if (!prefix) return;
+
+        const status = document.getElementById(prefix + "_fileStatus");
+        const hiddenFileName = document.getElementById(prefix + "_malamaFileName");
+        if (!status || !hiddenFileName) return;
+
+        const previewMode = status.dataset.previewMode;
+        if (previewMode === "selected") {
+            const localUrl = status.dataset.selectedPreviewUrl;
+            if (localUrl) {
+                window.open(localUrl, "_blank");
+            }
+            return;
+        }
+
+        const fileName = hiddenFileName.value || status.dataset.existingFilename;
         if (!fileName) return;
 
-        var url = "/PostEventDataAnalysis/DownloadLabFile?fileName=" + encodeURIComponent(fileName);
-
+        const url = "/PostEventDataAnalysis/DownloadMalamaFile?station=Labs&prefix=" + encodeURIComponent(prefix) + "&fileName=" + encodeURIComponent(fileName);
         window.open(url, "_blank");
     });
 
