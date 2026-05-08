@@ -97,6 +97,84 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<ResponseDto> UpdateAsync(PostEventLabStationDto model, string userName)
+        {
+            string methodName = nameof(UpdateAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Updating PostEventLabStation. Id={Id}, User={User}",
+                    CLASSNAME, methodName, model.Id, userName);
+
+                var existing = await _unitOfWork.PostEventLabStation.GetByIdAsync(model.Id);
+                if (existing == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Record not found for update. Id={Id}, User={User}",
+                        CLASSNAME, methodName, model.Id, userName);
+
+                    return new ResponseDto
+                    {
+                        Success = false,
+                        Message = "Record not found."
+                    };
+                }
+
+                _mapper.Map(model, existing);
+                existing.UpdatedOn = DateTime.Now;
+                existing.UpdatedBy = userName;
+
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Record updated successfully. Id={Id}, User={User}",
+                    CLASSNAME, methodName, model.Id, userName);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Post Event Lab Station record updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception while updating PostEventLabStation. Id={Id}, User={User}",
+                    CLASSNAME, methodName, model.Id, userName);
+
+                return new ResponseDto
+                {
+                    Success = false,
+                    Message = "Something went wrong while updating the record."
+                };
+            }
+        }
+
+        public async Task<PostEventLabStation?> GetByIdAsync(long id)
+        {
+            string methodName = nameof(GetByIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Fetching PostEventLabStation by Id={Id}",
+                    CLASSNAME, methodName, id);
+
+                return await _unitOfWork.PostEventLabStation.GetByIdAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Exception while fetching PostEventLabStation. Id={Id}",
+                    CLASSNAME, methodName, id);
+
+                return null;
+            }
+        }
+
         //public async Task UpdateAsync(LabStation model, string userName)
         //{
         //    string methodName = nameof(UpdateAsync);

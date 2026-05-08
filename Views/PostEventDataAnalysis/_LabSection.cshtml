@@ -129,10 +129,17 @@
                     <label>Upload Lab Result (Malama)</label>
 
                     <input type="file"
-                           class="form-control malama-file"
+                           class="malama-file d-none"
                            name="@($"{Model.Prefix}MalamaFile")"
                            data-prefix="@Model.Prefix"
+                           accept=".pdf,application/pdf"
                            onchange="toggleFlatpicker(this, '@Model.Prefix')" />
+
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm mt-1 open-malama-picker"
+                            data-prefix="@Model.Prefix">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
 
                     <div class="d-flex align-items-center gap-2 mt-2 malama-file-status"
                          id="@($"{Model.Prefix}_fileStatus")"
@@ -144,7 +151,7 @@
                         </span>
                         <span class="small text-truncate"
                               id="@($"{Model.Prefix}_fileNameDisplay")"
-                              style="max-width: 150px;"></span>
+                              style="max-width: 150px;">File selected</span>
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary preview-selected-file"
                                 data-prefix="@Model.Prefix">

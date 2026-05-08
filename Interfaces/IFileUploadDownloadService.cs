@@ -7,5 +7,6 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<FileUploadResult> UploadFile(IFormFile file, string station, string prefix, string barcode);
         FileDownloadResult GetFile(string station, string prefix, string fileName);
+        bool DeleteFile(string station, string prefix, string fileName);
     }
 }

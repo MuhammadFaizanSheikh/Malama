@@ -253,21 +253,21 @@ namespace ExcelFilesCompiler.Controllers
                     return View("SpecificServiceMemberLabStation", model);
                 }
 
-                var fileUploadError = await UploadLabFilesOnSave(model);
-                if (!string.IsNullOrEmpty(fileUploadError))
-                {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Error";
-                    TempData["ResponseMessage"] = fileUploadError;
-
-                    return View("SpecificServiceMemberLabStation", model);
-                }
-
                 if (model.PostEventLabStation.Id == 0)
                 {
                     _logger.LogInformation(
                         "{ClassName}, {MethodName}, Add operation started. User={User}",
                         CLASSNAME, methodName, user.UserName);
+
+                    var fileUploadError = await UploadLabFilesForAdd(model);
+                    if (!string.IsNullOrEmpty(fileUploadError))
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = fileUploadError;
+
+                        return View("SpecificServiceMemberLabStation", model);
+                    }
 
                     var result = await _postEventLabStationService
                         .AddAsync(model.PostEventLabStation, user.UserName);
@@ -291,11 +291,43 @@ namespace ExcelFilesCompiler.Controllers
                         "{ClassName}, {MethodName}, Update operation started. Id={Id}, User={User}",
                         CLASSNAME, methodName, model.PostEventLabStation.Id, user.UserName);
 
-                    // var result = await _postEventLabStationService.UpdateAsync(...);
+                    var existing = await _postEventLabStationService.GetByIdAsync(model.PostEventLabStation.Id);
+                    if (existing == null)
+                    {
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, Existing record not found for update. Id={Id}",
+                            CLASSNAME, methodName, model.PostEventLabStation.Id);
+
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = "Record not found.";
+                        return View("SpecificServiceMemberLabStation", model);
+                    }
+
+                    var fileProcessError = await ProcessLabFilesForUpdate(model, existing);
+                    if (!string.IsNullOrEmpty(fileProcessError))
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = fileProcessError;
+
+                        return View("SpecificServiceMemberLabStation", model);
+                    }
+
+                    var result = await _postEventLabStationService
+                        .UpdateAsync(model.PostEventLabStation, user.UserName);
+                    if (!result.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = result.Message;
+
+                        return View("SpecificServiceMemberLabStation", model);
+                    }
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Record updated successfully.";
+                    TempData["ResponseMessage"] = result.Message;
                 }
 
                 return RedirectToAction("SelectStation", new
@@ -318,47 +350,47 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        public async Task<IActionResult> UploadMalamaFile(IFormFile file, string station, string prefix, string barcode)
-        {
-            const string METHOD = nameof(UploadMalamaFile);
+        //public async Task<IActionResult> UploadMalamaFile(IFormFile file, string station, string prefix, string barcode)
+        //{
+        //    const string METHOD = nameof(UploadMalamaFile);
 
-            try
-            {
-                _logger.LogInformation("{Class}.{Method} - Request received | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
-                    CLASSNAME, METHOD, station, prefix, barcode);
+        //    try
+        //    {
+        //        _logger.LogInformation("{Class}.{Method} - Request received | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
+        //            CLASSNAME, METHOD, station, prefix, barcode);
 
-                var result = await _fileService.UploadFile(file, station, prefix, barcode);
+        //        var result = await _fileService.UploadFile(file, station, prefix, barcode);
 
-                if (!result.Success)
-                {
-                    _logger.LogWarning("{Class}.{Method} - Upload failed | Message: {Message}",
-                        CLASSNAME, METHOD, result.Message);
+        //        if (!result.Success)
+        //        {
+        //            _logger.LogWarning("{Class}.{Method} - Upload failed | Message: {Message}",
+        //                CLASSNAME, METHOD, result.Message);
 
-                    return Json(result);
-                }
+        //            return Json(result);
+        //        }
 
-                // OPTIONAL: update DB here (Malama flag + filename)
-                // Example:
-                // await _labService.UpdateMalamaFile(barcode, prefix, result.FileName);
+        //        // OPTIONAL: update DB here (Malama flag + filename)
+        //        // Example:
+        //        // await _labService.UpdateMalamaFile(barcode, prefix, result.FileName);
 
-                _logger.LogInformation("{Class}.{Method} - Upload successful | FileName: {FileName}",
-                    CLASSNAME, METHOD, result.FileName);
+        //        _logger.LogInformation("{Class}.{Method} - Upload successful | FileName: {FileName}",
+        //            CLASSNAME, METHOD, result.FileName);
 
-                return Json(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "{Class}.{Method} - Exception occurred | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
-                    CLASSNAME, METHOD, station, prefix, barcode);
+        //        return Json(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex,
+        //            "{Class}.{Method} - Exception occurred | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
+        //            CLASSNAME, METHOD, station, prefix, barcode);
 
-                return Json(new
-                {
-                    success = false,
-                    message = "Unexpected error occurred while uploading file"
-                });
-            }
-        }
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = "Unexpected error occurred while uploading file"
+        //        });
+        //    }
+        //}
 
         public IActionResult DownloadMalamaFile(
             string station,
@@ -408,7 +440,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        private async Task<string?> UploadLabFilesOnSave(PostEventLabStationAnalysisDto model)
+        private async Task<string?> UploadLabFilesForAdd(PostEventLabStationAnalysisDto model)
         {
             const string station = "Labs";
             var barcode = model.ServiceMember?.Barcode;
@@ -418,39 +450,7 @@ namespace ExcelFilesCompiler.Controllers
                 return "Service member barcode is required for lab file upload.";
             }
 
-            var fileMappings = new (string InputName, string Prefix, Action<string> SetFileName)[]
-            {
-                ("g6pdMalamaFile", "g6pd", fileName =>
-                {
-                    model.PostEventLabStation.G6pdResultMalamaUploaded = true;
-                    model.PostEventLabStation.G6pdResultMalamaUploadedFileName = fileName;
-                }),
-                ("aboMalamaFile", "abo", fileName =>
-                {
-                    model.PostEventLabStation.AboResultMalamaUploaded = true;
-                    model.PostEventLabStation.AboResultMalamaUploadedFileName = fileName;
-                }),
-                ("lipidMalamaFile", "lipid", fileName =>
-                {
-                    model.PostEventLabStation.LipidPanelResultMalamaUploaded = true;
-                    model.PostEventLabStation.LipidPanelResultMalamaUploadedFileName = fileName;
-                }),
-                ("hivMalamaFile", "hiv", fileName =>
-                {
-                    model.PostEventLabStation.HivResultMalamaUploaded = true;
-                    model.PostEventLabStation.HivResultMalamaUploadedFileName = fileName;
-                }),
-                ("pregMalamaFile", "preg", fileName =>
-                {
-                    model.PostEventLabStation.PregnancyResultMalamaUploaded = true;
-                    model.PostEventLabStation.PregnancyResultMalamaUploadedFileName = fileName;
-                }),
-                ("sickleMalamaFile", "sickle", fileName =>
-                {
-                    model.PostEventLabStation.SickleCellResultMalamaUploaded = true;
-                    model.PostEventLabStation.SickleCellResultMalamaUploadedFileName = fileName;
-                })
-            };
+            var fileMappings = GetMalamaFileMappings();
 
             foreach (var fileMapping in fileMappings)
             {
@@ -465,15 +465,157 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     _logger.LogWarning(
                         "{ClassName}.{MethodName} - File upload failed on save. Prefix={Prefix}, Message={Message}",
-                        CLASSNAME, nameof(UploadLabFilesOnSave), fileMapping.Prefix, result.Message);
+                        CLASSNAME, nameof(UploadLabFilesForAdd), fileMapping.Prefix, result.Message);
 
                     return result.Message ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
                 }
 
-                fileMapping.SetFileName(result.FileName);
+                fileMapping.SetUploaded(model.PostEventLabStation, true);
+                fileMapping.SetFileName(model.PostEventLabStation, result.FileName);
             }
 
             return null;
+        }
+
+        private async Task<string?> ProcessLabFilesForUpdate(PostEventLabStationAnalysisDto model, PostEventLabStation existing)
+        {
+            const string station = "Labs";
+            var barcode = model.ServiceMember?.Barcode;
+
+            if (string.IsNullOrWhiteSpace(barcode))
+            {
+                return "Service member barcode is required for lab file upload.";
+            }
+
+            var fileMappings = GetMalamaFileMappings();
+            foreach (var fileMapping in fileMappings)
+            {
+                var postedFile = Request.Form.Files[fileMapping.InputName];
+                var currentFileName = fileMapping.GetExistingFileName(existing);
+                var incomingUploaded = fileMapping.GetUploaded(model.PostEventLabStation);
+                var incomingFileName = fileMapping.GetFileName(model.PostEventLabStation);
+
+                // 1) Replace existing file (new upload selected in edit mode).
+                if (postedFile != null && postedFile.Length > 0)
+                {
+                    var uploadResult = await _fileService.UploadFile(postedFile, station, fileMapping.Prefix, barcode);
+                    if (!uploadResult.Success)
+                    {
+                        _logger.LogWarning(
+                            "{ClassName}.{MethodName} - File replacement failed. Prefix={Prefix}, Message={Message}",
+                            CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, uploadResult.Message);
+
+                        return uploadResult.Message ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(currentFileName) &&
+                        !string.Equals(currentFileName, uploadResult.FileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!_fileService.DeleteFile(station, fileMapping.Prefix, currentFileName))
+                        {
+                            _logger.LogWarning(
+                                "{ClassName}.{MethodName} - Old file delete failed after replacement. Prefix={Prefix}, FileName={FileName}",
+                                CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, currentFileName);
+                        }
+                    }
+
+                    fileMapping.SetUploaded(model.PostEventLabStation, true);
+                    fileMapping.SetFileName(model.PostEventLabStation, uploadResult.FileName);
+                    continue;
+                }
+
+                // 2) Cancel existing file (no new file selected; remove from server + clear DB fields).
+                if (!incomingUploaded)
+                {
+                    if (!string.IsNullOrWhiteSpace(currentFileName))
+                    {
+                        var deleteSuccess = _fileService.DeleteFile(station, fileMapping.Prefix, currentFileName);
+                        if (!deleteSuccess)
+                        {
+                            _logger.LogWarning(
+                                "{ClassName}.{MethodName} - File delete failed on cancel. Prefix={Prefix}, FileName={FileName}",
+                                CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, currentFileName);
+
+                            return $"Failed to delete {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
+                        }
+                    }
+
+                    fileMapping.SetUploaded(model.PostEventLabStation, false);
+                    fileMapping.SetFileName(model.PostEventLabStation, null);
+                    fileMapping.SetDate(model.PostEventLabStation, null);
+                    continue;
+                }
+
+                // 3) Keep existing file (no new file selected and user did not cancel).
+                if (string.IsNullOrWhiteSpace(incomingFileName) && !string.IsNullOrWhiteSpace(currentFileName))
+                {
+                    fileMapping.SetFileName(model.PostEventLabStation, currentFileName);
+                    fileMapping.SetUploaded(model.PostEventLabStation, true);
+                }
+            }
+
+            return null;
+        }
+
+        private static (string InputName, string Prefix,
+            Func<PostEventLabStationDto, bool> GetUploaded,
+            Action<PostEventLabStationDto, bool> SetUploaded,
+            Func<PostEventLabStation, string?> GetExistingFileName,
+            Func<PostEventLabStationDto, string?> GetFileName,
+            Action<PostEventLabStationDto, string?> SetFileName,
+            Action<PostEventLabStationDto, DateTime?> SetDate)[] GetMalamaFileMappings()
+        {
+            return new (string InputName, string Prefix,
+                Func<PostEventLabStationDto, bool> GetUploaded,
+                Action<PostEventLabStationDto, bool> SetUploaded,
+                Func<PostEventLabStation, string?> GetExistingFileName,
+                Func<PostEventLabStationDto, string?> GetFileName,
+                Action<PostEventLabStationDto, string?> SetFileName,
+                Action<PostEventLabStationDto, DateTime?> SetDate)[]
+            {
+                ("g6pdMalamaFile", "g6pd",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.G6pdResultMalamaUploaded),
+                    (dto, value) => dto.G6pdResultMalamaUploaded = value,
+                    entity => entity.G6pdResultMalamaUploadedFileName,
+                    dto => dto.G6pdResultMalamaUploadedFileName,
+                    (dto, value) => dto.G6pdResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.G6pdResultMalamaUploadedDateTime = value),
+                ("aboMalamaFile", "abo",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.AboResultMalamaUploaded),
+                    (dto, value) => dto.AboResultMalamaUploaded = value,
+                    entity => entity.AboResultMalamaUploadedFileName,
+                    dto => dto.AboResultMalamaUploadedFileName,
+                    (dto, value) => dto.AboResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.AboResultMalamaUploadedDateTime = value),
+                ("lipidMalamaFile", "lipid",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.LipidPanelResultMalamaUploaded),
+                    (dto, value) => dto.LipidPanelResultMalamaUploaded = value,
+                    entity => entity.LipidPanelResultMalamaUploadedFileName,
+                    dto => dto.LipidPanelResultMalamaUploadedFileName,
+                    (dto, value) => dto.LipidPanelResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.LipidPanelResultMalamaUploadedDateTime = value),
+                ("hivMalamaFile", "hiv",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.HivResultMalamaUploaded),
+                    (dto, value) => dto.HivResultMalamaUploaded = value,
+                    entity => entity.HivResultMalamaUploadedFileName,
+                    dto => dto.HivResultMalamaUploadedFileName,
+                    (dto, value) => dto.HivResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.HivResultMalamaUploadedDateTime = value),
+                ("pregMalamaFile", "preg",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.PregnancyResultMalamaUploaded),
+                    (dto, value) => dto.PregnancyResultMalamaUploaded = value,
+                    entity => entity.PregnancyResultMalamaUploadedFileName,
+                    dto => dto.PregnancyResultMalamaUploadedFileName,
+                    (dto, value) => dto.PregnancyResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.PregnancyResultMalamaUploadedDateTime = value),
+                ("sickleMalamaFile", "sickle",
+                    (Func<PostEventLabStationDto, bool>)(dto => dto.SickleCellResultMalamaUploaded),
+                    (dto, value) => dto.SickleCellResultMalamaUploaded = value,
+                    entity => entity.SickleCellResultMalamaUploadedFileName,
+                    dto => dto.SickleCellResultMalamaUploadedFileName,
+                    (dto, value) => dto.SickleCellResultMalamaUploadedFileName = value,
+                    (dto, value) => dto.SickleCellResultMalamaUploadedDateTime = value)
+            };
         }
     }
 }

@@ -97,6 +97,10 @@
     .malama-file-status .btn {
         line-height: 1.1;
     }
+
+    .open-malama-picker {
+        min-width: 90px;
+    }
 </style>
 
 <div class="d-flex align-items-center mb-3">
@@ -456,7 +460,19 @@
 </form>
 
 <script>
-    
+        function getLabResultNamePrefix(prefix) {
+            switch ((prefix || "").toLowerCase()) {
+                case "preg":
+                    return "Pregnancy";
+                case "lipid":
+                    return "LipidPanel";
+                case "sickle":
+                    return "SickleCell";
+                default:
+                    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
 
             document.querySelectorAll(".flatpickr").forEach(function (el) {
@@ -488,7 +504,7 @@
 
             const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
             for (const p of prefixes) {
-                const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
+                const namePrefix = getLabResultNamePrefix(p);
                 const sorCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`);
                 const emrCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`);
                 const malamaDateInput = document.getElementById(p + "_malamaDate");
@@ -512,7 +528,7 @@
 
             for (let p of prefixes) {
 
-                const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
+                const namePrefix = getLabResultNamePrefix(p);
 
                 // =========================
                 // RECEIVED VALIDATION
@@ -671,7 +687,8 @@
             }
         } else {
             const status = document.getElementById(prefix + "_fileStatus");
-            const hasExistingServerFile = !!(status?.dataset?.existingFilename || "").trim();
+            const hasExistingServerFile = !!(status?.dataset?.existingFilename || "").trim() &&
+                status?.dataset?.removedExisting !== "true";
             const originalValue = datePicker?.dataset?.originalValue || "";
 
             if (hasExistingServerFile) {
@@ -737,10 +754,11 @@
 
         const selectedFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
         const existingFileName = (status.dataset.existingFilename || "").trim();
+        const removedExisting = status.dataset.removedExisting === "true";
         const selectedPreviewUrl = status.dataset.selectedPreviewUrl || "";
 
         if (selectedFile) {
-            fileNameDisplay.textContent = selectedFile.name;
+            fileNameDisplay.textContent = "File selected";
             status.style.display = "flex";
 
             hiddenUploaded.value = "true";
@@ -759,8 +777,8 @@
         }
         status.dataset.selectedPreviewUrl = "";
 
-        if (existingFileName) {
-            fileNameDisplay.textContent = existingFileName;
+        if (existingFileName && !removedExisting) {
+            fileNameDisplay.textContent = "File selected";
             status.style.display = "flex";
             hiddenUploaded.value = "true";
             hiddenFileName.value = existingFileName;
@@ -781,15 +799,32 @@
         updateMalamaFileUI(prefix);
     });
 
-    $(document).on("click", ".cancel-selected-file", function () {
-        debugger;
+    $(document).on("click", ".open-malama-picker", function () {
         const prefix = $(this).data("prefix");
         if (!prefix) return;
 
         const input = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
         if (!input) return;
 
+        input.click();
+    });
+
+    $(document).on("click", ".cancel-selected-file", function () {
+        const prefix = $(this).data("prefix");
+        if (!prefix) return;
+
+        const input = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
+        const status = document.getElementById(prefix + "_fileStatus");
+        if (!input) return;
+
+        const hadSelectedFile = input.files && input.files.length > 0;
+        const hadExistingFile = !!(status?.dataset?.existingFilename || "").trim();
+
         input.value = "";
+        if (status && !hadSelectedFile && hadExistingFile) {
+            status.dataset.removedExisting = "true";
+        }
+
         toggleFlatpicker(input, prefix);
         updateMalamaFileUI(prefix);
     });

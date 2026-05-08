@@ -148,6 +148,39 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return null;
             }
         }
+
+        public bool DeleteFile(string station, string prefix, string fileName)
+        {
+            const string METHOD = nameof(DeleteFile);
+
+            try
+            {
+                _logger.LogInformation("{Class}.{Method} - Delete requested | Station: {Station}, Prefix: {Prefix}, FileName: {FileName}",
+                    CLASSNAME, METHOD, station, prefix, fileName);
+
+                var fullPath = Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results", fileName);
+
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    _logger.LogInformation("{Class}.{Method} - File already absent | FileName: {FileName}",
+                        CLASSNAME, METHOD, fileName);
+                    return true;
+                }
+
+                System.IO.File.Delete(fullPath);
+
+                _logger.LogInformation("{Class}.{Method} - File deleted successfully | FileName: {FileName}",
+                    CLASSNAME, METHOD, fileName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Error deleting file | Station: {Station}, Prefix: {Prefix}, FileName: {FileName}",
+                    CLASSNAME, METHOD, station, prefix, fileName);
+                return false;
+            }
+        }
     }
 
     public class FileUploadResult
