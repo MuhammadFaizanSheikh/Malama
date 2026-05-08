@@ -155,13 +155,14 @@
 
 <h3 class="mb-3">Required Lab(s)</h3>
 
-<form asp-action="SavePostEventLabStation" method="post">
+<form asp-action="SavePostEventLabStation" method="post" enctype="multipart/form-data">
 
     <input asp-for="PostEventLabStation.Id" type="hidden" />
     <input asp-for="PostEventLabStation.ServiceMembersChildId" type="hidden" />
     <input asp-for="PostEventLabStation.PostEventManagementId" type="hidden" />
     <input asp-for="EventId" type="hidden" />
     <input asp-for="EventID" type="hidden" />
+    <input asp-for="ServiceMember.Barcode" type="hidden" />
     <input type="hidden" asp-for="PostEventLabStation.SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     
 
@@ -468,6 +469,23 @@
                 }
 
             });
+
+            document.querySelectorAll("input[id$='_malamaDate']").forEach(function (el) {
+                el.setAttribute("readonly", "readonly");
+                if (el._flatpickr?.altInput) {
+                    el._flatpickr.altInput.setAttribute("readonly", "readonly");
+                }
+            });
+
+            const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
+            for (const p of prefixes) {
+                const namePrefix = p.charAt(0).toUpperCase() + p.slice(1);
+                const sorCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`);
+                const emrCheckbox = document.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`);
+
+                toggleLabSOR(p, sorCheckbox?.checked === true);
+                toggleLabEMR(p, emrCheckbox?.checked === true);
+            }
         });
 
         document.addEventListener("submit", function (e) {
@@ -590,12 +608,15 @@
 
         if (!el) return;
 
-        el.style.display = show ? "block" : "none";
+        setFlatpickrVisibility(el, show);
 
         if (show) el.setAttribute("required", "required");
         else {
             el.removeAttribute("required");
             el.value = "";
+            if (el._flatpickr) {
+                el._flatpickr.clear();
+            }
         }
     }
 
@@ -604,12 +625,15 @@
 
         if (!el) return;
 
-        el.style.display = show ? "block" : "none";
+        setFlatpickrVisibility(el, show);
 
         if (show) el.setAttribute("required", "required");
         else {
             el.removeAttribute("required");
             el.value = "";
+            if (el._flatpickr) {
+                el._flatpickr.clear();
+            }
         }
     }
 
@@ -617,57 +641,61 @@
 
         const datePicker = document.getElementById(prefix + "_malamaDate");
         const hiddenField = document.getElementById(prefix + "_malamaUploaded");
+        const now = getCurrentDateTimeValue();
 
         if (input.files && input.files.length > 0) {
-            datePicker.style.display = "block";
+            setFlatpickrVisibility(datePicker, true);
             hiddenField.value = "true";
+            datePicker.value = now;
+            if (datePicker._flatpickr) {
+                datePicker._flatpickr.setDate(now, true, "Y-m-d H:i");
+            }
         } else {
-            datePicker.style.display = "none";
+            setFlatpickrVisibility(datePicker, false);
             hiddenField.value = "false";
             datePicker.value = "";
+            if (datePicker._flatpickr) {
+                datePicker._flatpickr.clear();
+            }
         }
     }
 
-        $(document).on("change", ".malama-file", function () {
+    function setFlatpickrVisibility(input, show) {
+        if (!input) return;
 
-        var fileInput = this;
-        var file = fileInput.files[0];
+        input.style.display = show ? "block" : "none";
+        input.setAttribute("readonly", "readonly");
 
-        if (!file) return;
+        if (input._flatpickr?.altInput) {
+            input._flatpickr.altInput.style.display = show ? "block" : "none";
+            input._flatpickr.altInput.setAttribute("readonly", "readonly");
+        }
+    }
 
-        var prefix = $(this).data("prefix");
-        var barcode = $(this).data("barcode");
+    function getCurrentDateTimeValue() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hour = String(now.getHours()).padStart(2, "0");
+        const minute = String(now.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day} ${hour}:${minute}`;
+    }
 
-        var formData = new FormData();
-        formData.append("file", file);
-        formData.append("prefix", prefix);
-        formData.append("barcode", barcode);
+    $(document).on("change", ".malama-file", function () {
+        const prefix = $(this).data("prefix");
+        if (!prefix) return;
 
-        $.ajax({
-            url: "/PostEventDataAnalysis/UploadMalamaFile",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (res) {
+        const file = this.files && this.files.length > 0 ? this.files[0] : null;
+        const hasFile = !!file;
 
-                if (res.success) {
+        $("#" + prefix + "_malamaUploaded").val(hasFile ? "true" : "false");
 
-                    // set hidden values
-                    $("#" + prefix + "_malamaUploaded").val("true");
-                    $("#" + prefix + "_malamaFileName").val(res.fileName);
-
-                    // show preview button
-                    $("#" + prefix + "_previewContainer").show();
-
-                    $("#" + prefix + "_previewContainer button")
-                        .attr("data-filename", res.fileName);
-                }
-                else {
-                    alert(res.message);
-                }
-            }
-        });
+        if (hasFile) {
+            // File is now uploaded on Save; clear server filename until submit completes.
+            $("#" + prefix + "_malamaFileName").val("");
+            $("#" + prefix + "_previewContainer").hide();
+        }
     });
 
     $(document).on("click", ".preview-file", function () {

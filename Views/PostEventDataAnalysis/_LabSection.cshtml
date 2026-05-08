@@ -130,14 +130,15 @@
 
                     <input type="file"
                            class="form-control malama-file"
+                           name="@($"{Model.Prefix}MalamaFile")"
                            data-prefix="@Model.Prefix"
-                           data-barcode="123" />
+                           onchange="toggleFlatpicker(this, '@Model.Prefix')" />
 
                     <input name="@Model.MalamaDateName"
                            value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
                            class="form-control flatpickr mt-2"
                            id="@($"{Model.Prefix}_malamaDate")"
-                           style="display:none;"
+                           style="display:@(Model.Malama ? "block" : "none");"
                            readonly />
 
                     <input type="hidden"

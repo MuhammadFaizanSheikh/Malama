@@ -253,6 +253,16 @@ namespace ExcelFilesCompiler.Controllers
                     return View("SpecificServiceMemberLabStation", model);
                 }
 
+                var fileUploadError = await UploadLabFilesOnSave(model);
+                if (!string.IsNullOrEmpty(fileUploadError))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = fileUploadError;
+
+                    return View("SpecificServiceMemberLabStation", model);
+                }
+
                 if (model.PostEventLabStation.Id == 0)
                 {
                     _logger.LogInformation(
@@ -385,6 +395,74 @@ namespace ExcelFilesCompiler.Controllers
 
                 return StatusCode(500, "Error while downloading file");
             }
+        }
+
+        private async Task<string?> UploadLabFilesOnSave(PostEventLabStationAnalysisDto model)
+        {
+            const string station = "Labs";
+            var barcode = model.ServiceMember?.Barcode;
+
+            if (string.IsNullOrWhiteSpace(barcode))
+            {
+                return "Service member barcode is required for lab file upload.";
+            }
+
+            var fileMappings = new (string InputName, string Prefix, Action<string> SetFileName)[]
+            {
+                ("g6pdMalamaFile", "g6pd", fileName =>
+                {
+                    model.PostEventLabStation.G6pdResultMalamaUploaded = true;
+                    model.PostEventLabStation.G6pdResultMalamaUploadedFileName = fileName;
+                }),
+                ("aboMalamaFile", "abo", fileName =>
+                {
+                    model.PostEventLabStation.AboResultMalamaUploaded = true;
+                    model.PostEventLabStation.AboResultMalamaUploadedFileName = fileName;
+                }),
+                ("lipidMalamaFile", "lipid", fileName =>
+                {
+                    model.PostEventLabStation.LipidPanelResultMalamaUploaded = true;
+                    model.PostEventLabStation.LipidPanelResultMalamaUploadedFileName = fileName;
+                }),
+                ("hivMalamaFile", "hiv", fileName =>
+                {
+                    model.PostEventLabStation.HivResultMalamaUploaded = true;
+                    model.PostEventLabStation.HivResultMalamaUploadedFileName = fileName;
+                }),
+                ("pregMalamaFile", "preg", fileName =>
+                {
+                    model.PostEventLabStation.PregnancyResultMalamaUploaded = true;
+                    model.PostEventLabStation.PregnancyResultMalamaUploadedFileName = fileName;
+                }),
+                ("sickleMalamaFile", "sickle", fileName =>
+                {
+                    model.PostEventLabStation.SickleCellResultMalamaUploaded = true;
+                    model.PostEventLabStation.SickleCellResultMalamaUploadedFileName = fileName;
+                })
+            };
+
+            foreach (var fileMapping in fileMappings)
+            {
+                var postedFile = Request.Form.Files[fileMapping.InputName];
+                if (postedFile == null || postedFile.Length == 0)
+                {
+                    continue;
+                }
+
+                var result = await _fileService.UploadFile(postedFile, station, fileMapping.Prefix, barcode);
+                if (!result.Success)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - File upload failed on save. Prefix={Prefix}, Message={Message}",
+                        CLASSNAME, nameof(UploadLabFilesOnSave), fileMapping.Prefix, result.Message);
+
+                    return result.Message ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
+                }
+
+                fileMapping.SetFileName(result.FileName);
+            }
+
+            return null;
         }
     }
 }
