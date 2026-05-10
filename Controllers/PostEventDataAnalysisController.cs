@@ -229,7 +229,8 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
-                    return View("SpecificServiceMemberLabStation", model);
+                    var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                    return View("SpecificServiceMemberLabStation", errorModel);
                 }
 
                 var user = await _userManager.GetUserAsync(User);
@@ -250,7 +251,7 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Error";
                     TempData["ResponseMessage"] = "Invalid form data.";
 
-                    return View("SpecificServiceMemberLabStation", model);
+                    return RedirectToAction("Index");
                 }
 
                 if (model.PostEventLabStation.Id == 0)
@@ -301,7 +302,8 @@ namespace ExcelFilesCompiler.Controllers
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = "Record not found.";
-                        return View("SpecificServiceMemberLabStation", model);
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
                     var fileProcessError = await ProcessLabFilesForUpdate(model, existing);
@@ -311,7 +313,8 @@ namespace ExcelFilesCompiler.Controllers
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = fileProcessError;
 
-                        return View("SpecificServiceMemberLabStation", model);
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
                     var result = await _postEventLabStationService
@@ -322,7 +325,8 @@ namespace ExcelFilesCompiler.Controllers
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = result.Message;
 
-                        return View("SpecificServiceMemberLabStation", model);
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
                     TempData["ResponseStatus"] = "success";
@@ -346,7 +350,8 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = "An unexpected error occurred.";
 
-                return View("SavePostEventLabStation", model);
+                var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                return View("SpecificServiceMemberLabStation", errorModel);
             }
         }
 

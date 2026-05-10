@@ -476,8 +476,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             G6pdResultMalamaUploaded = entity.PostEventLabStation.G6pdResultMalamaUploaded,
                             G6pdResultMalamaUploadedFileName = entity.PostEventLabStation.G6pdResultMalamaUploadedFileName,
                             G6pdResultMalamaUploadedDateTime = entity.PostEventLabStation.G6pdResultMalamaUploadedDateTime,
-                            G6pdResultEMRUploaded = entity.PostEventLabStation.G6pdResultEMRUploaded,
-                            G6pdResultEMRUploadedDateTime = entity.PostEventLabStation.G6pdResultEMRUploadedDateTime,
+                            G6pdResultHRRUploaded = entity.PostEventLabStation.G6pdResultHRRUploaded,
+                            G6pdResultHRRUploadedDateTime = entity.PostEventLabStation.G6pdResultHRRUploadedDateTime,
                             G6pdResultSORUploaded = entity.PostEventLabStation.G6pdResultSORUploaded,
                             G6pdResultSORUploadedDateTime = entity.PostEventLabStation.G6pdResultSORUploadedDateTime,
 
@@ -488,8 +488,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             LipidPanelResultMalamaUploaded = entity.PostEventLabStation.LipidPanelResultMalamaUploaded,
                             LipidPanelResultMalamaUploadedFileName = entity.PostEventLabStation.LipidPanelResultMalamaUploadedFileName,
                             LipidPanelResultMalamaUploadedDateTime = entity.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
-                            LipidPanelResultEMRUploaded = entity.PostEventLabStation.LipidPanelResultEMRUploaded,
-                            LipidPanelResultEMRUploadedDateTime = entity.PostEventLabStation.LipidPanelResultEMRUploadedDateTime,
+                            LipidPanelResultHRRUploaded = entity.PostEventLabStation.LipidPanelResultHRRUploaded,
+                            LipidPanelResultHRRUploadedDateTime = entity.PostEventLabStation.LipidPanelResultHRRUploadedDateTime,
                             LipidPanelResultSORUploaded = entity.PostEventLabStation.LipidPanelResultSORUploaded,
                             LipidPanelResultSORUploadedDateTime = entity.PostEventLabStation.LipidPanelResultSORUploadedDateTime,
 
@@ -500,8 +500,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             AboResultMalamaUploaded = entity.PostEventLabStation.AboResultMalamaUploaded,
                             AboResultMalamaUploadedFileName = entity.PostEventLabStation.AboResultMalamaUploadedFileName,
                             AboResultMalamaUploadedDateTime = entity.PostEventLabStation.AboResultMalamaUploadedDateTime,
-                            AboResultEMRUploaded = entity.PostEventLabStation.AboResultEMRUploaded,
-                            AboResultEMRUploadedDateTime = entity.PostEventLabStation.AboResultEMRUploadedDateTime,
+                            AboResultHRRUploaded = entity.PostEventLabStation.AboResultHRRUploaded,
+                            AboResultHRRUploadedDateTime = entity.PostEventLabStation.AboResultHRRUploadedDateTime,
                             AboResultSORUploaded = entity.PostEventLabStation.AboResultSORUploaded,
                             AboResultSORUploadedDateTime = entity.PostEventLabStation.AboResultSORUploadedDateTime,
 
@@ -512,8 +512,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             HivResultMalamaUploaded = entity.PostEventLabStation.HivResultMalamaUploaded,
                             HivResultMalamaUploadedFileName = entity.PostEventLabStation.HivResultMalamaUploadedFileName,
                             HivResultMalamaUploadedDateTime = entity.PostEventLabStation.HivResultMalamaUploadedDateTime,
-                            HivResultEMRUploaded = entity.PostEventLabStation.HivResultEMRUploaded,
-                            HivResultEMRUploadedDateTime = entity.PostEventLabStation.HivResultEMRUploadedDateTime,
+                            HivResultHRRUploaded = entity.PostEventLabStation.HivResultHRRUploaded,
+                            HivResultHRRUploadedDateTime = entity.PostEventLabStation.HivResultHRRUploadedDateTime,
                             HivResultSORUploaded = entity.PostEventLabStation.HivResultSORUploaded,
                             HivResultSORUploadedDateTime = entity.PostEventLabStation.HivResultSORUploadedDateTime,
 
@@ -524,8 +524,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             PregnancyResultMalamaUploaded = entity.PostEventLabStation.PregnancyResultMalamaUploaded,
                             PregnancyResultMalamaUploadedFileName = entity.PostEventLabStation.PregnancyResultMalamaUploadedFileName,
                             PregnancyResultMalamaUploadedDateTime = entity.PostEventLabStation.PregnancyResultMalamaUploadedDateTime,
-                            PregnancyResultEMRUploaded = entity.PostEventLabStation.PregnancyResultEMRUploaded,
-                            PregnancyResultEMRUploadedDateTime = entity.PostEventLabStation.PregnancyResultEMRUploadedDateTime,
+                            PregnancyResultHRRUploaded = entity.PostEventLabStation.PregnancyResultHRRUploaded,
+                            PregnancyResultHRRUploadedDateTime = entity.PostEventLabStation.PregnancyResultHRRUploadedDateTime,
                             PregnancyResultSORUploaded = entity.PostEventLabStation.PregnancyResultSORUploaded,
                             PregnancyResultSORUploadedDateTime = entity.PostEventLabStation.PregnancyResultSORUploadedDateTime,
 
@@ -536,8 +536,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                             SickleCellResultMalamaUploaded = entity.PostEventLabStation.SickleCellResultMalamaUploaded,
                             SickleCellResultMalamaUploadedFileName = entity.PostEventLabStation.SickleCellResultMalamaUploadedFileName,
                             SickleCellResultMalamaUploadedDateTime = entity.PostEventLabStation.SickleCellResultMalamaUploadedDateTime,
-                            SickleCellResultEMRUploaded = entity.PostEventLabStation.SickleCellResultEMRUploaded,
-                            SickleCellResultEMRUploadedDateTime = entity.PostEventLabStation.SickleCellResultEMRUploadedDateTime,
+                            SickleCellResultHRRUploaded = entity.PostEventLabStation.SickleCellResultHRRUploaded,
+                            SickleCellResultHRRUploadedDateTime = entity.PostEventLabStation.SickleCellResultHRRUploadedDateTime,
                             SickleCellResultSORUploaded = entity.PostEventLabStation.SickleCellResultSORUploaded,
                             SickleCellResultSORUploadedDateTime = entity.PostEventLabStation.SickleCellResultSORUploadedDateTime
                         }

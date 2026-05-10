@@ -41,7 +41,7 @@
                 <label for="filterReport" class="form-label">Report</label>
                 <select id="filterReport" class="form-select select2" multiple="multiple">
                     <option value="Malama">Malama</option>
-                    <option value="EMR">EMR</option>
+                    <option value="HRR">HRR</option>
                     <option value="SOR">SOR</option>
                 </select>
             </div>
@@ -106,14 +106,14 @@
         public bool ShowDetails { get; set; }
 
         public bool? Malama { get; set; }
-        public bool? Emr { get; set; }
+        public bool? Hrr { get; set; }
         public bool? Sor { get; set; }
     }
 
     public LabStatusVm GetLabStatus(
         string labNeeded,
         bool? malama,
-        bool? emr,
+        bool? hrr,
         bool? sor,
         object postEventLabStation,
         bool? resultReceived,
@@ -152,7 +152,7 @@
                     };
             }
 
-            if (malama == true && emr == true && sor == true)
+            if (malama == true && hrr == true && sor == true)
             {
                 return new LabStatusVm
                     {
@@ -161,7 +161,7 @@
                         TextColor = "#ffffff"
                     };
             }
-            else if (malama == false && emr == false && sor == false)
+            else if (malama == false && hrr == false && sor == false)
             {
                 return new LabStatusVm
                     {
@@ -179,7 +179,7 @@
                         TextColor = "#ffffff",
                         ShowDetails = true,
                         Malama = malama,
-                        Emr = emr,
+                        Hrr = hrr,
                         Sor = sor
                     };
             }
@@ -247,7 +247,7 @@
                     var g6pd = GetLabStatus(
                     item.LabStationRecord?.G6pdNeeded,
                     item.PostEventLabStation?.G6pdResultMalamaUploaded,
-                    item.PostEventLabStation?.G6pdResultEMRUploaded,
+                    item.PostEventLabStation?.G6pdResultHRRUploaded,
                     item.PostEventLabStation?.G6pdResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.G6pdResultReceived,
@@ -267,8 +267,8 @@
                                     @(g6pd.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(g6pd.Emr == true ? "green" : "red")">
-                                    @(g6pd.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(g6pd.Hrr == true ? "green" : "red")">
+                                    @(g6pd.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(g6pd.Sor == true ? "green" : "red")">
@@ -285,7 +285,7 @@
                     var lipid = GetLabStatus(
                     item.LabStationRecord?.LipidPanelNeeded,
                     item.PostEventLabStation?.LipidPanelResultMalamaUploaded,
-                    item.PostEventLabStation?.LipidPanelResultEMRUploaded,
+                    item.PostEventLabStation?.LipidPanelResultHRRUploaded,
                     item.PostEventLabStation?.LipidPanelResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.LipidPanelResultReceived,
@@ -305,8 +305,8 @@
                                     @(lipid.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(lipid.Emr == true ? "green" : "red")">
-                                    @(lipid.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(lipid.Hrr == true ? "green" : "red")">
+                                    @(lipid.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(lipid.Sor == true ? "green" : "red")">
@@ -323,7 +323,7 @@
                     var hiv = GetLabStatus(
                     item.LabStationRecord?.HivNeeded,
                     item.PostEventLabStation?.HivResultMalamaUploaded,
-                    item.PostEventLabStation?.HivResultEMRUploaded,
+                    item.PostEventLabStation?.HivResultHRRUploaded,
                     item.PostEventLabStation?.HivResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.HivResultReceived,
@@ -343,8 +343,8 @@
                                     @(hiv.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(hiv.Emr == true ? "green" : "red")">
-                                    @(hiv.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(hiv.Hrr == true ? "green" : "red")">
+                                    @(hiv.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(hiv.Sor == true ? "green" : "red")">
@@ -361,7 +361,7 @@
                     var abo = GetLabStatus(
                     item.LabStationRecord?.AboNeeded,
                     item.PostEventLabStation?.AboResultMalamaUploaded,
-                    item.PostEventLabStation?.AboResultEMRUploaded,
+                    item.PostEventLabStation?.AboResultHRRUploaded,
                     item.PostEventLabStation?.AboResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.AboResultReceived,
@@ -381,8 +381,8 @@
                                     @(abo.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(abo.Emr == true ? "green" : "red")">
-                                    @(abo.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(abo.Hrr == true ? "green" : "red")">
+                                    @(abo.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(abo.Sor == true ? "green" : "red")">
@@ -398,7 +398,7 @@
                     var sickle = GetLabStatus(
                     item.LabStationRecord?.SickleCellNeeded,
                     item.PostEventLabStation?.SickleCellResultMalamaUploaded,
-                    item.PostEventLabStation?.SickleCellResultEMRUploaded,
+                    item.PostEventLabStation?.SickleCellResultHRRUploaded,
                     item.PostEventLabStation?.SickleCellResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.SickleCellResultReceived,
@@ -418,8 +418,8 @@
                                     @(sickle.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(sickle.Emr == true ? "green" : "red")">
-                                    @(sickle.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(sickle.Hrr == true ? "green" : "red")">
+                                    @(sickle.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(sickle.Sor == true ? "green" : "red")">
@@ -448,7 +448,7 @@
                     var preg = GetLabStatus(
                     item.LabStationRecord?.PregnancyTestNeeded,
                     item.PostEventLabStation?.PregnancyResultMalamaUploaded,
-                    item.PostEventLabStation?.PregnancyResultEMRUploaded,
+                    item.PostEventLabStation?.PregnancyResultHRRUploaded,
                     item.PostEventLabStation?.PregnancyResultSORUploaded,
                     item.PostEventLabStation,
                     item.PostEventLabStation?.PregnancyResultReceived,
@@ -468,8 +468,8 @@
                                     @(preg.Malama == true ? "✔" : "✖") Malama
                                 </span>
 
-                                <span style="color:@(preg.Emr == true ? "green" : "red")">
-                                    @(preg.Emr == true ? "✔" : "✖") EMR
+                                <span style="color:@(preg.Hrr == true ? "green" : "red")">
+                                    @(preg.Hrr == true ? "✔" : "✖") HRR
                                 </span>
 
                                 <span style="color:@(preg.Sor == true ? "green" : "red")">

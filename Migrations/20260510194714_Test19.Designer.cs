@@ -3,6 +3,7 @@ using System;
 using ExcelFilesCompiler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Malama.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510194714_Test19")]
+    partial class Test19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1961,10 +1964,12 @@ namespace Malama.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<bool>("AboResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("AboResultEMRUploaded");
 
                     b.Property<DateTime?>("AboResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("AboResultEMRUploadedDateTime");
 
                     b.Property<bool>("AboResultMalamaUploaded")
                         .HasColumnType("boolean");
@@ -1997,10 +2002,12 @@ namespace Malama.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("G6pdResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("G6pdResultEMRUploaded");
 
                     b.Property<DateTime?>("G6pdResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("G6pdResultEMRUploadedDateTime");
 
                     b.Property<bool>("G6pdResultMalamaUploaded")
                         .HasColumnType("boolean");
@@ -2027,10 +2034,12 @@ namespace Malama.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("HivResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("HivResultEMRUploaded");
 
                     b.Property<DateTime?>("HivResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("HivResultEMRUploadedDateTime");
 
                     b.Property<bool>("HivResultMalamaUploaded")
                         .HasColumnType("boolean");
@@ -2057,10 +2066,12 @@ namespace Malama.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("LipidPanelResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("LipidPanelResultEMRUploaded");
 
                     b.Property<DateTime?>("LipidPanelResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LipidPanelResultEMRUploadedDateTime");
 
                     b.Property<bool>("LipidPanelResultMalamaUploaded")
                         .HasColumnType("boolean");
@@ -2090,10 +2101,12 @@ namespace Malama.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<bool>("PregnancyResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("PregnancyResultEMRUploaded");
 
                     b.Property<DateTime?>("PregnancyResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("PregnancyResultEMRUploadedDateTime");
 
                     b.Property<bool>("PregnancyResultMalamaUploaded")
                         .HasColumnType("boolean");
@@ -2123,10 +2136,12 @@ namespace Malama.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<bool>("SickleCellResultHRRUploaded")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("SickleCellResultEMRUploaded");
 
                     b.Property<DateTime?>("SickleCellResultHRRUploadedDateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("SickleCellResultEMRUploadedDateTime");
 
                     b.Property<bool>("SickleCellResultMalamaUploaded")
                         .HasColumnType("boolean");

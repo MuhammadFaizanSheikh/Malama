@@ -1,4 +1,6 @@
-﻿namespace Malama.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Malama.Models
 {
     public class PostEventLabStation : GenericProperties
     {
@@ -16,8 +18,8 @@
         public bool G6pdResultMalamaUploaded { get; set; }
         public string? G6pdResultMalamaUploadedFileName { get; set; }
         public DateTime? G6pdResultMalamaUploadedDateTime { get; set; }
-        public bool G6pdResultEMRUploaded { get; set; }
-        public DateTime? G6pdResultEMRUploadedDateTime { get; set; }
+        public bool G6pdResultHRRUploaded { get; set; }
+        public DateTime? G6pdResultHRRUploadedDateTime { get; set; }
         public bool G6pdResultSORUploaded { get; set; }
         public DateTime? G6pdResultSORUploadedDateTime { get; set; }
 
@@ -28,8 +30,8 @@
         public bool AboResultMalamaUploaded { get; set; }
         public string? AboResultMalamaUploadedFileName { get; set; }
         public DateTime? AboResultMalamaUploadedDateTime { get; set; }
-        public bool AboResultEMRUploaded { get; set; }
-        public DateTime? AboResultEMRUploadedDateTime { get; set; }
+        public bool AboResultHRRUploaded { get; set; }
+        public DateTime? AboResultHRRUploadedDateTime { get; set; }
         public bool AboResultSORUploaded { get; set; }
         public DateTime? AboResultSORUploadedDateTime { get; set; }
 
@@ -40,8 +42,8 @@
         public bool HivResultMalamaUploaded { get; set; }
         public string? HivResultMalamaUploadedFileName { get; set; }
         public DateTime? HivResultMalamaUploadedDateTime { get; set; }
-        public bool HivResultEMRUploaded { get; set; }
-        public DateTime? HivResultEMRUploadedDateTime { get; set; }
+        public bool HivResultHRRUploaded { get; set; }
+        public DateTime? HivResultHRRUploadedDateTime { get; set; }
         public bool HivResultSORUploaded { get; set; }
         public DateTime? HivResultSORUploadedDateTime { get; set; }
 
@@ -52,8 +54,8 @@
         public bool PregnancyResultMalamaUploaded { get; set; }
         public string? PregnancyResultMalamaUploadedFileName { get; set; }
         public DateTime? PregnancyResultMalamaUploadedDateTime { get; set; }
-        public bool PregnancyResultEMRUploaded { get; set; }
-        public DateTime? PregnancyResultEMRUploadedDateTime { get; set; }
+        public bool PregnancyResultHRRUploaded { get; set; }
+        public DateTime? PregnancyResultHRRUploadedDateTime { get; set; }
         public bool PregnancyResultSORUploaded { get; set; }
         public DateTime? PregnancyResultSORUploadedDateTime { get; set; }
 
@@ -64,8 +66,8 @@
         public bool LipidPanelResultMalamaUploaded { get; set; }
         public string? LipidPanelResultMalamaUploadedFileName { get; set; }
         public DateTime? LipidPanelResultMalamaUploadedDateTime { get; set; }
-        public bool LipidPanelResultEMRUploaded { get; set; }
-        public DateTime? LipidPanelResultEMRUploadedDateTime { get; set; }
+        public bool LipidPanelResultHRRUploaded { get; set; }
+        public DateTime? LipidPanelResultHRRUploadedDateTime { get; set; }
         public bool LipidPanelResultSORUploaded { get; set; }
         public DateTime? LipidPanelResultSORUploadedDateTime { get; set; }
 
@@ -76,8 +78,8 @@
         public bool SickleCellResultMalamaUploaded { get; set; }
         public string? SickleCellResultMalamaUploadedFileName { get; set; }
         public DateTime? SickleCellResultMalamaUploadedDateTime { get; set; }
-        public bool SickleCellResultEMRUploaded { get; set; }
-        public DateTime? SickleCellResultEMRUploadedDateTime { get; set; }
+        public bool SickleCellResultHRRUploaded { get; set; }
+        public DateTime? SickleCellResultHRRUploadedDateTime { get; set; }
         public bool SickleCellResultSORUploaded { get; set; }
         public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
 
