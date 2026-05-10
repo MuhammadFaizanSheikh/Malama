@@ -2,8 +2,14 @@
 
 <h4>Labs Data</h4>
 
+<style>
+    #filterReportCol .select2-container {
+        width: 100% !important;
+    }
+</style>
+
 <!-- 🔹 Filters (we will expand later) -->
-<div class="card p-3 mb-4">
+<div class="card p-3 mb-4 post-event-lab-filters-card">
     <div class="container">
         <div class="row g-2">
 
@@ -31,10 +37,12 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" id="filterReportCol" style="display: none;">
                 <label for="filterReport" class="form-label">Report</label>
-                <select id="filterReport" class="form-control">
-                    <option value="">All</option>
+                <select id="filterReport" class="form-select select2" multiple="multiple">
+                    <option value="Malama">Malama</option>
+                    <option value="EMR">EMR</option>
+                    <option value="SOR">SOR</option>
                 </select>
             </div>
 
@@ -482,6 +490,7 @@
 
 <script>
         var table;
+        var labReportFilterFn = null;
 
     $(document).ready(function () {
 
@@ -504,6 +513,42 @@
             allowInput: true
         });
 
+        function destroyFilterReportSelect2() {
+            var $fr = $('#filterReport');
+            if ($fr.length && $fr.hasClass('select2-hidden-accessible')) {
+                $fr.select2('destroy');
+            }
+        }
+
+        function initFilterReportSelect2() {
+            var $fr = $('#filterReport');
+            if (!$fr.length || $fr.hasClass('select2-hidden-accessible')) {
+                return;
+            }
+            $fr.select2({
+                placeholder: 'All',
+                allowClear: true,
+                width: '100%',
+                closeOnSelect: false,
+                dropdownParent: $('.post-event-lab-filters-card')
+            });
+        }
+
+        function updateFilterReportVisibility() {
+            var labStatus = $('#filterLabStatus').val();
+            if (labStatus === 'P') {
+                $('#filterReportCol').show();
+                initFilterReportSelect2();
+            } else {
+                destroyFilterReportSelect2();
+                $('#filterReportCol').hide();
+                $('#filterReport').val(null);
+            }
+        }
+
+        $('#filterLabStatus').on('change', updateFilterReportVisibility);
+        updateFilterReportVisibility();
+
         $('#searchStaffBtn').on('click', function () {
 
             var barcode = $('#filterBarcode').val().trim().toLowerCase();
@@ -514,9 +559,21 @@
 
             var lab = $('#filterLab').val();
             var labStatus = $('#filterLabStatus').val();
+            var reportSelections = $('#filterReport').val() || [];
+            if (!Array.isArray(reportSelections)) {
+                reportSelections = reportSelections ? [reportSelections] : [];
+            }
 
             let dobPicker = $('#filterDob')[0]?._flatpickr;
             let dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            if (labReportFilterFn) {
+                var fi = $.fn.dataTable.ext.search.indexOf(labReportFilterFn);
+                if (fi !== -1) {
+                    $.fn.dataTable.ext.search.splice(fi, 1);
+                }
+                labReportFilterFn = null;
+            }
 
             // 🔹 Clear previous filters
             table.columns().search('');
@@ -551,12 +608,12 @@
                 table.column(1).search(status, true, false, true);
             }
 
-            // 🔹 NEW: Lab + Status dynamic filtering
+            // 🔹 NEW: Lab + Status dynamic filtering (cell contains badge + detail text; match status letter)
             if (lab && labStatus) {
                 let columnIndex = labColumnMap[lab];
 
                 if (columnIndex !== undefined) {
-                    table.column(columnIndex).search('^' + labStatus + '$', true, false);
+                    table.column(columnIndex).search(labStatus, true, false, true);
                 }
             }
 
@@ -569,18 +626,62 @@
                 }
             }
 
+            if (lab && labStatus === 'P' && reportSelections.length > 0) {
+                var columnIndexForReport = labColumnMap[lab];
+                if (columnIndexForReport !== undefined) {
+                    var needles = reportSelections.map(function (r) {
+                        return '✖ ' + r;
+                    });
+                    labReportFilterFn = function (settings, data, dataIndex) {
+                        if (settings.nTable.id !== 'postEventTable') {
+                            return true;
+                        }
+                        var api = new $.fn.dataTable.Api(settings);
+                        var rowNode = api.row(dataIndex).node();
+                        if (!rowNode) {
+                            return true;
+                        }
+                        var $cell = $('td', rowNode).eq(columnIndexForReport);
+                        var badgeText = $cell.find('.badge').first().text().trim();
+                        if (badgeText !== 'P') {
+                            return false;
+                        }
+                        var cellText = $cell.text();
+                        for (var i = 0; i < needles.length; i++) {
+                            if (cellText.indexOf(needles[i]) === -1) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
+                    $.fn.dataTable.ext.search.push(labReportFilterFn);
+                }
+            }
+
             table.draw();
         });
 
         // 🔹 Reset Filters
         $('#resetFiltersBtn').on('click', function () {
+            destroyFilterReportSelect2();
+
             $('input').val('');
-            $('select').val('');
+            $('select').not('#filterReport').val('');
+            $('#filterReport').val(null);
 
             let dobPicker = $('#filterDob')[0]?._flatpickr;
             if (dobPicker) dobPicker.clear();
 
+            if (labReportFilterFn) {
+                var fi = $.fn.dataTable.ext.search.indexOf(labReportFilterFn);
+                if (fi !== -1) {
+                    $.fn.dataTable.ext.search.splice(fi, 1);
+                }
+                labReportFilterFn = null;
+            }
+
             table.columns().search('');
+            updateFilterReportVisibility();
             table.draw();
         });
 

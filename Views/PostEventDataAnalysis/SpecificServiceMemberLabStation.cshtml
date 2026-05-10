@@ -163,7 +163,7 @@
 
 <h3 class="mb-3">Required Lab(s)</h3>
 
-<form asp-action="SavePostEventLabStation" method="post" enctype="multipart/form-data">
+<form id="frmPostEventLabStation" asp-action="SavePostEventLabStation" method="post" enctype="multipart/form-data">
 
     <input asp-for="PostEventLabStation.Id" type="hidden" />
     <input asp-for="PostEventLabStation.ServiceMembersChildId" type="hidden" />
@@ -440,6 +440,14 @@
                        readonly /> <!-- remove readonly if editable -->
             </div>
 
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <input class="form-control"
+                       asp-for="PostEventLabStation.Status"
+                       id="PostEventLabStation_Status"
+                       readonly />
+            </div>
+
         </div>
     </div>
 
@@ -473,6 +481,82 @@
             }
         }
 
+        const LAB_STATUS_PREFIXES = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle"];
+        const LAB_STATUS_PENDING = "Pending";
+        const LAB_STATUS_COMPLETED = "Completed";
+
+        function isLabSectionOnPage(prefix) {
+            return !!document.getElementById(prefix + "_yes");
+        }
+
+        function isLabFieldsComplete(form, prefix) {
+            const namePrefix = getLabResultNamePrefix(prefix);
+            const receivedRadio = form.querySelector(
+                `input[name*='${namePrefix}ResultReceived']:checked`
+            );
+            if (!receivedRadio) {
+                return false;
+            }
+
+            const isYes = receivedRadio.value === "true";
+
+            if (isYes) {
+                const receivedInput = document.getElementById(prefix + "_received");
+                if (!receivedInput || !(receivedInput.value || "").trim()) {
+                    return false;
+                }
+
+                const malamaUploaded = document.getElementById(prefix + "_malamaUploaded");
+                if (!malamaUploaded || malamaUploaded.value !== "true") {
+                    return false;
+                }
+
+                const sorCheckbox = form.querySelector(
+                    `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
+                );
+                const emrCheckbox = form.querySelector(
+                    `input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`
+                );
+                if (!sorCheckbox?.checked || !emrCheckbox?.checked) {
+                    return false;
+                }
+
+                const sorInput = document.getElementById(prefix + "_sor");
+                const emrInput = document.getElementById(prefix + "_emr");
+                if (!sorInput || !(sorInput.value || "").trim()) {
+                    return false;
+                }
+                if (!emrInput || !(emrInput.value || "").trim()) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            const reasonSelect = form.querySelector(`select[name*='${namePrefix}ResultReason']`);
+            return !!(reasonSelect && (reasonSelect.value || "").trim());
+        }
+
+        function updatePostEventLabStatus() {
+            const form = document.getElementById("frmPostEventLabStation");
+            const statusInput = document.getElementById("PostEventLabStation_Status");
+            if (!form || !statusInput) {
+                return;
+            }
+
+            const activePrefixes = LAB_STATUS_PREFIXES.filter(isLabSectionOnPage);
+            if (activePrefixes.length === 0) {
+                statusInput.value = LAB_STATUS_PENDING;
+                return;
+            }
+
+            const allComplete = activePrefixes.every(function (p) {
+                return isLabFieldsComplete(form, p);
+            });
+
+            statusInput.value = allComplete ? LAB_STATUS_COMPLETED : LAB_STATUS_PENDING;
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
 
             document.querySelectorAll(".flatpickr").forEach(function (el) {
@@ -484,7 +568,10 @@
                         dateFormat: "Y-m-d H:i",
                         allowInput: true,
                         enableTime: true,
-                        time_24hr: true
+                        time_24hr: true,
+                        onChange: function () {
+                            updatePostEventLabStatus();
+                        }
                     });
                 }
 
@@ -518,11 +605,21 @@
                 updateMalamaFileUI(p);
                 syncMalamaDateVisibility(p);
             }
+
+            updatePostEventLabStatus();
+
+            const statusForm = document.getElementById("frmPostEventLabStation");
+            if (statusForm) {
+                statusForm.addEventListener("change", updatePostEventLabStatus);
+                statusForm.addEventListener("input", updatePostEventLabStatus);
+            }
         });
 
         document.addEventListener("submit", function (e) {
             const form = e.target;
             if (form.tagName !== "FORM") return;
+
+            updatePostEventLabStatus();
 
             const prefixes = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
 
@@ -614,6 +711,78 @@
             window.location.href = url;
         });
 
+        function clearLabBranchFields(prefix) {
+            const form = document.getElementById("frmPostEventLabStation");
+            const namePrefix = getLabResultNamePrefix(prefix);
+
+            const received = document.getElementById(prefix + "_received");
+            if (received) {
+                received.removeAttribute("required");
+                received.value = "";
+                if (received._flatpickr) {
+                    received._flatpickr.clear();
+                }
+            }
+
+            const reasonSelect = form?.querySelector(`select[name*='${namePrefix}ResultReason']`);
+            if (reasonSelect) {
+                reasonSelect.value = "";
+            }
+
+            const sorCheckbox = form?.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`);
+            if (sorCheckbox) {
+                sorCheckbox.checked = false;
+            }
+            toggleLabSOR(prefix, false);
+
+            const emrCheckbox = form?.querySelector(`input[type='checkbox'][name*='${namePrefix}ResultEMRUploaded']`);
+            if (emrCheckbox) {
+                emrCheckbox.checked = false;
+            }
+            toggleLabEMR(prefix, false);
+
+            const fileInput = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
+            const status = document.getElementById(prefix + "_fileStatus");
+            const hiddenUploaded = document.getElementById(prefix + "_malamaUploaded");
+            const hiddenFileName = document.getElementById(prefix + "_malamaFileName");
+            const datePicker = document.getElementById(prefix + "_malamaDate");
+            const fileNameDisplay = document.getElementById(prefix + "_fileNameDisplay");
+
+            if (fileInput) {
+                fileInput.value = "";
+            }
+            if (status) {
+                const prevUrl = status.dataset.selectedPreviewUrl;
+                if (prevUrl) {
+                    URL.revokeObjectURL(prevUrl);
+                }
+                status.dataset.selectedPreviewUrl = "";
+                status.dataset.previewMode = "";
+                status.dataset.existingFilename = "";
+                status.dataset.removedExisting = "";
+                status.style.display = "none";
+            }
+            if (hiddenUploaded) {
+                hiddenUploaded.value = "false";
+            }
+            if (hiddenFileName) {
+                hiddenFileName.value = "";
+            }
+            if (datePicker) {
+                datePicker.value = "";
+                datePicker.dataset.originalValue = "";
+                setFlatpickrVisibility(datePicker, false);
+                if (datePicker._flatpickr) {
+                    datePicker._flatpickr.clear();
+                }
+            }
+            if (fileNameDisplay) {
+                fileNameDisplay.textContent = "";
+            }
+
+            updateMalamaFileUI(prefix);
+        }
+
         function toggleLab(prefix, isYes) {
 
         const yes = document.getElementById(prefix + "_yes");
@@ -621,6 +790,8 @@
         const received = document.getElementById(prefix + "_received");
 
         if (!yes || !no) return;
+
+        clearLabBranchFields(prefix);
 
         yes.style.display = isYes ? "block" : "none";
         no.style.display = isYes ? "none" : "block";
@@ -630,12 +801,12 @@
                 received.setAttribute("required", "required");
             } else {
                 received.removeAttribute("required");
-                received.value = "";
             }
         }
 
         // Keep Malama datetime hidden unless an actual file is selected.
         syncMalamaDateVisibility(prefix);
+        updatePostEventLabStatus();
     }
 
     function toggleLabEMR(prefix, show) {
@@ -653,6 +824,7 @@
                 el._flatpickr.clear();
             }
         }
+        updatePostEventLabStatus();
     }
 
     function toggleLabSOR(prefix, show) {
@@ -670,6 +842,7 @@
                 el._flatpickr.clear();
             }
         }
+        updatePostEventLabStatus();
     }
 
             function toggleFlatpicker(input, prefix) {
@@ -710,6 +883,7 @@
                 }
             }
         }
+        updatePostEventLabStatus();
     }
 
     function setFlatpickrVisibility(input, show) {
@@ -791,12 +965,14 @@
         hiddenUploaded.value = "false";
         hiddenFileName.value = "";
         status.dataset.previewMode = "";
+        updatePostEventLabStatus();
     }
 
     $(document).on("change", ".malama-file", function () {
         const prefix = $(this).data("prefix");
         if (!prefix) return;
         updateMalamaFileUI(prefix);
+        updatePostEventLabStatus();
     });
 
     $(document).on("click", ".open-malama-picker", function () {
@@ -827,6 +1003,7 @@
 
         toggleFlatpicker(input, prefix);
         updateMalamaFileUI(prefix);
+        updatePostEventLabStatus();
     });
 
     $(document).on("click", ".preview-selected-file", function () {
