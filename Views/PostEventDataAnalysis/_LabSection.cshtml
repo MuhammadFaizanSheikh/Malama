@@ -141,26 +141,27 @@
                         <i class="bi bi-upload"></i> Upload
                     </button>
 
-                    <div class="d-flex align-items-center gap-2 mt-2 malama-file-status"
+                    <div class="align-items-center gap-2 mt-2 malama-file-status"
                          id="@($"{Model.Prefix}_fileStatus")"
                          data-prefix="@Model.Prefix"
                          data-existing-filename="@Model.MalamaFileName"
+                         data-existing-original-filename="@Model.MalamaOriginalFileName"
                          style="display:none;">
                         <span class="text-success fs-6" title="File selected">
                             <i class="bi bi-file-earmark-check-fill"></i>
                         </span>
                         <span class="small text-truncate"
                               id="@($"{Model.Prefix}_fileNameDisplay")"
-                              style="max-width: 150px;">File selected</span>
+                              style="max-width: 200px;"></span>
                         <button type="button"
                                 class="btn btn-sm btn-outline-primary preview-selected-file"
                                 data-prefix="@Model.Prefix">
                             Preview
                         </button>
                         <button type="button"
-                                class="btn btn-sm btn-outline-danger cancel-selected-file"
+                                class="btn btn-sm btn-outline-danger remove-selected-file"
                                 data-prefix="@Model.Prefix">
-                            Cancel
+                            Remove
                         </button>
                     </div>
 
@@ -168,7 +169,7 @@
                            value="@(Model.MalamaDate?.ToString("yyyy-MM-dd HH:mm"))"
                            class="form-control flatpickr mt-2"
                            id="@($"{Model.Prefix}_malamaDate")"
-                               style="display:@(Model.Malama ? "block" : "none");"
+                           style="display:none;"
                            readonly />
 
                     <input type="hidden"
@@ -180,6 +181,11 @@
                            id="@($"{Model.Prefix}_malamaFileName")"
                            name="@Model.MalamaResultFileNameName"
                            value="@Model.MalamaFileName" />
+
+                    <input type="hidden"
+                           id="@($"{Model.Prefix}_malamaOriginalFileName")"
+                           name="@Model.MalamaOriginalFileNameName"
+                           value="@Model.MalamaOriginalFileName" />
 
                 </div>
 

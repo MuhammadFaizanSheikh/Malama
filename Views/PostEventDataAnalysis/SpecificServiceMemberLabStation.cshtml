@@ -101,6 +101,10 @@
     .open-malama-picker {
         min-width: 90px;
     }
+
+    .malama-file-status {
+        display: flex;
+    }
 </style>
 
 <div class="d-flex align-items-center mb-3">
@@ -188,6 +192,7 @@
     ReceivedDateName = "PostEventLabStation.G6pdResultReceivedDateTime",
     MalamaName = "PostEventLabStation.G6pdResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.G6pdResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.G6pdResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.G6pdResultMalamaUploadedDateTime",
     HRRName = "PostEventLabStation.G6pdResultHRRUploaded",
     HRRDateName = "PostEventLabStation.G6pdResultHRRUploadedDateTime",
@@ -199,6 +204,7 @@
     ReceivedDate = Model.PostEventLabStation.G6pdResultReceivedDateTime,
     Malama = Model.PostEventLabStation.G6pdResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.G6pdResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.G6pdResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.G6pdResultMalamaUploadedDateTime,
     HRR = Model.PostEventLabStation.G6pdResultHRRUploaded,
     HRRDate = Model.PostEventLabStation.G6pdResultHRRUploadedDateTime,
@@ -222,6 +228,7 @@
 
     MalamaName = "PostEventLabStation.AboResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.AboResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.AboResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.AboResultMalamaUploadedDateTime",
 
     HRRName = "PostEventLabStation.AboResultHRRUploaded",
@@ -236,6 +243,7 @@
 
     Malama = Model.PostEventLabStation.AboResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.AboResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.AboResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.AboResultMalamaUploadedDateTime,
 
     HRR = Model.PostEventLabStation.AboResultHRRUploaded,
@@ -261,6 +269,7 @@
 
     MalamaName = "PostEventLabStation.LipidPanelResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.LipidPanelResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.LipidPanelResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.LipidPanelResultMalamaUploadedDateTime",
 
     HRRName = "PostEventLabStation.LipidPanelResultHRRUploaded",
@@ -277,6 +286,7 @@
 
     Malama = Model.PostEventLabStation.LipidPanelResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.LipidPanelResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.LipidPanelResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.LipidPanelResultMalamaUploadedDateTime,
 
     HRR = Model.PostEventLabStation.LipidPanelResultHRRUploaded,
@@ -304,6 +314,7 @@
 
     MalamaName = "PostEventLabStation.HivResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.HivResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.HivResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.HivResultMalamaUploadedDateTime",
 
     HRRName = "PostEventLabStation.HivResultHRRUploaded",
@@ -320,6 +331,7 @@
 
     Malama = Model.PostEventLabStation.HivResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.HivResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.HivResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.HivResultMalamaUploadedDateTime,
 
     HRR = Model.PostEventLabStation.HivResultHRRUploaded,
@@ -347,6 +359,7 @@
 
     MalamaName = "PostEventLabStation.PregnancyResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.PregnancyResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.PregnancyResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.PregnancyResultMalamaUploadedDateTime",
 
     HRRName = "PostEventLabStation.PregnancyResultHRRUploaded",
@@ -363,6 +376,7 @@
 
     Malama = Model.PostEventLabStation.PregnancyResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.PregnancyResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.PregnancyResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.PregnancyResultMalamaUploadedDateTime,
 
     HRR = Model.PostEventLabStation.PregnancyResultHRRUploaded,
@@ -390,6 +404,7 @@
 
     MalamaName = "PostEventLabStation.SickleCellResultMalamaUploaded",
     MalamaResultFileNameName = "PostEventLabStation.SickleCellResultMalamaUploadedFileName",
+    MalamaOriginalFileNameName = "PostEventLabStation.SickleCellResultMalamaUploadedOriginalFileName",
     MalamaDateName = "PostEventLabStation.SickleCellResultMalamaUploadedDateTime",
 
     HRRName = "PostEventLabStation.SickleCellResultHRRUploaded",
@@ -404,6 +419,7 @@
 
     Malama = Model.PostEventLabStation.SickleCellResultMalamaUploaded,
     MalamaFileName = Model.PostEventLabStation.SickleCellResultMalamaUploadedFileName,
+    MalamaOriginalFileName = Model.PostEventLabStation.SickleCellResultMalamaUploadedOriginalFileName,
     MalamaDate = Model.PostEventLabStation.SickleCellResultMalamaUploadedDateTime,
 
     HRR = Model.PostEventLabStation.SickleCellResultHRRUploaded,
@@ -865,8 +881,8 @@
             const originalValue = datePicker?.dataset?.originalValue || "";
 
             if (hasExistingServerFile) {
-                // Keep original persisted state but keep datetime hidden until a new file is selected.
-                setFlatpickrVisibility(datePicker, false);
+                // On edit, show the persisted Malama upload datetime (readonly) when a file exists.
+                setFlatpickrVisibility(datePicker, true);
                 hiddenField.value = "true";
                 datePicker.value = originalValue;
                 if (datePicker._flatpickr && originalValue) {
@@ -914,7 +930,12 @@
         if (!fileInput || !datePicker) return;
 
         const hasSelectedFile = fileInput.files && fileInput.files.length > 0;
-        setFlatpickrVisibility(datePicker, hasSelectedFile);
+        const status = document.getElementById(prefix + "_fileStatus");
+        const hasExistingServerFile = !!(status?.dataset?.existingFilename || "").trim() &&
+            status?.dataset?.removedExisting !== "true";
+        const hasPersistedDate = !!(datePicker.value || "").trim();
+
+        setFlatpickrVisibility(datePicker, hasSelectedFile || (hasExistingServerFile && hasPersistedDate));
     }
 
     function updateMalamaFileUI(prefix) {
@@ -923,20 +944,23 @@
         const fileNameDisplay = document.getElementById(prefix + "_fileNameDisplay");
         const hiddenUploaded = document.getElementById(prefix + "_malamaUploaded");
         const hiddenFileName = document.getElementById(prefix + "_malamaFileName");
+        const hiddenOriginalFileName = document.getElementById(prefix + "_malamaOriginalFileName");
 
-        if (!fileInput || !status || !fileNameDisplay || !hiddenUploaded || !hiddenFileName) return;
+        if (!fileInput || !status || !fileNameDisplay || !hiddenUploaded || !hiddenFileName || !hiddenOriginalFileName) return;
 
         const selectedFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
         const existingFileName = (status.dataset.existingFilename || "").trim();
+        const existingOriginalFileName = (status.dataset.existingOriginalFilename || "").trim();
         const removedExisting = status.dataset.removedExisting === "true";
         const selectedPreviewUrl = status.dataset.selectedPreviewUrl || "";
 
         if (selectedFile) {
-            fileNameDisplay.textContent = "File selected";
+            fileNameDisplay.textContent = selectedFile.name;
             status.style.display = "flex";
 
             hiddenUploaded.value = "true";
             hiddenFileName.value = "";
+            hiddenOriginalFileName.value = selectedFile.name;
 
             if (selectedPreviewUrl) {
                 URL.revokeObjectURL(selectedPreviewUrl);
@@ -952,10 +976,11 @@
         status.dataset.selectedPreviewUrl = "";
 
         if (existingFileName && !removedExisting) {
-            fileNameDisplay.textContent = "File selected";
+            fileNameDisplay.textContent = existingOriginalFileName || existingFileName;
             status.style.display = "flex";
             hiddenUploaded.value = "true";
             hiddenFileName.value = existingFileName;
+            hiddenOriginalFileName.value = existingOriginalFileName || "";
             status.dataset.previewMode = "server";
             return;
         }
@@ -964,6 +989,7 @@
         status.style.display = "none";
         hiddenUploaded.value = "false";
         hiddenFileName.value = "";
+        hiddenOriginalFileName.value = "";
         status.dataset.previewMode = "";
         updatePostEventLabStatus();
     }
@@ -985,21 +1011,45 @@
         input.click();
     });
 
-    $(document).on("click", ".cancel-selected-file", function () {
+    $(document).on("click", ".remove-selected-file", function () {
         const prefix = $(this).data("prefix");
         if (!prefix) return;
 
         const input = document.querySelector(`.malama-file[data-prefix='${prefix}']`);
         const status = document.getElementById(prefix + "_fileStatus");
+        const hiddenUploaded = document.getElementById(prefix + "_malamaUploaded");
+        const hiddenFileName = document.getElementById(prefix + "_malamaFileName");
+        const hiddenOriginalFileName = document.getElementById(prefix + "_malamaOriginalFileName");
+        const fileNameDisplay = document.getElementById(prefix + "_fileNameDisplay");
         if (!input) return;
 
         const hadSelectedFile = input.files && input.files.length > 0;
         const hadExistingFile = !!(status?.dataset?.existingFilename || "").trim();
 
         input.value = "";
-        if (status && !hadSelectedFile && hadExistingFile) {
+        if (status && hadExistingFile) {
             status.dataset.removedExisting = "true";
+            // Ensure UI hides immediately (and form posts "removed" state)
+            status.dataset.existingFilename = "";
+            status.dataset.existingOriginalFilename = "";
+            status.dataset.previewMode = "";
         }
+
+        if (status && hadSelectedFile) {
+            const prevUrl = status.dataset.selectedPreviewUrl;
+            if (prevUrl) {
+                URL.revokeObjectURL(prevUrl);
+            }
+            status.dataset.selectedPreviewUrl = "";
+            status.dataset.previewMode = "";
+        }
+
+        // Force-clear posted values and force-hide action row immediately.
+        if (hiddenUploaded) hiddenUploaded.value = "false";
+        if (hiddenFileName) hiddenFileName.value = "";
+        if (hiddenOriginalFileName) hiddenOriginalFileName.value = "";
+        if (fileNameDisplay) fileNameDisplay.textContent = "";
+        if (status) status.style.display = "none";
 
         toggleFlatpicker(input, prefix);
         updateMalamaFileUI(prefix);

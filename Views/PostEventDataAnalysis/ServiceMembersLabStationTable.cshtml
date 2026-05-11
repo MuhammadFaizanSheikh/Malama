@@ -268,7 +268,7 @@
                     </a>
                 </td>
 
-                <td>@item.PostEventLabStation.Status</td>
+                <td>@(item.PostEventLabStation?.Status ?? "Pending")</td>
                 <td>@item.SmId</td>
                 <td>@item.FullName</td>
                 <td>@item.Last4</td>

@@ -440,6 +440,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 fileMapping.SetUploaded(model.PostEventLabStation, true);
                 fileMapping.SetFileName(model.PostEventLabStation, result.FileName);
+                fileMapping.SetOriginalFileName(model.PostEventLabStation, postedFile.FileName);
             }
 
             return null;
@@ -460,8 +461,10 @@ namespace ExcelFilesCompiler.Controllers
             {
                 var postedFile = Request.Form.Files[fileMapping.InputName];
                 var currentFileName = fileMapping.GetExistingFileName(existing);
+                var currentOriginalFileName = fileMapping.GetExistingOriginalFileName(existing);
                 var incomingUploaded = fileMapping.GetUploaded(model.PostEventLabStation);
                 var incomingFileName = fileMapping.GetFileName(model.PostEventLabStation);
+                var incomingOriginalFileName = fileMapping.GetOriginalFileName(model.PostEventLabStation);
 
                 // 1) Replace existing file (new upload selected in edit mode).
                 if (postedFile != null && postedFile.Length > 0)
@@ -489,6 +492,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     fileMapping.SetUploaded(model.PostEventLabStation, true);
                     fileMapping.SetFileName(model.PostEventLabStation, uploadResult.FileName);
+                    fileMapping.SetOriginalFileName(model.PostEventLabStation, postedFile.FileName);
                     continue;
                 }
 
@@ -510,6 +514,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     fileMapping.SetUploaded(model.PostEventLabStation, false);
                     fileMapping.SetFileName(model.PostEventLabStation, null);
+                    fileMapping.SetOriginalFileName(model.PostEventLabStation, null);
                     fileMapping.SetDate(model.PostEventLabStation, null);
                     continue;
                 }
@@ -519,6 +524,10 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     fileMapping.SetFileName(model.PostEventLabStation, currentFileName);
                     fileMapping.SetUploaded(model.PostEventLabStation, true);
+                    if (string.IsNullOrWhiteSpace(incomingOriginalFileName))
+                    {
+                        fileMapping.SetOriginalFileName(model.PostEventLabStation, currentOriginalFileName);
+                    }
                 }
             }
 
@@ -529,59 +538,83 @@ namespace ExcelFilesCompiler.Controllers
             Func<PostEventLabStationDto, bool> GetUploaded,
             Action<PostEventLabStationDto, bool> SetUploaded,
             Func<PostEventLabStation, string?> GetExistingFileName,
+            Func<PostEventLabStation, string?> GetExistingOriginalFileName,
             Func<PostEventLabStationDto, string?> GetFileName,
             Action<PostEventLabStationDto, string?> SetFileName,
+            Func<PostEventLabStationDto, string?> GetOriginalFileName,
+            Action<PostEventLabStationDto, string?> SetOriginalFileName,
             Action<PostEventLabStationDto, DateTime?> SetDate)[] GetMalamaFileMappings()
         {
             return new (string InputName, string Prefix,
                 Func<PostEventLabStationDto, bool> GetUploaded,
                 Action<PostEventLabStationDto, bool> SetUploaded,
                 Func<PostEventLabStation, string?> GetExistingFileName,
+                Func<PostEventLabStation, string?> GetExistingOriginalFileName,
                 Func<PostEventLabStationDto, string?> GetFileName,
                 Action<PostEventLabStationDto, string?> SetFileName,
+                Func<PostEventLabStationDto, string?> GetOriginalFileName,
+                Action<PostEventLabStationDto, string?> SetOriginalFileName,
                 Action<PostEventLabStationDto, DateTime?> SetDate)[]
             {
                 ("g6pdMalamaFile", "g6pd",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.G6pdResultMalamaUploaded),
                     (dto, value) => dto.G6pdResultMalamaUploaded = value,
                     entity => entity.G6pdResultMalamaUploadedFileName,
+                    entity => entity.G6pdResultMalamaUploadedOriginalFileName,
                     dto => dto.G6pdResultMalamaUploadedFileName,
                     (dto, value) => dto.G6pdResultMalamaUploadedFileName = value,
+                    dto => dto.G6pdResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.G6pdResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.G6pdResultMalamaUploadedDateTime = value),
                 ("aboMalamaFile", "abo",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.AboResultMalamaUploaded),
                     (dto, value) => dto.AboResultMalamaUploaded = value,
                     entity => entity.AboResultMalamaUploadedFileName,
+                    entity => entity.AboResultMalamaUploadedOriginalFileName,
                     dto => dto.AboResultMalamaUploadedFileName,
                     (dto, value) => dto.AboResultMalamaUploadedFileName = value,
+                    dto => dto.AboResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.AboResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.AboResultMalamaUploadedDateTime = value),
                 ("lipidMalamaFile", "lipid",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.LipidPanelResultMalamaUploaded),
                     (dto, value) => dto.LipidPanelResultMalamaUploaded = value,
                     entity => entity.LipidPanelResultMalamaUploadedFileName,
+                    entity => entity.LipidPanelResultMalamaUploadedOriginalFileName,
                     dto => dto.LipidPanelResultMalamaUploadedFileName,
                     (dto, value) => dto.LipidPanelResultMalamaUploadedFileName = value,
+                    dto => dto.LipidPanelResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.LipidPanelResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.LipidPanelResultMalamaUploadedDateTime = value),
                 ("hivMalamaFile", "hiv",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.HivResultMalamaUploaded),
                     (dto, value) => dto.HivResultMalamaUploaded = value,
                     entity => entity.HivResultMalamaUploadedFileName,
+                    entity => entity.HivResultMalamaUploadedOriginalFileName,
                     dto => dto.HivResultMalamaUploadedFileName,
                     (dto, value) => dto.HivResultMalamaUploadedFileName = value,
+                    dto => dto.HivResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.HivResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.HivResultMalamaUploadedDateTime = value),
                 ("pregMalamaFile", "preg",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.PregnancyResultMalamaUploaded),
                     (dto, value) => dto.PregnancyResultMalamaUploaded = value,
                     entity => entity.PregnancyResultMalamaUploadedFileName,
+                    entity => entity.PregnancyResultMalamaUploadedOriginalFileName,
                     dto => dto.PregnancyResultMalamaUploadedFileName,
                     (dto, value) => dto.PregnancyResultMalamaUploadedFileName = value,
+                    dto => dto.PregnancyResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.PregnancyResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.PregnancyResultMalamaUploadedDateTime = value),
                 ("sickleMalamaFile", "sickle",
                     (Func<PostEventLabStationDto, bool>)(dto => dto.SickleCellResultMalamaUploaded),
                     (dto, value) => dto.SickleCellResultMalamaUploaded = value,
                     entity => entity.SickleCellResultMalamaUploadedFileName,
+                    entity => entity.SickleCellResultMalamaUploadedOriginalFileName,
                     dto => dto.SickleCellResultMalamaUploadedFileName,
                     (dto, value) => dto.SickleCellResultMalamaUploadedFileName = value,
+                    dto => dto.SickleCellResultMalamaUploadedOriginalFileName,
+                    (dto, value) => dto.SickleCellResultMalamaUploadedOriginalFileName = value,
                     (dto, value) => dto.SickleCellResultMalamaUploadedDateTime = value)
             };
         }
