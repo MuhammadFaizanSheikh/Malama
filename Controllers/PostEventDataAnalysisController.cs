@@ -31,7 +31,7 @@ namespace ExcelFilesCompiler.Controllers
             _fileService = fileService;
         }
 
-        //[RoleAttributeAuthorizeFromConfig("EventManagement_View")]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -82,7 +82,7 @@ namespace ExcelFilesCompiler.Controllers
             return View(viewModel);
         }
 
-        //[RoleAttributeAuthorizeFromConfig("PostEventManagement_View")]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
         [HttpGet]
         public async Task<IActionResult> SelectStation(long eventManagementId, string selectedStation)
         {
@@ -159,6 +159,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
         public async Task<IActionResult> SpecificServiceMemberLabStation(long? postLabStationId, long serviceMembersChildId)
         {
             const string methodName = nameof(SpecificServiceMemberLabStation);
@@ -206,7 +207,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        //[RoleAttributeAuthorizeFromConfig("LabStation_Save")]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_Save")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SavePostEventLabStation(PostEventLabStationAnalysisDto model)
@@ -261,13 +262,15 @@ namespace ExcelFilesCompiler.Controllers
                         CLASSNAME, methodName, user.UserName);
 
                     var fileUploadError = await UploadLabFilesForAdd(model);
+                    
                     if (!string.IsNullOrEmpty(fileUploadError))
                     {
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = fileUploadError;
 
-                        return View("SpecificServiceMemberLabStation", model);
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
                     var result = await _postEventLabStationService
@@ -279,7 +282,8 @@ namespace ExcelFilesCompiler.Controllers
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = result.Message;
 
-                        return View("SpecificServiceMemberLabStation", model);
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
                     TempData["ResponseStatus"] = "success";
@@ -355,48 +359,7 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        //public async Task<IActionResult> UploadMalamaFile(IFormFile file, string station, string prefix, string barcode)
-        //{
-        //    const string METHOD = nameof(UploadMalamaFile);
-
-        //    try
-        //    {
-        //        _logger.LogInformation("{Class}.{Method} - Request received | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
-        //            CLASSNAME, METHOD, station, prefix, barcode);
-
-        //        var result = await _fileService.UploadFile(file, station, prefix, barcode);
-
-        //        if (!result.Success)
-        //        {
-        //            _logger.LogWarning("{Class}.{Method} - Upload failed | Message: {Message}",
-        //                CLASSNAME, METHOD, result.Message);
-
-        //            return Json(result);
-        //        }
-
-        //        // OPTIONAL: update DB here (Malama flag + filename)
-        //        // Example:
-        //        // await _labService.UpdateMalamaFile(barcode, prefix, result.FileName);
-
-        //        _logger.LogInformation("{Class}.{Method} - Upload successful | FileName: {FileName}",
-        //            CLASSNAME, METHOD, result.FileName);
-
-        //        return Json(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex,
-        //            "{Class}.{Method} - Exception occurred | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}",
-        //            CLASSNAME, METHOD, station, prefix, barcode);
-
-        //        return Json(new
-        //        {
-        //            success = false,
-        //            message = "Unexpected error occurred while uploading file"
-        //        });
-        //    }
-        //}
-
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
         public IActionResult DownloadMalamaFile(
             string station,
             string prefix,
