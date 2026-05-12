@@ -4,7 +4,7 @@
     {
         public long EventId { get; set; }
         public string? EventID { get; set; }
-        public ServiceMembersChildDto ServiceMember { get; set; }
+        public ServiceMembersChildDto ServiceMembersChild { get; set; }
         public VitalStationDto VitalStationDto { get; set; }
     }
 

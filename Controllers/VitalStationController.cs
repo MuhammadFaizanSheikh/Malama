@@ -9,22 +9,23 @@ using Microsoft.Extensions.Logging;
 
 namespace ExcelFilesCompiler.Controllers
 {
-    public class VitalStaionController : Controller
+    public class VitalStationController : Controller
     {
         private readonly IFileUploader _fileUploader;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IVitalStationService _service;
-        private readonly ILogger<VitalStaionController> _logger;
-        private const string CLASSNAME = "VitalStaionController";
+        private readonly ILogger<VitalStationController> _logger;
+        private const string CLASSNAME = "VitalStationController";
 
 
-        public VitalStaionController(ILogger<VitalStaionController> logger, IConfiguration configuration, UserManager<ApplicationUser> userManager, IVitalStationService service)
+        public VitalStationController(ILogger<VitalStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IVitalStationService service)
         {
             _logger = logger;
             _configuration = configuration;
             _userManager = userManager;
             _service = service;
+            _fileUploader = fileUploader;
         }
 
         [RoleAttributeAuthorizeFromConfig("VitalStation_View")]
@@ -212,17 +213,17 @@ namespace ExcelFilesCompiler.Controllers
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Lab record added successfully.";
+                    TempData["ResponseMessage"] = "Vital record added successfully.";
                 }
                 else
                 {
-                    _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for LabId={LabId} by User={UserName}", CLASSNAME, methodName, model.Id, user.UserName);
+                    _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for VitalStationId={VitalStationId} by User={UserName}", CLASSNAME, methodName, model.VitalStationDto.Id, user.UserName);
 
-                    await _service.UpdateAsync(model, user.UserName);
+                    await _service.UpdateAsync(model.VitalStationDto, user.UserName);
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Lab record updated successfully.";
+                    TempData["ResponseMessage"] = "Vital record updated successfully.";
                 }
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index", CLASSNAME, methodName);
@@ -230,7 +231,7 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving lab record", CLASSNAME, methodName);
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving VitalStation record", CLASSNAME, methodName);
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
