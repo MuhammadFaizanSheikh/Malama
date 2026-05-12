@@ -236,9 +236,9 @@
     }
 
 
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Vitals_View"))
+    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VitalStation_View"))
     {
-        <a asp-controller="Vitals" asp-action="Index" class="icon-box">
+        <a asp-controller="VitalStaion" asp-action="Index" class="icon-box">
             <img src="/images/Vitals.jpg" alt="Vitals" />
             <span>Vitals</span>
         </a>

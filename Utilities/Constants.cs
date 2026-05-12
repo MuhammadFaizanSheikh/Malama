@@ -26,6 +26,12 @@
             public const string Completed = "Completed";
         }
 
+        public static class YesNo
+        {
+            public const string Yes = "Yes";
+            public const string No = "No";
+        }
+
         public static class ResponseCodes
         {
             public const string NotFound = "NOT_FOUND";

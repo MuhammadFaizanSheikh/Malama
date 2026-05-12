@@ -338,6 +338,41 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetVitalStationByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetVitalStationByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching VitalStation Records where CheckIn=Yes for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.CheckIn == "Yes",
+                        c => c.VitalStationRecord
+                    )
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} VitalStation Records for EventId={EventId}",
+                    CLASSNAME, methodName, result.Count, eventId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching VitalStation Records for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw;
+            }
+        }
+
         public async Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId)
         {
             const string methodName = nameof(GetPreAndPostLabStationByEventIdAsync);

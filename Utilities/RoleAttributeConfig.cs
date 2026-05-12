@@ -215,7 +215,7 @@ namespace Malama.Utilities
         },
 
             // Vitals
-            ["Vitals_View"] = new List<(string Role, string Attribute)>
+            ["VitalStation_View"] = new List<(string Role, string Attribute)>
         {
             ("Vitals Staff", null),
             ("Event Manager", null)
@@ -325,7 +325,7 @@ namespace Malama.Utilities
             ["PanoramicDentalXRay"] = "Panoramic Dental X-Ray",
             ["RecordsReview"] = "Records Review",
             ["VisionScreening"] = "Vision Screening",
-            ["Vitals"] = "Vitals",
+            ["VitalStation"] = "Vitals",
             ["PostEventManagement"] = "Post Event Management",
             ["PostEventDataAnalysis"] = "Post Event Data Analysis"
         };
