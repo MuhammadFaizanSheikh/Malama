@@ -146,6 +146,38 @@ namespace Malama.AutoMapper
             //Post Event Lab Station
             CreateMap<PostEventLabStationDto, PostEventLabStation>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+            // Vital Station
+            CreateMap<VitalStationBloodPressureReading, VitalStationBpReadingDto>();
+
+            CreateMap<VitalStation, VitalStationDto>()
+                .ForMember(dest => dest.PendingSystolic, opt => opt.Ignore())
+                .ForMember(dest => dest.PendingDiastolic, opt => opt.Ignore())
+                .ForMember(dest => dest.IsNextReadingRequired, opt => opt.Ignore())
+                .ForMember(dest => dest.NextReadingNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.NextReadingAfterMinutes, opt => opt.Ignore())
+                .ForMember(dest => dest.Message, opt => opt.Ignore())
+                .ForMember(dest => dest.NextBpReadingAvailableAt, opt => opt.Ignore())
+                .ForMember(dest => dest.NextBpReadingUnlocked, opt => opt.Ignore())
+                .ForMember(dest => dest.BloodPressureReadings,
+                    opt => opt.MapFrom(src => (src.BloodPressureReadings ?? Array.Empty<VitalStationBloodPressureReading>())
+                        .OrderBy(r => r.ReadingNumber)));
+
+            CreateMap<VitalStationDto, VitalStation>()
+                .ForMember(dest => dest.ServiceMembersChild, opt => opt.Ignore())
+                .ForMember(dest => dest.BloodPressureReadings, opt => opt.Ignore())
+                .ForMember(dest => dest.FinalBpStatus, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalReadingsTaken, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedOn, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedOn, opt => opt.Ignore());
+
+            CreateMap<VitalStationBpReadingDto, VitalStationBloodPressureReading>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.VitalStationId, opt => opt.Ignore())
+                .ForMember(dest => dest.VitalStation, opt => opt.Ignore());
         }
     }
 }

@@ -94,7 +94,7 @@
     }
 </style>
 
-<h2 id="page-heading">Edit Service Member at Lab Station</h2>
+<h2 id="page-heading">Vital Station</h2>
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -115,14 +115,32 @@
     </script>
 }
 
+@{
+    var d = Model.VitalStationDto ?? new Malama.Models.VitalStationDto();
+    var completed = d.Status == "Completed";
+    var readings = (d.BloodPressureReadings ?? new List<Malama.Models.VitalStationBpReadingDto>())
+        .OrderBy(r => r.ReadingNumber).ToList();
+    var r1 = readings.FirstOrDefault(x => x.ReadingNumber == 1);
+    var r2 = readings.FirstOrDefault(x => x.ReadingNumber == 2);
+    var r3 = readings.FirstOrDefault(x => x.ReadingNumber == 3);
+    var nextNum = d.NextReadingNumber ?? 0;
+    var canEnterBp = !completed && d.NextBpReadingUnlocked && nextNum >= 1 && nextNum <= 3;
+    // Only emit unlock time while still waiting; once unlocked, omit so the countdown script does not run (avoids infinite reload).
+    string? unlockIso = !completed && !d.NextBpReadingUnlocked && d.NextBpReadingAvailableAt.HasValue
+        ? d.NextBpReadingAvailableAt.Value.ToString("o")
+        : null;
+}
+
 <form id="SaveVitalStation" asp-action="SaveVitalStation" method="post">
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.VitalStationDto.Id)
-    @* @Html.HiddenFor(m => m.ServiceMembersChildId) *@
+    @Html.HiddenFor(m => m.VitalStationDto.ServiceMembersChildId)
     <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
-    <!-- Link to parent contract -->
-    @* <input type="hidden" asp-for="FileDataId" /> *@
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to service member list</a>
+    </div>
 
     <h3 class="mb-4">Personal Information</h3>
     <div class="card mb-4">
@@ -153,8 +171,231 @@
         </div>
     </div>
 
-    <hr class="my-4" />
-    
+    <h3 class="mb-3">Vitals</h3>
+    <p class="text-muted mb-3">@d.Message</p>
+
+    <div class="card mb-4">
+        <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+            Height &amp; weight <span class="text-danger">*</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="VitalStationDto.Height" class="form-label">Height</label>
+                    @if (completed)
+                    {
+                        <input asp-for="VitalStationDto.Height" class="form-control read-only-style" readonly tabindex="-1" />
+                    }
+                    else
+                    {
+                        <input asp-for="VitalStationDto.Height" class="form-control" type="number" step="0.01" min="0.01" placeholder="Per site policy" />
+                    }
+                    <span asp-validation-for="VitalStationDto.Height" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="VitalStationDto.Weight" class="form-label">Weight</label>
+                    @if (completed)
+                    {
+                        <input asp-for="VitalStationDto.Weight" class="form-control read-only-style" readonly tabindex="-1" />
+                    }
+                    else
+                    {
+                        <input asp-for="VitalStationDto.Weight" class="form-control" type="number" step="0.01" min="0.01" placeholder="Per site policy" />
+                    }
+                    <span asp-validation-for="VitalStationDto.Weight" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Blood pressure (up to 3 attempts)</h4>
+    <p class="small text-muted mb-3">A reading is treated as <strong>normal</strong> when systolic is below 140 <strong>and</strong> diastolic is below 90. If a reading is high, the next attempt may be taken after <strong>15 minutes</strong>.</p>
+
+    <div class="row g-3 mb-2">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">1st attempt</div>
+                <div class="card-body">
+                    @if (r1 != null)
+                    {
+                        <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r1.Systolic / @r1.Diastolic</p>
+                        <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r1.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r1.ReadingStatus</span></p>
+                        @if (!string.IsNullOrEmpty(r1.Remarks))
+                        {
+                            <p class="mb-0 text-danger fw-semibold">@r1.Remarks</p>
+                        }
+                        <p class="small text-muted mb-0">Recorded at @r1.ReadingTakenAt.ToString("g")</p>
+                    }
+                    else if (canEnterBp && nextNum == 1)
+                    {
+                        <p class="small text-muted">Enter first reading with height and weight, then save.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0">Awaiting first reading.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">2nd attempt</div>
+                <div class="card-body">
+                    @if (r2 != null)
+                    {
+                        <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r2.Systolic / @r2.Diastolic</p>
+                        <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r2.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r2.ReadingStatus</span></p>
+                        @if (!string.IsNullOrEmpty(r2.Remarks))
+                        {
+                            <p class="mb-0 text-danger fw-semibold">@r2.Remarks</p>
+                        }
+                        <p class="small text-muted mb-0">Recorded at @r2.ReadingTakenAt.ToString("g")</p>
+                    }
+                    else if (r1 != null && r1.ReadingStatus == "High" && !completed)
+                    {
+                        if (canEnterBp && nextNum == 2)
+                        {
+                            <p class="small text-muted">Enter the second reading below, then save.</p>
+                        }
+                        else if (!d.NextBpReadingUnlocked && nextNum == 2 && d.NextBpReadingAvailableAt != null)
+                        {
+                            <p class="text-danger fw-semibold mb-2">High — 2nd reading is required after 15 minutes.</p>
+                            <p class="small mb-1">Time until next reading:</p>
+                            <p class="fw-bold" id="bpCountdown2" data-unlock-utc="@unlockIso">—</p>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">Second reading not yet available.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0">Shown when the first reading is high.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">3rd attempt</div>
+                <div class="card-body">
+                    @if (r3 != null)
+                    {
+                        <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r3.Systolic / @r3.Diastolic</p>
+                        <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r3.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r3.ReadingStatus</span></p>
+                        @if (!string.IsNullOrEmpty(r3.Remarks))
+                        {
+                            <p class="mb-0 text-danger fw-semibold">@r3.Remarks</p>
+                        }
+                        <p class="small text-muted mb-0">Recorded at @r3.ReadingTakenAt.ToString("g")</p>
+                    }
+                    else if (r2 != null && r2.ReadingStatus == "High" && !completed)
+                    {
+                        if (canEnterBp && nextNum == 3)
+                        {
+                            <p class="small text-muted">Enter the third reading below, then save.</p>
+                        }
+                        else if (!d.NextBpReadingUnlocked && nextNum == 3 && d.NextBpReadingAvailableAt != null)
+                        {
+                            <p class="text-danger fw-semibold mb-2">High — 3rd reading is required after 15 minutes.</p>
+                            <p class="small mb-1">Time until next reading:</p>
+                            <p class="fw-bold" id="bpCountdown3" data-unlock-utc="@unlockIso">—</p>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">Third reading not yet available.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0">Shown when the second reading is high.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!completed && canEnterBp)
+    {
+        <div class="card mb-4 border-primary">
+            <div class="card-header fw-bold text-white" style="background-color: rgba(80, 90, 201, 1);">
+                Current entry — attempt @nextNum of 3
+            </div>
+            <div class="card-body row g-3">
+                <div class="col-md-4">
+                    <label asp-for="VitalStationDto.PendingSystolic" class="form-label">Systolic</label>
+                    <input asp-for="VitalStationDto.PendingSystolic" class="form-control" type="number" inputmode="numeric" min="40" max="300" />
+                    <span asp-validation-for="VitalStationDto.PendingSystolic" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="VitalStationDto.PendingDiastolic" class="form-label">Diastolic</label>
+                    <input asp-for="VitalStationDto.PendingDiastolic" class="form-control" type="number" inputmode="numeric" min="20" max="200" />
+                    <span asp-validation-for="VitalStationDto.PendingDiastolic" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!completed && canEnterBp)
+    {
+        <div class="d-flex gap-2 button-container mb-5">
+            <button type="submit" class="btn btn-general">Save</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    }
+    else if (completed)
+    {
+        <div class="alert alert-success mb-4">
+            <strong>Completed.</strong> Final blood pressure status: <strong>@(d.FinalBpStatus ?? "—")</strong>
+        </div>
+        <a asp-action="Index" class="btn btn-general mb-5">Back to list</a>
+    }
+    else
+    {
+        <div class="d-flex gap-2 button-container mb-5">
+            <button type="button" class="btn btn-secondary" disabled title="Waiting for the required interval">Save (unavailable)</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
+        </div>
+    }
 </form>
 
+@if (!completed && !string.IsNullOrEmpty(unlockIso))
+{
+    <script>
+        (function () {
+            var iso = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(unlockIso));
+            if (!iso) return;
+            var unlock = Date.parse(iso);
+            if (isNaN(unlock)) return;
 
+            var reloadScheduled = false;
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+            function tick() {
+                var now = Date.now();
+                var ms = unlock - now;
+                var text = '';
+                if (ms <= 0) {
+                    text = '0:00 — refreshing…';
+                    var els = document.querySelectorAll('[id^="bpCountdown"]');
+                    els.forEach(function (el) { el.textContent = text; });
+                    if (!reloadScheduled) {
+                        reloadScheduled = true;
+                        window.clearInterval(intervalId);
+                        window.setTimeout(function () { window.location.reload(); }, 600);
+                    }
+                    return;
+                }
+                var totalSec = Math.floor(ms / 1000);
+                var m = Math.floor(totalSec / 60);
+                var s = totalSec % 60;
+                text = m + ':' + pad(s);
+                var els = document.querySelectorAll('[id^="bpCountdown"]');
+                els.forEach(function (el) { el.textContent = text; });
+            }
+            var intervalId = window.setInterval(tick, 1000);
+            tick();
+        })();
+    </script>
+}
+
+@await Html.PartialAsync("_ValidationScriptsPartial")

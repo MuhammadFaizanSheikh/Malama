@@ -220,6 +220,11 @@ namespace Malama.Utilities
             ("Vitals Staff", null),
             ("Event Manager", null)
         },
+            ["VitalStation_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("Vitals Staff", null),
+            ("Event Manager", null)
+        },
             ["PostEventManagement_View"] = new List<(string Role, string Attribute)>
         {
             ("Project Manager & Program Manager", null)

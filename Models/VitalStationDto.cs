@@ -1,10 +1,12 @@
-﻿namespace Malama.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Malama.Models
 {
     public class VitalStationVM
     {
         public long EventId { get; set; }
         public string? EventID { get; set; }
-        public ServiceMembersChildDto ServiceMembersChild { get; set; }
+        public ServiceMembersChildDto? ServiceMembersChild { get; set; }
         public VitalStationDto VitalStationDto { get; set; }
     }
 
@@ -33,15 +35,17 @@
 
         public long ServiceMembersChildId { get; set; }
 
+        [Required(ErrorMessage = "Height is required.")]
         public decimal? Height { get; set; }
 
+        [Required(ErrorMessage = "Weight is required.")]
         public decimal? Weight { get; set; }
 
-        public string FinalBpStatus { get; set; }
+        public string? FinalBpStatus { get; set; }
 
         public int TotalReadingsTaken { get; set; }
 
-        public string Status { get; set; }
+        public string Status { get; set; } = "Pending";
 
         public bool IsNextReadingRequired { get; set; }
 
@@ -51,6 +55,17 @@
 
         public string? Message { get; set; }
 
-        public List<VitalStationBpReadingDto> BloodPressureReadings { get; set; }
+        /// <summary>Local time when the next BP attempt may be submitted (15 minutes after the previous reading).</summary>
+        public DateTime? NextBpReadingAvailableAt { get; set; }
+
+        public bool NextBpReadingUnlocked { get; set; }
+
+        /// <summary>Posted only for the active attempt; not persisted.</summary>
+        public int? PendingSystolic { get; set; }
+
+        /// <summary>Posted only for the active attempt; not persisted.</summary>
+        public int? PendingDiastolic { get; set; }
+
+        public List<VitalStationBpReadingDto> BloodPressureReadings { get; set; } = new();
     }
 }

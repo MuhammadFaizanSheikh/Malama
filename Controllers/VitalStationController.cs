@@ -190,6 +190,13 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = message;
 
+                    var childId = model?.VitalStationDto?.ServiceMembersChildId ?? 0;
+                    if (childId > 0)
+                    {
+                        var vm = await _service.GetVitalStationByServiceMemberChildIdAsync(childId);
+                        return View("VitalStation", vm);
+                    }
+
                     return View("VitalStation", model);
                 }
 
@@ -213,7 +220,7 @@ namespace ExcelFilesCompiler.Controllers
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Vital record added successfully.";
+                    TempData["ResponseMessage"] = "Vital record saved successfully.";
                 }
                 else
                 {
@@ -223,11 +230,32 @@ namespace ExcelFilesCompiler.Controllers
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Vital record updated successfully.";
+                    TempData["ResponseMessage"] = "Vital record saved successfully.";
                 }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Index", CLASSNAME, methodName);
-                return RedirectToAction("Index");
+                _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Vital Station page", CLASSNAME, methodName);
+                return RedirectToAction(nameof(VitalStation), new
+                {
+                    vitalStationId = model.VitalStationDto.Id,
+                    serviceMembersChildId = model.VitalStationDto.ServiceMembersChildId
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "{ClassName}, {MethodName}, Business rule violation", CLASSNAME, methodName);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Cannot save";
+                TempData["ResponseMessage"] = ex.Message;
+
+                var childId = model?.VitalStationDto?.ServiceMembersChildId ?? 0;
+                if (childId > 0)
+                {
+                    var vm = await _service.GetVitalStationByServiceMemberChildIdAsync(childId);
+                    return View("VitalStation", vm);
+                }
+
+                return View("VitalStation", model);
             }
             catch (Exception ex)
             {

@@ -36,6 +36,8 @@ namespace ExcelFilesCompiler
         public DbSet<UserEventMapping> UserEventMapping { get; set; }
         public DbSet<PostEventManagement> PostEventManagement { get; set; }
         public DbSet<PostEventLabStation> PostEventLabStation { get; set; }
+        public DbSet<VitalStation> VitalStation { get; set; }
+        public DbSet<VitalStationBloodPressureReading> VitalStationBloodPressureReading { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

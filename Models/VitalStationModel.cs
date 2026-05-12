@@ -17,7 +17,8 @@
 
         public string Status { get; set; }
 
-        public ICollection<VitalStationBloodPressureReading> BloodPressureReadings { get; set; }
+        public ICollection<VitalStationBloodPressureReading> BloodPressureReadings { get; set; } =
+            new List<VitalStationBloodPressureReading>();
     }
 
     public class VitalStationBloodPressureReading
