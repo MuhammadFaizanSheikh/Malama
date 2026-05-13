@@ -188,7 +188,7 @@
                     }
                     else
                     {
-                        <input asp-for="VitalStationDto.Height" class="form-control" type="number" step="0.01" min="0.01" placeholder="Per site policy" />
+                        <input asp-for="VitalStationDto.Height" class="form-control" type="number" step="0.01" min="0.01" />
                     }
                     <span asp-validation-for="VitalStationDto.Height" class="text-danger"></span>
                 </div>
@@ -200,7 +200,7 @@
                     }
                     else
                     {
-                        <input asp-for="VitalStationDto.Weight" class="form-control" type="number" step="0.01" min="0.01" placeholder="Per site policy" />
+                        <input asp-for="VitalStationDto.Weight" class="form-control" type="number" step="0.01" min="0.01" />
                     }
                     <span asp-validation-for="VitalStationDto.Weight" class="text-danger"></span>
                 </div>
@@ -338,7 +338,7 @@
 
     @if (!completed && canEnterBp)
     {
-        <div class="d-flex gap-2 button-container mb-5">
+        <div class="d-flex justify-content-end gap-2 button-container mb-5">
             <button type="submit" class="btn btn-general">Save</button>
             <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
         </div>
@@ -348,12 +348,21 @@
         <div class="alert alert-success mb-4">
             <strong>Completed.</strong> Final blood pressure status: <strong>@(d.FinalBpStatus ?? "—")</strong>
         </div>
-        <a asp-action="Index" class="btn btn-general mb-5">Back to list</a>
+
+        <div class="d-flex justify-content-end mb-5">
+            <a asp-action="Index" class="btn btn-general">Back to list</a>
+        </div>
     }
     else
     {
-        <div class="d-flex gap-2 button-container mb-5">
-            <button type="button" class="btn btn-secondary" disabled title="Waiting for the required interval">Save (unavailable)</button>
+        <div class="d-flex justify-content-end gap-2 button-container mb-5">
+            <button type="button"
+                    class="btn btn-secondary"
+                    disabled
+                    title="Waiting for the required interval">
+                Save (unavailable)
+            </button>
+
             <a asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
         </div>
     }

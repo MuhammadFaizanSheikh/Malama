@@ -291,19 +291,29 @@
                     </select>
                     <span asp-validation-for="SingleContract.ContractStatus" class="text-danger"></span>
                 </div>
-            <div class="col-md-6">
+            <div class="col-md-6" id="clientNameContainer" style="display:none;">
+
                 <label for="ClientName" class="form-label">Client Name</label>
 
                 <!-- Textbox for Active Duty / Reserve -->
-                <input type="text" id="ClientNameTextbox" asp-for="SingleContract.ClientName"
-                       class="form-control" style="display:none;" />
+                <input type="text"
+                       id="ClientNameTextbox"
+                       asp-for="SingleContract.ClientName"
+                       class="form-control"
+                       style="display:none;" />
 
                 <!-- Dropdown for National Guard -->
-                <select id="ClientNameDropdown" asp-for="SingleContract.ClientName" class="form-select" style="display:none;">
+                <select id="ClientNameDropdown"
+                        asp-for="SingleContract.ClientName"
+                        class="form-select"
+                        style="display:none;">
+
                     <option value="">Select Client Name</option>
                 </select>
 
-                <span asp-validation-for="SingleContract.ClientName" class="text-danger"></span>
+                <span asp-validation-for="SingleContract.ClientName"
+                      class="text-danger"></span>
+
             </div>
             </div>
 
@@ -618,21 +628,25 @@
             }
         }
 
-        // Update fields based on Contract Component selection
+        const clientContainer = document.getElementById("clientNameContainer");
+
         function updateClientFields() {
-            // Remove any previous event blocking
+
             client.onmousedown = null;
             client.onkeydown = null;
 
             switch (component.value) {
+
                 case "Active Duty":
                 case "Reserve":
-                    client.value = "Command";       // ContractClient
-                    // Make "readonly" by blocking mouse/keyboard
+
+                    clientContainer.style.display = "block";
+
+                    client.value = "Command";
+
                     client.onmousedown = (e) => e.preventDefault();
                     client.onkeydown = (e) => e.preventDefault();
 
-                    // Show textbox, hide dropdown
                     clientTextbox.style.display = "block";
                     clientDropdown.style.display = "none";
 
@@ -643,11 +657,14 @@
                     break;
 
                 case "National Guard":
-                    client.value = "State";         // ContractClient
+
+                    clientContainer.style.display = "block";
+
+                    client.value = "State";
+
                     client.onmousedown = (e) => e.preventDefault();
                     client.onkeydown = (e) => e.preventDefault();
 
-                    // Show dropdown, hide textbox
                     clientDropdown.style.display = "block";
                     clientTextbox.style.display = "none";
 
@@ -658,9 +675,13 @@
                     if (stateList.length > 0) {
                         populateClientDropdown();
                     }
+
                     break;
 
                 default:
+
+                    clientContainer.style.display = "none";
+
                     client.value = "";
                     client.onmousedown = null;
                     client.onkeydown = null;
