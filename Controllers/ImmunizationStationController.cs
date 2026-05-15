@@ -62,7 +62,7 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x == null || x?.ImmunizationRecord?.Status == "Pending"),
+                    ["Pending"] = data.Count(x => x == null || x.ImmunizationRecord == null || x?.ImmunizationRecord?.Status == "Pending"),
                     ["Completed"] = data.Count(x => x.ImmunizationRecord?.Status == "Completed"),
                     ["NotGiven"] = data.Count(x => x.ImmunizationRecord?.Status == "Not given")
                 };

@@ -2251,7 +2251,6 @@
         applyStatusRules(null, false, false);
 
         function applyStatusRules(eventRuntimeStatus, isEdit, isDuplicateEvent) {
-            debugger;
             var dropdown = document.getElementById("EventStatus");
             var options = dropdown.options;
 
@@ -2280,16 +2279,6 @@
 
             // ===== EDIT MODE =====
 
-            @* if (eventRuntimeStatus === "Event Not Started") {
-
-                enableOptions([
-                    "Initial Pre-event",
-                    "Pre-Event Confirmed",
-                    "Pre-Event Complete",
-                    "Canceled"
-                ]);
-
-            } *@
             if (eventRuntimeStatus === "Event Not Started") {
 
                 if (isDuplicateEvent) {
@@ -2614,17 +2603,6 @@
             $(this).parent(".taskforce-row").remove();
             resetTaskForceIndices();
         });
-
-        // // Reset indices after removing a row
-        // function resetTaskForceIndices() {
-        //     taskForceIndex = 0;
-        //     $(".form-container-Taskforce .taskforce-row").each(function () {
-        //         $(this).attr("data-index", taskForceIndex);
-        //         $(this).find("input").attr("name", `SingleEventManagement.EventManagementTaskforcesList[${taskForceIndex}].Taskforce`);
-        //         taskForceIndex++;
-        //     });
-        // }
-
 
         $('#HIVDropOffStaffId').select2({
             ajax: {
@@ -3009,14 +2987,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     { "data": "staffID" },
                     { "data": "staffLastName" },
                     { "data": "staffFirstName" },
-                    // {
-                    //     "data": null,
-                    //     "render": function () {
-                    //         return ""; // Placeholder for attributes
-                    //     },
-                    //     "orderable": false,
-                    //     "searchable": false
-                    // },
                     { "data": "attributes" },
                     { "data": "roles" },
                     { "data": "licenseStateAndTypes" },
@@ -3036,12 +3006,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                     }
                 ]
             });
-
-            // $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
-            //     let staffData = $(this).data('staff');
-            //     addStaffToSelectedTable(staffData);
-            //     updateProgressBar(7);
-            // });
 
             $('#eventStaffSelectionTable tbody').off('click', '.add-staff-btn').on('click', '.add-staff-btn', function () {
                 let staffId = $(this).data('id');
@@ -3890,15 +3854,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return; // Stop form submission
             }
 
-            @* if (!validateEventStatusDependantFields(requirements)) {
-                e.preventDefault();
-                return;
-            } *@
-
-            // if (!validateTableRequiredFields()) {
-            //     return;
-            // }
-
             const completedSections = getCompletedProgressSections();
 
             $("<input>")
@@ -3915,7 +3870,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 .attr("value", actionValue)
                 .appendTo("#eventManagementForm");
 
-            // $("#eventManagementForm").submit();
         });
 
 
@@ -3951,15 +3905,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 return; // Stop form submission
             }
 
-            @* if (!validateEventStatusDependantFields(requirements)) {
-                e.preventDefault();
-                return;
-            } *@
-
-            // if (!validateTableRequiredFields()) {
-            //     return;
-            // }
-
             const completedSections = getCompletedProgressSections();
 
             $("<input>")
@@ -3976,7 +3921,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                 .attr("value", actionValue)
                 .appendTo("#eventManagementForm");
 
-            // $("#eventManagementForm").submit();
         });
 
         function validateDeployRadioGroup() {
@@ -3990,92 +3934,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             return true;
         }
-
-        // function validateTableRequiredFields() {
-        //     var isValidForm = true;
-
-        //     // Loop through each table (eventServicesTable, eventServicesTable2, eventServicesTable3)
-        //     var tableIds = ["eventServicesTable", "eventServicesTable2", "eventServicesTable3"];
-        //     tableIds.forEach(function (tableId) {
-        //         $("#" + tableId + " tbody tr").each(function () {
-        //             var row = $(this);
-
-        //             // Check for required td input fields
-        //             row.find("td input[required]").each(function () {
-        //                 if ($(this).val() === "") {
-        //                     isValidForm = false;
-        //                     // Trigger browser validation (focus on empty required field)
-        //                     $(this)[0].setCustomValidity('This field is required.');
-        //                     $(this).focus();
-        //                     return false; // Break out of the each loop for this row
-        //                 } else {
-        //                     // Clear custom validity if input is not empty
-        //                     $(this)[0].setCustomValidity('');
-        //                 }
-        //             });
-
-        //             if (!isValidForm) {
-        //                 return false; // Break out of the each loop for all rows
-        //             }
-        //         });
-        //     });
-
-        //     return isValidForm;
-        // }
-
-
-        // function getCompletedSections() {
-        //     const completedSections = [];
-
-        //     // Loop through each section and validate required fields
-        //     $(".form-section").each(function () {
-        //         const sectionId = $(this).attr("id"); // e.g., "section1"
-        //         let isSectionValid = true;
-
-        //         // Special handling for Section 6
-        //         if (sectionId === "section6") {
-        //             const requiredFieldsInSection6 = $(this).find("[required]");
-
-        //             // If no required fields in Section 6, don't consider it completed
-        //             if (requiredFieldsInSection6.length === 0) {
-        //                 isSectionValid = false;
-        //             } else {
-        //                 // Check if any required field is empty
-        //                 requiredFieldsInSection6.each(function () {
-        //                     if (!$(this).val().trim()) {
-        //                         isSectionValid = false;
-        //                         return false; // Break out of the loop
-        //                     }
-        //                 });
-        //             }
-        //         } else if (sectionId === "section7") {
-        //             // Check if eventStaffSelectedTable has at least one row
-        //             let table = $("#eventStaffSelectedTable").DataTable();
-        //             if (table.rows().count() === 0) {
-        //                 isSectionValid = false;
-        //             }
-        //         }
-        //         else {
-        //             // For other sections, validate as usual
-        //             $(this)
-        //                 .find("[required]")
-        //                 .each(function () {
-        //                     if (!$(this).val().trim()) {
-        //                         isSectionValid = false; // Mark invalid if a required field is empty
-        //                         return false; // Break out of the loop
-        //                     }
-        //                 });
-        //         }
-
-        //         // If the section is valid, add it to the completed sections list
-        //         if (isSectionValid) {
-        //             const numericId = sectionId.replace(/\D/g, ""); // Extract numeric part (e.g., "section1" -> "1")
-        //             completedSections.push(numericId);
-        //         }
-        //     });
-
-        //     return completedSections;
-        // }
 
         function getCompletedProgressSections() {
             const completedSections = [];
@@ -4126,12 +3984,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
 
             if (anyFieldFilled) {
-                // sectionFields.each(function () {
-                //     if (!this.checkValidity()) {
-                //         this.reportValidity();
-                //         isValid = false;
-                //     }
-                // });
 
                 sectionFields.each(function () {
                     if ($(this).prop("required") && !$(this).val()) {
@@ -4147,8 +3999,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
                         this.setCustomValidity("");
                     }
                 });
-
-
             }
 
             return isValid;
@@ -4175,7 +4025,8 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
 
 
-        $(document).on('input', '[required]', function () {
+        $(document).on('input', '[required]:not(#EventStatus)', function () {//EventStatus is excluded intentionaly
+            debugger;
             const section = $(this).closest(".form-section").attr("id").replace("section", "");
             updateProgressBar(section); // Update progress bar when user fills required fields
         });
@@ -4352,26 +4203,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             "autoWidth": true,
             "responsive": true
         });
-
-        // $('#eventServicesTable2').DataTable({
-        //     "paging": false,
-        //     "lengthChange": true,
-        //     "searching": false,
-        //     "ordering": false,
-        //     "info": false,
-        //     "autoWidth": true,
-        //     "responsive": true
-        // });
-
-        // $('#eventServicesTable3').DataTable({
-        //     "paging": false,
-        //     "lengthChange": true,
-        //     "searching": false,
-        //     "ordering": false,
-        //     "info": false,
-        //     "autoWidth": true,
-        //     "responsive": true
-        // });
 
         let statesCitiesLoaded = null;
 
@@ -4555,12 +4386,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
         toggleMobDate();
 
-
-
-
-
-
-
         $('#EventStartDate, #EventEndDate').change(function () {
             // Read Date objects from Flatpickr
             var startPicker = $('#EventStartDate')[0]._flatpickr;
@@ -4576,20 +4401,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
             refreshAvailabilityDates();//refresh Availability date of EventStaff selected record (if any change occur in Event Start/End Date)
         });
-
-
-        // Read Date objects from Flatpickr
-        // var startPicker = $('#EventStartDate')[0]._flatpickr;
-        // var endPicker = $('#EventEndDate')[0]._flatpickr;
-
-        // var startDate = startPicker.selectedDates[0];
-        // var endDate = endPicker.selectedDates[0];
-
-        // // Call function only if both dates exist
-        // if (startDate && endDate) {
-        //     generateControlsForDateRange(startDate, endDate);
-        // }
-
 
 
         function validateServiceMemberPercentages() {
@@ -4660,62 +4471,13 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             });
         }
 
-        // Centralized requirements object
-        @* const requirements = {
-            "Initial Pre-event": {
-                PickupDate: false,
-                PickupTime: false,
-                DeliveryFromDate: false,
-                DeliveryToDate: false,
-                SuggestedHourlyFlow: false,
-                TaskForce: false,
-            },
-            "Pre-Event Confirmed": {
-                PickupDate: true,
-                PickupTime: false,
-                DeliveryFromDate: false,
-                DeliveryToDate: false,
-                SuggestedHourlyFlow: false,
-                TaskForce: true,
-            },
-            "Pre-Event Complete": {
-                PickupDate: true,
-                PickupTime: true,
-                DeliveryFromDate: true,
-                DeliveryToDate: true,
-                SuggestedHourlyFlow: true,
-                TaskForce: true,
-            },
-            "In Progress": {
-                PickupDate: true,
-                PickupTime: true,
-                DeliveryFromDate: true,
-                DeliveryToDate: true,
-                SuggestedHourlyFlow: true,
-                TaskForce: true,
-            },
-            "In Progress Complete": {
-                PickupDate: true,
-                PickupTime: true,
-                DeliveryFromDate: true,
-                DeliveryToDate: true,
-                SuggestedHourlyFlow: true,
-                TaskForce: true,
-            },
-            "Canceled": {
-                PickupDate: false,
-                PickupTime: false,
-                DeliveryFromDate: false,
-                DeliveryToDate: false,
-                SuggestedHourlyFlow: false,
-                TaskForce: false,
-            },
-        }; *@
-
         $("#EventStatus").change(function () {
-            @* updateFieldRequirements(requirements); *@
+            debugger;
             toggleTaskForceRequired();
             toggleCancelReason();
+
+            const section = $(this).closest(".form-section").attr("id").replace("section", "");
+            updateProgressBar(section);
         });
 
         function toggleCancelReason() {
@@ -4732,42 +4494,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
             $('#ReasonOfCancel').val('');
         }
     }
-
-        // Update field requirements based on EventStatus
-        @* function updateFieldRequirements(requirements) {
-            const eventStatus = document.getElementById("EventStatus").value;
-            const currentSettings = requirements[eventStatus] || {};
-
-            for (const [field, isRequired] of Object.entries(currentSettings)) {
-                const fieldElement = document.getElementById(field);
-                if (fieldElement) {
-                    if (isRequired) {
-                        fieldElement.setAttribute("required", "required");
-                    } else {
-                        fieldElement.removeAttribute("required");
-                    }
-                }
-            }
-        } *@
-
-        // Validate fields on form submission
-        @* function validateEventStatusDependantFields(requirements) {
-            debugger;
-            const eventStatus = document.getElementById("EventStatus").value;
-            const currentSettings = requirements[eventStatus] || {};
-            let isValid = true;
-
-            for (const [field, isRequired] of Object.entries(currentSettings)) {
-                const fieldElement = document.getElementById(field);
-                if (isRequired && fieldElement && !fieldElement.value.trim()) {
-                    alert(`${field} field is required when Event Status is ${eventStatus}`);
-                    isValid = false;
-                    break;
-                }
-            }
-
-            return isValid;
-        } *@
 
         const phoneFields = ['EventHelpLine', 'MainPocPhonePrimary', 'MainPocPhoneSecondary', 'SecondaryPocPhonePrimary', 'SecondaryPocPhoneSecondary', 'AddtionalAlternatePocPhonePrimary', 'AddtionalAlternatePocPhoneSecondary', 'ShippingPocPrimaryPhone', 'ShippingPocSecondaryPhone', 'PharmacyPhoneNumber', 'HIVSupplyMilitaryContactPOCPhonePrimary', 'HIVSupplyMilitaryContactPOCPhoneSecondary', 'ImmVaccineSupplyMilitaryContactPOCPhonePrimary', 'ImmVaccineSupplyMilitaryContactPOCPhoneSecondary'];
 
@@ -5162,7 +4888,6 @@ function populateFilterRolesAndLicenseTypeDropdown() {
 
                             if (combinedData.eventStaffDetailAndAdditionalRoleslist) {
                                 loadStaffForEditMode(combinedData.eventStaffDetailAndAdditionalRoleslist).then(() => {
-                                    debugger;
 
                                     updateProgressBar(7);
                                     resolve(); // All staff loaded, resolve the main Promise
