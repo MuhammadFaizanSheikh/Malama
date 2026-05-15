@@ -250,6 +250,18 @@
     $(document).ready(function () {
         let filterDobPicker = flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
 
+        $('#contractsTable').DataTable({
+            paging: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+
+            searching: true,
+            ordering: true,
+            info: true,
+
+            responsive: true
+        });
+
         $('#searchStaffBtn').on('click', function () {
 
             var barcode = $('#filterBarcode').val().trim().toLowerCase();
