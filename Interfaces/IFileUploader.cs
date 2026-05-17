@@ -14,6 +14,8 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<ServiceMembersChild>> GetVitalStationByEventIdAsync(long eventId);
         Task<PostEventLabStationAnalysisDto?> GetPostEventLabStationAnalysisDtoAsync(long serviceMembersChildId);
         Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId);
+        Task<List<ServiceMembersChild>> GetPreAndPostImmunizationStationByEventIdAsync(long eventId);
+        Task<PostEventImmunizationStationAnalysisDto?> GetPostEventImmunizationStationAnalysisDtoAsync(long serviceMembersChildId);
         Task<List<ServiceMembersChild>> GetEventDataByEventIdForLabHivReport(long eventId);
         Task<ResponseDto> AddSingleRecordAsync(FileDataDto dto, long eventId, string addedBy);
         Task<ResponseDto> UpdateSingleRecordAsync(FileDataDto dto, string addedBy);

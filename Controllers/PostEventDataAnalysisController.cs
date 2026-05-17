@@ -17,14 +17,23 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IFileUploadDownloadService _fileService;
         private readonly IFileUploader _fileUploader;
         private readonly IPostEventLabStationService _postEventLabStationService;
+        private readonly IPostEventImmunizationStationService _postEventImmunizationStationService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<PostEventDataAnalysisController> _logger;
         private const string CLASSNAME = "PostEventDataAnalysisController";
 
-        public PostEventDataAnalysisController(IFileUploadDownloadService fileService, ILogger<PostEventDataAnalysisController> logger, IPostEventLabStationService postEventLabStationService, IFileUploader fileUploader, IEventManagementService eventManagementService, UserManager<ApplicationUser> userManager)
+        public PostEventDataAnalysisController(
+            IFileUploadDownloadService fileService,
+            ILogger<PostEventDataAnalysisController> logger,
+            IPostEventLabStationService postEventLabStationService,
+            IPostEventImmunizationStationService postEventImmunizationStationService,
+            IFileUploader fileUploader,
+            IEventManagementService eventManagementService,
+            UserManager<ApplicationUser> userManager)
         {
             _eventManagementService = eventManagementService;
             _postEventLabStationService = postEventLabStationService;
+            _postEventImmunizationStationService = postEventImmunizationStationService;
             _fileUploader = fileUploader;
             _userManager = userManager;
             _logger = logger;
@@ -130,9 +139,7 @@ namespace ExcelFilesCompiler.Controllers
                     model.ServiceMembersChild = selectedStation switch
                     {
                         "Labs" => await _fileUploader.GetPreAndPostLabStationByEventIdAsync(model.EventId),
-                        //"Immunization",
-                        //"Dental",
-                        //"XYZ",
+                        "Immunization" => await _fileUploader.GetPreAndPostImmunizationStationByEventIdAsync(model.EventId),
                         _ => new List<ServiceMembersChild>()
                     };
 
@@ -202,6 +209,170 @@ namespace ExcelFilesCompiler.Controllers
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseMessage"] = "Something went wrong.";
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
+        public async Task<IActionResult> SpecificServiceMemberImmunizationStation(long? postImmunizationStationId, long serviceMembersChildId)
+        {
+            const string methodName = nameof(SpecificServiceMemberImmunizationStation);
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Called with PostImmunizationStationId={PostImmunizationStationId}, ServiceMembersChildId={ServiceMembersChildId}",
+                CLASSNAME, methodName, postImmunizationStationId, serviceMembersChildId);
+
+            try
+            {
+                var model = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(serviceMembersChildId);
+
+                if (model == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No data found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseMessage"] = "Record not found.";
+
+                    return RedirectToAction("Index");
+                }
+
+                ViewBag.EventID = model.EventID;
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Successfully prepared DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error occurred for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseMessage"] = "Something went wrong.";
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_Save")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SavePostEventImmunizationStation(PostEventImmunizationStationAnalysisDto model)
+        {
+            const string methodName = nameof(SavePostEventImmunizationStation);
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var message = string.Join(" | ",
+                        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = message;
+
+                    var errorModel = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(
+                        model.PostEventImmunizationStation.ServiceMembersChildId);
+                    return View("SpecificServiceMemberImmunizationStation", errorModel);
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Unauthorized";
+                    TempData["ResponseMessage"] = "Please login and try again.";
+                    return RedirectToAction("Index");
+                }
+
+                if (model.PostEventImmunizationStation == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Error";
+                    TempData["ResponseMessage"] = "Invalid form data.";
+                    return RedirectToAction("Index");
+                }
+
+                if (model.PostEventImmunizationStation.Id == 0)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Add operation started. User={User}",
+                        CLASSNAME, methodName, user.UserName);
+
+                    var result = await _postEventImmunizationStationService.AddAsync(
+                        model.PostEventImmunizationStation, user.UserName);
+
+                    if (!result.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = result.Message;
+
+                        var errorModel = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(
+                            model.PostEventImmunizationStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberImmunizationStation", errorModel);
+                    }
+
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = result.Message;
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Update operation started. Id={Id}, User={User}",
+                        CLASSNAME, methodName, model.PostEventImmunizationStation.Id, user.UserName);
+
+                    var result = await _postEventImmunizationStationService.UpdateAsync(
+                        model.PostEventImmunizationStation, user.UserName);
+
+                    if (!result.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = result.Message;
+
+                        var errorModel = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(
+                            model.PostEventImmunizationStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberImmunizationStation", errorModel);
+                    }
+
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = "Success";
+                    TempData["ResponseMessage"] = result.Message;
+                }
+
+                return RedirectToAction("SelectStation", new
+                {
+                    eventManagementId = model.EventId,
+                    selectedStation = "Immunization"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred", CLASSNAME, methodName);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = "An unexpected error occurred.";
+
+                if (model?.PostEventImmunizationStation != null)
+                {
+                    var errorModel = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(
+                        model.PostEventImmunizationStation.ServiceMembersChildId);
+                    return View("SpecificServiceMemberImmunizationStation", errorModel);
+                }
 
                 return RedirectToAction("Index");
             }

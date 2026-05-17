@@ -421,6 +421,143 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetPreAndPostImmunizationStationByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetPreAndPostImmunizationStationByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching pre & post immunization data for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.Imm == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes" &&
+                             c.ImmunizationRecord != null &&
+                             c.ImmunizationRecord.Status == AppConstants.Status.Completed,
+                        c => c.ImmunizationRecord,
+                        c => c.PostEventImmunizationStation)
+                    .ToListAsync();
+
+                if (result == null || !result.Any())
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No immunization data found for EventId={EventId}",
+                        CLASSNAME, methodName, eventId);
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "{ClassName}.{MethodName} - Retrieved {Count} records for EventId={EventId}",
+                        CLASSNAME, methodName, result.Count, eventId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching immunization data for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw;
+            }
+        }
+
+        public async Task<PostEventImmunizationStationAnalysisDto?> GetPostEventImmunizationStationAnalysisDtoAsync(long serviceMembersChildId)
+        {
+            const string methodName = nameof(GetPostEventImmunizationStationAnalysisDtoAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching immunization DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                var entity = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.Id == serviceMembersChildId &&
+                             c.Imm == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes" &&
+                             c.ImmunizationRecord != null &&
+                             c.ImmunizationRecord.Status == AppConstants.Status.Completed,
+                        c => c.ImmunizationRecord,
+                        c => c.PostEventImmunizationStation,
+                        c => c.ServiceMembersParent.EventManagement,
+                        c => c.ServiceMembersParent.EventManagement.PostEventManagement)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.HepBVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.HepBVaccineLot)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.HepAVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.HepAVaccineLot)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.FluVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.FluVaccineLot)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.MMRVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.MMRVaccineLot)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.TetTdpVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.TetTdpVaccineLot)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.VaricellaVaccineInfo)
+                    .Include(c => c.ImmunizationRecord!).ThenInclude(i => i.VaricellaVaccineLot)
+                    .AsSplitQuery()
+                    .FirstOrDefaultAsync();
+
+                if (entity == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No data found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+
+                    return null;
+                }
+
+                var imm = entity.ImmunizationRecord;
+                var postEventManagementId = entity.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0;
+
+                var dto = new PostEventImmunizationStationAnalysisDto
+                {
+                    EventID = entity.ServiceMembersParent?.EventManagement?.EventID,
+                    EventId = entity.ServiceMembersParent.EventManagement.Id,
+                    ServiceMember = new ServiceMembersChildDto
+                    {
+                        FullName = entity.FullName,
+                        DodId = entity.DodId,
+                        Barcode = entity.Barcode,
+                        Dob = entity.Dob,
+                        Age = entity.Age,
+                        Sex = entity.Sex
+                    },
+                    ImmunizationStation = MapPreEventImmunizationStationDto(imm),
+                    PostEventImmunizationStation = entity.PostEventImmunizationStation != null
+                        ? MapPostEventImmunizationStationDto(entity.PostEventImmunizationStation, entity.Id, postEventManagementId)
+                        : new PostEventImmunizationStationDto
+                        {
+                            Id = 0,
+                            ServiceMembersChildId = entity.Id,
+                            PostEventManagementId = postEventManagementId,
+                            Status = AppConstants.Status.Pending
+                        }
+                };
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - DTO prepared successfully for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error preparing immunization DTO for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+
+                throw;
+            }
+        }
+
         public async Task<PostEventLabStationAnalysisDto?>GetPostEventLabStationAnalysisDtoAsync(long serviceMembersChildId)
         {
             const string methodName = nameof(GetPostEventLabStationAnalysisDtoAsync);
@@ -2658,5 +2795,80 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw;
             }
         }
+
+        private static PreEventImmunizationStationDto MapPreEventImmunizationStationDto(ImmunizationStation imm) =>
+            new()
+            {
+                HepBNeeded = imm.HepBNeeded,
+                HepANeeded = imm.HepANeeded,
+                FluNeeded = imm.FluNeeded,
+                MmrNeeded = imm.MMRNeeded,
+                TetTdpNeeded = imm.TetTdpNeeded,
+                VaricellaNeeded = imm.VaricellaNeeded,
+                HepB = MapVaccineDetail(imm.HepBVaccineInfo, imm.HepBVaccineLot, imm.HepBExpirationDate, imm.HepBType, imm.HepBBodyPart, imm.HepBBodyPartOther, imm.HepBSite, imm.HepBStaffName, imm.HepBGivenDateTime),
+                HepA = MapVaccineDetail(imm.HepAVaccineInfo, imm.HepAVaccineLot, imm.HepAExpirationDate, imm.HepAType, imm.HepABodyPart, imm.HepABodyPartOther, imm.HepASite, imm.HepAStaffName, imm.HepAGivenDateTime),
+                Flu = MapVaccineDetail(imm.FluVaccineInfo, imm.FluVaccineLot, imm.FluExpirationDate, imm.FluType, imm.FluBodyPart, imm.FluBodyPartOther, imm.FluSite, imm.FluStaffName, imm.FluGivenDateTime),
+                Mmr = MapVaccineDetail(imm.MMRVaccineInfo, imm.MMRVaccineLot, imm.MMRExpirationDate, imm.MMRType, imm.MMRBodyPart, imm.MMRBodyPartOther, imm.MMRSite, imm.MMRStaffName, imm.MMRGivenDateTime),
+                TetTdp = MapVaccineDetail(imm.TetTdpVaccineInfo, imm.TetTdpVaccineLot, imm.TetTdpExpirationDate, imm.TetTdpType, imm.TetTdpBodyPart, imm.TetTdpBodyPartOther, imm.TetTdpSite, imm.TetTdpStaffName, imm.TetTdpGivenDateTime),
+                Varicella = MapVaccineDetail(imm.VaricellaVaccineInfo, imm.VaricellaVaccineLot, imm.VaricellaExpirationDate, imm.VaricellaType, imm.VaricellaBodyPart, imm.VaricellaBodyPartOther, imm.VaricellaSite, imm.VaricellaStaffName, imm.VaricellaGivenDateTime)
+            };
+
+        private static ImmunizationVaccineDetailDto MapVaccineDetail(
+            ImmunizationVaccineInfo? vaccineInfo,
+            ImmunizationVaccineLotEntry? lot,
+            DateTime? expirationDate,
+            string? type,
+            string? bodyPart,
+            string? bodyPartOther,
+            string? site,
+            string? staffName,
+            DateTime? givenDateTime)
+        {
+            var displayBodyPart = bodyPart;
+            if (!string.IsNullOrWhiteSpace(bodyPartOther))
+            {
+                displayBodyPart = string.IsNullOrWhiteSpace(bodyPart)
+                    ? bodyPartOther
+                    : $"{bodyPart} ({bodyPartOther})";
+            }
+
+            return new ImmunizationVaccineDetailDto
+            {
+                Manufacturer = vaccineInfo?.Manufacturer,
+                Dose = vaccineInfo?.Dose.ToString(),
+                Unit = vaccineInfo?.Unit,
+                LotNo = lot?.LotNumber,
+                ExpirationDate = expirationDate ?? lot?.Expiration,
+                Type = type,
+                BodyPart = displayBodyPart,
+                Site = site,
+                StaffName = staffName,
+                GivenDateTime = givenDateTime
+            };
+        }
+
+        private static PostEventImmunizationStationDto MapPostEventImmunizationStationDto(
+            PostEventImmunizationStation post,
+            long serviceMembersChildId,
+            long postEventManagementId) =>
+            new()
+            {
+                Id = post.Id,
+                ServiceMembersChildId = serviceMembersChildId,
+                PostEventManagementId = postEventManagementId,
+                Status = post.Status,
+                HepBDataEntered = post.HepBDataEntered,
+                HepBDataEnteredDateTime = post.HepBDataEnteredDateTime,
+                HepADataEntered = post.HepADataEntered,
+                HepADataEnteredDateTime = post.HepADataEnteredDateTime,
+                FluDataEntered = post.FluDataEntered,
+                FluDataEnteredDateTime = post.FluDataEnteredDateTime,
+                MmrDataEntered = post.MmrDataEntered,
+                MmrDataEnteredDateTime = post.MmrDataEnteredDateTime,
+                TetTdpDataEntered = post.TetTdpDataEntered,
+                TetTdpDataEnteredDateTime = post.TetTdpDataEnteredDateTime,
+                VaricellaDataEntered = post.VaricellaDataEntered,
+                VaricellaDataEnteredDateTime = post.VaricellaDataEnteredDateTime
+            };
     }
 }

@@ -33,6 +33,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<ServiceMembersChild> ServiceMembersChild { get; }
         IGenericRepository<PostEventManagement> PostEventManagement { get; }
         IGenericRepository<PostEventLabStation> PostEventLabStation { get; }
+        IGenericRepository<PostEventImmunizationStation> PostEventImmunizationStation { get; }
         IGenericRepository<VitalStation> VitalStation { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();

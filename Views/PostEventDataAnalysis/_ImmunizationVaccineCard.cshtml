@@ -1,0 +1,86 @@
+@model ImmunizationVaccineCardViewModel
+
+@{
+    var cardId = Model.DataEnteredFieldName.Replace("DataEntered", "", StringComparison.Ordinal);
+}
+
+<div class="card mb-3 imm-vaccine-card" data-card-id="@cardId">
+    <div class="card-header fw-bold">@Model.Title</div>
+    <div class="card-body">
+        <div class="row g-3 mb-2">
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Manufacturer</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.Manufacturer) ? "—" : Model.Detail.Manufacturer)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Dose</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.Dose) ? "—" : Model.Detail.Dose)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Unit</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.Unit) ? "—" : Model.Detail.Unit)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Lot No</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.LotNo) ? "—" : Model.Detail.LotNo)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Expiration Date</label>
+                <div>@(Model.Detail.ExpirationDate?.ToString("MM/dd/yyyy") ?? "—")</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Type</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.Type) ? "—" : Model.Detail.Type)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Body Part</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.BodyPart) ? "—" : Model.Detail.BodyPart)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Site</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.Site) ? "—" : Model.Detail.Site)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Staff Name</label>
+                <div>@(string.IsNullOrWhiteSpace(Model.Detail.StaffName) ? "—" : Model.Detail.StaffName)</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted mb-0">Given Date/Time</label>
+                <div>@(Model.Detail.GivenDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "—")</div>
+            </div>
+        </div>
+
+        <hr class="my-3" />
+
+        <input type="hidden"
+               name="PostEventImmunizationStation.@Model.DataEnteredFieldName"
+               value="false" />
+
+        <div class="form-check">
+            <input type="checkbox"
+                   class="form-check-input imm-data-entered"
+                   id="@(cardId)-data-entered"
+                   name="PostEventImmunizationStation.@Model.DataEnteredFieldName"
+                   value="true"
+                   data-datetime-input="@(cardId)-data-entered-datetime"
+                   data-datetime-display="@(cardId)-data-entered-display"
+                   @(Model.DataEntered ? "checked" : "") />
+            <label class="form-check-label" for="@(cardId)-data-entered">Data Entered</label>
+        </div>
+
+        <input type="hidden"
+               class="data-entered-datetime-hidden"
+               id="@(cardId)-data-entered-datetime"
+               name="PostEventImmunizationStation.@Model.DataEnteredDateTimeFieldName"
+               value="@(Model.DataEnteredDateTime?.ToString("yyyy-MM-dd HH:mm:ss"))" />
+
+        <div class="data-entered-datetime-display mt-2 text-muted small"
+             id="@(cardId)-data-entered-display"
+             style="display:@(Model.DataEntered ? "block" : "none");">
+            @if (Model.DataEntered && Model.DataEnteredDateTime.HasValue)
+            {
+                <span>@Model.DataEnteredDateTime.Value.ToString("MM/dd/yyyy hh:mm tt")</span>
+            }
+        </div>
+    </div>
+</div>

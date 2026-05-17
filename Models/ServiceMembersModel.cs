@@ -119,5 +119,7 @@ namespace Malama.Models
         public virtual VitalStation VitalStationRecord { get; set; }
         [ValidateNever]
         public virtual PostEventLabStation PostEventLabStation { get; set; }
+        [ValidateNever]
+        public virtual PostEventImmunizationStation PostEventImmunizationStation { get; set; }
     }
 }

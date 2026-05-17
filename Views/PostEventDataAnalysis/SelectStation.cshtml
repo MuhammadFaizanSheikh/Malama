@@ -159,7 +159,7 @@
         }
         else if (Model.SelectedStation == "Immunization")
         {
-            @await Html.PartialAsync("_ImmunizationTable", Model.ServiceMembersChild)
+            @await Html.PartialAsync("ServiceMembersImmunizationStationTable", Model.ServiceMembersChild)
         }
         else if (Model.SelectedStation == "Dental")
         {

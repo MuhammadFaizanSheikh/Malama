@@ -1,0 +1,186 @@
+@model List<ServiceMembersChild>
+@using ExcelFilesCompiler.Utilities
+
+<h4 class="mt-4">Immunization Data</h4>
+
+<div class="card p-3 mb-4">
+    <div class="container">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
+                <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
+            </div>
+            <div class="col-md-3">
+                <label for="filterFullName" class="form-label">Full Name</label>
+                <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
+            </div>
+            <div class="col-md-3">
+                <label for="filterDodId" class="form-label">DoD ID</label>
+                <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
+            </div>
+            <div class="col-md-3">
+                <label for="filterDob" class="form-label">DOB</label>
+                <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
+            </div>
+            <div class="col-md-3">
+                <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
+                <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
+            </div>
+            <div class="col-md-3">
+                <label for="filterStatus" class="form-label">Post event status</label>
+                <select id="filterStatus" class="form-control">
+                    <option value="">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="col-12 text-center mt-3">
+                <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string VaccinePreEventLabel(string? needed)
+    {
+        if (needed == AppConstants.Status.Completed)
+        {
+            return "C";
+        }
+
+        return "N/A";
+    }
+
+    string VaccineBadgeColor(string? needed) =>
+        needed == AppConstants.Status.Completed ? "#198754" : "#6c757d";
+}
+
+<table id="postEventImmunizationTable" class="display nowrap table table-bordered">
+    <thead>
+        <tr>
+            <th>Action</th>
+            <th>Post Event Status</th>
+            <th>SM ID</th>
+            <th>FULL NAME</th>
+            <th>Last 4 SSN</th>
+            <th>DOD Id</th>
+            <th>Sex</th>
+            <th>DOB</th>
+            <th>Barcode</th>
+            <th>Hep B</th>
+            <th>Hep A</th>
+            <th>Flu</th>
+            <th>MMR</th>
+            <th>Tdap</th>
+            <th>Varicella</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var imm = item.ImmunizationRecord;
+            <tr>
+                <td>
+                    <a asp-action="SpecificServiceMemberImmunizationStation"
+                       asp-route-postImmunizationStationId="@item.PostEventImmunizationStation?.Id"
+                       asp-route-serviceMembersChildId="@item.Id"
+                       class="btn btn-primary edit-btn"
+                       style="background-color: rgba(80, 90, 201, 1);">
+                        Edit
+                    </a>
+                </td>
+                <td>@(item.PostEventImmunizationStation?.Status ?? "Pending")</td>
+                <td>@item.SmId</td>
+                <td>@item.FullName</td>
+                <td>@item.Last4</td>
+                <td>@item.DodId</td>
+                <td>@item.Sex</td>
+                <td>@item.Dob</td>
+                <td>@item.Barcode</td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.HepBNeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.HepBNeeded)
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.HepANeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.HepANeeded)
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.FluNeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.FluNeeded)
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.MMRNeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.MMRNeeded)
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.TetTdpNeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.TetTdpNeeded)
+                    </span>
+                </td>
+                <td>
+                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.VaricellaNeeded); color:#fff;">
+                        @VaccinePreEventLabel(imm?.VaricellaNeeded)
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+
+        var table = $('#postEventImmunizationTable').DataTable({
+            scrollX: true,
+            pageLength: 25
+        });
+
+        $('#searchStaffBtn').on('click', function () {
+            var barcode = $('#filterBarcode').val().trim().toLowerCase();
+            var fullName = $('#filterFullName').val().trim().toLowerCase();
+            var dodId = $('#filterDodId').val().trim();
+            var last4Ssn = $('#filterLast4Ssn').val().trim();
+            var status = $('#filterStatus').val().trim();
+
+            var dobPicker = $('#filterDob')[0]?._flatpickr;
+            var dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            table.columns().search('');
+
+            if (barcode) table.column(8).search(barcode, true, false, true);
+            if (fullName) {
+                var escaped = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                table.column(3).search(escaped, true, false, true);
+            }
+            if (dodId) table.column(5).search('^' + dodId + '$', true, false);
+            if (last4Ssn) table.column(4).search('^' + last4Ssn + '$', true, false);
+            if (status) table.column(1).search(status, true, false, true);
+
+            if (dobDate) {
+                var month = (dobDate.getMonth() + 1).toString().padStart(2, '0');
+                var day = dobDate.getDate().toString().padStart(2, '0');
+                var year = dobDate.getFullYear();
+                table.column(7).search('^' + month + '/' + day + '/' + year + '$', true, false);
+            }
+
+            table.draw();
+        });
+
+        $('#resetFiltersBtn').on('click', function () {
+            $('input').val('');
+            $('select').val('');
+            var dobPicker = $('#filterDob')[0]?._flatpickr;
+            if (dobPicker) dobPicker.clear();
+            table.columns().search('');
+            table.draw();
+        });
+    });
+</script>

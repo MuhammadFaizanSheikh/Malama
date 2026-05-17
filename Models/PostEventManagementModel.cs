@@ -27,6 +27,7 @@
         public virtual IList<PostEventStartEndTimeDayWise> PostEventStartEndTimeDayWise { get; set; }
         public virtual IList<PostEventServiceDetail> PostEventServiceDetails { get; set; }
         public virtual IList<PostEventLabStation> PostEventLabStation { get; set; }
+        public virtual IList<PostEventImmunizationStation> PostEventImmunizationStation { get; set; }
     }
 
 

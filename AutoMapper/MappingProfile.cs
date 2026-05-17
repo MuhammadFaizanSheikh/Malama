@@ -147,6 +147,15 @@ namespace Malama.AutoMapper
             CreateMap<PostEventLabStationDto, PostEventLabStation>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
 
+            CreateMap<PostEventImmunizationStationDto, PostEventImmunizationStation>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ServiceMembersChild, opt => opt.Ignore())
+                .ForMember(dest => dest.PostEventManagement, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedOn, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedOn, opt => opt.Ignore());
+
             // Vital Station
             CreateMap<VitalStationBloodPressureReading, VitalStationBpReadingDto>();
 
