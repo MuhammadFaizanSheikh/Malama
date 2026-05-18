@@ -43,21 +43,32 @@
 </div>
 
 @functions {
-    string VaccinePreEventLabel(string? needed)
+
+    string VaccineStatusLabel(string? needed, bool? dataEntered)
     {
-        if (needed == AppConstants.Status.Completed)
+        if (!string.Equals(needed, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase))
+        {
+            return "N/A";
+        }
+
+        if (dataEntered == true)
         {
             return "C";
         }
 
-        return "N/A";
+        return "I";
     }
 
-    string VaccineBadgeColor(string? needed) =>
-        needed == AppConstants.Status.Completed ? "#198754" : "#6c757d";
+    string VaccineBadgeColor(string status) =>
+        status switch
+        {
+            "C" => "#198754",
+            "I" => "#ffc107",
+            _ => "#6c757d"
+        };
 }
 
-<table id="postEventImmunizationTable" class="display nowrap table table-bordered">
+<table id="postEventTable">
     <thead>
         <tr>
             <th>Action</th>
@@ -80,18 +91,21 @@
     <tbody>
         @foreach (var item in Model)
         {
-            var imm = item.ImmunizationRecord;
+            var postImm = item.PostEventImmunizationStation;
+            var preImm = item.ImmunizationRecord;
+
             <tr>
                 <td>
                     <a asp-action="SpecificServiceMemberImmunizationStation"
-                       asp-route-postImmunizationStationId="@item.PostEventImmunizationStation?.Id"
+                       asp-route-postImmunizationStationId="@postImm?.Id"
                        asp-route-serviceMembersChildId="@item.Id"
                        class="btn btn-primary edit-btn"
                        style="background-color: rgba(80, 90, 201, 1);">
                         Edit
                     </a>
                 </td>
-                <td>@(item.PostEventImmunizationStation?.Status ?? "Pending")</td>
+
+                <td>@(postImm?.Status ?? "Pending")</td>
                 <td>@item.SmId</td>
                 <td>@item.FullName</td>
                 <td>@item.Last4</td>
@@ -99,36 +113,61 @@
                 <td>@item.Sex</td>
                 <td>@item.Dob</td>
                 <td>@item.Barcode</td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.HepBNeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.HepBNeeded)
+                    @{
+                        var status = VaccineStatusLabel(preImm?.HepBNeeded, postImm?.HepBDataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.HepANeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.HepANeeded)
+                    @{
+                        status = VaccineStatusLabel(preImm?.HepANeeded, postImm?.HepADataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.FluNeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.FluNeeded)
+                    @{
+                        status = VaccineStatusLabel(preImm?.FluNeeded, postImm?.FluDataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.MMRNeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.MMRNeeded)
+                    @{
+                        status = VaccineStatusLabel(preImm?.MMRNeeded, postImm?.MmrDataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.TetTdpNeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.TetTdpNeeded)
+                    @{
+                        status = VaccineStatusLabel(preImm?.TetTdpNeeded, postImm?.TetTdpDataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
                 <td>
-                    <span class="badge" style="background-color:@VaccineBadgeColor(imm?.VaricellaNeeded); color:#fff;">
-                        @VaccinePreEventLabel(imm?.VaricellaNeeded)
+                    @{
+                        status = VaccineStatusLabel(preImm?.VaricellaNeeded, postImm?.VaricellaDataEntered);
+                    }
+                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
+                        @status
                     </span>
                 </td>
+
             </tr>
         }
     </tbody>

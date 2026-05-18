@@ -1,4 +1,5 @@
-﻿@model List<ServiceMembersChild>
+﻿@using ExcelFilesCompiler.Utilities
+@model List<ServiceMembersChild>
 
 <h4>Labs Data</h4>
 
@@ -155,7 +156,7 @@
         string resultReason
     )
     {
-        if (labNeeded == "Completed")
+        if (labNeeded == AppConstants.Status.Completed)
         {
             if (resultReceived == false)
             {
