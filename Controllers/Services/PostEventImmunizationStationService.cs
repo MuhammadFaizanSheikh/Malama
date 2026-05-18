@@ -1,9 +1,7 @@
 using AutoMapper;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
-using ExcelFilesCompiler.Utilities;
 using Malama.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -64,7 +62,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 entity.AddedOn = DateTime.Now;
                 entity.AddedBy = userName;
 
-                await ApplyDataEnteredAndStatusAsync(entity);
+                NormalizeDataEnteredFields(entity);
 
                 await _unitOfWork.PostEventImmunizationStation.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -122,7 +120,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 existing.UpdatedOn = DateTime.Now;
                 existing.UpdatedBy = userName;
 
-                await ApplyDataEnteredAndStatusAsync(existing);
+                NormalizeDataEnteredFields(existing);
 
                 await _unitOfWork.SaveAsync();
 
@@ -174,18 +172,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private async Task ApplyDataEnteredAndStatusAsync(PostEventImmunizationStation entity)
-        {
-            NormalizeDataEnteredFields(entity);
-
-            var preEvent = await _unitOfWork.ServiceMembersChild
-                .GetWithIncludeNoTracking(c => c.Id == entity.ServiceMembersChildId, c => c.ImmunizationRecord)
-                .Select(c => c.ImmunizationRecord)
-                .FirstOrDefaultAsync();
-
-            entity.Status = ComputeStatus(entity, preEvent);
-        }
-
         private static void NormalizeDataEnteredFields(PostEventImmunizationStation entity)
         {
             entity.HepBDataEnteredDateTime = NormalizeVaccineDataEnteredDateTime(entity.HepBDataEntered, entity.HepBDataEnteredDateTime);
@@ -205,28 +191,5 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             return dateTime ?? DateTime.Now;
         }
-
-        private static string ComputeStatus(PostEventImmunizationStation entity, ImmunizationStation? preEvent)
-        {
-            if (preEvent == null)
-            {
-                return AppConstants.Status.Pending;
-            }
-
-            if (IsVaccinePending(preEvent.HepBNeeded, entity.HepBDataEntered) ||
-                IsVaccinePending(preEvent.HepANeeded, entity.HepADataEntered) ||
-                IsVaccinePending(preEvent.FluNeeded, entity.FluDataEntered) ||
-                IsVaccinePending(preEvent.MMRNeeded, entity.MmrDataEntered) ||
-                IsVaccinePending(preEvent.TetTdpNeeded, entity.TetTdpDataEntered) ||
-                IsVaccinePending(preEvent.VaricellaNeeded, entity.VaricellaDataEntered))
-            {
-                return AppConstants.Status.Pending;
-            }
-
-            return AppConstants.Status.Completed;
-        }
-
-        private static bool IsVaccinePending(string? needed, bool dataEntered) =>
-            needed == AppConstants.Status.Completed && !dataEntered;
     }
 }

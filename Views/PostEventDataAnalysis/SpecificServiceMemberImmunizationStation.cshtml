@@ -81,7 +81,6 @@
     <input asp-for="PostEventImmunizationStation.PostEventManagementId" type="hidden" />
     <input asp-for="EventId" type="hidden" />
     <input type="hidden" asp-for="PostEventImmunizationStation.SubmissionToken" value="@Guid.NewGuid()" />
-    <input asp-for="PostEventImmunizationStation.Status" type="hidden" />
 
     <h3 class="mb-3">Immunization(s)</h3>
 
@@ -99,6 +98,16 @@
         {
             <partial name="_ImmunizationSection" model="card" />
         }
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <label class="form-label" for="PostEventImmunizationStation_Status">Status</label>
+                <input class="form-control"
+                       asp-for="PostEventImmunizationStation.Status"
+                       id="PostEventImmunizationStation_Status"
+                       readonly />
+            </div>
+        </div>
     }
 
     <div class="d-flex gap-2 button-container mb-5 mt-4">
@@ -112,6 +121,9 @@
 
 <script>
         (function () {
+            const IMM_STATUS_PENDING = 'Pending';
+            const IMM_STATUS_COMPLETED = 'Completed';
+
             function formatDateTimeForPost(date) {
                 const pad = (n) => String(n).padStart(2, '0');
                 return date.getFullYear() + '-' +
@@ -159,11 +171,33 @@
                 }
             }
 
+            function updatePostEventImmunizationStatus() {
+                const statusInput = document.getElementById('PostEventImmunizationStation_Status');
+                const checkboxes = document.querySelectorAll('.imm-data-entered');
+                if (!statusInput) {
+                    return;
+                }
+
+                if (checkboxes.length === 0) {
+                    statusInput.value = IMM_STATUS_PENDING;
+                    return;
+                }
+
+                const allChecked = Array.from(checkboxes).every(function (checkbox) {
+                    return checkbox.checked;
+                });
+
+                statusInput.value = allChecked ? IMM_STATUS_COMPLETED : IMM_STATUS_PENDING;
+            }
+
             document.querySelectorAll('.imm-data-entered').forEach(function (checkbox) {
                 syncDataEnteredCheckbox(checkbox);
                 checkbox.addEventListener('change', function () {
                     syncDataEnteredCheckbox(checkbox);
+                    updatePostEventImmunizationStatus();
                 });
             });
+
+            updatePostEventImmunizationStatus();
         })();
 </script>
