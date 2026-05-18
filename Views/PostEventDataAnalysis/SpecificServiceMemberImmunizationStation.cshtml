@@ -1,3 +1,4 @@
+@using Malama.Utilities
 @using Malama.Models
 @model PostEventImmunizationStationAnalysisDto
 
@@ -82,7 +83,7 @@
     <input asp-for="EventId" type="hidden" />
     <input type="hidden" asp-for="PostEventImmunizationStation.SubmissionToken" value="@Guid.NewGuid()" />
 
-    <h3 class="mb-3">Immunization(s)</h3>
+    <h3 class="mb-3">Required Immunization(s)</h3>
 
     @{
         var vaccineCards = Model.GetVaccineCards().ToList();
@@ -110,12 +111,17 @@
         </div>
     }
 
-    <div class="d-flex gap-2 button-container mb-5 mt-4">
-        <button type="submit" class="btn btn-general">Save</button>
+    <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_Save") ? "" : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
+
         <a asp-action="SelectStation"
            asp-route-eventManagementId="@Model.EventId"
            asp-route-selectedStation="Immunization"
-           class="btn btn-outline-secondary">Back to list</a>
+           class="btn btn-secondary btn-lg btn-back-confirm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
     </div>
 </form>
 
@@ -200,4 +206,20 @@
 
             updatePostEventImmunizationStatus();
         })();
+
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            const confirmed = await showYesNoModal(
+                "Are you sure you want to go back to main screen without saving changes?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            window.location.href = url;
+        });
 </script>
