@@ -10,6 +10,7 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ISubmissionTokenService _submissionTokenService;
         private readonly ILogger<VitalStationService> _logger;
         private const string CLASSNAME = nameof(VitalStationService);
 
@@ -23,10 +24,12 @@ namespace ExcelFilesCompiler.Controllers.Services
         public VitalStationService(
             ILogger<VitalStationService> logger,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            ISubmissionTokenService submissionTokenService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _submissionTokenService = submissionTokenService;
             _logger = logger;
         }
 
@@ -166,12 +169,21 @@ namespace ExcelFilesCompiler.Controllers.Services
                 : $"Reading #{nextNumber} is available {WaitBetweenReadingsMinutes} minutes after the previous reading.";
         }
 
-        public async Task AddAsync(VitalStationDto model, string userName)
+        public async Task<ResponseDto> AddAsync(VitalStationDto model, string submissionToken, string userName)
         {
             string methodName = nameof(AddAsync);
 
             try
             {
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, userName);
+                if (!tokenResult.Success)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Token validation failed. Message={Message}, User={User}",
+                        CLASSNAME, methodName, tokenResult.Message, userName);
+                    return tokenResult;
+                }
+
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Adding VitalStation. ServiceMembersChildId={ServiceMembersChildId}, User={User}",
                     CLASSNAME, methodName, model.ServiceMembersChildId, userName);
@@ -218,6 +230,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, VitalStation added successfully. Id={Id}, ServiceMembersChildId={ServiceMembersChildId}, Status={Status}, User={User}",
                     CLASSNAME, methodName, entity.Id, entity.ServiceMembersChildId, entity.Status, userName);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Vital record saved successfully."
+                };
             }
             catch (InvalidOperationException ex)
             {
@@ -235,12 +253,21 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task UpdateAsync(VitalStationDto model, string userName)
+        public async Task<ResponseDto> UpdateAsync(VitalStationDto model, string submissionToken, string userName)
         {
             string methodName = nameof(UpdateAsync);
 
             try
             {
+                var tokenResult = await _submissionTokenService.ValidateAndSaveAsync(submissionToken, userName);
+                if (!tokenResult.Success)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Token validation failed. Message={Message}, User={User}",
+                        CLASSNAME, methodName, tokenResult.Message, userName);
+                    return tokenResult;
+                }
+
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Updating VitalStation. Id={Id}, ServiceMembersChildId={ServiceMembersChildId}, User={User}",
                     CLASSNAME, methodName, model.Id, model.ServiceMembersChildId, userName);
@@ -350,6 +377,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, VitalStation updated successfully. Id={Id}, ServiceMembersChildId={ServiceMembersChildId}, Status={Status}, TotalReadingsTaken={TotalReadingsTaken}, User={User}",
                     CLASSNAME, methodName, entity.Id, entity.ServiceMembersChildId, entity.Status, entity.TotalReadingsTaken, userName);
+
+                return new ResponseDto
+                {
+                    Success = true,
+                    Message = "Vital record saved successfully."
+                };
             }
             catch (InvalidOperationException ex)
             {

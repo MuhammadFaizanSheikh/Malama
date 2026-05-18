@@ -136,7 +136,7 @@
 
     @Html.HiddenFor(m => m.VitalStationDto.Id)
     @Html.HiddenFor(m => m.VitalStationDto.ServiceMembersChildId)
-    <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
+    <input type="hidden" asp-for="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
     <div class="mb-3">
         <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to service member list</a>
@@ -339,7 +339,7 @@
     @if (!completed && canEnterBp)
     {
         <div class="d-flex justify-content-end gap-2 button-container mb-5">
-            <button type="submit" class="btn btn-general">Save</button>
+            <button type="submit" id="vitalStationSubmitBtn" class="btn btn-general">Save</button>
             <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
         </div>
     }
@@ -406,5 +406,31 @@
         })();
     </script>
 }
+
+<script>
+    (function () {
+        var form = document.getElementById('SaveVitalStation');
+        if (!form) {
+            return;
+        }
+
+        var isSubmitting = false;
+
+        form.addEventListener('submit', function (e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+
+            isSubmitting = true;
+
+            var submitBtn = document.getElementById('vitalStationSubmitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+            }
+        });
+    })();
+</script>
 
 @await Html.PartialAsync("_ValidationScriptsPartial")

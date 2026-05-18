@@ -19,7 +19,12 @@ namespace ExcelFilesCompiler.Controllers
         private const string CLASSNAME = "VitalStationController";
 
 
-        public VitalStationController(ILogger<VitalStationController> logger, IFileUploader fileUploader, IConfiguration configuration, UserManager<ApplicationUser> userManager, IVitalStationService service)
+        public VitalStationController(
+            ILogger<VitalStationController> logger,
+            IFileUploader fileUploader,
+            IConfiguration configuration,
+            UserManager<ApplicationUser> userManager,
+            IVitalStationService service)
         {
             _logger = logger;
             _configuration = configuration;
@@ -212,26 +217,36 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction("Index");
                 }
 
+                ResponseDto result;
                 if (model.VitalStationDto.Id == 0)
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Add operation started by User={UserName}", CLASSNAME, methodName, user.UserName);
 
-                    await _service.AddAsync(model.VitalStationDto, user.UserName);
-
-                    TempData["ResponseStatus"] = "success";
-                    TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Vital record saved successfully.";
+                    result = await _service.AddAsync(
+                        model.VitalStationDto, model.SubmissionToken, user.UserName);
                 }
                 else
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for VitalStationId={VitalStationId} by User={UserName}", CLASSNAME, methodName, model.VitalStationDto.Id, user.UserName);
 
-                    await _service.UpdateAsync(model.VitalStationDto, user.UserName);
-
-                    TempData["ResponseStatus"] = "success";
-                    TempData["ResponseTitle"] = "Success";
-                    TempData["ResponseMessage"] = "Vital record saved successfully.";
+                    result = await _service.UpdateAsync(
+                        model.VitalStationDto, model.SubmissionToken, user.UserName);
                 }
+
+                if (!result.Success)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Already submitted";
+                    TempData["ResponseMessage"] = result.Message;
+
+                    var errorVm = await _service.GetVitalStationByServiceMemberChildIdAsync(
+                        model.VitalStationDto.ServiceMembersChildId);
+                    return View("VitalStation", errorVm ?? model);
+                }
+
+                TempData["ResponseStatus"] = "success";
+                TempData["ResponseTitle"] = "Success";
+                TempData["ResponseMessage"] = result.Message;
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Vital Station page", CLASSNAME, methodName);
                 return RedirectToAction(nameof(VitalStation), new

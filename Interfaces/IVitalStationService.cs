@@ -5,7 +5,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IVitalStationService
     {
         Task<VitalStationVM> GetVitalStationByServiceMemberChildIdAsync(long serviceMemberChildId);
-        Task AddAsync(VitalStationDto model, string userName);
-        Task UpdateAsync(VitalStationDto model, string userName);
+        Task<ResponseDto> AddAsync(VitalStationDto model, string submissionToken, string userName);
+        Task<ResponseDto> UpdateAsync(VitalStationDto model, string submissionToken, string userName);
     }
 }

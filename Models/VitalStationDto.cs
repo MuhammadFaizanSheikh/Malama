@@ -8,6 +8,7 @@ namespace Malama.Models
         public string? EventID { get; set; }
         public ServiceMembersChildDto? ServiceMembersChild { get; set; }
         public VitalStationDto VitalStationDto { get; set; }
+        public string SubmissionToken { get; set; }
     }
 
     public class VitalStationBpReadingDto
