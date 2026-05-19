@@ -91,6 +91,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     Success = true,
                     FileName = fileName,
+                    FullPath = fullPath,
                     RelativePath = Path.Combine("Results", $"{station}_Results", $"{prefix}_Results", fileName)
                 };
             }
@@ -181,6 +182,53 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return false;
             }
         }
+
+        public Task DeleteFileAsync(string filePath)
+        {
+            const string METHOD = nameof(DeleteFileAsync);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    return Task.CompletedTask;
+                }
+
+                var fullPath = Path.GetFullPath(filePath);
+                var basePath = Path.GetFullPath(_baseFolder);
+
+                if (!fullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(
+                        "{Class}.{Method} - Delete rejected, path is outside base folder | Path={Path}",
+                        CLASSNAME, METHOD, fullPath);
+                    return Task.CompletedTask;
+                }
+
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    _logger.LogInformation(
+                        "{Class}.{Method} - File not found for delete | Path={Path}",
+                        CLASSNAME, METHOD, fullPath);
+                    return Task.CompletedTask;
+                }
+
+                System.IO.File.Delete(fullPath);
+
+                _logger.LogInformation(
+                    "{Class}.{Method} - File deleted successfully | Path={Path}",
+                    CLASSNAME, METHOD, fullPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{Class}.{Method} - Rollback delete failure | Path={Path}",
+                    CLASSNAME, METHOD, filePath);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     public class FileUploadResult
@@ -188,6 +236,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         public bool Success { get; set; }
         public string Message { get; set; }
         public string FileName { get; set; }
+        public string FullPath { get; set; }
         public string RelativePath { get; set; }
     }
 

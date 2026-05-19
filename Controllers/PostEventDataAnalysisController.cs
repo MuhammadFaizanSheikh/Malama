@@ -387,6 +387,11 @@ namespace ExcelFilesCompiler.Controllers
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
+            UploadLabFilesResult? addFileUploadResult = null;
+            UploadLabFilesResult? updateFileUploadResult = null;
+            var addDbSaveCompleted = false;
+            var updateDbSaveCompleted = false;
+
             try
             {
                 if (!ModelState.IsValid)
@@ -432,13 +437,13 @@ namespace ExcelFilesCompiler.Controllers
                         "{ClassName}, {MethodName}, Add operation started. User={User}",
                         CLASSNAME, methodName, user.UserName);
 
-                    var fileUploadError = await UploadLabFilesForAdd(model);
-                    
-                    if (!string.IsNullOrEmpty(fileUploadError))
+                    addFileUploadResult = await UploadLabFilesForAdd(model);
+
+                    if (!addFileUploadResult.Success)
                     {
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
-                        TempData["ResponseMessage"] = fileUploadError;
+                        TempData["ResponseMessage"] = addFileUploadResult.ErrorMessage;
 
                         var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
                         return View("SpecificServiceMemberLabStation", errorModel);
@@ -449,6 +454,12 @@ namespace ExcelFilesCompiler.Controllers
 
                     if (!result.Success)
                     {
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, DB save failed after successful uploads. Rolling back {FileCount} file(s). User={User}",
+                            CLASSNAME, methodName, addFileUploadResult.UploadedFiles.Count, user.UserName);
+
+                        await RollbackUploadedLabFilesAsync(addFileUploadResult.UploadedFiles);
+
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = result.Message;
@@ -456,6 +467,8 @@ namespace ExcelFilesCompiler.Controllers
                         var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
                         return View("SpecificServiceMemberLabStation", errorModel);
                     }
+
+                    addDbSaveCompleted = true;
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
@@ -481,12 +494,30 @@ namespace ExcelFilesCompiler.Controllers
                         return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
-                    var fileProcessError = await ProcessLabFilesForUpdate(model, existing);
-                    if (!string.IsNullOrEmpty(fileProcessError))
+                    var fileUpdatePlan = PlanLabFilesForUpdate(model, existing);
+                    if (!string.IsNullOrEmpty(fileUpdatePlan.ErrorMessage))
                     {
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
-                        TempData["ResponseMessage"] = fileProcessError;
+                        TempData["ResponseMessage"] = fileUpdatePlan.ErrorMessage;
+
+                        var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
+                        return View("SpecificServiceMemberLabStation", errorModel);
+                    }
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Lab file update plan created. Upload={UploadCount}, Delete={DeleteCount}, Keep={KeepCount}",
+                        CLASSNAME, methodName,
+                        fileUpdatePlan.FilesToUpload.Count,
+                        fileUpdatePlan.FilesToDelete.Count,
+                        fileUpdatePlan.FilesToKeep.Count);
+
+                    updateFileUploadResult = await CommitLabFileUploadsForUpdate(model, fileUpdatePlan);
+                    if (!updateFileUploadResult.Success)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Error";
+                        TempData["ResponseMessage"] = updateFileUploadResult.ErrorMessage;
 
                         var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
                         return View("SpecificServiceMemberLabStation", errorModel);
@@ -496,6 +527,12 @@ namespace ExcelFilesCompiler.Controllers
                         .UpdateAsync(model.PostEventLabStation, user.UserName);
                     if (!result.Success)
                     {
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, DB update failed after successful uploads. Rolling back {FileCount} file(s). Id={Id}",
+                            CLASSNAME, methodName, updateFileUploadResult.UploadedFiles.Count, model.PostEventLabStation.Id);
+
+                        await RollbackUploadedLabFilesAsync(updateFileUploadResult.UploadedFiles);
+
                         TempData["ResponseStatus"] = "error";
                         TempData["ResponseTitle"] = "Error";
                         TempData["ResponseMessage"] = result.Message;
@@ -503,6 +540,10 @@ namespace ExcelFilesCompiler.Controllers
                         var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
                         return View("SpecificServiceMemberLabStation", errorModel);
                     }
+
+                    updateDbSaveCompleted = true;
+
+                    await CommitLabFileDeletionsForUpdate(fileUpdatePlan);
 
                     TempData["ResponseStatus"] = "success";
                     TempData["ResponseTitle"] = "Success";
@@ -520,6 +561,24 @@ namespace ExcelFilesCompiler.Controllers
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Exception occurred",
                     CLASSNAME, methodName);
+
+                if (!addDbSaveCompleted && addFileUploadResult?.UploadedFiles.Count > 0)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Exception after add uploads before DB save completed. Rolling back {FileCount} file(s).",
+                        CLASSNAME, methodName, addFileUploadResult.UploadedFiles.Count);
+
+                    await RollbackUploadedLabFilesAsync(addFileUploadResult.UploadedFiles);
+                }
+
+                if (!updateDbSaveCompleted && updateFileUploadResult?.UploadedFiles.Count > 0)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Exception after update uploads before DB save completed. Rolling back {FileCount} file(s).",
+                        CLASSNAME, methodName, updateFileUploadResult.UploadedFiles.Count);
+
+                    await RollbackUploadedLabFilesAsync(updateFileUploadResult.UploadedFiles);
+                }
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
@@ -579,14 +638,18 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        private async Task<string?> UploadLabFilesForAdd(PostEventLabStationAnalysisDto model)
+        private async Task<UploadLabFilesResult> UploadLabFilesForAdd(PostEventLabStationAnalysisDto model)
         {
+            const string methodName = nameof(UploadLabFilesForAdd);
             const string station = "Labs";
+            var uploadResult = new UploadLabFilesResult { Success = true };
             var barcode = model.ServiceMember?.Barcode;
 
             if (string.IsNullOrWhiteSpace(barcode))
             {
-                return "Service member barcode is required for lab file upload.";
+                uploadResult.Success = false;
+                uploadResult.ErrorMessage = "Service member barcode is required for lab file upload.";
+                return uploadResult;
             }
 
             var fileMappings = GetMalamaFileMappings();
@@ -603,31 +666,74 @@ namespace ExcelFilesCompiler.Controllers
                 if (!result.Success)
                 {
                     _logger.LogWarning(
-                        "{ClassName}.{MethodName} - File upload failed on save. Prefix={Prefix}, Message={Message}",
-                        CLASSNAME, nameof(UploadLabFilesForAdd), fileMapping.Prefix, result.Message);
+                        "{ClassName}.{MethodName} - File upload failed. Prefix={Prefix}, Message={Message}, UploadedSoFar={UploadedCount}",
+                        CLASSNAME, methodName, fileMapping.Prefix, result.Message, uploadResult.UploadedFiles.Count);
 
-                    return result.Message ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
+                    uploadResult.Success = false;
+                    uploadResult.ErrorMessage = result.Message
+                        ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
+
+                    await RollbackUploadedLabFilesAsync(uploadResult.UploadedFiles);
+                    return uploadResult;
                 }
+
+                uploadResult.UploadedFiles.Add(result.FullPath);
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - File upload succeeded. Prefix={Prefix}, Path={Path}",
+                    CLASSNAME, methodName, fileMapping.Prefix, result.FullPath);
 
                 fileMapping.SetUploaded(model.PostEventLabStation, true);
                 fileMapping.SetFileName(model.PostEventLabStation, result.FileName);
                 fileMapping.SetOriginalFileName(model.PostEventLabStation, postedFile.FileName);
             }
 
-            return null;
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - All file uploads completed successfully. FileCount={FileCount}",
+                CLASSNAME, methodName, uploadResult.UploadedFiles.Count);
+
+            return uploadResult;
         }
 
-        private async Task<string?> ProcessLabFilesForUpdate(PostEventLabStationAnalysisDto model, PostEventLabStation existing)
+        private async Task RollbackUploadedLabFilesAsync(IEnumerable<string> uploadedFiles)
         {
-            const string station = "Labs";
+            const string methodName = nameof(RollbackUploadedLabFilesAsync);
+            var fileList = uploadedFiles?.Where(path => !string.IsNullOrWhiteSpace(path)).ToList() ?? new List<string>();
+
+            if (fileList.Count == 0)
+            {
+                return;
+            }
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Rollback started. FileCount={FileCount}",
+                CLASSNAME, methodName, fileList.Count);
+
+            foreach (var filePath in fileList)
+            {
+                await _fileService.DeleteFileAsync(filePath);
+            }
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Rollback completed. FileCount={FileCount}",
+                CLASSNAME, methodName, fileList.Count);
+        }
+
+        private LabFileUpdatePlan PlanLabFilesForUpdate(PostEventLabStationAnalysisDto model, PostEventLabStation existing)
+        {
+            const string methodName = nameof(PlanLabFilesForUpdate);
+            var plan = new LabFileUpdatePlan();
             var barcode = model.ServiceMember?.Barcode;
 
             if (string.IsNullOrWhiteSpace(barcode))
             {
-                return "Service member barcode is required for lab file upload.";
+                plan.ErrorMessage = "Service member barcode is required for lab file upload.";
+                return plan;
             }
 
+            var expectedFileName = $"{barcode}.pdf";
             var fileMappings = GetMalamaFileMappings();
+
             foreach (var fileMapping in fileMappings)
             {
                 var postedFile = Request.Form.Files[fileMapping.InputName];
@@ -637,50 +743,26 @@ namespace ExcelFilesCompiler.Controllers
                 var incomingFileName = fileMapping.GetFileName(model.PostEventLabStation);
                 var incomingOriginalFileName = fileMapping.GetOriginalFileName(model.PostEventLabStation);
 
-                // 1) Replace existing file (new upload selected in edit mode).
+                // 1) Replace or add: new file selected in edit mode.
                 if (postedFile != null && postedFile.Length > 0)
                 {
-                    var uploadResult = await _fileService.UploadFile(postedFile, station, fileMapping.Prefix, barcode);
-                    if (!uploadResult.Success)
-                    {
-                        _logger.LogWarning(
-                            "{ClassName}.{MethodName} - File replacement failed. Prefix={Prefix}, Message={Message}",
-                            CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, uploadResult.Message);
-
-                        return uploadResult.Message ?? $"Failed to upload {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
-                    }
+                    plan.FilesToUpload.Add((postedFile, fileMapping.Prefix));
 
                     if (!string.IsNullOrWhiteSpace(currentFileName) &&
-                        !string.Equals(currentFileName, uploadResult.FileName, StringComparison.OrdinalIgnoreCase))
+                        !string.Equals(currentFileName, expectedFileName, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!_fileService.DeleteFile(station, fileMapping.Prefix, currentFileName))
-                        {
-                            _logger.LogWarning(
-                                "{ClassName}.{MethodName} - Old file delete failed after replacement. Prefix={Prefix}, FileName={FileName}",
-                                CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, currentFileName);
-                        }
+                        plan.FilesToDelete.Add((fileMapping.Prefix, currentFileName));
                     }
 
-                    fileMapping.SetUploaded(model.PostEventLabStation, true);
-                    fileMapping.SetFileName(model.PostEventLabStation, uploadResult.FileName);
-                    fileMapping.SetOriginalFileName(model.PostEventLabStation, postedFile.FileName);
                     continue;
                 }
 
-                // 2) Cancel existing file (no new file selected; remove from server + clear DB fields).
+                // 2) Cancel existing file: defer physical delete until after DB success.
                 if (!incomingUploaded)
                 {
                     if (!string.IsNullOrWhiteSpace(currentFileName))
                     {
-                        var deleteSuccess = _fileService.DeleteFile(station, fileMapping.Prefix, currentFileName);
-                        if (!deleteSuccess)
-                        {
-                            _logger.LogWarning(
-                                "{ClassName}.{MethodName} - File delete failed on cancel. Prefix={Prefix}, FileName={FileName}",
-                                CLASSNAME, nameof(ProcessLabFilesForUpdate), fileMapping.Prefix, currentFileName);
-
-                            return $"Failed to delete {fileMapping.Prefix.ToUpperInvariant()} lab result file.";
-                        }
+                        plan.FilesToDelete.Add((fileMapping.Prefix, currentFileName));
                     }
 
                     fileMapping.SetUploaded(model.PostEventLabStation, false);
@@ -693,6 +775,7 @@ namespace ExcelFilesCompiler.Controllers
                 // 3) Keep existing file (no new file selected and user did not cancel).
                 if (string.IsNullOrWhiteSpace(incomingFileName) && !string.IsNullOrWhiteSpace(currentFileName))
                 {
+                    plan.FilesToKeep.Add((fileMapping.Prefix, currentFileName));
                     fileMapping.SetFileName(model.PostEventLabStation, currentFileName);
                     fileMapping.SetUploaded(model.PostEventLabStation, true);
                     if (string.IsNullOrWhiteSpace(incomingOriginalFileName))
@@ -702,7 +785,114 @@ namespace ExcelFilesCompiler.Controllers
                 }
             }
 
-            return null;
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Plan created. Upload={UploadCount}, Delete={DeleteCount}, Keep={KeepCount}",
+                CLASSNAME, methodName,
+                plan.FilesToUpload.Count,
+                plan.FilesToDelete.Count,
+                plan.FilesToKeep.Count);
+
+            return plan;
+        }
+
+        private async Task<UploadLabFilesResult> CommitLabFileUploadsForUpdate(
+            PostEventLabStationAnalysisDto model,
+            LabFileUpdatePlan plan)
+        {
+            const string methodName = nameof(CommitLabFileUploadsForUpdate);
+            const string station = "Labs";
+            var uploadResult = new UploadLabFilesResult { Success = true };
+            var barcode = model.ServiceMember?.Barcode;
+
+            if (string.IsNullOrWhiteSpace(barcode))
+            {
+                uploadResult.Success = false;
+                uploadResult.ErrorMessage = "Service member barcode is required for lab file upload.";
+                return uploadResult;
+            }
+
+            if (plan.FilesToUpload.Count == 0)
+            {
+                return uploadResult;
+            }
+
+            var fileMappings = GetMalamaFileMappings()
+                .ToDictionary(m => m.Prefix, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var (file, prefix) in plan.FilesToUpload)
+            {
+                var result = await _fileService.UploadFile(file, station, prefix, barcode);
+                if (!result.Success)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - File upload failed. Prefix={Prefix}, Message={Message}, UploadedSoFar={UploadedCount}",
+                        CLASSNAME, methodName, prefix, result.Message, uploadResult.UploadedFiles.Count);
+
+                    uploadResult.Success = false;
+                    uploadResult.ErrorMessage = result.Message
+                        ?? $"Failed to upload {prefix.ToUpperInvariant()} lab result file.";
+
+                    await RollbackUploadedLabFilesAsync(uploadResult.UploadedFiles);
+                    return uploadResult;
+                }
+
+                uploadResult.UploadedFiles.Add(result.FullPath);
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - File upload succeeded. Prefix={Prefix}, Path={Path}",
+                    CLASSNAME, methodName, prefix, result.FullPath);
+
+                if (fileMappings.TryGetValue(prefix, out var fileMapping))
+                {
+                    fileMapping.SetUploaded(model.PostEventLabStation, true);
+                    fileMapping.SetFileName(model.PostEventLabStation, result.FileName);
+                    fileMapping.SetOriginalFileName(model.PostEventLabStation, file.FileName);
+                }
+            }
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - All planned uploads completed. FileCount={FileCount}",
+                CLASSNAME, methodName, uploadResult.UploadedFiles.Count);
+
+            return uploadResult;
+        }
+
+        private Task CommitLabFileDeletionsForUpdate(LabFileUpdatePlan plan)
+        {
+            const string methodName = nameof(CommitLabFileDeletionsForUpdate);
+            const string station = "Labs";
+
+            if (plan.FilesToDelete.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Commit delete started. FileCount={FileCount}",
+                CLASSNAME, methodName, plan.FilesToDelete.Count);
+
+            foreach (var (prefix, existingFileName) in plan.FilesToDelete)
+            {
+                var deleted = _fileService.DeleteFile(station, prefix, existingFileName);
+                if (deleted)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}.{MethodName} - Commit delete executed. Prefix={Prefix}, FileName={FileName}",
+                        CLASSNAME, methodName, prefix, existingFileName);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - Commit delete failed. Prefix={Prefix}, FileName={FileName}",
+                        CLASSNAME, methodName, prefix, existingFileName);
+                }
+            }
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Commit delete completed. FileCount={FileCount}",
+                CLASSNAME, methodName, plan.FilesToDelete.Count);
+
+            return Task.CompletedTask;
         }
 
         private static (string InputName, string Prefix,
