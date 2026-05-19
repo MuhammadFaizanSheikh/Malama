@@ -145,86 +145,61 @@
     }
 
     public LabStatusVm GetLabStatus(
-        string labNeeded,
+        string? labNeeded,
+        string? storedStatus,
         bool? malama,
         bool? hrr,
-        bool? sor,
-        object postEventLabStation,
-        bool? resultReceived,
-        string resultReason
-    )
+        bool? sor)
     {
-        if (labNeeded == AppConstants.Status.Completed)
+        if (labNeeded != AppConstants.Status.Completed)
         {
-            if (resultReceived == false)
-            {
-                if (resultReason == "Insufficient blood sample")
-                {
-                    return new LabStatusVm
-                        {
-                            Text = "CR",
-                            BgColor = "#33cc33",
-                            TextColor = "#ffffff"
-                        };
-                }
-
-                return new LabStatusVm
-                    {
-                        Text = "I",
-                        BgColor = "#ffc107",
-                        TextColor = "#000000"
-                    };
-            }
-
-            if (postEventLabStation == null)
-            {
-                return new LabStatusVm
-                    {
-                        Text = "I",
-                        BgColor = "#ffc107",
-                        TextColor = "#000000"
-                    };
-            }
-
-            if (malama == true && hrr == true && sor == true)
-            {
-                return new LabStatusVm
-                    {
-                        Text = "C",
-                        BgColor = "#198754",
-                        TextColor = "#ffffff"
-                    };
-            }
-            else if (malama == false && hrr == false && sor == false)
-            {
-                return new LabStatusVm
-                    {
-                        Text = "I",
-                        BgColor = "#ffc107",
-                        TextColor = "#000000"
-                    };
-            }
-            else
-            {
-                return new LabStatusVm
-                    {
-                        Text = "P",
-                        BgColor = "#fd7e14",
-                        TextColor = "#ffffff",
-                        ShowDetails = true,
-                        Malama = malama,
-                        Hrr = hrr,
-                        Sor = sor
-                    };
-            }
-        }
-
-        return new LabStatusVm
+            return new LabStatusVm
             {
                 Text = "N/A",
                 BgColor = "#6c757d",
                 TextColor = "#ffffff"
             };
+        }
+
+        var status = storedStatus;
+
+        return status switch
+        {
+            AppConstants.LabResultStatus.Complete => new LabStatusVm
+            {
+                Text = "C",
+                BgColor = "#198754",
+                TextColor = "#ffffff"
+            },
+            AppConstants.LabResultStatus.Incomplete => new LabStatusVm
+            {
+                Text = "I",
+                BgColor = "#ffc107",
+                TextColor = "#000000"
+            },
+            AppConstants.LabResultStatus.CompleteWithReason => new LabStatusVm
+            {
+                Text = "CR",
+                BgColor = "#33cc33",
+                TextColor = "#ffffff"
+            },
+            AppConstants.LabResultStatus.PartiallyComplete => new LabStatusVm
+            {
+                Text = "P",
+                BgColor = "#fd7e14",
+                TextColor = "#ffffff",
+                ShowDetails = true,
+                Malama = malama,
+                Hrr = hrr,
+                Sor = sor
+            },
+            _ => new LabStatusVm
+            {
+                Text = "I",
+                BgColor = "#ffc107",
+                TextColor = "#000000"
+            }
+        };
     }
 }
 
@@ -280,13 +255,10 @@
                 @{
                     var g6pd = GetLabStatus(
                     item.LabStationRecord?.G6pdNeeded,
+                    item.PostEventLabStation?.G6pdStatus,
                     item.PostEventLabStation?.G6pdResultMalamaUploaded,
                     item.PostEventLabStation?.G6pdResultHRRUploaded,
-                    item.PostEventLabStation?.G6pdResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.G6pdResultReceived,
-                    item.PostEventLabStation?.G6pdResultReason
-                    );
+                    item.PostEventLabStation?.G6pdResultSORUploaded);
                 }
                 <td style="min-width:70px;">
                     <div style="text-align:center;">
@@ -318,13 +290,10 @@
                 @{
                     var lipid = GetLabStatus(
                     item.LabStationRecord?.LipidPanelNeeded,
+                    item.PostEventLabStation?.LipidPanelStatus,
                     item.PostEventLabStation?.LipidPanelResultMalamaUploaded,
                     item.PostEventLabStation?.LipidPanelResultHRRUploaded,
-                    item.PostEventLabStation?.LipidPanelResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.LipidPanelResultReceived,
-                    item.PostEventLabStation?.LipidPanelResultReason
-                    );
+                    item.PostEventLabStation?.LipidPanelResultSORUploaded);
                 }
                 <td style="min-width:70px;">
                     <div style="text-align:center;">
@@ -356,13 +325,10 @@
                 @{
                     var hiv = GetLabStatus(
                     item.LabStationRecord?.HivNeeded,
+                    item.PostEventLabStation?.HivStatus,
                     item.PostEventLabStation?.HivResultMalamaUploaded,
                     item.PostEventLabStation?.HivResultHRRUploaded,
-                    item.PostEventLabStation?.HivResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.HivResultReceived,
-                    item.PostEventLabStation?.HivResultReason
-                    );
+                    item.PostEventLabStation?.HivResultSORUploaded);
                 }
                 <td style="min-width:70px;">
                     <div style="text-align:center;">
@@ -394,13 +360,10 @@
                 @{
                     var abo = GetLabStatus(
                     item.LabStationRecord?.AboNeeded,
+                    item.PostEventLabStation?.AboStatus,
                     item.PostEventLabStation?.AboResultMalamaUploaded,
                     item.PostEventLabStation?.AboResultHRRUploaded,
-                    item.PostEventLabStation?.AboResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.AboResultReceived,
-                    item.PostEventLabStation?.AboResultReason
-                    );
+                    item.PostEventLabStation?.AboResultSORUploaded);
                 }
                 <td style="min-width:70px;">
                     <div style="text-align:center;">
@@ -431,13 +394,10 @@
                 @{
                     var sickle = GetLabStatus(
                     item.LabStationRecord?.SickleCellNeeded,
+                    item.PostEventLabStation?.SickleCellStatus,
                     item.PostEventLabStation?.SickleCellResultMalamaUploaded,
                     item.PostEventLabStation?.SickleCellResultHRRUploaded,
-                    item.PostEventLabStation?.SickleCellResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.SickleCellResultReceived,
-                    item.PostEventLabStation?.SickleCellResultReason
-                    );
+                    item.PostEventLabStation?.SickleCellResultSORUploaded);
                 }
                 <td style="min-width:70px;">
                     <div style="text-align:center;">
@@ -464,16 +424,19 @@
                         }
                     </div>
                 </td>
+                <!-- DNA -->
                 @{
-                    var dnaCompleted = item.LabStationRecord?.DnaNeeded == "Completed";
+                    var dna = GetLabStatus(
+                    item.LabStationRecord?.DnaNeeded,
+                    item.PostEventLabStation?.DnaStatus,
+                    null,
+                    null,
+                    null);
                 }
-
-                <td>
+                <td style="min-width:70px;">
                     <div style="text-align:center;">
-                        <span class="badge"
-                              style="background-color:@(dnaCompleted ? "#198754" : "#6c757d");
-                     color:#ffffff;">
-                            @(dnaCompleted ? "C" : "N/A")
+                        <span class="badge" style="background-color:@dna.BgColor; color:@dna.TextColor;">
+                            @dna.Text
                         </span>
                     </div>
                 </td>
@@ -481,13 +444,10 @@
                 @{
                     var preg = GetLabStatus(
                     item.LabStationRecord?.PregnancyTestNeeded,
+                    item.PostEventLabStation?.PregnancyStatus,
                     item.PostEventLabStation?.PregnancyResultMalamaUploaded,
                     item.PostEventLabStation?.PregnancyResultHRRUploaded,
-                    item.PostEventLabStation?.PregnancyResultSORUploaded,
-                    item.PostEventLabStation,
-                    item.PostEventLabStation?.PregnancyResultReceived,
-                    item.PostEventLabStation?.PregnancyResultReason
-                    );
+                    item.PostEventLabStation?.PregnancyResultSORUploaded);
                 }
                 <td>
                     <div style="text-align:center;">
