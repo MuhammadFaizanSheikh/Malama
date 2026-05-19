@@ -640,6 +640,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                             ServiceMembersChildId = entity.Id,
                             PostEventManagementId = entity?.ServiceMembersParent?.EventManagement?.PostEventManagement?.Id ?? 0,
                             Status = entity.PostEventLabStation.Status,
+                            G6pdStatus = entity.PostEventLabStation.G6pdStatus,
+                            AboStatus = entity.PostEventLabStation.AboStatus,
+                            HivStatus = entity.PostEventLabStation.HivStatus,
+                            PregnancyStatus = entity.PostEventLabStation.PregnancyStatus,
+                            LipidPanelStatus = entity.PostEventLabStation.LipidPanelStatus,
+                            SickleCellStatus = entity.PostEventLabStation.SickleCellStatus,
+                            DnaStatus = entity.PostEventLabStation.DnaStatus,
 
                             // G6PD
                             G6pdResultReceived = entity.PostEventLabStation.G6pdResultReceived,

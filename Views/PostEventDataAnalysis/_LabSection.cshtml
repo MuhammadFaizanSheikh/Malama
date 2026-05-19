@@ -1,5 +1,18 @@
 ﻿@model LabUIModel
 
+@functions {
+    private static (string Label, string BadgeClass, string? InlineStyle) GetLabStatusBadge(string? status)
+    {
+        return status switch
+        {
+            "Complete" or "Completed" => ("Complete", "bg-success", null),
+            "Partially Complete" => ("Partially Complete", "", "background-color:#fd7e14;color:#ffffff;"),
+            "Complete with Reason" => ("Complete with Reason", "", "background-color:#33cc33;color:#ffffff;"),
+            _ => ("Incomplete", "bg-warning text-dark", null)
+        };
+    }
+}
+
 <div class="card mb-3">
     <div class="card-header fw-bold">@Model.Title</div>
 
@@ -253,6 +266,23 @@
             </div>
 
         </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.LabStatusName))
+        {
+            var statusBadge = GetLabStatusBadge(Model.LabStatus);
+            <div class="row mt-3">
+                <div class="col-md-6 d-flex align-items-center flex-wrap gap-2">
+                    <label class="form-label mb-0 fw-semibold">Status:</label>
+                    <input type="hidden"
+                           name="@Model.LabStatusName"
+                           id="@($"{Model.Prefix}_labStatus")"
+                           value="@(Model.LabStatus ?? "")" />
+                    <span id="@($"{Model.Prefix}_labStatusDisplay")"
+                          class="badge @statusBadge.BadgeClass"
+                          style="@statusBadge.InlineStyle">@statusBadge.Label</span>
+                </div>
+            </div>
         }
     </div>
 </div>

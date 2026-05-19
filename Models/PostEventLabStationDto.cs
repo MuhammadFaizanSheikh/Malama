@@ -88,6 +88,14 @@ namespace Malama.Models
 
         public string Status { get; set; } = AppConstants.Status.Pending;
 
+        public string? G6pdStatus { get; set; }
+        public string? AboStatus { get; set; }
+        public string? HivStatus { get; set; }
+        public string? PregnancyStatus { get; set; }
+        public string? LipidPanelStatus { get; set; }
+        public string? SickleCellStatus { get; set; }
+        public string? DnaStatus { get; set; }
+
         // G6PD
         public bool G6pdResultReceived { get; set; }
         public string? G6pdResultReason { get; set; }
@@ -207,5 +215,8 @@ namespace Malama.Models
         public string? HivBarcodeCarebill { get; set; }
         public string? PregnancyTestResult { get; set; }
         public string? DnaSerialNo { get; set; }
+
+        public string? LabStatusName { get; set; }
+        public string? LabStatus { get; set; }
     }
 }

@@ -26,6 +26,18 @@
             public const string Completed = "Completed";
         }
 
+        public static class LabResultStatus
+        {
+            public const string Complete = "Complete";
+            public const string PartiallyComplete = "Partially Complete";
+            public const string Incomplete = "Incomplete";
+            public const string CompleteWithReason = "Complete with Reason";
+            public const string NotApplicable = "N/A";
+
+            public const string InsufficientBloodSampleReason = "Insufficient blood sample";
+            public const string StillWaitingReason = "Still waiting";
+        }
+
         public static class YesNo
         {
             public const string Yes = "Yes";

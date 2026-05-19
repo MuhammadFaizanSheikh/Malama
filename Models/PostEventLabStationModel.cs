@@ -90,5 +90,12 @@ namespace Malama.Models
         public DateTime? SickleCellResultSORUploadedDateTime { get; set; }
 
         public string Status { get; set; }
+        public string? G6pdStatus { get; set; }
+        public string? AboStatus { get; set; }
+        public string? HivStatus { get; set; }
+        public string? PregnancyStatus { get; set; }
+        public string? LipidPanelStatus { get; set; }
+        public string? SickleCellStatus { get; set; }
+        public string? DnaStatus { get; set; }
     }
 }

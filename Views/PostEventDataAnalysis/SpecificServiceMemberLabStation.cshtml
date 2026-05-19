@@ -1,4 +1,5 @@
 ﻿@using Malama.Utilities
+@using ExcelFilesCompiler.Utilities
 @model PostEventLabStationAnalysisDto
 
 @{
@@ -209,7 +210,10 @@
     HRR = Model.PostEventLabStation.G6pdResultHRRUploaded,
     HRRDate = Model.PostEventLabStation.G6pdResultHRRUploadedDateTime,
     SOR = Model.PostEventLabStation.G6pdResultSORUploaded,
-    SORDate = Model.PostEventLabStation.G6pdResultSORUploadedDateTime
+    SORDate = Model.PostEventLabStation.G6pdResultSORUploadedDateTime,
+
+    LabStatusName = "PostEventLabStation.G6pdStatus",
+    LabStatus = Model.PostEventLabStation.G6pdStatus
 })
     }
 
@@ -250,7 +254,10 @@
     HRRDate = Model.PostEventLabStation.AboResultHRRUploadedDateTime,
 
     SOR = Model.PostEventLabStation.AboResultSORUploaded,
-    SORDate = Model.PostEventLabStation.AboResultSORUploadedDateTime
+    SORDate = Model.PostEventLabStation.AboResultSORUploadedDateTime,
+
+    LabStatusName = "PostEventLabStation.AboStatus",
+    LabStatus = Model.PostEventLabStation.AboStatus
 })
     }
      
@@ -295,7 +302,10 @@
     SOR = Model.PostEventLabStation.LipidPanelResultSORUploaded,
     SORDate = Model.PostEventLabStation.LipidPanelResultSORUploadedDateTime,
 
-    IsLipidRapid = Model.IsLipidRapid
+    IsLipidRapid = Model.IsLipidRapid,
+
+    LabStatusName = "PostEventLabStation.LipidPanelStatus",
+    LabStatus = Model.PostEventLabStation.LipidPanelStatus
 })
     }
 
@@ -340,7 +350,10 @@
     SOR = Model.PostEventLabStation.HivResultSORUploaded,
     SORDate = Model.PostEventLabStation.HivResultSORUploadedDateTime,
 
-    HivBarcodeCarebill = Model.HivBarcodeCarebill
+    HivBarcodeCarebill = Model.HivBarcodeCarebill,
+
+    LabStatusName = "PostEventLabStation.HivStatus",
+    LabStatus = Model.PostEventLabStation.HivStatus
 })
     }
 
@@ -385,7 +398,10 @@
     SOR = Model.PostEventLabStation.PregnancyResultSORUploaded,
     SORDate = Model.PostEventLabStation.PregnancyResultSORUploadedDateTime,
 
-    PregnancyTestResult = Model.PregnancyTestResult
+    PregnancyTestResult = Model.PregnancyTestResult,
+
+    LabStatusName = "PostEventLabStation.PregnancyStatus",
+    LabStatus = Model.PostEventLabStation.PregnancyStatus
 })
     }
 
@@ -426,7 +442,10 @@
     HRRDate = Model.PostEventLabStation.SickleCellResultHRRUploadedDateTime,
 
     SOR = Model.PostEventLabStation.SickleCellResultSORUploaded,
-    SORDate = Model.PostEventLabStation.SickleCellResultSORUploadedDateTime
+    SORDate = Model.PostEventLabStation.SickleCellResultSORUploadedDateTime,
+
+    LabStatusName = "PostEventLabStation.SickleCellStatus",
+    LabStatus = Model.PostEventLabStation.SickleCellStatus
 })
     }
 
@@ -439,7 +458,10 @@
     Title = "DNA",
     GivenDate = Model.DnaGivenDateTime,
     DnaSerialNoName = "PostEventLabStation.DnaSerialNo",
-    DnaSerialNo = Model.DnaSerialNo
+    DnaSerialNo = Model.DnaSerialNo,
+
+    LabStatusName = "PostEventLabStation.DnaStatus",
+    LabStatus = Model.PostEventLabStation.DnaStatus ?? AppConstants.LabResultStatus.Complete
 })
     }
     
@@ -498,59 +520,114 @@
         }
 
         const LAB_STATUS_PREFIXES = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle"];
+        const LAB_PAGE_PREFIXES = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
         const LAB_STATUS_PENDING = "Pending";
         const LAB_STATUS_COMPLETED = "Completed";
+        const LAB_RESULT_STATUS = {
+            complete: "Complete",
+            partiallyComplete: "Partially Complete",
+            incomplete: "Incomplete",
+            completeWithReason: "Complete with Reason"
+        };
 
         function isLabSectionOnPage(prefix) {
+            if (prefix === "dna") {
+                return !!document.getElementById("dna_labStatus");
+            }
             return !!document.getElementById(prefix + "_yes");
         }
 
-        function isLabFieldsComplete(form, prefix) {
+        function computeLabSectionStatus(form, prefix) {
+            if (prefix === "dna") {
+                return LAB_RESULT_STATUS.complete;
+            }
+
             const namePrefix = getLabResultNamePrefix(prefix);
             const receivedRadio = form.querySelector(
                 `input[name*='${namePrefix}ResultReceived']:checked`
             );
             if (!receivedRadio) {
-                return false;
+                return LAB_RESULT_STATUS.incomplete;
             }
 
             const isYes = receivedRadio.value === "true";
-
-            if (isYes) {
-                const receivedInput = document.getElementById(prefix + "_received");
-                if (!receivedInput || !(receivedInput.value || "").trim()) {
-                    return false;
+            if (!isYes) {
+                const reasonSelect = form.querySelector(`select[name*='${namePrefix}ResultReason']`);
+                const reason = (reasonSelect?.value || "").trim();
+                if (reason === "Insufficient blood sample") {
+                    return LAB_RESULT_STATUS.completeWithReason;
                 }
-
-                const malamaUploaded = document.getElementById(prefix + "_malamaUploaded");
-                if (!malamaUploaded || malamaUploaded.value !== "true") {
-                    return false;
-                }
-
-                const sorCheckbox = form.querySelector(
-                    `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
-                );
-                const hrrCheckbox = form.querySelector(
-                    `input[type='checkbox'][name*='${namePrefix}ResultHRRUploaded']`
-                );
-                if (!sorCheckbox?.checked || !hrrCheckbox?.checked) {
-                    return false;
-                }
-
-                const sorInput = document.getElementById(prefix + "_sor");
-                const hrrInput = document.getElementById(prefix + "_hrr");
-                if (!sorInput || !(sorInput.value || "").trim()) {
-                    return false;
-                }
-                if (!hrrInput || !(hrrInput.value || "").trim()) {
-                    return false;
-                }
-
-                return true;
+                return LAB_RESULT_STATUS.incomplete;
             }
 
-            const reasonSelect = form.querySelector(`select[name*='${namePrefix}ResultReason']`);
-            return !!(reasonSelect && (reasonSelect.value || "").trim());
+            const receivedInput = document.getElementById(prefix + "_received");
+            const receivedDateComplete = !!(receivedInput && (receivedInput.value || "").trim());
+
+            const malamaUploaded = document.getElementById(prefix + "_malamaUploaded");
+            const malamaComplete = malamaUploaded && malamaUploaded.value === "true";
+
+            const sorCheckbox = form.querySelector(
+                `input[type='checkbox'][name*='${namePrefix}ResultSORUploaded']`
+            );
+            const hrrCheckbox = form.querySelector(
+                `input[type='checkbox'][name*='${namePrefix}ResultHRRUploaded']`
+            );
+            const sorComplete = sorCheckbox?.checked === true;
+            const hrrComplete = hrrCheckbox?.checked === true;
+
+            if (malamaComplete && sorComplete && hrrComplete && receivedDateComplete) {
+                return LAB_RESULT_STATUS.complete;
+            }
+
+            if (!malamaComplete && !sorComplete && !hrrComplete) {
+                return LAB_RESULT_STATUS.incomplete;
+            }
+
+            return LAB_RESULT_STATUS.partiallyComplete;
+        }
+
+        function getLabStatusBadgeMeta(status) {
+            switch (status) {
+                case LAB_RESULT_STATUS.complete:
+                case "Completed": // legacy value
+                    return { label: "Complete", badgeClass: "bg-success", style: "" };
+                case LAB_RESULT_STATUS.partiallyComplete:
+                    return { label: "Partially Complete", badgeClass: "", style: "background-color:#fd7e14;color:#ffffff;" };
+                case LAB_RESULT_STATUS.completeWithReason:
+                    return { label: "Complete with Reason", badgeClass: "", style: "background-color:#33cc33;color:#ffffff;" };
+                default:
+                    return { label: "Incomplete", badgeClass: "bg-warning text-dark", style: "" };
+            }
+        }
+
+        function renderLabStatusBadge(prefix, status) {
+            const statusDisplay = document.getElementById(prefix + "_labStatusDisplay");
+            if (!statusDisplay) {
+                return;
+            }
+
+            const badge = getLabStatusBadgeMeta(status);
+            statusDisplay.textContent = badge.label;
+            statusDisplay.className = badge.badgeClass ? `badge ${badge.badgeClass}` : "badge";
+            statusDisplay.style.cssText = badge.style || "";
+        }
+
+        function updateLabSectionStatus(prefix) {
+            const form = document.getElementById("frmPostEventLabStation");
+            const statusHidden = document.getElementById(prefix + "_labStatus");
+            if (!form || !statusHidden) {
+                return;
+            }
+
+            const status = computeLabSectionStatus(form, prefix);
+            statusHidden.value = status;
+            renderLabStatusBadge(prefix, status);
+        }
+
+        function updateAllLabSectionStatuses() {
+            LAB_PAGE_PREFIXES.filter(isLabSectionOnPage).forEach(function (prefix) {
+                updateLabSectionStatus(prefix);
+            });
         }
 
         function updatePostEventLabStatus() {
@@ -560,14 +637,19 @@
                 return;
             }
 
-            const activePrefixes = LAB_STATUS_PREFIXES.filter(isLabSectionOnPage);
+            updateAllLabSectionStatuses();
+
+            const activePrefixes = LAB_PAGE_PREFIXES.filter(isLabSectionOnPage);
             if (activePrefixes.length === 0) {
                 statusInput.value = LAB_STATUS_PENDING;
                 return;
             }
 
-            const allComplete = activePrefixes.every(function (p) {
-                return isLabFieldsComplete(form, p);
+            const allComplete = activePrefixes.every(function (prefix) {
+                const labStatus = document.getElementById(prefix + "_labStatus")?.value;
+                return labStatus === LAB_RESULT_STATUS.complete ||
+                    labStatus === "Completed" ||
+                    labStatus === LAB_RESULT_STATUS.completeWithReason;
             });
 
             statusInput.value = allComplete ? LAB_STATUS_COMPLETED : LAB_STATUS_PENDING;

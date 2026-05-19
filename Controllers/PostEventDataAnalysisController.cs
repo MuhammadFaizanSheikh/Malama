@@ -449,6 +449,10 @@ namespace ExcelFilesCompiler.Controllers
                         return View("SpecificServiceMemberLabStation", errorModel);
                     }
 
+                    PostEventLabStationStatusHelper.ApplyPerLabStatuses(
+                        model.PostEventLabStation,
+                        model.LabStation);
+
                     var result = await _postEventLabStationService
                         .AddAsync(model.PostEventLabStation, user.UserName);
 
@@ -522,6 +526,10 @@ namespace ExcelFilesCompiler.Controllers
                         var errorModel = await _fileUploader.GetPostEventLabStationAnalysisDtoAsync(model.PostEventLabStation.ServiceMembersChildId);
                         return View("SpecificServiceMemberLabStation", errorModel);
                     }
+
+                    PostEventLabStationStatusHelper.ApplyPerLabStatuses(
+                        model.PostEventLabStation,
+                        model.LabStation);
 
                     var result = await _postEventLabStationService
                         .UpdateAsync(model.PostEventLabStation, user.UserName);
