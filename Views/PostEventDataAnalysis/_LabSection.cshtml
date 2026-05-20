@@ -255,7 +255,8 @@
                 <div class="col-md-6">
                     <label>Provide Reason</label>
                     <select class="form-control w-auto"
-                            name="@Model.ReasonName">
+                            name="@Model.ReasonName"
+                            onchange="updatePostEventLabStatus()">
 
                         <option value="">-- Select Reason --</option>
                         <option value="Still waiting" selected="@(Model.Reason == "Still waiting")">Still waiting</option>

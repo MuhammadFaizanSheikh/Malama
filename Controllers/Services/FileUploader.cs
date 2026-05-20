@@ -1524,7 +1524,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var dict = new Dictionary<string, object>();
                 foreach (DataColumn column in table.Columns)
                 {
-                    dict[column.ColumnName] = row[column];
+                    dict[column.ColumnName] =
+                row[column] == DBNull.Value
+                    ? string.Empty
+                    : row[column];
                 }
                 result.Add(dict);
             }

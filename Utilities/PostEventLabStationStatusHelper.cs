@@ -117,39 +117,87 @@ namespace ExcelFilesCompiler.Utilities
             return AppConstants.LabResultStatus.PartiallyComplete;
         }
 
+        /// <summary>
+        /// Overall page status is Completed when every required lab is finished:
+        /// Complete (Yes + Malama + SOR + HRR + received date) or Complete with Reason (No + Insufficient blood sample).
+        /// </summary>
         public static string ComputeOverallStatus(PreEventLabStationDto pre, PostEventLabStationDto post)
         {
-            var requiredStatuses = new List<string>();
+            var anyRequired = false;
 
-            AddRequiredStatus(requiredStatuses, pre.G6pdNeeded, post.G6pdStatus);
-            AddRequiredStatus(requiredStatuses, pre.AboNeeded, post.AboStatus);
-            AddRequiredStatus(requiredStatuses, pre.HivNeeded, post.HivStatus);
-            AddRequiredStatus(requiredStatuses, pre.PregnancyTestNeeded, post.PregnancyStatus);
-            AddRequiredStatus(requiredStatuses, pre.LipidPanelNeeded, post.LipidPanelStatus);
-            AddRequiredStatus(requiredStatuses, pre.SickleCellNeeded, post.SickleCellStatus);
-            AddRequiredStatus(requiredStatuses, pre.DnaNeeded, post.DnaStatus);
-
-            if (requiredStatuses.Count == 0)
+            if (IsRequiredLabBlockingOverall(pre.G6pdNeeded, post.G6pdStatus))
             {
                 return AppConstants.Status.Pending;
             }
 
-            var allFinished = requiredStatuses.All(IsLabFinishedStatus);
+            anyRequired |= pre.G6pdNeeded == AppConstants.Status.Completed;
 
-            return allFinished ? AppConstants.Status.Completed : AppConstants.Status.Pending;
-        }
-
-        private static void AddRequiredStatus(List<string> statuses, string? labNeeded, string? labStatus)
-        {
-            if (labNeeded == AppConstants.Status.Completed && !string.IsNullOrWhiteSpace(labStatus))
+            if (IsRequiredLabBlockingOverall(pre.AboNeeded, post.AboStatus))
             {
-                statuses.Add(labStatus);
+                return AppConstants.Status.Pending;
             }
+
+            anyRequired |= pre.AboNeeded == AppConstants.Status.Completed;
+
+            if (IsRequiredLabBlockingOverall(pre.HivNeeded, post.HivStatus))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            anyRequired |= pre.HivNeeded == AppConstants.Status.Completed;
+
+            if (IsRequiredLabBlockingOverall(pre.PregnancyTestNeeded, post.PregnancyStatus))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            anyRequired |= pre.PregnancyTestNeeded == AppConstants.Status.Completed;
+
+            if (IsRequiredLabBlockingOverall(pre.LipidPanelNeeded, post.LipidPanelStatus))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            anyRequired |= pre.LipidPanelNeeded == AppConstants.Status.Completed;
+
+            if (IsRequiredLabBlockingOverall(pre.SickleCellNeeded, post.SickleCellStatus))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            anyRequired |= pre.SickleCellNeeded == AppConstants.Status.Completed;
+
+            if (IsRequiredLabBlockingOverall(pre.DnaNeeded, post.DnaStatus))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            anyRequired |= pre.DnaNeeded == AppConstants.Status.Completed;
+
+            if (!anyRequired)
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            return AppConstants.Status.Completed;
         }
 
-        private static bool IsLabFinishedStatus(string? status) =>
-            status == AppConstants.LabResultStatus.Complete ||
-            status == AppConstants.LabResultStatus.CompleteWithReason ||
-            status == "Completed"; // legacy value
+        private static bool IsRequiredLabBlockingOverall(string? labNeeded, string? labStatus) =>
+            labNeeded == AppConstants.Status.Completed && !IsLabFinishedForOverall(labStatus);
+
+        public static bool IsLabFinishedForOverall(string? labStatus)
+        {
+            if (string.IsNullOrWhiteSpace(labStatus))
+            {
+                return false;
+            }
+
+            var normalized = labStatus == "Completed"
+                ? AppConstants.LabResultStatus.Complete
+                : labStatus;
+
+            return normalized == AppConstants.LabResultStatus.Complete ||
+                normalized == AppConstants.LabResultStatus.CompleteWithReason;
+        }
     }
 }

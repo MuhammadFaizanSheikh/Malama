@@ -523,12 +523,23 @@
         const LAB_PAGE_PREFIXES = ["g6pd", "abo", "hiv", "preg", "lipid", "sickle", "dna"];
         const LAB_STATUS_PENDING = "Pending";
         const LAB_STATUS_COMPLETED = "Completed";
+        const INSUFFICIENT_BLOOD_SAMPLE_REASON = "@AppConstants.LabResultStatus.InsufficientBloodSampleReason";
         const LAB_RESULT_STATUS = {
             complete: "Complete",
             partiallyComplete: "Partially Complete",
             incomplete: "Incomplete",
             completeWithReason: "Complete with Reason"
         };
+
+        function isLabFinishedForOverall(labStatus) {
+            if (!labStatus) {
+                return false;
+            }
+
+            return labStatus === LAB_RESULT_STATUS.complete ||
+                labStatus === "Completed" ||
+                labStatus === LAB_RESULT_STATUS.completeWithReason;
+        }
 
         function isLabSectionOnPage(prefix) {
             if (prefix === "dna") {
@@ -554,7 +565,7 @@
             if (!isYes) {
                 const reasonSelect = form.querySelector(`select[name*='${namePrefix}ResultReason']`);
                 const reason = (reasonSelect?.value || "").trim();
-                if (reason === "Insufficient blood sample") {
+                if (reason === INSUFFICIENT_BLOOD_SAMPLE_REASON) {
                     return LAB_RESULT_STATUS.completeWithReason;
                 }
                 return LAB_RESULT_STATUS.incomplete;
@@ -647,9 +658,7 @@
 
             const allComplete = activePrefixes.every(function (prefix) {
                 const labStatus = document.getElementById(prefix + "_labStatus")?.value;
-                return labStatus === LAB_RESULT_STATUS.complete ||
-                    labStatus === "Completed" ||
-                    labStatus === LAB_RESULT_STATUS.completeWithReason;
+                return isLabFinishedForOverall(labStatus);
             });
 
             statusInput.value = allComplete ? LAB_STATUS_COMPLETED : LAB_STATUS_PENDING;
