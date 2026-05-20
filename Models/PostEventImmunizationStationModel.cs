@@ -24,5 +24,12 @@ namespace Malama.Models
         public DateTime? TetTdpDataEnteredDateTime { get; set; }
         public bool VaricellaDataEntered { get; set; }
         public DateTime? VaricellaDataEnteredDateTime { get; set; }
+
+        public string? HepBStatus { get; set; }
+        public string? HepAStatus { get; set; }
+        public string? FluStatus { get; set; }
+        public string? MmrStatus { get; set; }
+        public string? TetTdpStatus { get; set; }
+        public string? VaricellaStatus { get; set; }
     }
 }

@@ -42,7 +42,7 @@
 
 <div class="card mb-3">
     <div class="card-header fw-bold">
-        Lab Status Abbreviation
+        Immunization Status Abbreviation
     </div>
 
     <div class="card-body d-flex flex-wrap gap-3">
@@ -67,28 +67,51 @@
 
 @functions {
 
-    string VaccineStatusLabel(string? needed, bool? dataEntered)
+    public class VaccineStatusVm
     {
-        if (!string.Equals(needed, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase))
-        {
-            return "N/A";
-        }
-
-        if (dataEntered == true)
-        {
-            return "C";
-        }
-
-        return "I";
+        public string Text { get; set; }
+        public string BgColor { get; set; }
+        public string TextColor { get; set; }
     }
 
-    string VaccineBadgeColor(string status) =>
-        status switch
+    VaccineStatusVm GetVaccineStatus(string? vaccineNeeded, string? storedStatus)
+    {
+        if (vaccineNeeded != AppConstants.Status.Completed)
         {
-            "C" => "#198754",
-            "I" => "#ffc107",
-            _ => "#6c757d"
+            return new VaccineStatusVm
+            {
+                Text = "N/A",
+                BgColor = "#6c757d",
+                TextColor = "#ffffff"
+            };
+        }
+
+        var status = storedStatus == "Completed"
+            ? AppConstants.LabResultStatus.Complete
+            : storedStatus;
+
+        return status switch
+        {
+            AppConstants.LabResultStatus.Complete => new VaccineStatusVm
+            {
+                Text = "C",
+                BgColor = "#198754",
+                TextColor = "#ffffff"
+            },
+            AppConstants.LabResultStatus.Incomplete => new VaccineStatusVm
+            {
+                Text = "I",
+                BgColor = "#ffc107",
+                TextColor = "#000000"
+            },
+            _ => new VaccineStatusVm
+            {
+                Text = "I",
+                BgColor = "#ffc107",
+                TextColor = "#000000"
+            }
         };
+    }
 }
 
 <table id="postEventTable">
@@ -139,55 +162,55 @@
 
                 <td>
                     @{
-                        var status = VaccineStatusLabel(preImm?.HepBNeeded, postImm?.HepBDataEntered);
+                        var hepB = GetVaccineStatus(preImm?.HepBNeeded, postImm?.HepBStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@hepB.BgColor; color:@hepB.TextColor;">
+                        @hepB.Text
                     </span>
                 </td>
 
                 <td>
                     @{
-                        status = VaccineStatusLabel(preImm?.HepANeeded, postImm?.HepADataEntered);
+                        var hepA = GetVaccineStatus(preImm?.HepANeeded, postImm?.HepAStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@hepA.BgColor; color:@hepA.TextColor;">
+                        @hepA.Text
                     </span>
                 </td>
 
                 <td>
                     @{
-                        status = VaccineStatusLabel(preImm?.FluNeeded, postImm?.FluDataEntered);
+                        var flu = GetVaccineStatus(preImm?.FluNeeded, postImm?.FluStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@flu.BgColor; color:@flu.TextColor;">
+                        @flu.Text
                     </span>
                 </td>
 
                 <td>
                     @{
-                        status = VaccineStatusLabel(preImm?.MMRNeeded, postImm?.MmrDataEntered);
+                        var mmr = GetVaccineStatus(preImm?.MMRNeeded, postImm?.MmrStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@mmr.BgColor; color:@mmr.TextColor;">
+                        @mmr.Text
                     </span>
                 </td>
 
                 <td>
                     @{
-                        status = VaccineStatusLabel(preImm?.TetTdpNeeded, postImm?.TetTdpDataEntered);
+                        var tetTdp = GetVaccineStatus(preImm?.TetTdpNeeded, postImm?.TetTdpStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@tetTdp.BgColor; color:@tetTdp.TextColor;">
+                        @tetTdp.Text
                     </span>
                 </td>
 
                 <td>
                     @{
-                        status = VaccineStatusLabel(preImm?.VaricellaNeeded, postImm?.VaricellaDataEntered);
+                        var varicella = GetVaccineStatus(preImm?.VaricellaNeeded, postImm?.VaricellaStatus);
                     }
-                    <span class="badge" style="background-color:@VaccineBadgeColor(status); color:#fff;">
-                        @status
+                    <span class="badge" style="background-color:@varicella.BgColor; color:@varicella.TextColor;">
+                        @varicella.Text
                     </span>
                 </td>
 

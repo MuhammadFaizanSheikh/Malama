@@ -1,10 +1,20 @@
+@using ExcelFilesCompiler.Utilities
 @model ImmunizationVaccineCardViewModel
 
-@{
-    var cardId = Model.DataEnteredFieldName.Replace("DataEntered", "", StringComparison.Ordinal);
+@functions {
+    private static (string Label, string BadgeClass, string? InlineStyle) GetVaccineStatusBadge(string? status)
+    {
+        return status switch
+        {
+            "Complete" or "Completed" => ("Complete", "bg-success", null),
+            "Incomplete" => ("Incomplete", "bg-warning text-dark", null),
+            "N/A" => ("N/A", "bg-secondary", null),
+            _ => ("Incomplete", "bg-warning text-dark", null)
+        };
+    }
 }
 
-<div class="card mb-3 imm-vaccine-card" data-card-id="@cardId">
+<div class="card mb-3 imm-vaccine-card" data-card-id="@Model.CardId">
     <div class="card-header fw-bold">@Model.Title</div>
     <div class="card-body">
         <div class="row g-3 mb-2">
@@ -55,28 +65,45 @@
         <div class="form-check">
             <input type="checkbox"
                    class="form-check-input imm-data-entered"
-                   id="@(cardId)-data-entered"
+                   id="@(Model.CardId)-data-entered"
                    name="PostEventImmunizationStation.@Model.DataEnteredFieldName"
                    value="true"
-                   data-datetime-input="@(cardId)-data-entered-datetime"
-                   data-datetime-display="@(cardId)-data-entered-display"
+                   data-card-id="@Model.CardId"
+                   data-datetime-input="@(Model.CardId)-data-entered-datetime"
+                   data-datetime-display="@(Model.CardId)-data-entered-display"
                    @(Model.DataEntered ? "checked" : "") />
-            <label class="form-check-label" for="@(cardId)-data-entered">Data Entered</label>
+            <label class="form-check-label" for="@(Model.CardId)-data-entered">Data Entered</label>
         </div>
 
         <input type="hidden"
                class="data-entered-datetime-hidden"
-               id="@(cardId)-data-entered-datetime"
+               id="@(Model.CardId)-data-entered-datetime"
                name="PostEventImmunizationStation.@Model.DataEnteredDateTimeFieldName"
                value="@(Model.DataEnteredDateTime?.ToString("yyyy-MM-dd HH:mm:ss"))" />
 
         <div class="data-entered-datetime-display mt-2 text-muted small"
-             id="@(cardId)-data-entered-display"
+             id="@(Model.CardId)-data-entered-display"
              style="display:@(Model.DataEntered ? "block" : "none");">
             @if (Model.DataEntered && Model.DataEnteredDateTime.HasValue)
             {
                 <span>@Model.DataEnteredDateTime.Value.ToString("MM/dd/yyyy hh:mm tt")</span>
             }
+        </div>
+
+        @{
+            var statusBadge = GetVaccineStatusBadge(Model.VaccineStatus);
+        }
+        <div class="row mt-3">
+            <div class="col-md-6 d-flex align-items-center flex-wrap gap-2">
+                <label class="form-label mb-0 fw-semibold">Status:</label>
+                <input type="hidden"
+                       name="PostEventImmunizationStation.@Model.VaccineStatusName"
+                       id="@(Model.CardId)_immStatus"
+                       value="@(Model.VaccineStatus ?? "")" />
+                <span id="@(Model.CardId)_immStatusDisplay"
+                      class="badge @statusBadge.BadgeClass"
+                      style="@statusBadge.InlineStyle">@statusBadge.Label</span>
+            </div>
         </div>
     </div>
 </div>

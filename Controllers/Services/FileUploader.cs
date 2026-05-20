@@ -2878,7 +2878,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 TetTdpDataEntered = post.TetTdpDataEntered,
                 TetTdpDataEnteredDateTime = post.TetTdpDataEnteredDateTime,
                 VaricellaDataEntered = post.VaricellaDataEntered,
-                VaricellaDataEnteredDateTime = post.VaricellaDataEnteredDateTime
+                VaricellaDataEnteredDateTime = post.VaricellaDataEnteredDateTime,
+                HepBStatus = post.HepBStatus,
+                HepAStatus = post.HepAStatus,
+                FluStatus = post.FluStatus,
+                MmrStatus = post.MmrStatus,
+                TetTdpStatus = post.TetTdpStatus,
+                VaricellaStatus = post.VaricellaStatus
             };
     }
 }

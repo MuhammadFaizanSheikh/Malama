@@ -310,6 +310,10 @@ namespace ExcelFilesCompiler.Controllers
                         "{ClassName}, {MethodName}, Add operation started. User={User}",
                         CLASSNAME, methodName, user.UserName);
 
+                    PostEventImmunizationStationStatusHelper.ApplyPerVaccineStatuses(
+                        model.PostEventImmunizationStation,
+                        model.ImmunizationStation);
+
                     var result = await _postEventImmunizationStationService.AddAsync(
                         model.PostEventImmunizationStation, user.UserName);
 
@@ -333,6 +337,10 @@ namespace ExcelFilesCompiler.Controllers
                     _logger.LogInformation(
                         "{ClassName}, {MethodName}, Update operation started. Id={Id}, User={User}",
                         CLASSNAME, methodName, model.PostEventImmunizationStation.Id, user.UserName);
+
+                    PostEventImmunizationStationStatusHelper.ApplyPerVaccineStatuses(
+                        model.PostEventImmunizationStation,
+                        model.ImmunizationStation);
 
                     var result = await _postEventImmunizationStationService.UpdateAsync(
                         model.PostEventImmunizationStation, user.UserName);

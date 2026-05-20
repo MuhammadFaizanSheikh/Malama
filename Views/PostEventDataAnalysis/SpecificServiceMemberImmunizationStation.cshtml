@@ -1,4 +1,5 @@
 @using Malama.Utilities
+@using ExcelFilesCompiler.Utilities
 @using Malama.Models
 @model PostEventImmunizationStationAnalysisDto
 
@@ -129,6 +130,11 @@
         (function () {
             const IMM_STATUS_PENDING = 'Pending';
             const IMM_STATUS_COMPLETED = 'Completed';
+            const VACCINE_RESULT_STATUS = {
+                complete: 'Complete',
+                incomplete: 'Incomplete',
+                notApplicable: 'N/A'
+            };
 
             function formatDateTimeForPost(date) {
                 const pad = (n) => String(n).padStart(2, '0');
@@ -177,23 +183,84 @@
                 }
             }
 
+            function computeVaccineStatus(checkbox) {
+                return checkbox.checked
+                    ? VACCINE_RESULT_STATUS.complete
+                    : VACCINE_RESULT_STATUS.incomplete;
+            }
+
+            function getVaccineStatusBadgeMeta(status) {
+                switch (status) {
+                    case VACCINE_RESULT_STATUS.complete:
+                    case 'Completed':
+                        return { label: 'Complete', badgeClass: 'bg-success', style: '' };
+                    case VACCINE_RESULT_STATUS.notApplicable:
+                        return { label: 'N/A', badgeClass: 'bg-secondary', style: '' };
+                    default:
+                        return { label: 'Incomplete', badgeClass: 'bg-warning text-dark', style: '' };
+                }
+            }
+
+            function renderVaccineStatusBadge(cardId, status) {
+                const statusDisplay = document.getElementById(cardId + '_immStatusDisplay');
+                if (!statusDisplay) {
+                    return;
+                }
+
+                const badge = getVaccineStatusBadgeMeta(status);
+                statusDisplay.textContent = badge.label;
+                statusDisplay.className = badge.badgeClass ? 'badge ' + badge.badgeClass : 'badge';
+                statusDisplay.style.cssText = badge.style || '';
+            }
+
+            function updateVaccineCardStatus(checkbox) {
+                const cardId = checkbox.getAttribute('data-card-id');
+                const statusHidden = document.getElementById(cardId + '_immStatus');
+                if (!cardId || !statusHidden) {
+                    return;
+                }
+
+                const status = computeVaccineStatus(checkbox);
+                statusHidden.value = status;
+                renderVaccineStatusBadge(cardId, status);
+            }
+
+            function isVaccineFinishedForOverall(vaccineStatus) {
+                if (!vaccineStatus) {
+                    return false;
+                }
+
+                return vaccineStatus === VACCINE_RESULT_STATUS.complete ||
+                    vaccineStatus === 'Completed';
+            }
+
+            function updateAllVaccineCardStatuses() {
+                document.querySelectorAll('.imm-data-entered').forEach(function (checkbox) {
+                    updateVaccineCardStatus(checkbox);
+                });
+            }
+
             function updatePostEventImmunizationStatus() {
                 const statusInput = document.getElementById('PostEventImmunizationStation_Status');
-                const checkboxes = document.querySelectorAll('.imm-data-entered');
+                const cards = document.querySelectorAll('.imm-vaccine-card');
                 if (!statusInput) {
                     return;
                 }
 
-                if (checkboxes.length === 0) {
+                updateAllVaccineCardStatuses();
+
+                if (cards.length === 0) {
                     statusInput.value = IMM_STATUS_PENDING;
                     return;
                 }
 
-                const allChecked = Array.from(checkboxes).every(function (checkbox) {
-                    return checkbox.checked;
+                const allComplete = Array.from(cards).every(function (card) {
+                    const cardId = card.getAttribute('data-card-id');
+                    const vaccineStatus = document.getElementById(cardId + '_immStatus')?.value;
+                    return isVaccineFinishedForOverall(vaccineStatus);
                 });
 
-                statusInput.value = allChecked ? IMM_STATUS_COMPLETED : IMM_STATUS_PENDING;
+                statusInput.value = allComplete ? IMM_STATUS_COMPLETED : IMM_STATUS_PENDING;
             }
 
             document.querySelectorAll('.imm-data-entered').forEach(function (checkbox) {
