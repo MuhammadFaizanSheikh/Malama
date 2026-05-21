@@ -90,6 +90,8 @@
 
         public string EventService { get; set; }
 
+        public string? Type { get; set; }
+
         public int? FinalPreEventConfirmedNumbers { get; set; }
 
         public int? PostEventNumbers { get; set; }

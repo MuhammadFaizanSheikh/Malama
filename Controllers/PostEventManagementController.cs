@@ -78,7 +78,7 @@ namespace ExcelFilesCompiler.Controllers
                     );
 
                 string eventID = string.Empty;
-
+                
                 if (postEventManagementId > 0)
                 {
                     var result = await _postEventManagementService.GetById(postEventManagementId);

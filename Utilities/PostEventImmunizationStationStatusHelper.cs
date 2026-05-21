@@ -101,11 +101,7 @@ namespace ExcelFilesCompiler.Utilities
                 return false;
             }
 
-            var normalized = vaccineStatus == "Completed"
-                ? AppConstants.LabResultStatus.Complete
-                : vaccineStatus;
-
-            return normalized == AppConstants.LabResultStatus.Complete;
+            return vaccineStatus == AppConstants.LabResultStatus.Complete;
         }
     }
 }

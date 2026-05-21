@@ -166,27 +166,6 @@
                                 @contract.StatusDescription
                             </a>
                         </td>
-
-                        <!-- Actions Column -->
-                        @* <td>
-                            <div class="button-container">
-                                @if (contract.CanEdit)
-                                {
-                                    <a href="javascript:void(0);"
-                                       class="btn btn-primary edit-btn"
-                                       data-id="@contract.Id"
-                                       style="background-color: rgba(80, 90, 201, 1);">
-                                        Edit
-                                    </a>
-                                }
-
-                                <a href="javascript:void(0);"
-                                   class="btn btn-secondary view-btn"
-                                   data-id="@contract.Id">
-                                    View
-                                </a>
-                            </div>
-                        </td> *@
                         <td>
                             <a asp-action="PostEventManagement" asp-route-eventManagementId="@contract.Id" asp-route-postEventManagementId="@contract.PostEventManagementId" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>

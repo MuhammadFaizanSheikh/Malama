@@ -391,6 +391,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                             {
                                 EventServiceDetailId = x.Id,
                                 EventService = x.EventService,
+                                Type = x.Type,
                                 FinalPreEventConfirmedNumbers = x.FinalPreEventConfirmedNumbers
                             }).ToList()
                         : new List<PostEventServiceDetailDto>(),
@@ -436,6 +437,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                         ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
                         : null
                 };
+
+                await PostEventManagementCountsHelper.ApplyPostEventCountsToDtoAsync(
+                    _unitOfWork,
+                    dto,
+                    em.Id,
+                    dto.Id);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, DTO prepared successfully. EventManagementId={Id}",
                     CLASSNAME, methodName, eventManagementId);
