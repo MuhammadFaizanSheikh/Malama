@@ -386,7 +386,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     // ✅ Services mapping (ONLY selected)
                     EventServices = em.EventServiceDetailList != null
                         ? em.EventServiceDetailList
-                            .Where(x => x.IsSelected)
+                            .Where(x => x.IsSelected && x.IsConfirmed)
                             .Select(x => new PostEventServiceDetailDto
                             {
                                 EventServiceDetailId = x.Id,
@@ -437,12 +437,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                         ? string.Join(", ", em.EventManagementTaskforcesList.Select(t => t.Taskforce))
                         : null
                 };
-
-                await PostEventManagementCountsHelper.ApplyPostEventCountsToDtoAsync(
-                    _unitOfWork,
-                    dto,
-                    em.Id,
-                    dto.Id);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, DTO prepared successfully. EventManagementId={Id}",
                     CLASSNAME, methodName, eventManagementId);

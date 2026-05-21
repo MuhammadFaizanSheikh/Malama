@@ -1,48 +1,12 @@
-using ExcelFilesCompiler.UnitOfWork;
 using Malama.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExcelFilesCompiler.Utilities
 {
+    /// <summary>
+    /// Computes PostEventNumbers from already-loaded lab and immunization station records.
+    /// </summary>
     public static class PostEventManagementCountsHelper
     {
-        public static async Task ApplyPostEventCountsToDtoAsync(
-            IUnitOfWork unitOfWork,
-            PostEventManagementDto dto,
-            long eventManagementId,
-            long postEventManagementId)
-        {
-            var effectivePostEventManagementId = postEventManagementId;
-
-            if (effectivePostEventManagementId <= 0)
-            {
-                effectivePostEventManagementId = await unitOfWork.PostEventManagement
-                    .GetAllWithConditionNoTracking(x => x.EventManagementId == eventManagementId)
-                    .Select(x => x.Id)
-                    .FirstOrDefaultAsync();
-            }
-
-            var labStations = new List<PostEventLabStation>();
-            var immunizationStations = new List<PostEventImmunizationStation>();
-
-            if (effectivePostEventManagementId > 0)
-            {
-                labStations = await unitOfWork.PostEventLabStation
-                    .GetAllWithConditionNoTracking(x => x.PostEventManagementId == effectivePostEventManagementId)
-                    .ToListAsync();
-
-                immunizationStations = await unitOfWork.PostEventImmunizationStation
-                    .GetAllWithConditionNoTracking(x => x.PostEventManagementId == effectivePostEventManagementId)
-                    .ToListAsync();
-            }
-
-            IReadOnlyDictionary<long, string?>? typeLookup = dto.EventServices?
-                .Where(x => x.EventServiceDetailId > 0)
-                .ToDictionary(x => x.EventServiceDetailId, x => x.Type);
-
-            ApplyPostEventNumbers(dto.EventServices, labStations, immunizationStations, typeLookup);
-        }
-
         private static readonly string[] LabFinishedStatuses =
         {
             AppConstants.LabResultStatus.Complete,

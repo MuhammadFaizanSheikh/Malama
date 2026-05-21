@@ -131,7 +131,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     x => x.EventManagement.ContractDetails,
                     x => x.EventManagement.EventManagementTaskforcesList,
                     x => x.EventManagement.EventServiceDetailList,
-                    x => x.PostEventServiceDetails.OrderBy(p => p.EventServiceDetailId)
+                    x => x.PostEventServiceDetails.OrderBy(p => p.EventServiceDetailId),
+                    x => x.PostEventLabStation,
+                    x => x.PostEventImmunizationStation
                 )
                 .Include(x => x.EventManagement.ServiceMembersParents)
                     .ThenInclude(p => p.ServiceMembersChildren)
@@ -257,11 +259,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                         : null
                 };
 
-                await PostEventManagementCountsHelper.ApplyPostEventCountsToDtoAsync(
-                    _unitOfWork,
+                ApplyPostEventNumbersToDto(
                     dto,
-                    postEvent.EventManagementId,
-                    postEvent.Id);
+                    postEvent.Id,
+                    postEvent.PostEventLabStation,
+                    postEvent.PostEventImmunizationStation);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, DTO prepared successfully. Id={Id}",
                     CLASSNAME, methodName, postEventManagementId);
@@ -273,6 +275,57 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Exception occurred. Id={Id}",
                     CLASSNAME, methodName, postEventManagementId);
+
+                throw;
+            }
+        }
+
+        private void ApplyPostEventNumbersToDto(
+            PostEventManagementDto dto,
+            long postEventManagementId,
+            IList<PostEventLabStation>? labStations,
+            IList<PostEventImmunizationStation>? immunizationStations)
+        {
+            const string methodName = nameof(ApplyPostEventNumbersToDto);
+
+            try
+            {
+                var labs = labStations?.ToList() ?? new List<PostEventLabStation>();
+                var immunizations = immunizationStations?.ToList() ?? new List<PostEventImmunizationStation>();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Applying post-event numbers. PostEventManagementId={PostEventManagementId}, LabStationCount={LabCount}, ImmunizationStationCount={ImmunizationCount}, EventServiceCount={EventServiceCount}",
+                    CLASSNAME,
+                    methodName,
+                    postEventManagementId,
+                    labs.Count,
+                    immunizations.Count,
+                    dto.EventServices?.Count ?? 0);
+
+                IReadOnlyDictionary<long, string?>? typeLookup = dto.EventServices?
+                    .Where(x => x.EventServiceDetailId > 0)
+                    .ToDictionary(x => x.EventServiceDetailId, x => x.Type);
+
+                PostEventManagementCountsHelper.ApplyPostEventNumbers(
+                    dto.EventServices,
+                    labs,
+                    immunizations,
+                    typeLookup);
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Post-event numbers applied successfully. PostEventManagementId={PostEventManagementId}",
+                    CLASSNAME,
+                    methodName,
+                    postEventManagementId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}, {MethodName}, Failed to apply post-event numbers. PostEventManagementId={PostEventManagementId}",
+                    CLASSNAME,
+                    methodName,
+                    postEventManagementId);
 
                 throw;
             }
