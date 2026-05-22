@@ -158,24 +158,23 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogInformation("{ClassName}, {MethodName}, ServiceMembersChildren count : {totalServiceMembers}",
                     CLASSNAME, methodName, totalServiceMembers);
 
-                // ✅ Load missing EventServiceDetail (manual include fix)
-                var serviceDetailIds = postEvent.PostEventServiceDetails?
-                    .Select(x => x.EventServiceDetailId)
-                    .ToList() ?? new List<long>();
-
-                var serviceDetails = serviceDetailIds.Any()
-                    ? await _unitOfWork.EventServiceDetail
-                        .GetWithIncludeNoTracking(x => serviceDetailIds.Contains(x.Id))
-                        .ToListAsync()
-                    : new List<EventServiceDetail>();
-
-                foreach (var item in postEvent.PostEventServiceDetails)
-                {
-                    item.EventServiceDetail = serviceDetails
-                        .FirstOrDefault(x => x.Id == item.EventServiceDetailId);
-                }
-
                 var em = postEvent.EventManagement;
+
+                var postEventServiceByDetailId = (postEvent.PostEventServiceDetails ?? new List<PostEventServiceDetail>())
+                    .GroupBy(x => x.EventServiceDetailId)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                var selectedEventServices = (em?.EventServiceDetailList ?? new List<EventServiceDetail>())
+                    .Where(x => x.IsSelected && x.IsConfirmed)
+                    .OrderBy(x => x.Id)
+                    .ToList();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Building event services from EventServiceDetail. SelectedCount={SelectedCount}, SavedPostEventServiceCount={SavedCount}",
+                    CLASSNAME,
+                    methodName,
+                    selectedEventServices.Count,
+                    postEventServiceByDetailId.Count);
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Converting timezone. Timezone={Timezone}",
                     CLASSNAME, methodName, em?.Timezone);
@@ -207,19 +206,24 @@ namespace ExcelFilesCompiler.Controllers.Services
                         }).ToList()
                         : new List<PostEventStartEndTimeDayWiseDto>(),
 
-                    // ✅ Services mapping
-                    EventServices = postEvent.PostEventServiceDetails != null
-                        ? postEvent.PostEventServiceDetails.Select(x => new PostEventServiceDetailDto
+                    // ✅ Services: list from EventServiceDetail; post-event fields from PostEventServiceDetail
+                    EventServices = selectedEventServices
+                        .Select(eventService =>
                         {
-                            Id = x.Id,
-                            EventServiceDetailId = x.EventServiceDetailId,
-                            EventService = x.EventServiceDetail?.EventService,
-                            Type = x.EventServiceDetail?.Type,
-                            FinalPreEventConfirmedNumbers = x.EventServiceDetail?.FinalPreEventConfirmedNumbers,
-                            Completed = x.Completed,
-                            PostEventNumbers = x.PostEventNumbers
-                        }).ToList()
-                        : new List<PostEventServiceDetailDto>(),
+                            postEventServiceByDetailId.TryGetValue(eventService.Id, out var savedPostEventService);
+
+                            return new PostEventServiceDetailDto
+                            {
+                                Id = savedPostEventService?.Id ?? 0,
+                                EventServiceDetailId = eventService.Id,
+                                EventService = eventService.EventService,
+                                Type = eventService.Type,
+                                FinalPreEventConfirmedNumbers = eventService.FinalPreEventConfirmedNumbers,
+                                Completed = savedPostEventService?.Completed ?? false,
+                                PostEventNumbers = savedPostEventService?.PostEventNumbers
+                            };
+                        })
+                        .ToList(),
 
                     // ✅ Contract details (FULL)
                     ContractDetails = em?.ContractDetails == null
