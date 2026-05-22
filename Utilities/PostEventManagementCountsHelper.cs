@@ -9,9 +9,7 @@ namespace ExcelFilesCompiler.Utilities
     {
         private static readonly string[] LabFinishedStatuses =
         {
-            AppConstants.LabResultStatus.Complete,
-            AppConstants.LabResultStatus.CompleteWithReason,
-            "Completed"
+            AppConstants.LabResultStatus.Complete
         };
 
         public static void ApplyPostEventNumbers(
@@ -120,8 +118,7 @@ namespace ExcelFilesCompiler.Utilities
         private static bool IsLabItemComplete(PostEventLabStation lab, string eventService)
         {
             var status = GetLabStatusForEventService(lab, eventService);
-            return !string.IsNullOrWhiteSpace(status) &&
-                LabFinishedStatuses.Contains(status, StringComparer.Ordinal);
+            return !string.IsNullOrWhiteSpace(status) && status.Equals(AppConstants.LabResultStatus.Complete);
         }
 
         private static string? GetLabStatusForEventService(PostEventLabStation lab, string eventService)
