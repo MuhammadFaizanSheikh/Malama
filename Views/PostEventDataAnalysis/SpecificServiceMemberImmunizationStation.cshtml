@@ -117,6 +117,17 @@
             <i class="bi bi-check-circle"></i> Save
         </button>
 
+        @if (vaccineCards.Any())
+        {
+            <button type="button"
+                    id="btnSf600Pdf"
+                    class="btn btn-general btn-lg me-3"
+                    style="display: none;"
+                    data-service-members-child-id="@Model.PostEventImmunizationStation.ServiceMembersChildId">
+                <i class="bi bi-file-earmark-pdf"></i> SF600
+            </button>
+        }
+
         <a asp-action="SelectStation"
            asp-route-eventManagementId="@Model.EventId"
            asp-route-selectedStation="Immunization"
@@ -273,6 +284,48 @@
 
             updatePostEventImmunizationStatus();
         })();
+
+        $('#btnSf600Pdf').on('click', function () {
+            const serviceMembersChildId = $(this).data('service-members-child-id');
+            if (!serviceMembersChildId) {
+                alert('Service member is missing.');
+                return;
+            }
+
+            const url = '@Url.Action("GenerateSf600ImmunizationPdf", "PostEventDataAnalysis")'
+                + '?serviceMembersChildId=' + encodeURIComponent(serviceMembersChildId);
+
+            const $btn = $(this);
+            $btn.prop('disabled', true);
+
+            fetch(url)
+                .then(async function (response) {
+                    if (!response.ok) {
+                        const message = await response.text();
+                        throw new Error(message || 'Failed to generate SF600 PDF.');
+                    }
+
+                    return response.blob();
+                })
+                .then(function (blob) {
+                    if (!blob || blob.size === 0) {
+                        alert('No PDF was generated.');
+                        return;
+                    }
+
+                    const objectUrl = window.URL.createObjectURL(blob);
+                    window.open(objectUrl, '_blank');
+                    setTimeout(function () {
+                        window.URL.revokeObjectURL(objectUrl);
+                    }, 60000);
+                })
+                .catch(function (error) {
+                    alert(error.message || 'Failed to generate SF600 PDF.');
+                })
+                .finally(function () {
+                    $btn.prop('disabled', false);
+                });
+        });
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();

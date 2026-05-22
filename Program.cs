@@ -49,6 +49,7 @@ builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationServi
 builder.Services.AddScoped<IDawsonUserService, DawsonUserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+builder.Services.AddScoped<ISf600ImmunizationPdfGenerator, Sf600ImmunizationPdfGenerator>();
 builder.Services.AddScoped<IEventUsersService, EventUsersService>();
 builder.Services.AddScoped<ISubmissionTokenService, SubmissionTokenService>();
 builder.Services.AddScoped<IPostEventManagementService, PostEventManagementService>();

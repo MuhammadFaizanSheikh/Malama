@@ -18,6 +18,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IFileUploader _fileUploader;
         private readonly IPostEventLabStationService _postEventLabStationService;
         private readonly IPostEventImmunizationStationService _postEventImmunizationStationService;
+        private readonly ISf600ImmunizationPdfGenerator _sf600ImmunizationPdfGenerator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<PostEventDataAnalysisController> _logger;
         private const string CLASSNAME = "PostEventDataAnalysisController";
@@ -27,6 +28,7 @@ namespace ExcelFilesCompiler.Controllers
             ILogger<PostEventDataAnalysisController> logger,
             IPostEventLabStationService postEventLabStationService,
             IPostEventImmunizationStationService postEventImmunizationStationService,
+            ISf600ImmunizationPdfGenerator sf600ImmunizationPdfGenerator,
             IFileUploader fileUploader,
             IEventManagementService eventManagementService,
             UserManager<ApplicationUser> userManager)
@@ -34,6 +36,7 @@ namespace ExcelFilesCompiler.Controllers
             _eventManagementService = eventManagementService;
             _postEventLabStationService = postEventLabStationService;
             _postEventImmunizationStationService = postEventImmunizationStationService;
+            _sf600ImmunizationPdfGenerator = sf600ImmunizationPdfGenerator;
             _fileUploader = fileUploader;
             _userManager = userManager;
             _logger = logger;
@@ -259,6 +262,71 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseMessage"] = "Something went wrong.";
 
                 return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("PostEventDataAnalysis_View")]
+        public async Task<IActionResult> GenerateSf600ImmunizationPdf(long serviceMembersChildId)
+        {
+            const string methodName = nameof(GenerateSf600ImmunizationPdf);
+
+            _logger.LogInformation(
+                "{ClassName}.{MethodName} - Called for ServiceMembersChildId={ServiceMembersChildId}",
+                CLASSNAME,
+                methodName,
+                serviceMembersChildId);
+
+            try
+            {
+                var model = await _fileUploader.GetPostEventImmunizationStationAnalysisDtoAsync(serviceMembersChildId);
+                if (model == null)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}.{MethodName} - No data found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME,
+                        methodName,
+                        serviceMembersChildId);
+
+                    return NotFound("Immunization record not found.");
+                }
+
+                if (!model.GetVaccineCards().Any())
+                {
+                    return BadRequest("No immunization data available to generate SF600.");
+                }
+
+                var pdfBytes = await _sf600ImmunizationPdfGenerator.GenerateAsync(model);
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - SF600 PDF generated for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME,
+                    methodName,
+                    serviceMembersChildId);
+
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "{ClassName}.{MethodName} - Cannot generate SF600 for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME,
+                    methodName,
+                    serviceMembersChildId);
+
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error generating SF600 for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME,
+                    methodName,
+                    serviceMembersChildId);
+
+                return StatusCode(500, "Something went wrong while generating SF600 PDF.");
             }
         }
 
