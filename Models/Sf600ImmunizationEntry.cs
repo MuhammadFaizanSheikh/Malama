@@ -2,6 +2,7 @@ namespace Malama.Models
 {
     public class Sf600ImmunizationEntry
     {
+        public int SequenceNumber { get; set; }
         public string VaccineTitle { get; set; } = string.Empty;
         public string? Manufacturer { get; set; }
         public string? Dose { get; set; }
@@ -10,6 +11,7 @@ namespace Malama.Models
         public DateTime? ExpirationDate { get; set; }
         public string? AdministrationType { get; set; }
         public string? BodyPart { get; set; }
+        public string? DisplayBodyPart { get; set; }
         public string? Site { get; set; }
         public string? StaffName { get; set; }
         public DateTime? GivenDateTime { get; set; }

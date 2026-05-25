@@ -1,4 +1,5 @@
 using ExcelFilesCompiler.Interfaces;
+using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -8,9 +9,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 {
     public class Sf600ImmunizationPdfGenerator : ISf600ImmunizationPdfGenerator
     {
-        private const int MaxImmunizations = 6;
-        private const int Page1SlotCount = 4;
-        private const int Page2SlotCount = 2;
+        private const float PageMarginH = 36f;
+        private const float PageMarginV = 36f;
+        private const float InnerBorderThickness = 0.5f;
+        private const float SeparatorBorderThickness = 1.5f;
+        private const float FacilityRowMinHeight = 30f;
+        private const float FacilityWritingAreaHeight = 14f;
 
         private readonly ILogger<Sf600ImmunizationPdfGenerator> _logger;
 
@@ -34,19 +38,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             var entries = BuildEntries(analysisDto);
             if (entries.Count == 0)
             {
-                throw new InvalidOperationException("No immunization data available for SF600 generation.");
-            }
-
-            if (entries.Count > MaxImmunizations)
-            {
-                _logger.LogWarning(
-                    "{ClassName}, {MethodName}, SF600 supports {Max} immunizations; {Count} found. Extra entries omitted.",
-                    nameof(Sf600ImmunizationPdfGenerator),
-                    methodName,
-                    MaxImmunizations,
-                    entries.Count);
-
-                entries = entries.Take(MaxImmunizations).ToList();
+                throw new InvalidOperationException("No completed immunization data available for SF600 generation.");
             }
 
             try
@@ -56,47 +48,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     container.Page(page =>
                     {
                         page.Size(PageSizes.Letter);
-                        page.MarginHorizontal(24);
-                        page.MarginVertical(18);
-                        page.DefaultTextStyle(Sf600Styles.Body);
-                        page.Content().Column(column =>
-                        {
-                            column.Spacing(4);
-                            ComposePageHeader(column, isBackPage: false);
-                            ComposePrivacyStatement(column);
-                            ComposeChronologicalTitle(column);
-                            ComposeTableColumnHeaders(column);
-                            ComposePatientIdentification(column, analysisDto.ServiceMember);
-                            ComposeFormFooter(column, isBackPage: false);
-
-                            for (var slot = 0; slot < Page1SlotCount; slot++)
-                            {
-                                var entry = slot < entries.Count ? entries[slot] : null;
-                                ComposeImmunizationBlock(column, slot + 1, entry);
-                            }
-                        });
-                    });
-
-                    container.Page(page =>
-                    {
-                        page.Size(PageSizes.Letter);
-                        page.MarginHorizontal(24);
-                        page.MarginVertical(18);
-                        page.DefaultTextStyle(Sf600Styles.Body);
-                        page.Content().Column(column =>
-                        {
-                            column.Spacing(4);
-                            ComposePageHeader(column, isBackPage: true);
-                            ComposeTableColumnHeaders(column);
-                            ComposeFormFooter(column, isBackPage: true);
-
-                            for (var slot = 0; slot < Page2SlotCount; slot++)
-                            {
-                                var entryIndex = Page1SlotCount + slot;
-                                var entry = entryIndex < entries.Count ? entries[entryIndex] : null;
-                                ComposeImmunizationBlock(column, entryIndex + 1, entry);
-                            }
-                        });
+                        page.MarginHorizontal(PageMarginH);
+                        page.MarginVertical(PageMarginV);
+                        page.DefaultTextStyle(Sf600Styles.Arial10);
+                        page.Content().Element(c => ComposeDocument(c, entries));
                     });
                 });
 
@@ -122,220 +77,257 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private static void ComposePageHeader(ColumnDescriptor column, bool isBackPage)
+        private static void ComposeDocument(IContainer container, IReadOnlyList<Sf600ImmunizationEntry> entries)
         {
-            column.Item().Row(row =>
+            container.Column(column =>
             {
-                row.RelativeItem().Text("FOR OFFICIAL USE ONLY").Style(Sf600Styles.SmallBold);
-                row.RelativeItem().AlignRight().Text("When Filled Out").Style(Sf600Styles.Small);
-            });
+                column.Spacing(8);
 
-            column.Item().Row(row =>
+                ComposeTitleRow(column);
+                ComposePrivacyStatement(column);
+                ComposeMainTable(column, entries);
+            });
+        }
+
+        private static void ComposeTitleRow(ColumnDescriptor column)
+        {
+            column.Item().Border(1).BorderColor(Sf600Styles.LineColor).Row(row =>
             {
-                row.RelativeItem().Text("PREVIOUS EDITION IS NOT USABLE").Style(Sf600Styles.Small);
-                row.RelativeItem().AlignRight().Text("AUTHORIZED FOR LOCAL REPRODUCTION").Style(Sf600Styles.Small);
-            });
+                row.RelativeItem(1).BorderRight(1).BorderColor(Sf600Styles.LineColor)
+                    .Padding(4).AlignLeft()
+                    .Text("MEDICAL RECORD")
+                    .Style(Sf600Styles.Arial10Bold);
 
-            column.Item().PaddingTop(4).AlignCenter().Text("MEDICAL RECORD").Style(Sf600Styles.Title);
+                row.RelativeItem(1).Padding(4).AlignRight()
+                    .Text("CHRONOLOGICAL RECORD OF MEDICAL CARE")
+                    .Style(Sf600Styles.Arial10Bold);
+            });
         }
 
         private static void ComposePrivacyStatement(ColumnDescriptor column)
         {
-            column.Item().PaddingTop(2).Text(
-                    "PRIVACY ACT STATEMENT: This information is subject to the Privacy Act of 1974 (5 U.S.C. Section 552a). " +
-                    "This information may be provided to appropriate Government agencies when relevant to civil, criminal or regulatory investigations or prosecutions. " +
-                    "The Social Security Number, authorized by Public Law 93-579 Section 7 (b) and Executive Order 9397, is used as a unique identifier " +
-                    "to distinguish between employees with the same names and birth dates and to ensure that each individual's record in the system is complete " +
-                    "and accurate and the information is properly attributed.")
-                .Style(Sf600Styles.FinePrint);
-        }
-
-        private static void ComposeChronologicalTitle(ColumnDescriptor column)
-        {
-            column.Item().PaddingTop(6).AlignCenter()
-                .Text("CHRONOLOGICAL RECORD OF MEDICAL CARE")
-                .Style(Sf600Styles.SectionTitle);
-        }
-
-        private static void ComposeTableColumnHeaders(ColumnDescriptor column)
-        {
-            column.Item().PaddingTop(4).Border(1).BorderColor(Sf600Styles.BorderColor).Row(row =>
+            column.Item().Text(text =>
             {
-                row.ConstantItem(95).BorderRight(1).BorderColor(Sf600Styles.BorderColor)
-                    .Padding(4).AlignMiddle().Text("DATE").Style(Sf600Styles.LabelBold);
-
-                row.RelativeItem().Padding(4).AlignMiddle().Text(
-                        "SYMPTOMS, DIAGNOSIS, TREATMENT, TREATING ORGANIZATION (Sign each entry)")
-                    .Style(Sf600Styles.LabelBold);
+                text.Span("PRIVACY ACT STATEMENT: ").Style(Sf600Styles.Arial10Bold);
+                text.Span(
+                        "This information is subject to the Privacy Act of 1974 (5 U.S.C. Section 552a).  This information " +
+                        "may be provided to appropriate Government agencies when relevant to civil, criminal or regulatory investigations or prosecutions. " +
+                        "The Social Security Number, authorized by Public Law 93-579 Section 7 (b) and Executive Order 9397, is used as a unique " +
+                        "identifier to distinguish between employees with the same names and birth dates and to ensure that each individual's record in " +
+                        "the system is complete and accurate and the information is properly attributed.")
+                    .Style(Sf600Styles.Arial10);
             });
         }
 
-        private static void ComposePatientIdentification(ColumnDescriptor column, ServiceMembersChildDto? member)
+        private static void ComposeMainTable(ColumnDescriptor column, IReadOnlyList<Sf600ImmunizationEntry> entries)
         {
-            column.Item().PaddingTop(4).Border(1).BorderColor(Sf600Styles.BorderColor).Padding(6).Column(box =>
+            column.Item().Border(1).BorderColor(Sf600Styles.LineColor).Column(table =>
             {
-                box.Spacing(3);
-
-                box.Item().Text(
-                        "PATIENT'S IDENTIFICATION: (For typed or written entries, give: Name - last, first, middle; ID NUMBER or Social Security Number; Gender; Date of Birth; Rank/Grade.)")
-                    .Style(Sf600Styles.Label);
-
-                box.Item().Row(row =>
+                table.Item().BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor).Row(row =>
                 {
-                    row.RelativeItem().Element(c => LabelValue(c, "Name:", member?.FullName));
-                    row.RelativeItem().Element(c => LabelValue(c, "ID NUMBER:", member?.DodId));
+                    row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                        .Padding(4)
+                        .Text("DATE")
+                        .Style(Sf600Styles.Arial8Bold);
+
+                    row.RelativeItem(3).Padding(4)
+                        .Text("SYMPTOMS, DIAGNOSIS, TREATMENT, TREATING ORGANIZATION (Sign each entry)")
+                        .Style(Sf600Styles.Arial8Bold);
                 });
 
-                box.Item().Row(row =>
+                foreach (var entry in entries)
                 {
-                    row.RelativeItem().Element(c => LabelValue(c, "Date of Birth:", member?.Dob));
-                    row.RelativeItem().Element(c => LabelValue(c, "Gender:", member?.Sex));
-                });
+                    table.Item().Element(c => ComposeImmunizationBlock(c, entry));
+                }
 
-                box.Item().Row(row =>
-                {
-                    row.RelativeItem().Element(c => LabelValue(c, "Rank/Grade:", null));
-                    row.RelativeItem().Element(c => LabelValue(c, "Barcode:", member?.Barcode));
-                });
-
-                box.Item().PaddingTop(2).Row(row =>
-                {
-                    row.ConstantItem(120).Text("HOSPITAL OR MEDICAL FACILITY").Style(Sf600Styles.Label);
-                    row.RelativeItem().Text("SPONSOR'S NAME").Style(Sf600Styles.Label);
-                });
-
-                box.Item().Row(row =>
-                {
-                    row.ConstantItem(120).Text("STATUS").Style(Sf600Styles.Label);
-                    row.RelativeItem().Text("DEPARTMENT/SERVICE").Style(Sf600Styles.Label);
-                });
-
-                box.Item().Row(row =>
-                {
-                    row.ConstantItem(120).Text("RELATIONSHIP TO SPONSOR").Style(Sf600Styles.Label);
-                    row.RelativeItem().Text("RECORDS MAINTAINED AT").Style(Sf600Styles.Label);
-                });
-
-                box.Item().Row(row =>
-                {
-                    row.RelativeItem().Text("REGISTER NUMBER").Style(Sf600Styles.Label);
-                    row.RelativeItem().Text("WARD NUMBER").Style(Sf600Styles.Label);
-                });
-
-                box.Item().Text("SOCIAL SECURITY/ID NUMBER").Style(Sf600Styles.Label);
+                ComposeFacilityInfoRows(table);
             });
-
-            column.Item().PaddingTop(6).AlignCenter()
-                .Text("CHRONOLOGICAL RECORD OF MEDICAL CARE")
-                .Style(Sf600Styles.SectionTitle);
         }
 
-        private static void ComposeFormFooter(ColumnDescriptor column, bool isBackPage)
+        private static void ComposeFacilityInfoRows(ColumnDescriptor table)
         {
-            column.Item().PaddingTop(4).Row(row =>
+            table.Item().BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor).Row(row =>
             {
-                row.RelativeItem().Text("Medical Record").Style(Sf600Styles.LabelBold);
-                row.RelativeItem().AlignRight().Text(
-                        isBackPage
-                            ? "STANDARD FORM 600 (REV. 8/2018) BACK"
-                            : "STANDARD FORM 600 (REV. 8/2018)")
-                    .Style(Sf600Styles.LabelBold);
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Element(c => ComposeFacilityCell(c, "HOSPITAL OR MEDICAL FACILITY"));
+
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Element(c => ComposeFacilityCell(c, "STATUS"));
+
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Element(c => ComposeFacilityCell(c, "DEPARTMENT/SERVICE"));
+
+                row.RelativeItem(1).Element(c => ComposeFacilityCell(c, "RECORDS MAINTAINED AT"));
             });
 
-            if (!isBackPage)
+            table.Item().BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor).Row(row =>
             {
-                column.Item().Row(row =>
-                {
-                    row.RelativeItem().Text("Prescribed by GSA/ICMR").Style(Sf600Styles.Small);
-                    row.RelativeItem().AlignRight().Text("FIRMR (41 CFR) 201-9.202-1").Style(Sf600Styles.Small);
-                });
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Element(c => ComposeFacilityCell(c, "SPONSOR'S NAME"));
+
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Element(c => ComposeFacilityCell(c, "SOCIAL SECURITY/ID NUMBER"));
+
+                row.RelativeItem(2).Element(c => ComposeFacilityCell(c, "RELATIONSHIP TO SPONSOR"));
+            });
+
+            table.Item().Height(SeparatorBorderThickness).Background(Sf600Styles.LineColor);
+        }
+
+        private static void ComposeFacilityCell(IContainer container, string label)
+        {
+            container.MinHeight(FacilityRowMinHeight).Padding(4).Column(col =>
+            {
+                col.Item().Text(label).Style(Sf600Styles.Arial7Bold);
+                col.Item().PaddingTop(2).MinHeight(FacilityWritingAreaHeight);
+            });
+        }
+
+        private static void ComposeImmunizationBlock(IContainer container, Sf600ImmunizationEntry entry)
+        {
+            container.Column(block =>
+            {
+                ComposeImmunizationDataRow(block, FormatGivenDate(entry.GivenDateTime), drawLineBelow: true,
+                    ("Immunization #" + entry.SequenceNumber, null),
+                    ("Dose #", FormatDose(entry.Dose, entry.Unit)),
+                    ("Provided By", entry.StaffName));
+
+                ComposeImmunizationDataRow(block, dateText: null, drawLineBelow: true,
+                    ("Type", entry.VaccineTitle),
+                    ("Manufacturer", entry.Manufacturer),
+                    null);
+
+                ComposeImmunizationDataRow(block, dateText: null, drawLineBelow: true,
+                    ("Lot #", entry.LotNo),
+                    ("Expiry Date", FormatDate(entry.ExpirationDate)),
+                    null);
+
+                ComposeImmunizationDataRow(block, dateText: null, drawLineBelow: false,
+                    ("Site", entry.Site),
+                    ("Body Part", entry.DisplayBodyPart),
+                    ("Type", entry.AdministrationType));
+
+                ComposeBoldSeparator(block);
+                ComposeNotesRows(block);
+                ComposeBoldSeparator(block);
+            });
+        }
+
+        private static void ComposeBoldSeparator(ColumnDescriptor column) =>
+            column.Item().Height(SeparatorBorderThickness).Background(Sf600Styles.LineColor);
+
+        private static void ComposeNotesRows(ColumnDescriptor column)
+        {
+            ComposeNotesRow(column, includeLabel: true, drawLineBelow: true);
+            ComposeNotesRow(column, includeLabel: false, drawLineBelow: false);
+        }
+
+        private static void ComposeNotesRow(ColumnDescriptor column, bool includeLabel, bool drawLineBelow)
+        {
+            var rowItem = column.Item();
+
+            if (drawLineBelow)
+            {
+                rowItem = rowItem.BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor);
             }
-        }
 
-        private static void ComposeImmunizationBlock(
-            ColumnDescriptor column,
-            int immunizationNumber,
-            Sf600ImmunizationEntry? entry)
-        {
-            column.Item().PaddingTop(4).Border(1).BorderColor(Sf600Styles.BorderColor).Row(row =>
+            rowItem.Row(row =>
             {
-                row.ConstantItem(95).BorderRight(1).BorderColor(Sf600Styles.BorderColor)
-                    .Padding(4).AlignTop().Column(dateCol =>
-                    {
-                        dateCol.Item().Text(FormatDateTime(entry?.GivenDateTime)).Style(Sf600Styles.Value);
-                        dateCol.Item().PaddingTop(8).Text("M M  D D  Y Y Y Y").Style(Sf600Styles.FinePrint);
-                    });
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Padding(6)
+                    .MinHeight(18);
 
-                row.RelativeItem().Padding(6).Column(treatmentCol =>
+                row.RelativeItem(3).Padding(6).Column(notesCol =>
                 {
-                    treatmentCol.Spacing(3);
-
-                    treatmentCol.Item().Text($"Immunization #{immunizationNumber}")
-                        .Style(Sf600Styles.ImmunizationTitle);
-
-                    if (!string.IsNullOrWhiteSpace(entry?.VaccineTitle))
+                    if (includeLabel)
                     {
-                        treatmentCol.Item().Text($"Vaccine: {entry.VaccineTitle}").Style(Sf600Styles.ValueBold);
+                        notesCol.Item().Text(text =>
+                        {
+                            text.Span("Notes : ").Style(Sf600Styles.Arial12Bold);
+                        });
                     }
 
-                    treatmentCol.Item().Row(r =>
-                    {
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Type:", entry?.AdministrationType));
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Lot#:", entry?.LotNo));
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Expiry Date:", FormatDate(entry?.ExpirationDate)));
-                    });
-
-                    treatmentCol.Item().Row(r =>
-                    {
-                        r.RelativeItem(2).Element(c =>
-                            InlineLabelValue(c, "Site: L / R", FormatSite(entry?.Site)));
-                        r.RelativeItem(3).Element(c =>
-                            InlineLabelValue(c, "Type: IM / SQ / ID", entry?.AdministrationType));
-                    });
-
-                    treatmentCol.Item().Text("M M  D D  Y Y Y Y").Style(Sf600Styles.FinePrint);
-
-                    treatmentCol.Item().Element(c =>
-                        InlineLabelValue(c, "BodyPart: Shdr/Other (please list):", entry?.BodyPart));
-
-                    treatmentCol.Item().Row(r =>
-                    {
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Manufacturer:", entry?.Manufacturer));
-                        r.ConstantItem(120).Element(c => InlineLabelValue(c, "Dose #:", FormatDose(entry?.Dose, entry?.Unit)));
-                    });
-
-                    treatmentCol.Item().Row(r =>
-                    {
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Notes:", null));
-                        r.RelativeItem().Element(c => InlineLabelValue(c, "Provided by:", entry?.StaffName));
-                    });
+                    notesCol.Item().MinHeight(16).BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor);
                 });
             });
         }
 
-        private static void LabelValue(IContainer container, string label, string? value)
+        private static void ComposeImmunizationDataRow(
+            ColumnDescriptor column,
+            string? dateText,
+            bool drawLineBelow,
+            (string Key, string? Value)? column1,
+            (string Key, string? Value)? column2 = null,
+            (string Key, string? Value)? column3 = null)
         {
-            container.Row(row =>
+            var rowItem = column.Item();
+
+            if (drawLineBelow)
             {
-                row.AutoItem().Text(label + " ").Style(Sf600Styles.Label);
-                row.RelativeItem().Text(value ?? string.Empty).Style(Sf600Styles.Value);
+                rowItem = rowItem.BorderBottom(InnerBorderThickness).BorderColor(Sf600Styles.LineColor);
+            }
+
+            rowItem.Row(row =>
+            {
+                row.RelativeItem(1).BorderRight(InnerBorderThickness).BorderColor(Sf600Styles.LineColor)
+                    .Padding(6).AlignMiddle()
+                    .Text(dateText ?? string.Empty)
+                    .Style(Sf600Styles.Arial12);
+
+                row.RelativeItem(3).Element(c => ComposeAlignedDataLine(c, column1, column2, column3));
             });
         }
 
-        private static void InlineLabelValue(IContainer container, string label, string? value)
+        private static void ComposeAlignedDataLine(
+            IContainer container,
+            (string Key, string? Value)? column1,
+            (string Key, string? Value)? column2,
+            (string Key, string? Value)? column3)
         {
+            container.PaddingVertical(4).PaddingHorizontal(6).Row(row =>
+            {
+                row.RelativeItem(1).PaddingHorizontal(4).Element(c => ComposeFieldCell(c, column1));
+                row.RelativeItem(1).PaddingHorizontal(4).Element(c => ComposeFieldCell(c, column2));
+                row.RelativeItem(1).PaddingHorizontal(4).Element(c => ComposeFieldCell(c, column3));
+            });
+        }
+
+        private static void ComposeFieldCell(IContainer container, (string Key, string? Value)? part)
+        {
+            if (part == null)
+            {
+                container.MinHeight(12);
+                return;
+            }
+
+            if (part.Value.Value == null)
+            {
+                container.Text(part.Value.Key).Style(Sf600Styles.Arial12Bold);
+                return;
+            }
+
             container.Text(text =>
             {
-                text.Span(label + " ").Style(Sf600Styles.Label);
-                text.Span(string.IsNullOrWhiteSpace(value) ? " " : value).Style(Sf600Styles.Value);
+                text.Span(part.Value.Key + " : ").Style(Sf600Styles.Arial12Bold);
+                text.Span(part.Value.Value).Style(Sf600Styles.Arial12);
             });
         }
 
         public static List<Sf600ImmunizationEntry> BuildEntries(PostEventImmunizationStationAnalysisDto analysisDto)
         {
-            return analysisDto.GetVaccineCards()
-                .Select(card => new Sf600ImmunizationEntry
+            var sequence = 1;
+            var entries = new List<Sf600ImmunizationEntry>();
+
+            foreach (var card in analysisDto.GetVaccineCards())
+            {
+                if (!IsVaccineEligibleForSf600(card, analysisDto.ImmunizationStation))
                 {
+                    continue;
+                }
+
+                entries.Add(new Sf600ImmunizationEntry
+                {
+                    SequenceNumber = sequence++,
                     VaccineTitle = card.Title,
                     Manufacturer = card.Detail.Manufacturer,
                     Dose = card.Detail.Dose,
@@ -344,18 +336,60 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ExpirationDate = card.Detail.ExpirationDate,
                     AdministrationType = card.Detail.Type,
                     BodyPart = card.Detail.BodyPart,
+                    DisplayBodyPart = FormatBodyPart(card.Detail.BodyPart),
                     Site = card.Detail.Site,
                     StaffName = card.Detail.StaffName,
                     GivenDateTime = card.Detail.GivenDateTime
-                })
-                .ToList();
+                });
+            }
+
+            return entries;
         }
+
+        private static bool IsVaccineEligibleForSf600(
+            ImmunizationVaccineCardViewModel card,
+            PreEventImmunizationStationDto? pre)
+        {
+            if (pre == null)
+            {
+                return false;
+            }
+
+            var neededStatus = card.CardId switch
+            {
+                "HepB" => pre.HepBNeeded,
+                "HepA" => pre.HepANeeded,
+                "Flu" => pre.FluNeeded,
+                "Mmr" => pre.MmrNeeded,
+                "TetTdp" => pre.TetTdpNeeded,
+                "Varicella" => pre.VaricellaNeeded,
+                _ => null
+            };
+
+            return neededStatus == AppConstants.Status.Completed;
+        }
+
+        private static string FormatBodyPart(string? bodyPart)
+        {
+            if (string.IsNullOrWhiteSpace(bodyPart))
+            {
+                return string.Empty;
+            }
+
+            if (bodyPart.Equals("Shdr", StringComparison.OrdinalIgnoreCase) ||
+                bodyPart.Equals("Shoulder", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Shdr";
+            }
+
+            return bodyPart;
+        }
+
+        private static string FormatGivenDate(DateTime? value) =>
+            value?.ToString("MM/dd/yyyy") ?? string.Empty;
 
         private static string FormatDate(DateTime? value) =>
             value?.ToString("MM/dd/yyyy") ?? string.Empty;
-
-        private static string FormatDateTime(DateTime? value) =>
-            value?.ToString("MM/dd/yyyy hh:mm tt") ?? string.Empty;
 
         private static string FormatDose(string? dose, string? unit)
         {
@@ -365,51 +399,27 @@ namespace ExcelFilesCompiler.Controllers.Services
             return string.Join(" ", parts);
         }
 
-        private static string FormatSite(string? site)
-        {
-            if (string.IsNullOrWhiteSpace(site))
-            {
-                return string.Empty;
-            }
-
-            if (site.Contains("right", StringComparison.OrdinalIgnoreCase))
-            {
-                return "R";
-            }
-
-            if (site.Contains("left", StringComparison.OrdinalIgnoreCase))
-            {
-                return "L";
-            }
-
-            return site;
-        }
-
         private static class Sf600Styles
         {
-            public static readonly string BorderColor = Colors.Black;
+            public static readonly string LineColor = Colors.Black;
 
-            public static TextStyle Body => TextStyle.Default.FontSize(8).FontFamily(Fonts.CourierNew);
+            public static TextStyle Arial10 =>
+                TextStyle.Default.FontSize(10).FontFamily(Fonts.Arial);
 
-            public static TextStyle FinePrint => TextStyle.Default.FontSize(6).FontFamily(Fonts.CourierNew);
+            public static TextStyle Arial10Bold =>
+                TextStyle.Default.FontSize(10).FontFamily(Fonts.Arial).SemiBold();
 
-            public static TextStyle Small => TextStyle.Default.FontSize(7).FontFamily(Fonts.CourierNew);
+            public static TextStyle Arial8Bold =>
+                TextStyle.Default.FontSize(8).FontFamily(Fonts.Arial).SemiBold();
 
-            public static TextStyle SmallBold => TextStyle.Default.FontSize(7).FontFamily(Fonts.CourierNew).SemiBold();
+            public static TextStyle Arial7Bold =>
+                TextStyle.Default.FontSize(7).FontFamily(Fonts.Arial).SemiBold();
 
-            public static TextStyle Label => TextStyle.Default.FontSize(7).FontFamily(Fonts.CourierNew);
+            public static TextStyle Arial12 =>
+                TextStyle.Default.FontSize(12).FontFamily(Fonts.Arial);
 
-            public static TextStyle LabelBold => TextStyle.Default.FontSize(7).FontFamily(Fonts.CourierNew).SemiBold();
-
-            public static TextStyle Value => TextStyle.Default.FontSize(8).FontFamily(Fonts.CourierNew);
-
-            public static TextStyle ValueBold => TextStyle.Default.FontSize(8).FontFamily(Fonts.CourierNew).SemiBold();
-
-            public static TextStyle Title => TextStyle.Default.FontSize(11).FontFamily(Fonts.CourierNew).SemiBold();
-
-            public static TextStyle SectionTitle => TextStyle.Default.FontSize(9).FontFamily(Fonts.CourierNew).SemiBold();
-
-            public static TextStyle ImmunizationTitle => TextStyle.Default.FontSize(8).FontFamily(Fonts.CourierNew).SemiBold();
+            public static TextStyle Arial12Bold =>
+                TextStyle.Default.FontSize(12).FontFamily(Fonts.Arial).SemiBold();
         }
     }
 }

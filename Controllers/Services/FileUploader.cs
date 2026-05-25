@@ -482,7 +482,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.Id == serviceMembersChildId &&
                              c.Imm == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              c.ImmunizationRecord != null &&
                              c.ImmunizationRecord.Status == AppConstants.Status.Completed,
                         c => c.ImmunizationRecord,
