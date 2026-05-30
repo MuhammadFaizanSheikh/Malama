@@ -20,6 +20,7 @@ using Serilog;
 using Malama.Interfaces;
 using Malama.Controllers.Services;
 using Malama.AutoMapper;
+using Malama.Services.Pdf.Sf600;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,9 @@ builder.Services.AddScoped<IAccountRegistrationService, AccountRegistrationServi
 builder.Services.AddScoped<IDawsonUserService, DawsonUserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+builder.Services.AddScoped<ISf600TemplateProvider, Sf600TemplateProvider>();
+builder.Services.AddSingleton<ISf600PdfFontProvider, Sf600PdfFontProvider>();
+builder.Services.AddScoped<ISf600PdfOverlayWriter, Sf600PdfOverlayWriter>();
 builder.Services.AddScoped<ISf600ImmunizationPdfGenerator, Sf600ImmunizationPdfGenerator>();
 builder.Services.AddScoped<IEventUsersService, EventUsersService>();
 builder.Services.AddScoped<ISubmissionTokenService, SubmissionTokenService>();

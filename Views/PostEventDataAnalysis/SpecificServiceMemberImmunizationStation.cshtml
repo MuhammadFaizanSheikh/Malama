@@ -113,20 +113,19 @@
     }
 
     <div class="d-flex justify-content-end mt-4">
-        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_Save") ? "" : "disabled")>
-            <i class="bi bi-check-circle"></i> Save
-        </button>
-
         @if (vaccineCards.Any())
         {
             <button type="button"
                     id="btnSf600Pdf"
                     class="btn btn-general btn-lg me-3"
                     data-service-members-child-id="@Model.PostEventImmunizationStation.ServiceMembersChildId">
-                <i class="bi bi-file-earmark-pdf"></i> SF600
+                <i class="bi bi-file-earmark-pdf"></i> Print SF600
             </button>
         }
-
+        
+        <button type="submit" class="btn btn-success btn-lg me-3" @(DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_Save") ? "" : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
         <a asp-action="SelectStation"
            asp-route-eventManagementId="@Model.EventId"
            asp-route-selectedStation="Immunization"

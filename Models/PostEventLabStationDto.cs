@@ -8,6 +8,8 @@ namespace Malama.Models
         public string FullName { get; set; }
         public string DodId { get; set; }
         public string Barcode { get; set; }
+        public string? FullSsn { get; set; }
+        public string? Rank { get; set; }
 
         public string Dob { get; set; }
         public int? Age { get; set; }

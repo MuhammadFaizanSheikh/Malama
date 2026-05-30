@@ -525,6 +525,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         FullName = entity.FullName,
                         DodId = entity.DodId,
                         Barcode = entity.Barcode,
+                        FullSsn = entity.FullSsn,
+                        Rank = entity.Rank,
                         Dob = entity.Dob,
                         Age = entity.Age,
                         Sex = entity.Sex
@@ -601,6 +603,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         FullName = entity.FullName,
                         DodId = entity.DodId,
                         Barcode = entity.Barcode,
+                        FullSsn = entity.FullSsn,
+                        Rank = entity.Rank,
                         Dob = entity.Dob,
                         Age = entity.Age,
                         Sex = entity.Sex
