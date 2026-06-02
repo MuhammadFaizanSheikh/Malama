@@ -338,6 +338,51 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetDentalXRayStationByEventIdAsync(long eventId, string? status = null)
+        {
+            const string methodName = nameof(GetDentalXRayStationByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching DentalXRayStation where DentalNeeded=Needed, CheckIn=Yes, EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
+
+                //var result = await _unitOfWork.ServiceMembersChild
+                //    .GetWithIncludeNoTracking(
+                //        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                //             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
+                //             c.CheckIn == "Yes" &&
+                //             (status == null ||
+                //              (c.LabStationRecord != null && c.LabStationRecord.Status == status)),
+                //        c => c.LabStationRecord
+                //    )
+                //    .ToListAsync();
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == "Yes")
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} DentalXRayStation records for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, result.Count, eventId, status);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching DentalXRayStation data for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
+
+                throw;
+            }
+        }
+
         public async Task<List<ServiceMembersChild>> GetVitalStationByEventIdAsync(long eventId)
         {
             const string methodName = nameof(GetVitalStationByEventIdAsync);
