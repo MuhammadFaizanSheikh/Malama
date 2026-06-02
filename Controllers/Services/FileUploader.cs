@@ -348,22 +348,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     "{ClassName}.{MethodName} - Fetching DentalXRayStation where DentalNeeded=Needed, CheckIn=Yes, EventId={EventId}, Status={Status}",
                     CLASSNAME, methodName, eventId, status);
 
-                //var result = await _unitOfWork.ServiceMembersChild
-                //    .GetWithIncludeNoTracking(
-                //        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
-                //             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
-                //             c.CheckIn == "Yes" &&
-                //             (status == null ||
-                //              (c.LabStationRecord != null && c.LabStationRecord.Status == status)),
-                //        c => c.LabStationRecord
-                //    )
-                //    .ToListAsync();
-
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes")
+                             c.CheckIn == "Yes" &&
+                             (status == null ||
+                              (c.DentalXRayStationRecord != null && c.DentalXRayStationRecord.Status == status)),
+                        c => c.DentalXRayStationRecord)
                     .ToListAsync();
 
                 _logger.LogInformation(

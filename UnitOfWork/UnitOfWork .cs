@@ -37,6 +37,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<PostEventLabStation> PostEventLabStation { get; private set; }
         public IGenericRepository<PostEventImmunizationStation> PostEventImmunizationStation { get; private set; }
         public IGenericRepository<VitalStation> VitalStation { get; private set; }
+        public IGenericRepository<DentalXRayStation> DentalXRayStation { get; private set; }
+        public IGenericRepository<DentalXRayPaImage> DentalXRayPaImage { get; private set; }
 
 
         public UnitOfWork(ApplicationDbContext context)
@@ -71,6 +73,8 @@ namespace ExcelFilesCompiler.UnitOfWork
             PostEventLabStation = new GenericRepository<PostEventLabStation>(_context);
             PostEventImmunizationStation = new GenericRepository<PostEventImmunizationStation>(_context);
             VitalStation = new GenericRepository<VitalStation>(_context);
+            DentalXRayStation = new GenericRepository<DentalXRayStation>(_context);
+            DentalXRayPaImage = new GenericRepository<DentalXRayPaImage>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

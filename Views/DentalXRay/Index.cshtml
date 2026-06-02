@@ -217,9 +217,9 @@
                         </td>
                         <td>@(c.LabStationRecord == null ? "Pending" : c.LabStationRecord.Status)</td> *@
                         <td>
-                            <a asp-action="DentalXRayStation" asp-route-dentalXRayStationId="@c.LabStationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
+                            <a asp-action="DentalXRayStation" asp-route-dentalXRayStationId="@c.DentalXRayStationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
-                        <td></td>
+                        <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
                         <td>@c.SmId</td>
                         <td>@c.FullName</td>
                         <td>@c.Last4</td>
@@ -227,8 +227,8 @@
                         <td>@c.Sex</td>
                         <td>@c.Dob</td>
                         <td>@c.Barcode</td>
-                        <td>@c.LabStationRecord?.AddedBy</td>
-                        <td>@c.LabStationRecord?.AddedOn</td>
+                        <td>@c.DentalXRayStationRecord?.AddedBy</td>
+                        <td>@c.DentalXRayStationRecord?.AddedOn</td>
                         @*  <td>@c.ContractEndDate.ToShortDateString()</td> *@
 
                     </tr>

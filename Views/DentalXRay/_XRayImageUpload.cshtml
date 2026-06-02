@@ -1,0 +1,62 @@
+@model Malama.Models.DentalXRayImageUploadModel
+
+<div class="card h-100">
+    <div class="card-body">
+        <h6 class="card-title">@Model.Title</h6>
+
+        <input type="file"
+               class="xray-file d-none"
+               name="@Model.FileInputName"
+               data-prefix="@Model.Prefix"
+               accept=".jpg,.jpeg,image/jpeg"
+               onchange="toggleXRayUploadDate(this, '@Model.Prefix')" />
+
+        <button type="button"
+                class="btn btn-outline-primary btn-sm mt-1 open-xray-picker"
+                data-prefix="@Model.Prefix">
+            <i class="bi bi-upload"></i> Upload
+        </button>
+
+        <div class="align-items-center gap-2 mt-2 xray-file-status"
+             id="@($"{Model.Prefix}_fileStatus")"
+             style="display:@(Model.Uploaded ? "flex" : "none");"
+             data-existing-filename="@Model.StoredFileName"
+             data-existing-original-filename="@Model.OriginalFileName"
+             data-download-prefix="@Model.Prefix">
+            <span id="@($"{Model.Prefix}_fileNameDisplay")" class="small text-muted">
+                @(Model.OriginalFileName ?? Model.StoredFileName)
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-secondary preview-xray-file" data-prefix="@Model.Prefix">
+                Preview
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-xray-file" data-prefix="@Model.Prefix">
+                Remove
+            </button>
+        </div>
+
+        <input type="hidden"
+               id="@($"{Model.Prefix}_uploaded")"
+               name="@Model.UploadedFieldName"
+               value="@(Model.Uploaded ? "true" : "false")" />
+        <input type="hidden"
+               id="@($"{Model.Prefix}_fileName")"
+               name="@Model.FileNameFieldName"
+               value="@Model.StoredFileName" />
+        <input type="hidden"
+               id="@($"{Model.Prefix}_originalFileName")"
+               name="@Model.OriginalFileNameFieldName"
+               value="@Model.OriginalFileName" />
+        <input type="hidden"
+               id="@($"{Model.Prefix}_removed")"
+               name="@Model.RemovedFieldName"
+               value="false" />
+
+        <input name="@Model.DateFieldName"
+               id="@($"{Model.Prefix}_uploadDate")"
+               class="form-control flatpickr mt-2"
+               type="text"
+               value="@(Model.UploadedDateTime?.ToString("yyyy-MM-dd HH:mm") ?? "")"
+               style="display:@(Model.Uploaded ? "block" : "none");"
+               readonly />
+    </div>
+</div>

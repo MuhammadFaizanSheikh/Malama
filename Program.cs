@@ -61,6 +61,7 @@ builder.Services.AddScoped<IPostEventLabStationService, PostEventLabStationServi
 builder.Services.AddScoped<IPostEventImmunizationStationService, PostEventImmunizationStationService>();
 builder.Services.AddScoped<IFileUploadDownloadService, FileUploadDownloadService>();
 builder.Services.AddScoped<IVitalStationService, VitalStationService>();
+builder.Services.AddScoped<IDentalXRayStationService, DentalXRayStationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));

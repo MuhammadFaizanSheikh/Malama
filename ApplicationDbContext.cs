@@ -39,6 +39,8 @@ namespace ExcelFilesCompiler
         public DbSet<PostEventImmunizationStation> PostEventImmunizationStation { get; set; }
         public DbSet<VitalStation> VitalStation { get; set; }
         public DbSet<VitalStationBloodPressureReading> VitalStationBloodPressureReading { get; set; }
+        public DbSet<DentalXRayStation> DentalXRayStation { get; set; }
+        public DbSet<DentalXRayPaImage> DentalXRayPaImage { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -134,6 +136,24 @@ namespace ExcelFilesCompiler
                     .WithMany()
                     .HasForeignKey(e => e.VaricellaVaccineLotEntryId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DentalXRayStation>(entity =>
+            {
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalXRayStationRecord)
+                    .HasForeignKey<DentalXRayStation>(e => e.ServiceMembersChildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
+            });
+
+            modelBuilder.Entity<DentalXRayPaImage>(entity =>
+            {
+                entity.HasOne(e => e.DentalXRayStation)
+                    .WithMany(d => d.PaImages)
+                    .HasForeignKey(e => e.DentalXRayStationId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

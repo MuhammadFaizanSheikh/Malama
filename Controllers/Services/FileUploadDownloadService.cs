@@ -109,6 +109,74 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<FileUploadResult> UploadImageFile(IFormFile file, string station, string prefix, string barcode, string fileKey)
+        {
+            const string METHOD = nameof(UploadImageFile);
+
+            try
+            {
+                _logger.LogInformation("{Class}.{Method} - Image upload started | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}, FileKey: {FileKey}",
+                    CLASSNAME, METHOD, station, prefix, barcode, fileKey);
+
+                if (file == null || file.Length == 0)
+                {
+                    _logger.LogWarning("{Class}.{Method} - No file selected", CLASSNAME, METHOD);
+                    return new FileUploadResult { Success = false, Message = "No file selected" };
+                }
+
+                var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg")
+                {
+                    _logger.LogWarning("{Class}.{Method} - Invalid image extension: {Extension}", CLASSNAME, METHOD, extension);
+                    return new FileUploadResult { Success = false, Message = "Only JPEG/JPG images are allowed" };
+                }
+
+                var stationFolder = Path.Combine(_baseFolder, $"{station}_Results");
+                var prefixFolder = Path.Combine(stationFolder, $"{prefix}_Results");
+
+                if (!Directory.Exists(stationFolder))
+                {
+                    Directory.CreateDirectory(stationFolder);
+                }
+
+                if (!Directory.Exists(prefixFolder))
+                {
+                    Directory.CreateDirectory(prefixFolder);
+                }
+
+                var fileName = $"{barcode}_{fileKey}.jpg";
+                var fullPath = Path.Combine(prefixFolder, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                _logger.LogInformation("{Class}.{Method} - Image uploaded successfully | FileName: {FileName}",
+                    CLASSNAME, METHOD, fileName);
+
+                return new FileUploadResult
+                {
+                    Success = true,
+                    FileName = fileName,
+                    FullPath = fullPath,
+                    RelativePath = Path.Combine("Results", $"{station}_Results", $"{prefix}_Results", fileName)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Error uploading image | Station: {Station}, Prefix: {Prefix}, Barcode: {Barcode}, FileKey: {FileKey}",
+                    CLASSNAME, METHOD, station, prefix, barcode, fileKey);
+
+                return new FileUploadResult
+                {
+                    Success = false,
+                    Message = "Error occurred while uploading image"
+                };
+            }
+        }
+
         public FileDownloadResult GetFile(string station, string prefix, string fileName)
         {
             const string METHOD = nameof(GetFile);
@@ -130,6 +198,9 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var bytes = System.IO.File.ReadAllBytes(fullPath);
 
+                var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
+                var contentType = extension is ".jpg" or ".jpeg" ? "image/jpeg" : "application/pdf";
+
                 _logger.LogInformation("{Class}.{Method} - File retrieved successfully | FileName: {FileName}",
                     CLASSNAME, METHOD, fileName);
 
@@ -137,7 +208,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     Bytes = bytes,
                     FileName = fileName,
-                    ContentType = "application/pdf"
+                    ContentType = contentType
                 };
             }
             catch (Exception ex)

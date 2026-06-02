@@ -35,6 +35,8 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<PostEventLabStation> PostEventLabStation { get; }
         IGenericRepository<PostEventImmunizationStation> PostEventImmunizationStation { get; }
         IGenericRepository<VitalStation> VitalStation { get; }
+        IGenericRepository<DentalXRayStation> DentalXRayStation { get; }
+        IGenericRepository<DentalXRayPaImage> DentalXRayPaImage { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
         void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class;
