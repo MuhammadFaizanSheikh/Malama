@@ -16,7 +16,7 @@ internal static class Sf600PatientIdentificationMapper
             ("Name :", serviceMember.FullName),
             ("DoD ID :", serviceMember.DodId),
             ("SSN :", serviceMember.FullSsn),
-            ("Gender :", serviceMember.Sex),
+            ("Sex :", serviceMember.Sex),
             ("DOB :", serviceMember.Dob),
             ("Rank :", serviceMember.Rank)
         };
