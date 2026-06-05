@@ -1,11 +1,31 @@
 @model Malama.Models.DentalXRayImageUploadModel
 
-<div class="card h-100">
+@{
+    var downloadPrefix = Model.DownloadPrefix ?? Model.Prefix;
+    var cardClass = Model.IsPaCard ? "card pa-card h-100 xray-upload-card" : "card h-100 xray-upload-card";
+}
+
+<div class="@cardClass" @(Model.IsPaCard ? $"data-index=\"{Model.PaCardIndex}\"" : null)>
     <div class="card-body">
-        <h6 class="card-title">@Model.Title</h6>
+        @if (Model.IsPaCard)
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="card-title mb-0">@Model.Title</h6>
+                @if (Model.ShowRemovePaCardButton)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card">Remove</button>
+                }
+            </div>
+            <input type="hidden" name="PaImages[@Model.PaCardIndex].Id" value="@Model.PaImageId" />
+            <input type="hidden" name="PaImages[@Model.PaCardIndex].SortOrder" value="@Model.PaCardIndex" class="pa-sort-order" />
+        }
+        else
+        {
+            <h6 class="card-title">@Model.Title</h6>
+        }
 
         <input type="file"
-               class="xray-file d-none"
+               class="xray-file d-none @(Model.IsPaCard ? "pa-file" : "")"
                name="@Model.FileInputName"
                data-prefix="@Model.Prefix"
                accept=".jpg,.jpeg,image/jpeg"
@@ -22,7 +42,7 @@
              style="display:@(Model.Uploaded ? "flex" : "none");"
              data-existing-filename="@Model.StoredFileName"
              data-existing-original-filename="@Model.OriginalFileName"
-             data-download-prefix="@Model.Prefix">
+             data-download-prefix="@downloadPrefix">
             <span id="@($"{Model.Prefix}_fileNameDisplay")" class="small text-muted">
                 @(Model.OriginalFileName ?? Model.StoredFileName)
             </span>
@@ -58,5 +78,25 @@
                value="@(Model.UploadedDateTime?.ToString("yyyy-MM-dd HH:mm") ?? "")"
                style="display:@(Model.Uploaded ? "block" : "none");"
                readonly />
+
+        <div class="xray-preview-panel mt-3" id="@($"{Model.Prefix}_previewSection")" style="display:@(Model.Uploaded ? "block" : "none");">
+            <label class="form-label fw-semibold mb-1">Image Preview:</label>
+            <div class="xray-preview-viewport" id="@($"{Model.Prefix}_previewViewport")">
+                <img id="@($"{Model.Prefix}_previewImg")" alt="X-Ray preview" />
+            </div>
+            <label class="form-label fw-semibold mt-2 mb-1">Zoom Controls:</label>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <button type="button" class="btn btn-sm btn-primary xray-zoom-in" data-prefix="@Model.Prefix">
+                    <i class="bi bi-zoom-in"></i> ZOOM IN
+                </button>
+                <button type="button" class="btn btn-sm btn-primary xray-zoom-out" data-prefix="@Model.Prefix">
+                    <i class="bi bi-zoom-out"></i> ZOOM OUT
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary xray-zoom-reset" data-prefix="@Model.Prefix">
+                    <i class="bi bi-arrow-counterclockwise"></i> RESET
+                </button>
+            </div>
+            <p class="mb-0 small">Zoom Level: <span id="@($"{Model.Prefix}_zoomLevel")" class="text-primary fw-semibold">100%</span></p>
+        </div>
     </div>
 </div>

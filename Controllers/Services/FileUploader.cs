@@ -351,7 +351,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
-                             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.BwxNeeded == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == "Yes" &&
                              (status == null ||
                               (c.DentalXRayStationRecord != null && c.DentalXRayStationRecord.Status == status)),

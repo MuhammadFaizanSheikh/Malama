@@ -49,11 +49,7 @@ namespace Malama.Models
         [ValidateNever]
         public virtual ICollection<DentalXRayPaImage> PaImages { get; set; } = new List<DentalXRayPaImage>();
 
-        public string? PanoStatus { get; set; }
-        public string? PanoReason { get; set; }
-        public string? PanoFileName { get; set; }
-        public string? PanoOriginalFileName { get; set; }
-        public DateTime? PanoUploadedDateTime { get; set; }
+        public string? Comment { get; set; }
 
         public string Status { get; set; } = "Pending";
     }
@@ -87,6 +83,11 @@ namespace Malama.Models
         public string? OriginalFileName { get; set; }
         public DateTime? UploadedDateTime { get; set; }
         public string RemovedFieldName { get; set; } = string.Empty;
+        public string? DownloadPrefix { get; set; }
+        public bool IsPaCard { get; set; }
+        public int PaCardIndex { get; set; }
+        public long PaImageId { get; set; }
+        public bool ShowRemovePaCardButton { get; set; }
     }
 
     public class DentalXRayPaImageDto
@@ -140,13 +141,7 @@ namespace Malama.Models
         public DateTime? PaUploadedDateTime { get; set; }
         public List<DentalXRayPaImageDto> PaImages { get; set; } = new();
 
-        public string? PanoStatus { get; set; }
-        public string? PanoReason { get; set; }
-        public bool PanoUploaded { get; set; }
-        public string? PanoFileName { get; set; }
-        public string? PanoOriginalFileName { get; set; }
-        public DateTime? PanoUploadedDateTime { get; set; }
-        public IFormFile? PanoFile { get; set; }
+        public string? Comment { get; set; }
 
         public string Status { get; set; } = "Pending";
         public string? SubmissionToken { get; set; }
@@ -155,6 +150,5 @@ namespace Malama.Models
         public bool BwLeftPremolarRemoved { get; set; }
         public bool BwRightMolarRemoved { get; set; }
         public bool BwRightPremolarRemoved { get; set; }
-        public bool PanoRemoved { get; set; }
     }
 }

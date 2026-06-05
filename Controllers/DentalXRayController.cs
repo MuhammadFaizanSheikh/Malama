@@ -360,16 +360,6 @@ namespace ExcelFilesCompiler.Controllers
                 if (paError != null) return paError;
             }
 
-            if (DentalXRayStationService.IsNeeded(serviceMember.PanoNeeded))
-            {
-                var panoError = ValidateSection(
-                    dto.PanoStatus,
-                    dto.PanoReason,
-                    dto.PanoStatus == "Completed" && !IsPanoUploadPresent(dto),
-                    "Panorex (Pano) X-Ray Status");
-                if (panoError != null) return panoError;
-            }
-
             return null;
         }
 
@@ -438,11 +428,6 @@ namespace ExcelFilesCompiler.Controllers
                 && HasUpload(dto.BwLeftPremolarUploaded, dto.BwLeftPremolarFileName, dto.BwLeftPremolarFile, dto.BwLeftPremolarRemoved)
                 && HasUpload(dto.BwRightMolarUploaded, dto.BwRightMolarFileName, dto.BwRightMolarFile, dto.BwRightMolarRemoved)
                 && HasUpload(dto.BwRightPremolarUploaded, dto.BwRightPremolarFileName, dto.BwRightPremolarFile, dto.BwRightPremolarRemoved);
-        }
-
-        private static bool IsPanoUploadPresent(DentalXRayStationSaveDto dto)
-        {
-            return HasUpload(dto.PanoUploaded, dto.PanoFileName, dto.PanoFile, dto.PanoRemoved);
         }
 
         private static bool HasUpload(bool uploadedFlag, string? fileName, IFormFile? file, bool removed)
@@ -534,18 +519,6 @@ namespace ExcelFilesCompiler.Controllers
                 }
             }
 
-            if (dto.PanoStatus == "Completed")
-            {
-                var error = await UploadSlotAsync(dto.PanoFile, "pano", "pano", barcode, uploadedFiles,
-                    fileName => dto.PanoFileName = fileName,
-                    original => dto.PanoOriginalFileName = original,
-                    dt => dto.PanoUploadedDateTime = dt,
-                    () => dto.PanoRemoved,
-                    () => dto.PanoUploaded,
-                    v => dto.PanoUploaded = v);
-                if (error != null) return error;
-            }
-
             return null;
         }
 
@@ -615,14 +588,6 @@ namespace ExcelFilesCompiler.Controllers
                 dto.PaUploadedDateTime = null;
             }
 
-            if (dto.PanoStatus == "Completed" && IsPanoUploadPresent(dto))
-            {
-                dto.PanoUploadedDateTime ??= DateTime.Now;
-            }
-            else
-            {
-                dto.PanoUploadedDateTime = null;
-            }
         }
 
         private void RollbackUploadedFiles(List<(string Prefix, string FileName)> uploadedFiles)

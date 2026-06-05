@@ -32,8 +32,27 @@
         color: white;
     }
     h2, h3 { color: rgba(80, 90, 201, 1); }
-    .xray-cards-row { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .xray-cards-row .card { flex: 1 1 220px; min-width: 220px; }
+    .xray-cards-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    @@media (max-width: 992px) {
+        .xray-cards-row { grid-template-columns: 1fr; }
+    }
+    .xray-upload-card { border: 1px solid #dee2e6; }
+    .xray-preview-viewport {
+        width: 100%;
+        height: 240px;
+        overflow: auto;
+        border: 1px solid #ced4da;
+        background: #f8f9fa;
+    }
+    .xray-preview-viewport img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
     .read-only-style {
         background-color: #f8f9fa;
         pointer-events: none;
@@ -270,51 +289,25 @@
                             {
                                 var pa = paImages[i];
                                 var prefix = $"pa_{i}";
-                                <div class="card pa-card h-100" data-index="@i">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="card-title mb-0">PA of tooth</h6>
-                                            @if (i > 0)
-                                            {
-                                                <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card">Remove</button>
-                                            }
-                                        </div>
-                                        <input type="hidden" name="PaImages[@i].Id" value="@pa.Id" />
-                                        <input type="hidden" name="PaImages[@i].SortOrder" value="@i" class="pa-sort-order" />
-
-                                        <input type="file" class="xray-file d-none pa-file" name="PaImages[@i].ImageFile"
-                                               data-prefix="@prefix" accept=".jpg,.jpeg,image/jpeg"
-                                               onchange="toggleXRayUploadDate(this, '@prefix')" />
-
-                                        <button type="button" class="btn btn-outline-primary btn-sm mt-1 open-xray-picker" data-prefix="@prefix">
-                                            <i class="bi bi-upload"></i> Upload
-                                        </button>
-
-                                        <div class="align-items-center gap-2 mt-2 xray-file-status"
-                                             id="@($"{prefix}_fileStatus")"
-                                             style="display:@(!string.IsNullOrWhiteSpace(pa.FileName) ? "flex" : "none");"
-                                             data-existing-filename="@pa.FileName"
-                                             data-existing-original-filename="@pa.OriginalFileName"
-                                             data-download-prefix="pa_tooth">
-                                            <span id="@($"{prefix}_fileNameDisplay")" class="small text-muted">@(pa.OriginalFileName ?? pa.FileName)</span>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary preview-xray-file" data-prefix="@prefix">Preview</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-xray-file" data-prefix="@prefix">Remove</button>
-                                        </div>
-
-                                        <input type="hidden" id="@($"{prefix}_uploaded")" name="PaImages[@i].Uploaded" value="@(!string.IsNullOrWhiteSpace(pa.FileName) ? "true" : "false")" />
-                                        <input type="hidden" id="@($"{prefix}_fileName")" name="PaImages[@i].FileName" value="@pa.FileName" />
-                                        <input type="hidden" id="@($"{prefix}_originalFileName")" name="PaImages[@i].OriginalFileName" value="@pa.OriginalFileName" />
-                                        <input type="hidden" id="@($"{prefix}_removed")" name="PaImages[@i].Removed" value="false" />
-
-                                        <input name="PaImages[@i].UploadedDateTime"
-                                               id="@($"{prefix}_uploadDate")"
-                                               class="form-control flatpickr mt-2"
-                                               type="text"
-                                               value="@(pa.UploadedDateTime?.ToString("yyyy-MM-dd HH:mm") ?? "")"
-                                               style="display:@(!string.IsNullOrWhiteSpace(pa.FileName) ? "block" : "none");"
-                                               readonly />
-                                    </div>
-                                </div>
+                                @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                    Prefix = prefix,
+                                    Title = "PA of tooth",
+                                    FileInputName = $"PaImages[{i}].ImageFile",
+                                    UploadedFieldName = $"PaImages[{i}].Uploaded",
+                                    FileNameFieldName = $"PaImages[{i}].FileName",
+                                    OriginalFileNameFieldName = $"PaImages[{i}].OriginalFileName",
+                                    DateFieldName = $"PaImages[{i}].UploadedDateTime",
+                                    RemovedFieldName = $"PaImages[{i}].Removed",
+                                    DownloadPrefix = "pa_tooth",
+                                    Uploaded = !string.IsNullOrWhiteSpace(pa.FileName),
+                                    StoredFileName = pa.FileName,
+                                    OriginalFileName = pa.OriginalFileName,
+                                    UploadedDateTime = pa.UploadedDateTime,
+                                    IsPaCard = true,
+                                    PaCardIndex = i,
+                                    PaImageId = pa.Id,
+                                    ShowRemovePaCardButton = i > 0
+                                })
                             }
                         </div>
                     </div>
@@ -322,62 +315,24 @@
             </div>
         }
 
-        @if (panoNeeded)
-        {
-            <div class="card mb-4" id="panoSection">
+        <div class="mb-4" id="panoSection">
+            <p class="fw-bold @(panoNeeded ? "text-primary" : "text-muted")">
+                @if (panoNeeded)
+                {
+                    <text>Panorex (Pano) X-ray is Required for this Service member</text>
+                }
+                else
+                {
+                    <text>Panorex (Pano) X-ray is NOT Required for this Service member</text>
+                }
+            </p>
+            <div class="card">
                 <div class="card-body">
-                    <div class="row mb-3 align-items-end">
-                        <div class="col-md-4">
-                            <label class="form-label">Panorex (Pano) X-Ray Status</label>
-                            <select name="PanoStatus" id="PanoStatus" class="form-select">
-                                <option value=""></option>
-                                <option value="Completed" selected="@(Model.PanoStatus == "Completed")">Completed</option>
-                                <option value="Not Completed" selected="@(Model.PanoStatus == "Not Completed")">Not Completed</option>
-                            </select>
-                        </div>
-                        @if (Model.Id != 0 && Model.PanoUploadedDateTime.HasValue)
-                        {
-                            <div class="col-md-4">
-                                <label class="form-label">Uploaded datetime</label>
-                                <input type="text" class="form-control read-only-style"
-                                       value="@Model.PanoUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
-                            </div>
-                        }
-                    </div>
-
-                    <div id="panoReasonContainer" style="display:none;" class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Reason</label>
-                            <select name="PanoReason" id="PanoReason" class="form-select">
-                                <option value=""></option>
-                                <option value="Insufficient Supplies">Insufficient Supplies</option>
-                                <option value="Refused">Refused</option>
-                                <option value="Contraindication">Contraindication</option>
-                                <option value="Excused">Excused</option>
-                                <option value="Proof of Service">Proof of Service</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="panoUploadContainer" style="display:none;" class="xray-cards-row">
-                        @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
-                            Prefix = "pano",
-                            Title = "Upload Pano X-Ray",
-                            FileInputName = "PanoFile",
-                            UploadedFieldName = "PanoUploaded",
-                            FileNameFieldName = "PanoFileName",
-                            OriginalFileNameFieldName = "PanoOriginalFileName",
-                            DateFieldName = "PanoUploadedDateTime",
-                            RemovedFieldName = "PanoRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.PanoFileName),
-                            StoredFileName = Model.PanoFileName,
-                            OriginalFileName = Model.PanoOriginalFileName,
-                            UploadedDateTime = Model.PanoUploadedDateTime
-                        })
-                    </div>
+                    <label class="form-label" for="Comment">Comment</label>
+                    <textarea name="Comment" id="Comment" class="form-control" rows="4">@Model.Comment</textarea>
                 </div>
             </div>
-        }
+        </div>
 
         <div class="row mb-4">
             <div class="col-md-4">
@@ -404,9 +359,12 @@
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
     const BWX_NEEDED = @Json.Serialize(bwxNeeded);
-    const PANO_NEEDED = @Json.Serialize(panoNeeded);
     const MAX_PA_CARDS = 8;
+    const XRAY_ZOOM_STEP = 25;
+    const XRAY_ZOOM_MIN = 50;
+    const XRAY_ZOOM_MAX = 300;
     let paCardIndex = @paImages.Count;
+    const xrayZoomLevels = {};
 
     function syncPaAddButton() {
         const count = $("#paCardsRow .pa-card").length;
@@ -450,6 +408,50 @@
         updateOverallStatus();
     }
 
+    function setXRayZoom(prefix, level) {
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const zoomLabel = document.getElementById(prefix + "_zoomLevel");
+        if (!previewImg || !zoomLabel) return;
+
+        const clamped = Math.max(XRAY_ZOOM_MIN, Math.min(XRAY_ZOOM_MAX, level));
+        xrayZoomLevels[prefix] = clamped;
+        previewImg.style.width = clamped + "%";
+        zoomLabel.textContent = clamped + "%";
+    }
+
+    function updateXRayPreview(prefix) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const status = document.getElementById(prefix + "_fileStatus");
+        const hiddenFileName = document.getElementById(prefix + "_fileName");
+        const removedInput = document.getElementById(prefix + "_removed");
+
+        if (!previewSection || !previewImg || !status) return;
+
+        const removed = removedInput?.value === "true";
+        let src = "";
+
+        if (status.dataset.previewMode === "selected" && status.dataset.selectedPreviewUrl) {
+            src = status.dataset.selectedPreviewUrl;
+        } else if (!removed && status.dataset.previewMode === "server") {
+            const fileName = (hiddenFileName?.value || status.dataset.existingFilename || "").trim();
+            const downloadPrefix = status.dataset.downloadPrefix || prefix;
+            if (fileName) {
+                src = "/DentalXRay/DownloadXRayImage?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+            }
+        }
+
+        if (src) {
+            previewImg.src = src;
+            previewSection.style.display = "block";
+            setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+        } else {
+            previewImg.removeAttribute("src");
+            previewSection.style.display = "none";
+            delete xrayZoomLevels[prefix];
+        }
+    }
+
     function updateXRayFileUI(prefix) {
         const fileInput = document.querySelector(`.xray-file[data-prefix='${prefix}']`);
         const status = document.getElementById(prefix + "_fileStatus");
@@ -477,6 +479,7 @@
             if (prevUrl) URL.revokeObjectURL(prevUrl);
             status.dataset.selectedPreviewUrl = URL.createObjectURL(selectedFile);
             status.dataset.previewMode = "selected";
+            updateXRayPreview(prefix);
             return;
         }
 
@@ -492,6 +495,7 @@
             hiddenFileName.value = existingFileName;
             if (hiddenOriginalFileName) hiddenOriginalFileName.value = existingOriginalFileName;
             status.dataset.previewMode = "server";
+            updateXRayPreview(prefix);
             return;
         }
 
@@ -501,6 +505,7 @@
         hiddenFileName.value = "";
         if (hiddenOriginalFileName) hiddenOriginalFileName.value = "";
         status.dataset.previewMode = "";
+        updateXRayPreview(prefix);
     }
 
     function toggleReasonAndUpload(statusSelector, reasonContainer, uploadContainer, reasonSelector) {
@@ -581,14 +586,6 @@
             if (!paDone) allDone = false;
         }
 
-        if (PANO_NEEDED) {
-            const panoStatus = $("#PanoStatus").val();
-            const panoDone = isSectionDone(panoStatus, $("#PanoReason").val(), function () {
-                return isUploadComplete("pano");
-            });
-            if (!panoDone) allDone = false;
-        }
-
         $("#StatusHidden").val(allDone ? "Completed" : "Pending");
     }
 
@@ -610,16 +607,70 @@
             card.find(".open-xray-picker").attr("data-prefix", prefix);
             card.find(".preview-xray-file").attr("data-prefix", prefix);
             card.find(".remove-xray-file").attr("data-prefix", prefix);
+            card.find(".xray-zoom-in, .xray-zoom-out, .xray-zoom-reset").attr("data-prefix", prefix);
 
-            ["_fileStatus", "_uploaded", "_fileName", "_originalFileName", "_removed", "_uploadDate", "_fileNameDisplay"].forEach(function (suffix) {
-                const oldId = card.find("[id$='" + suffix + "']").attr("id");
-                if (oldId) {
-                    card.find("[id='" + oldId + "']").attr("id", prefix + suffix);
-                }
+            ["_fileStatus", "_uploaded", "_fileName", "_originalFileName", "_removed", "_uploadDate", "_fileNameDisplay",
+             "_previewSection", "_previewViewport", "_previewImg", "_zoomLevel"].forEach(function (suffix) {
+                const el = card.find("[id$='" + suffix + "']");
+                if (el.length) el.attr("id", prefix + suffix);
             });
+
+            updateXRayFileUI(prefix);
         });
         paCardIndex = $("#paCardsRow .pa-card").length;
         syncPaAddButton();
+    }
+
+    function buildPaCardHtml(index) {
+        const prefix = "pa_" + index;
+        return `
+            <div class="card pa-card h-100 xray-upload-card" data-index="${index}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="card-title mb-0">PA of tooth</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card">Remove</button>
+                    </div>
+                    <input type="hidden" name="PaImages[${index}].Id" value="0" />
+                    <input type="hidden" name="PaImages[${index}].SortOrder" value="${index}" class="pa-sort-order" />
+                    <input type="file" class="xray-file d-none pa-file" name="PaImages[${index}].ImageFile"
+                           data-prefix="${prefix}" accept=".jpg,.jpeg,image/jpeg"
+                           onchange="toggleXRayUploadDate(this, '${prefix}')" />
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-1 open-xray-picker" data-prefix="${prefix}">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                    <div class="align-items-center gap-2 mt-2 xray-file-status" id="${prefix}_fileStatus"
+                         style="display:none;" data-download-prefix="pa_tooth">
+                        <span id="${prefix}_fileNameDisplay" class="small text-muted"></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary preview-xray-file" data-prefix="${prefix}">Preview</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-xray-file" data-prefix="${prefix}">Remove</button>
+                    </div>
+                    <input type="hidden" id="${prefix}_uploaded" name="PaImages[${index}].Uploaded" value="false" />
+                    <input type="hidden" id="${prefix}_fileName" name="PaImages[${index}].FileName" value="" />
+                    <input type="hidden" id="${prefix}_originalFileName" name="PaImages[${index}].OriginalFileName" value="" />
+                    <input type="hidden" id="${prefix}_removed" name="PaImages[${index}].Removed" value="false" />
+                    <input name="PaImages[${index}].UploadedDateTime" id="${prefix}_uploadDate"
+                           class="form-control flatpickr mt-2" type="text" style="display:none;" readonly />
+                    <div class="xray-preview-panel mt-3" id="${prefix}_previewSection" style="display:none;">
+                        <label class="form-label fw-semibold mb-1">Image Preview:</label>
+                        <div class="xray-preview-viewport" id="${prefix}_previewViewport">
+                            <img id="${prefix}_previewImg" alt="X-Ray preview" />
+                        </div>
+                        <label class="form-label fw-semibold mt-2 mb-1">Zoom Controls:</label>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <button type="button" class="btn btn-sm btn-primary xray-zoom-in" data-prefix="${prefix}">
+                                <i class="bi bi-zoom-in"></i> ZOOM IN
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary xray-zoom-out" data-prefix="${prefix}">
+                                <i class="bi bi-zoom-out"></i> ZOOM OUT
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary xray-zoom-reset" data-prefix="${prefix}">
+                                <i class="bi bi-arrow-counterclockwise"></i> RESET
+                            </button>
+                        </div>
+                        <p class="mb-0 small">Zoom Level: <span id="${prefix}_zoomLevel" class="text-primary fw-semibold">100%</span></p>
+                    </div>
+                </div>
+            </div>`;
     }
 
     function initFlatpickrForUploadDates() {
@@ -641,7 +692,7 @@
     $(document).ready(function () {
         initFlatpickrForUploadDates();
 
-        ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar", "pano"].forEach(updateXRayFileUI);
+        ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar"].forEach(updateXRayFileUI);
         $(".pa-card .xray-file").each(function () {
             updateXRayFileUI($(this).data("prefix"));
         });
@@ -652,14 +703,9 @@
         if ($("#PaReason").length && "@Model.PaReason") {
             $("#PaReason").val("@Model.PaReason");
         }
-        if ($("#PanoReason").length && "@Model.PanoReason") {
-            $("#PanoReason").val("@Model.PanoReason");
-        }
-
         togglePregnancyFlow();
         toggleReasonAndUpload("#BwxStatus", "#bwxReasonContainer", "#bwxUploadContainer", "#BwxReason");
         toggleReasonAndUpload("#PaStatus", "#paReasonContainer", "#paUploadContainer", "#PaReason");
-        toggleReasonAndUpload("#PanoStatus", "#panoReasonContainer", "#panoUploadContainer", "#PanoReason");
         updateOverallStatus();
         syncPaAddButton();
 
@@ -676,12 +722,7 @@
             toggleReasonAndUpload("#PaStatus", "#paReasonContainer", "#paUploadContainer", "#PaReason");
             updateOverallStatus();
         });
-        $("#PanoStatus").on("change", function () {
-            toggleReasonAndUpload("#PanoStatus", "#panoReasonContainer", "#panoUploadContainer", "#PanoReason");
-            updateOverallStatus();
-        });
-
-        $("#BwxReason, #PaReason, #PanoReason").on("change", updateOverallStatus);
+        $("#BwxReason, #PaReason").on("change", updateOverallStatus);
     });
 
     $(document).on("change", ".xray-file", function () {
@@ -721,6 +762,21 @@
         updateOverallStatus();
     });
 
+    $(document).on("click", ".xray-zoom-in", function () {
+        const prefix = $(this).data("prefix");
+        setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) + XRAY_ZOOM_STEP);
+    });
+
+    $(document).on("click", ".xray-zoom-out", function () {
+        const prefix = $(this).data("prefix");
+        setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) - XRAY_ZOOM_STEP);
+    });
+
+    $(document).on("click", ".xray-zoom-reset", function () {
+        const prefix = $(this).data("prefix");
+        setXRayZoom(prefix, 100);
+    });
+
     $(document).on("click", ".preview-xray-file", function () {
         const prefix = $(this).data("prefix");
         const status = document.getElementById(prefix + "_fileStatus");
@@ -747,38 +803,7 @@
         }
 
         const index = paCardIndex;
-        const prefix = "pa_" + index;
-        const html = `
-            <div class="card pa-card h-100" data-index="${index}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="card-title mb-0">PA of tooth</h6>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card">Remove</button>
-                    </div>
-                    <input type="hidden" name="PaImages[${index}].Id" value="0" />
-                    <input type="hidden" name="PaImages[${index}].SortOrder" value="${index}" class="pa-sort-order" />
-                    <input type="hidden" name="PaImages[${index}].Removed" value="false" class="pa-removed-flag" />
-                    <input type="file" class="xray-file d-none pa-file" name="PaImages[${index}].ImageFile"
-                           data-prefix="${prefix}" accept=".jpg,.jpeg,image/jpeg"
-                           onchange="toggleXRayUploadDate(this, '${prefix}')" />
-                    <button type="button" class="btn btn-outline-primary btn-sm mt-1 open-xray-picker" data-prefix="${prefix}">
-                        <i class="bi bi-upload"></i> Upload
-                    </button>
-                    <div class="align-items-center gap-2 mt-2 xray-file-status" id="${prefix}_fileStatus"
-                         style="display:none;" data-download-prefix="pa_tooth">
-                        <span id="${prefix}_fileNameDisplay" class="small text-muted"></span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary preview-xray-file" data-prefix="${prefix}">Preview</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-xray-file" data-prefix="${prefix}">Remove</button>
-                    </div>
-                    <input type="hidden" id="${prefix}_uploaded" name="PaImages[${index}].Uploaded" value="false" />
-                    <input type="hidden" id="${prefix}_fileName" name="PaImages[${index}].FileName" value="" />
-                    <input type="hidden" id="${prefix}_originalFileName" name="PaImages[${index}].OriginalFileName" value="" />
-                    <input type="hidden" id="${prefix}_removed" name="PaImages[${index}].Removed" value="false" />
-                    <input name="PaImages[${index}].UploadedDateTime" id="${prefix}_uploadDate"
-                           class="form-control flatpickr mt-2" type="text" style="display:none;" readonly />
-                </div>
-            </div>`;
-        $("#paCardsRow").append(html);
+        $("#paCardsRow").append(buildPaCardHtml(index));
         paCardIndex++;
         initFlatpickrForUploadDates();
         updateOverallStatus();

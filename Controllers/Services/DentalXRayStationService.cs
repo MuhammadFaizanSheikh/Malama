@@ -140,11 +140,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.PaReason = dto.PaReason;
             entity.PaUploadedDateTime = dto.PaUploadedDateTime;
 
-            entity.PanoStatus = dto.PanoStatus;
-            entity.PanoReason = dto.PanoReason;
-            entity.PanoFileName = dto.PanoRemoved ? null : dto.PanoFileName;
-            entity.PanoOriginalFileName = dto.PanoRemoved ? null : dto.PanoOriginalFileName;
-            entity.PanoUploadedDateTime = dto.PanoRemoved ? null : dto.PanoUploadedDateTime;
+            entity.Comment = dto.Comment;
 
             entity.PaImages = dto.PaImages
                 .Where(p => !p.Removed)
@@ -182,14 +178,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (IsNeeded(serviceMember.BwxNeeded))
             {
                 if (!IsSectionComplete(model.PaStatus, model.PaReason, IsPaUploadComplete(model)))
-                {
-                    sectionsComplete = false;
-                }
-            }
-
-            if (IsNeeded(serviceMember.PanoNeeded))
-            {
-                if (!IsSectionComplete(model.PanoStatus, model.PanoReason, IsPanoUploadComplete(model)))
                 {
                     sectionsComplete = false;
                 }
@@ -272,11 +260,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && model.PaImages.All(p => !p.FileName.IsNullOrEmpty());
         }
 
-        private static bool IsPanoUploadComplete(DentalXRayStation model)
-        {
-            return !model.PanoFileName.IsNullOrEmpty();
-        }
-
         private void MapToEntity(DentalXRayStation source, DentalXRayStation target, string userName)
         {
             target.AreYouPregnant = source.AreYouPregnant;
@@ -284,8 +267,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             MapBwxSection(source, target);
             MapPaSection(source, target);
-            MapPanoSection(source, target);
 
+            target.Comment = source.Comment;
             target.Status = source.Status;
             target.UpdatedOn = DateTime.Now;
             target.UpdatedBy = userName;
@@ -350,34 +333,6 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.PaReason = null;
             ReplacePaImages(target, source.PaImages?.ToList() ?? new List<DentalXRayPaImage>());
             target.PaUploadedDateTime = IsPaUploadComplete(source) ? source.PaUploadedDateTime : null;
-        }
-
-        private static void MapPanoSection(DentalXRayStation source, DentalXRayStation target)
-        {
-            target.PanoStatus = source.PanoStatus;
-            target.PanoReason = source.PanoReason;
-
-            if (source.PanoStatus.IsNullOrEmpty())
-            {
-                target.PanoFileName = null;
-                target.PanoOriginalFileName = null;
-                target.PanoUploadedDateTime = null;
-                return;
-            }
-
-            if (source.PanoStatus == "Not Completed")
-            {
-                target.PanoFileName = null;
-                target.PanoOriginalFileName = null;
-                target.PanoUploadedDateTime = null;
-                target.PanoReason = source.PanoReason;
-                return;
-            }
-
-            target.PanoReason = null;
-            target.PanoFileName = source.PanoFileName;
-            target.PanoOriginalFileName = source.PanoOriginalFileName;
-            target.PanoUploadedDateTime = IsPanoUploadComplete(source) ? source.PanoUploadedDateTime : null;
         }
 
         private static void ClearBwxUploads(DentalXRayStation target)
