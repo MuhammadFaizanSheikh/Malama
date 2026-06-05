@@ -6,6 +6,16 @@ namespace Malama.Services.Pdf.Sf600;
 /// </summary>
 internal static class Sf600ImmunizationBlockLayout
 {
+    // --- SF600 overlay tuning (change these, rebuild, regenerate PDF) ---
+    //
+    // GlobalBaselineYOffset: moves every row the same amount (use for first-line fit).
+    // LineSpacingAdjustment: progressive spacing from row 0 downward (row 0 unchanged).
+    //   Increase  -> lower rows move down (more space between lines).
+    //   Decrease  -> lower rows move up (less space between lines).
+    private const float GlobalBaselineYOffset = -16.5f;
+
+    public const float LineSpacingAdjustment = 2.0f;
+
     public const int ImmunizationsPerPage = 4;
     public const int LinesPerImmunization = 4;
     public const int NoteLineCount = 2;
@@ -30,7 +40,7 @@ internal static class Sf600ImmunizationBlockLayout
     [
         [
             new LineField(131.1f, "Immunization #{0}", 131.1f),
-            new LineField(301.5f, "Dose #:", 342f),
+            new LineField(301.5f, "Dose #:", 360f),
             new LineField(424.7f, "Provided By:", 515f)
         ],
         [
@@ -68,7 +78,9 @@ internal static class Sf600ImmunizationBlockLayout
             throw new ArgumentOutOfRangeException(nameof(rowIndex));
         }
 
-        return RowBaselines[rowIndex];
+        return RowBaselines[rowIndex]
+            + GlobalBaselineYOffset
+            - (rowIndex * LineSpacingAdjustment);
     }
 
     public static int GetRequiredPageCount(int immunizationCount) =>

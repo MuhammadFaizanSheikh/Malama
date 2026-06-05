@@ -29,7 +29,7 @@ internal static class Sf600ImmunizationEntryBuilder
                 AdministrationType = card.Detail.Type,
                 BodyPart = card.Detail.BodyPart,
                 DisplayBodyPart = FormatBodyPart(card.Detail.BodyPart),
-                Site = card.Detail.Site,
+                Site = FormatSite(card.Detail.Site),
                 StaffName = card.Detail.StaffName,
                 GivenDateTime = card.Detail.GivenDateTime
             });
@@ -59,6 +59,26 @@ internal static class Sf600ImmunizationEntryBuilder
         };
 
         return neededStatus == AppConstants.Status.Completed;
+    }
+
+    private static string FormatSite(string? site)
+    {
+        if (string.IsNullOrWhiteSpace(site))
+        {
+            return string.Empty;
+        }
+
+        if (site.Contains("right", StringComparison.OrdinalIgnoreCase))
+        {
+            return "R";
+        }
+
+        if (site.Contains("left", StringComparison.OrdinalIgnoreCase))
+        {
+            return "L";
+        }
+
+        return site;
     }
 
     private static string FormatBodyPart(string? bodyPart)
