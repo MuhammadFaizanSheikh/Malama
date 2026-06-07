@@ -16,6 +16,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IFileUploadDownloadService _fileService;
+        private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
         private readonly ILogger<DentalXRayController> _logger;
         private const string CLASSNAME = "DentalXRayController";
         private const string StationName = "DentalXRay";
@@ -26,7 +27,8 @@ namespace ExcelFilesCompiler.Controllers
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
             IDentalXRayStationService dentalXRayStationService,
-            IFileUploadDownloadService fileService)
+            IFileUploadDownloadService fileService,
+            DentalXRayFileSaveCoordinator fileSaveCoordinator)
         {
             _logger = logger;
             _fileUploader = fileUploader;
@@ -34,6 +36,7 @@ namespace ExcelFilesCompiler.Controllers
             _userManager = userManager;
             _dentalXRayStationService = dentalXRayStationService;
             _fileService = fileService;
+            _fileSaveCoordinator = fileSaveCoordinator;
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalXRay_View")]
@@ -175,8 +178,10 @@ namespace ExcelFilesCompiler.Controllers
             const string methodName = "SaveDentalXRayStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
-            DentalXRayStation? reloadModel = null;
-            var uploadedFiles = new List<(string Prefix, string FileName)>();
+            DentalXRayStation? existingRecord = null;
+            DentalXRayFileUpdatePlan? filePlan = null;
+            DentalXRayFileUploadSession? fileSession = null;
+            var dbSaveCompleted = false;
 
             try
             {
@@ -231,13 +236,39 @@ namespace ExcelFilesCompiler.Controllers
                     });
                 }
 
-                var uploadError = await ProcessFileUploadsAsync(dto, barcode, uploadedFiles);
-                if (!string.IsNullOrWhiteSpace(uploadError))
+                if (dto.Id > 0)
                 {
-                    RollbackUploadedFiles(uploadedFiles);
+                    var existingResult = await _dentalXRayStationService
+                        .GetDentalXRayStationByIdWithEventIdAsync(dto.Id);
+                    existingRecord = existingResult.DentalXRayStation;
+                    if (existingRecord == null)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Not Found";
+                        TempData["ResponseMessage"] = "Dental X-Ray record not found.";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+
+                filePlan = _fileSaveCoordinator.BuildPlan(dto, existingRecord, barcode);
+                if (!string.IsNullOrWhiteSpace(filePlan.ErrorMessage))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = filePlan.ErrorMessage;
+                    return RedirectToAction(nameof(DentalXRayStation), new
+                    {
+                        dentalXRayStationId = dto.Id,
+                        serviceMembersChildId = dto.ServiceMembersChildId
+                    });
+                }
+
+                fileSession = await _fileSaveCoordinator.UploadToStagingAsync(filePlan, barcode);
+                if (!fileSession.Success)
+                {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Upload Failed";
-                    TempData["ResponseMessage"] = uploadError;
+                    TempData["ResponseMessage"] = fileSession.ErrorMessage ?? "Failed to upload X-Ray image.";
                     return RedirectToAction(nameof(DentalXRayStation), new
                     {
                         dentalXRayStationId = dto.Id,
@@ -263,6 +294,9 @@ namespace ExcelFilesCompiler.Controllers
                     await _dentalXRayStationService.UpdateAsync(entity, user.UserName);
                 }
 
+                dbSaveCompleted = true;
+                _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
+
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Dental X-Ray record saved successfully.";
@@ -270,7 +304,11 @@ namespace ExcelFilesCompiler.Controllers
             }
             catch (Exception ex)
             {
-                RollbackUploadedFiles(uploadedFiles);
+                if (!dbSaveCompleted && fileSession != null)
+                {
+                    await _fileSaveCoordinator.RollbackStagingAsync(fileSession);
+                }
+
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while saving Dental X-Ray record", CLASSNAME, methodName);
 
                 TempData["ResponseStatus"] = "error";
@@ -540,132 +578,6 @@ namespace ExcelFilesCompiler.Controllers
             return uploadedFlag || !string.IsNullOrWhiteSpace(fileName) || (file != null && file.Length > 0);
         }
 
-        private async Task<string?> ProcessFileUploadsAsync(
-            DentalXRayStationSaveDto dto,
-            string barcode,
-            List<(string Prefix, string FileName)> uploadedFiles)
-        {
-            if (dto.BwxStatus == "Completed")
-            {
-                var error = await UploadSlotAsync(dto.BwLeftMolarFile, "bwx_left_molar", "left_molar", barcode, uploadedFiles,
-                    fileName => dto.BwLeftMolarFileName = fileName,
-                    original => dto.BwLeftMolarOriginalFileName = original,
-                    dt => dto.BwLeftMolarUploadedDateTime = dt,
-                    () => dto.BwLeftMolarRemoved,
-                    () => dto.BwLeftMolarUploaded,
-                    v => dto.BwLeftMolarUploaded = v);
-                if (error != null) return error;
-
-                error = await UploadSlotAsync(dto.BwLeftPremolarFile, "bwx_left_premolar", "left_premolar", barcode, uploadedFiles,
-                    fileName => dto.BwLeftPremolarFileName = fileName,
-                    original => dto.BwLeftPremolarOriginalFileName = original,
-                    dt => dto.BwLeftPremolarUploadedDateTime = dt,
-                    () => dto.BwLeftPremolarRemoved,
-                    () => dto.BwLeftPremolarUploaded,
-                    v => dto.BwLeftPremolarUploaded = v);
-                if (error != null) return error;
-
-                error = await UploadSlotAsync(dto.BwRightMolarFile, "bwx_right_molar", "right_molar", barcode, uploadedFiles,
-                    fileName => dto.BwRightMolarFileName = fileName,
-                    original => dto.BwRightMolarOriginalFileName = original,
-                    dt => dto.BwRightMolarUploadedDateTime = dt,
-                    () => dto.BwRightMolarRemoved,
-                    () => dto.BwRightMolarUploaded,
-                    v => dto.BwRightMolarUploaded = v);
-                if (error != null) return error;
-
-                error = await UploadSlotAsync(dto.BwRightPremolarFile, "bwx_right_premolar", "right_premolar", barcode, uploadedFiles,
-                    fileName => dto.BwRightPremolarFileName = fileName,
-                    original => dto.BwRightPremolarOriginalFileName = original,
-                    dt => dto.BwRightPremolarUploadedDateTime = dt,
-                    () => dto.BwRightPremolarRemoved,
-                    () => dto.BwRightPremolarUploaded,
-                    v => dto.BwRightPremolarUploaded = v);
-                if (error != null) return error;
-            }
-
-            if (dto.PaStatus == "Completed" && dto.PaImages != null)
-            {
-                for (var i = 0; i < dto.PaImages.Count; i++)
-                {
-                    var pa = dto.PaImages[i];
-                    if (pa.Removed)
-                    {
-                        pa.FileName = null;
-                        pa.OriginalFileName = null;
-                        pa.UploadedDateTime = null;
-                        continue;
-                    }
-
-                    if (pa.ImageFile != null && pa.ImageFile.Length > 0)
-                    {
-                        var fileKey = $"pa_{i + 1}";
-                        var result = await _fileService.UploadImageFile(pa.ImageFile, StationName, "pa_tooth", barcode, fileKey);
-                        if (!result.Success)
-                        {
-                            return result.Message ?? "Failed to upload PA X-Ray image.";
-                        }
-
-                        uploadedFiles.Add(("pa_tooth", result.FileName));
-                        pa.FileName = result.FileName;
-                        pa.OriginalFileName = pa.ImageFile.FileName;
-                        pa.UploadedDateTime = DateTime.Now;
-                        pa.Uploaded = true;
-                    }
-                    else if (!string.IsNullOrWhiteSpace(pa.FileName))
-                    {
-                        pa.Uploaded = true;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private async Task<string?> UploadSlotAsync(
-            IFormFile? file,
-            string prefix,
-            string fileKey,
-            string barcode,
-            List<(string Prefix, string FileName)> uploadedFiles,
-            Action<string> setFileName,
-            Action<string> setOriginalFileName,
-            Action<DateTime?> setUploadedDateTime,
-            Func<bool> isRemoved,
-            Func<bool> isUploaded,
-            Action<bool> setUploaded)
-        {
-            if (isRemoved())
-            {
-                setFileName(null!);
-                setOriginalFileName(null!);
-                setUploadedDateTime(null);
-                setUploaded(false);
-                return null;
-            }
-
-            if (file != null && file.Length > 0)
-            {
-                var result = await _fileService.UploadImageFile(file, StationName, prefix, barcode, fileKey);
-                if (!result.Success)
-                {
-                    return result.Message ?? "Failed to upload X-Ray image.";
-                }
-
-                uploadedFiles.Add((prefix, result.FileName));
-                setFileName(result.FileName);
-                setOriginalFileName(file.FileName);
-                setUploadedDateTime(DateTime.Now);
-                setUploaded(true);
-            }
-            else
-            {
-                setUploaded(isUploaded());
-            }
-
-            return null;
-        }
-
         private static void SetSectionUploadedDateTimes(DentalXRayStationSaveDto dto)
         {
             if (dto.BwxStatus == "Completed" && AreAllBwxUploadsPresent(dto))
@@ -688,14 +600,6 @@ namespace ExcelFilesCompiler.Controllers
                 dto.PaUploadedDateTime = null;
             }
 
-        }
-
-        private void RollbackUploadedFiles(List<(string Prefix, string FileName)> uploadedFiles)
-        {
-            foreach (var (prefix, fileName) in uploadedFiles)
-            {
-                _fileService.DeleteFile(StationName, prefix, fileName);
-            }
         }
     }
 }

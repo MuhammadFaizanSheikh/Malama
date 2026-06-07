@@ -109,6 +109,104 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public string GetImageFullPath(string station, string prefix, string fileName)
+        {
+            return Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results", fileName);
+        }
+
+        public async Task<FileUploadResult> UploadImageFileToStaging(
+            IFormFile file,
+            string station,
+            string prefix,
+            string barcode,
+            string fileKey)
+        {
+            const string METHOD = nameof(UploadImageFileToStaging);
+
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return new FileUploadResult { Success = false, Message = "No file selected" };
+                }
+
+                var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg")
+                {
+                    return new FileUploadResult { Success = false, Message = "Only JPEG/JPG images are allowed" };
+                }
+
+                var prefixFolder = Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results");
+                var stagingFolder = Path.Combine(prefixFolder, ".staging");
+
+                Directory.CreateDirectory(stagingFolder);
+
+                var stagingFileName = $"{barcode}_{fileKey}_{Guid.NewGuid():N}.jpg";
+                var fullPath = Path.Combine(stagingFolder, stagingFileName);
+
+                await using (var stream = new FileStream(fullPath, FileMode.CreateNew))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                _logger.LogInformation(
+                    "{Class}.{Method} - Staged image uploaded | Path={Path}",
+                    CLASSNAME, METHOD, fullPath);
+
+                return new FileUploadResult
+                {
+                    Success = true,
+                    FileName = stagingFileName,
+                    FullPath = fullPath
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Error staging image | Station={Station}, Prefix={Prefix}, FileKey={FileKey}",
+                    CLASSNAME, METHOD, station, prefix, fileKey);
+
+                return new FileUploadResult
+                {
+                    Success = false,
+                    Message = "Error occurred while staging image"
+                };
+            }
+        }
+
+        public bool CommitStagedImageFile(string stagingFullPath, string station, string prefix, string finalFileName)
+        {
+            const string METHOD = nameof(CommitStagedImageFile);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(stagingFullPath) || !System.IO.File.Exists(stagingFullPath))
+                {
+                    _logger.LogWarning("{Class}.{Method} - Staged file missing | Path={Path}", CLASSNAME, METHOD, stagingFullPath);
+                    return false;
+                }
+
+                var prefixFolder = Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results");
+                Directory.CreateDirectory(prefixFolder);
+
+                var destinationPath = Path.Combine(prefixFolder, finalFileName);
+                System.IO.File.Move(stagingFullPath, destinationPath, overwrite: true);
+
+                _logger.LogInformation(
+                    "{Class}.{Method} - Staged file committed | Destination={Destination}",
+                    CLASSNAME, METHOD, destinationPath);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Failed to commit staged file | StagingPath={StagingPath}, FinalFileName={FinalFileName}",
+                    CLASSNAME, METHOD, stagingFullPath, finalFileName);
+                return false;
+            }
+        }
+
         public async Task<FileUploadResult> UploadImageFile(IFormFile file, string station, string prefix, string barcode, string fileKey)
         {
             const string METHOD = nameof(UploadImageFile);
