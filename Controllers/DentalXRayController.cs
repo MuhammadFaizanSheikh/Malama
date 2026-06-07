@@ -505,7 +505,7 @@ namespace ExcelFilesCompiler.Controllers
         {
             if (string.IsNullOrWhiteSpace(status))
             {
-                return $"{label} is required.";
+                return null;
             }
 
             if (status == "Not Completed" && string.IsNullOrWhiteSpace(reason))
@@ -525,7 +525,7 @@ namespace ExcelFilesCompiler.Controllers
         {
             if (string.IsNullOrWhiteSpace(dto.PaStatus))
             {
-                return "Periapical (PA) X-Rays Status is required.";
+                return null;
             }
 
             if (dto.PaStatus == "Not Completed" && string.IsNullOrWhiteSpace(dto.PaReason))

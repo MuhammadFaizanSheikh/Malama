@@ -361,16 +361,6 @@
         }
 
         <div class="mb-4" id="panoSection">
-            <p class="fw-bold @(panoNeeded ? "text-primary" : "text-muted")">
-                @if (panoNeeded)
-                {
-                    <text>Panorex (Pano) X-ray is Required for this Service member</text>
-                }
-                else
-                {
-                    <text>Panorex (Pano) X-ray is NOT Required for this Service member</text>
-                }
-            </p>
             <div class="card">
                 <div class="card-body">
                     <label class="form-label" for="Comment">Comment</label>
@@ -379,7 +369,7 @@
             </div>
         </div>
 
-        <div class="row mb-4">
+        <div class="row mb-3">
             <div class="col-md-4">
                 <label class="form-label">Status</label>
                 <select name="Status" id="Status" class="form-select read-only-style" disabled>
@@ -389,6 +379,17 @@
                 <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(Model.Status) ? "Pending" : Model.Status)" />
             </div>
         </div>
+
+        <p class="fw-bold mb-4 @(panoNeeded ? "text-primary" : "text-muted")">
+            @if (panoNeeded)
+            {
+                <text>Panorex (Pano) X-ray is Required for this Service member</text>
+            }
+            else
+            {
+                <text>Panorex (Pano) X-ray is NOT Required for this Service member</text>
+            }
+        </p>
     </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
@@ -646,12 +647,67 @@
         }
     }
 
+    const BWX_UPLOAD_PREFIXES = ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar"];
+    const BWX_UPLOAD_LABELS = {
+        bwx_left_molar: "BW Left Molar",
+        bwx_left_premolar: "BW Left Premolar",
+        bwx_right_molar: "BW Right Molar",
+        bwx_right_premolar: "BW Right Premolar"
+    };
+
     function isUploadComplete(prefix) {
-        const hiddenUploaded = document.getElementById(prefix + "_uploaded");
         const hiddenFileName = document.getElementById(prefix + "_fileName");
         const removedInput = document.getElementById(prefix + "_removed");
+        const fileInput = document.querySelector(`.xray-file[data-prefix='${prefix}']`);
+
         if (removedInput?.value === "true") return false;
-        return hiddenUploaded?.value === "true" || !!(hiddenFileName?.value || "").trim();
+        if (fileInput?.files && fileInput.files.length > 0) return true;
+        return !!(hiddenFileName?.value || "").trim();
+    }
+
+    function shouldValidateXRaySections() {
+        return BWX_NEEDED && $("#xrayStationSection").is(":visible");
+    }
+
+    function validateXRayUploadsBeforeSave() {
+        const errors = [];
+        if (!shouldValidateXRaySections()) {
+            return errors;
+        }
+
+        const bwxStatus = $("#BwxStatus").val();
+        if (bwxStatus === "Completed") {
+            const missingBwx = BWX_UPLOAD_PREFIXES.filter(function (prefix) {
+                return !isUploadComplete(prefix);
+            }).map(function (prefix) {
+                return BWX_UPLOAD_LABELS[prefix];
+            });
+
+            if (missingBwx.length > 0) {
+                errors.push("BWX Status requires all 4 X-Ray uploads. Missing: " + missingBwx.join(", ") + ".");
+            }
+        }
+
+        const paStatus = $("#PaStatus").val();
+        if (paStatus === "Completed") {
+            const paCards = $(".pa-card:visible");
+            if (paCards.length === 0) {
+                errors.push("Periapical (PA) X-Rays Status requires at least one PA X-Ray image.");
+            } else {
+                const missingPa = [];
+                paCards.each(function () {
+                    const prefix = $(this).find(".xray-file").data("prefix");
+                    if (prefix && !isUploadComplete(prefix)) {
+                        missingPa.push("PA card " + (missingPa.length + 1));
+                    }
+                });
+                if (missingPa.length > 0) {
+                    errors.push("Periapical (PA) X-Rays Status requires an uploaded image on every PA card.");
+                }
+            }
+        }
+
+        return errors;
     }
 
     function isSectionDone(statusVal, reasonVal, uploadCheckFn) {
@@ -664,31 +720,44 @@
     function updateOverallStatus() {
         if (!$("#xrayStationSection").is(":visible")) {
             $("#StatusHidden").val("Pending");
+            $("#Status").val("Pending");
             return;
         }
 
-        let allDone = true;
+        let sectionsEvaluated = 0;
+        let sectionsComplete = 0;
 
         if (BWX_NEEDED) {
             const bwxStatus = $("#BwxStatus").val();
-            const bwxDone = isSectionDone(bwxStatus, $("#BwxReason").val(), function () {
-                return ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar"]
-                    .every(isUploadComplete);
-            });
-            if (!bwxDone) allDone = false;
+            if (bwxStatus) {
+                sectionsEvaluated++;
+                if (isSectionDone(bwxStatus, $("#BwxReason").val(), function () {
+                    return BWX_UPLOAD_PREFIXES.every(isUploadComplete);
+                })) {
+                    sectionsComplete++;
+                }
+            }
 
             const paStatus = $("#PaStatus").val();
-            const paDone = isSectionDone(paStatus, $("#PaReason").val(), function () {
-                return $(".pa-card:visible").length > 0 &&
-                    $(".pa-card:visible").toArray().every(function (card) {
-                        const prefix = $(card).find(".xray-file").data("prefix");
-                        return isUploadComplete(prefix);
-                    });
-            });
-            if (!paDone) allDone = false;
+            if (paStatus) {
+                sectionsEvaluated++;
+                if (isSectionDone(paStatus, $("#PaReason").val(), function () {
+                    return $(".pa-card:visible").length > 0 &&
+                        $(".pa-card:visible").toArray().every(function (card) {
+                            const prefix = $(card).find(".xray-file").data("prefix");
+                            return isUploadComplete(prefix);
+                        });
+                })) {
+                    sectionsComplete++;
+                }
+            }
         }
 
-        $("#StatusHidden").val(allDone ? "Completed" : "Pending");
+        const overallStatus = sectionsEvaluated > 0 && sectionsComplete === sectionsEvaluated
+            ? "Completed"
+            : "Pending";
+        $("#StatusHidden").val(overallStatus);
+        $("#Status").val(overallStatus);
     }
 
     function reindexPaCards() {
@@ -794,7 +863,7 @@
     $(document).ready(function () {
         initFlatpickrForUploadDates();
 
-        ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar"].forEach(updateXRayFileUI);
+        BWX_UPLOAD_PREFIXES.forEach(updateXRayFileUI);
         $(".pa-card .xray-file").each(function () {
             updateXRayFileUI($(this).data("prefix"));
         });
@@ -927,8 +996,22 @@
         updateOverallStatus();
     });
 
-    $("#SaveDentalXRayStation").on("submit", function () {
+    $("#SaveDentalXRayStation").on("submit", function (e) {
         updateOverallStatus();
+
+        const uploadErrors = validateXRayUploadsBeforeSave();
+        if (uploadErrors.length > 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "error",
+                title: "Missing X-Ray Uploads",
+                html: uploadErrors.join("<br>"),
+                confirmButtonText: "OK",
+                confirmButtonColor: "#FF0000",
+                iconColor: "#FF0000"
+            });
+            return false;
+        }
     });
 
     $('a.btn-back-confirm').on('click', async function (e) {
