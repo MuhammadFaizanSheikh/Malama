@@ -4,6 +4,42 @@ using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
+    public static class DentalXRayQuestionnaire
+    {
+        public static readonly string[] TobaccoTypes = { "Vape", "Chew", "Cigarettes", "Snuff", "Nicotine" };
+
+        public static readonly string[] HealthConditions =
+        {
+            "Hives or skin rash",
+            "Epilepsy",
+            "Cancer",
+            "Kidney disease",
+            "Heart trouble/Chest Pain",
+            "Heart murmur",
+            "High Blood Pressure",
+            "Rheumatic fever",
+            "Frequent headaches",
+            "Asthma/hay fever",
+            "Thyroid disease",
+            "Anemia/thin blood",
+            "Arthritis/rheumatism",
+            "Tuberculosis (TB)",
+            "Diabetes",
+            "Ulcer/stomach",
+            "Stroke",
+            "Liver disease",
+            "Sexually transmitted diseases"
+        };
+    }
+
+    public class DentalXRayTobaccoUseDetail
+    {
+        public string Type { get; set; } = string.Empty;
+        public string? Used { get; set; }
+        public string? TimesPerDay { get; set; }
+        public string? TimesPerWeek { get; set; }
+    }
+
     public class DentalXRayStationViewModel
     {
         public List<ServiceMembersChild> FileDataList { get; set; } = new();
@@ -19,8 +55,25 @@ namespace Malama.Models
         [ValidateNever]
         public virtual ServiceMembersChild ServiceMembersChild { get; set; }
 
+        public string? HealthcareProviderCareLast2Years { get; set; }
+        public string? SeriousIllnessOperationHospitalization { get; set; }
+        public string? SeriousIllnessOperationHospitalizationDetail { get; set; }
+        public string? MedicationFoodAllergy { get; set; }
+        public string? MedicationFoodAllergyDetail { get; set; }
+        public string? TakingMedications { get; set; }
+        public string? TakingMedicationsDetail { get; set; }
+        public string? HepatitisOrJaundice { get; set; }
+        public string? HealthChangeLastTwoYears { get; set; }
+        public string? UseTobaccoOrVape { get; set; }
+        public string? TobaccoUseDetailsJson { get; set; }
+        public string? DrinkAlcoholicBeverages { get; set; }
+        public string? AlcoholicBeveragesFrequencyQuantity { get; set; }
+        public string? SickFromDentalTreatment { get; set; }
+        public string? BleederOrExcessiveBleeding { get; set; }
+        public string? ShortOfBreathOneFlightStairs { get; set; }
         public string? AreYouPregnant { get; set; }
         public string? PregnancyApproval { get; set; }
+        public string? ApplicableHealthConditionsJson { get; set; }
 
         public string? BwxStatus { get; set; }
         public string? BwxReason { get; set; }
@@ -106,8 +159,25 @@ namespace Malama.Models
     {
         public long Id { get; set; }
         public long ServiceMembersChildId { get; set; }
+        public string? HealthcareProviderCareLast2Years { get; set; }
+        public string? SeriousIllnessOperationHospitalization { get; set; }
+        public string? SeriousIllnessOperationHospitalizationDetail { get; set; }
+        public string? MedicationFoodAllergy { get; set; }
+        public string? MedicationFoodAllergyDetail { get; set; }
+        public string? TakingMedications { get; set; }
+        public string? TakingMedicationsDetail { get; set; }
+        public string? HepatitisOrJaundice { get; set; }
+        public string? HealthChangeLastTwoYears { get; set; }
+        public string? UseTobaccoOrVape { get; set; }
+        public List<DentalXRayTobaccoUseDetail> TobaccoUseDetails { get; set; } = new();
+        public string? DrinkAlcoholicBeverages { get; set; }
+        public string? AlcoholicBeveragesFrequencyQuantity { get; set; }
+        public string? SickFromDentalTreatment { get; set; }
+        public string? BleederOrExcessiveBleeding { get; set; }
+        public string? ShortOfBreathOneFlightStairs { get; set; }
         public string? AreYouPregnant { get; set; }
         public string? PregnancyApproval { get; set; }
+        public List<string> ApplicableHealthConditions { get; set; } = new();
         public string? BwxStatus { get; set; }
         public string? BwxReason { get; set; }
         public DateTime? BwxUploadedDateTime { get; set; }

@@ -198,6 +198,7 @@
                     <th>Action</th>
                     <th>Status</th>
                     <th>SM ID</th>
+                    <th>DRC</th>
                     <th>FULL NAME</th>
                     <th>Last 4 SSN</th>
                     <th>DOD Id</th>
@@ -221,6 +222,7 @@
                         </td>
                         <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
                         <td>@c.SmId</td>
+                        <td>@c.Drc</td>
                         <td>@c.FullName</td>
                         <td>@c.Last4</td>
                         <td>@c.DodId</td>

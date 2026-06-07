@@ -4,6 +4,7 @@ using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -114,8 +115,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             entity.Id = dto.Id;
             entity.ServiceMembersChildId = dto.ServiceMembersChildId;
-            entity.AreYouPregnant = dto.AreYouPregnant;
-            entity.PregnancyApproval = dto.PregnancyApproval;
+            MapQuestionnaire(dto, entity);
             entity.BwxStatus = dto.BwxStatus;
             entity.BwxReason = dto.BwxReason;
             entity.BwxUploadedDateTime = dto.BwxUploadedDateTime;
@@ -260,10 +260,85 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && model.PaImages.All(p => !p.FileName.IsNullOrEmpty());
         }
 
+        private static void MapQuestionnaire(DentalXRayStationSaveDto dto, DentalXRayStation entity)
+        {
+            entity.HealthcareProviderCareLast2Years = dto.HealthcareProviderCareLast2Years;
+            entity.SeriousIllnessOperationHospitalization = dto.SeriousIllnessOperationHospitalization;
+            entity.SeriousIllnessOperationHospitalizationDetail = IsYes(dto.SeriousIllnessOperationHospitalization)
+                ? dto.SeriousIllnessOperationHospitalizationDetail
+                : null;
+            entity.MedicationFoodAllergy = dto.MedicationFoodAllergy;
+            entity.MedicationFoodAllergyDetail = IsYes(dto.MedicationFoodAllergy)
+                ? dto.MedicationFoodAllergyDetail
+                : null;
+            entity.TakingMedications = dto.TakingMedications;
+            entity.TakingMedicationsDetail = IsYes(dto.TakingMedications)
+                ? dto.TakingMedicationsDetail
+                : null;
+            entity.HepatitisOrJaundice = dto.HepatitisOrJaundice;
+            entity.HealthChangeLastTwoYears = dto.HealthChangeLastTwoYears;
+            entity.UseTobaccoOrVape = dto.UseTobaccoOrVape;
+            entity.TobaccoUseDetailsJson = IsYes(dto.UseTobaccoOrVape)
+                ? JsonSerializer.Serialize(NormalizeTobaccoDetails(dto.TobaccoUseDetails))
+                : null;
+            entity.DrinkAlcoholicBeverages = dto.DrinkAlcoholicBeverages;
+            entity.AlcoholicBeveragesFrequencyQuantity = IsYes(dto.DrinkAlcoholicBeverages)
+                ? dto.AlcoholicBeveragesFrequencyQuantity
+                : null;
+            entity.SickFromDentalTreatment = dto.SickFromDentalTreatment;
+            entity.BleederOrExcessiveBleeding = dto.BleederOrExcessiveBleeding;
+            entity.ShortOfBreathOneFlightStairs = dto.ShortOfBreathOneFlightStairs;
+            entity.AreYouPregnant = dto.AreYouPregnant;
+            entity.PregnancyApproval = dto.PregnancyApproval;
+            entity.ApplicableHealthConditionsJson = dto.ApplicableHealthConditions != null && dto.ApplicableHealthConditions.Count > 0
+                ? JsonSerializer.Serialize(dto.ApplicableHealthConditions)
+                : null;
+        }
+
+        private static List<DentalXRayTobaccoUseDetail> NormalizeTobaccoDetails(List<DentalXRayTobaccoUseDetail>? details)
+        {
+            var normalized = new List<DentalXRayTobaccoUseDetail>();
+            foreach (var type in DentalXRayQuestionnaire.TobaccoTypes)
+            {
+                var existing = details?.FirstOrDefault(d => string.Equals(d.Type, type, StringComparison.OrdinalIgnoreCase));
+                normalized.Add(new DentalXRayTobaccoUseDetail
+                {
+                    Type = type,
+                    Used = existing?.Used ?? "No",
+                    TimesPerDay = IsYes(existing?.Used) ? existing?.TimesPerDay : null,
+                    TimesPerWeek = IsYes(existing?.Used) ? existing?.TimesPerWeek : null
+                });
+            }
+
+            return normalized;
+        }
+
+        private static bool IsYes(string? value)
+        {
+            return string.Equals(value?.Trim(), "Yes", StringComparison.OrdinalIgnoreCase);
+        }
+
         private void MapToEntity(DentalXRayStation source, DentalXRayStation target, string userName)
         {
+            target.HealthcareProviderCareLast2Years = source.HealthcareProviderCareLast2Years;
+            target.SeriousIllnessOperationHospitalization = source.SeriousIllnessOperationHospitalization;
+            target.SeriousIllnessOperationHospitalizationDetail = source.SeriousIllnessOperationHospitalizationDetail;
+            target.MedicationFoodAllergy = source.MedicationFoodAllergy;
+            target.MedicationFoodAllergyDetail = source.MedicationFoodAllergyDetail;
+            target.TakingMedications = source.TakingMedications;
+            target.TakingMedicationsDetail = source.TakingMedicationsDetail;
+            target.HepatitisOrJaundice = source.HepatitisOrJaundice;
+            target.HealthChangeLastTwoYears = source.HealthChangeLastTwoYears;
+            target.UseTobaccoOrVape = source.UseTobaccoOrVape;
+            target.TobaccoUseDetailsJson = source.TobaccoUseDetailsJson;
+            target.DrinkAlcoholicBeverages = source.DrinkAlcoholicBeverages;
+            target.AlcoholicBeveragesFrequencyQuantity = source.AlcoholicBeveragesFrequencyQuantity;
+            target.SickFromDentalTreatment = source.SickFromDentalTreatment;
+            target.BleederOrExcessiveBleeding = source.BleederOrExcessiveBleeding;
+            target.ShortOfBreathOneFlightStairs = source.ShortOfBreathOneFlightStairs;
             target.AreYouPregnant = source.AreYouPregnant;
             target.PregnancyApproval = source.PregnancyApproval;
+            target.ApplicableHealthConditionsJson = source.ApplicableHealthConditionsJson;
 
             MapBwxSection(source, target);
             MapPaSection(source, target);

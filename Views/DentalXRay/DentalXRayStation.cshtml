@@ -111,21 +111,27 @@
                     <p><span class="fw-bold">Sex:</span> @sm?.Sex</p>
                 </div>
             </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <hr class="my-4" />
 
+    <h3 class="mb-4">Questionnaire</h3>
+    @await Html.PartialAsync("_DentalXRayQuestionnaire", Model)
+
     @if (isFemale)
     {
-        <h3 class="mb-4">Questionnaire</h3>
-        <div class="row mb-4" id="pregnancyQuestionSection">
-            <div class="col-md-6">
-                <label class="form-label">Q1. Are you pregnant?</label>
+        <div class="row mb-3" id="pregnancyQuestionSection">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">12. Are you pregnant?</label>
                 <select name="AreYouPregnant" id="AreYouPregnant" class="form-select" required>
-                    <option value=""></option>
+                    <option value="No" selected="@(string.IsNullOrWhiteSpace(Model.AreYouPregnant) || Model.AreYouPregnant == "No")">No</option>
                     <option value="Yes" selected="@(Model.AreYouPregnant == "Yes")">Yes</option>
-                    <option value="No" selected="@(Model.AreYouPregnant == "No")">No</option>
                 </select>
             </div>
         </div>
@@ -142,7 +148,46 @@
         </div>
     }
 
-    <div id="xrayStationSection" style="display:none;">
+    @{
+        var selectedConditions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(Model.ApplicableHealthConditionsJson))
+        {
+            try
+            {
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(Model.ApplicableHealthConditionsJson);
+                if (parsed != null)
+                {
+                    foreach (var item in parsed) selectedConditions.Add(item);
+                }
+            }
+            catch { }
+        }
+    }
+    <div class="card mb-4">
+        <div class="card-body">
+            <label class="form-label fw-semibold">13. Check the following conditions if they apply to you:</label>
+            <div class="row condition-checkboxes">
+                @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
+                {
+                    var condition = DentalXRayQuestionnaire.HealthConditions[ci];
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="ApplicableHealthConditions"
+                                   value="@condition"
+                                   id="condition_@ci"
+                                   checked="@selectedConditions.Contains(condition)" />
+                            <label class="form-check-label" for="condition_@ci">@condition</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div id="xrayStationSection" style="@(isFemale ? "display:none;" : "")">
         <h3 class="mb-4">X-Ray Station</h3>
 
         @if (bwxNeeded)
@@ -522,6 +567,63 @@
         }
     }
 
+    function toggleQuestionnaireDetail(selectEl) {
+        const $select = $(selectEl);
+        const target = $select.data("detail");
+        if (!target) return;
+        const $detail = $(target);
+        const $textarea = $detail.find("textarea");
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $textarea.prop("required", true);
+        } else {
+            $detail.hide();
+            $textarea.prop("required", false).val("");
+        }
+    }
+
+    function toggleTobaccoSection() {
+        const isYes = $("#UseTobaccoOrVape").val() === "Yes";
+        const $section = $("#tobaccoDetailsSection");
+        $section.toggle(isYes);
+        $section.find(".tobacco-used-select").prop("required", isYes);
+        if (!isYes) {
+            $section.find(".tobacco-used-select").val("No");
+            $section.find(".tobacco-type-detail").hide();
+            $section.find(".tobacco-frequency-input").prop("required", false).val("");
+        } else {
+            $(".tobacco-used-select").each(function () {
+                toggleTobaccoTypeDetail(this);
+            });
+        }
+    }
+
+    function toggleTobaccoTypeDetail(selectEl) {
+        const $select = $(selectEl);
+        const index = $select.data("index");
+        const $detail = $("#tobaccoTypeDetail_" + index);
+        const $inputs = $detail.find(".tobacco-frequency-input");
+        if ($("#UseTobaccoOrVape").val() !== "Yes") {
+            $detail.hide();
+            $inputs.prop("required", false);
+            return;
+        }
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $inputs.prop("required", true);
+        } else {
+            $detail.hide();
+            $inputs.prop("required", false).val("");
+        }
+    }
+
+    function initQuestionnaireToggles() {
+        $(".dental-q-detail-toggle").each(function () {
+            toggleQuestionnaireDetail(this);
+        });
+        toggleTobaccoSection();
+    }
+
     function togglePregnancyFlow() {
         if (!IS_FEMALE) {
             $("#xrayStationSection").show();
@@ -703,11 +805,20 @@
         if ($("#PaReason").length && "@Model.PaReason") {
             $("#PaReason").val("@Model.PaReason");
         }
+        initQuestionnaireToggles();
         togglePregnancyFlow();
         toggleReasonAndUpload("#BwxStatus", "#bwxReasonContainer", "#bwxUploadContainer", "#BwxReason");
         toggleReasonAndUpload("#PaStatus", "#paReasonContainer", "#paUploadContainer", "#PaReason");
         updateOverallStatus();
         syncPaAddButton();
+
+        $(".dental-q-detail-toggle").on("change", function () {
+            toggleQuestionnaireDetail(this);
+        });
+        $("#UseTobaccoOrVape").on("change", toggleTobaccoSection);
+        $(document).on("change", ".tobacco-used-select", function () {
+            toggleTobaccoTypeDetail(this);
+        });
 
         $("#AreYouPregnant, #PregnancyApproval").on("change", function () {
             togglePregnancyFlow();
