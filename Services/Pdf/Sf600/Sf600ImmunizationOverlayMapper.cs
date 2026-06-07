@@ -20,6 +20,7 @@ internal static class Sf600ImmunizationOverlayMapper
 
         var pageCount = Sf600ImmunizationBlockLayout.GetRequiredPageCount(totalBlocks);
         overlays.AddRange(Sf600PatientIdentificationMapper.Map(analysisDto.ServiceMember, pageCount));
+        overlays.AddRange(MapPageNumbers(pageCount));
 
         return overlays;
     }
@@ -36,7 +37,23 @@ internal static class Sf600ImmunizationOverlayMapper
 
         overlays.AddRange(MapNotesLabels(totalBlocks));
 
+        var pageCount = Sf600ImmunizationBlockLayout.GetRequiredPageCount(totalBlocks);
+        overlays.AddRange(MapPageNumbers(pageCount));
+
         return overlays;
+    }
+
+    private static IEnumerable<Sf600OverlayText> MapPageNumbers(int pageCount)
+    {
+        for (var page = 1; page <= pageCount; page++)
+        {
+            yield return Text(
+                page,
+                Sf600PageNumberLayout.X,
+                Sf600PageNumberLayout.Y,
+                $"page {page} of {pageCount}",
+                fontSize: Sf600PageNumberLayout.FontSize);
+        }
     }
 
     private static IEnumerable<Sf600OverlayText> MapBlock(Sf600ImmunizationEntry entry, int immunizationIndex)
@@ -97,28 +114,32 @@ internal static class Sf600ImmunizationOverlayMapper
 
     private static IEnumerable<Sf600OverlayText> MapNotesLabels(int immunizationCount)
     {
-        var pageCount = Sf600ImmunizationBlockLayout.GetRequiredPageCount(immunizationCount);
+        var page = Sf600ImmunizationBlockLayout.GetNotesPageNumber(immunizationCount);
+        var notesRowIndex = Sf600ImmunizationBlockLayout.GetNotesRowIndex(immunizationCount);
 
-        for (var page = 1; page <= pageCount; page++)
-        {
-            var notesLabel = page == 1 ? "Notes:" : "Notes Con't:";
-            yield return Text(
-                page,
-                Sf600ImmunizationBlockLayout.NotesLabelX,
-                Sf600ImmunizationBlockLayout.GetRowBaseline(page, Sf600ImmunizationBlockLayout.NotesRowIndex),
-                notesLabel,
-                isBold: true);
-        }
+        yield return Text(
+            page,
+            Sf600ImmunizationBlockLayout.NotesLabelX,
+            Sf600ImmunizationBlockLayout.GetRowBaseline(page, notesRowIndex),
+            "Notes:",
+            isBold: true);
     }
 
-    private static Sf600OverlayText Text(int page, float x, float y, string text, bool isBold = false) =>
+    private static Sf600OverlayText Text(
+        int page,
+        float x,
+        float y,
+        string text,
+        bool isBold = false,
+        float? fontSize = null) =>
         new()
         {
             PageNumber = page,
             X = x,
             Y = y,
             Text = text.Trim(),
-            IsBold = isBold
+            IsBold = isBold,
+            FontSize = fontSize ?? Sf600PdfConstants.DataFontSize
         };
 
     private static string FormatGivenDate(DateTime? value) =>

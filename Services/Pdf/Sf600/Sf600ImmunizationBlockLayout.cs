@@ -86,5 +86,20 @@ internal static class Sf600ImmunizationBlockLayout
     public static int GetRequiredPageCount(int immunizationCount) =>
         immunizationCount <= ImmunizationsPerPage ? 1 : 2;
 
+    /// <summary>Fixed notes row when the page is full (4 immunizations). Prefer <see cref="GetNotesRowIndex"/>.</summary>
     public const int NotesRowIndex = 16;
+
+    public static int GetNotesPageNumber(int immunizationCount) =>
+        immunizationCount <= 0 ? 1 : GetPageNumber(immunizationCount - 1);
+
+    public static int GetNotesRowIndex(int immunizationCount)
+    {
+        if (immunizationCount <= 0)
+        {
+            return 0;
+        }
+
+        var lastLocalIndex = GetLocalImmunizationIndex(immunizationCount - 1);
+        return GetFirstRowIndexForImmunization(lastLocalIndex) + LinesPerImmunization;
+    }
 }
