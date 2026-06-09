@@ -387,11 +387,12 @@ namespace ExcelFilesCompiler.Controllers
 
             if (DentalXRayStationService.IsNeeded(serviceMember.BwxNeeded))
             {
-                var bwxError = ValidateSection(
-                    dto.BwxStatus,
-                    dto.BwxReason,
-                    dto.BwxStatus == "Completed" && !AreAllBwxUploadsPresent(dto),
-                    "BWX Status");
+                if (dto.BwxStatus == "Completed" && string.IsNullOrWhiteSpace(dto.BwxUploadMode))
+                {
+                    return "BWX upload type selection is required.";
+                }
+
+                var bwxError = ValidateBwxSection(dto);
                 if (bwxError != null) return bwxError;
             }
 
@@ -560,7 +561,58 @@ namespace ExcelFilesCompiler.Controllers
             return null;
         }
 
+        private static string? ValidateBwxSection(DentalXRayStationSaveDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.BwxStatus))
+            {
+                return null;
+            }
+
+            if (dto.BwxStatus == "Not Completed" && string.IsNullOrWhiteSpace(dto.BwxReason))
+            {
+                return "BWX Status reason is required.";
+            }
+
+            if (dto.BwxStatus != "Completed")
+            {
+                return null;
+            }
+
+            if (string.Equals(dto.BwxUploadMode, BwxUploadMode.Consolidated, StringComparison.OrdinalIgnoreCase)
+                && !HasConsolidatedBwxUpload(dto))
+            {
+                return "BWX Status requires consolidated X-Ray image upload.";
+            }
+
+            if (string.Equals(dto.BwxUploadMode, BwxUploadMode.Separate, StringComparison.OrdinalIgnoreCase)
+                && !AreAllSeparateBwxUploadsPresent(dto))
+            {
+                return "BWX Status requires all 4 X-Ray uploads.";
+            }
+
+            return null;
+        }
+
         private static bool AreAllBwxUploadsPresent(DentalXRayStationSaveDto dto)
+        {
+            if (string.Equals(dto.BwxUploadMode, BwxUploadMode.Consolidated, StringComparison.OrdinalIgnoreCase))
+            {
+                return HasConsolidatedBwxUpload(dto);
+            }
+
+            return AreAllSeparateBwxUploadsPresent(dto);
+        }
+
+        private static bool HasConsolidatedBwxUpload(DentalXRayStationSaveDto dto)
+        {
+            return HasUpload(
+                dto.BwxConsolidatedUploaded,
+                dto.BwxConsolidatedFileName,
+                dto.BwxConsolidatedFile,
+                dto.BwxConsolidatedRemoved);
+        }
+
+        private static bool AreAllSeparateBwxUploadsPresent(DentalXRayStationSaveDto dto)
         {
             return HasUpload(dto.BwLeftMolarUploaded, dto.BwLeftMolarFileName, dto.BwLeftMolarFile, dto.BwLeftMolarRemoved)
                 && HasUpload(dto.BwLeftPremolarUploaded, dto.BwLeftPremolarFileName, dto.BwLeftPremolarFile, dto.BwLeftPremolarRemoved)

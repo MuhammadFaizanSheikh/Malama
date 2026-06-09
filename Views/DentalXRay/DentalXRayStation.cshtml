@@ -17,6 +17,22 @@
     {
         paImages.Add(new DentalXRayPaImage { SortOrder = 0 });
     }
+
+    var initialBwxUploadMode = Model.BwxUploadMode;
+    if (string.IsNullOrWhiteSpace(initialBwxUploadMode))
+    {
+        if (!string.IsNullOrWhiteSpace(Model.BwxConsolidatedFileName))
+        {
+            initialBwxUploadMode = BwxUploadMode.Consolidated;
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.BwLeftMolarFileName)
+            || !string.IsNullOrWhiteSpace(Model.BwLeftPremolarFileName)
+            || !string.IsNullOrWhiteSpace(Model.BwRightMolarFileName)
+            || !string.IsNullOrWhiteSpace(Model.BwRightPremolarFileName))
+        {
+            initialBwxUploadMode = BwxUploadMode.Separate;
+        }
+    }
 }
 
 <style>
@@ -41,6 +57,9 @@
         .xray-cards-row { grid-template-columns: 1fr; }
     }
     .xray-upload-card { border: 1px solid #dee2e6; }
+    .xray-upload-full-width { width: 100%; }
+    .xray-preview-viewport-full { height: 360px; }
+    .bwx-upload-mode-option { margin-bottom: 0.5rem; }
     .xray-preview-viewport {
         width: 100%;
         height: 280px;
@@ -238,7 +257,49 @@
                         </div>
                     </div>
 
-                    <div id="bwxUploadContainer" style="display:none;" class="xray-cards-row">
+                    <div id="bwxUploadModeSection" style="display:none;" class="mb-3">
+                        <p class="mb-2">Do you want to upload BWX ray :</p>
+                        <div class="bwx-upload-mode-option">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="BwxUploadMode" id="BwxModeConsolidated"
+                                       value="@BwxUploadMode.Consolidated"
+                                       checked="@(initialBwxUploadMode == BwxUploadMode.Consolidated)" />
+                                <label class="form-check-label" for="BwxModeConsolidated">
+                                    As a single JPG image file that consolidates all the BWX rays into one cohesive image?
+                                </label>
+                            </div>
+                        </div>
+                        <div class="bwx-upload-mode-option">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="BwxUploadMode" id="BwxModeSeparate"
+                                       value="@BwxUploadMode.Separate"
+                                       checked="@(initialBwxUploadMode == BwxUploadMode.Separate)" />
+                                <label class="form-check-label" for="BwxModeSeparate">
+                                    Upload each individual BWX ray separately?
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="bwxConsolidatedUploadContainer" style="display:none;">
+                        @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            Prefix = "bwx_consolidated",
+                            Title = "Consolidated BWX",
+                            FileInputName = "BwxConsolidatedFile",
+                            UploadedFieldName = "BwxConsolidatedUploaded",
+                            FileNameFieldName = "BwxConsolidatedFileName",
+                            OriginalFileNameFieldName = "BwxConsolidatedOriginalFileName",
+                            DateFieldName = "BwxConsolidatedUploadedDateTime",
+                            RemovedFieldName = "BwxConsolidatedRemoved",
+                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwxConsolidatedFileName),
+                            StoredFileName = Model.BwxConsolidatedFileName,
+                            OriginalFileName = Model.BwxConsolidatedOriginalFileName,
+                            UploadedDateTime = Model.BwxConsolidatedUploadedDateTime,
+                            IsFullWidth = true
+                        })
+                    </div>
+
+                    <div id="bwxSeparateUploadContainer" style="display:none;" class="xray-cards-row">
                         @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
                             Prefix = "bwx_left_molar",
                             Title = "BW Left Molar",
@@ -645,6 +706,48 @@
         }
     }
 
+    function toggleBwxSection() {
+        const status = $("#BwxStatus").val();
+        $("#bwxReasonContainer").hide();
+        $("#bwxUploadModeSection").hide();
+        $("#bwxConsolidatedUploadContainer").hide();
+        $("#bwxSeparateUploadContainer").hide();
+        $("#BwxReason").prop("required", false);
+
+        if (status === "Not Completed") {
+            $("#bwxReasonContainer").show();
+            $("#BwxReason").prop("required", true);
+        } else if (status === "Completed") {
+            $("#bwxUploadModeSection").show();
+            toggleBwxUploadContainers();
+        }
+    }
+
+    function toggleBwxUploadContainers() {
+        if ($("#BwxStatus").val() !== "Completed") {
+            return;
+        }
+
+        const mode = $("input[name='BwxUploadMode']:checked").val();
+        $("#bwxConsolidatedUploadContainer").toggle(mode === "Consolidated");
+        $("#bwxSeparateUploadContainer").toggle(mode === "Separate");
+    }
+
+    function getSelectedBwxUploadMode() {
+        return $("input[name='BwxUploadMode']:checked").val() || "";
+    }
+
+    function isBwxUploadCompleteForStatus() {
+        const mode = getSelectedBwxUploadMode();
+        if (mode === "Consolidated") {
+            return isUploadComplete("bwx_consolidated");
+        }
+        if (mode === "Separate") {
+            return BWX_UPLOAD_PREFIXES.every(isUploadComplete);
+        }
+        return false;
+    }
+
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
         const target = $select.data("detail");
@@ -754,14 +857,21 @@
 
         const bwxStatus = $("#BwxStatus").val();
         if (bwxStatus === "Completed") {
-            const missingBwx = BWX_UPLOAD_PREFIXES.filter(function (prefix) {
-                return !isUploadComplete(prefix);
-            }).map(function (prefix) {
-                return BWX_UPLOAD_LABELS[prefix];
-            });
+            const mode = getSelectedBwxUploadMode();
+            if (!mode) {
+                errors.push("BWX upload type selection is required.");
+            } else if (mode === "Consolidated" && !isUploadComplete("bwx_consolidated")) {
+                errors.push("BWX Status requires consolidated X-Ray image upload.");
+            } else if (mode === "Separate") {
+                const missingBwx = BWX_UPLOAD_PREFIXES.filter(function (prefix) {
+                    return !isUploadComplete(prefix);
+                }).map(function (prefix) {
+                    return BWX_UPLOAD_LABELS[prefix];
+                });
 
-            if (missingBwx.length > 0) {
-                errors.push("BWX Status requires all 4 X-Ray uploads. Missing: " + missingBwx.join(", ") + ".");
+                if (missingBwx.length > 0) {
+                    errors.push("BWX Status requires all 4 X-Ray uploads. Missing: " + missingBwx.join(", ") + ".");
+                }
             }
         }
 
@@ -808,9 +918,7 @@
             const paStatus = $("#PaStatus").val();
 
             if (bwxStatus && paStatus) {
-                const bwxDone = isSectionDone(bwxStatus, $("#BwxReason").val(), function () {
-                    return BWX_UPLOAD_PREFIXES.every(isUploadComplete);
-                });
+                const bwxDone = isSectionDone(bwxStatus, $("#BwxReason").val(), isBwxUploadCompleteForStatus);
                 const paDone = isSectionDone(paStatus, $("#PaReason").val(), function () {
                     return $(".pa-card:visible").length > 0 &&
                         $(".pa-card:visible").toArray().every(function (card) {
@@ -929,6 +1037,7 @@
         initFlatpickrForUploadDates();
 
         BWX_UPLOAD_PREFIXES.forEach(updateXRayFileUI);
+        updateXRayFileUI("bwx_consolidated");
         $(".pa-card .xray-file").each(function () {
             updateXRayFileUI($(this).data("prefix"));
         });
@@ -941,7 +1050,7 @@
         }
         initQuestionnaireToggles();
         togglePregnancyFlow();
-        toggleReasonAndUpload("#BwxStatus", "#bwxReasonContainer", "#bwxUploadContainer", "#BwxReason");
+        toggleBwxSection();
         toggleReasonAndUpload("#PaStatus", "#paReasonContainer", "#paUploadContainer", "#PaReason");
         updateOverallStatus();
         syncPaAddButton();
@@ -960,7 +1069,11 @@
         });
 
         $("#BwxStatus").on("change", function () {
-            toggleReasonAndUpload("#BwxStatus", "#bwxReasonContainer", "#bwxUploadContainer", "#BwxReason");
+            toggleBwxSection();
+            updateOverallStatus();
+        });
+        $("input[name='BwxUploadMode']").on("change", function () {
+            toggleBwxUploadContainers();
             updateOverallStatus();
         });
         $("#PaStatus").on("change", function () {

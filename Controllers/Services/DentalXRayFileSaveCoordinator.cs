@@ -11,6 +11,8 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IFileUploadDownloadService _fileService;
         private readonly ILogger<DentalXRayFileSaveCoordinator> _logger;
 
+        private const string BwxConsolidatedPrefix = "bwx_consolidated";
+
         private static readonly (string Prefix, string FileKey)[] BwxSlots =
         {
             ("bwx_left_molar", "left_molar"),
@@ -145,10 +147,88 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (dto.BwxStatus != "Completed")
             {
                 QueueExistingBwxDeletes(existing, plan);
+                QueueDelete(plan, BwxConsolidatedPrefix, existing?.BwxConsolidatedFileName);
                 ClearBwxDtoFields(dto);
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(dto.BwxUploadMode))
+            {
+                plan.ErrorMessage = "BWX upload type selection is required.";
+                return;
+            }
+
+            if (string.Equals(dto.BwxUploadMode, BwxUploadMode.Consolidated, StringComparison.OrdinalIgnoreCase))
+            {
+                QueueExistingSeparateDeletes(existing, plan);
+                PlanConsolidatedBwx(dto, existing, barcode, plan);
+                ClearSeparateBwxDtoFields(dto);
+                return;
+            }
+
+            if (string.Equals(dto.BwxUploadMode, BwxUploadMode.Separate, StringComparison.OrdinalIgnoreCase))
+            {
+                QueueDelete(plan, BwxConsolidatedPrefix, existing?.BwxConsolidatedFileName);
+                PlanSeparateBwx(dto, existing, barcode, plan);
+                ClearConsolidatedBwxDtoFields(dto);
+                return;
+            }
+
+            plan.ErrorMessage = "Invalid BWX upload type selection.";
+        }
+
+        private void PlanConsolidatedBwx(
+            DentalXRayStationSaveDto dto,
+            DentalXRayStation? existing,
+            string barcode,
+            DentalXRayFileUpdatePlan plan)
+        {
+            var finalFileName = $"{barcode}_consolidated.jpg";
+
+            if (dto.BwxConsolidatedRemoved)
+            {
+                QueueDelete(plan, BwxConsolidatedPrefix, existing?.BwxConsolidatedFileName);
+                ClearConsolidatedBwxDtoFields(dto);
+                return;
+            }
+
+            if (dto.BwxConsolidatedFile != null && dto.BwxConsolidatedFile.Length > 0)
+            {
+                plan.FilesToUpload.Add(new DentalXRayStagedFileUpload
+                {
+                    File = dto.BwxConsolidatedFile,
+                    Prefix = BwxConsolidatedPrefix,
+                    FinalFileName = finalFileName
+                });
+
+                dto.BwxConsolidatedFileName = finalFileName;
+                dto.BwxConsolidatedOriginalFileName = dto.BwxConsolidatedFile.FileName;
+                dto.BwxConsolidatedUploadedDateTime = DateTime.Now;
+                dto.BwxConsolidatedUploaded = true;
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.BwxConsolidatedFileName))
+            {
+                dto.BwxConsolidatedUploaded = true;
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(existing?.BwxConsolidatedFileName))
+            {
+                dto.BwxConsolidatedFileName = existing.BwxConsolidatedFileName;
+                dto.BwxConsolidatedOriginalFileName = existing.BwxConsolidatedOriginalFileName;
+                dto.BwxConsolidatedUploadedDateTime = existing.BwxConsolidatedUploadedDateTime;
+                dto.BwxConsolidatedUploaded = true;
+            }
+        }
+
+        private void PlanSeparateBwx(
+            DentalXRayStationSaveDto dto,
+            DentalXRayStation? existing,
+            string barcode,
+            DentalXRayFileUpdatePlan plan)
+        {
             for (var i = 0; i < BwxSlots.Length; i++)
             {
                 var (prefix, fileKey) = BwxSlots[i];
@@ -264,6 +344,12 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
         private static void QueueExistingBwxDeletes(DentalXRayStation? existing, DentalXRayFileUpdatePlan plan)
+        {
+            QueueExistingSeparateDeletes(existing, plan);
+            QueueDelete(plan, BwxConsolidatedPrefix, existing?.BwxConsolidatedFileName);
+        }
+
+        private static void QueueExistingSeparateDeletes(DentalXRayStation? existing, DentalXRayFileUpdatePlan plan)
         {
             if (existing == null)
             {
@@ -404,12 +490,27 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private static void ClearBwxDtoFields(DentalXRayStationSaveDto dto)
         {
+            ClearSeparateBwxDtoFields(dto);
+            ClearConsolidatedBwxDtoFields(dto);
+            dto.BwxUploadMode = null;
+            dto.BwxUploadedDateTime = null;
+        }
+
+        private static void ClearSeparateBwxDtoFields(DentalXRayStationSaveDto dto)
+        {
             for (var i = 0; i < BwxSlots.Length; i++)
             {
                 ClearBwxSlot(dto, i);
             }
+        }
 
-            dto.BwxUploadedDateTime = null;
+        private static void ClearConsolidatedBwxDtoFields(DentalXRayStationSaveDto dto)
+        {
+            dto.BwxConsolidatedFileName = null;
+            dto.BwxConsolidatedOriginalFileName = null;
+            dto.BwxConsolidatedUploadedDateTime = null;
+            dto.BwxConsolidatedUploaded = false;
+            dto.BwxConsolidatedRemoved = false;
         }
     }
 }

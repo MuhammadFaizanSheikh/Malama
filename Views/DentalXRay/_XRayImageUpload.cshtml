@@ -2,7 +2,12 @@
 
 @{
     var downloadPrefix = Model.DownloadPrefix ?? Model.Prefix;
-    var cardClass = Model.IsPaCard ? "card pa-card h-100 xray-upload-card" : "card h-100 xray-upload-card";
+    var cardClass = Model.IsPaCard
+        ? "card pa-card h-100 xray-upload-card"
+        : Model.IsFullWidth
+            ? "card h-100 xray-upload-card xray-upload-full-width"
+            : "card h-100 xray-upload-card";
+    var viewportClass = Model.IsFullWidth ? "xray-preview-viewport xray-preview-viewport-full" : "xray-preview-viewport";
 }
 
 <div class="@cardClass" @(Model.IsPaCard ? $"data-index=\"{Model.PaCardIndex}\"" : null)>
@@ -81,7 +86,7 @@
 
         <div class="xray-preview-panel mt-3" id="@($"{Model.Prefix}_previewSection")" style="display:@(Model.Uploaded ? "block" : "none");">
             <label class="form-label fw-semibold mb-1">Image Preview:</label>
-            <div class="xray-preview-viewport" id="@($"{Model.Prefix}_previewViewport")">
+            <div class="@viewportClass" id="@($"{Model.Prefix}_previewViewport")">
                 <img id="@($"{Model.Prefix}_previewImg")" alt="X-Ray preview" />
             </div>
             <label class="form-label fw-semibold mt-2 mb-1">Zoom Controls:</label>

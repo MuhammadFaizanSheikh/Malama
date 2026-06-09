@@ -4,6 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
+    public static class BwxUploadMode
+    {
+        public const string Consolidated = "Consolidated";
+        public const string Separate = "Separate";
+    }
+
     public static class DentalXRayQuestionnaire
     {
         public static readonly string[] TobaccoTypes = { "Vape", "Chew", "Cigarettes", "Snuff", "Nicotine" };
@@ -77,7 +83,12 @@ namespace Malama.Models
 
         public string? BwxStatus { get; set; }
         public string? BwxReason { get; set; }
+        public string? BwxUploadMode { get; set; }
         public DateTime? BwxUploadedDateTime { get; set; }
+
+        public string? BwxConsolidatedFileName { get; set; }
+        public string? BwxConsolidatedOriginalFileName { get; set; }
+        public DateTime? BwxConsolidatedUploadedDateTime { get; set; }
 
         public string? BwLeftMolarFileName { get; set; }
         public string? BwLeftMolarOriginalFileName { get; set; }
@@ -141,6 +152,7 @@ namespace Malama.Models
         public int PaCardIndex { get; set; }
         public long PaImageId { get; set; }
         public bool ShowRemovePaCardButton { get; set; }
+        public bool IsFullWidth { get; set; }
     }
 
     public class DentalXRayPaImageDto
@@ -180,7 +192,15 @@ namespace Malama.Models
         public List<string> ApplicableHealthConditions { get; set; } = new();
         public string? BwxStatus { get; set; }
         public string? BwxReason { get; set; }
+        public string? BwxUploadMode { get; set; }
         public DateTime? BwxUploadedDateTime { get; set; }
+
+        public bool BwxConsolidatedUploaded { get; set; }
+        public string? BwxConsolidatedFileName { get; set; }
+        public string? BwxConsolidatedOriginalFileName { get; set; }
+        public DateTime? BwxConsolidatedUploadedDateTime { get; set; }
+        public IFormFile? BwxConsolidatedFile { get; set; }
+        public bool BwxConsolidatedRemoved { get; set; }
 
         public bool BwLeftMolarUploaded { get; set; }
         public string? BwLeftMolarFileName { get; set; }

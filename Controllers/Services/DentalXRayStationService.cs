@@ -118,7 +118,12 @@ namespace ExcelFilesCompiler.Controllers.Services
             MapQuestionnaire(dto, entity);
             entity.BwxStatus = dto.BwxStatus;
             entity.BwxReason = dto.BwxReason;
+            entity.BwxUploadMode = dto.BwxUploadMode;
             entity.BwxUploadedDateTime = dto.BwxUploadedDateTime;
+
+            entity.BwxConsolidatedFileName = dto.BwxConsolidatedRemoved ? null : dto.BwxConsolidatedFileName;
+            entity.BwxConsolidatedOriginalFileName = dto.BwxConsolidatedRemoved ? null : dto.BwxConsolidatedOriginalFileName;
+            entity.BwxConsolidatedUploadedDateTime = dto.BwxConsolidatedRemoved ? null : dto.BwxConsolidatedUploadedDateTime;
 
             entity.BwLeftMolarFileName = dto.BwLeftMolarRemoved ? null : dto.BwLeftMolarFileName;
             entity.BwLeftMolarOriginalFileName = dto.BwLeftMolarRemoved ? null : dto.BwLeftMolarOriginalFileName;
@@ -242,6 +247,26 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private static bool IsBwxUploadComplete(DentalXRayStation model)
         {
+            if (string.Equals(model.BwxUploadMode, BwxUploadMode.Consolidated, StringComparison.OrdinalIgnoreCase))
+            {
+                return !model.BwxConsolidatedFileName.IsNullOrEmpty();
+            }
+
+            if (string.Equals(model.BwxUploadMode, BwxUploadMode.Separate, StringComparison.OrdinalIgnoreCase))
+            {
+                return HasAllSeparateBwxUploads(model);
+            }
+
+            if (!model.BwxConsolidatedFileName.IsNullOrEmpty())
+            {
+                return true;
+            }
+
+            return HasAllSeparateBwxUploads(model);
+        }
+
+        private static bool HasAllSeparateBwxUploads(DentalXRayStation model)
+        {
             return !model.BwLeftMolarFileName.IsNullOrEmpty()
                 && !model.BwLeftPremolarFileName.IsNullOrEmpty()
                 && !model.BwRightMolarFileName.IsNullOrEmpty()
@@ -348,6 +373,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         {
             target.BwxStatus = source.BwxStatus;
             target.BwxReason = source.BwxReason;
+            target.BwxUploadMode = source.BwxUploadMode;
 
             if (source.BwxStatus.IsNullOrEmpty())
             {
@@ -365,18 +391,31 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
 
             target.BwxReason = null;
-            target.BwLeftMolarFileName = source.BwLeftMolarFileName;
-            target.BwLeftMolarOriginalFileName = source.BwLeftMolarOriginalFileName;
-            target.BwLeftMolarUploadedDateTime = source.BwLeftMolarUploadedDateTime;
-            target.BwLeftPremolarFileName = source.BwLeftPremolarFileName;
-            target.BwLeftPremolarOriginalFileName = source.BwLeftPremolarOriginalFileName;
-            target.BwLeftPremolarUploadedDateTime = source.BwLeftPremolarUploadedDateTime;
-            target.BwRightMolarFileName = source.BwRightMolarFileName;
-            target.BwRightMolarOriginalFileName = source.BwRightMolarOriginalFileName;
-            target.BwRightMolarUploadedDateTime = source.BwRightMolarUploadedDateTime;
-            target.BwRightPremolarFileName = source.BwRightPremolarFileName;
-            target.BwRightPremolarOriginalFileName = source.BwRightPremolarOriginalFileName;
-            target.BwRightPremolarUploadedDateTime = source.BwRightPremolarUploadedDateTime;
+
+            if (string.Equals(source.BwxUploadMode, BwxUploadMode.Consolidated, StringComparison.OrdinalIgnoreCase))
+            {
+                ClearSeparateBwxUploads(target);
+                target.BwxConsolidatedFileName = source.BwxConsolidatedFileName;
+                target.BwxConsolidatedOriginalFileName = source.BwxConsolidatedOriginalFileName;
+                target.BwxConsolidatedUploadedDateTime = source.BwxConsolidatedUploadedDateTime;
+            }
+            else
+            {
+                ClearConsolidatedBwxUploads(target);
+                target.BwLeftMolarFileName = source.BwLeftMolarFileName;
+                target.BwLeftMolarOriginalFileName = source.BwLeftMolarOriginalFileName;
+                target.BwLeftMolarUploadedDateTime = source.BwLeftMolarUploadedDateTime;
+                target.BwLeftPremolarFileName = source.BwLeftPremolarFileName;
+                target.BwLeftPremolarOriginalFileName = source.BwLeftPremolarOriginalFileName;
+                target.BwLeftPremolarUploadedDateTime = source.BwLeftPremolarUploadedDateTime;
+                target.BwRightMolarFileName = source.BwRightMolarFileName;
+                target.BwRightMolarOriginalFileName = source.BwRightMolarOriginalFileName;
+                target.BwRightMolarUploadedDateTime = source.BwRightMolarUploadedDateTime;
+                target.BwRightPremolarFileName = source.BwRightPremolarFileName;
+                target.BwRightPremolarOriginalFileName = source.BwRightPremolarOriginalFileName;
+                target.BwRightPremolarUploadedDateTime = source.BwRightPremolarUploadedDateTime;
+            }
+
             target.BwxUploadedDateTime = IsBwxUploadComplete(source) ? source.BwxUploadedDateTime : null;
         }
 
@@ -407,6 +446,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private static void ClearBwxUploads(DentalXRayStation target)
         {
+            ClearSeparateBwxUploads(target);
+            ClearConsolidatedBwxUploads(target);
+            target.BwxUploadMode = null;
+            target.BwxReason = null;
+        }
+
+        private static void ClearSeparateBwxUploads(DentalXRayStation target)
+        {
             target.BwLeftMolarFileName = null;
             target.BwLeftMolarOriginalFileName = null;
             target.BwLeftMolarUploadedDateTime = null;
@@ -419,7 +466,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.BwRightPremolarFileName = null;
             target.BwRightPremolarOriginalFileName = null;
             target.BwRightPremolarUploadedDateTime = null;
-            target.BwxReason = null;
+        }
+
+        private static void ClearConsolidatedBwxUploads(DentalXRayStation target)
+        {
+            target.BwxConsolidatedFileName = null;
+            target.BwxConsolidatedOriginalFileName = null;
+            target.BwxConsolidatedUploadedDateTime = null;
         }
 
         private void ReplacePaImages(DentalXRayStation target, List<DentalXRayPaImage> newImages)
