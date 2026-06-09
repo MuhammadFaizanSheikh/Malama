@@ -43,7 +43,7 @@
     .xray-upload-card { border: 1px solid #dee2e6; }
     .xray-preview-viewport {
         width: 100%;
-        aspect-ratio: 1 / 1;
+        /* aspect-ratio: 1 / 1; */
         overflow: auto;
         border: 1px solid #ced4da;
         background: #f8f9fa;
@@ -520,6 +520,7 @@
             hiddenUploaded.value = "true";
             hiddenFileName.value = "";
             if (hiddenOriginalFileName) hiddenOriginalFileName.value = selectedFile.name;
+            if (removedInput) removedInput.value = "false";
 
             const prevUrl = status.dataset.selectedPreviewUrl;
             if (prevUrl) URL.revokeObjectURL(prevUrl);
@@ -660,8 +661,8 @@
         const removedInput = document.getElementById(prefix + "_removed");
         const fileInput = document.querySelector(`.xray-file[data-prefix='${prefix}']`);
 
-        if (removedInput?.value === "true") return false;
         if (fileInput?.files && fileInput.files.length > 0) return true;
+        if (removedInput?.value === "true") return false;
         return !!(hiddenFileName?.value || "").trim();
     }
 
@@ -724,38 +725,26 @@
             return;
         }
 
-        let sectionsEvaluated = 0;
-        let sectionsComplete = 0;
+        let overallStatus = "Pending";
 
         if (BWX_NEEDED) {
             const bwxStatus = $("#BwxStatus").val();
-            if (bwxStatus) {
-                sectionsEvaluated++;
-                if (isSectionDone(bwxStatus, $("#BwxReason").val(), function () {
-                    return BWX_UPLOAD_PREFIXES.every(isUploadComplete);
-                })) {
-                    sectionsComplete++;
-                }
-            }
-
             const paStatus = $("#PaStatus").val();
-            if (paStatus) {
-                sectionsEvaluated++;
-                if (isSectionDone(paStatus, $("#PaReason").val(), function () {
+
+            if (bwxStatus && paStatus) {
+                const bwxDone = isSectionDone(bwxStatus, $("#BwxReason").val(), function () {
+                    return BWX_UPLOAD_PREFIXES.every(isUploadComplete);
+                });
+                const paDone = isSectionDone(paStatus, $("#PaReason").val(), function () {
                     return $(".pa-card:visible").length > 0 &&
                         $(".pa-card:visible").toArray().every(function (card) {
                             const prefix = $(card).find(".xray-file").data("prefix");
                             return isUploadComplete(prefix);
                         });
-                })) {
-                    sectionsComplete++;
-                }
+                });
+                overallStatus = bwxDone && paDone ? "Completed" : "Pending";
             }
         }
-
-        const overallStatus = sectionsEvaluated > 0 && sectionsComplete === sectionsEvaluated
-            ? "Completed"
-            : "Pending";
         $("#StatusHidden").val(overallStatus);
         $("#Status").val(overallStatus);
     }

@@ -170,33 +170,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return "Pending";
             }
 
-            var sectionsEvaluated = 0;
-            var sectionsComplete = 0;
-
-            if (!string.IsNullOrWhiteSpace(model.BwxStatus))
-            {
-                sectionsEvaluated++;
-                if (IsSectionComplete(model.BwxStatus, model.BwxReason, IsBwxUploadComplete(model)))
-                {
-                    sectionsComplete++;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(model.PaStatus))
-            {
-                sectionsEvaluated++;
-                if (IsSectionComplete(model.PaStatus, model.PaReason, IsPaUploadComplete(model)))
-                {
-                    sectionsComplete++;
-                }
-            }
-
-            if (sectionsEvaluated == 0)
+            if (string.IsNullOrWhiteSpace(model.BwxStatus) || string.IsNullOrWhiteSpace(model.PaStatus))
             {
                 return "Pending";
             }
 
-            return sectionsComplete == sectionsEvaluated ? "Completed" : "Pending";
+            var bwxComplete = IsSectionComplete(model.BwxStatus, model.BwxReason, IsBwxUploadComplete(model));
+            var paComplete = IsSectionComplete(model.PaStatus, model.PaReason, IsPaUploadComplete(model));
+
+            return bwxComplete && paComplete ? "Completed" : "Pending";
         }
 
         public static bool IsFemale(ServiceMembersChild? serviceMember)
