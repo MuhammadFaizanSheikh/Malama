@@ -48,12 +48,21 @@
         border: 1px solid #ced4da;
         background: #f8f9fa;
     }
+    .xray-preview-viewport.can-pan {
+        cursor: grab;
+    }
+    .xray-preview-viewport.can-pan.is-panning {
+        cursor: grabbing;
+        user-select: none;
+    }
     .xray-preview-viewport img {
         display: block;
         width: 100%;
         height: auto;
         max-width: none;
         transform-origin: top left;
+        -webkit-user-drag: none;
+        user-select: none;
     }
     .read-only-style {
         background-color: #f8f9fa;
@@ -413,6 +422,14 @@
     const XRAY_ZOOM_MAX = 300;
     let paCardIndex = @paImages.Count;
     const xrayZoomLevels = {};
+    const xrayPanState = {
+        active: false,
+        viewport: null,
+        startX: 0,
+        startY: 0,
+        scrollLeft: 0,
+        scrollTop: 0
+    };
 
     function syncPaAddButton() {
         const count = $("#paCardsRow .pa-card").length;
@@ -468,7 +485,54 @@
         previewImg.style.width = clamped + "%";
         previewImg.style.height = "auto";
         previewImg.style.transform = "";
+        previewImg.draggable = false;
         zoomLabel.textContent = clamped + "%";
+        requestAnimationFrame(function () {
+            updateXRayPanAvailability(prefix);
+        });
+    }
+
+    function updateXRayPanAvailability(prefix) {
+        const viewport = document.getElementById(prefix + "_previewViewport");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!viewport) return;
+
+        const canPan = !!previewImg?.src &&
+            (viewport.scrollWidth > viewport.clientWidth + 1 ||
+             viewport.scrollHeight > viewport.clientHeight + 1);
+
+        viewport.classList.toggle("can-pan", canPan);
+        viewport.title = canPan ? "Click and drag to move the image" : "";
+        if (previewImg) {
+            previewImg.draggable = false;
+        }
+    }
+
+    function startXRayPan(clientX, clientY, viewport) {
+        xrayPanState.active = true;
+        xrayPanState.viewport = viewport;
+        xrayPanState.startX = clientX;
+        xrayPanState.startY = clientY;
+        xrayPanState.scrollLeft = viewport.scrollLeft;
+        xrayPanState.scrollTop = viewport.scrollTop;
+        viewport.classList.add("is-panning");
+    }
+
+    function moveXRayPan(clientX, clientY) {
+        if (!xrayPanState.active || !xrayPanState.viewport) return;
+
+        const dx = clientX - xrayPanState.startX;
+        const dy = clientY - xrayPanState.startY;
+        xrayPanState.viewport.scrollLeft = xrayPanState.scrollLeft - dx;
+        xrayPanState.viewport.scrollTop = xrayPanState.scrollTop - dy;
+    }
+
+    function endXRayPan() {
+        if (!xrayPanState.active) return;
+
+        xrayPanState.viewport?.classList.remove("is-panning");
+        xrayPanState.active = false;
+        xrayPanState.viewport = null;
     }
 
     function updateXRayPreview(prefix) {
@@ -496,6 +560,7 @@
         if (src) {
             previewImg.onload = function () {
                 setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+                updateXRayPanAvailability(prefix);
             };
             previewImg.src = src;
             previewSection.style.display = "block";
@@ -955,6 +1020,38 @@
     $(document).on("click", ".xray-zoom-reset", function () {
         const prefix = $(this).data("prefix");
         setXRayZoom(prefix, 100);
+    });
+
+    $(document).on("mousedown", ".xray-preview-viewport.can-pan", function (e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        startXRayPan(e.clientX, e.clientY, this);
+    });
+
+    $(document).on("mousemove", function (e) {
+        if (!xrayPanState.active) return;
+        e.preventDefault();
+        moveXRayPan(e.clientX, e.clientY);
+    });
+
+    $(document).on("mouseup", function () {
+        endXRayPan();
+    });
+
+    $(document).on("touchstart", ".xray-preview-viewport.can-pan", function (e) {
+        if (!e.touches || e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        startXRayPan(touch.clientX, touch.clientY, this);
+    });
+
+    $(document).on("touchmove", function (e) {
+        if (!xrayPanState.active || !e.touches || e.touches.length !== 1) return;
+        e.preventDefault();
+        moveXRayPan(e.touches[0].clientX, e.touches[0].clientY);
+    });
+
+    $(document).on("touchend touchcancel", function () {
+        endXRayPan();
     });
 
     $(document).on("click", ".preview-xray-file", function () {
