@@ -86,7 +86,7 @@ internal static class Sf600ImmunizationBlockLayout
     public static int GetRequiredPageCount(int immunizationCount) =>
         immunizationCount <= ImmunizationsPerPage ? 1 : 2;
 
-    /// <summary>Fixed notes row when the page is full (4 immunizations). Prefer <see cref="GetNotesRowIndex"/>.</summary>
+    /// <summary>Notes row when page 1 is full (4 immunizations). Template rows 16–17 are reserved for notes.</summary>
     public const int NotesRowIndex = 16;
 
     public static int GetNotesPageNumber(int immunizationCount) =>
@@ -100,6 +100,15 @@ internal static class Sf600ImmunizationBlockLayout
         }
 
         var lastLocalIndex = GetLocalImmunizationIndex(immunizationCount - 1);
-        return GetFirstRowIndexForImmunization(lastLocalIndex) + LinesPerImmunization;
+        var notesRow = GetFirstRowIndexForImmunization(lastLocalIndex) + LinesPerImmunization;
+
+        // Full page (4 immunizations): use template notes row with no extra blank line.
+        if (lastLocalIndex == ImmunizationsPerPage - 1)
+        {
+            return notesRow;
+        }
+
+        // Partial page: leave one blank row between the last immunization line and Notes.
+        return notesRow + 1;
     }
 }
