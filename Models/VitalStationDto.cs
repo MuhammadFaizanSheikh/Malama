@@ -9,6 +9,12 @@ namespace Malama.Models
         public ServiceMembersChildDto? ServiceMembersChild { get; set; }
         public VitalStationDto VitalStationDto { get; set; }
         public string SubmissionToken { get; set; }
+
+        /// <summary>When true, successful save redirects back to the Dental X-Ray station page.</summary>
+        public bool ReturnToDentalXRay { get; set; }
+
+        /// <summary>Dental X-Ray record id to return to (0 for new records).</summary>
+        public long DentalXRayStationId { get; set; }
     }
 
     public class VitalStationBpReadingDto

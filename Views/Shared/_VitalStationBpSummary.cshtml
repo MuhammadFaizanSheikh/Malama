@@ -1,0 +1,228 @@
+@model Malama.Models.VitalStationDto
+
+@{
+    var d = Model ?? new Malama.Models.VitalStationDto();
+    var completed = string.Equals(d.Status, "Completed", StringComparison.OrdinalIgnoreCase);
+    var hasRecord = d.Id > 0 || (d.BloodPressureReadings?.Count ?? 0) > 0 || d.Height.HasValue || d.Weight.HasValue;
+    var readings = (d.BloodPressureReadings ?? new List<Malama.Models.VitalStationBpReadingDto>())
+        .OrderBy(r => r.ReadingNumber).ToList();
+    var r1 = readings.FirstOrDefault(x => x.ReadingNumber == 1);
+    var r2 = readings.FirstOrDefault(x => x.ReadingNumber == 2);
+    var r3 = readings.FirstOrDefault(x => x.ReadingNumber == 3);
+    var nextNum = d.NextReadingNumber ?? 0;
+    var canEnterBp = !completed && d.NextBpReadingUnlocked && nextNum >= 1 && nextNum <= 3;
+    string? unlockIso = !completed && !d.NextBpReadingUnlocked && d.NextBpReadingAvailableAt.HasValue
+        ? d.NextBpReadingAvailableAt.Value.ToString("o")
+        : null;
+    var showRedirect = ViewData["ShowVitalRedirect"] as bool? ?? false;
+    var allowVitalStationSubmit = ViewData["AllowVitalStationSubmit"] as bool? ?? false;
+    var countdownPrefix = ViewData["BpCountdownIdPrefix"] as string ?? "bpCountdown";
+}
+
+<h3 class="mb-3">Blood Pressure (Vitals)</h3>
+<p class="text-muted mb-3">
+    It is recommended to record blood pressure before proceeding with dental X-Ray.
+    @if (!string.IsNullOrWhiteSpace(d.Message))
+    {
+        <span class="d-block mt-1">@d.Message</span>
+    }
+</p>
+
+@if (d.Height.HasValue || d.Weight.HasValue)
+{
+    <div class="card mb-4">
+        <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+            Height &amp; weight
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <p class="mb-0"><span class="fw-bold">Height:</span> @(d.Height?.ToString() ?? "—")</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-0"><span class="fw-bold">Weight:</span> @(d.Weight?.ToString() ?? "—")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<h4 class="mb-3">Blood pressure (up to 3 attempts)</h4>
+<p class="small text-muted mb-3">
+    A reading is treated as <strong>normal</strong> when systolic is below 140 <strong>and</strong> diastolic is below 90.
+    If a reading is high, the next attempt may be taken after <strong>15 minutes</strong>.
+</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">1st attempt</div>
+            <div class="card-body">
+                @if (r1 != null)
+                {
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r1.Systolic / @r1.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r1.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r1.ReadingStatus</span></p>
+                    @if (!string.IsNullOrEmpty(r1.Remarks))
+                    {
+                        <p class="mb-0 text-danger fw-semibold">@r1.Remarks</p>
+                    }
+                    <p class="small text-muted mb-0">Recorded at @r1.ReadingTakenAt.ToString("g")</p>
+                }
+                else if (!hasRecord)
+                {
+                    <p class="text-muted small mb-0">No blood pressure recorded yet.</p>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">Awaiting first reading.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">2nd attempt</div>
+            <div class="card-body">
+                @if (r2 != null)
+                {
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r2.Systolic / @r2.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r2.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r2.ReadingStatus</span></p>
+                    @if (!string.IsNullOrEmpty(r2.Remarks))
+                    {
+                        <p class="mb-0 text-danger fw-semibold">@r2.Remarks</p>
+                    }
+                    <p class="small text-muted mb-0">Recorded at @r2.ReadingTakenAt.ToString("g")</p>
+                }
+                else if (r1 != null && r1.ReadingStatus == "High" && !completed)
+                {
+                    if (!d.NextBpReadingUnlocked && nextNum == 2 && d.NextBpReadingAvailableAt != null)
+                    {
+                        <p class="text-danger fw-semibold mb-2">High — 2nd reading is required after 15 minutes.</p>
+                        <p class="small mb-1">Time until next reading:</p>
+                        <p class="fw-bold" id="@(countdownPrefix)2" data-unlock-utc="@unlockIso">—</p>
+                    }
+                    else if (canEnterBp && nextNum == 2)
+                    {
+                        <p class="small text-muted">Second reading is ready to enter on the Vital Station page.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted small">Second reading not yet available.</p>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">Shown when the first reading is high.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.12);">3rd attempt</div>
+            <div class="card-body">
+                @if (r3 != null)
+                {
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r3.Systolic / @r3.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r3.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r3.ReadingStatus</span></p>
+                    @if (!string.IsNullOrEmpty(r3.Remarks))
+                    {
+                        <p class="mb-0 text-danger fw-semibold">@r3.Remarks</p>
+                    }
+                    <p class="small text-muted mb-0">Recorded at @r3.ReadingTakenAt.ToString("g")</p>
+                }
+                else if (r2 != null && r2.ReadingStatus == "High" && !completed)
+                {
+                    if (!d.NextBpReadingUnlocked && nextNum == 3 && d.NextBpReadingAvailableAt != null)
+                    {
+                        <p class="text-danger fw-semibold mb-2">High — 3rd reading is required after 15 minutes.</p>
+                        <p class="small mb-1">Time until next reading:</p>
+                        <p class="fw-bold" id="@(countdownPrefix)3" data-unlock-utc="@unlockIso">—</p>
+                    }
+                    else if (canEnterBp && nextNum == 3)
+                    {
+                        <p class="small text-muted">Third reading is ready to enter on the Vital Station page.</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted small">Third reading not yet available.</p>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">Shown when the second reading is high.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (completed)
+{
+    <div class="alert alert-success mb-4">
+        <strong>Vitals completed.</strong> Final blood pressure status: <strong>@(d.FinalBpStatus ?? "—")</strong>
+    </div>
+}
+else if (showRedirect)
+{
+    <div class="alert alert-info mb-4">
+        <strong>Blood pressure is recommended before dental X-Ray.</strong>
+        @if (hasRecord)
+        {
+            <span>Your current progress on this page will be saved when you continue to the Vital Station.</span>
+        }
+        else
+        {
+            <span>Your current progress on this page will be saved. Then enter height, weight, and blood pressure on the Vital Station page.</span>
+        }
+    </div>
+    @if (allowVitalStationSubmit)
+    {
+        <div class="d-flex justify-content-start mb-4">
+            <button type="submit"
+                    formnovalidate="formnovalidate"
+                    class="btn btn-general"
+                    id="goToVitalStationBtn">
+                <i class="bi bi-heart-pulse"></i> Go to Vital Station
+            </button>
+        </div>
+    }
+}
+
+@if (!completed && !string.IsNullOrEmpty(unlockIso))
+{
+    <script>
+        (function () {
+            var iso = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(unlockIso));
+            if (!iso) return;
+            var unlock = Date.parse(iso);
+            if (isNaN(unlock)) return;
+
+            var reloadScheduled = false;
+            var countdownSelector = '[id^="@countdownPrefix"]';
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+            function tick() {
+                var now = Date.now();
+                var ms = unlock - now;
+                var text = '';
+                if (ms <= 0) {
+                    text = '0:00 — refreshing…';
+                    document.querySelectorAll(countdownSelector).forEach(function (el) { el.textContent = text; });
+                    if (!reloadScheduled) {
+                        reloadScheduled = true;
+                        window.clearInterval(intervalId);
+                        window.setTimeout(function () { window.location.reload(); }, 600);
+                    }
+                    return;
+                }
+                var totalSec = Math.floor(ms / 1000);
+                var m = Math.floor(totalSec / 60);
+                var s = totalSec % 60;
+                text = m + ':' + pad(s);
+                document.querySelectorAll(countdownSelector).forEach(function (el) { el.textContent = text; });
+            }
+            var intervalId = window.setInterval(tick, 1000);
+            tick();
+        })();
+    </script>
+}

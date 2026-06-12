@@ -236,6 +236,8 @@ namespace Malama.Models
         public string Status { get; set; } = "Pending";
         public string? SubmissionToken { get; set; }
 
+        public bool GoToVitalStation { get; set; }
+
         public bool BwLeftMolarRemoved { get; set; }
         public bool BwLeftPremolarRemoved { get; set; }
         public bool BwRightMolarRemoved { get; set; }

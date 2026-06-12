@@ -2,6 +2,7 @@
 @using ExcelFilesCompiler.Utilities
 @using Malama.Models
 @using Malama.Utilities
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @model DentalXRayStation
 
 @{
@@ -17,6 +18,14 @@
     {
         paImages.Add(new DentalXRayPaImage { SortOrder = 0 });
     }
+
+    var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
+    {
+        ServiceMembersChildId = Model.ServiceMembersChildId,
+        Status = "Pending"
+    };
+    var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
+    var canSaveDentalXRay = DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_Save");
 
     var initialBwxUploadMode = Model.BwxUploadMode;
     if (string.IsNullOrWhiteSpace(initialBwxUploadMode))
@@ -115,6 +124,7 @@
     <input type="hidden" asp-for="Id" name="Id" />
     <input type="hidden" asp-for="ServiceMembersChildId" name="ServiceMembersChildId" />
     <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
+    <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
     <h3 class="mb-4">Personal Information</h3>
     <div class="card mb-4">
@@ -217,7 +227,18 @@
 
     <hr class="my-4" />
 
-    <div id="xrayStationSection" style="@(isFemale ? "display:none;" : "")">
+    <div id="clinicalStationSection" style="@(isFemale ? "display:none;" : "")">
+        @{
+            var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
+            vitalBpViewData["ShowVitalRedirect"] = !vitalsCompleted;
+            vitalBpViewData["AllowVitalStationSubmit"] = canSaveDentalXRay;
+            vitalBpViewData["BpCountdownIdPrefix"] = "dentalBpCountdown";
+        }
+        @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+
+        <hr class="my-4" />
+
+        <div id="xrayStationSection">
         <h3 class="mb-4">X-Ray Station</h3>
 
         @if (bwxNeeded)
@@ -462,6 +483,7 @@
                 <text>Panorex (Pano) X-ray is NOT Required for this Service member</text>
             }
         </p>
+        </div>
     </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
@@ -807,24 +829,30 @@
 
     function togglePregnancyFlow() {
         if (!IS_FEMALE) {
-            $("#xrayStationSection").show();
+            $("#clinicalStationSection").show();
             return;
         }
 
         const pregnant = $("#AreYouPregnant").val();
         $("#pregnancyApprovalSection").hide();
         $("#PregnancyApproval").prop("required", false);
-        $("#xrayStationSection").hide();
+        $("#clinicalStationSection").hide();
 
         if (pregnant === "Yes") {
             $("#pregnancyApprovalSection").show();
             $("#PregnancyApproval").prop("required", true);
             if ($("#PregnancyApproval").val() === "Approved") {
-                $("#xrayStationSection").show();
+                $("#clinicalStationSection").show();
             }
         } else if (pregnant === "No") {
-            $("#xrayStationSection").show();
+            $("#clinicalStationSection").show();
         }
+    }
+
+    let goToVitalStationClicked = false;
+
+    function isGoToVitalStationSubmit(submitter) {
+        return goToVitalStationClicked || (submitter && submitter.name === "GoToVitalStation");
     }
 
     const BWX_UPLOAD_PREFIXES = ["bwx_left_molar", "bwx_left_premolar", "bwx_right_molar", "bwx_right_premolar"];
@@ -1206,7 +1234,24 @@
         updateOverallStatus();
     });
 
+    $(document).on("click", "#goToVitalStationBtn", function () {
+        goToVitalStationClicked = true;
+        $("#GoToVitalStationFlag").val("true");
+    });
+
+    $(document).on("click", "#SaveDentalXRayStation button[type='submit']:not(#goToVitalStationBtn)", function () {
+        goToVitalStationClicked = false;
+        $("#GoToVitalStationFlag").val("false");
+    });
+
     $("#SaveDentalXRayStation").on("submit", function (e) {
+        const submitter = e.originalEvent && e.originalEvent.submitter;
+        if (isGoToVitalStationSubmit(submitter)) {
+            $("#GoToVitalStationFlag").val("true");
+            return true;
+        }
+
+        goToVitalStationClicked = false;
         updateOverallStatus();
 
         const uploadErrors = validateXRayUploadsBeforeSave();

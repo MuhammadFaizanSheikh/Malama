@@ -15,6 +15,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDentalXRayStationService _dentalXRayStationService;
+        private readonly IVitalStationService _vitalStationService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
         private readonly ILogger<DentalXRayController> _logger;
@@ -27,6 +28,7 @@ namespace ExcelFilesCompiler.Controllers
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
             IDentalXRayStationService dentalXRayStationService,
+            IVitalStationService vitalStationService,
             IFileUploadDownloadService fileService,
             DentalXRayFileSaveCoordinator fileSaveCoordinator)
         {
@@ -35,6 +37,7 @@ namespace ExcelFilesCompiler.Controllers
             _configuration = configuration;
             _userManager = userManager;
             _dentalXRayStationService = dentalXRayStationService;
+            _vitalStationService = vitalStationService;
             _fileService = fileService;
             _fileSaveCoordinator = fileSaveCoordinator;
         }
@@ -158,6 +161,37 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 ViewBag.EventId = eventId;
+
+                try
+                {
+                    var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(model.ServiceMembersChildId);
+                    var vitalDto = vitalVm?.VitalStationDto ?? new VitalStationDto
+                    {
+                        ServiceMembersChildId = model.ServiceMembersChildId,
+                        Status = AppConstants.Status.Pending
+                    };
+
+                    ViewBag.VitalStation = vitalDto;
+                    ViewBag.VitalsCompleted = string.Equals(vitalDto.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Vital station loaded for ServiceMembersChildId={ServiceMembersChildId}. VitalStationId={VitalStationId}, Status={Status}",
+                        CLASSNAME, methodName, model.ServiceMembersChildId, vitalDto.Id, vitalDto.Status);
+                }
+                catch (Exception vitalEx)
+                {
+                    _logger.LogError(vitalEx,
+                        "{ClassName}, {MethodName}, Failed to load vital station for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, model.ServiceMembersChildId);
+
+                    ViewBag.VitalStation = new VitalStationDto
+                    {
+                        ServiceMembersChildId = model.ServiceMembersChildId,
+                        Status = AppConstants.Status.Pending
+                    };
+                    ViewBag.VitalsCompleted = false;
+                }
+
                 return View(model);
             }
             catch (Exception ex)
@@ -176,7 +210,12 @@ namespace ExcelFilesCompiler.Controllers
         public async Task<IActionResult> SaveDentalXRayStation(DentalXRayStationSaveDto dto)
         {
             const string methodName = "SaveDentalXRayStation";
-            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+            var goToVitalStation = dto.GoToVitalStation
+                || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
+            dto.GoToVitalStation = goToVitalStation;
+
+            _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
+                CLASSNAME, methodName, goToVitalStation);
 
             DentalXRayStation? existingRecord = null;
             DentalXRayFileUpdatePlan? filePlan = null;
@@ -222,7 +261,9 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var validationError = ValidateSaveDto(dto, serviceMember);
+                var validationError = dto.GoToVitalStation
+                    ? ValidateDraftBeforeVitalRedirect(dto, serviceMember)
+                    : ValidateSaveDto(dto, serviceMember);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Validation failed: {Error}", CLASSNAME, methodName, validationError);
@@ -297,6 +338,34 @@ namespace ExcelFilesCompiler.Controllers
                 dbSaveCompleted = true;
                 _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
 
+                if (dto.GoToVitalStation)
+                {
+                    long vitalStationId = 0;
+                    try
+                    {
+                        var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(dto.ServiceMembersChildId);
+                        vitalStationId = vitalVm?.VitalStationDto?.Id ?? 0;
+                    }
+                    catch (Exception vitalEx)
+                    {
+                        _logger.LogWarning(vitalEx,
+                            "{ClassName}, {MethodName}, Could not load vital station id before redirect. ServiceMembersChildId={ServiceMembersChildId}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    }
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Draft saved. Redirecting to Vital Station. DentalXRayStationId={DentalXRayStationId}, ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, entity.Id, dto.ServiceMembersChildId);
+
+                    return RedirectToAction("VitalStation", "VitalStation", new
+                    {
+                        vitalStationId,
+                        serviceMembersChildId = dto.ServiceMembersChildId,
+                        returnTo = "DentalXRay",
+                        dentalXRayStationId = entity.Id
+                    });
+                }
+
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Dental X-Ray record saved successfully.";
@@ -351,6 +420,35 @@ namespace ExcelFilesCompiler.Controllers
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
                 return StatusCode(500, "Error while downloading file");
             }
+        }
+
+        private static string? ValidateDraftBeforeVitalRedirect(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
+        {
+            if (HasPendingFileUploads(dto) && string.IsNullOrWhiteSpace(serviceMember.Barcode))
+            {
+                return "Service member barcode is required for file upload.";
+            }
+
+            return null;
+        }
+
+        private static bool HasPendingFileUploads(DentalXRayStationSaveDto dto)
+        {
+            if (dto.BwxConsolidatedFile != null && dto.BwxConsolidatedFile.Length > 0)
+            {
+                return true;
+            }
+
+            if ((dto.BwLeftMolarFile != null && dto.BwLeftMolarFile.Length > 0)
+                || (dto.BwLeftPremolarFile != null && dto.BwLeftPremolarFile.Length > 0)
+                || (dto.BwRightMolarFile != null && dto.BwRightMolarFile.Length > 0)
+                || (dto.BwRightPremolarFile != null && dto.BwRightPremolarFile.Length > 0))
+            {
+                return true;
+            }
+
+            return dto.PaImages != null && dto.PaImages.Any(p =>
+                p.ImageFile != null && p.ImageFile.Length > 0 && !p.Removed);
         }
 
         private string? ValidateSaveDto(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)

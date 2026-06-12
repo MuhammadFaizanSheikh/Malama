@@ -114,13 +114,17 @@ namespace ExcelFilesCompiler.Controllers
 
         [HttpGet]
         [RoleAttributeAuthorizeFromConfig("VitalStation_View")]
-        public async Task<IActionResult> VitalStation(long vitalStationId, long serviceMembersChildId)
+        public async Task<IActionResult> VitalStation(
+            long vitalStationId,
+            long serviceMembersChildId,
+            string? returnTo = null,
+            long dentalXRayStationId = 0)
         {
             const string methodName = "VitalStation";
 
             _logger.LogInformation(
-                "{ClassName}, {MethodName}, Called with VitalStationId={VitalStationId}, ServiceMembersChildId={ServiceMembersChildId}",
-                CLASSNAME, methodName, vitalStationId, serviceMembersChildId
+                "{ClassName}, {MethodName}, Called with VitalStationId={VitalStationId}, ServiceMembersChildId={ServiceMembersChildId}, ReturnTo={ReturnTo}, DentalXRayStationId={DentalXRayStationId}",
+                CLASSNAME, methodName, vitalStationId, serviceMembersChildId, returnTo, dentalXRayStationId
             );
 
             try
@@ -143,6 +147,15 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 ViewBag.EventId = dto.EventID;
+
+                if (string.Equals(returnTo, "DentalXRay", StringComparison.OrdinalIgnoreCase))
+                {
+                    dto.ReturnToDentalXRay = true;
+                    dto.DentalXRayStationId = dentalXRayStationId;
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Return-to-Dental-X-Ray flow enabled for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+                }
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, EventId={EventId} assigned to ViewBag",
@@ -176,6 +189,17 @@ namespace ExcelFilesCompiler.Controllers
             const string methodName = "SaveVitalStation";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
+            void PreserveDentalReturnContext(VitalStationVM? target)
+            {
+                if (target == null)
+                {
+                    return;
+                }
+
+                target.ReturnToDentalXRay = model.ReturnToDentalXRay;
+                target.DentalXRayStationId = model.DentalXRayStationId;
+            }
+
             try
             {
                 if (!ModelState.IsValid)
@@ -199,6 +223,7 @@ namespace ExcelFilesCompiler.Controllers
                     if (childId > 0)
                     {
                         var vm = await _service.GetVitalStationByServiceMemberChildIdAsync(childId);
+                        PreserveDentalReturnContext(vm);
                         return View("VitalStation", vm);
                     }
 
@@ -241,12 +266,26 @@ namespace ExcelFilesCompiler.Controllers
 
                     var errorVm = await _service.GetVitalStationByServiceMemberChildIdAsync(
                         model.VitalStationDto.ServiceMembersChildId);
+                    PreserveDentalReturnContext(errorVm);
                     return View("VitalStation", errorVm ?? model);
                 }
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = result.Message;
+
+                if (model.ReturnToDentalXRay)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Dental X-Ray station. ServiceMembersChildId={ServiceMembersChildId}, DentalXRayStationId={DentalXRayStationId}",
+                        CLASSNAME, methodName, model.VitalStationDto.ServiceMembersChildId, model.DentalXRayStationId);
+
+                    return RedirectToAction("DentalXRayStation", "DentalXRay", new
+                    {
+                        dentalXRayStationId = model.DentalXRayStationId,
+                        serviceMembersChildId = model.VitalStationDto.ServiceMembersChildId
+                    });
+                }
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Vital Station page", CLASSNAME, methodName);
                 return RedirectToAction(nameof(VitalStation), new
@@ -267,6 +306,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (childId > 0)
                 {
                     var vm = await _service.GetVitalStationByServiceMemberChildIdAsync(childId);
+                    PreserveDentalReturnContext(vm);
                     return View("VitalStation", vm);
                 }
 

@@ -95,6 +95,10 @@
 </style>
 
 <h2 id="page-heading">Vital Station</h2>
+@if (Model.ReturnToDentalXRay)
+{
+    <p class="text-center text-muted mb-4">Complete vitals for this service member, then you will return to the Dental X-Ray station.</p>
+}
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -137,9 +141,27 @@
     @Html.HiddenFor(m => m.VitalStationDto.Id)
     @Html.HiddenFor(m => m.VitalStationDto.ServiceMembersChildId)
     <input type="hidden" asp-for="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
+    @if (Model.ReturnToDentalXRay)
+    {
+        <input type="hidden" asp-for="ReturnToDentalXRay" />
+        <input type="hidden" asp-for="DentalXRayStationId" />
+    }
 
     <div class="mb-3">
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to service member list</a>
+        @if (Model.ReturnToDentalXRay)
+        {
+            <a asp-controller="DentalXRay"
+               asp-action="DentalXRayStation"
+               asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
+               asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+               class="btn btn-outline-secondary btn-sm">
+                ← Back to Dental X-Ray
+            </a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to service member list</a>
+        }
     </div>
 
     <h3 class="mb-4">Personal Information</h3>
@@ -340,7 +362,18 @@
     {
         <div class="d-flex justify-content-end gap-2 button-container mb-5">
             <button type="submit" id="vitalStationSubmitBtn" class="btn btn-general">Save</button>
-            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            @if (Model.ReturnToDentalXRay)
+            {
+                <a asp-controller="DentalXRay"
+                   asp-action="DentalXRayStation"
+                   asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-outline-secondary">Cancel</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            }
         </div>
     }
     else if (completed)
@@ -350,7 +383,18 @@
         </div>
 
         <div class="d-flex justify-content-end mb-5">
-            <a asp-action="Index" class="btn btn-general">Back to list</a>
+            @if (Model.ReturnToDentalXRay)
+            {
+                <a asp-controller="DentalXRay"
+                   asp-action="DentalXRayStation"
+                   asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-general">Back to Dental X-Ray</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-general">Back to list</a>
+            }
         </div>
     }
     else
@@ -363,7 +407,18 @@
                 Save (unavailable)
             </button>
 
-            <a asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
+            @if (Model.ReturnToDentalXRay)
+            {
+                <a asp-controller="DentalXRay"
+                   asp-action="DentalXRayStation"
+                   asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-outline-secondary">Back to Dental X-Ray</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
+            }
         </div>
     }
 </form>

@@ -229,15 +229,37 @@ namespace Malama.Utilities
             ("Event Manager", null)
         },
 
-            // Vitals
+            // Vitals (dental exam roles included so Dental X-Ray workflow can redirect here for BP)
             ["VitalStation_View"] = new List<(string Role, string Attribute)>
         {
             ("Vitals Staff", null),
+            ("DE- Dentist", "Exam"),
+            ("DE-Dental X-Ray Tech", "Exam"),
+            ("DE-Dental Assistant", "Exam"),
+            ("DE-Dental Lead", "Exam"),
+            ("DE-Dental Director", "Exam"),
+            ("DT-Treatment Coordinator", "Treatment"),
+            ("DT-Dentist", "General"),
+            ("DT-Dentist", "Oral Surgery"),
+            ("DT-Dentist", "Endo"),
+            ("DT-Dental Assistant", "Treatment"),
+            ("DT-Dental Director", "Treatment"),
             ("Event Manager", null)
         },
             ["VitalStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Vitals Staff", null),
+            ("DE- Dentist", "Exam"),
+            ("DE-Dental X-Ray Tech", "Exam"),
+            ("DE-Dental Assistant", "Exam"),
+            ("DE-Dental Lead", "Exam"),
+            ("DE-Dental Director", "Exam"),
+            ("DT-Treatment Coordinator", "Treatment"),
+            ("DT-Dentist", "General"),
+            ("DT-Dentist", "Oral Surgery"),
+            ("DT-Dentist", "Endo"),
+            ("DT-Dental Assistant", "Treatment"),
+            ("DT-Dental Director", "Treatment"),
             ("Event Manager", null)
         },
             ["PostEventManagement_View"] = new List<(string Role, string Attribute)>
