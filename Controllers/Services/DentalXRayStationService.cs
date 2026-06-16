@@ -310,9 +310,101 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.ShortOfBreathOneFlightStairs = dto.ShortOfBreathOneFlightStairs;
             entity.AreYouPregnant = dto.AreYouPregnant;
             entity.PregnancyApproval = dto.PregnancyApproval;
-            entity.ApplicableHealthConditionsJson = dto.ApplicableHealthConditions != null && dto.ApplicableHealthConditions.Count > 0
-                ? JsonSerializer.Serialize(dto.ApplicableHealthConditions)
-                : null;
+            entity.ApplicableHealthConditionsJson = SerializeSelectedHealthConditions(
+                dto.ApplicableHealthConditions,
+                dto.HealthConditionDetails);
+        }
+
+        public static List<DentalXRayHealthConditionDetail> ParseHealthConditionsJson(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new List<DentalXRayHealthConditionDetail>();
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    return new List<DentalXRayHealthConditionDetail>();
+                }
+
+                var result = new List<DentalXRayHealthConditionDetail>();
+                foreach (var element in doc.RootElement.EnumerateArray())
+                {
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        var condition = element.GetString();
+                        if (!string.IsNullOrWhiteSpace(condition))
+                        {
+                            result.Add(new DentalXRayHealthConditionDetail
+                            {
+                                Condition = condition,
+                                IsSelected = true
+                            });
+                        }
+
+                        continue;
+                    }
+
+                    if (element.ValueKind == JsonValueKind.Object)
+                    {
+                        var condition = element.TryGetProperty("Condition", out var conditionProp)
+                            ? conditionProp.GetString()
+                            : null;
+                        if (string.IsNullOrWhiteSpace(condition))
+                        {
+                            continue;
+                        }
+
+                        var detail = element.TryGetProperty("Detail", out var detailProp)
+                            ? detailProp.GetString()
+                            : null;
+
+                        result.Add(new DentalXRayHealthConditionDetail
+                        {
+                            Condition = condition,
+                            Detail = detail,
+                            IsSelected = true
+                        });
+                    }
+                }
+
+                return result;
+            }
+            catch
+            {
+                return new List<DentalXRayHealthConditionDetail>();
+            }
+        }
+
+        private static string? SerializeSelectedHealthConditions(
+            List<string>? selectedConditions,
+            List<DentalXRayHealthConditionDetail>? details)
+        {
+            if (selectedConditions == null || selectedConditions.Count == 0)
+            {
+                return null;
+            }
+
+            var detailLookup = (details ?? new List<DentalXRayHealthConditionDetail>())
+                .Where(d => !string.IsNullOrWhiteSpace(d.Condition))
+                .GroupBy(d => d.Condition, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Detail, StringComparer.OrdinalIgnoreCase);
+
+            var selected = selectedConditions
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Select(c => new
+                {
+                    Condition = c.Trim(),
+                    Detail = detailLookup.TryGetValue(c, out var detail) && !string.IsNullOrWhiteSpace(detail)
+                        ? detail.Trim()
+                        : null
+                })
+                .ToList();
+
+            return selected.Count > 0 ? JsonSerializer.Serialize(selected) : null;
         }
 
         private static List<DentalXRayTobaccoUseDetail> NormalizeTobaccoDetails(List<DentalXRayTobaccoUseDetail>? details)

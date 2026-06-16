@@ -14,23 +14,6 @@
         catch { }
     }
 
-    var selectedConditions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    if (!string.IsNullOrWhiteSpace(Model.ApplicableHealthConditionsJson))
-    {
-        try
-        {
-            var parsed = JsonSerializer.Deserialize<List<string>>(Model.ApplicableHealthConditionsJson);
-            if (parsed != null)
-            {
-                foreach (var item in parsed)
-                {
-                    selectedConditions.Add(item);
-                }
-            }
-        }
-        catch { }
-    }
-
     DentalXRayTobaccoUseDetail GetTobaccoDetail(string type) =>
         tobaccoDetails.FirstOrDefault(t => string.Equals(t.Type, type, StringComparison.OrdinalIgnoreCase))
         ?? new DentalXRayTobaccoUseDetail { Type = type, Used = "No" };

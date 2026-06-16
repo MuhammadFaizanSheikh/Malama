@@ -97,6 +97,8 @@
         pointer-events: none;
         border-color: #ced4da;
     }
+    .condition-detail { display: none; }
+    .condition-item { margin-bottom: 0.75rem; }
 </style>
 
 <h2 id="page-heading">Edit Service Member at Dental X-Ray Station</h2>
@@ -189,38 +191,66 @@
     }
 
     @{
-        var selectedConditions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (!string.IsNullOrWhiteSpace(Model.ApplicableHealthConditionsJson))
-        {
-            try
-            {
-                var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(Model.ApplicableHealthConditionsJson);
-                if (parsed != null)
-                {
-                    foreach (var item in parsed) selectedConditions.Add(item);
-                }
-            }
-            catch { }
-        }
+        var healthConditionsQuestionNumber = isFemale ? 13 : 12;
+        var savedHealthConditions = DentalXRayStationService.ParseHealthConditionsJson(Model.ApplicableHealthConditionsJson);
+        var savedByCondition = savedHealthConditions
+            .Where(h => !string.IsNullOrWhiteSpace(h.Condition))
+            .ToDictionary(h => h.Condition, h => h, StringComparer.OrdinalIgnoreCase);
+
+        bool IsConditionSelected(string condition) => savedByCondition.ContainsKey(condition);
+        string GetConditionDetail(string condition) =>
+            savedByCondition.TryGetValue(condition, out var item) ? item.Detail ?? "" : "";
     }
     <div class="card mb-4">
         <div class="card-body">
-            <label class="form-label fw-semibold">13. Check the following conditions if they apply to you:</label>
+            <label class="form-label fw-semibold">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
             <div class="row condition-checkboxes">
                 @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
                 {
                     var condition = DentalXRayQuestionnaire.HealthConditions[ci];
-                    <div class="col-md-6">
+                    var isSelected = IsConditionSelected(condition);
+                    var detail = GetConditionDetail(condition);
+                    <div class="col-md-6 condition-item">
+                        <input type="hidden" name="HealthConditionDetails[@ci].Condition" value="@condition" />
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox"
+                            <input class="form-check-input condition-checkbox" type="checkbox"
                                    name="ApplicableHealthConditions"
                                    value="@condition"
                                    id="condition_@ci"
-                                   checked="@selectedConditions.Contains(condition)" />
+                                   checked="@isSelected" />
                             <label class="form-check-label" for="condition_@ci">@condition</label>
+                        </div>
+                        <div class="condition-detail ms-4 mt-1">
+                            <textarea name="HealthConditionDetails[@ci].Detail"
+                                      class="form-control condition-detail-text"
+                                      rows="3"
+                                      placeholder="Please provide details">@detail</textarea>
                         </div>
                     </div>
                 }
+                @{
+                    var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
+                    var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
+                    var otherSelected = IsConditionSelected(otherCondition);
+                    var otherDetail = GetConditionDetail(otherCondition);
+                }
+                <div class="col-md-6 condition-item">
+                    <input type="hidden" name="HealthConditionDetails[@otherIndex].Condition" value="@otherCondition" />
+                    <div class="form-check">
+                        <input class="form-check-input condition-checkbox" type="checkbox"
+                               name="ApplicableHealthConditions"
+                               value="@otherCondition"
+                               id="condition_other"
+                               checked="@otherSelected" />
+                        <label class="form-check-label" for="condition_other">@otherCondition</label>
+                    </div>
+                    <div class="condition-detail ms-4 mt-1">
+                        <textarea name="HealthConditionDetails[@otherIndex].Detail"
+                                  class="form-control condition-detail-text"
+                                  rows="3"
+                                  placeholder="Please provide details">@otherDetail</textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -820,11 +850,30 @@
         }
     }
 
+    function toggleConditionDetail(checkboxEl) {
+        const $item = $(checkboxEl).closest(".condition-item");
+        const $detail = $item.find(".condition-detail");
+        const $textarea = $detail.find("textarea");
+        if ($(checkboxEl).is(":checked")) {
+            $detail.show();
+        } else {
+            $detail.hide();
+            $textarea.val("");
+        }
+    }
+
+    function initConditionToggles() {
+        $(".condition-checkbox").each(function () {
+            toggleConditionDetail(this);
+        });
+    }
+
     function initQuestionnaireToggles() {
         $(".dental-q-detail-toggle").each(function () {
             toggleQuestionnaireDetail(this);
         });
         toggleTobaccoSection();
+        initConditionToggles();
     }
 
     function togglePregnancyFlow() {
@@ -1089,6 +1138,9 @@
         $("#UseTobaccoOrVape").on("change", toggleTobaccoSection);
         $(document).on("change", ".tobacco-used-select", function () {
             toggleTobaccoTypeDetail(this);
+        });
+        $(document).on("change", ".condition-checkbox", function () {
+            toggleConditionDetail(this);
         });
 
         $("#AreYouPregnant, #PregnancyApproval").on("change", function () {

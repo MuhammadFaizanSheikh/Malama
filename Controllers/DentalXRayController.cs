@@ -213,6 +213,7 @@ namespace ExcelFilesCompiler.Controllers
             var goToVitalStation = dto.GoToVitalStation
                 || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
             dto.GoToVitalStation = goToVitalStation;
+            BindHealthConditionsFromForm(dto, Request.Form);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
                 CLASSNAME, methodName, goToVitalStation);
@@ -420,6 +421,29 @@ namespace ExcelFilesCompiler.Controllers
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
                 return StatusCode(500, "Error while downloading file");
             }
+        }
+
+        private static void BindHealthConditionsFromForm(DentalXRayStationSaveDto dto, IFormCollection form)
+        {
+            dto.ApplicableHealthConditions = form["ApplicableHealthConditions"].ToList();
+
+            var details = new List<DentalXRayHealthConditionDetail>();
+            for (var i = 0; i <= DentalXRayQuestionnaire.HealthConditions.Length; i++)
+            {
+                var condition = form[$"HealthConditionDetails[{i}].Condition"].ToString();
+                if (string.IsNullOrWhiteSpace(condition))
+                {
+                    continue;
+                }
+
+                details.Add(new DentalXRayHealthConditionDetail
+                {
+                    Condition = condition,
+                    Detail = form[$"HealthConditionDetails[{i}].Detail"].ToString()
+                });
+            }
+
+            dto.HealthConditionDetails = details;
         }
 
         private static string? ValidateDraftBeforeVitalRedirect(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)

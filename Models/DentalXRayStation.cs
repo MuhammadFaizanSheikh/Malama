@@ -14,6 +14,8 @@ namespace Malama.Models
     {
         public static readonly string[] TobaccoTypes = { "Vape", "Chew", "Cigarettes", "Snuff", "Nicotine" };
 
+        public const string OtherHealthCondition = "Other";
+
         public static readonly string[] HealthConditions =
         {
             "Hives or skin rash",
@@ -44,6 +46,13 @@ namespace Malama.Models
         public string? Used { get; set; }
         public string? TimesPerDay { get; set; }
         public string? TimesPerWeek { get; set; }
+    }
+
+    public class DentalXRayHealthConditionDetail
+    {
+        public string Condition { get; set; } = string.Empty;
+        public bool IsSelected { get; set; }
+        public string? Detail { get; set; }
     }
 
     public class DentalXRayStationViewModel
@@ -190,6 +199,7 @@ namespace Malama.Models
         public string? AreYouPregnant { get; set; }
         public string? PregnancyApproval { get; set; }
         public List<string> ApplicableHealthConditions { get; set; } = new();
+        public List<DentalXRayHealthConditionDetail> HealthConditionDetails { get; set; } = new();
         public string? BwxStatus { get; set; }
         public string? BwxReason { get; set; }
         public string? BwxUploadMode { get; set; }
