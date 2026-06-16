@@ -1,5 +1,9 @@
-﻿@{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+﻿@model IEnumerable<Malama.Models.ServiceMembersChild>
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Dental Exams";
+    var selectedEventId = ViewBag.EventId;
 }
 
 <style>
@@ -8,10 +12,301 @@
         margin: 20px auto;
     }
 
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white;
+    }
+
+        .btn-general:hover {
+            background-color: rgba(60, 70, 180, 1);
+            border-color: rgba(60, 70, 180, 1);
+            color: white;
+        }
+
+        .btn-general:focus,
+        .btn-general:active {
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
+            outline: none;
+        }
+
+    .button-container {
+        gap: 15px;
+    }
+
     h2, h3 {
         color: rgba(80, 90, 201, 1);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    table {
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table tbody tr {
+            background-color: rgba(240, 245, 255, 1);
+        }
+
+            table tbody tr:hover {
+                background-color: rgba(245, 250, 255, 1);
+            }
+
+        table td button,
+        table td a {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        table td .button-container {
+            display: flex;
+            justify-content: center;
+        }
+
+            table td .button-container a {
+                margin-right: 5px;
+            }
+
+        table thead th {
+            background-color: rgba(120, 130, 221, 1);
+            color: white;
+            text-align: center;
+        }
+
+    .read-only-style {
+        background-color: #f8f9fa;
+        pointer-events: none;
+        border-color: #ced4da;
     }
 </style>
 
 <h2 id="page-heading">Dental Exams</h2>
 
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]',
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor,
+                iconColor: iconColor
+            });
+        });
+    </script>
+}
+
+@if (Model != null)
+{
+    @if (ViewBag.Summary != null)
+    {
+        <table id="dentalExamsSummaryTable" class="display nowrap table table-bordered mb-4">
+            <thead>
+                <tr style="background-color: #7b83eb;">
+                    <th>Event Summary</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr bgcolor="ffffff">
+                    <td>Total number of SM</td>
+                    <td>@ViewBag.Summary["Total"]</td>
+                </tr>
+                <tr>
+                    <td>Number of SM (Pending)</td>
+                    <td>@ViewBag.Summary["Pending"]</td>
+                </tr>
+                <tr bgcolor="ffffff">
+                    <td>Number of SM (Completed)</td>
+                    <td>@ViewBag.Summary["Completed"]</td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    <div class="card p-3 mb-4">
+        <div class="container">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
+                    <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterFullName" class="form-label">Full Name</label>
+                    <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterDodId" class="form-label">DoD ID</label>
+                    <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterDob" class="form-label">DOB</label>
+                    <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
+                    <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterStatus" class="form-label">Dental Exams Station SMs status</label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div class="col-12 text-center mt-3">
+                    <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                    <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="datatableWrapper" class="datatable-wrapper">
+        <table id="contractsTable" class="display">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Status</th>
+                    <th>SM ID</th>
+                    <th>DRC</th>
+                    <th>FULL NAME</th>
+                    <th>Last 4 SSN</th>
+                    <th>DOD Id</th>
+                    <th>Sex</th>
+                    <th>DOB</th>
+                    <th>Barcode</th>
+                    <th>Completed By (Staff Name)</th>
+                    <th>Completed At (Date/time)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);" disabled title="Coming soon">Edit</button>
+                        </td>
+                        <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
+                        <td>@c.SmId</td>
+                        <td>@c.Drc</td>
+                        <td>@c.FullName</td>
+                        <td>@c.Last4</td>
+                        <td>@c.DodId</td>
+                        <td>@c.Sex</td>
+                        <td>@c.Dob</td>
+                        <td>@c.Barcode</td>
+                        <td>@c.DentalXRayStationRecord?.AddedBy</td>
+                        <td>@c.DentalXRayStationRecord?.AddedOn</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<script>
+    function allowOnlyDigits(input) {
+        input.value = input.value.replace(/\D/g, '');
+    }
+
+    $(document).ready(function () {
+        let filterDobPicker = flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+
+        $('#contractsTable').DataTable({
+            paging: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            searching: true,
+            ordering: true,
+            info: true,
+            responsive: true
+        });
+
+        $('#searchStaffBtn').on('click', function () {
+            var barcode = $('#filterBarcode').val().trim().toLowerCase();
+            var fullName = $('#filterFullName').val().trim().toLowerCase();
+            var dodId = $('#filterDodId').val().trim();
+            var last4Ssn = $('#filterLast4Ssn').val().trim();
+            var status = $('#filterStatus').val().trim().toLowerCase();
+
+            let dobPicker = $('#filterDob')[0]?._flatpickr;
+            let dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            var contractsTable = $('#contractsTable').DataTable();
+            contractsTable.columns().search('');
+
+            if (barcode) {
+                contractsTable.column(9).search(barcode, true, false, true);
+            }
+
+            if (fullName) {
+                const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                contractsTable.column(4).search(escapedFullName, true, false, true);
+            }
+
+            if (dodId) {
+                contractsTable.column(6).search('^' + dodId + '$', true, false);
+            }
+
+            if (dobDate) {
+                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = dobDate.getDate().toString().padStart(2, '0');
+                const year = dobDate.getFullYear();
+                const dobFormatted = `${month}/${day}/${year}`;
+
+                contractsTable
+                    .column(8)
+                    .search('^' + dobFormatted + '$', true, false);
+            }
+
+            if (last4Ssn) {
+                contractsTable.column(5).search('^' + last4Ssn + '$', true, false);
+            }
+
+            if (status) {
+                contractsTable.column(1).search(status, true, false, true);
+            }
+
+            contractsTable.draw();
+        });
+
+        function resetAllFilters() {
+            $('#filterBarcode').val('');
+            $('#filterFullName').val('');
+            $('#filterDodId').val('');
+            filterDobPicker.clear();
+            $('#filterLast4Ssn').val('');
+            $('#filterStatus').val('');
+
+            var previewTable = $('#contractsTable').DataTable();
+            previewTable.columns().search('');
+            previewTable.search('').draw();
+        }
+
+        document.getElementById("resetFiltersBtn").addEventListener("click", function () {
+            resetAllFilters();
+        });
+    });
+</script>

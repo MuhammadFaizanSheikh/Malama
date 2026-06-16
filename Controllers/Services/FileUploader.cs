@@ -278,7 +278,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.Imm == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes",
+                             c.CheckIn == AppConstants.YesNo.Yes,
                         c => c.ImmunizationRecord
                     )
                     .ToListAsync();
@@ -314,7 +314,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              (status == null ||
                               (c.LabStationRecord != null && c.LabStationRecord.Status == status)),
                         c => c.LabStationRecord
@@ -352,7 +352,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.BwxNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              (status == null ||
                               (c.DentalXRayStationRecord != null && c.DentalXRayStationRecord.Status == status)),
                         c => c.DentalXRayStationRecord)
@@ -375,6 +375,43 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetDentalExamsByEventIdAsync(long eventId, string? status = null)
+        {
+            const string methodName = nameof(GetDentalExamsByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching DentalExams where DentalNeeded=Needed, CheckIn=Yes, EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
+                             (status == null ||
+                              (c.DentalXRayStationRecord != null && c.DentalXRayStationRecord.Status == status)),
+                        c => c.DentalXRayStationRecord)
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} DentalExams records for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, result.Count, eventId, status);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching DentalExams data for EventId={EventId}, Status={Status}",
+                    CLASSNAME, methodName, eventId, status);
+
+                throw;
+            }
+        }
+
         public async Task<List<ServiceMembersChild>> GetVitalStationByEventIdAsync(long eventId)
         {
             const string methodName = nameof(GetVitalStationByEventIdAsync);
@@ -388,7 +425,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
-                             c.CheckIn == "Yes",
+                             c.CheckIn == AppConstants.YesNo.Yes,
                         c => c.VitalStationRecord
                     )
                     .ToListAsync();
@@ -424,7 +461,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              c.LabStationRecord != null &&
                              c.LabStationRecord.Status == AppConstants.Status.Completed,
                         c => c.LabStationRecord,
@@ -472,7 +509,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.Imm == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              c.ImmunizationRecord != null &&
                              c.ImmunizationRecord.Status == AppConstants.Status.Completed,
                         c => c.ImmunizationRecord,
@@ -611,7 +648,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.Id == serviceMembersChildId &&
                              c.LabNeeded == AppConstants.NeededOrNA.Needed &&
-                             c.CheckIn == "Yes" &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
                              c.LabStationRecord != null &&
                              c.LabStationRecord.Status == AppConstants.Status.Completed,
                         c => c.LabStationRecord,
