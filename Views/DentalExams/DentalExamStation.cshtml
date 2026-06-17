@@ -13,6 +13,12 @@
     var isQuestionnaireReadOnly = Model.IsQuestionnaireReadOnly;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
+    var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
+    {
+        ServiceMembersChildId = sm.Id,
+        Status = "Pending"
+    };
+    var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
 }
 
 <style>
@@ -61,6 +67,7 @@
     @Html.AntiForgeryToken()
     <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
     <input type="hidden" name="IsQuestionnaireReadOnly" value="@(isQuestionnaireReadOnly ? "true" : "false")" />
+    <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
     <h3 class="mb-4">Personal Information</h3>
     <div class="card mb-4">
@@ -203,6 +210,17 @@
         </div>
     </div>
 
+    <hr class="my-4" />
+
+    @{
+        var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
+        vitalBpViewData["ShowVitalRedirect"] = !vitalsCompleted;
+        vitalBpViewData["AllowVitalStationSubmit"] = canSaveDentalExam;
+        vitalBpViewData["BpCountdownIdPrefix"] = "dentalExamBpCountdown";
+        vitalBpViewData["VitalRecommendationContext"] = "dental exam";
+    }
+    @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+
     <div class="d-flex justify-content-end mt-4 gap-3">
         <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalExam ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
@@ -215,6 +233,11 @@
 
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
+    let goToVitalStationClicked = false;
+
+    function isGoToVitalStationSubmit(submitter) {
+        return goToVitalStationClicked || (submitter && submitter.name === "GoToVitalStation");
+    }
 
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
@@ -322,6 +345,27 @@
             toggleConditionDetail(this);
         });
         $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
+
+        $(document).on("click", "#goToVitalStationBtn", function () {
+            goToVitalStationClicked = true;
+            $("#GoToVitalStationFlag").val("true");
+        });
+
+        $(document).on("click", "#SaveDentalExamStation button[type='submit']:not(#goToVitalStationBtn)", function () {
+            goToVitalStationClicked = false;
+            $("#GoToVitalStationFlag").val("false");
+        });
+
+        $("#SaveDentalExamStation").on("submit", function (e) {
+            const submitter = e.originalEvent && e.originalEvent.submitter;
+            if (isGoToVitalStationSubmit(submitter)) {
+                $("#GoToVitalStationFlag").val("true");
+                return true;
+            }
+
+            goToVitalStationClicked = false;
+            $("#GoToVitalStationFlag").val("false");
+        });
     });
 
     $('a.btn-back-confirm').on('click', async function (e) {

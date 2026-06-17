@@ -31,5 +31,6 @@ namespace Malama.Models
         public string? PregnancyApproval { get; set; }
         public List<string> ApplicableHealthConditions { get; set; } = new();
         public List<DentalXRayHealthConditionDetail> HealthConditionDetails { get; set; } = new();
+        public bool GoToVitalStation { get; set; }
     }
 }

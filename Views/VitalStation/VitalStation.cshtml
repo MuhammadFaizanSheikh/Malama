@@ -99,6 +99,10 @@
 {
     <p class="text-center text-muted mb-4">Complete vitals for this service member, then you will return to the Dental X-Ray station.</p>
 }
+else if (Model.ReturnToDentalExams)
+{
+    <p class="text-center text-muted mb-4">Complete vitals for this service member, then you will return to the Dental Exams station.</p>
+}
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -146,6 +150,10 @@
         <input type="hidden" asp-for="ReturnToDentalXRay" />
         <input type="hidden" asp-for="DentalXRayStationId" />
     }
+    @if (Model.ReturnToDentalExams)
+    {
+        <input type="hidden" asp-for="ReturnToDentalExams" />
+    }
 
     <div class="mb-3">
         @if (Model.ReturnToDentalXRay)
@@ -156,6 +164,15 @@
                asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
                class="btn btn-outline-secondary btn-sm">
                 ← Back to Dental X-Ray
+            </a>
+        }
+        else if (Model.ReturnToDentalExams)
+        {
+            <a asp-controller="DentalExams"
+               asp-action="DentalExamStation"
+               asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+               class="btn btn-outline-secondary btn-sm">
+                ← Back to Dental Exams
             </a>
         }
         else
@@ -370,6 +387,13 @@
                    asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
                    class="btn btn-outline-secondary">Cancel</a>
             }
+            else if (Model.ReturnToDentalExams)
+            {
+                <a asp-controller="DentalExams"
+                   asp-action="DentalExamStation"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-outline-secondary">Cancel</a>
+            }
             else
             {
                 <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
@@ -390,6 +414,13 @@
                    asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
                    asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
                    class="btn btn-general">Back to Dental X-Ray</a>
+            }
+            else if (Model.ReturnToDentalExams)
+            {
+                <a asp-controller="DentalExams"
+                   asp-action="DentalExamStation"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-general">Back to Dental Exams</a>
             }
             else
             {
@@ -414,6 +445,13 @@
                    asp-route-dentalXRayStationId="@Model.DentalXRayStationId"
                    asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
                    class="btn btn-outline-secondary">Back to Dental X-Ray</a>
+            }
+            else if (Model.ReturnToDentalExams)
+            {
+                <a asp-controller="DentalExams"
+                   asp-action="DentalExamStation"
+                   asp-route-serviceMembersChildId="@Model.VitalStationDto.ServiceMembersChildId"
+                   class="btn btn-outline-secondary">Back to Dental Exams</a>
             }
             else
             {

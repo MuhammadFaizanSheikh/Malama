@@ -15,6 +15,9 @@ namespace Malama.Models
 
         /// <summary>Dental X-Ray record id to return to (0 for new records).</summary>
         public long DentalXRayStationId { get; set; }
+
+        /// <summary>When true, successful save redirects back to the Dental Exams station page.</summary>
+        public bool ReturnToDentalExams { get; set; }
     }
 
     public class VitalStationBpReadingDto

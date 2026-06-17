@@ -14,6 +14,7 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly IFileUploader _fileUploader;
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
+        private readonly IVitalStationService _vitalStationService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalExamsController> _logger;
         private const string CLASSNAME = "DentalExamsController";
@@ -22,11 +23,13 @@ namespace ExcelFilesCompiler.Controllers
             ILogger<DentalExamsController> logger,
             IFileUploader fileUploader,
             IDentalQuestionnaireService dentalQuestionnaireService,
+            IVitalStationService vitalStationService,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _fileUploader = fileUploader;
             _dentalQuestionnaireService = dentalQuestionnaireService;
+            _vitalStationService = vitalStationService;
             _userManager = userManager;
         }
 
@@ -117,6 +120,36 @@ namespace ExcelFilesCompiler.Controllers
 
                 ViewBag.EventId = result.EventId;
 
+                try
+                {
+                    var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(serviceMembersChildId);
+                    var vitalDto = vitalVm?.VitalStationDto ?? new VitalStationDto
+                    {
+                        ServiceMembersChildId = serviceMembersChildId,
+                        Status = AppConstants.Status.Pending
+                    };
+
+                    ViewBag.VitalStation = vitalDto;
+                    ViewBag.VitalsCompleted = string.Equals(vitalDto.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Vital station loaded for ServiceMembersChildId={ServiceMembersChildId}. VitalStationId={VitalStationId}, Status={Status}",
+                        CLASSNAME, methodName, serviceMembersChildId, vitalDto.Id, vitalDto.Status);
+                }
+                catch (Exception vitalEx)
+                {
+                    _logger.LogError(vitalEx,
+                        "{ClassName}, {MethodName}, Failed to load vital station for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+
+                    ViewBag.VitalStation = new VitalStationDto
+                    {
+                        ServiceMembersChildId = serviceMembersChildId,
+                        Status = AppConstants.Status.Pending
+                    };
+                    ViewBag.VitalsCompleted = false;
+                }
+
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
 
@@ -145,13 +178,17 @@ namespace ExcelFilesCompiler.Controllers
         {
             const string methodName = nameof(SaveDentalExamStation);
 
+            var goToVitalStation = dto.GoToVitalStation
+                || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
+            dto.GoToVitalStation = goToVitalStation;
             dto.IsQuestionnaireReadOnly = string.Equals(
                 Request.Form["IsQuestionnaireReadOnly"],
                 "true",
                 StringComparison.OrdinalIgnoreCase);
             DentalQuestionnaireFormBinder.BindHealthConditions(dto, Request.Form);
 
-            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+            _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
+                CLASSNAME, methodName, goToVitalStation);
 
             try
             {
@@ -182,7 +219,9 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var validationError = await ValidateSaveDtoAsync(dto, serviceMember);
+                var validationError = dto.GoToVitalStation
+                    ? ValidateDraftBeforeVitalRedirect()
+                    : await ValidateSaveDtoAsync(dto, serviceMember);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     TempData["ResponseStatus"] = "error";
@@ -194,6 +233,33 @@ namespace ExcelFilesCompiler.Controllers
                 if (!dto.IsQuestionnaireReadOnly)
                 {
                     await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
+                }
+
+                if (dto.GoToVitalStation)
+                {
+                    long vitalStationId = 0;
+                    try
+                    {
+                        var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(dto.ServiceMembersChildId);
+                        vitalStationId = vitalVm?.VitalStationDto?.Id ?? 0;
+                    }
+                    catch (Exception vitalEx)
+                    {
+                        _logger.LogWarning(vitalEx,
+                            "{ClassName}, {MethodName}, Could not load vital station id before redirect. ServiceMembersChildId={ServiceMembersChildId}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    }
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Draft saved. Redirecting to Vital Station. ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId);
+
+                    return RedirectToAction("VitalStation", "VitalStation", new
+                    {
+                        vitalStationId,
+                        serviceMembersChildId = dto.ServiceMembersChildId,
+                        returnTo = "DentalExams"
+                    });
                 }
 
                 TempData["ResponseStatus"] = "success";
@@ -212,6 +278,11 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseMessage"] = ex.Message;
                 return RedirectToAction(nameof(DentalExamStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
             }
+        }
+
+        private static string? ValidateDraftBeforeVitalRedirect()
+        {
+            return null;
         }
 
         private async Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)

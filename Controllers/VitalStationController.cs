@@ -156,6 +156,13 @@ namespace ExcelFilesCompiler.Controllers
                         "{ClassName}, {MethodName}, Return-to-Dental-X-Ray flow enabled for ServiceMembersChildId={ServiceMembersChildId}",
                         CLASSNAME, methodName, serviceMembersChildId);
                 }
+                else if (string.Equals(returnTo, "DentalExams", StringComparison.OrdinalIgnoreCase))
+                {
+                    dto.ReturnToDentalExams = true;
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Return-to-Dental-Exams flow enabled for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+                }
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, EventId={EventId} assigned to ViewBag",
@@ -198,6 +205,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 target.ReturnToDentalXRay = model.ReturnToDentalXRay;
                 target.DentalXRayStationId = model.DentalXRayStationId;
+                target.ReturnToDentalExams = model.ReturnToDentalExams;
             }
 
             try
@@ -283,6 +291,18 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction("DentalXRayStation", "DentalXRay", new
                     {
                         dentalXRayStationId = model.DentalXRayStationId,
+                        serviceMembersChildId = model.VitalStationDto.ServiceMembersChildId
+                    });
+                }
+
+                if (model.ReturnToDentalExams)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Operation completed successfully. Redirecting to Dental Exams station. ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, model.VitalStationDto.ServiceMembersChildId);
+
+                    return RedirectToAction("DentalExamStation", "DentalExams", new
+                    {
                         serviceMembersChildId = model.VitalStationDto.ServiceMembersChildId
                     });
                 }
