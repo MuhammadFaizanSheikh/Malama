@@ -35,9 +35,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (existing != null)
             {
+                MapFormDataToEntity(dto, existing);
+                existing.UpdatedBy = userName;
+                existing.UpdatedOn = DateTime.Now;
+                await _unitOfWork.SaveAsync();
+
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Questionnaire already exists for ServiceMembersChildId={ServiceMembersChildId}. Skipping update.",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    "{ClassName}, {MethodName}, Questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} by {User}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
                 return;
             }
 

@@ -201,8 +201,7 @@ namespace ExcelFilesCompiler.Controllers
                 var pageModel = new DentalXRayStationPageViewModel
                 {
                     Station = model,
-                    Questionnaire = questionnaire,
-                    IsQuestionnaireReadOnly = questionnaire.Id > 0
+                    Questionnaire = questionnaire
                 };
 
                 return View(pageModel);
@@ -227,10 +226,6 @@ namespace ExcelFilesCompiler.Controllers
                 || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
             dto.GoToVitalStation = goToVitalStation;
             BindHealthConditionsFromForm(dto, Request.Form);
-            dto.IsQuestionnaireReadOnly = string.Equals(
-                Request.Form["IsQuestionnaireReadOnly"],
-                "true",
-                StringComparison.OrdinalIgnoreCase);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
                 CLASSNAME, methodName, goToVitalStation);
@@ -337,10 +332,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 SetSectionUploadedDateTimes(dto);
 
-                if (!dto.IsQuestionnaireReadOnly)
-                {
-                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
-                }
+                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
 
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 
@@ -481,69 +473,57 @@ namespace ExcelFilesCompiler.Controllers
                 p.ImageFile != null && p.ImageFile.Length > 0 && !p.Removed);
         }
 
-        private async Task<string?> ValidateSaveDtoAsync(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
+        private Task<string?> ValidateSaveDtoAsync(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
         {
-            DentalQuestionnaire? existingQuestionnaire = null;
-            if (dto.IsQuestionnaireReadOnly)
-            {
-                existingQuestionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-            }
-
-            var questionnaireError = dto.IsQuestionnaireReadOnly
-                ? null
-                : ValidateQuestionnaire(dto, serviceMember);
-            if (questionnaireError != null) return questionnaireError;
-
-            var pregnancySource = dto.IsQuestionnaireReadOnly ? existingQuestionnaire : null;
-            var areYouPregnant = dto.IsQuestionnaireReadOnly ? pregnancySource?.AreYouPregnant : dto.AreYouPregnant;
-            var pregnancyApproval = dto.IsQuestionnaireReadOnly ? pregnancySource?.PregnancyApproval : dto.PregnancyApproval;
+            var questionnaireError = ValidateQuestionnaire(dto, serviceMember);
+            if (questionnaireError != null) return Task.FromResult<string?>(questionnaireError);
 
             if (DentalXRayStationService.IsFemale(serviceMember))
             {
-                if (string.IsNullOrWhiteSpace(areYouPregnant))
+                if (string.IsNullOrWhiteSpace(dto.AreYouPregnant))
                 {
-                    return "Pregnancy question is required for female service members.";
+                    return Task.FromResult<string?>("Pregnancy question is required for female service members.");
                 }
 
-                if (areYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase))
+                if (dto.AreYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(pregnancyApproval))
+                    if (string.IsNullOrWhiteSpace(dto.PregnancyApproval))
                     {
-                        return "Approval selection is required when pregnant.";
+                        return Task.FromResult<string?>("Approval selection is required when pregnant.");
                     }
 
-                    if (pregnancyApproval.Equals("Declined", StringComparison.OrdinalIgnoreCase))
+                    if (dto.PregnancyApproval.Equals("Declined", StringComparison.OrdinalIgnoreCase))
                     {
-                        return null;
+                        return Task.FromResult<string?>(null);
                     }
                 }
             }
 
             if (!DentalXRayStationService.CanProceedWithXRay(
-                dto.IsQuestionnaireReadOnly ? existingQuestionnaire : _dentalQuestionnaireService.MapFormDataToEntity(dto),
+                _dentalQuestionnaireService.MapFormDataToEntity(dto),
                 serviceMember))
             {
-                return "Cannot proceed with X-Ray based on questionnaire responses.";
+                return Task.FromResult<string?>("Cannot proceed with X-Ray based on questionnaire responses.");
             }
 
             if (DentalXRayStationService.IsNeeded(serviceMember.BwxNeeded))
             {
                 if (dto.BwxStatus == "Completed" && string.IsNullOrWhiteSpace(dto.BwxUploadMode))
                 {
-                    return "BWX upload type selection is required.";
+                    return Task.FromResult<string?>("BWX upload type selection is required.");
                 }
 
                 var bwxError = ValidateBwxSection(dto);
-                if (bwxError != null) return bwxError;
+                if (bwxError != null) return Task.FromResult<string?>(bwxError);
             }
 
             if (DentalXRayStationService.IsNeeded(serviceMember.BwxNeeded))
             {
                 var paError = ValidatePaSection(dto);
-                if (paError != null) return paError;
+                if (paError != null) return Task.FromResult<string?>(paError);
             }
 
-            return null;
+            return Task.FromResult<string?>(null);
         }
 
         private static string? ValidateQuestionnaire(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)

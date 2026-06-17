@@ -156,8 +156,7 @@ namespace ExcelFilesCompiler.Controllers
                 var pageModel = new DentalExamStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
-                    Questionnaire = questionnaire,
-                    IsQuestionnaireReadOnly = questionnaire.Id > 0
+                    Questionnaire = questionnaire
                 };
 
                 return View(pageModel);
@@ -181,10 +180,6 @@ namespace ExcelFilesCompiler.Controllers
             var goToVitalStation = dto.GoToVitalStation
                 || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
             dto.GoToVitalStation = goToVitalStation;
-            dto.IsQuestionnaireReadOnly = string.Equals(
-                Request.Form["IsQuestionnaireReadOnly"],
-                "true",
-                StringComparison.OrdinalIgnoreCase);
             DentalQuestionnaireFormBinder.BindHealthConditions(dto, Request.Form);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
@@ -230,10 +225,7 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalExamStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
-                if (!dto.IsQuestionnaireReadOnly)
-                {
-                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
-                }
+                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
 
                 if (dto.GoToVitalStation)
                 {
@@ -285,14 +277,9 @@ namespace ExcelFilesCompiler.Controllers
             return null;
         }
 
-        private async Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
+        private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
         {
-            if (dto.IsQuestionnaireReadOnly)
-            {
-                return null;
-            }
-
-            return DentalQuestionnaireValidator.Validate(dto, serviceMember);
+            return Task.FromResult(DentalQuestionnaireValidator.Validate(dto, serviceMember));
         }
     }
 }

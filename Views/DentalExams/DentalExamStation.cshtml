@@ -10,7 +10,6 @@
 
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
-    var isQuestionnaireReadOnly = Model.IsQuestionnaireReadOnly;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
@@ -66,7 +65,6 @@
 <form id="SaveDentalExamStation" asp-action="SaveDentalExamStation" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
-    <input type="hidden" name="IsQuestionnaireReadOnly" value="@(isQuestionnaireReadOnly ? "true" : "false")" />
     <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
     <h3 class="mb-4">Personal Information</h3>
@@ -105,24 +103,14 @@
     <hr class="my-4" />
 
     <h3 class="mb-4">Questionnaire</h3>
-    @if (isQuestionnaireReadOnly)
-    {
-        <div class="alert alert-info">
-            Questionnaire answers were saved previously and are shown in read-only mode.
-        </div>
-    }
-    @{
-        var questionnaireViewData = new ViewDataDictionary<DentalQuestionnaire>(ViewData, questionnaire);
-        questionnaireViewData["IsQuestionnaireReadOnly"] = isQuestionnaireReadOnly;
-    }
-    @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire, questionnaireViewData)
+    @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)
 
     @if (isFemale)
     {
         <div class="row mb-3" id="pregnancyQuestionSection">
             <div class="col-md-6 mb-3">
                 <label class="form-label">12. Are you pregnant?</label>
-                <select name="AreYouPregnant" id="AreYouPregnant" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "required")>
+                <select name="AreYouPregnant" id="AreYouPregnant" class="form-select" required>
                     <option value="No" selected="@(string.IsNullOrWhiteSpace(questionnaire.AreYouPregnant) || questionnaire.AreYouPregnant == "No")">No</option>
                     <option value="Yes" selected="@(questionnaire.AreYouPregnant == "Yes")">Yes</option>
                 </select>
@@ -132,7 +120,7 @@
         <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
             <div class="col-md-12">
                 <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
-                <select name="PregnancyApproval" id="PregnancyApproval" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "")>
+                <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
                     <option value=""></option>
                     <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
                     <option value="Declined" selected="@(questionnaire.PregnancyApproval == "Declined")">Declined</option>
@@ -168,16 +156,14 @@
                                    name="ApplicableHealthConditions"
                                    value="@condition"
                                    id="condition_@ci"
-                                   checked="@isSelected"
-                                   @(isQuestionnaireReadOnly ? "disabled" : "") />
+                                   checked="@isSelected" />
                             <label class="form-check-label" for="condition_@ci">@condition</label>
                         </div>
                         <div class="condition-detail ms-4 mt-1">
                             <textarea name="HealthConditionDetails[@ci].Detail"
-                                      class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
+                                      class="form-control condition-detail-text"
                                       rows="3"
-                                      placeholder="Please provide details"
-                                      @(isQuestionnaireReadOnly ? "readonly" : "")>@detail</textarea>
+                                      placeholder="Please provide details">@detail</textarea>
                         </div>
                     </div>
                 }
@@ -194,16 +180,14 @@
                                name="ApplicableHealthConditions"
                                value="@otherCondition"
                                id="condition_other"
-                               checked="@otherSelected"
-                               @(isQuestionnaireReadOnly ? "disabled" : "") />
+                               checked="@otherSelected" />
                         <label class="form-check-label" for="condition_other">@otherCondition</label>
                     </div>
                     <div class="condition-detail ms-4 mt-1">
                         <textarea name="HealthConditionDetails[@otherIndex].Detail"
-                                  class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
+                                  class="form-control condition-detail-text"
                                   rows="3"
-                                  placeholder="Please provide details"
-                                  @(isQuestionnaireReadOnly ? "readonly" : "")>@otherDetail</textarea>
+                                  placeholder="Please provide details">@otherDetail</textarea>
                     </div>
                 </div>
             </div>

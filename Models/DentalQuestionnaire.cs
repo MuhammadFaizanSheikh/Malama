@@ -41,6 +41,5 @@ namespace Malama.Models
     {
         public DentalXRayStation Station { get; set; } = new();
         public DentalQuestionnaire Questionnaire { get; set; } = new();
-        public bool IsQuestionnaireReadOnly { get; set; }
     }
 }

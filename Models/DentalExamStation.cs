@@ -4,13 +4,11 @@ namespace Malama.Models
     {
         public ServiceMembersChild ServiceMember { get; set; } = new();
         public DentalQuestionnaire Questionnaire { get; set; } = new();
-        public bool IsQuestionnaireReadOnly { get; set; }
     }
 
     public class DentalExamStationSaveDto : IDentalQuestionnaireFormData
     {
         public long ServiceMembersChildId { get; set; }
-        public bool IsQuestionnaireReadOnly { get; set; }
         public string? HealthcareProviderCareLast2Years { get; set; }
         public string? SeriousIllnessOperationHospitalization { get; set; }
         public string? SeriousIllnessOperationHospitalizationDetail { get; set; }

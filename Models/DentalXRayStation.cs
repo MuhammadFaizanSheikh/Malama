@@ -227,7 +227,6 @@ namespace Malama.Models
         public string? SubmissionToken { get; set; }
 
         public bool GoToVitalStation { get; set; }
-        public bool IsQuestionnaireReadOnly { get; set; }
 
         public bool BwLeftMolarRemoved { get; set; }
         public bool BwLeftPremolarRemoved { get; set; }
