@@ -156,7 +156,7 @@ namespace Malama.Models
         public bool Removed { get; set; }
     }
 
-    public class DentalXRayStationSaveDto
+    public class DentalXRayStationSaveDto : IDentalQuestionnaireFormData
     {
         public long Id { get; set; }
         public long ServiceMembersChildId { get; set; }

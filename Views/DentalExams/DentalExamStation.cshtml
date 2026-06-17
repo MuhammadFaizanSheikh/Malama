@@ -1,0 +1,333 @@
+@using ExcelFilesCompiler.Controllers.Services
+@using Malama.Models
+@using Malama.Utilities
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@model DentalExamStationPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Dental Exams";
+
+    var sm = Model.ServiceMember;
+    var questionnaire = Model.Questionnaire;
+    var isQuestionnaireReadOnly = Model.IsQuestionnaireReadOnly;
+    var isFemale = DentalXRayStationService.IsFemale(sm);
+    var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
+}
+
+<style>
+    #page-heading { text-align: center; margin: 20px auto; }
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white;
+    }
+    .btn-general:hover {
+        background-color: rgba(60, 70, 180, 1);
+        border-color: rgba(60, 70, 180, 1);
+        color: white;
+    }
+    h2, h3 { color: rgba(80, 90, 201, 1); }
+    .read-only-style {
+        background-color: #f8f9fa;
+        pointer-events: none;
+        border-color: #ced4da;
+    }
+    .condition-detail { display: none; }
+    .condition-item { margin-bottom: 0.75rem; }
+</style>
+
+<h2 id="page-heading">Edit Service Member at Dental Exams</h2>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]',
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor,
+                iconColor: iconColor
+            });
+        });
+    </script>
+}
+
+<form id="SaveDentalExamStation" asp-action="SaveDentalExamStation" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
+    <input type="hidden" name="IsQuestionnaireReadOnly" value="@(isQuestionnaireReadOnly ? "true" : "false")" />
+
+    <h3 class="mb-4">Personal Information</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Full Name:</span> @sm?.FullName</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOD ID:</span> @sm?.DodId</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @sm?.Barcode</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOB:</span> @sm?.Dob</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Age:</span> @sm?.Age</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Sex:</span> @sm?.Sex</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <h3 class="mb-4">Questionnaire</h3>
+    @if (isQuestionnaireReadOnly)
+    {
+        <div class="alert alert-info">
+            Questionnaire answers were saved previously and are shown in read-only mode.
+        </div>
+    }
+    @{
+        var questionnaireViewData = new ViewDataDictionary<DentalQuestionnaire>(ViewData, questionnaire);
+        questionnaireViewData["IsQuestionnaireReadOnly"] = isQuestionnaireReadOnly;
+    }
+    @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire, questionnaireViewData)
+
+    @if (isFemale)
+    {
+        <div class="row mb-3" id="pregnancyQuestionSection">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">12. Are you pregnant?</label>
+                <select name="AreYouPregnant" id="AreYouPregnant" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "required")>
+                    <option value="No" selected="@(string.IsNullOrWhiteSpace(questionnaire.AreYouPregnant) || questionnaire.AreYouPregnant == "No")">No</option>
+                    <option value="Yes" selected="@(questionnaire.AreYouPregnant == "Yes")">Yes</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
+            <div class="col-md-12">
+                <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
+                <select name="PregnancyApproval" id="PregnancyApproval" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "")>
+                    <option value=""></option>
+                    <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
+                    <option value="Declined" selected="@(questionnaire.PregnancyApproval == "Declined")">Declined</option>
+                </select>
+            </div>
+        </div>
+    }
+
+    @{
+        var healthConditionsQuestionNumber = isFemale ? 13 : 12;
+        var savedHealthConditions = DentalQuestionnaireService.ParseHealthConditionsJson(questionnaire.ApplicableHealthConditionsJson);
+        var savedByCondition = savedHealthConditions
+            .Where(h => !string.IsNullOrWhiteSpace(h.Condition))
+            .ToDictionary(h => h.Condition, h => h, StringComparer.OrdinalIgnoreCase);
+
+        bool IsConditionSelected(string condition) => savedByCondition.ContainsKey(condition);
+        string GetConditionDetail(string condition) =>
+            savedByCondition.TryGetValue(condition, out var item) ? item.Detail ?? "" : "";
+    }
+    <div class="card mb-4">
+        <div class="card-body">
+            <label class="form-label fw-semibold">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
+            <div class="row condition-checkboxes">
+                @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
+                {
+                    var condition = DentalXRayQuestionnaire.HealthConditions[ci];
+                    var isSelected = IsConditionSelected(condition);
+                    var detail = GetConditionDetail(condition);
+                    <div class="col-md-6 condition-item">
+                        <input type="hidden" name="HealthConditionDetails[@ci].Condition" value="@condition" />
+                        <div class="form-check">
+                            <input class="form-check-input condition-checkbox" type="checkbox"
+                                   name="ApplicableHealthConditions"
+                                   value="@condition"
+                                   id="condition_@ci"
+                                   checked="@isSelected"
+                                   @(isQuestionnaireReadOnly ? "disabled" : "") />
+                            <label class="form-check-label" for="condition_@ci">@condition</label>
+                        </div>
+                        <div class="condition-detail ms-4 mt-1">
+                            <textarea name="HealthConditionDetails[@ci].Detail"
+                                      class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
+                                      rows="3"
+                                      placeholder="Please provide details"
+                                      @(isQuestionnaireReadOnly ? "readonly" : "")>@detail</textarea>
+                        </div>
+                    </div>
+                }
+                @{
+                    var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
+                    var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
+                    var otherSelected = IsConditionSelected(otherCondition);
+                    var otherDetail = GetConditionDetail(otherCondition);
+                }
+                <div class="col-md-6 condition-item">
+                    <input type="hidden" name="HealthConditionDetails[@otherIndex].Condition" value="@otherCondition" />
+                    <div class="form-check">
+                        <input class="form-check-input condition-checkbox" type="checkbox"
+                               name="ApplicableHealthConditions"
+                               value="@otherCondition"
+                               id="condition_other"
+                               checked="@otherSelected"
+                               @(isQuestionnaireReadOnly ? "disabled" : "") />
+                        <label class="form-check-label" for="condition_other">@otherCondition</label>
+                    </div>
+                    <div class="condition-detail ms-4 mt-1">
+                        <textarea name="HealthConditionDetails[@otherIndex].Detail"
+                                  class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
+                                  rows="3"
+                                  placeholder="Please provide details"
+                                  @(isQuestionnaireReadOnly ? "readonly" : "")>@otherDetail</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4 gap-3">
+        <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalExam ? "" : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
+        <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</form>
+
+<script>
+    const IS_FEMALE = @Json.Serialize(isFemale);
+
+    function toggleQuestionnaireDetail(selectEl) {
+        const $select = $(selectEl);
+        const target = $select.data("detail");
+        if (!target) return;
+        const $detail = $(target);
+        const $textarea = $detail.find("textarea");
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $textarea.prop("required", true);
+        } else {
+            $detail.hide();
+            $textarea.prop("required", false).val("");
+        }
+    }
+
+    function toggleTobaccoSection() {
+        const isYes = $("#UseTobaccoOrVape").val() === "Yes";
+        const $section = $("#tobaccoDetailsSection");
+        $section.toggle(isYes);
+        $section.find(".tobacco-used-select").prop("required", isYes);
+        if (!isYes) {
+            $section.find(".tobacco-used-select").val("No");
+            $section.find(".tobacco-type-detail").hide();
+            $section.find(".tobacco-frequency-input").prop("required", false).val("");
+        } else {
+            $(".tobacco-used-select").each(function () {
+                toggleTobaccoTypeDetail(this);
+            });
+        }
+    }
+
+    function toggleTobaccoTypeDetail(selectEl) {
+        const $select = $(selectEl);
+        const index = $select.data("index");
+        const $detail = $("#tobaccoTypeDetail_" + index);
+        const $inputs = $detail.find(".tobacco-frequency-input");
+        if ($("#UseTobaccoOrVape").val() !== "Yes") {
+            $detail.hide();
+            $inputs.prop("required", false);
+            return;
+        }
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $inputs.prop("required", true);
+        } else {
+            $detail.hide();
+            $inputs.prop("required", false).val("");
+        }
+    }
+
+    function toggleConditionDetail(checkboxEl) {
+        const $item = $(checkboxEl).closest(".condition-item");
+        const $detail = $item.find(".condition-detail");
+        const $textarea = $detail.find("textarea");
+        if ($(checkboxEl).is(":checked")) {
+            $detail.show();
+        } else {
+            $detail.hide();
+            $textarea.val("");
+        }
+    }
+
+    function initConditionToggles() {
+        $(".condition-checkbox").each(function () {
+            toggleConditionDetail(this);
+        });
+    }
+
+    function togglePregnancyFlow() {
+        if (!IS_FEMALE) {
+            return;
+        }
+
+        const pregnant = $("#AreYouPregnant").val();
+        $("#pregnancyApprovalSection").hide();
+        $("#PregnancyApproval").prop("required", false);
+
+        if (pregnant === "Yes") {
+            $("#pregnancyApprovalSection").show();
+            $("#PregnancyApproval").prop("required", true);
+        }
+    }
+
+    function initQuestionnaireToggles() {
+        $(".dental-q-detail-toggle").each(function () {
+            toggleQuestionnaireDetail(this);
+        });
+        toggleTobaccoSection();
+        initConditionToggles();
+        togglePregnancyFlow();
+    }
+
+    $(document).ready(function () {
+        initQuestionnaireToggles();
+
+        $(".dental-q-detail-toggle").on("change", function () {
+            toggleQuestionnaireDetail(this);
+        });
+        $("#UseTobaccoOrVape").on("change", toggleTobaccoSection);
+        $(document).on("change", ".tobacco-used-select", function () {
+            toggleTobaccoTypeDetail(this);
+        });
+        $(document).on("change", ".condition-checkbox", function () {
+            toggleConditionDetail(this);
+        });
+        $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
+    });
+
+    $('a.btn-back-confirm').on('click', async function (e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?");
+        if (confirmed) window.location.href = url;
+    });
+</script>

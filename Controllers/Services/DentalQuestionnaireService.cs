@@ -25,9 +25,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task SaveOrUpdateFromSaveDtoAsync(DentalXRayStationSaveDto dto, string userName)
+        public async Task SaveOrUpdateFromFormDataAsync(IDentalQuestionnaireFormData dto, string userName)
         {
-            const string methodName = nameof(SaveOrUpdateFromSaveDtoAsync);
+            const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
 
             var existing = await _unitOfWork.DentalQuestionnaire
                 .GetWithIncludeTracking(q => q.ServiceMembersChildId == dto.ServiceMembersChildId)
@@ -41,7 +41,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return;
             }
 
-            var entity = MapSaveDtoToEntity(dto);
+            var entity = MapFormDataToEntity(dto);
             entity.AddedOn = DateTime.Now;
             entity.AddedBy = userName;
 
@@ -53,7 +53,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
         }
 
-        public DentalQuestionnaire MapSaveDtoToEntity(DentalXRayStationSaveDto dto, DentalQuestionnaire? existing = null)
+        public DentalQuestionnaire MapFormDataToEntity(IDentalQuestionnaireFormData dto, DentalQuestionnaire? existing = null)
         {
             var entity = existing ?? new DentalQuestionnaire();
 

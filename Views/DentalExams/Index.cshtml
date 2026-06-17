@@ -206,7 +206,8 @@
                 {
                     <tr>
                         <td>
-                            <button type="button" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);" disabled title="Coming soon">Edit</button>
+                            <a asp-action="DentalExamStation" asp-route-serviceMembersChildId="@c.Id"
+                               class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
                         <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
                         <td>@c.SmId</td>

@@ -5,7 +5,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IDentalQuestionnaireService
     {
         Task<DentalQuestionnaire?> GetByServiceMembersChildIdAsync(long serviceMembersChildId);
-        Task SaveOrUpdateFromSaveDtoAsync(DentalXRayStationSaveDto dto, string userName);
-        DentalQuestionnaire MapSaveDtoToEntity(DentalXRayStationSaveDto dto, DentalQuestionnaire? existing = null);
+        Task SaveOrUpdateFromFormDataAsync(IDentalQuestionnaireFormData dto, string userName);
+        DentalQuestionnaire MapFormDataToEntity(IDentalQuestionnaireFormData dto, DentalQuestionnaire? existing = null);
     }
 }
