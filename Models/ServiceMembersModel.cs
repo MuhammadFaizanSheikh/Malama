@@ -120,6 +120,8 @@ namespace Malama.Models
         [ValidateNever]
         public virtual DentalXRayStation DentalXRayStationRecord { get; set; }
         [ValidateNever]
+        public virtual DentalQuestionnaire DentalQuestionnaireRecord { get; set; }
+        [ValidateNever]
         public virtual PostEventLabStation PostEventLabStation { get; set; }
         [ValidateNever]
         public virtual PostEventImmunizationStation PostEventImmunizationStation { get; set; }

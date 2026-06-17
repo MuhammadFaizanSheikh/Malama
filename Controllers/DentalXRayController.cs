@@ -15,6 +15,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDentalXRayStationService _dentalXRayStationService;
+        private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IVitalStationService _vitalStationService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
@@ -28,6 +29,7 @@ namespace ExcelFilesCompiler.Controllers
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
             IDentalXRayStationService dentalXRayStationService,
+            IDentalQuestionnaireService dentalQuestionnaireService,
             IVitalStationService vitalStationService,
             IFileUploadDownloadService fileService,
             DentalXRayFileSaveCoordinator fileSaveCoordinator)
@@ -37,6 +39,7 @@ namespace ExcelFilesCompiler.Controllers
             _configuration = configuration;
             _userManager = userManager;
             _dentalXRayStationService = dentalXRayStationService;
+            _dentalQuestionnaireService = dentalQuestionnaireService;
             _vitalStationService = vitalStationService;
             _fileService = fileService;
             _fileSaveCoordinator = fileSaveCoordinator;
@@ -192,7 +195,17 @@ namespace ExcelFilesCompiler.Controllers
                     ViewBag.VitalsCompleted = false;
                 }
 
-                return View(model);
+                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(model.ServiceMembersChildId)
+                    ?? new DentalQuestionnaire { ServiceMembersChildId = model.ServiceMembersChildId };
+
+                var pageModel = new DentalXRayStationPageViewModel
+                {
+                    Station = model,
+                    Questionnaire = questionnaire,
+                    IsQuestionnaireReadOnly = questionnaire.Id > 0
+                };
+
+                return View(pageModel);
             }
             catch (Exception ex)
             {
@@ -214,6 +227,10 @@ namespace ExcelFilesCompiler.Controllers
                 || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
             dto.GoToVitalStation = goToVitalStation;
             BindHealthConditionsFromForm(dto, Request.Form);
+            dto.IsQuestionnaireReadOnly = string.Equals(
+                Request.Form["IsQuestionnaireReadOnly"],
+                "true",
+                StringComparison.OrdinalIgnoreCase);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
                 CLASSNAME, methodName, goToVitalStation);
@@ -264,7 +281,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 var validationError = dto.GoToVitalStation
                     ? ValidateDraftBeforeVitalRedirect(dto, serviceMember)
-                    : ValidateSaveDto(dto, serviceMember);
+                    : await ValidateSaveDtoAsync(dto, serviceMember);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Validation failed: {Error}", CLASSNAME, methodName, validationError);
@@ -320,8 +337,15 @@ namespace ExcelFilesCompiler.Controllers
 
                 SetSectionUploadedDateTimes(dto);
 
+                if (!dto.IsQuestionnaireReadOnly)
+                {
+                    await _dentalQuestionnaireService.SaveOrUpdateFromSaveDtoAsync(dto, user.UserName);
+                }
+
+                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+
                 var entity = _dentalXRayStationService.MapSaveDtoToEntity(dto);
-                entity.Status = _dentalXRayStationService.ComputeOverallStatus(entity, serviceMember);
+                entity.Status = _dentalXRayStationService.ComputeOverallStatus(entity, serviceMember, questionnaire);
 
                 if (dto.Id == 0)
                 {
@@ -475,26 +499,38 @@ namespace ExcelFilesCompiler.Controllers
                 p.ImageFile != null && p.ImageFile.Length > 0 && !p.Removed);
         }
 
-        private string? ValidateSaveDto(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
+        private async Task<string?> ValidateSaveDtoAsync(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
         {
-            var questionnaireError = ValidateQuestionnaire(dto, serviceMember);
+            DentalQuestionnaire? existingQuestionnaire = null;
+            if (dto.IsQuestionnaireReadOnly)
+            {
+                existingQuestionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+            }
+
+            var questionnaireError = dto.IsQuestionnaireReadOnly
+                ? null
+                : ValidateQuestionnaire(dto, serviceMember);
             if (questionnaireError != null) return questionnaireError;
+
+            var pregnancySource = dto.IsQuestionnaireReadOnly ? existingQuestionnaire : null;
+            var areYouPregnant = dto.IsQuestionnaireReadOnly ? pregnancySource?.AreYouPregnant : dto.AreYouPregnant;
+            var pregnancyApproval = dto.IsQuestionnaireReadOnly ? pregnancySource?.PregnancyApproval : dto.PregnancyApproval;
 
             if (DentalXRayStationService.IsFemale(serviceMember))
             {
-                if (string.IsNullOrWhiteSpace(dto.AreYouPregnant))
+                if (string.IsNullOrWhiteSpace(areYouPregnant))
                 {
                     return "Pregnancy question is required for female service members.";
                 }
 
-                if (dto.AreYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase))
+                if (areYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(dto.PregnancyApproval))
+                    if (string.IsNullOrWhiteSpace(pregnancyApproval))
                     {
                         return "Approval selection is required when pregnant.";
                     }
 
-                    if (dto.PregnancyApproval.Equals("Declined", StringComparison.OrdinalIgnoreCase))
+                    if (pregnancyApproval.Equals("Declined", StringComparison.OrdinalIgnoreCase))
                     {
                         return null;
                     }
@@ -502,7 +538,8 @@ namespace ExcelFilesCompiler.Controllers
             }
 
             if (!DentalXRayStationService.CanProceedWithXRay(
-                _dentalXRayStationService.MapSaveDtoToEntity(dto), serviceMember))
+                dto.IsQuestionnaireReadOnly ? existingQuestionnaire : _dentalQuestionnaireService.MapSaveDtoToEntity(dto),
+                serviceMember))
             {
                 return "Cannot proceed with X-Ray based on questionnaire responses.";
             }

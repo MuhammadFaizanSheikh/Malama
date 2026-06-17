@@ -3,17 +3,20 @@
 @using Malama.Models
 @using Malama.Utilities
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
-@model DentalXRayStation
+@model DentalXRayStationPageViewModel
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Dental X-Ray Station";
 
-    var sm = Model.ServiceMembersChild;
+    var station = Model.Station;
+    var questionnaire = Model.Questionnaire;
+    var isQuestionnaireReadOnly = Model.IsQuestionnaireReadOnly;
+    var sm = station.ServiceMembersChild;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
     var panoNeeded = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
-    var paImages = Model.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
+    var paImages = station.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
     if (!paImages.Any())
     {
         paImages.Add(new DentalXRayPaImage { SortOrder = 0 });
@@ -21,23 +24,23 @@
 
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
-        ServiceMembersChildId = Model.ServiceMembersChildId,
+        ServiceMembersChildId = station.ServiceMembersChildId,
         Status = "Pending"
     };
     var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
     var canSaveDentalXRay = DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_Save");
 
-    var initialBwxUploadMode = Model.BwxUploadMode;
+    var initialBwxUploadMode = station.BwxUploadMode;
     if (string.IsNullOrWhiteSpace(initialBwxUploadMode))
     {
-        if (!string.IsNullOrWhiteSpace(Model.BwxConsolidatedFileName))
+        if (!string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName))
         {
             initialBwxUploadMode = BwxUploadMode.Consolidated;
         }
-        else if (!string.IsNullOrWhiteSpace(Model.BwLeftMolarFileName)
-            || !string.IsNullOrWhiteSpace(Model.BwLeftPremolarFileName)
-            || !string.IsNullOrWhiteSpace(Model.BwRightMolarFileName)
-            || !string.IsNullOrWhiteSpace(Model.BwRightPremolarFileName))
+        else if (!string.IsNullOrWhiteSpace(station.BwLeftMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightPremolarFileName))
         {
             initialBwxUploadMode = BwxUploadMode.Separate;
         }
@@ -123,8 +126,9 @@
 
 <form id="SaveDentalXRayStation" asp-action="SaveDentalXRayStation" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" name="Id" />
-    <input type="hidden" asp-for="ServiceMembersChildId" name="ServiceMembersChildId" />
+    <input type="hidden" name="Id" value="@station.Id" />
+    <input type="hidden" name="ServiceMembersChildId" value="@station.ServiceMembersChildId" />
+    <input type="hidden" name="IsQuestionnaireReadOnly" value="@(isQuestionnaireReadOnly ? "true" : "false")" />
     <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
@@ -164,16 +168,26 @@
     <hr class="my-4" />
 
     <h3 class="mb-4">Questionnaire</h3>
-    @await Html.PartialAsync("_DentalXRayQuestionnaire", Model)
+    @if (isQuestionnaireReadOnly)
+    {
+        <div class="alert alert-info">
+            Questionnaire answers were saved previously and are shown in read-only mode.
+        </div>
+    }
+    @{
+        var questionnaireViewData = new ViewDataDictionary<DentalQuestionnaire>(ViewData, questionnaire);
+        questionnaireViewData["IsQuestionnaireReadOnly"] = isQuestionnaireReadOnly;
+    }
+    @await Html.PartialAsync("_DentalXRayQuestionnaire", questionnaire, questionnaireViewData)
 
     @if (isFemale)
     {
         <div class="row mb-3" id="pregnancyQuestionSection">
             <div class="col-md-6 mb-3">
                 <label class="form-label">12. Are you pregnant?</label>
-                <select name="AreYouPregnant" id="AreYouPregnant" class="form-select" required>
-                    <option value="No" selected="@(string.IsNullOrWhiteSpace(Model.AreYouPregnant) || Model.AreYouPregnant == "No")">No</option>
-                    <option value="Yes" selected="@(Model.AreYouPregnant == "Yes")">Yes</option>
+                <select name="AreYouPregnant" id="AreYouPregnant" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "required")>
+                    <option value="No" selected="@(string.IsNullOrWhiteSpace(questionnaire.AreYouPregnant) || questionnaire.AreYouPregnant == "No")">No</option>
+                    <option value="Yes" selected="@(questionnaire.AreYouPregnant == "Yes")">Yes</option>
                 </select>
             </div>
         </div>
@@ -181,10 +195,10 @@
         <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
             <div class="col-md-12">
                 <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
-                <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
+                <select name="PregnancyApproval" id="PregnancyApproval" class="form-select @(isQuestionnaireReadOnly ? "read-only-style" : "")" @(isQuestionnaireReadOnly ? "disabled" : "")>
                     <option value=""></option>
-                    <option value="Approved" selected="@(Model.PregnancyApproval == "Approved")">Approved</option>
-                    <option value="Declined" selected="@(Model.PregnancyApproval == "Declined")">Declined</option>
+                    <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
+                    <option value="Declined" selected="@(questionnaire.PregnancyApproval == "Declined")">Declined</option>
                 </select>
             </div>
         </div>
@@ -192,7 +206,7 @@
 
     @{
         var healthConditionsQuestionNumber = isFemale ? 13 : 12;
-        var savedHealthConditions = DentalXRayStationService.ParseHealthConditionsJson(Model.ApplicableHealthConditionsJson);
+        var savedHealthConditions = DentalQuestionnaireService.ParseHealthConditionsJson(questionnaire.ApplicableHealthConditionsJson);
         var savedByCondition = savedHealthConditions
             .Where(h => !string.IsNullOrWhiteSpace(h.Condition))
             .ToDictionary(h => h.Condition, h => h, StringComparer.OrdinalIgnoreCase);
@@ -217,14 +231,16 @@
                                    name="ApplicableHealthConditions"
                                    value="@condition"
                                    id="condition_@ci"
-                                   checked="@isSelected" />
+                                   checked="@isSelected"
+                                   @(isQuestionnaireReadOnly ? "disabled" : "") />
                             <label class="form-check-label" for="condition_@ci">@condition</label>
                         </div>
                         <div class="condition-detail ms-4 mt-1">
                             <textarea name="HealthConditionDetails[@ci].Detail"
-                                      class="form-control condition-detail-text"
+                                      class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
                                       rows="3"
-                                      placeholder="Please provide details">@detail</textarea>
+                                      placeholder="Please provide details"
+                                      @(isQuestionnaireReadOnly ? "readonly" : "")>@detail</textarea>
                         </div>
                     </div>
                 }
@@ -241,14 +257,16 @@
                                name="ApplicableHealthConditions"
                                value="@otherCondition"
                                id="condition_other"
-                               checked="@otherSelected" />
+                               checked="@otherSelected"
+                               @(isQuestionnaireReadOnly ? "disabled" : "") />
                         <label class="form-check-label" for="condition_other">@otherCondition</label>
                     </div>
                     <div class="condition-detail ms-4 mt-1">
                         <textarea name="HealthConditionDetails[@otherIndex].Detail"
-                                  class="form-control condition-detail-text"
+                                  class="form-control condition-detail-text @(isQuestionnaireReadOnly ? "read-only-style" : "")"
                                   rows="3"
-                                  placeholder="Please provide details">@otherDetail</textarea>
+                                  placeholder="Please provide details"
+                                  @(isQuestionnaireReadOnly ? "readonly" : "")>@otherDetail</textarea>
                     </div>
                 </div>
             </div>
@@ -280,16 +298,16 @@
                             <label class="form-label">BWX Status</label>
                             <select name="BwxStatus" id="BwxStatus" class="form-select">
                                 <option value=""></option>
-                                <option value="Completed" selected="@(Model.BwxStatus == "Completed")">Completed</option>
-                                <option value="Not Completed" selected="@(Model.BwxStatus == "Not Completed")">Not Completed</option>
+                                <option value="Completed" selected="@(station.BwxStatus == "Completed")">Completed</option>
+                                <option value="Not Completed" selected="@(station.BwxStatus == "Not Completed")">Not Completed</option>
                             </select>
                         </div>
-                        @if (Model.Id != 0 && Model.BwxUploadedDateTime.HasValue)
+                        @if (station.Id != 0 && station.BwxUploadedDateTime.HasValue)
                         {
                             <div class="col-md-4">
                                 <label class="form-label">Uploaded datetime</label>
                                 <input type="text" class="form-control read-only-style"
-                                       value="@Model.BwxUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
+                                       value="@station.BwxUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
                             </div>
                         }
                     </div>
@@ -342,10 +360,10 @@
                             OriginalFileNameFieldName = "BwxConsolidatedOriginalFileName",
                             DateFieldName = "BwxConsolidatedUploadedDateTime",
                             RemovedFieldName = "BwxConsolidatedRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwxConsolidatedFileName),
-                            StoredFileName = Model.BwxConsolidatedFileName,
-                            OriginalFileName = Model.BwxConsolidatedOriginalFileName,
-                            UploadedDateTime = Model.BwxConsolidatedUploadedDateTime,
+                            Uploaded = !string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName),
+                            StoredFileName = station.BwxConsolidatedFileName,
+                            OriginalFileName = station.BwxConsolidatedOriginalFileName,
+                            UploadedDateTime = station.BwxConsolidatedUploadedDateTime,
                             IsFullWidth = true
                         })
                     </div>
@@ -360,10 +378,10 @@
                             OriginalFileNameFieldName = "BwLeftMolarOriginalFileName",
                             DateFieldName = "BwLeftMolarUploadedDateTime",
                             RemovedFieldName = "BwLeftMolarRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwLeftMolarFileName),
-                            StoredFileName = Model.BwLeftMolarFileName,
-                            OriginalFileName = Model.BwLeftMolarOriginalFileName,
-                            UploadedDateTime = Model.BwLeftMolarUploadedDateTime
+                            Uploaded = !string.IsNullOrWhiteSpace(station.BwLeftMolarFileName),
+                            StoredFileName = station.BwLeftMolarFileName,
+                            OriginalFileName = station.BwLeftMolarOriginalFileName,
+                            UploadedDateTime = station.BwLeftMolarUploadedDateTime
                         })
                         @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
                             Prefix = "bwx_left_premolar",
@@ -374,10 +392,10 @@
                             OriginalFileNameFieldName = "BwLeftPremolarOriginalFileName",
                             DateFieldName = "BwLeftPremolarUploadedDateTime",
                             RemovedFieldName = "BwLeftPremolarRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwLeftPremolarFileName),
-                            StoredFileName = Model.BwLeftPremolarFileName,
-                            OriginalFileName = Model.BwLeftPremolarOriginalFileName,
-                            UploadedDateTime = Model.BwLeftPremolarUploadedDateTime
+                            Uploaded = !string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName),
+                            StoredFileName = station.BwLeftPremolarFileName,
+                            OriginalFileName = station.BwLeftPremolarOriginalFileName,
+                            UploadedDateTime = station.BwLeftPremolarUploadedDateTime
                         })
                         @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
                             Prefix = "bwx_right_molar",
@@ -388,10 +406,10 @@
                             OriginalFileNameFieldName = "BwRightMolarOriginalFileName",
                             DateFieldName = "BwRightMolarUploadedDateTime",
                             RemovedFieldName = "BwRightMolarRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwRightMolarFileName),
-                            StoredFileName = Model.BwRightMolarFileName,
-                            OriginalFileName = Model.BwRightMolarOriginalFileName,
-                            UploadedDateTime = Model.BwRightMolarUploadedDateTime
+                            Uploaded = !string.IsNullOrWhiteSpace(station.BwRightMolarFileName),
+                            StoredFileName = station.BwRightMolarFileName,
+                            OriginalFileName = station.BwRightMolarOriginalFileName,
+                            UploadedDateTime = station.BwRightMolarUploadedDateTime
                         })
                         @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
                             Prefix = "bwx_right_premolar",
@@ -402,10 +420,10 @@
                             OriginalFileNameFieldName = "BwRightPremolarOriginalFileName",
                             DateFieldName = "BwRightPremolarUploadedDateTime",
                             RemovedFieldName = "BwRightPremolarRemoved",
-                            Uploaded = !string.IsNullOrWhiteSpace(Model.BwRightPremolarFileName),
-                            StoredFileName = Model.BwRightPremolarFileName,
-                            OriginalFileName = Model.BwRightPremolarOriginalFileName,
-                            UploadedDateTime = Model.BwRightPremolarUploadedDateTime
+                            Uploaded = !string.IsNullOrWhiteSpace(station.BwRightPremolarFileName),
+                            StoredFileName = station.BwRightPremolarFileName,
+                            OriginalFileName = station.BwRightPremolarOriginalFileName,
+                            UploadedDateTime = station.BwRightPremolarUploadedDateTime
                         })
                     </div>
                 </div>
@@ -418,16 +436,16 @@
                             <label class="form-label">Periapical (PA) X-Rays Status</label>
                             <select name="PaStatus" id="PaStatus" class="form-select">
                                 <option value=""></option>
-                                <option value="Completed" selected="@(Model.PaStatus == "Completed")">Completed</option>
-                                <option value="Not Completed" selected="@(Model.PaStatus == "Not Completed")">Not Completed</option>
+                                <option value="Completed" selected="@(station.PaStatus == "Completed")">Completed</option>
+                                <option value="Not Completed" selected="@(station.PaStatus == "Not Completed")">Not Completed</option>
                             </select>
                         </div>
-                        @if (Model.Id != 0 && Model.PaUploadedDateTime.HasValue)
+                        @if (station.Id != 0 && station.PaUploadedDateTime.HasValue)
                         {
                             <div class="col-md-4">
                                 <label class="form-label">Uploaded datetime</label>
                                 <input type="text" class="form-control read-only-style"
-                                       value="@Model.PaUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
+                                       value="@station.PaUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
                             </div>
                         }
                     </div>
@@ -487,7 +505,7 @@
             <div class="card">
                 <div class="card-body">
                     <label class="form-label" for="Comment">Comment</label>
-                    <textarea name="Comment" id="Comment" class="form-control" rows="4">@Model.Comment</textarea>
+                    <textarea name="Comment" id="Comment" class="form-control" rows="4">@station.Comment</textarea>
                 </div>
             </div>
         </div>
@@ -496,10 +514,10 @@
             <div class="col-md-4">
                 <label class="form-label">Status</label>
                 <select name="Status" id="Status" class="form-select read-only-style" disabled>
-                    <option value="Pending" selected="@(Model.Status != "Completed")">Pending</option>
-                    <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                    <option value="Pending" selected="@(station.Status != "Completed")">Pending</option>
+                    <option value="Completed" selected="@(station.Status == "Completed")">Completed</option>
                 </select>
-                <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(Model.Status) ? "Pending" : Model.Status)" />
+                <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(station.Status) ? "Pending" : station.Status)" />
             </div>
         </div>
 
@@ -1119,11 +1137,11 @@
             updateXRayFileUI($(this).data("prefix"));
         });
 
-        if ($("#BwxReason").length && "@Model.BwxReason") {
-            $("#BwxReason").val("@Model.BwxReason");
+        if ($("#BwxReason").length && "@station.BwxReason") {
+            $("#BwxReason").val("@station.BwxReason");
         }
-        if ($("#PaReason").length && "@Model.PaReason") {
-            $("#PaReason").val("@Model.PaReason");
+        if ($("#PaReason").length && "@station.PaReason") {
+            $("#PaReason").val("@station.PaReason");
         }
         initQuestionnaireToggles();
         togglePregnancyFlow();

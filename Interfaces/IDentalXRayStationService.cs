@@ -7,7 +7,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<(DentalXRayStation DentalXRayStation, long EventId)> GetDentalXRayStationByIdWithEventIdAsync(long dentalXRayStationId);
         Task AddAsync(DentalXRayStation model, string userName);
         Task UpdateAsync(DentalXRayStation model, string userName);
-        string ComputeOverallStatus(DentalXRayStation model, ServiceMembersChild serviceMember);
+        string ComputeOverallStatus(DentalXRayStation model, ServiceMembersChild serviceMember, DentalQuestionnaire? questionnaire = null);
         DentalXRayStation MapSaveDtoToEntity(DentalXRayStationSaveDto dto, DentalXRayStation? existing = null);
     }
 }

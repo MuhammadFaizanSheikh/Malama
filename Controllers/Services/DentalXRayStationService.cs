@@ -4,7 +4,6 @@ using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text.Json;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -115,7 +114,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             entity.Id = dto.Id;
             entity.ServiceMembersChildId = dto.ServiceMembersChildId;
-            MapQuestionnaire(dto, entity);
             entity.BwxStatus = dto.BwxStatus;
             entity.BwxReason = dto.BwxReason;
             entity.BwxUploadMode = dto.BwxUploadMode;
@@ -163,9 +161,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             return entity;
         }
 
-        public string ComputeOverallStatus(DentalXRayStation model, ServiceMembersChild serviceMember)
+        public string ComputeOverallStatus(DentalXRayStation model, ServiceMembersChild serviceMember, DentalQuestionnaire? questionnaire = null)
         {
-            if (!CanProceedWithXRay(model, serviceMember))
+            if (!CanProceedWithXRay(questionnaire, serviceMember))
             {
                 return "Pending";
             }
@@ -203,26 +201,26 @@ namespace ExcelFilesCompiler.Controllers.Services
             return string.Equals(value?.Trim(), AppConstants.NeededOrNA.Needed, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool CanProceedWithXRay(DentalXRayStation model, ServiceMembersChild serviceMember)
+        public static bool CanProceedWithXRay(DentalQuestionnaire? questionnaire, ServiceMembersChild serviceMember)
         {
             if (!IsFemale(serviceMember))
             {
                 return true;
             }
 
-            if (string.IsNullOrWhiteSpace(model.AreYouPregnant))
+            if (string.IsNullOrWhiteSpace(questionnaire?.AreYouPregnant))
             {
                 return false;
             }
 
-            if (model.AreYouPregnant.Equals("No", StringComparison.OrdinalIgnoreCase))
+            if (questionnaire.AreYouPregnant.Equals("No", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            return model.AreYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase)
-                && model.PregnancyApproval != null
-                && model.PregnancyApproval.Equals("Approved", StringComparison.OrdinalIgnoreCase);
+            return questionnaire.AreYouPregnant.Equals("Yes", StringComparison.OrdinalIgnoreCase)
+                && questionnaire.PregnancyApproval != null
+                && questionnaire.PregnancyApproval.Equals("Approved", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsSectionComplete(string? status, string? reason, bool uploadsComplete)
@@ -280,151 +278,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && model.PaImages.All(p => !p.FileName.IsNullOrEmpty());
         }
 
-        private static void MapQuestionnaire(DentalXRayStationSaveDto dto, DentalXRayStation entity)
-        {
-            entity.HealthcareProviderCareLast2Years = dto.HealthcareProviderCareLast2Years;
-            entity.SeriousIllnessOperationHospitalization = dto.SeriousIllnessOperationHospitalization;
-            entity.SeriousIllnessOperationHospitalizationDetail = IsYes(dto.SeriousIllnessOperationHospitalization)
-                ? dto.SeriousIllnessOperationHospitalizationDetail
-                : null;
-            entity.MedicationFoodAllergy = dto.MedicationFoodAllergy;
-            entity.MedicationFoodAllergyDetail = IsYes(dto.MedicationFoodAllergy)
-                ? dto.MedicationFoodAllergyDetail
-                : null;
-            entity.TakingMedications = dto.TakingMedications;
-            entity.TakingMedicationsDetail = IsYes(dto.TakingMedications)
-                ? dto.TakingMedicationsDetail
-                : null;
-            entity.HepatitisOrJaundice = dto.HepatitisOrJaundice;
-            entity.HealthChangeLastTwoYears = dto.HealthChangeLastTwoYears;
-            entity.UseTobaccoOrVape = dto.UseTobaccoOrVape;
-            entity.TobaccoUseDetailsJson = IsYes(dto.UseTobaccoOrVape)
-                ? JsonSerializer.Serialize(NormalizeTobaccoDetails(dto.TobaccoUseDetails))
-                : null;
-            entity.DrinkAlcoholicBeverages = dto.DrinkAlcoholicBeverages;
-            entity.AlcoholicBeveragesFrequencyQuantity = IsYes(dto.DrinkAlcoholicBeverages)
-                ? dto.AlcoholicBeveragesFrequencyQuantity
-                : null;
-            entity.SickFromDentalTreatment = dto.SickFromDentalTreatment;
-            entity.BleederOrExcessiveBleeding = dto.BleederOrExcessiveBleeding;
-            entity.ShortOfBreathOneFlightStairs = dto.ShortOfBreathOneFlightStairs;
-            entity.AreYouPregnant = dto.AreYouPregnant;
-            entity.PregnancyApproval = dto.PregnancyApproval;
-            entity.ApplicableHealthConditionsJson = SerializeSelectedHealthConditions(
-                dto.ApplicableHealthConditions,
-                dto.HealthConditionDetails);
-        }
-
-        public static List<DentalXRayHealthConditionDetail> ParseHealthConditionsJson(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return new List<DentalXRayHealthConditionDetail>();
-            }
-
-            try
-            {
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.ValueKind != JsonValueKind.Array)
-                {
-                    return new List<DentalXRayHealthConditionDetail>();
-                }
-
-                var result = new List<DentalXRayHealthConditionDetail>();
-                foreach (var element in doc.RootElement.EnumerateArray())
-                {
-                    if (element.ValueKind == JsonValueKind.String)
-                    {
-                        var condition = element.GetString();
-                        if (!string.IsNullOrWhiteSpace(condition))
-                        {
-                            result.Add(new DentalXRayHealthConditionDetail
-                            {
-                                Condition = condition,
-                                IsSelected = true
-                            });
-                        }
-
-                        continue;
-                    }
-
-                    if (element.ValueKind == JsonValueKind.Object)
-                    {
-                        var condition = element.TryGetProperty("Condition", out var conditionProp)
-                            ? conditionProp.GetString()
-                            : null;
-                        if (string.IsNullOrWhiteSpace(condition))
-                        {
-                            continue;
-                        }
-
-                        var detail = element.TryGetProperty("Detail", out var detailProp)
-                            ? detailProp.GetString()
-                            : null;
-
-                        result.Add(new DentalXRayHealthConditionDetail
-                        {
-                            Condition = condition,
-                            Detail = detail,
-                            IsSelected = true
-                        });
-                    }
-                }
-
-                return result;
-            }
-            catch
-            {
-                return new List<DentalXRayHealthConditionDetail>();
-            }
-        }
-
-        private static string? SerializeSelectedHealthConditions(
-            List<string>? selectedConditions,
-            List<DentalXRayHealthConditionDetail>? details)
-        {
-            if (selectedConditions == null || selectedConditions.Count == 0)
-            {
-                return null;
-            }
-
-            var detailLookup = (details ?? new List<DentalXRayHealthConditionDetail>())
-                .Where(d => !string.IsNullOrWhiteSpace(d.Condition))
-                .GroupBy(d => d.Condition, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.First().Detail, StringComparer.OrdinalIgnoreCase);
-
-            var selected = selectedConditions
-                .Where(c => !string.IsNullOrWhiteSpace(c))
-                .Select(c => new
-                {
-                    Condition = c.Trim(),
-                    Detail = detailLookup.TryGetValue(c, out var detail) && !string.IsNullOrWhiteSpace(detail)
-                        ? detail.Trim()
-                        : null
-                })
-                .ToList();
-
-            return selected.Count > 0 ? JsonSerializer.Serialize(selected) : null;
-        }
-
-        private static List<DentalXRayTobaccoUseDetail> NormalizeTobaccoDetails(List<DentalXRayTobaccoUseDetail>? details)
-        {
-            var normalized = new List<DentalXRayTobaccoUseDetail>();
-            foreach (var type in DentalXRayQuestionnaire.TobaccoTypes)
-            {
-                var existing = details?.FirstOrDefault(d => string.Equals(d.Type, type, StringComparison.OrdinalIgnoreCase));
-                normalized.Add(new DentalXRayTobaccoUseDetail
-                {
-                    Type = type,
-                    Used = existing?.Used ?? "No",
-                    TimesPerDay = IsYes(existing?.Used) ? existing?.TimesPerDay : null,
-                    TimesPerWeek = IsYes(existing?.Used) ? existing?.TimesPerWeek : null
-                });
-            }
-
-            return normalized;
-        }
-
         private static bool IsYes(string? value)
         {
             return string.Equals(value?.Trim(), "Yes", StringComparison.OrdinalIgnoreCase);
@@ -432,26 +285,6 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         private void MapToEntity(DentalXRayStation source, DentalXRayStation target, string userName)
         {
-            target.HealthcareProviderCareLast2Years = source.HealthcareProviderCareLast2Years;
-            target.SeriousIllnessOperationHospitalization = source.SeriousIllnessOperationHospitalization;
-            target.SeriousIllnessOperationHospitalizationDetail = source.SeriousIllnessOperationHospitalizationDetail;
-            target.MedicationFoodAllergy = source.MedicationFoodAllergy;
-            target.MedicationFoodAllergyDetail = source.MedicationFoodAllergyDetail;
-            target.TakingMedications = source.TakingMedications;
-            target.TakingMedicationsDetail = source.TakingMedicationsDetail;
-            target.HepatitisOrJaundice = source.HepatitisOrJaundice;
-            target.HealthChangeLastTwoYears = source.HealthChangeLastTwoYears;
-            target.UseTobaccoOrVape = source.UseTobaccoOrVape;
-            target.TobaccoUseDetailsJson = source.TobaccoUseDetailsJson;
-            target.DrinkAlcoholicBeverages = source.DrinkAlcoholicBeverages;
-            target.AlcoholicBeveragesFrequencyQuantity = source.AlcoholicBeveragesFrequencyQuantity;
-            target.SickFromDentalTreatment = source.SickFromDentalTreatment;
-            target.BleederOrExcessiveBleeding = source.BleederOrExcessiveBleeding;
-            target.ShortOfBreathOneFlightStairs = source.ShortOfBreathOneFlightStairs;
-            target.AreYouPregnant = source.AreYouPregnant;
-            target.PregnancyApproval = source.PregnancyApproval;
-            target.ApplicableHealthConditionsJson = source.ApplicableHealthConditionsJson;
-
             MapBwxSection(source, target);
             MapPaSection(source, target);
 
