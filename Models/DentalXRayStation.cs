@@ -142,6 +142,7 @@ namespace Malama.Models
         public long PaImageId { get; set; }
         public bool ShowRemovePaCardButton { get; set; }
         public bool IsFullWidth { get; set; }
+        public bool IsReadOnly { get; set; }
     }
 
     public class DentalXRayPaImageDto

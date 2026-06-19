@@ -14,22 +14,29 @@ namespace ExcelFilesCompiler.Controllers
     {
         private readonly IFileUploader _fileUploader;
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
+        private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IVitalStationService _vitalStationService;
+        private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalExamsController> _logger;
         private const string CLASSNAME = "DentalExamsController";
+        private const string XRayStationName = "DentalXRay";
 
         public DentalExamsController(
             ILogger<DentalExamsController> logger,
             IFileUploader fileUploader,
             IDentalQuestionnaireService dentalQuestionnaireService,
+            IDentalXRayStationService dentalXRayStationService,
             IVitalStationService vitalStationService,
+            IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _fileUploader = fileUploader;
             _dentalQuestionnaireService = dentalQuestionnaireService;
+            _dentalXRayStationService = dentalXRayStationService;
             _vitalStationService = vitalStationService;
+            _fileService = fileService;
             _userManager = userManager;
         }
 
@@ -153,10 +160,19 @@ namespace ExcelFilesCompiler.Controllers
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
 
+                var xRayStation = await _dentalXRayStationService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                    ?? new DentalXRayStation
+                    {
+                        ServiceMembersChildId = serviceMembersChildId,
+                        Status = AppConstants.Status.Pending,
+                        PaImages = new List<DentalXRayPaImage>()
+                    };
+
                 var pageModel = new DentalExamStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
-                    Questionnaire = questionnaire
+                    Questionnaire = questionnaire,
+                    XRayStation = xRayStation
                 };
 
                 return View(pageModel);
@@ -280,6 +296,36 @@ namespace ExcelFilesCompiler.Controllers
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
         {
             return Task.FromResult(DentalQuestionnaireValidator.Validate(dto, serviceMember));
+        }
+
+        [RoleAttributeAuthorizeFromConfig("DentalExams_View")]
+        public IActionResult DownloadXRayImage(string prefix, string fileName)
+        {
+            const string methodName = nameof(DownloadXRayImage);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(fileName))
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Invalid download request", CLASSNAME, methodName);
+                    return BadRequest("Invalid file download request.");
+                }
+
+                var file = _fileService.GetFile(XRayStationName, prefix, fileName);
+                if (file == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, File not found: {FileName}", CLASSNAME, methodName, fileName);
+                    return NotFound();
+                }
+
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{file.FileName}\"";
+                return File(file.Bytes, file.ContentType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
+                return StatusCode(500, "Error while downloading file");
+            }
         }
     }
 }

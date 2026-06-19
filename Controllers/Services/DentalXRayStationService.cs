@@ -62,6 +62,42 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<DentalXRayStation?> GetByServiceMembersChildIdAsync(long serviceMembersChildId)
+        {
+            const string methodName = nameof(GetByServiceMembersChildIdAsync);
+
+            try
+            {
+                if (serviceMembersChildId <= 0)
+                {
+                    return null;
+                }
+
+                var station = await _unitOfWork.DentalXRayStation
+                    .GetWithIncludeNoTracking(d => d.ServiceMembersChildId == serviceMembersChildId)
+                    .Include(d => d.PaImages)
+                    .FirstOrDefaultAsync();
+
+                if (station == null)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, No DentalXRayStationRecord found for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+                    return null;
+                }
+
+                station.PaImages = station.PaImages.OrderBy(p => p.SortOrder).ToList();
+                return station;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Error fetching DentalXRayStationRecord for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
+        }
+
         public async Task AddAsync(DentalXRayStation model, string userName)
         {
             model.AddedOn = DateTime.Now;

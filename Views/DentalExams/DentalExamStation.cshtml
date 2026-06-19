@@ -40,6 +40,59 @@
     }
     .condition-detail { display: none; }
     .condition-item { margin-bottom: 0.75rem; }
+    .questionnaire-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .questionnaire-toggle-switch .form-check-input {
+        width: 2.75rem;
+        height: 1.4rem;
+        margin-top: 0;
+        cursor: pointer;
+    }
+    .questionnaire-toggle-switch .form-check-input:checked {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+    }
+    .questionnaire-toggle-switch .form-check-input:focus {
+        border-color: rgba(80, 90, 201, 0.5);
+        box-shadow: 0 0 0 0.25rem rgba(80, 90, 201, 0.25);
+    }
+    .xray-cards-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    @@media (max-width: 992px) {
+        .xray-cards-row { grid-template-columns: 1fr; }
+    }
+    .xray-upload-card { border: 1px solid #dee2e6; }
+    .xray-upload-full-width { width: 100%; }
+    .xray-preview-viewport-full { height: 360px; }
+    .bwx-upload-mode-option { margin-bottom: 0.5rem; }
+    .xray-preview-viewport {
+        width: 100%;
+        height: 280px;
+        overflow: auto;
+        border: 1px solid #ced4da;
+        background: #f8f9fa;
+    }
+    .xray-preview-viewport.can-pan { cursor: grab; }
+    .xray-preview-viewport.can-pan.is-panning {
+        cursor: grabbing;
+        user-select: none;
+    }
+    .xray-preview-viewport img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        transform-origin: top left;
+        -webkit-user-drag: none;
+        user-select: none;
+    }
 </style>
 
 <h2 id="page-heading">Edit Service Member at Dental Exams</h2>
@@ -102,7 +155,19 @@
 
     <hr class="my-4" />
 
-    <h3 class="mb-4">Questionnaire</h3>
+    <div class="questionnaire-heading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleQuestionnaireSectionSwitch"
+                   aria-controls="questionnaireSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Questionnaire</h3>
+    </div>
+
+    <div id="questionnaireSection" style="display:none;">
     @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)
 
     @if (isFemale)
@@ -193,17 +258,56 @@
             </div>
         </div>
     </div>
+    </div>
 
     <hr class="my-4" />
 
+    <div class="questionnaire-heading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleVitalsSectionSwitch"
+                   aria-controls="vitalsSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Blood Pressure (Vitals)</h3>
+    </div>
+
+    <div id="vitalsSection" style="display:none;">
     @{
         var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
         vitalBpViewData["ShowVitalRedirect"] = !vitalsCompleted;
         vitalBpViewData["AllowVitalStationSubmit"] = canSaveDentalExam;
         vitalBpViewData["BpCountdownIdPrefix"] = "dentalExamBpCountdown";
         vitalBpViewData["VitalRecommendationContext"] = "dental exam";
+        vitalBpViewData["HideSectionHeading"] = true;
     }
     @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="questionnaire-heading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleXRaySectionSwitch"
+                   aria-controls="xraySection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">X-Ray</h3>
+    </div>
+
+    <div id="xraySection" style="display:none;">
+    @{
+        var xrayViewData = new ViewDataDictionary<DentalXRayStation>(ViewData, Model.XRayStation);
+        xrayViewData["ServiceMember"] = sm;
+        xrayViewData["Questionnaire"] = questionnaire;
+    }
+    @await Html.PartialAsync("_DentalXRayStationReadOnly", Model.XRayStation, xrayViewData)
+    </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
         <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalExam ? "" : "disabled")>
@@ -293,6 +397,7 @@
 
     function togglePregnancyFlow() {
         if (!IS_FEMALE) {
+            toggleXRayReadOnlyVisibility();
             return;
         }
 
@@ -303,6 +408,31 @@
         if (pregnant === "Yes") {
             $("#pregnancyApprovalSection").show();
             $("#PregnancyApproval").prop("required", true);
+        }
+
+        toggleXRayReadOnlyVisibility();
+    }
+
+    function toggleXRayReadOnlyVisibility() {
+        const $section = $("#xrayStationReadOnlySection");
+        if (!$section.length) {
+            return;
+        }
+
+        if (!IS_FEMALE) {
+            $section.show();
+            return;
+        }
+
+        const pregnant = $("#AreYouPregnant").val();
+        $section.hide();
+
+        if (pregnant === "Yes") {
+            if ($("#PregnancyApproval").val() === "Approved") {
+                $section.show();
+            }
+        } else if (pregnant === "No") {
+            $section.show();
         }
     }
 
@@ -315,8 +445,178 @@
         togglePregnancyFlow();
     }
 
+    function toggleQuestionnaireSectionFromSwitch() {
+        const isOn = $("#toggleQuestionnaireSectionSwitch").is(":checked");
+        const $section = $("#questionnaireSection");
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $("#toggleQuestionnaireSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleVitalsSectionFromSwitch() {
+        const isOn = $("#toggleVitalsSectionSwitch").is(":checked");
+        const $section = $("#vitalsSection");
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $("#toggleVitalsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleXRaySectionFromSwitch() {
+        const isOn = $("#toggleXRaySectionSwitch").is(":checked");
+        const $section = $("#xraySection");
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    const XRAY_ZOOM_STEP = 25;
+    const XRAY_ZOOM_MIN = 50;
+    const XRAY_ZOOM_MAX = 300;
+    const xrayZoomLevels = {};
+    const xrayPanState = {
+        active: false,
+        viewport: null,
+        startX: 0,
+        startY: 0,
+        scrollLeft: 0,
+        scrollTop: 0
+    };
+
+    function setXRayZoom(prefix, level) {
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const zoomLabel = document.getElementById(prefix + "_zoomLevel");
+        if (!previewImg || !zoomLabel) return;
+
+        const clamped = Math.max(XRAY_ZOOM_MIN, Math.min(XRAY_ZOOM_MAX, level));
+        xrayZoomLevels[prefix] = clamped;
+        previewImg.style.width = clamped + "%";
+        previewImg.style.height = "auto";
+        previewImg.style.transform = "";
+        previewImg.draggable = false;
+        zoomLabel.textContent = clamped + "%";
+        requestAnimationFrame(function () {
+            updateXRayPanAvailability(prefix);
+        });
+    }
+
+    function updateXRayPanAvailability(prefix) {
+        const viewport = document.getElementById(prefix + "_previewViewport");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!viewport) return;
+
+        const canPan = !!previewImg?.src &&
+            (viewport.scrollWidth > viewport.clientWidth + 1 ||
+             viewport.scrollHeight > viewport.clientHeight + 1);
+
+        viewport.classList.toggle("can-pan", canPan);
+        viewport.title = canPan ? "Click and drag to move the image" : "";
+    }
+
+    function startXRayPan(clientX, clientY, viewport) {
+        xrayPanState.active = true;
+        xrayPanState.viewport = viewport;
+        xrayPanState.startX = clientX;
+        xrayPanState.startY = clientY;
+        xrayPanState.scrollLeft = viewport.scrollLeft;
+        xrayPanState.scrollTop = viewport.scrollTop;
+        viewport.classList.add("is-panning");
+    }
+
+    function moveXRayPan(clientX, clientY) {
+        if (!xrayPanState.active || !xrayPanState.viewport) return;
+        const dx = clientX - xrayPanState.startX;
+        const dy = clientY - xrayPanState.startY;
+        xrayPanState.viewport.scrollLeft = xrayPanState.scrollLeft - dx;
+        xrayPanState.viewport.scrollTop = xrayPanState.scrollTop - dy;
+    }
+
+    function endXRayPan() {
+        if (!xrayPanState.active) return;
+        xrayPanState.viewport?.classList.remove("is-panning");
+        xrayPanState.active = false;
+        xrayPanState.viewport = null;
+    }
+
+    const XRAY_DOWNLOAD_URL = "/DentalExams/DownloadXRayImage";
+
+    function updateXRayPreview(prefix) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const status = document.getElementById(prefix + "_fileStatus");
+        if (!previewSection || !previewImg || !status) return;
+
+        const fileName = (status.dataset.existingFilename || "").trim();
+        const downloadPrefix = status.dataset.downloadPrefix || prefix;
+        let src = "";
+
+        if (fileName) {
+            src = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        }
+
+        if (src) {
+            previewImg.onload = function () {
+                setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+                updateXRayPanAvailability(prefix);
+            };
+            previewImg.onerror = function () {
+                previewSection.style.display = "none";
+            };
+            previewImg.src = src;
+            previewSection.style.display = "block";
+            if (previewImg.complete) {
+                setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+                updateXRayPanAvailability(prefix);
+            }
+        } else {
+            previewImg.removeAttribute("src");
+            previewSection.style.display = "none";
+        }
+    }
+
+    function openXRayPreview(prefix) {
+        const status = document.getElementById(prefix + "_fileStatus");
+        if (!status) return;
+
+        const fileName = (status.dataset.existingFilename || "").trim();
+        const downloadPrefix = status.dataset.downloadPrefix || prefix;
+        if (!fileName) return;
+
+        updateXRayPreview(prefix);
+        const url = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        window.open(url, "_blank");
+    }
+
+    function initReadOnlyXRayPreviews() {
+        $("#xraySection .preview-xray-file").each(function () {
+            const prefix = this.getAttribute("data-prefix");
+            if (prefix) {
+                updateXRayPreview(prefix);
+            }
+        });
+    }
+
     $(document).ready(function () {
         initQuestionnaireToggles();
+        initReadOnlyXRayPreviews();
+
+        $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
+        $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
+        $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
 
         $(".dental-q-detail-toggle").on("change", function () {
             toggleQuestionnaireDetail(this);
@@ -349,6 +649,40 @@
 
             goToVitalStationClicked = false;
             $("#GoToVitalStationFlag").val("false");
+        });
+
+        $(document).on("click", "#xraySection .preview-xray-file", function () {
+            const prefix = this.getAttribute("data-prefix");
+            if (prefix) {
+                openXRayPreview(prefix);
+            }
+        });
+
+        $(document).on("click", ".xray-zoom-in", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) + XRAY_ZOOM_STEP);
+        });
+
+        $(document).on("click", ".xray-zoom-out", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) - XRAY_ZOOM_STEP);
+        });
+
+        $(document).on("click", ".xray-zoom-reset", function () {
+            setXRayZoom($(this).data("prefix"), 100);
+        });
+
+        $(document).on("mousedown", ".xray-preview-viewport.can-pan", function (e) {
+            if (e.button !== 0) return;
+            startXRayPan(e.clientX, e.clientY, this);
+        });
+
+        $(document).on("mousemove", function (e) {
+            moveXRayPan(e.clientX, e.clientY);
+        });
+
+        $(document).on("mouseup mouseleave", function () {
+            endXRayPan();
         });
     });
 

@@ -18,9 +18,13 @@
     var allowVitalStationSubmit = ViewData["AllowVitalStationSubmit"] as bool? ?? false;
     var countdownPrefix = ViewData["BpCountdownIdPrefix"] as string ?? "bpCountdown";
     var vitalRecommendationContext = ViewData["VitalRecommendationContext"] as string ?? "dental X-Ray";
+    var hideSectionHeading = ViewData["HideSectionHeading"] as bool? ?? false;
 }
 
-<h3 class="mb-3">Blood Pressure (Vitals)</h3>
+@if (!hideSectionHeading)
+{
+    <h3 class="mb-3">Blood Pressure (Vitals)</h3>
+}
 <p class="text-muted mb-3">
     It is recommended to record blood pressure before proceeding with @vitalRecommendationContext.
     @if (!string.IsNullOrWhiteSpace(d.Message))
