@@ -98,6 +98,31 @@ namespace ExcelFilesCompiler.Controllers.Services
             return entity;
         }
 
+        public static List<string> ParseTobaccoUsedTypes(string? json)
+        {
+            return ParseTobaccoDetails(json)
+                .Where(t => string.Equals(t.Used, "Yes", StringComparison.OrdinalIgnoreCase))
+                .Select(t => t.Type)
+                .ToList();
+        }
+
+        public static List<DentalXRayTobaccoUseDetail> ParseTobaccoDetails(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new List<DentalXRayTobaccoUseDetail>();
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<List<DentalXRayTobaccoUseDetail>>(json) ?? new();
+            }
+            catch
+            {
+                return new List<DentalXRayTobaccoUseDetail>();
+            }
+        }
+
         public static List<DentalXRayHealthConditionDetail> ParseHealthConditionsJson(string? json)
         {
             if (string.IsNullOrWhiteSpace(json))

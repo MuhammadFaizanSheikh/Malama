@@ -15,6 +15,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IFileUploader _fileUploader;
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IDentalXRayStationService _dentalXRayStationService;
+        private readonly IDentalExamService _dentalExamService;
         private readonly IVitalStationService _vitalStationService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -27,6 +28,7 @@ namespace ExcelFilesCompiler.Controllers
             IFileUploader fileUploader,
             IDentalQuestionnaireService dentalQuestionnaireService,
             IDentalXRayStationService dentalXRayStationService,
+            IDentalExamService dentalExamService,
             IVitalStationService vitalStationService,
             IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
@@ -35,6 +37,7 @@ namespace ExcelFilesCompiler.Controllers
             _fileUploader = fileUploader;
             _dentalQuestionnaireService = dentalQuestionnaireService;
             _dentalXRayStationService = dentalXRayStationService;
+            _dentalExamService = dentalExamService;
             _vitalStationService = vitalStationService;
             _fileService = fileService;
             _userManager = userManager;
@@ -168,11 +171,15 @@ namespace ExcelFilesCompiler.Controllers
                         PaImages = new List<DentalXRayPaImage>()
                     };
 
+                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                    ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+
                 var pageModel = new DentalExamStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
                     Questionnaire = questionnaire,
-                    XRayStation = xRayStation
+                    XRayStation = xRayStation,
+                    DentalExam = dentalExam
                 };
 
                 return View(pageModel);
@@ -243,6 +250,11 @@ namespace ExcelFilesCompiler.Controllers
 
                 await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
 
+                if (!dto.GoToVitalStation)
+                {
+                    await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
+                }
+
                 if (dto.GoToVitalStation)
                 {
                     long vitalStationId = 0;
@@ -295,7 +307,13 @@ namespace ExcelFilesCompiler.Controllers
 
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
         {
-            return Task.FromResult(DentalQuestionnaireValidator.Validate(dto, serviceMember));
+            var questionnaireError = DentalQuestionnaireValidator.Validate(dto, serviceMember);
+            if (questionnaireError != null)
+            {
+                return Task.FromResult<string?>(questionnaireError);
+            }
+
+            return Task.FromResult(DentalExamValidator.ValidatePsr(dto));
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalExams_View")]

@@ -1,4 +1,5 @@
 @using ExcelFilesCompiler.Controllers.Services
+@using ExcelFilesCompiler.Utilities
 @using Malama.Models
 @using Malama.Utilities
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -10,6 +11,7 @@
 
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
+    var dentalExam = Model.DentalExam;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
@@ -118,6 +120,7 @@
 <form id="SaveDentalExamStation" asp-action="SaveDentalExamStation" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
+    <input type="hidden" name="DentalExamId" value="@dentalExam.Id" />
     <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
     <h3 class="mb-4">Personal Information</h3>
@@ -309,6 +312,14 @@
     @await Html.PartialAsync("_DentalXRayStationReadOnly", Model.XRayStation, xrayViewData)
     </div>
 
+    <hr class="my-4" />
+
+    @{
+        var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+        psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
+    }
+    @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
+
     <div class="d-flex justify-content-end mt-4 gap-3">
         <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalExam ? "" : "disabled")>
             <i class="bi bi-check-circle"></i> Save
@@ -436,6 +447,44 @@
         }
     }
 
+    function toggleSoftTissuesDetail() {
+        const isNotWnl = $("input[name='SoftTissuesWnl']:checked").val() === @Json.Serialize(DentalExamPsr.SoftTissuesWnlNo);
+        const $section = $("#softTissuesConditionSection");
+        const $textarea = $("#SoftTissuesConditionDetail");
+        if (isNotWnl) {
+            $section.show();
+            $textarea.prop("required", true);
+        } else {
+            $section.hide();
+            $textarea.prop("required", false).val("");
+        }
+    }
+
+    function updatePsrTobaccoDisplay() {
+        const useTobacco = $("#UseTobaccoOrVape").val();
+        if (useTobacco !== "Yes") {
+            $("#psrTobaccoDisplay").text("No");
+            return;
+        }
+
+        const usedTypes = [];
+        $(".tobacco-used-select").each(function () {
+            if ($(this).val() === "Yes") {
+                const type = $(this).closest(".tobacco-type-row").find("input[name*='.Type']").val();
+                if (type) {
+                    usedTypes.push(type);
+                }
+            }
+        });
+
+        $("#psrTobaccoDisplay").text(usedTypes.length ? "Yes (" + usedTypes.join(", ") + ")" : "Yes");
+    }
+
+    function initPsrSection() {
+        toggleSoftTissuesDetail();
+        updatePsrTobaccoDisplay();
+    }
+
     function initQuestionnaireToggles() {
         $(".dental-q-detail-toggle").each(function () {
             toggleQuestionnaireDetail(this);
@@ -443,6 +492,7 @@
         toggleTobaccoSection();
         initConditionToggles();
         togglePregnancyFlow();
+        initPsrSection();
     }
 
     function toggleQuestionnaireSectionFromSwitch() {
@@ -621,10 +671,15 @@
         $(".dental-q-detail-toggle").on("change", function () {
             toggleQuestionnaireDetail(this);
         });
-        $("#UseTobaccoOrVape").on("change", toggleTobaccoSection);
+        $("#UseTobaccoOrVape").on("change", function () {
+            toggleTobaccoSection();
+            updatePsrTobaccoDisplay();
+        });
         $(document).on("change", ".tobacco-used-select", function () {
             toggleTobaccoTypeDetail(this);
+            updatePsrTobaccoDisplay();
         });
+        $(document).on("change", ".soft-tissues-wnl-radio", toggleSoftTissuesDetail);
         $(document).on("change", ".condition-checkbox", function () {
             toggleConditionDetail(this);
         });

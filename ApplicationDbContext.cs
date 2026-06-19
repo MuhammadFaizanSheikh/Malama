@@ -42,6 +42,7 @@ namespace ExcelFilesCompiler
         public DbSet<DentalXRayStation> DentalXRayStation { get; set; }
         public DbSet<DentalXRayPaImage> DentalXRayPaImage { get; set; }
         public DbSet<DentalQuestionnaire> DentalQuestionnaire { get; set; }
+        public DbSet<DentalExam> DentalExam { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -162,6 +163,16 @@ namespace ExcelFilesCompiler
                 entity.HasOne(e => e.ServiceMembersChild)
                     .WithOne(s => s.DentalQuestionnaireRecord)
                     .HasForeignKey<DentalQuestionnaire>(e => e.ServiceMembersChildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
+            });
+
+            modelBuilder.Entity<DentalExam>(entity =>
+            {
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalExamRecord)
+                    .HasForeignKey<DentalExam>(e => e.ServiceMembersChildId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
