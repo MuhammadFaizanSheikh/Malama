@@ -309,6 +309,8 @@ namespace ExcelFilesCompiler.Controllers
 
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
         {
+            dto.Findings = DentalExamFindingBinder.ParseFromJson(dto.FindingsJson);
+
             var questionnaireError = DentalQuestionnaireValidator.Validate(dto, serviceMember);
             if (questionnaireError != null)
             {
@@ -319,6 +321,15 @@ namespace ExcelFilesCompiler.Controllers
             if (reviewError != null)
             {
                 return Task.FromResult<string?>(reviewError);
+            }
+
+            if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
+            {
+                var findingsError = DentalExamFindingValidator.ValidateFindings(dto.Findings);
+                if (findingsError != null)
+                {
+                    return Task.FromResult<string?>(findingsError);
+                }
             }
 
             return Task.FromResult(DentalExamValidator.ValidatePsr(dto));

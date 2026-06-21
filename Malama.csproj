@@ -15,6 +15,10 @@
     <Content Remove="_pdfanalysis\**" />
     <EmbeddedResource Remove="_pdfanalysis\**" />
     <None Remove="_pdfanalysis\**" />
+    <Compile Remove="tools\**" />
+    <Content Remove="tools\**" />
+    <EmbeddedResource Remove="tools\**" />
+    <None Remove="tools\**" />
   </ItemGroup>
 
   <ItemGroup>

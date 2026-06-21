@@ -1,0 +1,543 @@
+@using ExcelFilesCompiler.Utilities
+@using Malama.Models
+@using System.Text.Json
+@model DentalExam
+
+@{
+    var exam = Model ?? new DentalExam();
+    var findings = exam.Findings?
+        .OrderBy(f => f.SortOrder)
+        .Select(DentalExamFindingMapper.ToDto)
+        .ToList() ?? new List<DentalExamFindingDto>();
+    var cdtCodesByType = DentalExamCdtCodeProvider.GetCodesByDiseaseType();
+    var findingsJson = JsonSerializer.Serialize(findings, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    });
+    var cdtCodesJson = JsonSerializer.Serialize(cdtCodesByType);
+}
+
+<style>
+    #dentalFindingFormCard .finding-action-btn {
+        min-width: 2rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    #dentalFindingFormCard .finding-action-btn i {
+        pointer-events: none;
+    }
+
+    #dentalFindingsTable .finding-action-btn {
+        min-width: 2rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    #dentalFindingsTable .finding-action-btn i {
+        pointer-events: none;
+    }
+
+    #dentalFindingReferenceImage {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    #dentalFindingImageColumn {
+        min-height: 420px;
+    }
+
+    .finding-classification-badge {
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+        border-radius: 0.375rem;
+    }
+
+    .finding-class-2 {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .finding-class-3 {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+
+<div class="card mb-4">
+    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+        Dental Findings
+    </div>
+    <div class="card-body">
+        <input type="hidden" name="FindingsJson" id="FindingsJson" value="@findingsJson" />
+
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-striped align-middle mb-0" id="dentalFindingsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">S.No</th>
+                        <th style="width: 110px;">Affected Tooth</th>
+                        <th style="width: 140px;">Affected Surface(s)</th>
+                        <th style="width: 160px;">Disease / Condition Type</th>
+                        <th style="width: 180px;">Classification</th>
+                        <th>CDT Codes, Codes Notes</th>
+                        <th>Description / Details</th>
+                        <th style="width: 100px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dentalFindingsTableBody">
+                    <tr id="dentalFindingsEmptyRow">
+                        <td colspan="8" class="text-center text-muted py-4">No findings added yet.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary mb-3" id="addNewFindingBtn">
+            <i class="fas fa-plus-circle"></i> Add New Finding
+        </button>
+
+        <div id="dentalFindingFormCard" class="card border-primary mb-0" style="display:none;">
+            <div class="card-header bg-light fw-semibold" id="dentalFindingFormTitle">Add Finding</div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label" for="findingAffectedTooth">Affected Tooth</label>
+                                <select id="findingAffectedTooth" class="form-select"></select>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="findingPrimaryTooth" />
+                                    <label class="form-check-label" for="findingPrimaryTooth">Primary tooth</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="findingDiseaseType">Disease / Condition Type</label>
+                                <select id="findingDiseaseType" class="form-select">
+                                    <option value=""></option>
+                                    @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
+                                    {
+                                        <option value="@diseaseType">@diseaseType</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6" id="findingSurfacesSection" style="display:none;">
+                                <label class="form-label" for="findingAffectedSurfaces">Affected Surface(s)</label>
+                                <select id="findingAffectedSurfaces" class="form-select finding-multiselect" multiple></select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="findingCdtCodes">CDT Code</label>
+                                <select id="findingCdtCodes" class="form-select finding-multiselect" multiple></select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="findingCdtCodesNotes">Codes Notes</label>
+                            <textarea id="findingCdtCodesNotes" class="form-control" rows="2" placeholder="Optional notes for selected CDT codes"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="findingDescription">Description / Details</label>
+                            <textarea id="findingDescription" class="form-control" rows="4"></textarea>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label d-block">Classification for selected tooth</label>
+                            @for (var i = 0; i < DentalExamFindingConstants.Classifications.Length; i++)
+                            {
+                                var classification = DentalExamFindingConstants.Classifications[i];
+                                <div class="form-check">
+                                    <input class="form-check-input finding-classification-radio"
+                                           type="radio"
+                                           name="FindingClassification"
+                                           id="findingClassification_@i"
+                                           value="@classification" />
+                                    <label class="form-check-label" for="findingClassification_@i">
+                                        @classification
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-6" id="dentalFindingImageColumn">
+                        <div class="border rounded p-3 bg-light h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                            <img src="~/images/dental-tooth-chart-reference.png"
+                                 id="dentalFindingReferenceImage"
+                                 alt="Dental tooth chart reference"
+                                 class="img-fluid mb-2" />
+                            <div class="small text-muted">Universal numbering reference (1-32)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-start gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary" id="cancelFindingFormBtn">Cancel</button>
+                    <button type="button" class="btn btn-general" id="addFindingToListBtn">
+                        <i class="fas fa-list-ul"></i> Add to List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
+        const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
+        const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
+        const RESTORATIVE_SURFACES = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfaces);
+        const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
+
+        let dentalFindings = @Html.Raw(findingsJson);
+        let editingFindingIndex = null;
+
+        function escapeHtml(value) {
+            return $("<div>").text(value ?? "").html();
+        }
+
+        function destroySelect2($select) {
+            if ($select.hasClass("select2-hidden-accessible")) {
+                $select.select2("destroy");
+            }
+        }
+
+        function initMultiSelect($select, placeholder) {
+            destroySelect2($select);
+            $select.select2({
+                placeholder: placeholder,
+                width: "100%",
+                closeOnSelect: false,
+                allowClear: true,
+                dropdownParent: $("#dentalFindingFormCard")
+            });
+        }
+
+        function getSelectedValues($select) {
+            const values = $select.val();
+            if (!values) {
+                return [];
+            }
+            return Array.isArray(values) ? values.filter(Boolean) : [values].filter(Boolean);
+        }
+
+        function setMultiSelectValues($select, values) {
+            $select.val(values || []).trigger("change");
+        }
+
+        function populateToothOptions() {
+            const isPrimary = $("#findingPrimaryTooth").is(":checked");
+            const teeth = isPrimary ? PRIMARY_TEETH : PERMANENT_TEETH;
+            const current = $("#findingAffectedTooth").val();
+            const $select = $("#findingAffectedTooth");
+            $select.empty().append('<option value=""></option>');
+            teeth.forEach(function (tooth) {
+                $select.append($("<option>").val(tooth).text(tooth));
+            });
+            if (current && teeth.includes(current)) {
+                $select.val(current);
+            }
+        }
+
+        function populateSurfaceOptions(selectedValues) {
+            const diseaseType = $("#findingDiseaseType").val();
+            const $section = $("#findingSurfacesSection");
+            const $select = $("#findingAffectedSurfaces");
+            destroySelect2($select);
+            $select.empty();
+
+            if (diseaseType === "Periodontal") {
+                PERIODONTAL_SURFACES.forEach(function (surface) {
+                    $select.append($("<option>").val(surface).text(surface));
+                });
+                $section.show();
+                initMultiSelect($select, "Select surface(s)");
+                setMultiSelectValues($select, selectedValues || []);
+                return;
+            }
+
+            if (diseaseType === "Restorative") {
+                RESTORATIVE_SURFACES.forEach(function (surface) {
+                    $select.append($("<option>").val(surface).text(surface));
+                });
+                $section.show();
+                initMultiSelect($select, "Select surface(s)");
+                setMultiSelectValues($select, selectedValues || []);
+                return;
+            }
+
+            $section.hide();
+            setMultiSelectValues($select, []);
+        }
+
+        function populateCdtOptions(selectedValues) {
+            const diseaseType = $("#findingDiseaseType").val();
+            const $select = $("#findingCdtCodes");
+            destroySelect2($select);
+            $select.empty();
+
+            const codes = CDT_CODES_BY_TYPE[diseaseType] || [];
+            codes.forEach(function (code) {
+                $select.append($("<option>").val(code).text(code));
+            });
+
+            initMultiSelect($select, "Select CDT code(s)");
+            if (selectedValues && selectedValues.length) {
+                const valid = selectedValues.filter(function (code) { return codes.includes(code); });
+                setMultiSelectValues($select, valid);
+            } else {
+                setMultiSelectValues($select, []);
+            }
+        }
+
+        function clearFindingForm() {
+            editingFindingIndex = null;
+            $("#dentalFindingFormTitle").text("Add Finding");
+            $("#addFindingToListBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("#findingPrimaryTooth").prop("checked", false);
+            populateToothOptions();
+            $("#findingAffectedTooth").val("");
+            $("#findingDiseaseType").val("");
+            populateSurfaceOptions([]);
+            populateCdtOptions([]);
+            $("#findingCdtCodesNotes").val("");
+            $("#findingDescription").val("");
+            $("input[name='FindingClassification']").prop("checked", false);
+        }
+
+        function showFindingForm() {
+            $("#dentalFindingFormCard").slideDown(200, function () {
+                populateSurfaceOptions(getSelectedValues($("#findingAffectedSurfaces")));
+                populateCdtOptions(getSelectedValues($("#findingCdtCodes")));
+            });
+        }
+
+        function hideFindingForm() {
+            destroySelect2($("#findingAffectedSurfaces"));
+            destroySelect2($("#findingCdtCodes"));
+            $("#dentalFindingFormCard").slideUp(200);
+            clearFindingForm();
+        }
+
+        function validateFindingForm() {
+            const finding = readFindingForm();
+            if (!finding.affectedTooth) {
+                Swal.fire("Invalid Data", "Affected Tooth is required.", "warning");
+                return null;
+            }
+            if (!finding.diseaseConditionType) {
+                Swal.fire("Invalid Data", "Disease / Condition Type is required.", "warning");
+                return null;
+            }
+            if ((finding.diseaseConditionType === "Periodontal" || finding.diseaseConditionType === "Restorative")
+                && (!finding.affectedSurfaces || finding.affectedSurfaces.length === 0)) {
+                Swal.fire("Invalid Data", "Affected Surface(s) are required for the selected Disease / Condition Type.", "warning");
+                return null;
+            }
+            if (!finding.classification) {
+                Swal.fire("Invalid Data", "Classification is required.", "warning");
+                return null;
+            }
+            return finding;
+        }
+
+        function readFindingForm() {
+            return {
+                id: editingFindingIndex != null && dentalFindings[editingFindingIndex]
+                    ? dentalFindings[editingFindingIndex].id
+                    : 0,
+                isPrimaryTooth: $("#findingPrimaryTooth").is(":checked"),
+                affectedTooth: $("#findingAffectedTooth").val() || "",
+                diseaseConditionType: $("#findingDiseaseType").val() || "",
+                affectedSurfaces: getSelectedValues($("#findingAffectedSurfaces")),
+                cdtCodes: getSelectedValues($("#findingCdtCodes")),
+                cdtCodesNotes: $("#findingCdtCodesNotes").val()?.trim() || "",
+                descriptionDetails: $("#findingDescription").val()?.trim() || "",
+                classification: $("input[name='FindingClassification']:checked").val() || "",
+                sortOrder: editingFindingIndex != null ? editingFindingIndex : dentalFindings.length
+            };
+        }
+
+        function writeFindingForm(finding) {
+            $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth);
+            populateToothOptions();
+            $("#findingAffectedTooth").val(finding.affectedTooth || "");
+            $("#findingDiseaseType").val(finding.diseaseConditionType || "");
+            populateSurfaceOptions(finding.affectedSurfaces || []);
+            populateCdtOptions(finding.cdtCodes || []);
+            $("#findingCdtCodesNotes").val(finding.cdtCodesNotes || "");
+            $("#findingDescription").val(finding.descriptionDetails || "");
+            $("input[name='FindingClassification']").each(function () {
+                $(this).prop("checked", $(this).val() === (finding.classification || ""));
+            });
+        }
+
+        function formatClassificationBadge(classification) {
+            if (!classification) {
+                return "-";
+            }
+
+            if (classification.indexOf("Class 2") === 0) {
+                return "<span class='badge finding-classification-badge finding-class-2'>Class 2</span>";
+            }
+
+            if (classification.indexOf("Class 3") === 0) {
+                return "<span class='badge finding-classification-badge finding-class-3'>Class 3</span>";
+            }
+
+            return escapeHtml(classification);
+        }
+
+        function syncFindingsJson() {
+            const normalized = dentalFindings.map(function (item, index) {
+                return {
+                    id: item.id || 0,
+                    isPrimaryTooth: !!item.isPrimaryTooth,
+                    affectedTooth: item.affectedTooth || "",
+                    diseaseConditionType: item.diseaseConditionType || "",
+                    affectedSurfaces: item.affectedSurfaces || [],
+                    cdtCodes: item.cdtCodes || [],
+                    cdtCodesNotes: item.cdtCodesNotes || "",
+                    descriptionDetails: item.descriptionDetails || "",
+                    classification: item.classification || "",
+                    sortOrder: index
+                };
+            });
+            $("#FindingsJson").val(JSON.stringify(normalized));
+        }
+
+        function renderFindingsTable() {
+            const $tbody = $("#dentalFindingsTableBody");
+            $tbody.empty();
+
+            if (!dentalFindings.length) {
+                $tbody.append(
+                    '<tr id="dentalFindingsEmptyRow"><td colspan="8" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                );
+                syncFindingsJson();
+                return;
+            }
+
+            dentalFindings.forEach(function (finding, index) {
+                const surfaces = (finding.affectedSurfaces || []).join(", ") || "-";
+                const cdtCodes = (finding.cdtCodes || []).join("; ") || "-";
+                const codesNotes = finding.cdtCodesNotes ? "<div class='small text-muted mt-1'>" + escapeHtml(finding.cdtCodesNotes) + "</div>" : "";
+                const toothLabel = finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : "");
+                const classificationBadge = formatClassificationBadge(finding.classification);
+                const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
+
+                $tbody.append(
+                    "<tr data-finding-index='" + index + "'>" +
+                    "<td>" + (index + 1) + "</td>" +
+                    "<td>" + escapeHtml(toothLabel) + "</td>" +
+                    "<td>" + escapeHtml(surfaces) + "</td>" +
+                    "<td>" + escapeHtml(finding.diseaseConditionType || "-") + "</td>" +
+                    "<td>" + classificationBadge + "</td>" +
+                    "<td><div>" + escapeHtml(cdtCodes) + "</div>" + codesNotes + "</td>" +
+                    "<td>" + description + "</td>" +
+                    "<td class='text-nowrap'>" +
+                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 finding-action-btn edit-finding-btn' data-index='" + index + "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                    "<button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-finding-btn' data-index='" + index + "' title='Delete'><i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>" +
+                    "</td>" +
+                    "</tr>"
+                );
+            });
+
+            syncFindingsJson();
+        }
+
+        function addOrUpdateFinding() {
+            const finding = validateFindingForm();
+            if (!finding) {
+                return;
+            }
+
+            if (editingFindingIndex != null) {
+                dentalFindings[editingFindingIndex] = finding;
+            } else {
+                dentalFindings.push(finding);
+            }
+
+            renderFindingsTable();
+            hideFindingForm();
+        }
+
+        function editFinding(index) {
+            const finding = dentalFindings[index];
+            if (!finding) {
+                return;
+            }
+
+            editingFindingIndex = index;
+            $("#dentalFindingFormTitle").text("Edit Finding");
+            $("#addFindingToListBtn").html('<i class="fas fa-check-circle"></i> Update Finding');
+            writeFindingForm(finding);
+            showFindingForm();
+
+            $("html, body").animate({
+                scrollTop: $("#dentalFindingFormCard").offset().top - 80
+            }, 300);
+        }
+
+        function deleteFinding(index) {
+            Swal.fire({
+                title: "Delete finding?",
+                text: "This finding will be removed from the list.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                dentalFindings.splice(index, 1);
+                if (editingFindingIndex === index) {
+                    hideFindingForm();
+                } else if (editingFindingIndex != null && editingFindingIndex > index) {
+                    editingFindingIndex -= 1;
+                }
+                renderFindingsTable();
+            });
+        }
+
+        window.initDentalExamFindingsSection = function () {
+            populateToothOptions();
+            renderFindingsTable();
+        };
+
+        $(document).ready(function () {
+            initDentalExamFindingsSection();
+
+            $("#addNewFindingBtn").on("click", function () {
+                clearFindingForm();
+                showFindingForm();
+                $("html, body").animate({
+                    scrollTop: $("#dentalFindingFormCard").offset().top - 80
+                }, 300);
+            });
+
+            $("#cancelFindingFormBtn").on("click", hideFindingForm);
+            $("#addFindingToListBtn").on("click", addOrUpdateFinding);
+            $("#findingPrimaryTooth").on("change", populateToothOptions);
+            $("#findingDiseaseType").on("change", function () {
+                populateSurfaceOptions([]);
+                populateCdtOptions([]);
+            });
+
+            $(document).on("click", ".edit-finding-btn", function () {
+                editFinding(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".delete-finding-btn", function () {
+                deleteFinding(parseInt($(this).data("index"), 10));
+            });
+
+            $("#SaveDentalExamStation").on("submit", function () {
+                syncFindingsJson();
+            });
+        });
+    })();
+</script>

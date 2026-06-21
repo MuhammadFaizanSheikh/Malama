@@ -3,6 +3,7 @@ using ExcelFilesCompiler.UnitOfWork;
 using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ExcelFilesCompiler.Controllers.Services
 {
@@ -20,19 +21,35 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<DentalExam?> GetByServiceMembersChildIdAsync(long serviceMembersChildId)
         {
-            return await _unitOfWork.DentalExam
-                .GetWithIncludeNoTracking(e => e.ServiceMembersChildId == serviceMembersChildId)
+            var exam = await _unitOfWork.DentalExam
+                .GetWithIncludeNoTracking(
+                    e => e.ServiceMembersChildId == serviceMembersChildId,
+                    e => e.Findings)
                 .FirstOrDefaultAsync();
+
+            if (exam?.Findings != null)
+            {
+                exam.Findings = exam.Findings.OrderBy(f => f.SortOrder).ToList();
+            }
+
+            return exam;
         }
 
         public async Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
+            IDbContextTransaction? transaction = null;
 
             try
             {
+                dto.Findings = DentalExamFindingBinder.ParseFromJson(dto.FindingsJson);
+
+                transaction = await _unitOfWork.BeginTransactionAsync();
+
                 var existing = await _unitOfWork.DentalExam
-                    .GetWithIncludeTracking(e => e.ServiceMembersChildId == dto.ServiceMembersChildId)
+                    .GetWithIncludeTracking(
+                        e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
+                        e => e.Findings)
                     .FirstOrDefaultAsync();
 
                 if (existing != null)
@@ -41,11 +58,18 @@ namespace ExcelFilesCompiler.Controllers.Services
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
                     existing.Status = "Completed";
+
+                    if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
+                    {
+                        ReplaceFindings(existing, dto.Findings);
+                    }
+
                     await _unitOfWork.SaveAsync();
+                    await transaction.CommitAsync();
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}",
-                        CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
+                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId, userName, dto.Findings.Count);
                     return;
                 }
 
@@ -57,16 +81,62 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _unitOfWork.DentalExam.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
 
+                if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
+                {
+                    ReplaceFindings(entity, dto.Findings);
+                    await _unitOfWork.SaveAsync();
+                }
+
+                await transaction.CommitAsync();
+
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Dental exam created for ServiceMembersChildId={ServiceMembersChildId} by {User}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
+                    "{ClassName}, {MethodName}, Dental exam created for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, dto.Findings.Count);
             }
             catch (Exception ex)
             {
+                if (transaction != null)
+                {
+                    try
+                    {
+                        await transaction.RollbackAsync();
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        _logger.LogError(rollbackEx,
+                            "{ClassName}, {MethodName}, Failed to rollback dental exam transaction for ServiceMembersChildId={ServiceMembersChildId}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    }
+                }
+
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Failed to save dental exam for ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId);
                 throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    await transaction.DisposeAsync();
+                }
+            }
+        }
+
+        private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings)
+        {
+            target.Findings ??= new List<DentalExamFinding>();
+            var existingFindings = target.Findings.ToList();
+
+            if (existingFindings.Count > 0)
+            {
+                _unitOfWork.DentalExamFinding.RemoveRange(existingFindings);
+                target.Findings.Clear();
+            }
+
+            foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
+            {
+                target.Findings.Add(DentalExamFindingMapper.ToEntity(finding, target.Id, index));
             }
         }
 

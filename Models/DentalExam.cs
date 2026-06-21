@@ -41,5 +41,9 @@ namespace Malama.Models
         public DateTime? DentistSignatureDateTime { get; set; }
 
         public string Status { get; set; } = "Pending";
+
+        [JsonIgnore]
+        [ValidateNever]
+        public virtual ICollection<DentalExamFinding> Findings { get; set; } = new List<DentalExamFinding>();
     }
 }

@@ -96,6 +96,10 @@ namespace Malama.Models
 
         public string? DentistSignatureName { get; set; }
 
+        public string? FindingsJson { get; set; }
+
+        public List<DentalExamFindingDto> Findings { get; set; } = new();
+
     }
 
 }
