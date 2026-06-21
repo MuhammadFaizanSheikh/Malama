@@ -1,5 +1,6 @@
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
+using ExcelFilesCompiler.Utilities;
 using Malama.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,18 +75,42 @@ namespace ExcelFilesCompiler.Controllers.Services
             var entity = existing ?? new DentalExam();
 
             entity.ServiceMembersChildId = dto.ServiceMembersChildId;
-            entity.PsrUpperRight = dto.PsrUpperRight?.Trim();
-            entity.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
-            entity.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
-            entity.PsrLowerRight = dto.PsrLowerRight?.Trim();
-            entity.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
-            entity.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
-            entity.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
-            entity.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
-            entity.SoftTissuesConditionDetail = dto.SoftTissuesWnl != null
-                && dto.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
-                ? dto.SoftTissuesConditionDetail?.Trim()
+
+            if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
+            {
+                entity.PsrUpperRight = dto.PsrUpperRight?.Trim();
+                entity.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
+                entity.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
+                entity.PsrLowerRight = dto.PsrLowerRight?.Trim();
+                entity.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
+                entity.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
+                entity.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
+                entity.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
+                entity.SoftTissuesConditionDetail = dto.SoftTissuesWnl != null
+                    && dto.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
+                    ? dto.SoftTissuesConditionDetail?.Trim()
+                    : null;
+            }
+
+            entity.QuestionnaireReviewed = dto.QuestionnaireReviewed;
+            entity.FinalComments = dto.QuestionnaireReviewed
+                ? dto.FinalComments?.Trim()
                 : null;
+
+            entity.DentistSignatureEntered = dto.DentistSignatureEntered;
+            if (dto.DentistSignatureEntered)
+            {
+                entity.DentistSignatureName = dto.DentistSignatureName?.Trim();
+                if (entity.DentistSignatureDateTime == null
+                    && !string.IsNullOrWhiteSpace(entity.DentistSignatureName))
+                {
+                    entity.DentistSignatureDateTime = DateTime.Now;
+                }
+            }
+            else
+            {
+                entity.DentistSignatureName = null;
+            }
 
             return entity;
         }

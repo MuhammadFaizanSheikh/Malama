@@ -1,12 +1,36 @@
 using ExcelFilesCompiler.Controllers.Services;
 using Malama.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace ExcelFilesCompiler.Utilities
 {
+    public static class FormCheckboxHelper
+    {
+        public static bool IsChecked(IFormCollection form, string fieldName)
+        {
+            if (!form.TryGetValue(fieldName, out var values))
+            {
+                return false;
+            }
+
+            return values.Any(value => string.Equals(value, "true", StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
     public static class DentalExamValidator
     {
+        public static bool IsSubsequentDiseasesSectionActive(DentalExamStationSaveDto dto)
+        {
+            return dto.QuestionnaireReviewed && dto.DentistSignatureEntered;
+        }
+
         public static string? ValidatePsr(DentalExamStationSaveDto dto)
         {
+            if (!IsSubsequentDiseasesSectionActive(dto))
+            {
+                return null;
+            }
+
             var sextantFields = new (string? Value, string Label)[]
             {
                 (dto.PsrUpperRight, "Upper Right"),
@@ -40,6 +64,21 @@ namespace ExcelFilesCompiler.Utilities
                 && string.IsNullOrWhiteSpace(dto.SoftTissuesConditionDetail))
             {
                 return "Describe Condition not within normal limits is required when Soft Tissues is NOT within Normal Limits.";
+            }
+
+            return null;
+        }
+
+        public static string? ValidateQuestionnaireReview(DentalExamStationSaveDto dto)
+        {
+            if (dto.QuestionnaireReviewed && string.IsNullOrWhiteSpace(dto.FinalComments))
+            {
+                return "Final Comments is required when Dental Questionnaire has been reviewed.";
+            }
+
+            if (dto.DentistSignatureEntered && string.IsNullOrWhiteSpace(dto.DentistSignatureName))
+            {
+                return "Dentist name is required when Dentist Signature is entered.";
             }
 
             return null;

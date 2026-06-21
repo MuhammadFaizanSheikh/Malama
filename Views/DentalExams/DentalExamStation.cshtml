@@ -20,6 +20,7 @@
         Status = "Pending"
     };
     var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
+    var showSubsequentDiseasesSection = dentalExam.QuestionnaireReviewed && dentalExam.DentistSignatureEntered;
 }
 
 <style>
@@ -261,6 +262,67 @@
             </div>
         </div>
     </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <input type="hidden" name="QuestionnaireReviewed" value="false" />
+            <div class="form-check mb-2">
+                <input class="form-check-input dental-exam-review-toggle"
+                       type="checkbox"
+                       name="QuestionnaireReviewed"
+                       id="QuestionnaireReviewed"
+                       value="true"
+                       @(dentalExam.QuestionnaireReviewed ? "checked" : null) />
+                <label class="form-check-label fw-semibold" for="QuestionnaireReviewed">
+                    Dental Questionnaire has been reviewed?
+                </label>
+            </div>
+            <div id="finalCommentsSection" style="@(dentalExam.QuestionnaireReviewed ? "" : "display:none;")">
+                <label class="form-label" for="FinalComments">Final Comments</label>
+                <textarea name="FinalComments"
+                          id="FinalComments"
+                          class="form-control"
+                          rows="4"
+                          @(dentalExam.QuestionnaireReviewed ? "required" : "")>@dentalExam.FinalComments</textarea>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <input type="hidden" name="DentistSignatureEntered" value="false" />
+            <div class="form-check mb-2">
+                <input class="form-check-input dental-exam-review-toggle"
+                       type="checkbox"
+                       name="DentistSignatureEntered"
+                       id="DentistSignatureEntered"
+                       value="true"
+                       @(dentalExam.DentistSignatureEntered ? "checked" : null) />
+                <label class="form-check-label fw-semibold" for="DentistSignatureEntered">
+                    Dentist Signature - Enter Your Name
+                </label>
+            </div>
+            <div id="dentistSignatureSection" style="@(dentalExam.DentistSignatureEntered ? "" : "display:none;")">
+                <label class="form-label" for="DentistSignatureName">Name</label>
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-7">
+                        <input type="text"
+                               name="DentistSignatureName"
+                               id="DentistSignatureName"
+                               class="form-control"
+                               value="@dentalExam.DentistSignatureName"
+                               @(dentalExam.DentistSignatureEntered ? "required" : "") />
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text"
+                               id="DentistSignatureDateTimeDisplay"
+                               class="form-control read-only-style"
+                               value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
+                               placeholder="Signed date/time"
+                               readonly
+                               style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <hr class="my-4" />
@@ -317,8 +379,11 @@
     @{
         var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
         psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
+        psrViewData["RequirePsrFields"] = showSubsequentDiseasesSection;
     }
-    @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
+    <div id="subsequentDiseasesSection" style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
+        @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
+    </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
         <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalExam ? "" : "disabled")>
@@ -447,16 +512,41 @@
         }
     }
 
+    function isSubsequentDiseasesSectionActive() {
+        return $("#QuestionnaireReviewed").is(":checked") && $("#DentistSignatureEntered").is(":checked");
+    }
+
+    function setPsrFieldsRequired(required) {
+        $(".psr-sextant-select").prop("required", required);
+        $("input[name='PsrCarrierRisk']").prop("required", required);
+        $("input.soft-tissues-wnl-radio").prop("required", required);
+        if (!required) {
+            $("#SoftTissuesConditionDetail").prop("required", false);
+        } else {
+            toggleSoftTissuesDetail();
+        }
+    }
+
+    function toggleSubsequentDiseasesSection() {
+        const active = isSubsequentDiseasesSectionActive();
+        $("#subsequentDiseasesSection").toggle(active);
+        setPsrFieldsRequired(active);
+    }
+
     function toggleSoftTissuesDetail() {
+        const psrActive = isSubsequentDiseasesSectionActive();
         const isNotWnl = $("input[name='SoftTissuesWnl']:checked").val() === @Json.Serialize(DentalExamPsr.SoftTissuesWnlNo);
         const $section = $("#softTissuesConditionSection");
         const $textarea = $("#SoftTissuesConditionDetail");
-        if (isNotWnl) {
+        if (psrActive && isNotWnl) {
             $section.show();
             $textarea.prop("required", true);
         } else {
             $section.hide();
-            $textarea.prop("required", false).val("");
+            $textarea.prop("required", false);
+            if (!isNotWnl) {
+                $textarea.val("");
+            }
         }
     }
 
@@ -480,6 +570,30 @@
         $("#psrTobaccoDisplay").text(usedTypes.length ? "Yes (" + usedTypes.join(", ") + ")" : "Yes");
     }
 
+    function toggleQuestionnaireReviewFields() {
+        const reviewed = $("#QuestionnaireReviewed").is(":checked");
+        const $commentsSection = $("#finalCommentsSection");
+        const $comments = $("#FinalComments");
+        $commentsSection.toggle(reviewed);
+        $comments.prop("required", reviewed);
+        toggleSubsequentDiseasesSection();
+    }
+
+    function toggleDentistSignatureFields() {
+        const signed = $("#DentistSignatureEntered").is(":checked");
+        const $signatureSection = $("#dentistSignatureSection");
+        const $name = $("#DentistSignatureName");
+        $signatureSection.toggle(signed);
+        $name.prop("required", signed);
+        toggleSubsequentDiseasesSection();
+    }
+
+    function initDentalExamReviewFields() {
+        toggleQuestionnaireReviewFields();
+        toggleDentistSignatureFields();
+        toggleSubsequentDiseasesSection();
+    }
+
     function initPsrSection() {
         toggleSoftTissuesDetail();
         updatePsrTobaccoDisplay();
@@ -493,6 +607,7 @@
         initConditionToggles();
         togglePregnancyFlow();
         initPsrSection();
+        initDentalExamReviewFields();
     }
 
     function toggleQuestionnaireSectionFromSwitch() {
@@ -680,6 +795,8 @@
             updatePsrTobaccoDisplay();
         });
         $(document).on("change", ".soft-tissues-wnl-radio", toggleSoftTissuesDetail);
+        $("#QuestionnaireReviewed").on("change", toggleQuestionnaireReviewFields);
+        $("#DentistSignatureEntered").on("change", toggleDentistSignatureFields);
         $(document).on("change", ".condition-checkbox", function () {
             toggleConditionDetail(this);
         });

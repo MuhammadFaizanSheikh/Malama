@@ -203,6 +203,8 @@ namespace ExcelFilesCompiler.Controllers
             var goToVitalStation = dto.GoToVitalStation
                 || string.Equals(Request.Form["GoToVitalStation"], "true", StringComparison.OrdinalIgnoreCase);
             dto.GoToVitalStation = goToVitalStation;
+            dto.QuestionnaireReviewed = FormCheckboxHelper.IsChecked(Request.Form, "QuestionnaireReviewed");
+            dto.DentistSignatureEntered = FormCheckboxHelper.IsChecked(Request.Form, "DentistSignatureEntered");
             DentalQuestionnaireFormBinder.BindHealthConditions(dto, Request.Form);
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called. GoToVitalStation={GoToVitalStation}",
@@ -311,6 +313,12 @@ namespace ExcelFilesCompiler.Controllers
             if (questionnaireError != null)
             {
                 return Task.FromResult<string?>(questionnaireError);
+            }
+
+            var reviewError = DentalExamValidator.ValidateQuestionnaireReview(dto);
+            if (reviewError != null)
+            {
+                return Task.FromResult<string?>(reviewError);
             }
 
             return Task.FromResult(DentalExamValidator.ValidatePsr(dto));

@@ -34,6 +34,12 @@ namespace Malama.Models
         public string? SoftTissuesWnl { get; set; }
         public string? SoftTissuesConditionDetail { get; set; }
 
+        public bool QuestionnaireReviewed { get; set; }
+        public string? FinalComments { get; set; }
+        public bool DentistSignatureEntered { get; set; }
+        public string? DentistSignatureName { get; set; }
+        public DateTime? DentistSignatureDateTime { get; set; }
+
         public string Status { get; set; } = "Pending";
     }
 }
