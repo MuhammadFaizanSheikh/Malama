@@ -160,6 +160,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                     && dto.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
                     ? dto.SoftTissuesConditionDetail?.Trim()
                     : null;
+
+                entity.DenClass = dto.DenClass?.Trim();
+                entity.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
+                entity.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
             }
 
             entity.QuestionnaireReviewed = dto.QuestionnaireReviewed;

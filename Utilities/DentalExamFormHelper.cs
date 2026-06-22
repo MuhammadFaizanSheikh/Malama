@@ -69,6 +69,27 @@ namespace ExcelFilesCompiler.Utilities
             return null;
         }
 
+        public static string? ValidateDenClass(DentalExamStationSaveDto dto)
+        {
+            if (!IsSubsequentDiseasesSectionActive(dto))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.DenClass)
+                || !DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase))
+            {
+                return "Dental Readiness Classification (DEN Class) is required.";
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.DenClassReasonComments))
+            {
+                return "Classification Reason / Comments is required.";
+            }
+
+            return null;
+        }
+
         public static string? ValidateQuestionnaireReview(DentalExamStationSaveDto dto)
         {
             if (dto.QuestionnaireReviewed && string.IsNullOrWhiteSpace(dto.FinalComments))

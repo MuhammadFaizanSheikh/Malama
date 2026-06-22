@@ -100,6 +100,12 @@ namespace Malama.Models
 
         public List<DentalExamFindingDto> Findings { get; set; } = new();
 
+        public string? DenClass { get; set; }
+
+        public string? DenClassReasonComments { get; set; }
+
+        public bool PanoXRayAcknowledged { get; set; }
+
     }
 
 }

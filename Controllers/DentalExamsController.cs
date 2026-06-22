@@ -239,6 +239,15 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                if (DentalXRayStationService.IsNeeded(serviceMember.PanoNeeded))
+                {
+                    dto.PanoXRayAcknowledged = true;
+                }
+                else
+                {
+                    dto.PanoXRayAcknowledged = FormCheckboxHelper.IsChecked(Request.Form, "PanoXRayAcknowledged");
+                }
+
                 var validationError = dto.GoToVitalStation
                     ? ValidateDraftBeforeVitalRedirect()
                     : await ValidateSaveDtoAsync(dto, serviceMember);
@@ -330,6 +339,12 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     return Task.FromResult<string?>(findingsError);
                 }
+            }
+
+            var denClassError = DentalExamValidator.ValidateDenClass(dto);
+            if (denClassError != null)
+            {
+                return Task.FromResult<string?>(denClassError);
             }
 
             return Task.FromResult(DentalExamValidator.ValidatePsr(dto));

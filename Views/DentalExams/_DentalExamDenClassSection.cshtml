@@ -1,0 +1,88 @@
+@using ExcelFilesCompiler.Controllers.Services
+@using Malama.Models
+@model DentalExam
+
+@{
+    var exam = Model ?? new DentalExam();
+    var serviceMemberPanoRequired = ViewData["ServiceMemberPanoRequired"] as bool? ?? false;
+    var requireDenClassFields = ViewData["RequireDenClassFields"] as bool? ?? false;
+    var denClassRequiredAttr = requireDenClassFields ? "required" : "";
+    var panoMarkedRequiredByDentist = exam.PanoXRayAcknowledged;
+}
+
+<div class="card mb-4">
+    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+        Dental Readiness Classification (DEN Class)
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            @for (var i = 0; i < DentalExamDenClass.Options.Length; i++)
+            {
+                var option = DentalExamDenClass.Options[i];
+                var isSelected = string.Equals(exam.DenClass, option, StringComparison.OrdinalIgnoreCase);
+                <div class="form-check">
+                    <input class="form-check-input den-class-radio"
+                           type="radio"
+                           name="DenClass"
+                           id="DenClass_@i"
+                           value="@option"
+                           @(isSelected ? "checked" : null)
+                           @denClassRequiredAttr />
+                    <label class="form-check-label" for="DenClass_@i">@option</label>
+                </div>
+            }
+        </div>
+
+        <div class="mb-0">
+            <label class="form-label" for="DenClassReasonComments">Classification Reason / Comments</label>
+            <textarea name="DenClassReasonComments"
+                      id="DenClassReasonComments"
+                      class="form-control"
+                      rows="4"
+                      @denClassRequiredAttr>@exam.DenClassReasonComments</textarea>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+        Panorex (Pano) X-Ray
+    </div>
+    <div class="card-body py-3">
+        @if (serviceMemberPanoRequired)
+        {
+            <input type="hidden" name="PanoXRayAcknowledged" value="true" />
+            <p class="fw-semibold mb-2 mb-md-3">
+                Panorex (Pano) X-ray is Required for this Service member.
+            </p>
+            <div class="form-check mb-0">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="PanoXRayAcknowledgedDisplay"
+                       checked
+                       disabled />
+                <label class="form-check-label" for="PanoXRayAcknowledgedDisplay">
+                    Pano X-ray requirement confirmed for this service member
+                </label>
+            </div>
+        }
+        else
+        {
+            <p class="fw-semibold mb-2 mb-md-3">
+                Panorex (Pano) X-ray is NOT Required for this Service member.
+            </p>
+            <div class="form-check mb-0">
+                <input type="hidden" name="PanoXRayAcknowledged" value="false" />
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="PanoXRayAcknowledged"
+                       id="PanoXRayAcknowledged"
+                       value="true"
+                       @(panoMarkedRequiredByDentist ? "checked" : null) />
+                <label class="form-check-label" for="PanoXRayAcknowledged">
+                    Mark Panorex (Pano) X-ray as required for this service member
+                </label>
+            </div>
+        }
+    </div>
+</div>

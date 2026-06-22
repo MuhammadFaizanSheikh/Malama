@@ -13,6 +13,22 @@ namespace Malama.Models
         public const string SoftTissuesWnlNo = "No, NOT within Normal Limits";
     }
 
+    public static class DentalExamDenClass
+    {
+        public const string Class1 = "Class1 - No treatment needed";
+        public const string Class2 = "Class 2 - Treatment needed but not expected within 12 months";
+        public const string Class3 = "Class 3 - Urgent treatment needed";
+        public const string Class4 = "Class 4 - Unknown / Examination incomplete";
+
+        public static readonly string[] Options =
+        {
+            Class1,
+            Class2,
+            Class3,
+            Class4
+        };
+    }
+
     [Table("DentalExam")]
     public class DentalExam : GenericProperties
     {
@@ -39,6 +55,10 @@ namespace Malama.Models
         public bool DentistSignatureEntered { get; set; }
         public string? DentistSignatureName { get; set; }
         public DateTime? DentistSignatureDateTime { get; set; }
+
+        public string? DenClass { get; set; }
+        public string? DenClassReasonComments { get; set; }
+        public bool PanoXRayAcknowledged { get; set; }
 
         public string Status { get; set; } = "Pending";
 

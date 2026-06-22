@@ -21,6 +21,7 @@
     };
     var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
     var showSubsequentDiseasesSection = dentalExam.QuestionnaireReviewed && dentalExam.DentistSignatureEntered;
+    var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
 }
 
 <style>
@@ -384,6 +385,12 @@
     <div id="subsequentDiseasesSection" style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
         @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
         @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam)
+        @{
+            var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
+            denClassViewData["RequireDenClassFields"] = showSubsequentDiseasesSection;
+        }
+        @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
     </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
@@ -517,6 +524,11 @@
         return $("#QuestionnaireReviewed").is(":checked") && $("#DentistSignatureEntered").is(":checked");
     }
 
+    function setDenClassFieldsRequired(required) {
+        $("input.den-class-radio").prop("required", required);
+        $("#DenClassReasonComments").prop("required", required);
+    }
+
     function setPsrFieldsRequired(required) {
         $(".psr-sextant-select").prop("required", required);
         $("input[name='PsrCarrierRisk']").prop("required", required);
@@ -532,6 +544,7 @@
         const active = isSubsequentDiseasesSectionActive();
         $("#subsequentDiseasesSection").toggle(active);
         setPsrFieldsRequired(active);
+        setDenClassFieldsRequired(active);
     }
 
     function toggleSoftTissuesDetail() {
