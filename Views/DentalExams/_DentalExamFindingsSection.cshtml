@@ -37,13 +37,20 @@
     }
 
     #dentalFindingReferenceImage {
-        max-height: 100%;
+        width: 100%;
         max-width: 100%;
+        min-height: 520px;
+        max-height: 620px;
         object-fit: contain;
     }
 
     #dentalFindingImageColumn {
-        min-height: 420px;
+        min-height: 580px;
+    }
+
+    #dentalFindingImageColumn .dental-finding-image-wrap {
+        min-height: 560px;
+        padding: 1rem;
     }
 
     .finding-classification-badge {
@@ -161,7 +168,7 @@
                     </div>
 
                     <div class="col-md-6" id="dentalFindingImageColumn">
-                        <div class="border rounded p-3 bg-light h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                        <div class="border rounded p-3 bg-light h-100 d-flex flex-column justify-content-center align-items-center text-center dental-finding-image-wrap">
                             <img src="~/images/dental-tooth-chart-reference.png"
                                  id="dentalFindingReferenceImage"
                                  alt="Dental tooth chart reference"

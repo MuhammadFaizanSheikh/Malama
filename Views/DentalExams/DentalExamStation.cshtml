@@ -380,7 +380,7 @@
     @{
         var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
         psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
-        psrViewData["RequirePsrFields"] = showSubsequentDiseasesSection;
+        psrViewData["RequirePsrFields"] = false;
     }
     <div id="subsequentDiseasesSection" style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
         @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
@@ -388,9 +388,27 @@
         @{
             var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
             denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
-            denClassViewData["RequireDenClassFields"] = showSubsequentDiseasesSection;
         }
         @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label" for="DentalExamStatus">Overall Status</label>
+            <select id="DentalExamStatus" class="form-select read-only-style" disabled>
+                @if (dentalExam.Status == "Completed")
+                {
+                    <option value="Pending">Pending</option>
+                    <option value="Completed" selected="selected">Completed</option>
+                }
+                else
+                {
+                    <option value="Pending" selected="selected">Pending</option>
+                    <option value="Completed">Completed</option>
+                }
+            </select>
+            <input type="hidden" name="Status" id="DentalExamStatusHidden" value="@(string.IsNullOrWhiteSpace(dentalExam.Status) ? "Pending" : dentalExam.Status)" />
+        </div>
     </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
@@ -524,20 +542,81 @@
         return $("#QuestionnaireReviewed").is(":checked") && $("#DentistSignatureEntered").is(":checked");
     }
 
+    function toggleDenClassCommentsRequired() {
+        const hasSelection = $("input.den-class-radio:checked").length > 0;
+        $("#DenClassReasonComments").prop("required", hasSelection);
+        updateDentalExamOverallStatus();
+    }
+
     function setDenClassFieldsRequired(required) {
-        $("input.den-class-radio").prop("required", required);
-        $("#DenClassReasonComments").prop("required", required);
+        toggleDenClassCommentsRequired();
+    }
+
+    function isPsrComplete() {
+        if (!isSubsequentDiseasesSectionActive()) {
+            return false;
+        }
+
+        const scoreOptions = @Json.Serialize(DentalExamPsr.ScoreOptions);
+        const sextantValues = [
+            $("#PsrUpperRight").val(),
+            $("#PsrUpperAnterior").val(),
+            $("#PsrUpperLeft").val(),
+            $("#PsrLowerRight").val(),
+            $("#PsrLowerAnterior").val(),
+            $("#PsrLowerLeft").val()
+        ];
+
+        for (const value of sextantValues) {
+            if (!value || !scoreOptions.includes(value)) {
+                return false;
+            }
+        }
+
+        if (!$("input[name='PsrCarrierRisk']:checked").val()) {
+            return false;
+        }
+
+        const softTissuesWnl = $("input[name='SoftTissuesWnl']:checked").val();
+        if (!softTissuesWnl) {
+            return false;
+        }
+
+        if (softTissuesWnl === @Json.Serialize(DentalExamPsr.SoftTissuesWnlNo)
+            && !$("#SoftTissuesConditionDetail").val()?.trim()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function isDenClassComplete() {
+        if (!isSubsequentDiseasesSectionActive()) {
+            return false;
+        }
+
+        if (!$("input[name='DenClass']:checked").val()) {
+            return false;
+        }
+
+        return !!$("#DenClassReasonComments").val()?.trim();
+    }
+
+    function updateDentalExamOverallStatus() {
+        const status = isSubsequentDiseasesSectionActive() && isPsrComplete() && isDenClassComplete()
+            ? "Completed"
+            : "Pending";
+
+        $("#DentalExamStatus").val(status);
+        $("#DentalExamStatusHidden").val(status);
     }
 
     function setPsrFieldsRequired(required) {
-        $(".psr-sextant-select").prop("required", required);
-        $("input[name='PsrCarrierRisk']").prop("required", required);
-        $("input.soft-tissues-wnl-radio").prop("required", required);
-        if (!required) {
-            $("#SoftTissuesConditionDetail").prop("required", false);
-        } else {
-            toggleSoftTissuesDetail();
-        }
+        $(".psr-sextant-select").prop("required", false);
+        $("input[name='PsrCarrierRisk']").prop("required", false);
+        $("input.soft-tissues-wnl-radio").prop("required", false);
+        $("#SoftTissuesConditionDetail").prop("required", false);
+        updateDentalExamOverallStatus();
     }
 
     function toggleSubsequentDiseasesSection() {
@@ -545,6 +624,7 @@
         $("#subsequentDiseasesSection").toggle(active);
         setPsrFieldsRequired(active);
         setDenClassFieldsRequired(active);
+        updateDentalExamOverallStatus();
     }
 
     function toggleSoftTissuesDetail() {
@@ -554,14 +634,14 @@
         const $textarea = $("#SoftTissuesConditionDetail");
         if (psrActive && isNotWnl) {
             $section.show();
-            $textarea.prop("required", true);
         } else {
             $section.hide();
-            $textarea.prop("required", false);
             if (!isNotWnl) {
                 $textarea.val("");
             }
         }
+        $textarea.prop("required", false);
+        updateDentalExamOverallStatus();
     }
 
     function updatePsrTobaccoDisplay() {
@@ -792,6 +872,8 @@
     $(document).ready(function () {
         initQuestionnaireToggles();
         initReadOnlyXRayPreviews();
+        toggleDenClassCommentsRequired();
+        updateDentalExamOverallStatus();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
@@ -809,6 +891,10 @@
             updatePsrTobaccoDisplay();
         });
         $(document).on("change", ".soft-tissues-wnl-radio", toggleSoftTissuesDetail);
+        $(document).on("change input", ".psr-sextant-select, input[name='PsrCarrierRisk'], #SoftTissuesConditionDetail", updateDentalExamOverallStatus);
+        $(document).on("change input", "input.den-class-radio, #DenClassReasonComments", function () {
+            toggleDenClassCommentsRequired();
+        });
         $("#QuestionnaireReviewed").on("change", toggleQuestionnaireReviewFields);
         $("#DentistSignatureEntered").on("change", toggleDentistSignatureFields);
         $(document).on("change", ".condition-checkbox", function () {
@@ -835,6 +921,7 @@
 
             goToVitalStationClicked = false;
             $("#GoToVitalStationFlag").val("false");
+            updateDentalExamOverallStatus();
         });
 
         $(document).on("click", "#xraySection .preview-xray-file", function () {

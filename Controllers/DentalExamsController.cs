@@ -347,7 +347,7 @@ namespace ExcelFilesCompiler.Controllers
                 return Task.FromResult<string?>(denClassError);
             }
 
-            return Task.FromResult(DentalExamValidator.ValidatePsr(dto));
+            return Task.FromResult<string?>(null);
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalExams_View")]

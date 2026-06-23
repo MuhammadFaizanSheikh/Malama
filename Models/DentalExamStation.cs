@@ -106,6 +106,8 @@ namespace Malama.Models
 
         public bool PanoXRayAcknowledged { get; set; }
 
+        public string Status { get; set; } = "Pending";
+
     }
 
 }

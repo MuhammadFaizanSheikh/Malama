@@ -55,37 +55,31 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (existing != null)
                 {
                     MapFormDataToEntity(dto, existing);
+                    ApplySubsequentDiseasesFindings(existing, dto);
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
-                    existing.Status = "Completed";
-
-                    if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
-                    {
-                        ReplaceFindings(existing, dto.Findings);
-                    }
+                    existing.Status = DentalExamValidator.ComputeOverallStatus(dto);
 
                     await _unitOfWork.SaveAsync();
                     await transaction.CommitAsync();
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}",
-                        CLASSNAME, methodName, dto.ServiceMembersChildId, userName, dto.Findings.Count);
+                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. SubsequentSectionActive={SubsequentSectionActive}, FindingCount={FindingCount}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId, userName,
+                        DentalExamValidator.IsSubsequentDiseasesSectionActive(dto), dto.Findings.Count);
                     return;
                 }
 
                 var entity = MapFormDataToEntity(dto);
                 entity.AddedOn = DateTime.Now;
                 entity.AddedBy = userName;
-                entity.Status = "Completed";
+                entity.Status = DentalExamValidator.ComputeOverallStatus(dto);
 
                 await _unitOfWork.DentalExam.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
-                {
-                    ReplaceFindings(entity, dto.Findings);
-                    await _unitOfWork.SaveAsync();
-                }
+                ApplySubsequentDiseasesFindings(entity, dto);
+                await _unitOfWork.SaveAsync();
 
                 await transaction.CommitAsync();
 
@@ -123,6 +117,17 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        private void ApplySubsequentDiseasesFindings(DentalExam target, DentalExamStationSaveDto dto)
+        {
+            if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
+            {
+                ReplaceFindings(target, dto.Findings);
+                return;
+            }
+
+            ReplaceFindings(target, new List<DentalExamFindingDto>());
+        }
+
         private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings)
         {
             target.Findings ??= new List<DentalExamFinding>();
@@ -148,22 +153,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
             {
-                entity.PsrUpperRight = dto.PsrUpperRight?.Trim();
-                entity.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
-                entity.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
-                entity.PsrLowerRight = dto.PsrLowerRight?.Trim();
-                entity.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
-                entity.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
-                entity.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
-                entity.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
-                entity.SoftTissuesConditionDetail = dto.SoftTissuesWnl != null
-                    && dto.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
-                    ? dto.SoftTissuesConditionDetail?.Trim()
-                    : null;
-
-                entity.DenClass = dto.DenClass?.Trim();
-                entity.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
-                entity.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
+                MapSubsequentDiseasesFieldsFromDto(entity, dto);
+            }
+            else
+            {
+                ClearSubsequentDiseasesFields(entity);
             }
 
             entity.QuestionnaireReviewed = dto.QuestionnaireReviewed;
@@ -186,7 +180,50 @@ namespace ExcelFilesCompiler.Controllers.Services
                 entity.DentistSignatureName = null;
             }
 
+            entity.Status = ComputeOverallStatus(dto);
+
             return entity;
+        }
+
+        private static string ComputeOverallStatus(DentalExamStationSaveDto dto)
+        {
+            return DentalExamValidator.ComputeOverallStatus(dto);
+        }
+
+        private static void MapSubsequentDiseasesFieldsFromDto(DentalExam entity, DentalExamStationSaveDto dto)
+        {
+            entity.PsrUpperRight = dto.PsrUpperRight?.Trim();
+            entity.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
+            entity.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
+            entity.PsrLowerRight = dto.PsrLowerRight?.Trim();
+            entity.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
+            entity.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
+            entity.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
+            entity.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
+            entity.SoftTissuesConditionDetail = dto.SoftTissuesWnl != null
+                && dto.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
+                ? dto.SoftTissuesConditionDetail?.Trim()
+                : null;
+
+            entity.DenClass = dto.DenClass?.Trim();
+            entity.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
+            entity.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
+        }
+
+        private static void ClearSubsequentDiseasesFields(DentalExam entity)
+        {
+            entity.PsrUpperRight = null;
+            entity.PsrUpperAnterior = null;
+            entity.PsrUpperLeft = null;
+            entity.PsrLowerRight = null;
+            entity.PsrLowerAnterior = null;
+            entity.PsrLowerLeft = null;
+            entity.PsrCarrierRisk = null;
+            entity.SoftTissuesWnl = null;
+            entity.SoftTissuesConditionDetail = null;
+            entity.DenClass = null;
+            entity.DenClassReasonComments = null;
+            entity.PanoXRayAcknowledged = false;
         }
     }
 }

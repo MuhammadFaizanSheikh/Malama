@@ -76,15 +76,12 @@ namespace ExcelFilesCompiler.Utilities
                 return null;
             }
 
-            if (string.IsNullOrWhiteSpace(dto.DenClass)
-                || !DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase))
-            {
-                return "Dental Readiness Classification (DEN Class) is required.";
-            }
+            var hasDenClass = !string.IsNullOrWhiteSpace(dto.DenClass)
+                && DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase);
 
-            if (string.IsNullOrWhiteSpace(dto.DenClassReasonComments))
+            if (hasDenClass && string.IsNullOrWhiteSpace(dto.DenClassReasonComments))
             {
-                return "Classification Reason / Comments is required.";
+                return "Classification Reason / Comments is required when Dental Readiness Classification is selected.";
             }
 
             return null;
@@ -109,6 +106,39 @@ namespace ExcelFilesCompiler.Utilities
         {
             return !string.IsNullOrWhiteSpace(value)
                 && DentalExamPsr.ScoreOptions.Contains(value.Trim(), StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool IsPsrComplete(DentalExamStationSaveDto dto)
+        {
+            if (!IsSubsequentDiseasesSectionActive(dto))
+            {
+                return false;
+            }
+
+            return ValidatePsr(dto) == null;
+        }
+
+        public static bool IsDenClassComplete(DentalExamStationSaveDto dto)
+        {
+            if (!IsSubsequentDiseasesSectionActive(dto))
+            {
+                return false;
+            }
+
+            var hasDenClass = !string.IsNullOrWhiteSpace(dto.DenClass)
+                && DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase);
+
+            return hasDenClass && !string.IsNullOrWhiteSpace(dto.DenClassReasonComments);
+        }
+
+        public static string ComputeOverallStatus(DentalExamStationSaveDto dto)
+        {
+            if (IsPsrComplete(dto) && IsDenClassComplete(dto))
+            {
+                return "Completed";
+            }
+
+            return "Pending";
         }
     }
 

@@ -5,8 +5,8 @@
 @{
     var exam = Model ?? new DentalExam();
     var serviceMemberPanoRequired = ViewData["ServiceMemberPanoRequired"] as bool? ?? false;
-    var requireDenClassFields = ViewData["RequireDenClassFields"] as bool? ?? false;
-    var denClassRequiredAttr = requireDenClassFields ? "required" : "";
+    var hasDenClassSelected = !string.IsNullOrWhiteSpace(exam.DenClass);
+    var denClassCommentsRequiredAttr = hasDenClassSelected ? "required" : "";
     var panoMarkedRequiredByDentist = exam.PanoXRayAcknowledged;
 }
 
@@ -26,8 +26,7 @@
                            name="DenClass"
                            id="DenClass_@i"
                            value="@option"
-                           @(isSelected ? "checked" : null)
-                           @denClassRequiredAttr />
+                           @(isSelected ? "checked" : null) />
                     <label class="form-check-label" for="DenClass_@i">@option</label>
                 </div>
             }
@@ -39,7 +38,7 @@
                       id="DenClassReasonComments"
                       class="form-control"
                       rows="4"
-                      @denClassRequiredAttr>@exam.DenClassReasonComments</textarea>
+                      @denClassCommentsRequiredAttr>@exam.DenClassReasonComments</textarea>
         </div>
     </div>
 </div>
