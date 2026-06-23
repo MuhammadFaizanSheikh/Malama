@@ -78,8 +78,8 @@ namespace ExcelFilesCompiler.Controllers
                 var summary = new Dictionary<string, int>
                 {
                     ["Total"] = data.Count,
-                    ["Pending"] = data.Count(x => x.DentalXRayStationRecord == null || x.DentalXRayStationRecord.Status == "Pending"),
-                    ["Completed"] = data.Count(x => x.DentalXRayStationRecord?.Status == "Completed")
+                    ["Pending"] = data.Count(x => x.DentalExamRecord == null || x.DentalExamRecord.Status == "Pending"),
+                    ["Completed"] = data.Count(x => x.DentalExamRecord?.Status == "Completed")
                 };
 
                 ViewBag.Summary = summary;

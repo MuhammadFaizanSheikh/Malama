@@ -209,7 +209,7 @@
                             <a asp-action="DentalExamStation" asp-route-serviceMembersChildId="@c.Id"
                                class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
-                        <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
+                        <td>@(c.DentalExamRecord == null ? "Pending" : c.DentalExamRecord.Status)</td>
                         <td>@c.SmId</td>
                         <td>@c.Drc</td>
                         <td>@c.FullName</td>
@@ -218,8 +218,8 @@
                         <td>@c.Sex</td>
                         <td>@c.Dob</td>
                         <td>@c.Barcode</td>
-                        <td>@c.DentalXRayStationRecord?.AddedBy</td>
-                        <td>@c.DentalXRayStationRecord?.AddedOn</td>
+                        <td>@c.DentalExamRecord?.AddedBy</td>
+                        <td>@c.DentalExamRecord?.AddedOn</td>
                     </tr>
                 }
             </tbody>

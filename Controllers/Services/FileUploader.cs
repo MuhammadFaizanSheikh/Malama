@@ -391,8 +391,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                              c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
                              c.CheckIn == AppConstants.YesNo.Yes &&
                              (status == null ||
-                              (c.DentalXRayStationRecord != null && c.DentalXRayStationRecord.Status == status)),
-                        c => c.DentalXRayStationRecord)
+                              (c.DentalExamRecord != null && c.DentalExamRecord.Status == status)),
+                        c => c.DentalExamRecord)
                     .ToListAsync();
 
                 _logger.LogInformation(
