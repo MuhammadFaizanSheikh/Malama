@@ -111,14 +111,6 @@
                     <div class="col-md-6">
                         <div class="row g-3 mb-3">
                             <div class="col-6">
-                                <label class="form-label" for="findingAffectedTooth">Affected Tooth</label>
-                                <select id="findingAffectedTooth" class="form-select"></select>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" id="findingPrimaryTooth" />
-                                    <label class="form-check-label" for="findingPrimaryTooth">Primary tooth</label>
-                                </div>
-                            </div>
-                            <div class="col-6">
                                 <label class="form-label" for="findingDiseaseType">Disease / Condition Type</label>
                                 <select id="findingDiseaseType" class="form-select">
                                     <option value=""></option>
@@ -127,6 +119,14 @@
                                         <option value="@diseaseType">@diseaseType</option>
                                     }
                                 </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="findingAffectedTooth">Affected Tooth</label>
+                                <select id="findingAffectedTooth" class="form-select"></select>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="findingPrimaryTooth" />
+                                    <label class="form-check-label" for="findingPrimaryTooth">Primary tooth</label>
+                                </div>
                             </div>
                             <div class="col-6" id="findingSurfacesSection" style="display:none;">
                                 <label class="form-label" for="findingAffectedSurfaces">Affected Surface(s)</label>
@@ -219,6 +219,16 @@
                 allowClear: true,
                 dropdownParent: $("#dentalFindingFormCard")
             });
+
+            $select.off("select2:select.clearSearch select2:unselect.clearSearch")
+                .on("select2:select.clearSearch select2:unselect.clearSearch", function () {
+                    const $searchField = $select.next(".select2-container")
+                        .find(".select2-search__field");
+                    if ($searchField.length) {
+                        $searchField.val("");
+                        $searchField.trigger("input");
+                    }
+                });
         }
 
         function getSelectedValues($select) {

@@ -160,7 +160,7 @@
 
     <hr class="my-4" />
 
-    <div class="questionnaire-heading">
+    <div class="questionnaire-heading" id="questionnaireHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
             <input class="form-check-input"
                    type="checkbox"
@@ -324,11 +324,18 @@
             </div>
         </div>
     </div>
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleQuestionnaireSectionSwitch"
+                    data-target-heading="questionnaireHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Questionnaire
+            </button>
+        </div>
     </div>
 
     <hr class="my-4" />
 
-    <div class="questionnaire-heading">
+    <div class="questionnaire-heading" id="vitalsHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
             <input class="form-check-input"
                    type="checkbox"
@@ -350,11 +357,18 @@
         vitalBpViewData["HideSectionHeading"] = true;
     }
     @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleVitalsSectionSwitch"
+                    data-target-heading="vitalsHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Blood Pressure (Vitals)
+            </button>
+        </div>
     </div>
 
     <hr class="my-4" />
 
-    <div class="questionnaire-heading">
+    <div class="questionnaire-heading" id="xrayHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
             <input class="form-check-input"
                    type="checkbox"
@@ -373,6 +387,13 @@
         xrayViewData["Questionnaire"] = questionnaire;
     }
     @await Html.PartialAsync("_DentalXRayStationReadOnly", Model.XRayStation, xrayViewData)
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleXRaySectionSwitch"
+                    data-target-heading="xrayHeading">
+                <i class="fas fa-chevron-up"></i> Collapse X-Ray
+            </button>
+        </div>
     </div>
 
     <hr class="my-4" />
@@ -878,6 +899,21 @@
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+
+        $(document).on("click", ".section-collapse-btn", function () {
+            const switchId = $(this).data("target-switch");
+            const headingId = $(this).data("target-heading");
+            const $switch = $("#" + switchId);
+
+            $switch.prop("checked", false).trigger("change");
+
+            const $heading = $("#" + headingId);
+            if ($heading.length) {
+                $("html, body").animate({
+                    scrollTop: $heading.offset().top - 80
+                }, 300);
+            }
+        });
 
         $(".dental-q-detail-toggle").on("change", function () {
             toggleQuestionnaireDetail(this);
