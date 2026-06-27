@@ -1,0 +1,134 @@
+@using Malama.Models
+@model DentalXRayStation
+
+@{
+    var station = Model ?? new DentalXRayStation();
+    var prefix = ViewData["Prefix"] as string ?? "xray";
+
+    var bwxUploadMode = station.BwxUploadMode;
+    if (string.IsNullOrWhiteSpace(bwxUploadMode))
+    {
+        if (!string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName))
+        {
+            bwxUploadMode = BwxUploadMode.Consolidated;
+        }
+        else if (!string.IsNullOrWhiteSpace(station.BwLeftMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightPremolarFileName))
+        {
+            bwxUploadMode = BwxUploadMode.Separate;
+        }
+    }
+
+    var bwxImageOptions = new List<(string Label, string DownloadPrefix, string FileName)>();
+    if (bwxUploadMode == BwxUploadMode.Consolidated && !string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName))
+    {
+        bwxImageOptions.Add(("Consolidated BWX", "bwx_consolidated", station.BwxConsolidatedFileName));
+    }
+    else if (bwxUploadMode == BwxUploadMode.Separate)
+    {
+        if (!string.IsNullOrWhiteSpace(station.BwLeftMolarFileName))
+        {
+            bwxImageOptions.Add(("BW Left Molar", "bwx_left_molar", station.BwLeftMolarFileName));
+        }
+        if (!string.IsNullOrWhiteSpace(station.BwRightMolarFileName))
+        {
+            bwxImageOptions.Add(("BW Right Molar", "bwx_right_molar", station.BwRightMolarFileName));
+        }
+        if (!string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName))
+        {
+            bwxImageOptions.Add(("BW Left Premolar", "bwx_left_premolar", station.BwLeftPremolarFileName));
+        }
+        if (!string.IsNullOrWhiteSpace(station.BwRightPremolarFileName))
+        {
+            bwxImageOptions.Add(("BW Right Premolar", "bwx_right_premolar", station.BwRightPremolarFileName));
+        }
+    }
+
+    var paImageOptions = station.PaImages?
+        .Where(p => !string.IsNullOrWhiteSpace(p.FileName))
+        .OrderBy(p => p.SortOrder)
+        .ToList() ?? new List<DentalXRayPaImage>();
+
+    var hasBwxImages = bwxImageOptions.Any();
+    var hasPaImages = paImageOptions.Any();
+}
+
+<div class="xray-preview-card xray-preview-widget" id="@(prefix)_widget" data-prefix="@prefix">
+    <p class="fw-semibold mb-2">X-Ray Preview</p>
+
+    <div class="mb-3">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input xray-preview-type-radio"
+                   type="radio"
+                   name="@(prefix)_Type"
+                   id="@(prefix)_Type_BWX"
+                   value="BWX"
+                   @(hasBwxImages ? "" : "disabled") />
+            <label class="form-check-label" for="@(prefix)_Type_BWX">BWX</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input xray-preview-type-radio"
+                   type="radio"
+                   name="@(prefix)_Type"
+                   id="@(prefix)_Type_PA"
+                   value="PA"
+                   @(hasPaImages ? "" : "disabled") />
+            <label class="form-check-label" for="@(prefix)_Type_PA">PA</label>
+        </div>
+    </div>
+
+    <div class="mb-3" id="@(prefix)_bwxSelectWrap" style="display:none;">
+        <label class="form-label" for="@(prefix)_bwxSelect">Select BWX image</label>
+        <select class="form-select xray-preview-image-select" id="@(prefix)_bwxSelect">
+            <option value="">-- Select --</option>
+            @foreach (var option in bwxImageOptions)
+            {
+                <option value="@option.FileName"
+                        data-filename="@option.FileName"
+                        data-prefix="@option.DownloadPrefix">@option.Label</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3" id="@(prefix)_paSelectWrap" style="display:none;">
+        <label class="form-label" for="@(prefix)_paSelect">Select PA image</label>
+        <select class="form-select xray-preview-image-select" id="@(prefix)_paSelect">
+            <option value="">-- Select --</option>
+            @for (var i = 0; i < paImageOptions.Count; i++)
+            {
+                var pa = paImageOptions[i];
+                <option value="@pa.FileName"
+                        data-filename="@pa.FileName"
+                        data-prefix="pa_tooth">PA of tooth @(i + 1)</option>
+            }
+        </select>
+    </div>
+
+    <p class="text-muted small" id="@(prefix)_emptyMsg">Select an X-Ray type and image to preview.</p>
+
+    <div class="xray-preview-panel" id="@(prefix)_previewSection" style="display:none;">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="small text-muted" id="@(prefix)_fileNameDisplay"></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary xray-preview-open-btn">
+                Preview
+            </button>
+        </div>
+        <div class="xray-preview-viewport-boxed xray-preview-viewport" id="@(prefix)_previewViewport">
+            <img id="@(prefix)_previewImg" alt="X-Ray preview" />
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-2 mb-1">
+            <button type="button" class="btn btn-sm btn-primary xray-zoom-in" data-prefix="@prefix">
+                <i class="bi bi-zoom-in"></i> ZOOM IN
+            </button>
+            <button type="button" class="btn btn-sm btn-primary xray-zoom-out" data-prefix="@prefix">
+                <i class="bi bi-zoom-out"></i> ZOOM OUT
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary xray-zoom-reset" data-prefix="@prefix">
+                <i class="bi bi-arrow-counterclockwise"></i> RESET
+            </button>
+        </div>
+        <p class="mb-0 small">Zoom Level: <span id="@(prefix)_zoomLevel" class="text-primary fw-semibold">100%</span></p>
+    </div>
+</div>

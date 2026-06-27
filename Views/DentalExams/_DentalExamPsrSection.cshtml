@@ -11,55 +11,6 @@
     var softTissuesDetailRequiredAttr = requirePsrFields && showSoftTissuesDetail ? "required" : "";
 
     var xrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
-
-    var bwxUploadMode = xrayStation.BwxUploadMode;
-    if (string.IsNullOrWhiteSpace(bwxUploadMode))
-    {
-        if (!string.IsNullOrWhiteSpace(xrayStation.BwxConsolidatedFileName))
-        {
-            bwxUploadMode = BwxUploadMode.Consolidated;
-        }
-        else if (!string.IsNullOrWhiteSpace(xrayStation.BwLeftMolarFileName)
-            || !string.IsNullOrWhiteSpace(xrayStation.BwLeftPremolarFileName)
-            || !string.IsNullOrWhiteSpace(xrayStation.BwRightMolarFileName)
-            || !string.IsNullOrWhiteSpace(xrayStation.BwRightPremolarFileName))
-        {
-            bwxUploadMode = BwxUploadMode.Separate;
-        }
-    }
-
-    var bwxImageOptions = new List<(string Label, string DownloadPrefix, string FileName)>();
-    if (bwxUploadMode == BwxUploadMode.Consolidated && !string.IsNullOrWhiteSpace(xrayStation.BwxConsolidatedFileName))
-    {
-        bwxImageOptions.Add(("Consolidated BWX", "bwx_consolidated", xrayStation.BwxConsolidatedFileName));
-    }
-    else if (bwxUploadMode == BwxUploadMode.Separate)
-    {
-        if (!string.IsNullOrWhiteSpace(xrayStation.BwLeftMolarFileName))
-        {
-            bwxImageOptions.Add(("BW Left Molar", "bwx_left_molar", xrayStation.BwLeftMolarFileName));
-        }
-        if (!string.IsNullOrWhiteSpace(xrayStation.BwRightMolarFileName))
-        {
-            bwxImageOptions.Add(("BW Right Molar", "bwx_right_molar", xrayStation.BwRightMolarFileName));
-        }
-        if (!string.IsNullOrWhiteSpace(xrayStation.BwLeftPremolarFileName))
-        {
-            bwxImageOptions.Add(("BW Left Premolar", "bwx_left_premolar", xrayStation.BwLeftPremolarFileName));
-        }
-        if (!string.IsNullOrWhiteSpace(xrayStation.BwRightPremolarFileName))
-        {
-            bwxImageOptions.Add(("BW Right Premolar", "bwx_right_premolar", xrayStation.BwRightPremolarFileName));
-        }
-    }
-
-    var paImageOptions = xrayStation.PaImages?
-        .Where(p => !string.IsNullOrWhiteSpace(p.FileName))
-        .OrderBy(p => p.SortOrder)
-        .ToList() ?? new List<DentalXRayPaImage>();
-
-    var hasBwxImages = bwxImageOptions.Any();
-    var hasPaImages = paImageOptions.Any();
 }
 <h3 class="mb-4">Subsequent diseases and abnormalities</h3>
 
@@ -214,83 +165,7 @@
             </div>
 
             <div class="col-lg-6">
-                <div class="psr-xray-preview-card">
-                    <p class="fw-semibold mb-2">X-Ray Preview</p>
-
-                    <div class="mb-3">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input psr-xray-type-radio"
-                                   type="radio"
-                                   name="PsrXrayType"
-                                   id="PsrXrayType_BWX"
-                                   value="BWX"
-                                   @(hasBwxImages ? "" : "disabled") />
-                            <label class="form-check-label" for="PsrXrayType_BWX">BWX</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input psr-xray-type-radio"
-                                   type="radio"
-                                   name="PsrXrayType"
-                                   id="PsrXrayType_PA"
-                                   value="PA"
-                                   @(hasPaImages ? "" : "disabled") />
-                            <label class="form-check-label" for="PsrXrayType_PA">PA</label>
-                        </div>
-                    </div>
-
-                    <div class="mb-3" id="psrXrayBwxSelectWrap" style="display:none;">
-                        <label class="form-label" for="psrXrayBwxSelect">Select BWX image</label>
-                        <select class="form-select psr-xray-image-select" id="psrXrayBwxSelect">
-                            <option value="">-- Select --</option>
-                            @foreach (var option in bwxImageOptions)
-                            {
-                                <option value="@option.FileName"
-                                        data-filename="@option.FileName"
-                                        data-prefix="@option.DownloadPrefix">@option.Label</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="mb-3" id="psrXrayPaSelectWrap" style="display:none;">
-                        <label class="form-label" for="psrXrayPaSelect">Select PA image</label>
-                        <select class="form-select psr-xray-image-select" id="psrXrayPaSelect">
-                            <option value="">-- Select --</option>
-                            @for (var i = 0; i < paImageOptions.Count; i++)
-                            {
-                                var pa = paImageOptions[i];
-                                <option value="@pa.FileName"
-                                        data-filename="@pa.FileName"
-                                        data-prefix="pa_tooth">PA of tooth @(i + 1)</option>
-                            }
-                        </select>
-                    </div>
-
-                    <p class="text-muted small" id="psrXrayEmptyMsg">Select an X-Ray type and image to preview.</p>
-
-                    <div class="psr-xray-preview-panel" id="psrXray_previewSection" style="display:none;">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="small text-muted" id="psrXray_fileNameDisplay"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="psrXrayPreviewBtn">
-                                Preview
-                            </button>
-                        </div>
-                        <div class="psr-xray-preview-viewport xray-preview-viewport" id="psrXray_previewViewport">
-                            <img id="psrXray_previewImg" alt="X-Ray preview" />
-                        </div>
-                        <div class="d-flex flex-wrap gap-2 mt-2 mb-1">
-                            <button type="button" class="btn btn-sm btn-primary xray-zoom-in" data-prefix="psrXray">
-                                <i class="bi bi-zoom-in"></i> ZOOM IN
-                            </button>
-                            <button type="button" class="btn btn-sm btn-primary xray-zoom-out" data-prefix="psrXray">
-                                <i class="bi bi-zoom-out"></i> ZOOM OUT
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary xray-zoom-reset" data-prefix="psrXray">
-                                <i class="bi bi-arrow-counterclockwise"></i> RESET
-                            </button>
-                        </div>
-                        <p class="mb-0 small">Zoom Level: <span id="psrXray_zoomLevel" class="text-primary fw-semibold">100%</span></p>
-                    </div>
-                </div>
+                @await Html.PartialAsync("_DentalExamXrayPreview", xrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "psrXray" })
 
                 <div class="mt-3" id="psrToothChartImageColumn">
                     <div class="border rounded p-3 bg-light d-flex flex-column justify-content-center align-items-center text-center psr-tooth-chart-image-wrap">

@@ -5,6 +5,7 @@
 
 @{
     var exam = Model ?? new DentalExam();
+    var findingsXrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalExamFindingMapper.ToDto)
@@ -168,7 +169,9 @@
                     </div>
 
                     <div class="col-md-6" id="dentalFindingImageColumn">
-                        <div class="border rounded p-3 bg-light h-100 d-flex flex-column justify-content-center align-items-center text-center dental-finding-image-wrap">
+                        @await Html.PartialAsync("_DentalExamXrayPreview", findingsXrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "findingsXray" })
+
+                        <div class="border rounded p-3 bg-light mt-3 d-flex flex-column justify-content-center align-items-center text-center dental-finding-image-wrap">
                             <img src="~/images/dental-tooth-chart-reference.png"
                                  id="dentalFindingReferenceImage"
                                  alt="Dental tooth chart reference"
