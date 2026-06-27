@@ -97,6 +97,23 @@
         -webkit-user-drag: none;
         user-select: none;
     }
+    .psr-xray-preview-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: #fdfdff;
+    }
+    .psr-xray-preview-viewport {
+        height: 320px;
+        border-radius: 0.375rem;
+    }
+    #psrToothChartReferenceImage {
+        width: 100%;
+        max-width: 100%;
+        min-height: 520px;
+        max-height: 620px;
+        object-fit: contain;
+    }
 </style>
 
 <h2 id="page-heading">Edit Service Member at Dental Exams</h2>
@@ -402,6 +419,7 @@
         var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
         psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
         psrViewData["RequirePsrFields"] = false;
+        psrViewData["XRayStation"] = Model.XRayStation;
     }
     <div id="subsequentDiseasesSection" style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
         @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
@@ -993,7 +1011,80 @@
         $(document).on("mouseup mouseleave", function () {
             endXRayPan();
         });
+
+        initPsrXrayPreview();
     });
+
+    const PSR_XRAY_PREFIX = "psrXray";
+    let psrXrayCurrentUrl = "";
+
+    function clearPsrXrayPreview() {
+        const previewSection = document.getElementById(PSR_XRAY_PREFIX + "_previewSection");
+        const previewImg = document.getElementById(PSR_XRAY_PREFIX + "_previewImg");
+        if (previewImg) { previewImg.removeAttribute("src"); }
+        if (previewSection) { previewSection.style.display = "none"; }
+        psrXrayCurrentUrl = "";
+        $("#psrXray_fileNameDisplay").text("");
+        $("#psrXrayEmptyMsg").show();
+    }
+
+    function showPsrXrayPreview(downloadPrefix, fileName, label) {
+        const previewSection = document.getElementById(PSR_XRAY_PREFIX + "_previewSection");
+        const previewImg = document.getElementById(PSR_XRAY_PREFIX + "_previewImg");
+        if (!previewSection || !previewImg || !fileName || !downloadPrefix) {
+            clearPsrXrayPreview();
+            return;
+        }
+
+        const src = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        psrXrayCurrentUrl = src;
+        $("#psrXray_fileNameDisplay").text(label || fileName);
+        previewImg.onload = function () {
+            setXRayZoom(PSR_XRAY_PREFIX, 100);
+            updateXRayPanAvailability(PSR_XRAY_PREFIX);
+        };
+        previewImg.onerror = function () { clearPsrXrayPreview(); };
+        previewImg.src = src;
+        previewSection.style.display = "block";
+        $("#psrXrayEmptyMsg").hide();
+        if (previewImg.complete) {
+            setXRayZoom(PSR_XRAY_PREFIX, 100);
+            updateXRayPanAvailability(PSR_XRAY_PREFIX);
+        }
+    }
+
+    function handlePsrXraySelectChange(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        const fileName = opt ? opt.getAttribute("data-filename") : null;
+        const downloadPrefix = opt ? opt.getAttribute("data-prefix") : null;
+        const label = opt ? opt.text : null;
+        if (fileName && downloadPrefix) {
+            showPsrXrayPreview(downloadPrefix, fileName, label);
+        } else {
+            clearPsrXrayPreview();
+        }
+    }
+
+    function initPsrXrayPreview() {
+        $(document).on("change", ".psr-xray-type-radio", function () {
+            const isBwx = this.value === "BWX";
+            $("#psrXrayBwxSelectWrap").toggle(isBwx);
+            $("#psrXrayPaSelectWrap").toggle(!isBwx);
+            document.getElementById("psrXrayBwxSelect").value = "";
+            document.getElementById("psrXrayPaSelect").value = "";
+            clearPsrXrayPreview();
+        });
+
+        $(document).on("change", ".psr-xray-image-select", function () {
+            handlePsrXraySelectChange(this);
+        });
+
+        $(document).on("click", "#psrXrayPreviewBtn", function () {
+            if (psrXrayCurrentUrl) {
+                window.open(psrXrayCurrentUrl, "_blank");
+            }
+        });
+    }
 
     $('a.btn-back-confirm').on('click', async function (e) {
         e.preventDefault();
