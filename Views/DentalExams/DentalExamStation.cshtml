@@ -114,6 +114,139 @@
         max-height: 620px;
         object-fit: contain;
     }
+
+    .psr-interactive-tooth-chart {
+        width: 100%;
+    }
+
+    .psr-tooth-chart-board {
+        position: relative;
+        width: 100%;
+        padding: 0.25rem 1.35rem;
+        background: #fff;
+        user-select: none;
+    }
+
+    .psr-tooth-side {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #111;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+    }
+
+    .psr-tooth-side-left {
+        left: 0.15rem;
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    .psr-tooth-side-right {
+        right: 0.15rem;
+    }
+
+    .psr-tooth-arch-divider {
+        height: 3px;
+        background: #111;
+        margin: 0.15rem 0;
+    }
+
+    .psr-tooth-primary-row,
+    .psr-tooth-images-row,
+    .psr-tooth-num-row,
+    .psr-tooth-check-row {
+        display: grid;
+        grid-template-columns: repeat(16, minmax(0, 1fr));
+        gap: 0;
+        align-items: center;
+    }
+
+    .psr-tooth-primary-cell,
+    .psr-tooth-num-cell {
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1.1;
+        color: #111;
+        min-height: 0.95rem;
+    }
+
+    .psr-tooth-image-btn {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        line-height: 0;
+    }
+
+    .psr-tooth-img {
+        width: 100%;
+        height: auto;
+        max-height: 210px;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+    }
+
+    .psr-tooth-arch-lower .psr-tooth-img {
+        max-height: 220px;
+    }
+
+    .psr-tooth-check-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 0.2rem 0;
+        cursor: pointer;
+    }
+
+    .psr-tooth-check-label input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
+    }
+
+    .psr-tooth-check-box {
+        width: 14px;
+        height: 14px;
+        border: 1.5px solid #111;
+        background: #fff;
+        border-radius: 2px;
+        display: inline-block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .psr-tooth-check-label input:checked + .psr-tooth-check-box {
+        background: #ffe0e0;
+    }
+
+    .psr-tooth-check-label input:checked + .psr-tooth-check-box::after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 0px;
+        width: 5px;
+        height: 9px;
+        border: solid #111;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .psr-tooth-image-btn[aria-pressed="true"] {
+        outline: none;
+    }
 </style>
 
 <h2 id="page-heading">Edit Service Member at Dental Exams</h2>
@@ -731,9 +864,61 @@
         toggleSubsequentDiseasesSection();
     }
 
+    function setPsrToothSelected(toothNumber, selected) {
+        const tooth = String(toothNumber);
+        const $input = $("#psrToothCheck_" + tooth);
+        const $chart = $("#psrInteractiveToothChart");
+        const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+        const $img = $btn.find(".psr-tooth-img");
+
+        $input.prop("checked", !!selected);
+        $btn.attr("aria-pressed", selected ? "true" : "false");
+        if ($img.length) {
+            $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+        }
+    }
+
+    function togglePsrTooth(toothNumber) {
+        const $input = $("#psrToothCheck_" + toothNumber);
+        if (!$input.length) {
+            return;
+        }
+        setPsrToothSelected(toothNumber, !$input.is(":checked"));
+    }
+
+    function initPsrToothChart() {
+        const $chart = $("#psrInteractiveToothChart");
+        if (!$chart.length) {
+            return;
+        }
+
+        // Preload selected images so swaps are instant
+        $chart.find(".psr-tooth-img").each(function () {
+            const selectedSrc = $(this).attr("data-selected");
+            if (selectedSrc) {
+                const preload = new Image();
+                preload.src = selectedSrc;
+            }
+        });
+
+        $chart.off("click.psrTooth").on("click.psrTooth", ".psr-tooth-image-btn", function (e) {
+            e.preventDefault();
+            togglePsrTooth($(this).attr("data-tooth"));
+        });
+
+        $chart.off("change.psrTooth").on("change.psrTooth", ".psr-tooth-input", function () {
+            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
+
+        $chart.find(".psr-tooth-input").each(function () {
+            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
+    }
+
     function initPsrSection() {
         toggleSoftTissuesDetail();
         updatePsrTobaccoDisplay();
+        initPsrToothChart();
     }
 
     function initQuestionnaireToggles() {

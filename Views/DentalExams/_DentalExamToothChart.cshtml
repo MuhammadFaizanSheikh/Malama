@@ -1,0 +1,123 @@
+@*
+  Interactive Universal tooth chart (1-32).
+  Each tooth is a cutout image; checking swaps to the light-red filled image.
+*@
+@{
+    var upperTeeth = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+    var lowerTeeth = new[] { 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17 };
+    var primaryUpper = new Dictionary<int, string>
+    {
+        { 4, "A" }, { 5, "B" }, { 6, "C" }, { 7, "D" }, { 8, "E" },
+        { 9, "F" }, { 10, "G" }, { 11, "H" }, { 12, "I" }, { 13, "J" }
+    };
+    var primaryLower = new Dictionary<int, string>
+    {
+        { 29, "T" }, { 28, "S" }, { 27, "R" }, { 26, "Q" }, { 25, "P" },
+        { 24, "O" }, { 23, "N" }, { 22, "M" }, { 21, "L" }, { 20, "K" }
+    };
+    string ToothImg(int n, bool selected) =>
+        Url.Content($"~/images/teeth/{(selected ? "selected" : "normal")}/tooth-{n}.png");
+}
+<div id="psrInteractiveToothChart" class="psr-interactive-tooth-chart" data-psr-tooth-chart="1">
+    <div class="psr-tooth-chart-board" role="group" aria-label="Interactive dental tooth chart">
+        <div class="psr-tooth-side psr-tooth-side-left" aria-hidden="true">RIGHT</div>
+        <div class="psr-tooth-side psr-tooth-side-right" aria-hidden="true">LEFT</div>
+
+        <div class="psr-tooth-arch psr-tooth-arch-upper">
+            <div class="psr-tooth-primary-row">
+                @foreach (var n in upperTeeth)
+                {
+                    <div class="psr-tooth-primary-cell">
+                        @(primaryUpper.TryGetValue(n, out var letter) ? letter : "")
+                    </div>
+                }
+            </div>
+            <div class="psr-tooth-images-row">
+                @foreach (var n in upperTeeth)
+                {
+                    <button type="button"
+                            class="psr-tooth-image-btn"
+                            data-tooth="@n"
+                            aria-pressed="false"
+                            title="Tooth @n">
+                        <img class="psr-tooth-img"
+                             src="@ToothImg(n, false)"
+                             data-normal="@ToothImg(n, false)"
+                             data-selected="@ToothImg(n, true)"
+                             alt="Tooth @n" />
+                    </button>
+                }
+            </div>
+            <div class="psr-tooth-num-row">
+                @foreach (var n in upperTeeth)
+                {
+                    <div class="psr-tooth-num-cell">@n</div>
+                }
+            </div>
+            <div class="psr-tooth-check-row">
+                @foreach (var n in upperTeeth)
+                {
+                    <label class="psr-tooth-check-label" title="Select tooth @n">
+                        <input type="checkbox"
+                               class="psr-tooth-input"
+                               id="psrToothCheck_@n"
+                               name="PsrSelectedTeeth"
+                               value="@n"
+                               data-tooth="@n" />
+                        <span class="psr-tooth-check-box" aria-hidden="true"></span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="psr-tooth-arch-divider" aria-hidden="true"></div>
+
+        <div class="psr-tooth-arch psr-tooth-arch-lower">
+            <div class="psr-tooth-check-row">
+                @foreach (var n in lowerTeeth)
+                {
+                    <label class="psr-tooth-check-label" title="Select tooth @n">
+                        <input type="checkbox"
+                               class="psr-tooth-input"
+                               id="psrToothCheck_@n"
+                               name="PsrSelectedTeeth"
+                               value="@n"
+                               data-tooth="@n" />
+                        <span class="psr-tooth-check-box" aria-hidden="true"></span>
+                    </label>
+                }
+            </div>
+            <div class="psr-tooth-num-row">
+                @foreach (var n in lowerTeeth)
+                {
+                    <div class="psr-tooth-num-cell">@n</div>
+                }
+            </div>
+            <div class="psr-tooth-images-row">
+                @foreach (var n in lowerTeeth)
+                {
+                    <button type="button"
+                            class="psr-tooth-image-btn"
+                            data-tooth="@n"
+                            aria-pressed="false"
+                            title="Tooth @n">
+                        <img class="psr-tooth-img"
+                             src="@ToothImg(n, false)"
+                             data-normal="@ToothImg(n, false)"
+                             data-selected="@ToothImg(n, true)"
+                             alt="Tooth @n" />
+                    </button>
+                }
+            </div>
+            <div class="psr-tooth-primary-row">
+                @foreach (var n in lowerTeeth)
+                {
+                    <div class="psr-tooth-primary-cell">
+                        @(primaryLower.TryGetValue(n, out var letter) ? letter : "")
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="small text-muted mt-2 text-center">Select teeth to mark (Universal numbering 1-32)</div>
+</div>
