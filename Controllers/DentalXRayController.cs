@@ -265,6 +265,35 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                // Go to Vital Station: redirect only — do not validate or persist form/files.
+                if (dto.GoToVitalStation)
+                {
+                    long vitalStationId = 0;
+                    try
+                    {
+                        var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(dto.ServiceMembersChildId);
+                        vitalStationId = vitalVm?.VitalStationDto?.Id ?? 0;
+                    }
+                    catch (Exception vitalEx)
+                    {
+                        _logger.LogWarning(vitalEx,
+                            "{ClassName}, {MethodName}, Could not load vital station id before redirect. ServiceMembersChildId={ServiceMembersChildId}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    }
+
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Redirecting to Vital Station without saving. DentalXRayStationId={DentalXRayStationId}, ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, dto.Id, dto.ServiceMembersChildId);
+
+                    return RedirectToAction("VitalStation", "VitalStation", new
+                    {
+                        vitalStationId,
+                        serviceMembersChildId = dto.ServiceMembersChildId,
+                        returnTo = "DentalXRay",
+                        dentalXRayStationId = dto.Id
+                    });
+                }
+
                 var barcode = serviceMember.Barcode;
                 if (string.IsNullOrWhiteSpace(barcode))
                 {
@@ -274,9 +303,7 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var validationError = dto.GoToVitalStation
-                    ? ValidateDraftBeforeVitalRedirect(dto, serviceMember)
-                    : await ValidateSaveDtoAsync(dto, serviceMember);
+                var validationError = await ValidateSaveDtoAsync(dto, serviceMember);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Validation failed: {Error}", CLASSNAME, methodName, validationError);
@@ -355,34 +382,6 @@ namespace ExcelFilesCompiler.Controllers
                 dbSaveCompleted = true;
                 _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
 
-                if (dto.GoToVitalStation)
-                {
-                    long vitalStationId = 0;
-                    try
-                    {
-                        var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(dto.ServiceMembersChildId);
-                        vitalStationId = vitalVm?.VitalStationDto?.Id ?? 0;
-                    }
-                    catch (Exception vitalEx)
-                    {
-                        _logger.LogWarning(vitalEx,
-                            "{ClassName}, {MethodName}, Could not load vital station id before redirect. ServiceMembersChildId={ServiceMembersChildId}",
-                            CLASSNAME, methodName, dto.ServiceMembersChildId);
-                    }
-
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Draft saved. Redirecting to Vital Station. DentalXRayStationId={DentalXRayStationId}, ServiceMembersChildId={ServiceMembersChildId}",
-                        CLASSNAME, methodName, entity.Id, dto.ServiceMembersChildId);
-
-                    return RedirectToAction("VitalStation", "VitalStation", new
-                    {
-                        vitalStationId,
-                        serviceMembersChildId = dto.ServiceMembersChildId,
-                        returnTo = "DentalXRay",
-                        dentalXRayStationId = entity.Id
-                    });
-                }
-
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Dental X-Ray record saved successfully.";
@@ -442,35 +441,6 @@ namespace ExcelFilesCompiler.Controllers
         private static void BindHealthConditionsFromForm(DentalXRayStationSaveDto dto, IFormCollection form)
         {
             DentalQuestionnaireFormBinder.BindHealthConditions(dto, form);
-        }
-
-        private static string? ValidateDraftBeforeVitalRedirect(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
-        {
-            if (HasPendingFileUploads(dto) && string.IsNullOrWhiteSpace(serviceMember.Barcode))
-            {
-                return "Service member barcode is required for file upload.";
-            }
-
-            return null;
-        }
-
-        private static bool HasPendingFileUploads(DentalXRayStationSaveDto dto)
-        {
-            if (dto.BwxConsolidatedFile != null && dto.BwxConsolidatedFile.Length > 0)
-            {
-                return true;
-            }
-
-            if ((dto.BwLeftMolarFile != null && dto.BwLeftMolarFile.Length > 0)
-                || (dto.BwLeftPremolarFile != null && dto.BwLeftPremolarFile.Length > 0)
-                || (dto.BwRightMolarFile != null && dto.BwRightMolarFile.Length > 0)
-                || (dto.BwRightPremolarFile != null && dto.BwRightPremolarFile.Length > 0))
-            {
-                return true;
-            }
-
-            return dto.PaImages != null && dto.PaImages.Any(p =>
-                p.ImageFile != null && p.ImageFile.Length > 0 && !p.Removed);
         }
 
         private Task<string?> ValidateSaveDtoAsync(DentalXRayStationSaveDto dto, ServiceMembersChild serviceMember)
