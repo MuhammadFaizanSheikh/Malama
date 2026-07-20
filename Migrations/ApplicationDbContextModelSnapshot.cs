@@ -638,6 +638,28 @@ namespace Malama.Migrations
                     b.ToTable("DentalExamFinding");
                 });
 
+            modelBuilder.Entity("Malama.Models.DentalExamSelectedTooth", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DentalExamId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ToothNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalExamId", "ToothNumber")
+                        .IsUnique();
+
+                    b.ToTable("DentalExamSelectedTooth");
+                });
+
             modelBuilder.Entity("Malama.Models.DentalQuestionnaire", b =>
                 {
                     b.Property<long>("Id")
@@ -3704,6 +3726,17 @@ namespace Malama.Migrations
                     b.Navigation("DentalExam");
                 });
 
+            modelBuilder.Entity("Malama.Models.DentalExamSelectedTooth", b =>
+                {
+                    b.HasOne("Malama.Models.DentalExam", "DentalExam")
+                        .WithMany("SelectedTeeth")
+                        .HasForeignKey("DentalExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalExam");
+                });
+
             modelBuilder.Entity("Malama.Models.DentalQuestionnaire", b =>
                 {
                     b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
@@ -4202,6 +4235,8 @@ namespace Malama.Migrations
             modelBuilder.Entity("Malama.Models.DentalExam", b =>
                 {
                     b.Navigation("Findings");
+
+                    b.Navigation("SelectedTeeth");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalXRayStation", b =>

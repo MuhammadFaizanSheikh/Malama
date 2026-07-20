@@ -44,6 +44,7 @@ namespace ExcelFilesCompiler
         public DbSet<DentalQuestionnaire> DentalQuestionnaire { get; set; }
         public DbSet<DentalExam> DentalExam { get; set; }
         public DbSet<DentalExamFinding> DentalExamFinding { get; set; }
+        public DbSet<DentalExamSelectedTooth> DentalExamSelectedTooth { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -185,6 +186,16 @@ namespace ExcelFilesCompiler
                     .WithMany(d => d.Findings)
                     .HasForeignKey(e => e.DentalExamId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<DentalExamSelectedTooth>(entity =>
+            {
+                entity.HasOne(e => e.DentalExam)
+                    .WithMany(d => d.SelectedTeeth)
+                    .HasForeignKey(e => e.DentalExamId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.DentalExamId, e.ToothNumber }).IsUnique();
             });
         }
 

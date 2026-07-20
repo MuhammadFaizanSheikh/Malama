@@ -68,8 +68,6 @@ namespace Malama.Models
 
         public bool GoToVitalStation { get; set; }
 
-
-
         public string? PsrUpperRight { get; set; }
 
         public string? PsrUpperAnterior { get; set; }
@@ -83,6 +81,9 @@ namespace Malama.Models
         public string? PsrLowerLeft { get; set; }
 
         public string? PsrCarrierRisk { get; set; }
+
+        //Teeth marking object.
+        public List<int> PsrSelectedTeeth { get; set; } = new();
 
         public string? SoftTissuesWnl { get; set; }
 

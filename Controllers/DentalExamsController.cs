@@ -259,10 +259,9 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalExamStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
-                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
-
                 if (!dto.GoToVitalStation)
                 {
+                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
                     await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
                 }
 
@@ -282,7 +281,7 @@ namespace ExcelFilesCompiler.Controllers
                     }
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Draft saved. Redirecting to Vital Station. ServiceMembersChildId={ServiceMembersChildId}",
+                        "{ClassName}, {MethodName}, Redirecting to Vital Station without saving. ServiceMembersChildId={ServiceMembersChildId}",
                         CLASSNAME, methodName, dto.ServiceMembersChildId);
 
                     return RedirectToAction("VitalStation", "VitalStation", new

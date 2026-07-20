@@ -42,6 +42,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<DentalQuestionnaire> DentalQuestionnaire { get; private set; }
         public IGenericRepository<DentalExam> DentalExam { get; private set; }
         public IGenericRepository<DentalExamFinding> DentalExamFinding { get; private set; }
+        public IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; private set; }
 
 
         public UnitOfWork(ApplicationDbContext context)
@@ -81,6 +82,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             DentalQuestionnaire = new GenericRepository<DentalQuestionnaire>(_context);
             DentalExam = new GenericRepository<DentalExam>(_context);
             DentalExamFinding = new GenericRepository<DentalExamFinding>(_context);
+            DentalExamSelectedTooth = new GenericRepository<DentalExamSelectedTooth>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

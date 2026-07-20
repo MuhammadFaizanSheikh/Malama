@@ -21,18 +21,41 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<DentalExam?> GetByServiceMembersChildIdAsync(long serviceMembersChildId)
         {
-            var exam = await _unitOfWork.DentalExam
-                .GetWithIncludeNoTracking(
-                    e => e.ServiceMembersChildId == serviceMembersChildId,
-                    e => e.Findings)
-                .FirstOrDefaultAsync();
+            const string methodName = nameof(GetByServiceMembersChildIdAsync);
 
-            if (exam?.Findings != null)
+            try
             {
-                exam.Findings = exam.Findings.OrderBy(f => f.SortOrder).ToList();
-            }
+                var exam = await _unitOfWork.DentalExam
+                    .GetWithIncludeNoTracking(
+                        e => e.ServiceMembersChildId == serviceMembersChildId,
+                        e => e.Findings,
+                        e => e.SelectedTeeth)
+                    .FirstOrDefaultAsync();
 
-            return exam;
+                if (exam?.Findings != null)
+                {
+                    exam.Findings = exam.Findings.OrderBy(f => f.SortOrder).ToList();
+                }
+
+                if (exam?.SelectedTeeth != null)
+                {
+                    exam.SelectedTeeth = exam.SelectedTeeth.OrderBy(t => t.ToothNumber).ToList();
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Loaded dental exam for ServiceMembersChildId={ServiceMembersChildId}. Found={Found}, SelectedToothCount={SelectedToothCount}",
+                    CLASSNAME, methodName, serviceMembersChildId, exam != null,
+                    exam?.SelectedTeeth?.Count ?? 0);
+
+                return exam;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to load dental exam for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
         }
 
         public async Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName)
@@ -43,19 +66,21 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 dto.Findings = DentalExamFindingBinder.ParseFromJson(dto.FindingsJson);
+                dto.PsrSelectedTeeth = NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
 
                 transaction = await _unitOfWork.BeginTransactionAsync();
 
                 var existing = await _unitOfWork.DentalExam
                     .GetWithIncludeTracking(
                         e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
-                        e => e.Findings)
+                        e => e.Findings,
+                        e => e.SelectedTeeth)
                     .FirstOrDefaultAsync();
 
                 if (existing != null)
                 {
                     MapFormDataToEntity(dto, existing);
-                    ApplySubsequentDiseasesFindings(existing, dto);
+                    ApplySubsequentDiseasesData(existing, dto);
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
                     existing.Status = DentalExamValidator.ComputeOverallStatus(dto);
@@ -64,9 +89,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     await transaction.CommitAsync();
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. SubsequentSectionActive={SubsequentSectionActive}, FindingCount={FindingCount}",
+                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. SubsequentSectionActive={SubsequentSectionActive}, FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
                         CLASSNAME, methodName, dto.ServiceMembersChildId, userName,
-                        DentalExamValidator.IsSubsequentDiseasesSectionActive(dto), dto.Findings.Count);
+                        DentalExamValidator.IsSubsequentDiseasesSectionActive(dto),
+                        dto.Findings.Count,
+                        dto.PsrSelectedTeeth.Count);
                     return;
                 }
 
@@ -78,14 +105,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _unitOfWork.DentalExam.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                ApplySubsequentDiseasesFindings(entity, dto);
+                ApplySubsequentDiseasesData(entity, dto);
                 await _unitOfWork.SaveAsync();
 
                 await transaction.CommitAsync();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Dental exam created for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, dto.Findings.Count);
+                    "{ClassName}, {MethodName}, Dental exam created for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName,
+                    dto.Findings.Count, dto.PsrSelectedTeeth.Count);
             }
             catch (Exception ex)
             {
@@ -117,15 +145,17 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private void ApplySubsequentDiseasesFindings(DentalExam target, DentalExamStationSaveDto dto)
+        private void ApplySubsequentDiseasesData(DentalExam target, DentalExamStationSaveDto dto)
         {
             if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
             {
                 ReplaceFindings(target, dto.Findings);
+                ReplaceSelectedTeeth(target, dto.PsrSelectedTeeth);
                 return;
             }
 
             ReplaceFindings(target, new List<DentalExamFindingDto>());
+            ReplaceSelectedTeeth(target, new List<int>());
         }
 
         private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings)
@@ -143,6 +173,40 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 target.Findings.Add(DentalExamFindingMapper.ToEntity(finding, target.Id, index));
             }
+        }
+
+        private void ReplaceSelectedTeeth(DentalExam target, List<int> selectedTeeth)
+        {
+            target.SelectedTeeth ??= new List<DentalExamSelectedTooth>();
+            var existingTeeth = target.SelectedTeeth.ToList();
+
+            if (existingTeeth.Count > 0)
+            {
+                _unitOfWork.DentalExamSelectedTooth.RemoveRange(existingTeeth);
+                target.SelectedTeeth.Clear();
+            }
+
+            foreach (var toothNumber in selectedTeeth)
+            {
+                target.SelectedTeeth.Add(new DentalExamSelectedTooth
+                {
+                    DentalExamId = target.Id,
+                    ToothNumber = toothNumber
+                });
+            }
+
+            _logger.LogDebug(
+                "{ClassName}, ReplaceSelectedTeeth, DentalExamId={DentalExamId}, SelectedToothCount={SelectedToothCount}",
+                CLASSNAME, target.Id, selectedTeeth.Count);
+        }
+
+        private static List<int> NormalizeSelectedTeeth(IEnumerable<int>? teeth)
+        {
+            return (teeth ?? Enumerable.Empty<int>())
+                .Where(t => t >= 1 && t <= 32)
+                .Distinct()
+                .OrderBy(t => t)
+                .ToList();
         }
 
         private static DentalExam MapFormDataToEntity(DentalExamStationSaveDto dto, DentalExam? existing = null)
