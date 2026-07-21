@@ -197,7 +197,8 @@
         const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
         const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
         const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
-        const RESTORATIVE_SURFACES = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfaces);
+        const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
+        const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
 
         let dentalFindings = @Html.Raw(findingsJson);
@@ -246,6 +247,20 @@
             $select.val(values || []).trigger("change");
         }
 
+        function getRestorativeSurfacesForTooth(tooth) {
+            const n = parseInt(tooth, 10);
+            if (!n || n < 1 || n > 32) {
+                return [];
+            }
+            if ((n >= 6 && n <= 11) || (n >= 22 && n <= 27)) {
+                return RESTORATIVE_SURFACES_ANTERIOR.slice();
+            }
+            if ((n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32)) {
+                return RESTORATIVE_SURFACES_POSTERIOR.slice();
+            }
+            return [];
+        }
+
         function populateToothOptions() {
             const isPrimary = $("#findingPrimaryTooth").is(":checked");
             const teeth = isPrimary ? PRIMARY_TEETH : PERMANENT_TEETH;
@@ -278,12 +293,22 @@
             }
 
             if (diseaseType === "Restorative") {
-                RESTORATIVE_SURFACES.forEach(function (surface) {
+                const surfaces = getRestorativeSurfacesForTooth($("#findingAffectedTooth").val());
+                if (!surfaces.length) {
+                    $section.hide();
+                    setMultiSelectValues($select, []);
+                    return;
+                }
+
+                surfaces.forEach(function (surface) {
                     $select.append($("<option>").val(surface).text(surface));
                 });
                 $section.show();
                 initMultiSelect($select, "Select surface(s)");
-                setMultiSelectValues($select, selectedValues || []);
+                const validSelected = (selectedValues || []).filter(function (surface) {
+                    return surfaces.indexOf(surface) >= 0;
+                });
+                setMultiSelectValues($select, validSelected);
                 return;
             }
 
@@ -350,10 +375,23 @@
                 Swal.fire("Invalid Data", "Disease / Condition Type is required.", "warning");
                 return null;
             }
-            if ((finding.diseaseConditionType === "Periodontal" || finding.diseaseConditionType === "Restorative")
-                && (!finding.affectedSurfaces || finding.affectedSurfaces.length === 0)) {
-                Swal.fire("Invalid Data", "Affected Surface(s) are required for the selected Disease / Condition Type.", "warning");
-                return null;
+            if (finding.diseaseConditionType === "Periodontal") {
+                if (!finding.affectedSurfaces || finding.affectedSurfaces.length === 0) {
+                    Swal.fire("Invalid Data", "Affected Surface(s) are required for the selected Disease / Condition Type.", "warning");
+                    return null;
+                }
+            }
+
+            if (finding.diseaseConditionType === "Restorative") {
+                const allowedSurfaces = getRestorativeSurfacesForTooth(finding.affectedTooth);
+                if (!allowedSurfaces.length) {
+                    Swal.fire("Invalid Data", "For Restorative findings, select a permanent tooth (1-32) to choose Affected Surface(s).", "warning");
+                    return null;
+                }
+                if (!finding.affectedSurfaces || finding.affectedSurfaces.length === 0) {
+                    Swal.fire("Invalid Data", "Affected Surface(s) are required for the selected Disease / Condition Type.", "warning");
+                    return null;
+                }
             }
             if (!finding.classification) {
                 Swal.fire("Invalid Data", "Classification is required.", "warning");
@@ -541,7 +579,17 @@
 
             $("#cancelFindingFormBtn").on("click", hideFindingForm);
             $("#addFindingToListBtn").on("click", addOrUpdateFinding);
-            $("#findingPrimaryTooth").on("change", populateToothOptions);
+            $("#findingPrimaryTooth").on("change", function () {
+                populateToothOptions();
+                if ($("#findingDiseaseType").val() === "Restorative") {
+                    populateSurfaceOptions([]);
+                }
+            });
+            $("#findingAffectedTooth").on("change", function () {
+                if ($("#findingDiseaseType").val() === "Restorative") {
+                    populateSurfaceOptions([]);
+                }
+            });
             $("#findingDiseaseType").on("change", function () {
                 populateSurfaceOptions([]);
                 populateCdtOptions([]);

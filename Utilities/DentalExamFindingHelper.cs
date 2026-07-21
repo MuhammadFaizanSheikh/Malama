@@ -100,12 +100,19 @@ namespace ExcelFilesCompiler.Utilities
 
             if (RequiresSurfaces(finding.DiseaseConditionType))
             {
+                var allowedSurfaces = GetAllowedSurfaces(finding.DiseaseConditionType, finding.AffectedTooth);
+
+                if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
+                    && allowedSurfaces.Length == 0)
+                {
+                    return prefix + "Affected Surface(s) require a permanent tooth number (1-32).";
+                }
+
                 if (finding.AffectedSurfaces == null || finding.AffectedSurfaces.Count == 0)
                 {
                     return prefix + "Affected Surface(s) are required for the selected Disease / Condition Type.";
                 }
 
-                var allowedSurfaces = GetAllowedSurfaces(finding.DiseaseConditionType);
                 if (finding.AffectedSurfaces.Any(s => !allowedSurfaces.Contains(s.Trim(), StringComparer.OrdinalIgnoreCase)))
                 {
                     return prefix + "Affected Surface(s) contain invalid values.";
@@ -143,7 +150,7 @@ namespace ExcelFilesCompiler.Utilities
                 || string.Equals(diseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static string[] GetAllowedSurfaces(string? diseaseConditionType)
+        public static string[] GetAllowedSurfaces(string? diseaseConditionType, string? affectedTooth = null)
         {
             if (string.Equals(diseaseConditionType, DentalExamFindingConstants.Periodontal, StringComparison.OrdinalIgnoreCase))
             {
@@ -152,7 +159,31 @@ namespace ExcelFilesCompiler.Utilities
 
             if (string.Equals(diseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
             {
-                return DentalExamFindingConstants.RestorativeSurfaces;
+                return GetRestorativeSurfacesForTooth(affectedTooth);
+            }
+
+            return Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Posterior (1-5, 12-21, 28-32): M,D,L,B,O.
+        /// Anterior (6-11, 22-27): M,D,L,F,I.
+        /// </summary>
+        public static string[] GetRestorativeSurfacesForTooth(string? affectedTooth)
+        {
+            if (!int.TryParse(affectedTooth?.Trim(), out var tooth) || tooth < 1 || tooth > 32)
+            {
+                return Array.Empty<string>();
+            }
+
+            if ((tooth >= 6 && tooth <= 11) || (tooth >= 22 && tooth <= 27))
+            {
+                return DentalExamFindingConstants.RestorativeSurfacesAnterior;
+            }
+
+            if ((tooth >= 1 && tooth <= 5) || (tooth >= 12 && tooth <= 21) || (tooth >= 28 && tooth <= 32))
+            {
+                return DentalExamFindingConstants.RestorativeSurfacesPosterior;
             }
 
             return Array.Empty<string>();

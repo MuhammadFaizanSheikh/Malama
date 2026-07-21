@@ -20,7 +20,12 @@ namespace Malama.Models
         };
 
         public static readonly string[] PeriodontalSurfaces = { "UL", "UR", "LL", "LR" };
-        public static readonly string[] RestorativeSurfaces = { "M", "O", "D", "I", "F", "L", "B" };
+
+        /// <summary>Restorative surfaces for posterior teeth (1-5, 12-21, 28-32).</summary>
+        public static readonly string[] RestorativeSurfacesPosterior = { "M", "D", "L", "B", "O" };
+
+        /// <summary>Restorative surfaces for anterior teeth (6-11, 22-27).</summary>
+        public static readonly string[] RestorativeSurfacesAnterior = { "M", "D", "L", "F", "I" };
 
         public static readonly string[] PermanentTeeth =
             Enumerable.Range(1, 32).Select(i => i.ToString()).ToArray();
