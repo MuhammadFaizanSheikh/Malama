@@ -7,6 +7,7 @@ using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -173,6 +174,15 @@ namespace ExcelFilesCompiler.Controllers
 
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+
+                var currentUserRoles = User.FindAll(ClaimTypes.Role)
+                    .Select(c => c.Value)
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(r => r)
+                    .ToList();
+
+                ViewBag.CurrentUserRoles = string.Join(Environment.NewLine, currentUserRoles);
 
                 var pageModel = new DentalExamStationPageViewModel
                 {

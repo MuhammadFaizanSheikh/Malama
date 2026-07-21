@@ -471,6 +471,11 @@
                                style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
                     </div>
                 </div>
+                <label class="form-label mt-2" for="DentistSignatureRoles">Roles</label>
+                <textarea id="DentistSignatureRoles"
+                          class="form-control read-only-style"
+                          rows="3"
+                          readonly>@(ViewBag.CurrentUserRoles as string ?? "")</textarea>
             </div>
         </div>
     </div>
