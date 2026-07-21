@@ -297,6 +297,7 @@
                 if (!surfaces.length) {
                     $section.hide();
                     setMultiSelectValues($select, []);
+                    populateCdtOptions([]);
                     return;
                 }
 
@@ -309,11 +310,51 @@
                     return surfaces.indexOf(surface) >= 0;
                 });
                 setMultiSelectValues($select, validSelected);
+                populateCdtOptions(getSelectedValues($("#findingCdtCodes")));
                 return;
             }
 
             $section.hide();
             setMultiSelectValues($select, []);
+        }
+
+        function getRestorativeCdtCodes(tooth, surfaceCount) {
+            const n = parseInt(tooth, 10);
+            if (!n || n < 1 || n > 32 || !surfaceCount || surfaceCount < 1) {
+                return [];
+            }
+
+            const isAnterior = (n >= 6 && n <= 11) || (n >= 22 && n <= 27);
+            const isPosterior = (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
+            if (!isAnterior && !isPosterior) {
+                return [];
+            }
+
+            const amalgam = surfaceCount === 1
+                ? "D2140 - Amalgam-One Surface"
+                : surfaceCount === 2
+                    ? "D2150 - Amalgam-Two Surfaces"
+                    : surfaceCount === 3
+                        ? "D2160 - Amalgam-Three Surfaces"
+                        : "D2161 - Amalgam-Four or More Surfaces";
+
+            const resin = isAnterior
+                ? (surfaceCount === 1
+                    ? "D2330 - Resin Based Composite-One Surface, Anterior"
+                    : surfaceCount === 2
+                        ? "D2331 - Resin Based Composite-Two Surfaces, Anterior"
+                        : surfaceCount === 3
+                            ? "D2332 - Resin Based Composite-Three Surfaces, Anterior"
+                            : "D2335 - Resin Based Composite-Four or More Surfaces, Anterior")
+                : (surfaceCount === 1
+                    ? "D2391 - Resin Based Composite-One Surface, Posterior"
+                    : surfaceCount === 2
+                        ? "D2392 - Resin Based Composite-Two Surfaces, Posterior"
+                        : surfaceCount === 3
+                            ? "D2393 - Resin Based Composite-Three Surfaces, Posterior"
+                            : "D2394 - Resin Based Composite-Four or More Surfaces, Posterior");
+
+            return [amalgam, resin];
         }
 
         function populateCdtOptions(selectedValues) {
@@ -322,17 +363,39 @@
             destroySelect2($select);
             $select.empty();
 
-            const codes = CDT_CODES_BY_TYPE[diseaseType] || [];
+            let codes = CDT_CODES_BY_TYPE[diseaseType] || [];
+            if (diseaseType === "Restorative") {
+                codes = getRestorativeCdtCodes(
+                    $("#findingAffectedTooth").val(),
+                    getSelectedValues($("#findingAffectedSurfaces")).length
+                );
+            }
+
             codes.forEach(function (code) {
                 $select.append($("<option>").val(code).text(code));
             });
 
             initMultiSelect($select, "Select CDT code(s)");
             if (selectedValues && selectedValues.length) {
-                const valid = selectedValues.filter(function (code) { return codes.includes(code); });
+                const valid = selectedValues.filter(function (code) { return codes.indexOf(code) >= 0; });
                 setMultiSelectValues($select, valid);
             } else {
                 setMultiSelectValues($select, []);
+            }
+        }
+
+        function syncPrimaryToothAvailability() {
+            const $primary = $("#findingPrimaryTooth");
+            const isRestorative = $("#findingDiseaseType").val() === "Restorative";
+
+            if (isRestorative) {
+                if ($primary.is(":checked")) {
+                    $primary.prop("checked", false);
+                    populateToothOptions();
+                }
+                $primary.prop("disabled", true);
+            } else {
+                $primary.prop("disabled", false);
             }
         }
 
@@ -341,9 +404,10 @@
             $("#dentalFindingFormTitle").text("Add Finding");
             $("#addFindingToListBtn").html('<i class="fas fa-list-ul"></i> Add to List');
             $("#findingPrimaryTooth").prop("checked", false);
+            $("#findingDiseaseType").val("");
+            syncPrimaryToothAvailability();
             populateToothOptions();
             $("#findingAffectedTooth").val("");
-            $("#findingDiseaseType").val("");
             populateSurfaceOptions([]);
             populateCdtOptions([]);
             $("#findingCdtCodesNotes").val("");
@@ -418,10 +482,11 @@
         }
 
         function writeFindingForm(finding) {
-            $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth);
+            $("#findingDiseaseType").val(finding.diseaseConditionType || "");
+            syncPrimaryToothAvailability();
+            $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth && finding.diseaseConditionType !== "Restorative");
             populateToothOptions();
             $("#findingAffectedTooth").val(finding.affectedTooth || "");
-            $("#findingDiseaseType").val(finding.diseaseConditionType || "");
             populateSurfaceOptions(finding.affectedSurfaces || []);
             populateCdtOptions(finding.cdtCodes || []);
             $("#findingCdtCodesNotes").val(finding.cdtCodesNotes || "");
@@ -590,7 +655,14 @@
                     populateSurfaceOptions([]);
                 }
             });
+            $(document).on("change", "#findingAffectedSurfaces", function () {
+                if ($("#findingDiseaseType").val() === "Restorative") {
+                    populateCdtOptions([]);
+                }
+            });
             $("#findingDiseaseType").on("change", function () {
+                syncPrimaryToothAvailability();
+                populateToothOptions();
                 populateSurfaceOptions([]);
                 populateCdtOptions([]);
             });

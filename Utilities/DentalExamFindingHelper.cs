@@ -127,6 +127,18 @@ namespace ExcelFilesCompiler.Utilities
                 return prefix + "Classification is required.";
             }
 
+            if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
+                && finding.CdtCodes != null
+                && finding.CdtCodes.Count > 0)
+            {
+                var allowedCdtCodes = GetRestorativeCdtCodes(finding.AffectedTooth, finding.AffectedSurfaces?.Count ?? 0);
+                if (allowedCdtCodes.Length == 0
+                    || finding.CdtCodes.Any(c => !allowedCdtCodes.Contains(c.Trim(), StringComparer.OrdinalIgnoreCase)))
+                {
+                    return prefix + "CDT Code selection is invalid for the selected tooth and Affected Surface(s).";
+                }
+            }
+
             return null;
         }
 
@@ -187,6 +199,56 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             return Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Restorative CDT options by tooth group (anterior/posterior) and selected surface count.
+        /// </summary>
+        public static string[] GetRestorativeCdtCodes(string? affectedTooth, int surfaceCount)
+        {
+            if (surfaceCount < 1
+                || !int.TryParse(affectedTooth?.Trim(), out var tooth)
+                || tooth < 1
+                || tooth > 32)
+            {
+                return Array.Empty<string>();
+            }
+
+            var isAnterior = (tooth >= 6 && tooth <= 11) || (tooth >= 22 && tooth <= 27);
+            var isPosterior = (tooth >= 1 && tooth <= 5)
+                || (tooth >= 12 && tooth <= 21)
+                || (tooth >= 28 && tooth <= 32);
+
+            if (!isAnterior && !isPosterior)
+            {
+                return Array.Empty<string>();
+            }
+
+            var amalgam = surfaceCount switch
+            {
+                1 => "D2140 - Amalgam-One Surface",
+                2 => "D2150 - Amalgam-Two Surfaces",
+                3 => "D2160 - Amalgam-Three Surfaces",
+                _ => "D2161 - Amalgam-Four or More Surfaces"
+            };
+
+            var resin = isAnterior
+                ? surfaceCount switch
+                {
+                    1 => "D2330 - Resin Based Composite-One Surface, Anterior",
+                    2 => "D2331 - Resin Based Composite-Two Surfaces, Anterior",
+                    3 => "D2332 - Resin Based Composite-Three Surfaces, Anterior",
+                    _ => "D2335 - Resin Based Composite-Four or More Surfaces, Anterior"
+                }
+                : surfaceCount switch
+                {
+                    1 => "D2391 - Resin Based Composite-One Surface, Posterior",
+                    2 => "D2392 - Resin Based Composite-Two Surfaces, Posterior",
+                    3 => "D2393 - Resin Based Composite-Three Surfaces, Posterior",
+                    _ => "D2394 - Resin Based Composite-Four or More Surfaces, Posterior"
+                };
+
+            return new[] { amalgam, resin };
         }
     }
 }
