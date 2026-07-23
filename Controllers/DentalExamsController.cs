@@ -18,6 +18,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
         private readonly IVitalStationService _vitalStationService;
+        private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalExamsController> _logger;
@@ -31,6 +32,7 @@ namespace ExcelFilesCompiler.Controllers
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
             IVitalStationService vitalStationService,
+            IEventStaffService eventStaffService,
             IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
         {
@@ -40,6 +42,7 @@ namespace ExcelFilesCompiler.Controllers
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
             _vitalStationService = vitalStationService;
+            _eventStaffService = eventStaffService;
             _fileService = fileService;
             _userManager = userManager;
         }
@@ -184,6 +187,12 @@ namespace ExcelFilesCompiler.Controllers
 
                 ViewBag.CurrentUserRoles = string.Join(Environment.NewLine, currentUserRoles);
 
+                var currentUser = await _userManager.GetUserAsync(User);
+                var currentUserDisplayName = await ResolveDentistDisplayNameAsync(currentUser);
+                ViewBag.DentistSignatureDisplayName = !string.IsNullOrWhiteSpace(dentalExam.DentistSignatureName)
+                    ? dentalExam.DentistSignatureName
+                    : currentUserDisplayName;
+
                 var pageModel = new DentalExamStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
@@ -258,6 +267,11 @@ namespace ExcelFilesCompiler.Controllers
                     dto.PanoXRayAcknowledged = FormCheckboxHelper.IsChecked(Request.Form, "PanoXRayAcknowledged");
                 }
 
+                if (dto.DentistSignatureEntered && !dto.GoToVitalStation)
+                {
+                    dto.DentistSignatureName = await ResolveDentistSignatureNameForSaveAsync(dto.ServiceMembersChildId, user);
+                }
+
                 var validationError = dto.GoToVitalStation
                     ? ValidateDraftBeforeVitalRedirect()
                     : await ValidateSaveDtoAsync(dto, serviceMember);
@@ -323,6 +337,67 @@ namespace ExcelFilesCompiler.Controllers
         private static string? ValidateDraftBeforeVitalRedirect()
         {
             return null;
+        }
+
+        private async Task<string> ResolveDentistSignatureNameForSaveAsync(long serviceMembersChildId, ApplicationUser user)
+        {
+            try
+            {
+                var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                if (existingExam != null && !string.IsNullOrWhiteSpace(existingExam.DentistSignatureName))
+                {
+                    return existingExam.DentistSignatureName.Trim();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "{ClassName}, ResolveDentistSignatureNameForSaveAsync, Could not load existing dental exam for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, serviceMembersChildId);
+            }
+
+            return await ResolveDentistDisplayNameAsync(user);
+        }
+
+        private async Task<string> ResolveDentistDisplayNameAsync(ApplicationUser? user)
+        {
+            if (user == null)
+            {
+                return string.Empty;
+            }
+
+            if (!user.IsEventUser)
+            {
+                return user.UserName?.Trim() ?? string.Empty;
+            }
+
+            try
+            {
+                var staff = await _eventStaffService.GetEventStaffWithAttributesByUserId(user.Id);
+                return FormatEventStaffDisplayName(staff);
+            }
+            catch (KeyNotFoundException)
+            {
+                _logger.LogWarning(
+                    "{ClassName}, ResolveDentistDisplayNameAsync, EventStaff not found for UserId={UserId}. Falling back to UserName.",
+                    CLASSNAME, user.Id);
+                return user.UserName?.Trim() ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, ResolveDentistDisplayNameAsync, Failed to resolve EventStaff name for UserId={UserId}",
+                    CLASSNAME, user.Id);
+                return user.UserName?.Trim() ?? string.Empty;
+            }
+        }
+
+        private static string FormatEventStaffDisplayName(EventStaff staff)
+        {
+            return string.Join(" ",
+                new[] { staff.StaffFirstName, staff.StaffMiddleInitial, staff.StaffLastName }
+                    .Where(part => !string.IsNullOrWhiteSpace(part))
+                    .Select(part => part!.Trim()));
         }
 
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)

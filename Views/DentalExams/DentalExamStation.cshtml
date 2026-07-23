@@ -42,6 +42,13 @@
         pointer-events: none;
         border-color: #ced4da;
     }
+
+    /* Allow scrolling on readonly role list without enabling editing */
+    #DentistSignatureRoles.read-only-style {
+        pointer-events: auto;
+        overflow-y: auto;
+        resize: none;
+    }
     .condition-detail { display: none; }
     .condition-item { margin-bottom: 0.75rem; }
     .questionnaire-heading {
@@ -457,9 +464,10 @@
                         <input type="text"
                                name="DentistSignatureName"
                                id="DentistSignatureName"
-                               class="form-control"
-                               value="@dentalExam.DentistSignatureName"
-                               @(dentalExam.DentistSignatureEntered ? "required" : "") />
+                               class="form-control read-only-style"
+                               value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
+                               readonly
+                               @(dentalExam.DentistSignatureEntered ? "required" : null) />
                     </div>
                     <div class="col-md-5">
                         <input type="text"
