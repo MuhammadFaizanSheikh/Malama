@@ -267,7 +267,14 @@ namespace ExcelFilesCompiler.Controllers
                     dto.PanoXRayAcknowledged = FormCheckboxHelper.IsChecked(Request.Form, "PanoXRayAcknowledged");
                 }
 
-                if (dto.DentistSignatureEntered && !dto.GoToVitalStation)
+                var isDentalExamDentist = User.IsInRole("DE- Dentist");
+                var isDentalExamAssistantOnly = User.IsInRole("DE-Dental Assistant") && !isDentalExamDentist;
+
+                if (isDentalExamAssistantOnly && !dto.GoToVitalStation)
+                {
+                    await ApplyAssistantLockedDentalExamFieldsAsync(dto);
+                }
+                else if (dto.DentistSignatureEntered && !dto.GoToVitalStation)
                 {
                     dto.DentistSignatureName = await ResolveDentistSignatureNameForSaveAsync(dto.ServiceMembersChildId, user);
                 }
@@ -337,6 +344,94 @@ namespace ExcelFilesCompiler.Controllers
         private static string? ValidateDraftBeforeVitalRedirect()
         {
             return null;
+        }
+
+        private async Task ApplyAssistantLockedDentalExamFieldsAsync(DentalExamStationSaveDto dto)
+        {
+            const string methodName = nameof(ApplyAssistantLockedDentalExamFieldsAsync);
+
+            try
+            {
+                var existing = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                if (existing == null)
+                {
+                    dto.QuestionnaireReviewed = false;
+                    dto.DentistSignatureEntered = false;
+                    dto.DentistSignatureName = null;
+                    dto.FinalComments = null;
+                    ClearSubsequentDiseasesDto(dto);
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, No existing dental exam. Cleared dentist-locked fields for assistant save. ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId);
+                    return;
+                }
+
+                dto.QuestionnaireReviewed = existing.QuestionnaireReviewed;
+                dto.DentistSignatureEntered = existing.DentistSignatureEntered;
+                dto.DentistSignatureName = existing.DentistSignatureName;
+                dto.FinalComments = existing.FinalComments;
+
+                dto.PsrUpperRight = existing.PsrUpperRight;
+                dto.PsrUpperAnterior = existing.PsrUpperAnterior;
+                dto.PsrUpperLeft = existing.PsrUpperLeft;
+                dto.PsrLowerRight = existing.PsrLowerRight;
+                dto.PsrLowerAnterior = existing.PsrLowerAnterior;
+                dto.PsrLowerLeft = existing.PsrLowerLeft;
+                dto.PsrCarrierRisk = existing.PsrCarrierRisk;
+                dto.SoftTissuesWnl = existing.SoftTissuesWnl;
+                dto.SoftTissuesConditionDetail = existing.SoftTissuesConditionDetail;
+                dto.DenClass = existing.DenClass;
+                dto.DenClassReasonComments = existing.DenClassReasonComments;
+                dto.PanoXRayAcknowledged = existing.PanoXRayAcknowledged;
+
+                dto.Findings = existing.Findings?
+                    .OrderBy(f => f.SortOrder)
+                    .Select(DentalExamFindingMapper.ToDto)
+                    .ToList() ?? new List<DentalExamFindingDto>();
+
+                dto.FindingsJson = System.Text.Json.JsonSerializer.Serialize(
+                    dto.Findings,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    });
+
+                dto.PsrSelectedTeeth = existing.SelectedTeeth?
+                    .Select(t => t.ToothNumber)
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToList() ?? new List<int>();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Preserved dentist-locked fields for assistant save. ServiceMembersChildId={ServiceMembersChildId}, FindingCount={FindingCount}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, dto.Findings.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to preserve dentist-locked fields for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId);
+                throw;
+            }
+        }
+
+        private static void ClearSubsequentDiseasesDto(DentalExamStationSaveDto dto)
+        {
+            dto.PsrUpperRight = null;
+            dto.PsrUpperAnterior = null;
+            dto.PsrUpperLeft = null;
+            dto.PsrLowerRight = null;
+            dto.PsrLowerAnterior = null;
+            dto.PsrLowerLeft = null;
+            dto.PsrCarrierRisk = null;
+            dto.SoftTissuesWnl = null;
+            dto.SoftTissuesConditionDetail = null;
+            dto.DenClass = null;
+            dto.DenClassReasonComments = null;
+            dto.PanoXRayAcknowledged = false;
+            dto.Findings = new List<DentalExamFindingDto>();
+            dto.FindingsJson = "[]";
+            dto.PsrSelectedTeeth = new List<int>();
         }
 
         private async Task<string> ResolveDentistSignatureNameForSaveAsync(long serviceMembersChildId, ApplicationUser user)

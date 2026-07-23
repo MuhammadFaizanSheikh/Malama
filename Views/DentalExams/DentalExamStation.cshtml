@@ -14,6 +14,9 @@
     var dentalExam = Model.DentalExam;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
+    var isDentalExamDentist = User.IsInRole("DE- Dentist");
+    var isDentalExamAssistantOnly = User.IsInRole("DE-Dental Assistant") && !isDentalExamDentist;
+    var subsequentReadOnly = isDentalExamAssistantOnly;
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
         ServiceMembersChildId = sm.Id,
@@ -22,6 +25,8 @@
     var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
     var showSubsequentDiseasesSection = dentalExam.QuestionnaireReviewed && dentalExam.DentistSignatureEntered;
     var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
+    var showFinalCommentsReadOnly = isDentalExamAssistantOnly && dentalExam.QuestionnaireReviewed;
+    var showSignatureReadOnly = isDentalExamAssistantOnly && dentalExam.DentistSignatureEntered;
 }
 
 <style>
@@ -423,68 +428,130 @@
 
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <input type="hidden" name="QuestionnaireReviewed" value="false" />
-            <div class="form-check mb-2">
-                <input class="form-check-input dental-exam-review-toggle"
-                       type="checkbox"
-                       name="QuestionnaireReviewed"
-                       id="QuestionnaireReviewed"
-                       value="true"
-                       @(dentalExam.QuestionnaireReviewed ? "checked" : null) />
-                <label class="form-check-label fw-semibold" for="QuestionnaireReviewed">
-                    Dental Questionnaire has been reviewed?
-                </label>
-            </div>
-            <div id="finalCommentsSection" style="@(dentalExam.QuestionnaireReviewed ? "" : "display:none;")">
-                <label class="form-label" for="FinalComments">Final Comments</label>
-                <textarea name="FinalComments"
-                          id="FinalComments"
-                          class="form-control"
-                          rows="4"
-                          @(dentalExam.QuestionnaireReviewed ? "required" : "")>@dentalExam.FinalComments</textarea>
-            </div>
+            @if (isDentalExamDentist)
+            {
+                <input type="hidden" name="QuestionnaireReviewed" value="false" />
+                <div class="form-check mb-2">
+                    <input class="form-check-input dental-exam-review-toggle"
+                           type="checkbox"
+                           name="QuestionnaireReviewed"
+                           id="QuestionnaireReviewed"
+                           value="true"
+                           @(dentalExam.QuestionnaireReviewed ? "checked" : null) />
+                    <label class="form-check-label fw-semibold" for="QuestionnaireReviewed">
+                        Dental Questionnaire has been reviewed?
+                    </label>
+                </div>
+                <div id="finalCommentsSection" style="@(dentalExam.QuestionnaireReviewed ? "" : "display:none;")">
+                    <label class="form-label" for="FinalComments">Final Comments</label>
+                    <textarea name="FinalComments"
+                              id="FinalComments"
+                              class="form-control"
+                              rows="4"
+                              @(dentalExam.QuestionnaireReviewed ? "required" : "")>@dentalExam.FinalComments</textarea>
+                </div>
+            }
+            else if (showFinalCommentsReadOnly)
+            {
+                <input type="hidden" name="QuestionnaireReviewed" value="true" />
+                <p class="fw-semibold mb-2">Dental Questionnaire has been reviewed?</p>
+                <div id="finalCommentsSection">
+                    <label class="form-label" for="FinalComments">Final Comments</label>
+                    <textarea name="FinalComments"
+                              id="FinalComments"
+                              class="form-control read-only-style"
+                              rows="4"
+                              readonly>@dentalExam.FinalComments</textarea>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" name="QuestionnaireReviewed" value="@(dentalExam.QuestionnaireReviewed ? "true" : "false")" />
+                @if (!string.IsNullOrWhiteSpace(dentalExam.FinalComments))
+                {
+                    <input type="hidden" name="FinalComments" value="@dentalExam.FinalComments" />
+                }
+            }
         </div>
         <div class="col-md-6">
-            <input type="hidden" name="DentistSignatureEntered" value="false" />
-            <div class="form-check mb-2">
-                <input class="form-check-input dental-exam-review-toggle"
-                       type="checkbox"
-                       name="DentistSignatureEntered"
-                       id="DentistSignatureEntered"
-                       value="true"
-                       @(dentalExam.DentistSignatureEntered ? "checked" : null) />
-                <label class="form-check-label fw-semibold" for="DentistSignatureEntered">
-                    Dentist Signature - Enter Your Name
-                </label>
-            </div>
-            <div id="dentistSignatureSection" style="@(dentalExam.DentistSignatureEntered ? "" : "display:none;")">
-                <label class="form-label" for="DentistSignatureName">Name</label>
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-7">
-                        <input type="text"
-                               name="DentistSignatureName"
-                               id="DentistSignatureName"
-                               class="form-control read-only-style"
-                               value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
-                               readonly
-                               @(dentalExam.DentistSignatureEntered ? "required" : null) />
+            @if (isDentalExamDentist)
+            {
+                <input type="hidden" name="DentistSignatureEntered" value="false" />
+                <div class="form-check mb-2">
+                    <input class="form-check-input dental-exam-review-toggle"
+                           type="checkbox"
+                           name="DentistSignatureEntered"
+                           id="DentistSignatureEntered"
+                           value="true"
+                           @(dentalExam.DentistSignatureEntered ? "checked" : null) />
+                    <label class="form-check-label fw-semibold" for="DentistSignatureEntered">
+                        Dentist Signature - Enter Your Name
+                    </label>
+                </div>
+                <div id="dentistSignatureSection" style="@(dentalExam.DentistSignatureEntered ? "" : "display:none;")">
+                    <label class="form-label" for="DentistSignatureName">Name</label>
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7">
+                            <input type="text"
+                                   name="DentistSignatureName"
+                                   id="DentistSignatureName"
+                                   class="form-control read-only-style"
+                                   value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
+                                   readonly
+                                   @(dentalExam.DentistSignatureEntered ? "required" : null) />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text"
+                                   id="DentistSignatureDateTimeDisplay"
+                                   class="form-control read-only-style"
+                                   value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
+                                   placeholder="Signed date/time"
+                                   readonly
+                                   style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                        </div>
                     </div>
-                    <div class="col-md-5">
-                        <input type="text"
-                               id="DentistSignatureDateTimeDisplay"
-                               class="form-control read-only-style"
-                               value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
-                               placeholder="Signed date/time"
-                               readonly
-                               style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                    <label class="form-label mt-2" for="DentistSignatureRoles">Roles</label>
+                    <textarea id="DentistSignatureRoles"
+                              class="form-control read-only-style"
+                              rows="3"
+                              readonly>@(ViewBag.CurrentUserRoles as string ?? "")</textarea>
+                </div>
+            }
+            else if (showSignatureReadOnly)
+            {
+                <input type="hidden" name="DentistSignatureEntered" value="true" />
+                <input type="hidden" name="DentistSignatureName" value="@dentalExam.DentistSignatureName" />
+                <p class="fw-semibold mb-2">Dentist Signature</p>
+                <div id="dentistSignatureSection">
+                    <label class="form-label" for="DentistSignatureNameDisplay">Name</label>
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7">
+                            <input type="text"
+                                   id="DentistSignatureNameDisplay"
+                                   class="form-control read-only-style"
+                                   value="@dentalExam.DentistSignatureName"
+                                   readonly />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text"
+                                   id="DentistSignatureDateTimeDisplay"
+                                   class="form-control read-only-style"
+                                   value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
+                                   placeholder="Signed date/time"
+                                   readonly
+                                   style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                        </div>
                     </div>
                 </div>
-                <label class="form-label mt-2" for="DentistSignatureRoles">Roles</label>
-                <textarea id="DentistSignatureRoles"
-                          class="form-control read-only-style"
-                          rows="3"
-                          readonly>@(ViewBag.CurrentUserRoles as string ?? "")</textarea>
-            </div>
+            }
+            else
+            {
+                <input type="hidden" name="DentistSignatureEntered" value="@(dentalExam.DentistSignatureEntered ? "true" : "false")" />
+                @if (!string.IsNullOrWhiteSpace(dentalExam.DentistSignatureName))
+                {
+                    <input type="hidden" name="DentistSignatureName" value="@dentalExam.DentistSignatureName" />
+                }
+            }
         </div>
     </div>
         <div class="d-flex justify-content-center mt-3">
@@ -566,17 +633,23 @@
         psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
         psrViewData["RequirePsrFields"] = false;
         psrViewData["XRayStation"] = Model.XRayStation;
+        psrViewData["SubsequentReadOnly"] = subsequentReadOnly;
     }
-    <div id="subsequentDiseasesSection" style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
+    <div id="subsequentDiseasesSection"
+         class="@(subsequentReadOnly ? "subsequent-readonly-mode" : null)"
+         data-subsequent-readonly="@(subsequentReadOnly ? "true" : "false")"
+         style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
         @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
         @{
             var findingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
             findingsViewData["XRayStation"] = Model.XRayStation;
+            findingsViewData["SubsequentReadOnly"] = subsequentReadOnly;
         }
         @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam, findingsViewData)
         @{
             var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
             denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
+            denClassViewData["SubsequentReadOnly"] = subsequentReadOnly;
         }
         @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
     </div>
@@ -612,6 +685,9 @@
 
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
+    const IS_DENTAL_EXAM_DENTIST = @Json.Serialize(isDentalExamDentist);
+    const SUBSEQUENT_SECTION_UNLOCKED = @Json.Serialize(showSubsequentDiseasesSection);
+    const SUBSEQUENT_READONLY = @Json.Serialize(subsequentReadOnly);
     let goToVitalStationClicked = false;
 
     function isGoToVitalStationSubmit(submitter) {
@@ -728,7 +804,50 @@
     }
 
     function isSubsequentDiseasesSectionActive() {
-        return $("#QuestionnaireReviewed").is(":checked") && $("#DentistSignatureEntered").is(":checked");
+        if (!IS_DENTAL_EXAM_DENTIST) {
+            return SUBSEQUENT_SECTION_UNLOCKED;
+        }
+
+        const reviewed = $("#QuestionnaireReviewed").length
+            ? $("#QuestionnaireReviewed").is(":checked")
+            : false;
+        const signed = $("#DentistSignatureEntered").length
+            ? $("#DentistSignatureEntered").is(":checked")
+            : false;
+        return reviewed && signed;
+    }
+
+    function applySubsequentReadOnlyMode() {
+        if (!SUBSEQUENT_READONLY) {
+            return;
+        }
+
+        const $section = $("#subsequentDiseasesSection");
+        if (!$section.length) {
+            return;
+        }
+
+        $section.find("input, select, textarea, button").each(function () {
+            const $el = $(this);
+            if ($el.closest(".xray-preview-widget").length) {
+                return;
+            }
+            if ($el.attr("id") === "FindingsJson") {
+                return;
+            }
+            if ($el.hasClass("edit-finding-btn") || $el.attr("id") === "cancelFindingFormBtn") {
+                return;
+            }
+            if ($el.is("input:checkbox, input:radio, select, button")) {
+                $el.prop("disabled", true);
+            } else {
+                $el.prop("readonly", true).addClass("read-only-style");
+            }
+        });
+
+        $("#addNewFindingBtn").hide();
+        $("#addFindingToListBtn").hide();
+        $("#psrInteractiveToothChart").attr("data-readonly", "true");
     }
 
     function toggleDenClassCommentsRequired() {
@@ -854,6 +973,9 @@
     }
 
     function toggleQuestionnaireReviewFields() {
+        if (!$("#QuestionnaireReviewed").length) {
+            return;
+        }
         const reviewed = $("#QuestionnaireReviewed").is(":checked");
         const $commentsSection = $("#finalCommentsSection");
         const $comments = $("#FinalComments");
@@ -863,6 +985,9 @@
     }
 
     function toggleDentistSignatureFields() {
+        if (!$("#DentistSignatureEntered").length) {
+            return;
+        }
         const signed = $("#DentistSignatureEntered").is(":checked");
         const $signatureSection = $("#dentistSignatureSection");
         const $name = $("#DentistSignatureName");
@@ -875,6 +1000,7 @@
         toggleQuestionnaireReviewFields();
         toggleDentistSignatureFields();
         toggleSubsequentDiseasesSection();
+        applySubsequentReadOnlyMode();
     }
 
     function setPsrToothSelected(toothNumber, selected) {
@@ -914,16 +1040,21 @@
             }
         });
 
+        $chart.find(".psr-tooth-input").each(function () {
+            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
+
+        if ($chart.attr("data-readonly") === "true" || SUBSEQUENT_READONLY) {
+            $chart.find(".psr-tooth-input").prop("disabled", true);
+            return;
+        }
+
         $chart.off("click.psrTooth").on("click.psrTooth", ".psr-tooth-image-btn", function (e) {
             e.preventDefault();
             togglePsrTooth($(this).attr("data-tooth"));
         });
 
         $chart.off("change.psrTooth").on("change.psrTooth", ".psr-tooth-input", function () {
-            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
-        });
-
-        $chart.find(".psr-tooth-input").each(function () {
             setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
         });
     }

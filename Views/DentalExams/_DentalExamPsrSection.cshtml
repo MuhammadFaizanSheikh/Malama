@@ -6,9 +6,11 @@
     var exam = Model ?? new DentalExam();
     var tobaccoDisplay = ViewData["TobaccoDisplay"] as string ?? "No";
     var requirePsrFields = ViewData["RequirePsrFields"] as bool? ?? false;
+    var subsequentReadOnly = ViewData["SubsequentReadOnly"] as bool? ?? false;
     var showSoftTissuesDetail = string.Equals(exam.SoftTissuesWnl, DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase);
-    var psrRequiredAttr = requirePsrFields ? "required" : "";
-    var softTissuesDetailRequiredAttr = requirePsrFields && showSoftTissuesDetail ? "required" : "";
+    var psrRequiredAttr = requirePsrFields && !subsequentReadOnly ? "required" : "";
+    var softTissuesDetailRequiredAttr = requirePsrFields && showSoftTissuesDetail && !subsequentReadOnly ? "required" : "";
+    var psrDisabledAttr = subsequentReadOnly ? "disabled" : null;
 
     var xrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
 }
@@ -24,7 +26,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="form-label" for="PsrUpperRight">Upper Right</label>
-                        <select name="PsrUpperRight" id="PsrUpperRight" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrUpperRight" id="PsrUpperRight" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -34,7 +36,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" for="PsrUpperAnterior">Upper Anterior</label>
-                        <select name="PsrUpperAnterior" id="PsrUpperAnterior" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrUpperAnterior" id="PsrUpperAnterior" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -44,7 +46,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" for="PsrUpperLeft">Upper Left</label>
-                        <select name="PsrUpperLeft" id="PsrUpperLeft" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrUpperLeft" id="PsrUpperLeft" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -57,7 +59,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="form-label" for="PsrLowerRight">Lower Right</label>
-                        <select name="PsrLowerRight" id="PsrLowerRight" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrLowerRight" id="PsrLowerRight" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -67,7 +69,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" for="PsrLowerAnterior">Lower Anterior</label>
-                        <select name="PsrLowerAnterior" id="PsrLowerAnterior" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrLowerAnterior" id="PsrLowerAnterior" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -77,7 +79,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" for="PsrLowerLeft">Lower Left</label>
-                        <select name="PsrLowerLeft" id="PsrLowerLeft" class="form-select psr-sextant-select" @psrRequiredAttr>
+                        <select name="PsrLowerLeft" id="PsrLowerLeft" class="form-select psr-sextant-select" @psrRequiredAttr @psrDisabledAttr>
                             <option value=""></option>
                             @foreach (var score in DentalExamPsr.ScoreOptions)
                             {
@@ -117,7 +119,7 @@
                                    id="PsrCarrierRisk_@risk"
                                    value="@risk"
                                    checked="@(string.Equals(exam.PsrCarrierRisk, risk, StringComparison.OrdinalIgnoreCase))"
-                                   @psrRequiredAttr />
+                                   @psrRequiredAttr @psrDisabledAttr />
                             <label class="form-check-label" for="PsrCarrierRisk_@risk">@risk</label>
                         </div>
                     }
@@ -139,7 +141,7 @@
                                id="SoftTissuesWnl_Yes"
                                value="@DentalExamPsr.SoftTissuesWnlYes"
                                checked="@(string.Equals(exam.SoftTissuesWnl, DentalExamPsr.SoftTissuesWnlYes, StringComparison.OrdinalIgnoreCase))"
-                               @psrRequiredAttr />
+                               @psrRequiredAttr @psrDisabledAttr />
                         <label class="form-check-label" for="SoftTissuesWnl_Yes">@DentalExamPsr.SoftTissuesWnlYes</label>
                     </div>
                     <div class="form-check">
@@ -149,7 +151,7 @@
                                id="SoftTissuesWnl_No"
                                value="@DentalExamPsr.SoftTissuesWnlNo"
                                checked="@(string.Equals(exam.SoftTissuesWnl, DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase))"
-                               @psrRequiredAttr />
+                               @psrRequiredAttr @psrDisabledAttr />
                         <label class="form-check-label" for="SoftTissuesWnl_No">@DentalExamPsr.SoftTissuesWnlNo</label>
                     </div>
                 </div>
@@ -158,8 +160,9 @@
                     <label class="form-label" for="SoftTissuesConditionDetail">Describe Condition not within normal limits:</label>
                     <textarea name="SoftTissuesConditionDetail"
                               id="SoftTissuesConditionDetail"
-                              class="form-control"
+                              class="form-control @(subsequentReadOnly ? "read-only-style" : null)"
                               rows="4"
+                              @(subsequentReadOnly ? "readonly" : null)
                               @softTissuesDetailRequiredAttr>@exam.SoftTissuesConditionDetail</textarea>
                 </div>
             </div>
