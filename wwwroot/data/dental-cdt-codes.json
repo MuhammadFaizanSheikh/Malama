@@ -28,12 +28,6 @@
                        "D3347 - Bicuspid Root Canal Retreatment",
                        "D3348 - Molar Root Canal Retreatment"
                    ],
-    "Missing Teeth":  [
-                          "Code 1 - Individual Tooth",
-                          "Code 2 - Full Edentulous",
-                          "Code 3 - Upper Edentulous",
-                          "Code 4 - Lower Edentulous"
-                      ],
     "Oral Surgery":  [
                          "D6100 - Implant removal",
                          "D7111 - Extraction [Deciduous Tooth]",

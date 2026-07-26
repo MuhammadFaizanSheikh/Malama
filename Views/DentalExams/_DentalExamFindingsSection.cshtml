@@ -205,6 +205,7 @@
 
         let dentalFindings = @Html.Raw(findingsJson);
         let editingFindingIndex = null;
+        let suppressRestorativeCdtReset = false;
 
         function escapeHtml(value) {
             return $("<div>").text(value ?? "").html();
@@ -417,10 +418,24 @@
             $("input[name='FindingClassification']").prop("checked", false);
         }
 
-        function showFindingForm() {
+        function showFindingForm(preserveSelections) {
+            const surfacesToRestore = preserveSelections && preserveSelections.affectedSurfaces
+                ? preserveSelections.affectedSurfaces.slice()
+                : null;
+            const cdtCodesToRestore = preserveSelections && preserveSelections.cdtCodes
+                ? preserveSelections.cdtCodes.slice()
+                : null;
+
             $("#dentalFindingFormCard").slideDown(200, function () {
-                populateSurfaceOptions(getSelectedValues($("#findingAffectedSurfaces")));
-                populateCdtOptions(getSelectedValues($("#findingCdtCodes")));
+                const surfaces = surfacesToRestore || getSelectedValues($("#findingAffectedSurfaces"));
+                const cdtCodes = cdtCodesToRestore || getSelectedValues($("#findingCdtCodes"));
+                suppressRestorativeCdtReset = true;
+                try {
+                    populateSurfaceOptions(surfaces);
+                    populateCdtOptions(cdtCodes);
+                } finally {
+                    suppressRestorativeCdtReset = false;
+                }
                 applyFindingFormReadOnly();
             });
         }
@@ -490,8 +505,13 @@
             $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth && finding.diseaseConditionType !== "Restorative");
             populateToothOptions();
             $("#findingAffectedTooth").val(finding.affectedTooth || "");
-            populateSurfaceOptions(finding.affectedSurfaces || []);
-            populateCdtOptions(finding.cdtCodes || []);
+            suppressRestorativeCdtReset = true;
+            try {
+                populateSurfaceOptions(finding.affectedSurfaces || []);
+                populateCdtOptions(finding.cdtCodes || []);
+            } finally {
+                suppressRestorativeCdtReset = false;
+            }
             $("#findingCdtCodesNotes").val(finding.cdtCodesNotes || "");
             $("#findingDescription").val(finding.descriptionDetails || "");
             $("input[name='FindingClassification']").each(function () {
@@ -604,7 +624,10 @@
             }
             writeFindingForm(finding);
             applyFindingFormReadOnly();
-            showFindingForm();
+            showFindingForm({
+                affectedSurfaces: finding.affectedSurfaces || [],
+                cdtCodes: finding.cdtCodes || []
+            });
 
             $("html, body").animate({
                 scrollTop: $("#dentalFindingFormCard").offset().top - 80
@@ -694,6 +717,9 @@
                 }
             });
             $(document).on("change", "#findingAffectedSurfaces", function () {
+                if (suppressRestorativeCdtReset) {
+                    return;
+                }
                 if ($("#findingDiseaseType").val() === "Restorative") {
                     populateCdtOptions([]);
                 }

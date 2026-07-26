@@ -109,7 +109,6 @@ namespace Malama.Utilities
             // Dental X-Ray
             ["DentalXRay_View"] = new List<(string Role, string Attribute)>
         {
-            ("DE- Dentist", "Exam"),
             ("DE-Dental X-Ray Tech", "Exam"),
             ("DE-Dental Assistant", "Exam"),
             ("DE-Dental Lead", "Exam"),
@@ -124,7 +123,6 @@ namespace Malama.Utilities
         },
             ["DentalXRay_Save"] = new List<(string Role, string Attribute)>
         {
-            ("DE- Dentist", "Exam"),
             ("DE-Dental X-Ray Tech", "Exam"),
             ("DE-Dental Assistant", "Exam"),
             ("DE-Dental Lead", "Exam"),
@@ -230,7 +228,6 @@ namespace Malama.Utilities
             ["VitalStation_View"] = new List<(string Role, string Attribute)>
         {
             ("Vitals Staff", null),
-            ("DE- Dentist", "Exam"),
             ("DE-Dental X-Ray Tech", "Exam"),
             ("DE-Dental Assistant", "Exam"),
             ("DE-Dental Lead", "Exam"),
@@ -246,7 +243,6 @@ namespace Malama.Utilities
             ["VitalStation_Save"] = new List<(string Role, string Attribute)>
         {
             ("Vitals Staff", null),
-            ("DE- Dentist", "Exam"),
             ("DE-Dental X-Ray Tech", "Exam"),
             ("DE-Dental Assistant", "Exam"),
             ("DE-Dental Lead", "Exam"),

@@ -8,7 +8,6 @@ namespace Malama.Models
     {
         public static readonly string[] DiseaseConditionTypes =
         {
-            "Missing Teeth",
             "Restorative",
             "Oral Surgery",
             "Periodontal",
