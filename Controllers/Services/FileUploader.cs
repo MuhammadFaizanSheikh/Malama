@@ -412,6 +412,44 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetDentalTreatmentsByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetDentalTreatmentsByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching DentalTreatment candidates where DentalExam Status=Completed, DenClass=Class3, DentalNeeded=Needed, CheckIn=Yes, EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.DentalNeeded == AppConstants.NeededOrNA.Needed &&
+                             c.CheckIn == AppConstants.YesNo.Yes &&
+                             c.DentalExamRecord != null &&
+                             c.DentalExamRecord.Status == AppConstants.Status.Completed &&
+                             c.DentalExamRecord.DenClass == DentalExamDenClass.Class3,
+                        c => c.DentalExamRecord)
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} DentalTreatment records for EventId={EventId}",
+                    CLASSNAME, methodName, result.Count, eventId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching DentalTreatment data for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw;
+            }
+        }
+
         public async Task<List<ServiceMembersChild>> GetVitalStationByEventIdAsync(long eventId)
         {
             const string methodName = nameof(GetVitalStationByEventIdAsync);

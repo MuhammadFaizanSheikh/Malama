@@ -1,0 +1,800 @@
+@using ExcelFilesCompiler.Controllers.Services
+@using ExcelFilesCompiler.Utilities
+@using Malama.Models
+@using Malama.Utilities
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@model DentalExamStationPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Dental Treatment";
+
+    var sm = Model.ServiceMember;
+    var questionnaire = Model.Questionnaire;
+    var dentalExam = Model.DentalExam;
+    var isFemale = DentalXRayStationService.IsFemale(sm);
+    var isDentalExamDentist = User.IsInRole("DE- Dentist") || User.IsInRole("DT-Dentist");
+    var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
+    {
+        ServiceMembersChildId = sm.Id,
+        Status = "Pending"
+    };
+    // Dentist roles see the same review/signature controls as Dental Exam (disabled here).
+    // All other Treatment viewers see them read-only when already completed on the Dental Exam.
+    var showFinalCommentsReadOnly = !isDentalExamDentist && dentalExam.QuestionnaireReviewed;
+    var showSignatureReadOnly = !isDentalExamDentist && dentalExam.DentistSignatureEntered;
+}
+
+<style>
+    #page-heading { text-align: center; margin: 20px auto; }
+    .btn-general {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+        color: white;
+    }
+    .btn-general:hover {
+        background-color: rgba(60, 70, 180, 1);
+        border-color: rgba(60, 70, 180, 1);
+        color: white;
+    }
+    h2, h3 { color: rgba(80, 90, 201, 1); }
+    .read-only-style {
+        background-color: #f8f9fa;
+        pointer-events: none;
+        border-color: #ced4da;
+    }
+    #DentistSignatureRoles.read-only-style {
+        pointer-events: auto;
+        overflow-y: auto;
+        resize: none;
+    }
+    .condition-detail { display: none; }
+    .condition-item { margin-bottom: 0.75rem; }
+    .questionnaire-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .questionnaire-toggle-switch .form-check-input {
+        width: 2.75rem;
+        height: 1.4rem;
+        margin-top: 0;
+        cursor: pointer;
+    }
+    .questionnaire-toggle-switch .form-check-input:checked {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
+    }
+    .questionnaire-toggle-switch .form-check-input:focus {
+        border-color: rgba(80, 90, 201, 0.5);
+        box-shadow: 0 0 0 0.25rem rgba(80, 90, 201, 0.25);
+    }
+    .xray-cards-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    @@media (max-width: 992px) {
+        .xray-cards-row { grid-template-columns: 1fr; }
+    }
+    .xray-upload-card { border: 1px solid #dee2e6; }
+    .xray-upload-full-width { width: 100%; }
+    .xray-preview-viewport-full { height: 360px; }
+    .bwx-upload-mode-option { margin-bottom: 0.5rem; }
+    .xray-preview-viewport {
+        width: 100%;
+        height: 280px;
+        overflow: auto;
+        border: 1px solid #ced4da;
+        background: #f8f9fa;
+    }
+    .xray-preview-viewport.can-pan { cursor: grab; }
+    .xray-preview-viewport.can-pan.is-panning {
+        cursor: grabbing;
+        user-select: none;
+    }
+    .xray-preview-viewport img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        transform-origin: top left;
+        -webkit-user-drag: none;
+        user-select: none;
+    }
+    .xray-preview-card {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: #fdfdff;
+    }
+    .xray-preview-viewport-boxed {
+        height: 320px;
+        border-radius: 0.375rem;
+    }
+</style>
+
+<h2 id="page-heading">Edit Service Member at Dental Treatment</h2>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]',
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor,
+                iconColor: iconColor
+            });
+        });
+    </script>
+}
+
+<div id="DentalTreatmentStation">
+    <h3 class="mb-4">Personal Information</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Full Name:</span> @sm?.FullName</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOD ID:</span> @sm?.DodId</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @sm?.Barcode</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DOB:</span> @sm?.Dob</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Age:</span> @sm?.Age</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Sex:</span> @sm?.Sex</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">DEN Class:</span> @dentalExam.DenClass</p>
+                </div>
+                <div class="col-md-4">
+                    <p><span class="fw-bold">Dental Exam Status:</span> @dentalExam.Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="questionnaire-heading" id="questionnaireHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleQuestionnaireSectionSwitch"
+                   aria-controls="questionnaireSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Questionnaire</h3>
+    </div>
+
+    <div id="questionnaireSection" style="display:none;">
+        @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)
+
+        @if (isFemale)
+        {
+            <div class="row mb-3" id="pregnancyQuestionSection">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">12. Are you pregnant?</label>
+                    <select name="AreYouPregnant" id="AreYouPregnant" class="form-select">
+                        <option value="No" selected="@(string.IsNullOrWhiteSpace(questionnaire.AreYouPregnant) || questionnaire.AreYouPregnant == "No")">No</option>
+                        <option value="Yes" selected="@(questionnaire.AreYouPregnant == "Yes")">Yes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
+                <div class="col-md-12">
+                    <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
+                    <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
+                        <option value=""></option>
+                        <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
+                        <option value="Declined" selected="@(questionnaire.PregnancyApproval == "Declined")">Declined</option>
+                    </select>
+                </div>
+            </div>
+        }
+
+        @{
+            var healthConditionsQuestionNumber = isFemale ? 13 : 12;
+            var savedHealthConditions = DentalQuestionnaireService.ParseHealthConditionsJson(questionnaire.ApplicableHealthConditionsJson);
+            var savedByCondition = savedHealthConditions
+                .Where(h => !string.IsNullOrWhiteSpace(h.Condition))
+                .ToDictionary(h => h.Condition, h => h, StringComparer.OrdinalIgnoreCase);
+
+            bool IsConditionSelected(string condition) => savedByCondition.ContainsKey(condition);
+            string GetConditionDetail(string condition) =>
+                savedByCondition.TryGetValue(condition, out var item) ? item.Detail ?? "" : "";
+        }
+        <div class="card mb-4">
+            <div class="card-body">
+                <label class="form-label fw-semibold">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
+                <div class="row condition-checkboxes">
+                    @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
+                    {
+                        var condition = DentalXRayQuestionnaire.HealthConditions[ci];
+                        var isSelected = IsConditionSelected(condition);
+                        var detail = GetConditionDetail(condition);
+                        <div class="col-md-6 condition-item">
+                            <div class="form-check">
+                                <input class="form-check-input condition-checkbox" type="checkbox"
+                                       value="@condition"
+                                       id="condition_@ci"
+                                       checked="@isSelected" />
+                                <label class="form-check-label" for="condition_@ci">@condition</label>
+                            </div>
+                            <div class="condition-detail ms-4 mt-1">
+                                <textarea class="form-control condition-detail-text"
+                                          rows="3"
+                                          placeholder="Please provide details">@detail</textarea>
+                            </div>
+                        </div>
+                    }
+                    @{
+                        var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
+                        var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
+                        var otherSelected = IsConditionSelected(otherCondition);
+                        var otherDetail = GetConditionDetail(otherCondition);
+                    }
+                    <div class="col-md-6 condition-item">
+                        <div class="form-check">
+                            <input class="form-check-input condition-checkbox" type="checkbox"
+                                   value="@otherCondition"
+                                   id="condition_other"
+                                   checked="@otherSelected" />
+                            <label class="form-check-label" for="condition_other">@otherCondition</label>
+                        </div>
+                        <div class="condition-detail ms-4 mt-1">
+                            <textarea class="form-control condition-detail-text"
+                                      rows="3"
+                                      placeholder="Please provide details">@otherDetail</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                @if (isDentalExamDentist)
+                {
+                    <div class="form-check mb-2">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="QuestionnaireReviewed"
+                               value="true"
+                               disabled
+                               @(dentalExam.QuestionnaireReviewed ? "checked" : null) />
+                        <label class="form-check-label fw-semibold" for="QuestionnaireReviewed">
+                            Dental Questionnaire has been reviewed?
+                        </label>
+                    </div>
+                    @if (dentalExam.QuestionnaireReviewed)
+                    {
+                        <div id="finalCommentsSection">
+                            <label class="form-label" for="FinalComments">Final Comments</label>
+                            <textarea id="FinalComments"
+                                      class="form-control read-only-style"
+                                      rows="4"
+                                      readonly>@dentalExam.FinalComments</textarea>
+                        </div>
+                    }
+                }
+                else if (showFinalCommentsReadOnly)
+                {
+                    <p class="fw-semibold mb-2">Dental Questionnaire has been reviewed?</p>
+                    <div id="finalCommentsSection">
+                        <label class="form-label" for="FinalComments">Final Comments</label>
+                        <textarea id="FinalComments"
+                                  class="form-control read-only-style"
+                                  rows="4"
+                                  readonly>@dentalExam.FinalComments</textarea>
+                    </div>
+                }
+            </div>
+            <div class="col-md-6">
+                @if (isDentalExamDentist)
+                {
+                    <div class="form-check mb-2">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="DentistSignatureEntered"
+                               value="true"
+                               disabled
+                               @(dentalExam.DentistSignatureEntered ? "checked" : null) />
+                        <label class="form-check-label fw-semibold" for="DentistSignatureEntered">
+                            Dentist Signature - Enter Your Name
+                        </label>
+                    </div>
+                    @if (dentalExam.DentistSignatureEntered)
+                    {
+                        <div id="dentistSignatureSection">
+                            <label class="form-label" for="DentistSignatureName">Name</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-7">
+                                    <input type="text"
+                                           id="DentistSignatureName"
+                                           class="form-control read-only-style"
+                                           value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
+                                           readonly />
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text"
+                                           id="DentistSignatureDateTimeDisplay"
+                                           class="form-control read-only-style"
+                                           value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
+                                           placeholder="Signed date/time"
+                                           readonly
+                                           style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                                </div>
+                            </div>
+                            <label class="form-label mt-2" for="DentistSignatureRoles">Roles</label>
+                            <textarea id="DentistSignatureRoles"
+                                      class="form-control read-only-style"
+                                      rows="3"
+                                      readonly>@(ViewBag.CurrentUserRoles as string ?? "")</textarea>
+                        </div>
+                    }
+                }
+                else if (showSignatureReadOnly)
+                {
+                    <p class="fw-semibold mb-2">Dentist Signature</p>
+                    <div id="dentistSignatureSection">
+                        <label class="form-label" for="DentistSignatureNameDisplay">Name</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-7">
+                                <input type="text"
+                                       id="DentistSignatureNameDisplay"
+                                       class="form-control read-only-style"
+                                       value="@dentalExam.DentistSignatureName"
+                                       readonly />
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text"
+                                       id="DentistSignatureDateTimeDisplay"
+                                       class="form-control read-only-style"
+                                       value="@(dentalExam.DentistSignatureDateTime?.ToString("MM/dd/yyyy hh:mm tt") ?? "")"
+                                       placeholder="Signed date/time"
+                                       readonly
+                                       style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleQuestionnaireSectionSwitch"
+                    data-target-heading="questionnaireHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Questionnaire
+            </button>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="questionnaire-heading" id="vitalsHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleVitalsSectionSwitch"
+                   aria-controls="vitalsSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Blood Pressure (Vitals)</h3>
+    </div>
+
+    <div id="vitalsSection" style="display:none;">
+        @{
+            var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
+            vitalBpViewData["ShowVitalRedirect"] = false;
+            vitalBpViewData["AllowVitalStationSubmit"] = false;
+            vitalBpViewData["BpCountdownIdPrefix"] = "dentalTreatmentBpCountdown";
+            vitalBpViewData["VitalRecommendationContext"] = "dental treatment";
+            vitalBpViewData["HideSectionHeading"] = true;
+        }
+        @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleVitalsSectionSwitch"
+                    data-target-heading="vitalsHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Blood Pressure (Vitals)
+            </button>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="questionnaire-heading" id="xrayHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleXRaySectionSwitch"
+                   aria-controls="xraySection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">X-Ray</h3>
+    </div>
+
+    <div id="xraySection" style="display:none;">
+        @{
+            var xrayViewData = new ViewDataDictionary<DentalXRayStation>(ViewData, Model.XRayStation);
+            xrayViewData["ServiceMember"] = sm;
+            xrayViewData["Questionnaire"] = questionnaire;
+        }
+        @await Html.PartialAsync("~/Views/DentalExams/_DentalXRayStationReadOnly.cshtml", Model.XRayStation, xrayViewData)
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleXRaySectionSwitch"
+                    data-target-heading="xrayHeading">
+                <i class="fas fa-chevron-up"></i> Collapse X-Ray
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4 gap-3">
+        <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<script>
+    const IS_FEMALE = @Json.Serialize(isFemale);
+
+    function toggleQuestionnaireDetail(selectEl) {
+        const $select = $(selectEl);
+        const target = $select.data("detail");
+        if (!target) return;
+        const $detail = $(target);
+        const $textarea = $detail.find("textarea");
+        if ($select.val() === "Yes") {
+            $detail.show();
+        } else {
+            $detail.hide();
+        }
+        $textarea.prop("required", false);
+    }
+
+    function toggleTobaccoSection() {
+        const isYes = $("#UseTobaccoOrVape").val() === "Yes";
+        const $section = $("#tobaccoDetailsSection");
+        $section.toggle(isYes);
+        $section.find(".tobacco-used-select").prop("required", false);
+        if (!isYes) {
+            $section.find(".tobacco-type-detail").hide();
+        } else {
+            $(".tobacco-used-select").each(function () {
+                toggleTobaccoTypeDetail(this);
+            });
+        }
+    }
+
+    function toggleTobaccoTypeDetail(selectEl) {
+        const $select = $(selectEl);
+        const index = $select.data("index");
+        const $detail = $("#tobaccoTypeDetail_" + index);
+        const $inputs = $detail.find(".tobacco-frequency-input");
+        $inputs.prop("required", false);
+        if ($("#UseTobaccoOrVape").val() !== "Yes") {
+            $detail.hide();
+            return;
+        }
+        if ($select.val() === "Yes") {
+            $detail.show();
+        } else {
+            $detail.hide();
+        }
+    }
+
+    function toggleConditionDetail(checkboxEl) {
+        const $item = $(checkboxEl).closest(".condition-item");
+        const $detail = $item.find(".condition-detail");
+        if ($(checkboxEl).is(":checked")) {
+            $detail.show();
+        } else {
+            $detail.hide();
+        }
+    }
+
+    function initConditionToggles() {
+        $(".condition-checkbox").each(function () {
+            toggleConditionDetail(this);
+        });
+    }
+
+    function togglePregnancyFlow() {
+        if (!IS_FEMALE) {
+            return;
+        }
+        const pregnant = $("#AreYouPregnant").val() === "Yes";
+        $("#pregnancyApprovalSection").toggle(pregnant);
+    }
+
+    function applyQuestionnaireReadOnlyMode() {
+        $("#questionnaireSection").find("input, select, textarea, button").each(function () {
+            const $el = $(this);
+            if ($el.closest(".questionnaire-toggle-switch").length) {
+                return;
+            }
+            if ($el.hasClass("section-collapse-btn")) {
+                return;
+            }
+            if ($el.is("input:checkbox, input:radio, select, button")) {
+                $el.prop("disabled", true);
+            } else {
+                $el.prop("readonly", true).addClass("read-only-style");
+            }
+        });
+    }
+
+    function initQuestionnaireToggles() {
+        $(".dental-q-detail-toggle").each(function () {
+            toggleQuestionnaireDetail(this);
+        });
+        toggleTobaccoSection();
+        initConditionToggles();
+        togglePregnancyFlow();
+        applyQuestionnaireReadOnlyMode();
+    }
+
+    function toggleQuestionnaireSectionFromSwitch() {
+        const isOn = $("#toggleQuestionnaireSectionSwitch").is(":checked");
+        const $section = $("#questionnaireSection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleQuestionnaireSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleVitalsSectionFromSwitch() {
+        const isOn = $("#toggleVitalsSectionSwitch").is(":checked");
+        const $section = $("#vitalsSection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleVitalsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleXRaySectionFromSwitch() {
+        const isOn = $("#toggleXRaySectionSwitch").is(":checked");
+        const $section = $("#xraySection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    const XRAY_ZOOM_STEP = 25;
+    const XRAY_ZOOM_MIN = 50;
+    const XRAY_ZOOM_MAX = 300;
+    const xrayZoomLevels = {};
+    const xrayPanState = {
+        active: false,
+        viewport: null,
+        startX: 0,
+        startY: 0,
+        scrollLeft: 0,
+        scrollTop: 0
+    };
+    const XRAY_DOWNLOAD_URL = "/DentalTreatment/DownloadXRayImage";
+
+    function setXRayZoom(prefix, level) {
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const zoomLabel = document.getElementById(prefix + "_zoomLevel");
+        if (!previewImg || !zoomLabel) return;
+
+        const clamped = Math.max(XRAY_ZOOM_MIN, Math.min(XRAY_ZOOM_MAX, level));
+        xrayZoomLevels[prefix] = clamped;
+        previewImg.style.width = clamped + "%";
+        previewImg.style.height = "auto";
+        previewImg.style.transform = "";
+        previewImg.draggable = false;
+        zoomLabel.textContent = clamped + "%";
+        requestAnimationFrame(function () {
+            updateXRayPanAvailability(prefix);
+        });
+    }
+
+    function updateXRayPanAvailability(prefix) {
+        const viewport = document.getElementById(prefix + "_previewViewport");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!viewport) return;
+
+        const canPan = !!previewImg?.src &&
+            (viewport.scrollWidth > viewport.clientWidth + 1 ||
+             viewport.scrollHeight > viewport.clientHeight + 1);
+
+        viewport.classList.toggle("can-pan", canPan);
+        viewport.title = canPan ? "Click and drag to move the image" : "";
+    }
+
+    function startXRayPan(clientX, clientY, viewport) {
+        xrayPanState.active = true;
+        xrayPanState.viewport = viewport;
+        xrayPanState.startX = clientX;
+        xrayPanState.startY = clientY;
+        xrayPanState.scrollLeft = viewport.scrollLeft;
+        xrayPanState.scrollTop = viewport.scrollTop;
+        viewport.classList.add("is-panning");
+    }
+
+    function moveXRayPan(clientX, clientY) {
+        if (!xrayPanState.active || !xrayPanState.viewport) return;
+        const dx = clientX - xrayPanState.startX;
+        const dy = clientY - xrayPanState.startY;
+        xrayPanState.viewport.scrollLeft = xrayPanState.scrollLeft - dx;
+        xrayPanState.viewport.scrollTop = xrayPanState.scrollTop - dy;
+    }
+
+    function endXRayPan() {
+        if (!xrayPanState.active) return;
+        xrayPanState.viewport?.classList.remove("is-panning");
+        xrayPanState.active = false;
+        xrayPanState.viewport = null;
+    }
+
+    function updateXRayPreview(prefix) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const status = document.getElementById(prefix + "_fileStatus");
+        if (!previewSection || !previewImg || !status) return;
+
+        const fileName = (status.dataset.existingFilename || "").trim();
+        const downloadPrefix = status.dataset.downloadPrefix || prefix;
+        let src = "";
+
+        if (fileName) {
+            src = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        }
+
+        if (src) {
+            previewImg.onload = function () {
+                setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+                updateXRayPanAvailability(prefix);
+            };
+            previewImg.onerror = function () {
+                previewSection.style.display = "none";
+            };
+            previewImg.src = src;
+            previewSection.style.display = "block";
+            if (previewImg.complete) {
+                setXRayZoom(prefix, xrayZoomLevels[prefix] || 100);
+                updateXRayPanAvailability(prefix);
+            }
+        } else {
+            previewImg.removeAttribute("src");
+            previewSection.style.display = "none";
+        }
+    }
+
+    function openXRayPreview(prefix) {
+        const status = document.getElementById(prefix + "_fileStatus");
+        if (!status) return;
+
+        const fileName = (status.dataset.existingFilename || "").trim();
+        const downloadPrefix = status.dataset.downloadPrefix || prefix;
+        if (!fileName) return;
+
+        updateXRayPreview(prefix);
+        const url = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        window.open(url, "_blank");
+    }
+
+    function initReadOnlyXRayPreviews() {
+        $("#xraySection .preview-xray-file").each(function () {
+            const prefix = this.getAttribute("data-prefix");
+            if (prefix) {
+                updateXRayPreview(prefix);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        initQuestionnaireToggles();
+        initReadOnlyXRayPreviews();
+
+        $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
+        $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
+        $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+
+        $(document).on("click", ".section-collapse-btn", function () {
+            const switchId = $(this).data("target-switch");
+            const headingId = $(this).data("target-heading");
+            const $switch = $("#" + switchId);
+
+            $switch.prop("checked", false).trigger("change");
+
+            const $heading = $("#" + headingId);
+            if ($heading.length) {
+                $("html, body").animate({
+                    scrollTop: $heading.offset().top - 80
+                }, 300);
+            }
+        });
+
+        $(document).on("click", "#xraySection .preview-xray-file", function () {
+            const prefix = this.getAttribute("data-prefix");
+            if (prefix) {
+                openXRayPreview(prefix);
+            }
+        });
+
+        $(document).on("click", ".xray-zoom-in", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) + XRAY_ZOOM_STEP);
+        });
+
+        $(document).on("click", ".xray-zoom-out", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) - XRAY_ZOOM_STEP);
+        });
+
+        $(document).on("click", ".xray-zoom-reset", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, 100);
+        });
+
+        $(document).on("mousedown", ".xray-preview-viewport", function (e) {
+            if (e.button !== 0) return;
+            if (!$(this).hasClass("can-pan")) return;
+            e.preventDefault();
+            startXRayPan(e.clientX, e.clientY, this);
+        });
+
+        $(document).on("mousemove", function (e) {
+            moveXRayPan(e.clientX, e.clientY);
+        });
+
+        $(document).on("mouseup mouseleave", function () {
+            endXRayPan();
+        });
+
+        $('a.btn-back-confirm').on('click', async function (e) {
+            e.preventDefault();
+            const href = $(this).attr('href');
+            const result = await Swal.fire({
+                title: 'Leave this page?',
+                text: 'Any unsaved changes will be lost.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, go back',
+                cancelButtonText: 'Stay'
+            });
+            if (result.isConfirmed) {
+                window.location.href = href;
+            }
+        });
+    });
+</script>
