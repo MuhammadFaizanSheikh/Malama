@@ -457,6 +457,14 @@
         </div>
     </div>
 
+    <hr class="my-4" />
+
+    @{
+        var treatmentFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+        treatmentFindingsViewData["XRayStation"] = Model.XRayStation;
+    }
+    @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
+
     <div class="d-flex justify-content-end mt-4 gap-3">
         <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
             <i class="bi bi-arrow-left"></i> Back
@@ -781,6 +789,8 @@
             endXRayPan();
         });
 
+        initXrayPreviewWidgets();
+
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
             const href = $(this).attr('href');
@@ -797,4 +807,77 @@
             }
         });
     });
+
+    const xrayPreviewUrls = {};
+
+    function clearXrayPreviewInstance(prefix) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (previewImg) { previewImg.removeAttribute("src"); }
+        if (previewSection) { previewSection.style.display = "none"; }
+        xrayPreviewUrls[prefix] = "";
+        $("#" + prefix + "_fileNameDisplay").text("");
+        $("#" + prefix + "_emptyMsg").show();
+    }
+
+    function showXrayPreviewInstance(prefix, downloadPrefix, fileName, label) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!previewSection || !previewImg || !fileName || !downloadPrefix) {
+            clearXrayPreviewInstance(prefix);
+            return;
+        }
+
+        const src = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        xrayPreviewUrls[prefix] = src;
+        $("#" + prefix + "_fileNameDisplay").text(label || fileName);
+        previewImg.onload = function () {
+            setXRayZoom(prefix, 100);
+            updateXRayPanAvailability(prefix);
+        };
+        previewImg.onerror = function () { clearXrayPreviewInstance(prefix); };
+        previewImg.src = src;
+        previewSection.style.display = "block";
+        $("#" + prefix + "_emptyMsg").hide();
+        if (previewImg.complete) {
+            setXRayZoom(prefix, 100);
+            updateXRayPanAvailability(prefix);
+        }
+    }
+
+    function initXrayPreviewWidgets() {
+        $(document).on("change", ".xray-preview-type-radio", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (!prefix) { return; }
+            const isBwx = this.value === "BWX";
+            $("#" + prefix + "_bwxSelectWrap").toggle(isBwx);
+            $("#" + prefix + "_paSelectWrap").toggle(!isBwx);
+            const bwxSel = document.getElementById(prefix + "_bwxSelect");
+            const paSel = document.getElementById(prefix + "_paSelect");
+            if (bwxSel) { bwxSel.value = ""; }
+            if (paSel) { paSel.value = ""; }
+            clearXrayPreviewInstance(prefix);
+        });
+
+        $(document).on("change", ".xray-preview-image-select", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (!prefix) { return; }
+            const opt = this.options[this.selectedIndex];
+            const fileName = opt ? opt.getAttribute("data-filename") : null;
+            const downloadPrefix = opt ? opt.getAttribute("data-prefix") : null;
+            const label = opt ? opt.text : null;
+            if (fileName && downloadPrefix) {
+                showXrayPreviewInstance(prefix, downloadPrefix, fileName, label);
+            } else {
+                clearXrayPreviewInstance(prefix);
+            }
+        });
+
+        $(document).on("click", ".xray-preview-open-btn", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (prefix && xrayPreviewUrls[prefix]) {
+                window.open(xrayPreviewUrls[prefix], "_blank");
+            }
+        });
+    }
 </script>
