@@ -1,0 +1,328 @@
+@{
+    var carpuleOptions = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    var anesthesiaTypes = new[]
+    {
+        "Lidocaine 3%",
+        "Carbocaine 3%",
+        "Marcaine 3.5%",
+        "Septocaine 5%"
+    };
+}
+
+<style>
+    #anesthesiaFormCard .anesthesia-action-btn,
+    #anesthesiaTable .anesthesia-action-btn {
+        min-width: 2rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    #anesthesiaFormCard .anesthesia-action-btn i,
+    #anesthesiaTable .anesthesia-action-btn i {
+        pointer-events: none;
+    }
+</style>
+
+<div class="mb-4" id="treatmentAnesthesiaSection">
+    <div class="questionnaire-heading" id="anesthesiaHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleAnesthesiaSectionSwitch"
+                   aria-controls="anesthesiaContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Anesthesia</h4>
+    </div>
+
+    <div id="anesthesiaContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-striped align-middle mb-0" id="anesthesiaTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">S.No</th>
+                                @foreach (var type in anesthesiaTypes)
+                                {
+                                    <th>@type</th>
+                                }
+                                <th style="width: 140px;">Date</th>
+                                <th style="width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="anesthesiaTableBody">
+                            <tr id="anesthesiaEmptyRow">
+                                <td colspan="@(anesthesiaTypes.Length + 3)" class="text-center text-muted py-4">No anesthesia records added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mb-3" id="addAnesthesiaBtn">
+                    <i class="fas fa-plus-circle"></i> Add Anesthesia
+                </button>
+
+                <div id="anesthesiaFormCard" class="card border-primary mb-0" style="display:none;">
+                    <div class="card-header bg-light fw-semibold" id="anesthesiaFormTitle">Add Anesthesia</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="text" id="anesthesiaDate" class="form-control" readonly style="max-width: 220px;" />
+                        </div>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Type</th>
+                                        <th style="width: 200px;"># of Carpules</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var type in anesthesiaTypes)
+                                    {
+                                        var typeId = type.Replace(" ", "_").Replace("%", "").Replace(".", "");
+                                        <tr>
+                                            <td class="fw-semibold">@type</td>
+                                            <td>
+                                                <select class="form-select anesthesia-carpules-select"
+                                                        data-type="@type"
+                                                        id="anesthesiaCarpules_@typeId">
+                                                    <option value=""></option>
+                                                    @foreach (var n in carpuleOptions)
+                                                    {
+                                                        <option value="@n">@n</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-start gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" id="cancelAnesthesiaFormBtn">Cancel</button>
+                            <button type="button" class="btn btn-general" id="saveAnesthesiaBtn">
+                                <i class="fas fa-list-ul"></i> Add to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleAnesthesiaSectionSwitch"
+                            data-target-heading="anesthesiaHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Anesthesia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const ANESTHESIA_TYPES = @Json.Serialize(anesthesiaTypes);
+        let anesthesiaRecords = [];
+        let editingAnesthesiaIndex = null;
+
+        function escapeHtml(value) {
+            return $("<div>").text(value ?? "").html();
+        }
+
+        function formatAnesthesiaDate(date) {
+            const d = date || new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const yyyy = d.getFullYear();
+            return mm + "/" + dd + "/" + yyyy;
+        }
+
+        function renderAnesthesiaTable() {
+            const $tbody = $("#anesthesiaTableBody");
+            $tbody.empty();
+            const colCount = ANESTHESIA_TYPES.length + 3;
+
+            if (!anesthesiaRecords.length) {
+                $tbody.append(
+                    '<tr id="anesthesiaEmptyRow"><td colspan="' + colCount + '" class="text-center text-muted py-4">No anesthesia records added yet.</td></tr>'
+                );
+                return;
+            }
+
+            anesthesiaRecords.forEach(function (record, index) {
+                const actionButtons =
+                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 anesthesia-action-btn edit-anesthesia-btn' data-index='" + index + "' title='Edit'>" +
+                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                    "<button type='button' class='btn btn-sm btn-outline-danger anesthesia-action-btn delete-anesthesia-btn' data-index='" + index + "' title='Delete'>" +
+                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+
+                let typeCells = "";
+                ANESTHESIA_TYPES.forEach(function (type) {
+                    const value = record.carpulesByType && record.carpulesByType[type]
+                        ? record.carpulesByType[type]
+                        : "";
+                    typeCells += "<td>" + escapeHtml(value) + "</td>";
+                });
+
+                $tbody.append(
+                    "<tr data-anesthesia-index='" + index + "'>" +
+                    "<td>" + (index + 1) + "</td>" +
+                    typeCells +
+                    "<td>" + escapeHtml(record.date || "") + "</td>" +
+                    "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                    "</tr>"
+                );
+            });
+        }
+
+        function clearAnesthesiaForm() {
+            editingAnesthesiaIndex = null;
+            $("#anesthesiaFormTitle").text("Add Anesthesia");
+            $("#saveAnesthesiaBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("#anesthesiaDate").val(formatAnesthesiaDate());
+            $(".anesthesia-carpules-select").prop("disabled", false).val("");
+        }
+
+        function showAnesthesiaForm() {
+            $("#anesthesiaFormCard").slideDown(200);
+        }
+
+        function hideAnesthesiaForm() {
+            $("#anesthesiaFormCard").slideUp(200);
+            clearAnesthesiaForm();
+        }
+
+        function writeAnesthesiaForm(record) {
+            $("#anesthesiaDate").val(record.date || formatAnesthesiaDate());
+            $(".anesthesia-carpules-select").prop("disabled", false).each(function () {
+                const type = $(this).data("type");
+                const value = record.carpulesByType && record.carpulesByType[type]
+                    ? record.carpulesByType[type]
+                    : "";
+                $(this).val(value);
+            });
+        }
+
+        function readAnesthesiaRecord() {
+            const date = $("#anesthesiaDate").val() || formatAnesthesiaDate();
+            const carpulesByType = {};
+            let hasAny = false;
+
+            $(".anesthesia-carpules-select").each(function () {
+                const type = $(this).data("type");
+                const carpules = $(this).val();
+                carpulesByType[type] = carpules ? String(carpules) : "";
+                if (carpules) {
+                    hasAny = true;
+                }
+            });
+
+            if (!hasAny) {
+                return null;
+            }
+
+            return {
+                date: date,
+                carpulesByType: carpulesByType
+            };
+        }
+
+        function addOrUpdateAnesthesia() {
+            const record = readAnesthesiaRecord();
+            if (!record) {
+                Swal.fire("Invalid Data", "Please select # of Carpules for at least one Type.", "warning");
+                return;
+            }
+
+            if (editingAnesthesiaIndex != null) {
+                anesthesiaRecords[editingAnesthesiaIndex] = record;
+            } else {
+                anesthesiaRecords.push(record);
+            }
+
+            renderAnesthesiaTable();
+            hideAnesthesiaForm();
+        }
+
+        function editAnesthesia(index) {
+            const record = anesthesiaRecords[index];
+            if (!record) {
+                return;
+            }
+
+            editingAnesthesiaIndex = index;
+            $("#anesthesiaFormTitle").text("Edit Anesthesia");
+            $("#saveAnesthesiaBtn").html('<i class="fas fa-check-circle"></i> Update Anesthesia');
+            writeAnesthesiaForm(record);
+            showAnesthesiaForm();
+
+            $("html, body").animate({
+                scrollTop: $("#anesthesiaFormCard").offset().top - 80
+            }, 300);
+        }
+
+        function deleteAnesthesia(index) {
+            Swal.fire({
+                title: "Delete anesthesia record?",
+                text: "This record will be removed from the list.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                anesthesiaRecords.splice(index, 1);
+                if (editingAnesthesiaIndex === index) {
+                    hideAnesthesiaForm();
+                } else if (editingAnesthesiaIndex != null && editingAnesthesiaIndex > index) {
+                    editingAnesthesiaIndex -= 1;
+                }
+                renderAnesthesiaTable();
+            });
+        }
+
+        function toggleAnesthesiaSectionFromSwitch() {
+            const isOn = $("#toggleAnesthesiaSectionSwitch").is(":checked");
+            const $section = $("#anesthesiaContentSection");
+            if (isOn) {
+                $section.slideDown(200);
+            } else {
+                $section.slideUp(200);
+            }
+            $("#toggleAnesthesiaSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+        }
+
+        $(document).ready(function () {
+            renderAnesthesiaTable();
+            clearAnesthesiaForm();
+
+            $("#toggleAnesthesiaSectionSwitch").on("change", toggleAnesthesiaSectionFromSwitch);
+
+            $("#addAnesthesiaBtn").on("click", function () {
+                clearAnesthesiaForm();
+                showAnesthesiaForm();
+                $("html, body").animate({
+                    scrollTop: $("#anesthesiaFormCard").offset().top - 80
+                }, 300);
+            });
+
+            $("#cancelAnesthesiaFormBtn").on("click", hideAnesthesiaForm);
+            $("#saveAnesthesiaBtn").on("click", addOrUpdateAnesthesia);
+
+            $(document).on("click", ".edit-anesthesia-btn", function () {
+                editAnesthesia(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".delete-anesthesia-btn", function () {
+                deleteAnesthesia(parseInt($(this).data("index"), 10));
+            });
+        });
+    })();
+</script>

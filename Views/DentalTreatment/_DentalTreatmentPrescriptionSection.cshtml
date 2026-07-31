@@ -1,0 +1,651 @@
+@{
+    var prescriptionProducts = new[]
+    {
+        "Augmentin 875mg",
+        "Clindamycin 300mg",
+        "Keflex 500mg",
+        "Ibuprofen 600mg",
+        "Tylenol #3/ codeine",
+        "Norco5/325mg"
+    };
+}
+
+<style>
+    #prescriptionFormCard .prescription-action-btn,
+    #prescriptionTable .prescription-action-btn {
+        min-width: 2rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    #prescriptionFormCard .prescription-action-btn i,
+    #prescriptionTable .prescription-action-btn i {
+        pointer-events: none;
+    }
+
+    #prescriptionTable {
+        min-width: 1200px;
+    }
+</style>
+
+<div class="mb-4" id="treatmentPrescriptionSection">
+    <div class="questionnaire-heading" id="prescriptionHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="togglePrescriptionSectionSwitch"
+                   aria-controls="prescriptionContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Prescription Provided</h4>
+    </div>
+
+    <div id="prescriptionContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-striped align-middle mb-0" id="prescriptionTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">S.No</th>
+                                <th style="width: 110px;">Type</th>
+                                <th>Product</th>
+                                <th style="width: 110px;">Start Date</th>
+                                <th style="width: 110px;">End Date</th>
+                                <th style="width: 100px;">Dosage</th>
+                                <th style="width: 90px;">Duration</th>
+                                <th style="width: 90px;">Frequency</th>
+                                <th style="width: 120px;">Prescribed Amount</th>
+                                <th>Notes</th>
+                                <th style="width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionTableBody">
+                            <tr id="prescriptionEmptyRow">
+                                <td colspan="11" class="text-center text-muted py-4">No prescriptions added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mb-3" id="addPrescriptionBtn">
+                    <i class="fas fa-plus-circle"></i> Add New Prescription
+                </button>
+
+                <div id="prescriptionFormCard" class="card border-primary mb-0" style="display:none;">
+                    <div class="card-header bg-light fw-semibold" id="prescriptionFormTitle">Add New Prescription</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label d-block">Type</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="PrescriptionType"
+                                       id="prescriptionTypeOtc" value="OTC" />
+                                <label class="form-check-label" for="prescriptionTypeOtc">OTC</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="PrescriptionType"
+                                       id="prescriptionTypeRx" value="Prescription" />
+                                <label class="form-check-label" for="prescriptionTypeRx">Prescription</label>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label" for="prescriptionProduct">Product</label>
+                                <select id="prescriptionProduct" class="form-select">
+                                    <option value=""></option>
+                                    @foreach (var product in prescriptionProducts)
+                                    {
+                                        <option value="@product">@product</option>
+                                    }
+                                </select>
+                                <div class="form-text">Select a product or type a custom medicine name.</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionStartDate">Start Date</label>
+                                <input type="text" id="prescriptionStartDate" class="form-control" placeholder="MM/DD/YYYY" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionEndDate">End Date</label>
+                                <input type="text" id="prescriptionEndDate" class="form-control" placeholder="MM/DD/YYYY" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionDuration">Duration</label>
+                                <div class="input-group">
+                                    <input type="text" id="prescriptionDuration" class="form-control" inputmode="decimal" maxlength="5" />
+                                    <span class="input-group-text">Day(s)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionDosage">Dosage</label>
+                                <div class="input-group">
+                                    <input type="text" id="prescriptionDosage" class="form-control" inputmode="decimal" maxlength="5" />
+                                    <span class="input-group-text">mg</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionFrequency">Frequency</label>
+                                <input type="text" id="prescriptionFrequency" class="form-control" inputmode="decimal" maxlength="5" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="prescriptionPrescribedAmount">Prescribed Amount</label>
+                                <input type="text" id="prescriptionPrescribedAmount" class="form-control" readonly />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="prescriptionNotes">Notes</label>
+                            <textarea id="prescriptionNotes" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-start gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" id="cancelPrescriptionFormBtn">Cancel</button>
+                            <button type="button" class="btn btn-general" id="savePrescriptionBtn">
+                                <i class="fas fa-list-ul"></i> Add to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="togglePrescriptionSectionSwitch"
+                            data-target-heading="prescriptionHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Prescription Provided
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const PRESCRIPTION_PRODUCTS = @Json.Serialize(prescriptionProducts);
+        let prescriptionRecords = [];
+        let editingPrescriptionIndex = null;
+        let suppressPrescriptionDateSync = false;
+        let prescriptionStartPicker = null;
+        let prescriptionEndPicker = null;
+
+        function escapeHtml(value) {
+            return $("<div>").text(value ?? "").html();
+        }
+
+        function parseUsDate(value) {
+            if (!value) {
+                return null;
+            }
+            const parts = String(value).split("/");
+            if (parts.length !== 3) {
+                return null;
+            }
+            const month = parseInt(parts[0], 10);
+            const day = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (!month || !day || !year) {
+                return null;
+            }
+            const date = new Date(year, month - 1, day);
+            if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+                return null;
+            }
+            return date;
+        }
+
+        function formatUsDate(date) {
+            if (!date) {
+                return "";
+            }
+            const mm = String(date.getMonth() + 1).padStart(2, "0");
+            const dd = String(date.getDate()).padStart(2, "0");
+            const yyyy = date.getFullYear();
+            return mm + "/" + dd + "/" + yyyy;
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function daysBetween(start, end) {
+            const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+            const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+            return Math.round((endUtc - startUtc) / 86400000);
+        }
+
+        function destroyPrescriptionProductSelect() {
+            const $select = $("#prescriptionProduct");
+            if ($select.hasClass("select2-hidden-accessible")) {
+                $select.select2("destroy");
+            }
+        }
+
+        function initPrescriptionProductSelect(selectedValue) {
+            const $select = $("#prescriptionProduct");
+            destroyPrescriptionProductSelect();
+            $select.empty().append('<option value=""></option>');
+            PRESCRIPTION_PRODUCTS.forEach(function (product) {
+                $select.append($("<option>").val(product).text(product));
+            });
+            if (selectedValue && PRESCRIPTION_PRODUCTS.indexOf(selectedValue) < 0) {
+                $select.append($("<option>").val(selectedValue).text(selectedValue));
+            }
+            $select.select2({
+                placeholder: "Select or type a medicine",
+                width: "100%",
+                allowClear: true,
+                tags: true,
+                dropdownParent: $("#prescriptionFormCard"),
+                createTag: function (params) {
+                    const term = $.trim(params.term);
+                    if (!term) {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    };
+                }
+            });
+            if (selectedValue) {
+                $select.val(selectedValue).trigger("change");
+            } else {
+                $select.val(null).trigger("change");
+            }
+        }
+
+        function initPrescriptionDatePickers() {
+            if (prescriptionStartPicker) {
+                prescriptionStartPicker.destroy();
+            }
+            if (prescriptionEndPicker) {
+                prescriptionEndPicker.destroy();
+            }
+
+            prescriptionStartPicker = flatpickr("#prescriptionStartDate", {
+                dateFormat: "m/d/Y",
+                allowInput: true,
+                onChange: function () {
+                    if (suppressPrescriptionDateSync) {
+                        return;
+                    }
+                    syncEndDateFromDuration();
+                    updatePrescribedAmount();
+                }
+            });
+
+            prescriptionEndPicker = flatpickr("#prescriptionEndDate", {
+                dateFormat: "m/d/Y",
+                allowInput: true,
+                onChange: function () {
+                    if (suppressPrescriptionDateSync) {
+                        return;
+                    }
+                    syncDurationFromEndDate();
+                    updatePrescribedAmount();
+                }
+            });
+        }
+
+        function syncDurationFromEndDate() {
+            const start = parseUsDate($("#prescriptionStartDate").val());
+            const end = parseUsDate($("#prescriptionEndDate").val());
+            if (!start || !end) {
+                return;
+            }
+            const duration = daysBetween(start, end);
+            if (duration < 0) {
+                return;
+            }
+            suppressPrescriptionDateSync = true;
+            $("#prescriptionDuration").val(String(duration));
+            suppressPrescriptionDateSync = false;
+        }
+
+        function syncEndDateFromDuration() {
+            const start = parseUsDate($("#prescriptionStartDate").val());
+            const durationText = $("#prescriptionDuration").val()?.trim();
+            if (!start || durationText === "" || durationText == null) {
+                return;
+            }
+            const duration = parseInt(durationText, 10);
+            if (isNaN(duration) || duration < 0) {
+                return;
+            }
+            const end = addDays(start, duration);
+            suppressPrescriptionDateSync = true;
+            if (prescriptionEndPicker) {
+                prescriptionEndPicker.setDate(end, false);
+            } else {
+                $("#prescriptionEndDate").val(formatUsDate(end));
+            }
+            suppressPrescriptionDateSync = false;
+        }
+
+        function sanitizeDecimalInput(value) {
+            let cleaned = String(value ?? "").replace(/[^0-9.]/g, "");
+            const firstDot = cleaned.indexOf(".");
+            if (firstDot >= 0) {
+                cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, "");
+            }
+            return cleaned.slice(0, 5);
+        }
+
+        function bindDecimalOnlyFields() {
+            $("#prescriptionDuration, #prescriptionDosage, #prescriptionFrequency").on("input", function () {
+                const sanitized = sanitizeDecimalInput(this.value);
+                if (this.value !== sanitized) {
+                    this.value = sanitized;
+                }
+            });
+
+            $("#prescriptionDuration, #prescriptionDosage, #prescriptionFrequency").on("keypress", function (e) {
+                const key = e.key;
+                if (key.length !== 1) {
+                    return;
+                }
+                if (this.value.length >= 5 && this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    return;
+                }
+                if (/[0-9]/.test(key)) {
+                    return;
+                }
+                if (key === "." && this.value.indexOf(".") === -1) {
+                    return;
+                }
+                e.preventDefault();
+            });
+        }
+
+        function updatePrescribedAmount() {
+            const frequency = parseFloat($("#prescriptionFrequency").val());
+            const duration = parseFloat($("#prescriptionDuration").val());
+            if (isNaN(frequency) || isNaN(duration)) {
+                $("#prescriptionPrescribedAmount").val("");
+                return;
+            }
+            const amount = frequency * duration;
+            $("#prescriptionPrescribedAmount").val(Number.isInteger(amount) ? String(amount) : String(Math.round(amount * 100) / 100));
+        }
+
+        function renderPrescriptionTable() {
+            const $tbody = $("#prescriptionTableBody");
+            $tbody.empty();
+
+            if (!prescriptionRecords.length) {
+                $tbody.append(
+                    '<tr id="prescriptionEmptyRow"><td colspan="11" class="text-center text-muted py-4">No prescriptions added yet.</td></tr>'
+                );
+                return;
+            }
+
+            prescriptionRecords.forEach(function (record, index) {
+                const actionButtons =
+                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 prescription-action-btn edit-prescription-btn' data-index='" + index + "' title='Edit'>" +
+                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                    "<button type='button' class='btn btn-sm btn-outline-danger prescription-action-btn delete-prescription-btn' data-index='" + index + "' title='Delete'>" +
+                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+
+                $tbody.append(
+                    "<tr data-prescription-index='" + index + "'>" +
+                    "<td>" + (index + 1) + "</td>" +
+                    "<td>" + escapeHtml(record.type || "") + "</td>" +
+                    "<td>" + escapeHtml(record.product || "") + "</td>" +
+                    "<td>" + escapeHtml(record.startDate || "") + "</td>" +
+                    "<td>" + escapeHtml(record.endDate || "") + "</td>" +
+                    "<td>" + escapeHtml(record.dosage || "") + "</td>" +
+                    "<td>" + escapeHtml(record.duration || "") + "</td>" +
+                    "<td>" + escapeHtml(record.frequency || "") + "</td>" +
+                    "<td>" + escapeHtml(record.prescribedAmount || "") + "</td>" +
+                    "<td>" + escapeHtml(record.notes || "") + "</td>" +
+                    "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                    "</tr>"
+                );
+            });
+        }
+
+        function clearPrescriptionForm() {
+            editingPrescriptionIndex = null;
+            $("#prescriptionFormTitle").text("Add New Prescription");
+            $("#savePrescriptionBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("input[name='PrescriptionType']").prop("checked", false);
+            destroyPrescriptionProductSelect();
+            const $product = $("#prescriptionProduct");
+            $product.empty().append('<option value=""></option>');
+            PRESCRIPTION_PRODUCTS.forEach(function (product) {
+                $product.append($("<option>").val(product).text(product));
+            });
+            $product.val("");
+
+            suppressPrescriptionDateSync = true;
+            const today = new Date();
+            if (prescriptionStartPicker) {
+                prescriptionStartPicker.setDate(today, false);
+            } else {
+                $("#prescriptionStartDate").val(formatUsDate(today));
+            }
+            if (prescriptionEndPicker) {
+                prescriptionEndPicker.clear();
+            } else {
+                $("#prescriptionEndDate").val("");
+            }
+            $("#prescriptionDuration").val("");
+            suppressPrescriptionDateSync = false;
+            $("#prescriptionDosage").val("");
+            $("#prescriptionFrequency").val("");
+            $("#prescriptionPrescribedAmount").val("");
+            $("#prescriptionNotes").val("");
+        }
+
+        function showPrescriptionForm(selectedProduct) {
+            $("#prescriptionFormCard").slideDown(200, function () {
+                initPrescriptionProductSelect(selectedProduct || "");
+            });
+        }
+
+        function hidePrescriptionForm() {
+            destroyPrescriptionProductSelect();
+            $("#prescriptionFormCard").slideUp(200);
+            clearPrescriptionForm();
+        }
+
+        function writePrescriptionForm(record) {
+            $("input[name='PrescriptionType']").prop("checked", false);
+            if (record.type === "OTC" || record.type === "Prescription") {
+                $("input[name='PrescriptionType'][value='" + record.type + "']").prop("checked", true);
+            }
+
+            suppressPrescriptionDateSync = true;
+            if (prescriptionStartPicker && record.startDate) {
+                prescriptionStartPicker.setDate(parseUsDate(record.startDate) || record.startDate, false);
+            } else {
+                $("#prescriptionStartDate").val(record.startDate || "");
+            }
+            if (prescriptionEndPicker) {
+                if (record.endDate) {
+                    prescriptionEndPicker.setDate(parseUsDate(record.endDate) || record.endDate, false);
+                } else {
+                    prescriptionEndPicker.clear();
+                }
+            } else {
+                $("#prescriptionEndDate").val(record.endDate || "");
+            }
+            $("#prescriptionDuration").val(record.duration || "");
+            suppressPrescriptionDateSync = false;
+
+            $("#prescriptionDosage").val(record.dosage || "");
+            $("#prescriptionFrequency").val(record.frequency || "");
+            $("#prescriptionPrescribedAmount").val(record.prescribedAmount || "");
+            $("#prescriptionNotes").val(record.notes || "");
+            updatePrescribedAmount();
+        }
+
+        function readPrescriptionForm() {
+            return {
+                type: $("input[name='PrescriptionType']:checked").val() || "",
+                product: $("#prescriptionProduct").val() || "",
+                startDate: $("#prescriptionStartDate").val() || "",
+                endDate: $("#prescriptionEndDate").val() || "",
+                dosage: $("#prescriptionDosage").val()?.trim() || "",
+                duration: $("#prescriptionDuration").val()?.trim() || "",
+                frequency: $("#prescriptionFrequency").val()?.trim() || "",
+                prescribedAmount: $("#prescriptionPrescribedAmount").val()?.trim() || "",
+                notes: $("#prescriptionNotes").val()?.trim() || ""
+            };
+        }
+
+        function validatePrescriptionForm(record) {
+            if (!record.type) {
+                Swal.fire("Invalid Data", "Please select OTC or Prescription.", "warning");
+                return false;
+            }
+            if (!record.product) {
+                Swal.fire("Invalid Data", "Product is required.", "warning");
+                return false;
+            }
+            if (!record.startDate || !parseUsDate(record.startDate)) {
+                Swal.fire("Invalid Data", "Start Date is required.", "warning");
+                return false;
+            }
+            if (!record.endDate || !parseUsDate(record.endDate)) {
+                Swal.fire("Invalid Data", "End Date is required.", "warning");
+                return false;
+            }
+            if (!record.duration || isNaN(parseFloat(record.duration))) {
+                Swal.fire("Invalid Data", "Duration must be a valid number.", "warning");
+                return false;
+            }
+            if (!record.frequency || isNaN(parseFloat(record.frequency))) {
+                Swal.fire("Invalid Data", "Frequency must be a valid number.", "warning");
+                return false;
+            }
+            if (record.dosage && isNaN(parseFloat(record.dosage))) {
+                Swal.fire("Invalid Data", "Dosage must be a valid number.", "warning");
+                return false;
+            }
+            const start = parseUsDate(record.startDate);
+            const end = parseUsDate(record.endDate);
+            if (start && end && daysBetween(start, end) < 0) {
+                Swal.fire("Invalid Data", "End Date cannot be before Start Date.", "warning");
+                return false;
+            }
+            return true;
+        }
+
+        function addOrUpdatePrescription() {
+            updatePrescribedAmount();
+            const record = readPrescriptionForm();
+            if (!validatePrescriptionForm(record)) {
+                return;
+            }
+
+            if (editingPrescriptionIndex != null) {
+                prescriptionRecords[editingPrescriptionIndex] = record;
+            } else {
+                prescriptionRecords.push(record);
+            }
+
+            renderPrescriptionTable();
+            hidePrescriptionForm();
+        }
+
+        function editPrescription(index) {
+            const record = prescriptionRecords[index];
+            if (!record) {
+                return;
+            }
+
+            editingPrescriptionIndex = index;
+            $("#prescriptionFormTitle").text("Edit Prescription");
+            $("#savePrescriptionBtn").html('<i class="fas fa-check-circle"></i> Update Prescription');
+            writePrescriptionForm(record);
+            showPrescriptionForm(record.product || "");
+
+            $("html, body").animate({
+                scrollTop: $("#prescriptionFormCard").offset().top - 80
+            }, 300);
+        }
+
+        function deletePrescription(index) {
+            Swal.fire({
+                title: "Delete prescription?",
+                text: "This prescription will be removed from the list.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                prescriptionRecords.splice(index, 1);
+                if (editingPrescriptionIndex === index) {
+                    hidePrescriptionForm();
+                } else if (editingPrescriptionIndex != null && editingPrescriptionIndex > index) {
+                    editingPrescriptionIndex -= 1;
+                }
+                renderPrescriptionTable();
+            });
+        }
+
+        function togglePrescriptionSectionFromSwitch() {
+            const isOn = $("#togglePrescriptionSectionSwitch").is(":checked");
+            const $section = $("#prescriptionContentSection");
+            if (isOn) {
+                $section.slideDown(200);
+            } else {
+                $section.slideUp(200);
+            }
+            $("#togglePrescriptionSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+        }
+
+        $(document).ready(function () {
+            initPrescriptionDatePickers();
+            bindDecimalOnlyFields();
+            renderPrescriptionTable();
+            clearPrescriptionForm();
+
+            $("#togglePrescriptionSectionSwitch").on("change", togglePrescriptionSectionFromSwitch);
+
+            $("#addPrescriptionBtn").on("click", function () {
+                clearPrescriptionForm();
+                showPrescriptionForm("");
+                $("html, body").animate({
+                    scrollTop: $("#prescriptionFormCard").offset().top - 80
+                }, 300);
+            });
+
+            $("#cancelPrescriptionFormBtn").on("click", hidePrescriptionForm);
+            $("#savePrescriptionBtn").on("click", addOrUpdatePrescription);
+
+            $("#prescriptionDuration").on("input change", function () {
+                if (suppressPrescriptionDateSync) {
+                    return;
+                }
+                syncEndDateFromDuration();
+                updatePrescribedAmount();
+            });
+
+            $("#prescriptionFrequency").on("input change", updatePrescribedAmount);
+
+            $(document).on("click", ".edit-prescription-btn", function () {
+                editPrescription(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".delete-prescription-btn", function () {
+                deletePrescription(parseInt($(this).data("index"), 10));
+            });
+        });
+    })();
+</script>

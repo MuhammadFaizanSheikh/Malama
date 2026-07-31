@@ -459,11 +459,37 @@
 
     <hr class="my-4" />
 
-    @{
-        var treatmentFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
-        treatmentFindingsViewData["XRayStation"] = Model.XRayStation;
-    }
-    @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
+    <div class="questionnaire-heading" id="subsequentHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleSubsequentSectionSwitch"
+                   aria-controls="subsequentSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Subsequent diseases and abnormalities</h3>
+    </div>
+
+    <div id="subsequentSection" style="display:none;">
+        @{
+            var treatmentFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            treatmentFindingsViewData["XRayStation"] = Model.XRayStation;
+        }
+        @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
+
+        @await Html.PartialAsync("_DentalTreatmentAnesthesiaSection")
+
+        @await Html.PartialAsync("_DentalTreatmentPrescriptionSection")
+
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleSubsequentSectionSwitch"
+                    data-target-heading="subsequentHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Subsequent diseases and abnormalities
+            </button>
+        </div>
+    </div>
 
     <div class="d-flex justify-content-end mt-4 gap-3">
         <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
@@ -604,6 +630,17 @@
         $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
     }
 
+    function toggleSubsequentSectionFromSwitch() {
+        const isOn = $("#toggleSubsequentSectionSwitch").is(":checked");
+        const $section = $("#subsequentSection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleSubsequentSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
     const XRAY_ZOOM_STEP = 25;
     const XRAY_ZOOM_MIN = 50;
     const XRAY_ZOOM_MAX = 300;
@@ -736,6 +773,7 @@
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+        $("#toggleSubsequentSectionSwitch").on("change", toggleSubsequentSectionFromSwitch);
 
         $(document).on("click", ".section-collapse-btn", function () {
             const switchId = $(this).data("target-switch");

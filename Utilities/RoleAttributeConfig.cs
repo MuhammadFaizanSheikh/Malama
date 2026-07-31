@@ -95,14 +95,8 @@ namespace Malama.Utilities
             // Dental Treatment
             ["DentalTreatment_View"] = new List<(string Role, string Attribute)>
         {
-            ("DE-Dental X-Ray Tech", "Exam"),
-            ("DE-Dental Director", "Exam"),
-            ("DT-Treatment Coordinator", "Treatment"),
-            ("DT-Dentist", "General"),
-            ("DT-Dentist", "Oral Surgery"),
-            ("DT-Dentist", "Endo"),
-            ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment"),
+            ("DT-Dentist", "Treatment"),
+            ("DT-Dental Assistant", "Treatment Assist"),
             ("Event Manager", null)
         },
 

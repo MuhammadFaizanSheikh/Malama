@@ -52,103 +52,116 @@
     }
 </style>
 
-<div class="card mb-4" id="treatmentFindingsSection">
-    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
-        Dental Findings
-    </div>
-    <div class="card-body">
-        <div class="table-responsive mb-3">
-            <table class="table table-bordered table-striped align-middle mb-0" id="treatmentFindingsTable">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 60px;">S.No</th>
-                        <th style="width: 110px;">Affected Tooth</th>
-                        <th style="width: 140px;">Affected Surface(s)</th>
-                        <th style="width: 160px;">Disease / Condition Type</th>
-                        <th style="width: 180px;">Classification</th>
-                        <th>Description / Details</th>
-                        <th style="width: 120px;">Post Service Treatment</th>
-                        <th style="width: 120px;">Reason</th>
-                        <th style="width: 140px;">Notes</th>
-                        <th style="width: 120px;">Final DRC</th>
-                        <th style="width: 180px;">Dentist/Professional Completing / Recommending Final Treatment</th>
-                        <th style="width: 100px;">Status</th>
-                        <th style="width: 140px;">Date/Time</th>
-                        <th style="width: 80px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="treatmentFindingsTableBody">
-                    <tr id="treatmentFindingsEmptyRow">
-                        <td colspan="14" class="text-center text-muted py-4">No findings added yet.</td>
-                    </tr>
-                </tbody>
-            </table>
+<div class="mb-4" id="treatmentFindingsSection">
+    <div class="questionnaire-heading" id="dentalFindingsHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleDentalFindingsSectionSwitch"
+                   aria-controls="dentalFindingsContentSection"
+                   aria-expanded="false" />
         </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Dental Findings</h4>
+    </div>
 
-        <div id="treatmentFindingFormCard" class="card border-primary mb-0" style="display:none;">
-            <div class="card-header bg-light fw-semibold" id="treatmentFindingFormTitle">Edit Finding</div>
+    <div id="dentalFindingsContentSection" style="display:none;">
+        <div class="card mb-0">
             <div class="card-body">
-                <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Finding</h5>
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label" for="treatmentFindingDiseaseType">Disease / Condition Type</label>
-                        <select id="treatmentFindingDiseaseType" class="form-select">
-                            <option value=""></option>
-                            @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
-                            {
-                                <option value="@diseaseType">@diseaseType</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="treatmentFindingAffectedTooth">Affected Tooth</label>
-                        <select id="treatmentFindingAffectedTooth" class="form-select"></select>
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="treatmentFindingPrimaryTooth" />
-                            <label class="form-check-label" for="treatmentFindingPrimaryTooth">Primary tooth</label>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-striped align-middle mb-0" id="treatmentFindingsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">S.No</th>
+                                <th style="width: 110px;">Affected Tooth</th>
+                                <th style="width: 140px;">Affected Surface(s)</th>
+                                <th style="width: 160px;">Disease / Condition Type</th>
+                                <th style="width: 180px;">Classification</th>
+                                <th>Description / Details</th>
+                                <th style="width: 120px;">Post Service Treatment</th>
+                                <th style="width: 120px;">Reason</th>
+                                <th style="width: 140px;">Notes</th>
+                                <th style="width: 120px;">Final DRC</th>
+                                <th style="width: 180px;">Dentist/Professional Completing / Recommending Final Treatment</th>
+                                <th style="width: 100px;">Status</th>
+                                <th style="width: 140px;">Date/Time</th>
+                                <th style="width: 80px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="treatmentFindingsTableBody">
+                            <tr id="treatmentFindingsEmptyRow">
+                                <td colspan="14" class="text-center text-muted py-4">No findings added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="treatmentFindingFormCard" class="card border-primary mb-0" style="display:none;">
+                    <div class="card-header bg-light fw-semibold" id="treatmentFindingFormTitle">Required Treatment Services</div>
+                    <div class="card-body">
+                        <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Initial Exam Finding</h5>
+                        <div id="initialExamFindingSection">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="treatmentFindingDiseaseType">Disease / Condition Type</label>
+                                    <select id="treatmentFindingDiseaseType" class="form-select">
+                                        <option value=""></option>
+                                        @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
+                                        {
+                                            <option value="@diseaseType">@diseaseType</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="treatmentFindingAffectedTooth">Affected Tooth</label>
+                                    <select id="treatmentFindingAffectedTooth" class="form-select"></select>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="treatmentFindingPrimaryTooth" />
+                                        <label class="form-check-label" for="treatmentFindingPrimaryTooth">Primary tooth</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="treatmentFindingSurfacesSection" style="display:none;">
+                                    <label class="form-label" for="treatmentFindingAffectedSurfaces">Affected Surface(s)</label>
+                                    <select id="treatmentFindingAffectedSurfaces" class="form-select treatment-finding-multiselect" multiple></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="treatmentFindingCdtCodes">CDT Code</label>
+                                    <select id="treatmentFindingCdtCodes" class="form-select treatment-finding-multiselect" multiple></select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="treatmentFindingCdtCodesNotes">Codes Notes</label>
+                                <textarea id="treatmentFindingCdtCodesNotes" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="treatmentFindingDescription">Description / Details</label>
+                                <textarea id="treatmentFindingDescription" class="form-control" rows="4"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Classification for selected tooth</label>
+                                @for (var i = 0; i < DentalExamFindingConstants.Classifications.Length; i++)
+                                {
+                                    var classification = DentalExamFindingConstants.Classifications[i];
+                                    <div class="form-check">
+                                        <input class="form-check-input treatment-finding-classification-radio"
+                                               type="radio"
+                                               name="TreatmentFindingClassification"
+                                               id="treatmentFindingClassification_@i"
+                                               value="@classification" />
+                                        <label class="form-check-label" for="treatmentFindingClassification_@i">
+                                            @classification
+                                        </label>
+                                    </div>
+                                }
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6" id="treatmentFindingSurfacesSection" style="display:none;">
-                        <label class="form-label" for="treatmentFindingAffectedSurfaces">Affected Surface(s)</label>
-                        <select id="treatmentFindingAffectedSurfaces" class="form-select treatment-finding-multiselect" multiple></select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label" for="treatmentFindingCdtCodes">CDT Code</label>
-                        <select id="treatmentFindingCdtCodes" class="form-select treatment-finding-multiselect" multiple></select>
-                    </div>
-                </div>
 
-                <div class="mb-3">
-                    <label class="form-label" for="treatmentFindingCdtCodesNotes">Codes Notes</label>
-                    <textarea id="treatmentFindingCdtCodesNotes" class="form-control" rows="2"></textarea>
-                </div>
+                        <hr class="my-4" />
 
-                <div class="mb-3">
-                    <label class="form-label" for="treatmentFindingDescription">Description / Details</label>
-                    <textarea id="treatmentFindingDescription" class="form-control" rows="4"></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label d-block">Classification for selected tooth</label>
-                    @for (var i = 0; i < DentalExamFindingConstants.Classifications.Length; i++)
-                    {
-                        var classification = DentalExamFindingConstants.Classifications[i];
-                        <div class="form-check">
-                            <input class="form-check-input treatment-finding-classification-radio"
-                                   type="radio"
-                                   name="TreatmentFindingClassification"
-                                   id="treatmentFindingClassification_@i"
-                                   value="@classification" />
-                            <label class="form-check-label" for="treatmentFindingClassification_@i">
-                                @classification
-                            </label>
-                        </div>
-                    }
-                </div>
-
-                <hr class="my-4" />
-
-                <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Treatment Section</h5>
+                        <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Treatment Section</h5>
                 <div class="mb-3">
                     <label class="form-label d-block">Treatment Completed</label>
                     <div class="form-check form-check-inline">
@@ -232,6 +245,16 @@
                     <button type="button" class="btn btn-secondary" id="cancelTreatmentFindingFormBtn">Cancel</button>
                     <button type="button" class="btn btn-general" id="updateTreatmentFindingBtn">
                         <i class="fas fa-check-circle"></i> Update Finding
+                    </button>
+                </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleDentalFindingsSectionSwitch"
+                            data-target-heading="dentalFindingsHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Dental Findings
                     </button>
                 </div>
             </div>
@@ -691,7 +714,7 @@
 
         function clearTreatmentForm() {
             editingFindingIndex = null;
-            $("#treatmentFindingFormTitle").text("Edit Finding");
+            $("#treatmentFindingFormTitle").text("Required Treatment Services");
             $("#treatmentFindingPrimaryTooth").prop("checked", false);
             $("#treatmentFindingDiseaseType").val("");
             populateToothOptions();
@@ -795,13 +818,34 @@
             }
 
             editingFindingIndex = index;
-            $("#treatmentFindingFormTitle").text("Edit Finding");
+            $("#treatmentFindingFormTitle").text("Required Treatment Services");
             writeFindingForm(finding);
             showFindingForm(finding);
+
+            // Ensure parent Subsequent section is visible when editing.
+            if (!$("#toggleSubsequentSectionSwitch").is(":checked")) {
+                $("#toggleSubsequentSectionSwitch").prop("checked", true).trigger("change");
+            }
+
+            // Ensure Dental Findings section is visible when editing.
+            if (!$("#toggleDentalFindingsSectionSwitch").is(":checked")) {
+                $("#toggleDentalFindingsSectionSwitch").prop("checked", true).trigger("change");
+            }
 
             $("html, body").animate({
                 scrollTop: $("#treatmentFindingFormCard").offset().top - 80
             }, 300);
+        }
+
+        function toggleDentalFindingsSectionFromSwitch() {
+            const isOn = $("#toggleDentalFindingsSectionSwitch").is(":checked");
+            const $section = $("#dentalFindingsContentSection");
+            if (isOn) {
+                $section.slideDown(200);
+            } else {
+                $section.slideUp(200);
+            }
+            $("#toggleDentalFindingsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
         }
 
         window.initDentalTreatmentFindingsSection = function () {
@@ -811,6 +855,8 @@
 
         $(document).ready(function () {
             initDentalTreatmentFindingsSection();
+
+            $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
 
             $("#cancelTreatmentFindingFormBtn").on("click", hideFindingForm);
             $("#updateTreatmentFindingBtn").on("click", updateFindingFromTreatmentSection);
