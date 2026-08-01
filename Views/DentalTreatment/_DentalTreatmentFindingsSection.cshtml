@@ -9,6 +9,8 @@
     var examinerNamesByUserId = ViewData["ExaminerNamesByUserId"] as Dictionary<string, string>
         ?? new Dictionary<string, string>();
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
+    var canEditTreatment = ViewData["CanEditTreatment"] as bool?
+        ?? (ViewBag.IsDtDentist == true);
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalExamFindingMapper.ToDto)
@@ -310,6 +312,7 @@
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
 
         let treatmentFindings = (@Html.Raw(findingsJson) || []).map(function (item) {
             return normalizeTreatmentFinding(item);
@@ -684,10 +687,13 @@
                 const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
                 const postServiceTreatment = displayOrDash(finding.treatmentCompleted);
                 const examinerDetail = formatExaminerDetail(finding);
-                const actionButtons =
-                    "<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
-                    index +
-                    "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>";
+                const actionButtons = CAN_EDIT_TREATMENT
+                    ? ("<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
+                        index +
+                        "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>")
+                    : ("<button type='button' class='btn btn-sm btn-outline-secondary finding-action-btn edit-treatment-finding-btn' data-index='" +
+                        index +
+                        "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>");
 
                 $tbody.append(
                     "<tr data-finding-index='" + index + "'>" +
@@ -729,6 +735,34 @@
                     $select.next(".select2-container").css("pointer-events", "none").addClass("read-only-style");
                 }
             });
+        }
+
+        function applyTreatmentSectionReadOnly() {
+            if (CAN_EDIT_TREATMENT) {
+                $("#updateTreatmentFindingBtn").show();
+                return;
+            }
+
+            const $treatmentFields = $(
+                "input[name='TreatmentCompleted'], #treatmentPostServiceTreatment, #treatmentSectionCdtCodes, #treatmentFinalDrc, #treatmentReason, #treatmentNotes"
+            );
+            $treatmentFields.each(function () {
+                const $el = $(this);
+                if ($el.is("input:checkbox, input:radio, select")) {
+                    $el.prop("disabled", true);
+                } else {
+                    $el.prop("readonly", true).addClass("read-only-style");
+                }
+            });
+
+            ["#treatmentPostServiceTreatment", "#treatmentSectionCdtCodes"].forEach(function (selector) {
+                const $select = $(selector);
+                if ($select.hasClass("select2-hidden-accessible")) {
+                    $select.next(".select2-container").css("pointer-events", "none").addClass("read-only-style");
+                }
+            });
+
+            $("#updateTreatmentFindingBtn").hide();
         }
 
         function getTreatmentPostServiceValues(finding) {
@@ -894,6 +928,7 @@
                     suppressTreatmentCdtReset = false;
                 }
                 applyFindingSectionReadOnly();
+                applyTreatmentSectionReadOnly();
                 toggleTreatmentCompletedFields();
                 if ($("input[name='TreatmentCompleted']:checked").val() === "Yes") {
                     suppressTreatmentCdtReset = true;
@@ -903,6 +938,7 @@
                     } finally {
                         suppressTreatmentCdtReset = false;
                     }
+                    applyTreatmentSectionReadOnly();
                 }
             });
         }
@@ -987,6 +1023,10 @@
         }
 
         function updateFindingFromTreatmentSection() {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             if (editingFindingIndex == null || !treatmentFindings[editingFindingIndex]) {
                 return;
             }
@@ -1060,7 +1100,12 @@
             $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
 
             $("#cancelTreatmentFindingFormBtn").on("click", hideFindingForm);
-            $("#updateTreatmentFindingBtn").on("click", updateFindingFromTreatmentSection);
+            $("#updateTreatmentFindingBtn").on("click", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
+                updateFindingFromTreatmentSection();
+            });
 
             $(document).on("change", "input[name='TreatmentCompleted']", function () {
                 toggleTreatmentCompletedFields();

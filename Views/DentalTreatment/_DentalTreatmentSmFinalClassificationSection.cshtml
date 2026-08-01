@@ -1,3 +1,7 @@
+@{
+    var canEditTreatment = ViewBag.IsDtDentist == true;
+}
+
 <div class="mb-4" id="treatmentSmFinalClassificationSection">
     <div class="questionnaire-heading" id="smFinalClassificationHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
@@ -16,7 +20,9 @@
             <div class="card-body">
                 <div class="mb-0" style="max-width: 320px;">
                     <label class="form-label" for="smFinalClassification">SM Final Classification</label>
-                    <select id="smFinalClassification" class="form-select">
+                    <select id="smFinalClassification"
+                            class="form-select @(canEditTreatment ? null : "read-only-style")"
+                            @(canEditTreatment ? null : "disabled")>
                         <option value=""></option>
                         <option value="1">1</option>
                         <option value="2">2</option>

@@ -1,4 +1,5 @@
 @{
+    var canEditTreatment = ViewBag.IsDtDentist == true;
     var carpuleOptions = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     var anesthesiaTypes = new[]
     {
@@ -59,7 +60,7 @@
                     </table>
                 </div>
 
-                <button type="button" class="btn btn-outline-primary mb-3" id="addAnesthesiaBtn">
+                <button type="button" class="btn btn-outline-primary mb-3" id="addAnesthesiaBtn" style="@(canEditTreatment ? null : "display:none;")">
                     <i class="fas fa-plus-circle"></i> Add Anesthesia
                 </button>
 
@@ -126,6 +127,7 @@
 <script>
     (function () {
         const ANESTHESIA_TYPES = @Json.Serialize(anesthesiaTypes);
+        const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
         let anesthesiaRecords = [];
         let editingAnesthesiaIndex = null;
 
@@ -154,11 +156,12 @@
             }
 
             anesthesiaRecords.forEach(function (record, index) {
-                const actionButtons =
-                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 anesthesia-action-btn edit-anesthesia-btn' data-index='" + index + "' title='Edit'>" +
-                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
-                    "<button type='button' class='btn btn-sm btn-outline-danger anesthesia-action-btn delete-anesthesia-btn' data-index='" + index + "' title='Delete'>" +
-                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+                const actionButtons = CAN_EDIT_TREATMENT
+                    ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 anesthesia-action-btn edit-anesthesia-btn' data-index='" + index + "' title='Edit'>" +
+                        "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                        "<button type='button' class='btn btn-sm btn-outline-danger anesthesia-action-btn delete-anesthesia-btn' data-index='" + index + "' title='Delete'>" +
+                        "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>")
+                    : "-";
 
                 let typeCells = "";
                 ANESTHESIA_TYPES.forEach(function (type) {
@@ -232,6 +235,10 @@
         }
 
         function addOrUpdateAnesthesia() {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             const record = readAnesthesiaRecord();
             if (!record) {
                 Swal.fire("Invalid Data", "Please select # of Carpules for at least one Type.", "warning");
@@ -249,6 +256,10 @@
         }
 
         function editAnesthesia(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             const record = anesthesiaRecords[index];
             if (!record) {
                 return;
@@ -266,6 +277,10 @@
         }
 
         function deleteAnesthesia(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             Swal.fire({
                 title: "Delete anesthesia record?",
                 text: "This record will be removed from the list.",
@@ -306,6 +321,9 @@
             $("#toggleAnesthesiaSectionSwitch").on("change", toggleAnesthesiaSectionFromSwitch);
 
             $("#addAnesthesiaBtn").on("click", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
                 clearAnesthesiaForm();
                 showAnesthesiaForm();
                 $("html, body").animate({

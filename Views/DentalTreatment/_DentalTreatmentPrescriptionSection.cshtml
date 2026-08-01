@@ -1,4 +1,5 @@
 @{
+    var canEditTreatment = ViewBag.IsDtDentist == true;
     var prescriptionProducts = new[]
     {
         "Augmentin 875mg",
@@ -68,7 +69,7 @@
                     </table>
                 </div>
 
-                <button type="button" class="btn btn-outline-primary mb-3" id="addPrescriptionBtn">
+                <button type="button" class="btn btn-outline-primary mb-3" id="addPrescriptionBtn" style="@(canEditTreatment ? null : "display:none;")">
                     <i class="fas fa-plus-circle"></i> Add New Prescription
                 </button>
 
@@ -168,6 +169,7 @@
 <script>
     (function () {
         const PRESCRIPTION_PRODUCTS = @Json.Serialize(prescriptionProducts);
+        const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
         let prescriptionRecords = [];
         let editingPrescriptionIndex = null;
         let suppressPrescriptionDateSync = false;
@@ -390,11 +392,12 @@
             }
 
             prescriptionRecords.forEach(function (record, index) {
-                const actionButtons =
-                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 prescription-action-btn edit-prescription-btn' data-index='" + index + "' title='Edit'>" +
-                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
-                    "<button type='button' class='btn btn-sm btn-outline-danger prescription-action-btn delete-prescription-btn' data-index='" + index + "' title='Delete'>" +
-                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+                const actionButtons = CAN_EDIT_TREATMENT
+                    ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 prescription-action-btn edit-prescription-btn' data-index='" + index + "' title='Edit'>" +
+                        "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                        "<button type='button' class='btn btn-sm btn-outline-danger prescription-action-btn delete-prescription-btn' data-index='" + index + "' title='Delete'>" +
+                        "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>")
+                    : "-";
 
                 $tbody.append(
                     "<tr data-prescription-index='" + index + "'>" +
@@ -543,6 +546,10 @@
         }
 
         function addOrUpdatePrescription() {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             updatePrescribedAmount();
             const record = readPrescriptionForm();
             if (!validatePrescriptionForm(record)) {
@@ -560,6 +567,10 @@
         }
 
         function editPrescription(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             const record = prescriptionRecords[index];
             if (!record) {
                 return;
@@ -577,6 +588,10 @@
         }
 
         function deletePrescription(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             Swal.fire({
                 title: "Delete prescription?",
                 text: "This prescription will be removed from the list.",
@@ -619,6 +634,9 @@
             $("#togglePrescriptionSectionSwitch").on("change", togglePrescriptionSectionFromSwitch);
 
             $("#addPrescriptionBtn").on("click", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
                 clearPrescriptionForm();
                 showPrescriptionForm("");
                 $("html, body").animate({

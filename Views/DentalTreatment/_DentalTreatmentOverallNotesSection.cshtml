@@ -2,6 +2,7 @@
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string
         ?? ViewBag.CurrentUserDisplayName as string
         ?? string.Empty;
+    var canEditTreatment = ViewBag.IsDtDentist == true;
 }
 
 <style>
@@ -57,7 +58,7 @@
                     </table>
                 </div>
 
-                <button type="button" class="btn btn-outline-primary mb-3" id="addOverallNoteBtn">
+                <button type="button" class="btn btn-outline-primary mb-3" id="addOverallNoteBtn" style="@(canEditTreatment ? null : "display:none;")">
                     <i class="fas fa-plus-circle"></i> Add Another Note
                 </button>
 
@@ -110,6 +111,7 @@
 <script>
     (function () {
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
         let overallNotes = [];
         let editingOverallNoteIndex = null;
 
@@ -143,11 +145,12 @@
             }
 
             overallNotes.forEach(function (note, index) {
-                const actionButtons =
-                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 overall-note-action-btn edit-overall-note-btn' data-index='" + index + "' title='Edit'>" +
-                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
-                    "<button type='button' class='btn btn-sm btn-outline-danger overall-note-action-btn delete-overall-note-btn' data-index='" + index + "' title='Delete'>" +
-                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+                const actionButtons = CAN_EDIT_TREATMENT
+                    ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 overall-note-action-btn edit-overall-note-btn' data-index='" + index + "' title='Edit'>" +
+                        "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                        "<button type='button' class='btn btn-sm btn-outline-danger overall-note-action-btn delete-overall-note-btn' data-index='" + index + "' title='Delete'>" +
+                        "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>")
+                    : "-";
 
                 $tbody.append(
                     "<tr data-overall-note-index='" + index + "'>" +
@@ -199,6 +202,10 @@
         }
 
         function addOrUpdateOverallNote() {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             const note = readOverallNote();
             if (!note) {
                 Swal.fire("Invalid Data", "Please enter Notes.", "warning");
@@ -221,6 +228,10 @@
         }
 
         function editOverallNote(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             const note = overallNotes[index];
             if (!note) {
                 return;
@@ -238,6 +249,10 @@
         }
 
         function deleteOverallNote(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
             Swal.fire({
                 title: "Delete overall note?",
                 text: "This note will be removed from the list.",
@@ -278,6 +293,9 @@
             $("#toggleOverallNotesSectionSwitch").on("change", toggleOverallNotesSectionFromSwitch);
 
             $("#addOverallNoteBtn").on("click", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
                 clearOverallNoteForm();
                 showOverallNoteForm();
                 $("html, body").animate({

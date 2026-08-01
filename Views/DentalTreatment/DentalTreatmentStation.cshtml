@@ -14,6 +14,8 @@
     var dentalExam = Model.DentalExam;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var isDentalExamDentist = User.IsInRole("DE- Dentist") || User.IsInRole("DT-Dentist");
+    var isDtDentist = User.IsInRole("DT-Dentist");
+    ViewBag.IsDtDentist = isDtDentist;
     var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
@@ -248,6 +250,16 @@
 
     .psr-tooth-image-btn[aria-pressed="true"] {
         outline: none;
+    }
+
+    #psrInteractiveToothChart.psr-tooth-chart-editable .psr-tooth-image-btn {
+        pointer-events: auto;
+        cursor: pointer;
+    }
+
+    #psrInteractiveToothChart.psr-tooth-chart-editable .psr-tooth-check-label {
+        pointer-events: auto;
+        cursor: pointer;
     }
 </style>
 
@@ -636,6 +648,7 @@
             treatmentFindingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                 ?? new Dictionary<string, string>();
             treatmentFindingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
+            treatmentFindingsViewData["CanEditTreatment"] = isDtDentist;
         }
         @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
 
@@ -665,6 +678,7 @@
 
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
+    const IS_DT_DENTIST = @Json.Serialize(isDtDentist);
 
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
@@ -833,9 +847,64 @@
         toggleSectionFromSwitch("#togglePanoXraySectionSwitch", "#panoXrayContentSection");
     }
 
-    function applyExamSubsequentReadOnlyMode() {
-        $("#psrInteractiveToothChart").attr("data-readonly", "true");
-        $("#psrInteractiveToothChart").find("input, button").prop("disabled", true);
+    function setPsrToothSelected(toothNumber, selected) {
+        const tooth = String(toothNumber);
+        const $input = $("#psrToothCheck_" + tooth);
+        const $chart = $("#psrInteractiveToothChart");
+        const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+        const $img = $btn.find(".psr-tooth-img");
+
+        $input.prop("checked", !!selected);
+        $btn.attr("aria-pressed", selected ? "true" : "false");
+        if ($img.length) {
+            $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+        }
+    }
+
+    function togglePsrTooth(toothNumber) {
+        const $input = $("#psrToothCheck_" + toothNumber);
+        if (!$input.length) {
+            return;
+        }
+        setPsrToothSelected(toothNumber, !$input.is(":checked"));
+    }
+
+    function initTreatmentPsrToothChart() {
+        const $chart = $("#psrInteractiveToothChart");
+        if (!$chart.length) {
+            return;
+        }
+
+        $chart.find(".psr-tooth-img").each(function () {
+            const selectedSrc = $(this).attr("data-selected");
+            if (selectedSrc) {
+                const preload = new Image();
+                preload.src = selectedSrc;
+            }
+        });
+
+        $chart.find(".psr-tooth-input").each(function () {
+            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
+
+        if (!IS_DT_DENTIST) {
+            $chart.attr("data-readonly", "true");
+            $chart.find("input, button").prop("disabled", true);
+            return;
+        }
+
+        $chart.removeAttr("data-readonly");
+        $chart.addClass("psr-tooth-chart-editable");
+        $chart.find("input, button").prop("disabled", false);
+
+        $chart.off("click.psrTooth").on("click.psrTooth", ".psr-tooth-image-btn", function (e) {
+            e.preventDefault();
+            togglePsrTooth($(this).attr("data-tooth"));
+        });
+
+        $chart.off("change.psrTooth").on("change.psrTooth", ".psr-tooth-input", function () {
+            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
     }
 
     const XRAY_ZOOM_STEP = 25;
@@ -966,7 +1035,7 @@
     $(document).ready(function () {
         initQuestionnaireToggles();
         initReadOnlyXRayPreviews();
-        applyExamSubsequentReadOnlyMode();
+        initTreatmentPsrToothChart();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
