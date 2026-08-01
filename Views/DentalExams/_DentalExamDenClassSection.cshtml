@@ -12,81 +12,123 @@
     var panoMarkedRequiredByDentist = exam.PanoXRayAcknowledged;
 }
 
-<div class="card mb-4">
-    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
-        Dental Readiness Classification (DEN Class)
+<div class="mb-4" id="denClassSection">
+    <div class="questionnaire-heading" id="denClassSectionHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleDenClassSectionSwitch"
+                   aria-controls="denClassContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Dental Readiness Classification (DEN Class)</h4>
     </div>
-    <div class="card-body">
-        <div class="mb-3">
-            @for (var i = 0; i < DentalExamDenClass.Options.Length; i++)
-            {
-                var option = DentalExamDenClass.Options[i];
-                var isSelected = string.Equals(exam.DenClass, option, StringComparison.OrdinalIgnoreCase);
-                <div class="form-check">
-                    <input class="form-check-input den-class-radio"
-                           type="radio"
-                           name="DenClass"
-                           id="DenClass_@i"
-                           value="@option"
-                           @(isSelected ? "checked" : null)
-                           @denDisabledAttr />
-                    <label class="form-check-label" for="DenClass_@i">@option</label>
+
+    <div id="denClassContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body">
+                <div class="mb-3">
+                    @for (var i = 0; i < DentalExamDenClass.Options.Length; i++)
+                    {
+                        var option = DentalExamDenClass.Options[i];
+                        var isSelected = string.Equals(exam.DenClass, option, StringComparison.OrdinalIgnoreCase);
+                        <div class="form-check">
+                            <input class="form-check-input den-class-radio"
+                                   type="radio"
+                                   name="DenClass"
+                                   id="DenClass_@i"
+                                   value="@option"
+                                   @(isSelected ? "checked" : null)
+                                   @denDisabledAttr />
+                            <label class="form-check-label" for="DenClass_@i">@option</label>
+                        </div>
+                    }
                 </div>
-            }
+
+                <div class="mb-0">
+                    <label class="form-label" for="DenClassReasonComments">Classification Reason / Comments</label>
+                    <textarea name="DenClassReasonComments"
+                              id="DenClassReasonComments"
+                              class="form-control @(subsequentReadOnly ? "read-only-style" : null)"
+                              rows="4"
+                              @(subsequentReadOnly ? "readonly" : null)
+                              @denClassCommentsRequiredAttr>@exam.DenClassReasonComments</textarea>
+                </div>
+            </div>
         </div>
 
-        <div class="mb-0">
-            <label class="form-label" for="DenClassReasonComments">Classification Reason / Comments</label>
-            <textarea name="DenClassReasonComments"
-                      id="DenClassReasonComments"
-                      class="form-control @(subsequentReadOnly ? "read-only-style" : null)"
-                      rows="4"
-                      @(subsequentReadOnly ? "readonly" : null)
-                      @denClassCommentsRequiredAttr>@exam.DenClassReasonComments</textarea>
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleDenClassSectionSwitch"
+                    data-target-heading="denClassSectionHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Dental Readiness Classification (DEN Class)
+            </button>
         </div>
     </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
-        Panorex (Pano) X-Ray
+<div class="mb-4" id="panoXraySection">
+    <div class="questionnaire-heading" id="panoXraySectionHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="togglePanoXraySectionSwitch"
+                   aria-controls="panoXrayContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Panorex (Pano) X-Ray</h4>
     </div>
-    <div class="card-body py-3">
-        @if (serviceMemberPanoRequired)
-        {
-            <input type="hidden" name="PanoXRayAcknowledged" value="true" />
-            <p class="fw-semibold mb-2 mb-md-3">
-                Panorex (Pano) X-ray is Required for this Service member.
-            </p>
-            <div class="form-check mb-0">
-                <input class="form-check-input"
-                       type="checkbox"
-                       id="PanoXRayAcknowledgedDisplay"
-                       checked
-                       disabled />
-                <label class="form-check-label" for="PanoXRayAcknowledgedDisplay">
-                    Pano X-ray requirement confirmed for this service member
-                </label>
+
+    <div id="panoXrayContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body py-3">
+                @if (serviceMemberPanoRequired)
+                {
+                    <input type="hidden" name="PanoXRayAcknowledged" value="true" />
+                    <p class="fw-semibold mb-2 mb-md-3">
+                        Panorex (Pano) X-ray is Required for this Service member.
+                    </p>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="PanoXRayAcknowledgedDisplay"
+                               checked
+                               disabled />
+                        <label class="form-check-label" for="PanoXRayAcknowledgedDisplay">
+                            Pano X-ray requirement confirmed for this service member
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <p class="fw-semibold mb-2 mb-md-3">
+                        Panorex (Pano) X-ray is NOT Required for this Service member.
+                    </p>
+                    <div class="form-check mb-0">
+                        <input type="hidden" name="PanoXRayAcknowledged" value="false" />
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="PanoXRayAcknowledged"
+                               id="PanoXRayAcknowledged"
+                               value="true"
+                               @(panoMarkedRequiredByDentist ? "checked" : null)
+                               @denDisabledAttr />
+                        <label class="form-check-label" for="PanoXRayAcknowledged">
+                            Mark Panorex (Pano) X-ray as required for this service member
+                        </label>
+                    </div>
+                }
             </div>
-        }
-        else
-        {
-            <p class="fw-semibold mb-2 mb-md-3">
-                Panorex (Pano) X-ray is NOT Required for this Service member.
-            </p>
-            <div class="form-check mb-0">
-                <input type="hidden" name="PanoXRayAcknowledged" value="false" />
-                <input class="form-check-input"
-                       type="checkbox"
-                       name="PanoXRayAcknowledged"
-                       id="PanoXRayAcknowledged"
-                       value="true"
-                       @(panoMarkedRequiredByDentist ? "checked" : null)
-                       @denDisabledAttr />
-                <label class="form-check-label" for="PanoXRayAcknowledged">
-                    Mark Panorex (Pano) X-ray as required for this service member
-                </label>
-            </div>
-        }
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="togglePanoXraySectionSwitch"
+                    data-target-heading="panoXraySectionHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Panorex (Pano) X-Ray
+            </button>
+        </div>
     </div>
 </div>

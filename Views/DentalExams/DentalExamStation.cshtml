@@ -639,19 +639,41 @@
          class="@(subsequentReadOnly ? "subsequent-readonly-mode" : null)"
          data-subsequent-readonly="@(subsequentReadOnly ? "true" : "false")"
          style="@(showSubsequentDiseasesSection ? "" : "display:none;")">
-        @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
-        @{
-            var findingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
-            findingsViewData["XRayStation"] = Model.XRayStation;
-            findingsViewData["SubsequentReadOnly"] = subsequentReadOnly;
-        }
-        @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam, findingsViewData)
-        @{
-            var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
-            denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
-            denClassViewData["SubsequentReadOnly"] = subsequentReadOnly;
-        }
-        @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
+        <div class="questionnaire-heading" id="subsequentDiseasesHeading">
+            <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       id="toggleSubsequentDiseasesSectionSwitch"
+                       aria-controls="subsequentDiseasesContent"
+                       aria-expanded="false" />
+            </div>
+            <h3 class="mb-0">Subsequent diseases and abnormalities</h3>
+        </div>
+
+        <div id="subsequentDiseasesContent" style="display:none;">
+            @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
+            @{
+                var findingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                findingsViewData["XRayStation"] = Model.XRayStation;
+                findingsViewData["SubsequentReadOnly"] = subsequentReadOnly;
+            }
+            @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam, findingsViewData)
+            @{
+                var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
+                denClassViewData["SubsequentReadOnly"] = subsequentReadOnly;
+            }
+            @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
+
+            <div class="d-flex justify-content-center mt-3">
+                <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                        data-target-switch="toggleSubsequentDiseasesSectionSwitch"
+                        data-target-heading="subsequentDiseasesHeading">
+                    <i class="fas fa-chevron-up"></i> Collapse Subsequent diseases and abnormalities
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="row mb-4">
@@ -930,6 +952,14 @@
     function toggleSubsequentDiseasesSection() {
         const active = isSubsequentDiseasesSectionActive();
         $("#subsequentDiseasesSection").toggle(active);
+        if (!active) {
+            $("#toggleSubsequentDiseasesSectionSwitch").prop("checked", false).attr("aria-expanded", "false");
+            $("#subsequentDiseasesContent").hide();
+            $("#togglePsrSectionSwitch, #toggleDentalFindingsSectionSwitch, #toggleDenClassSectionSwitch, #togglePanoXraySectionSwitch")
+                .prop("checked", false)
+                .attr("aria-expanded", "false");
+            $("#psrContentSection, #dentalFindingsContentSection, #denClassContentSection, #panoXrayContentSection").hide();
+        }
         setPsrFieldsRequired(active);
         setDenClassFieldsRequired(active);
         updateDentalExamOverallStatus();
@@ -1115,6 +1145,39 @@
         $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
     }
 
+    function toggleSectionFromSwitch(switchSelector, sectionSelector) {
+        const isOn = $(switchSelector).is(":checked");
+        const $section = $(sectionSelector);
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $(switchSelector).attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleSubsequentDiseasesContentFromSwitch() {
+        toggleSectionFromSwitch("#toggleSubsequentDiseasesSectionSwitch", "#subsequentDiseasesContent");
+    }
+
+    function togglePsrSectionFromSwitch() {
+        toggleSectionFromSwitch("#togglePsrSectionSwitch", "#psrContentSection");
+    }
+
+    function toggleDentalFindingsSectionFromSwitch() {
+        toggleSectionFromSwitch("#toggleDentalFindingsSectionSwitch", "#dentalFindingsContentSection");
+    }
+
+    function toggleDenClassSectionFromSwitch() {
+        toggleSectionFromSwitch("#toggleDenClassSectionSwitch", "#denClassContentSection");
+    }
+
+    function togglePanoXraySectionFromSwitch() {
+        toggleSectionFromSwitch("#togglePanoXraySectionSwitch", "#panoXrayContentSection");
+    }
+
     const XRAY_ZOOM_STEP = 25;
     const XRAY_ZOOM_MIN = 50;
     const XRAY_ZOOM_MAX = 300;
@@ -1250,6 +1313,11 @@
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+        $("#toggleSubsequentDiseasesSectionSwitch").on("change", toggleSubsequentDiseasesContentFromSwitch);
+        $("#togglePsrSectionSwitch").on("change", togglePsrSectionFromSwitch);
+        $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
+        $("#toggleDenClassSectionSwitch").on("change", toggleDenClassSectionFromSwitch);
+        $("#togglePanoXraySectionSwitch").on("change", togglePanoXraySectionFromSwitch);
 
         $(document).on("click", ".section-collapse-btn", function () {
             const switchId = $(this).data("target-switch");
