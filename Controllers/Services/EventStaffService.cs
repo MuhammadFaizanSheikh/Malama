@@ -635,6 +635,84 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<string>> GetEventAssignedRoleNamesByUserIdAsync(string userId, long eventManagementId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userId) || eventManagementId <= 0)
+                {
+                    _logger.LogWarning(
+                        "GetEventAssignedRoleNamesByUserIdAsync skipped. UserId={UserId}, EventManagementId={EventManagementId}",
+                        userId, eventManagementId);
+                    return new List<string>();
+                }
+
+                var staff = await _unitOfWork.EventStaff
+                    .GetFirstOrDefaultWithConditionNoTracking(es => es.UserId == userId);
+
+                if (staff == null)
+                {
+                    _logger.LogWarning(
+                        "GetEventAssignedRoleNamesByUserIdAsync: EventStaff not found for UserId={UserId}",
+                        userId);
+                    return new List<string>();
+                }
+
+                var detail = await _unitOfWork.EventStaffDetail
+                    .GetWithIncludeNoTracking(
+                        d => d.EventStaffId == staff.Id && d.EventManagementId == eventManagementId,
+                        d => d.EventWiseStaffRoleList,
+                        d => d.EventWiseStaffSecondaryRoleList)
+                    .FirstOrDefaultAsync();
+
+                if (detail == null)
+                {
+                    _logger.LogWarning(
+                        "GetEventAssignedRoleNamesByUserIdAsync: EventStaffDetail not found for EventStaffId={EventStaffId}, EventManagementId={EventManagementId}",
+                        staff.Id, eventManagementId);
+                    return new List<string>();
+                }
+
+                var roleIds = (detail.EventWiseStaffRoleList ?? new List<EventWiseStaffRole>())
+                    .Select(r => r.RoleId)
+                    .Concat((detail.EventWiseStaffSecondaryRoleList ?? new List<EventWiseStaffSecondaryRole>())
+                        .Select(r => r.RoleId))
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList();
+
+                if (roleIds.Count == 0)
+                {
+                    _logger.LogWarning(
+                        "GetEventAssignedRoleNamesByUserIdAsync: No EventWiseStaffRole rows for EventStaffDetailId={EventStaffDetailId}",
+                        detail.Id);
+                    return new List<string>();
+                }
+
+                var roleNames = new List<string>();
+                foreach (var roleId in roleIds)
+                {
+                    var role = await _roleManager.FindByIdAsync(roleId);
+                    if (role != null && !string.IsNullOrWhiteSpace(role.Name))
+                    {
+                        roleNames.Add(role.Name.Trim());
+                    }
+                }
+
+                return roleNames
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Error retrieving event-assigned roles for UserId={UserId}, EventManagementId={EventManagementId}",
+                    userId, eventManagementId);
+                return new List<string>();
+            }
+        }
+
         public async Task<bool> CheckSSNExistsAsync(string ssn)
         {
             if (string.IsNullOrWhiteSpace(ssn))

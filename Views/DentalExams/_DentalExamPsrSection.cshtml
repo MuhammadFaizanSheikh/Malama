@@ -178,11 +178,11 @@
             </div>
 
             <div class="col-lg-6">
-                @await Html.PartialAsync("_DentalExamXrayPreview", xrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "psrXray" })
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamXrayPreview.cshtml", xrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "psrXray" })
 
                 <div class="mt-3" id="psrToothChartImageColumn">
                     <div class="border rounded p-3 bg-white psr-tooth-chart-image-wrap">
-                        @await Html.PartialAsync("_DentalExamToothChart", exam)
+                        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamToothChart.cshtml", exam)
                     </div>
                 </div>
             </div>

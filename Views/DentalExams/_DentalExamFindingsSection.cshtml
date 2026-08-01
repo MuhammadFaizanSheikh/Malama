@@ -7,6 +7,10 @@
     var exam = Model ?? new DentalExam();
     var findingsXrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
     var subsequentReadOnly = ViewData["SubsequentReadOnly"] as bool? ?? false;
+    var currentUserId = ViewData["CurrentUserId"] as string ?? string.Empty;
+    var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
+    var examinerNamesByUserId = ViewData["ExaminerNamesByUserId"] as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalExamFindingMapper.ToDto)
@@ -17,6 +21,7 @@
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     });
     var cdtCodesJson = JsonSerializer.Serialize(cdtCodesByType);
+    var examinerNamesJson = JsonSerializer.Serialize(examinerNamesByUserId);
 }
 
 <style>
@@ -102,12 +107,13 @@
                         <th style="width: 180px;">Classification</th>
                         <th>CDT Codes, Codes Notes</th>
                         <th>Description / Details</th>
+                        <th style="width: 180px;">Examiner</th>
                         <th style="width: 100px;">Action</th>
                     </tr>
                 </thead>
                 <tbody id="dentalFindingsTableBody">
                     <tr id="dentalFindingsEmptyRow">
-                        <td colspan="8" class="text-center text-muted py-4">No findings added yet.</td>
+                        <td colspan="9" class="text-center text-muted py-4">No findings added yet.</td>
                     </tr>
                 </tbody>
             </table>
@@ -146,7 +152,7 @@
                                 <select id="findingAffectedSurfaces" class="form-select finding-multiselect" multiple></select>
                             </div>
                             <div class="col-6">
-                                <label class="form-label" for="findingCdtCodes">CDT Code</label>
+                                <label class="form-label" for="findingCdtCodes">CDT Code <span class="text-danger">*</span></label>
                                 <select id="findingCdtCodes" class="form-select finding-multiselect" multiple></select>
                             </div>
                         </div>
@@ -223,6 +229,9 @@
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const FINDINGS_READ_ONLY = @Json.Serialize(subsequentReadOnly);
+        const CURRENT_USER_ID = @Json.Serialize(currentUserId);
+        const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
 
         let dentalFindings = @Html.Raw(findingsJson);
         let editingFindingIndex = null;
@@ -500,14 +509,17 @@
                 Swal.fire("Invalid Data", "Classification is required.", "warning");
                 return null;
             }
+            if (!finding.cdtCodes || finding.cdtCodes.length === 0) {
+                Swal.fire("Invalid Data", "CDT Code is required.", "warning");
+                return null;
+            }
             return finding;
         }
 
         function readFindingForm() {
+            const existing = editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null;
             return {
-                id: editingFindingIndex != null && dentalFindings[editingFindingIndex]
-                    ? dentalFindings[editingFindingIndex].id
-                    : 0,
+                id: existing ? (existing.id || 0) : 0,
                 isPrimaryTooth: $("#findingPrimaryTooth").is(":checked"),
                 affectedTooth: $("#findingAffectedTooth").val() || "",
                 diseaseConditionType: $("#findingDiseaseType").val() || "",
@@ -516,7 +528,11 @@
                 cdtCodesNotes: $("#findingCdtCodesNotes").val()?.trim() || "",
                 descriptionDetails: $("#findingDescription").val()?.trim() || "",
                 classification: $("input[name='FindingClassification']:checked").val() || "",
-                sortOrder: editingFindingIndex != null ? editingFindingIndex : dentalFindings.length
+                sortOrder: editingFindingIndex != null ? editingFindingIndex : dentalFindings.length,
+                examinationAddedBy: existing ? (existing.examinationAddedBy || null) : null,
+                examinationAddedOn: existing ? (existing.examinationAddedOn || null) : null,
+                examinationUpdatedBy: existing ? (existing.examinationUpdatedBy || null) : null,
+                examinationUpdatedOn: existing ? (existing.examinationUpdatedOn || null) : null
             };
         }
 
@@ -568,10 +584,68 @@
                     cdtCodesNotes: item.cdtCodesNotes || "",
                     descriptionDetails: item.descriptionDetails || "",
                     classification: item.classification || "",
-                    sortOrder: index
+                    sortOrder: index,
+                    examinationAddedBy: item.examinationAddedBy || null,
+                    examinationAddedOn: item.examinationAddedOn || null,
+                    examinationUpdatedBy: item.examinationUpdatedBy || null,
+                    examinationUpdatedOn: item.examinationUpdatedOn || null
                 };
             });
             $("#FindingsJson").val(JSON.stringify(normalized));
+        }
+
+        function formatExaminerDateTime(value) {
+            if (!value) {
+                return "";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return escapeHtml(String(value));
+            }
+            return escapeHtml(date.toLocaleString(undefined, {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            }));
+        }
+
+        function formatExaminerDetail(finding) {
+            const userId = finding.examinationUpdatedBy || finding.examinationAddedBy;
+            const when = finding.examinationUpdatedOn || finding.examinationAddedOn;
+            if (!userId && !when) {
+                return "-";
+            }
+
+            const name = (userId && examinerNamesByUserId[userId])
+                ? examinerNamesByUserId[userId]
+                : (userId === CURRENT_USER_ID ? CURRENT_USER_DISPLAY_NAME : "");
+            const nameHtml = name ? escapeHtml(name) : "-";
+            const whenHtml = when ? ("<div class='small text-muted'>" + formatExaminerDateTime(when) + "</div>") : "";
+            return nameHtml + whenHtml;
+        }
+
+        function stampExaminerOnFinding(finding, isEdit) {
+            const nowIso = new Date().toISOString();
+            if (CURRENT_USER_ID) {
+                examinerNamesByUserId[CURRENT_USER_ID] = CURRENT_USER_DISPLAY_NAME || examinerNamesByUserId[CURRENT_USER_ID] || "";
+            }
+
+            if (isEdit) {
+                finding.examinationUpdatedBy = CURRENT_USER_ID || null;
+                finding.examinationUpdatedOn = nowIso;
+                if (!finding.examinationAddedBy) {
+                    finding.examinationAddedBy = CURRENT_USER_ID || null;
+                    finding.examinationAddedOn = nowIso;
+                }
+            } else {
+                finding.examinationAddedBy = CURRENT_USER_ID || null;
+                finding.examinationAddedOn = nowIso;
+                finding.examinationUpdatedBy = null;
+                finding.examinationUpdatedOn = null;
+            }
+            return finding;
         }
 
         function renderFindingsTable() {
@@ -580,7 +654,7 @@
 
             if (!dentalFindings.length) {
                 $tbody.append(
-                    '<tr id="dentalFindingsEmptyRow"><td colspan="8" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                    '<tr id="dentalFindingsEmptyRow"><td colspan="9" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 syncFindingsJson();
                 return;
@@ -593,6 +667,7 @@
                 const toothLabel = finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : "");
                 const classificationBadge = formatClassificationBadge(finding.classification);
                 const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
+                const examinerDetail = formatExaminerDetail(finding);
 
                 const actionButtons = FINDINGS_READ_ONLY
                     ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 finding-action-btn edit-finding-btn' data-index='" + index + "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>")
@@ -608,6 +683,7 @@
                     "<td>" + classificationBadge + "</td>" +
                     "<td><div>" + escapeHtml(cdtCodes) + "</div>" + codesNotes + "</td>" +
                     "<td>" + description + "</td>" +
+                    "<td>" + examinerDetail + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
                 );
@@ -622,7 +698,10 @@
                 return;
             }
 
-            if (editingFindingIndex != null) {
+            const isEdit = editingFindingIndex != null;
+            stampExaminerOnFinding(finding, isEdit);
+
+            if (isEdit) {
                 dentalFindings[editingFindingIndex] = finding;
             } else {
                 dentalFindings.push(finding);

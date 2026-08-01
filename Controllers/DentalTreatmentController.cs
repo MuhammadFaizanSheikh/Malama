@@ -3,9 +3,10 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
 using Malama.Models;
+using Malama.Utilities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Claims;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -16,7 +17,9 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
         private readonly IVitalStationService _vitalStationService;
+        private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalTreatmentController> _logger;
         private const string CLASSNAME = "DentalTreatmentController";
         private const string XRayStationName = "DentalXRay";
@@ -28,7 +31,9 @@ namespace ExcelFilesCompiler.Controllers
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
             IVitalStationService vitalStationService,
-            IFileUploadDownloadService fileService)
+            IEventStaffService eventStaffService,
+            IFileUploadDownloadService fileService,
+            UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _fileUploader = fileUploader;
@@ -36,7 +41,9 @@ namespace ExcelFilesCompiler.Controllers
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
             _vitalStationService = vitalStationService;
+            _eventStaffService = eventStaffService;
             _fileService = fileService;
+            _userManager = userManager;
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalTreatment_View")]
@@ -172,15 +179,30 @@ namespace ExcelFilesCompiler.Controllers
                         PaImages = new List<DentalXRayPaImage>()
                     };
 
-                var currentUserRoles = User.FindAll(ClaimTypes.Role)
-                    .Select(c => c.Value)
-                    .Where(v => !string.IsNullOrWhiteSpace(v))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(r => r)
-                    .ToList();
+                var currentUser = await _userManager.GetUserAsync(User);
+                var eventManagementId = DentalExamSignatureHelper.TryResolveEventManagementId(
+                    User,
+                    HttpContext.Session,
+                    result.EventId);
+                var (signatureDisplayName, signatureRoles) = await DentalExamSignatureHelper.ResolveDisplayAsync(
+                    dentalExam.DentistSignatureEntered,
+                    dentalExam.DentistSignatureUserId,
+                    currentUser,
+                    eventManagementId,
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
-                ViewBag.CurrentUserRoles = string.Join(Environment.NewLine, currentUserRoles);
-                ViewBag.DentistSignatureDisplayName = dentalExam.DentistSignatureName ?? string.Empty;
+                ViewBag.DentistSignatureDisplayName = signatureDisplayName;
+                ViewBag.DentistSignatureRoles = signatureRoles;
+                ViewBag.CurrentUserDisplayName = currentUser != null
+                    ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
+                    : string.Empty;
+                ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
+                    dentalExam.Findings,
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
                 var pageModel = new DentalExamStationPageViewModel
                 {

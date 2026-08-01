@@ -14,9 +14,9 @@
     var dentalExam = Model.DentalExam;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var canSaveDentalExam = DashboardAuthorizationHelper.HasAccess(User, "DentalExams_Save");
+    // Dentist-only: review, signature, and subsequent edits. All other Dental Exam roles (assistant, Event Manager, future) share assistant-like locks.
     var isDentalExamDentist = User.IsInRole("DE- Dentist");
-    var isDentalExamAssistantOnly = User.IsInRole("DE-Dental Assistant") && !isDentalExamDentist;
-    var subsequentReadOnly = isDentalExamAssistantOnly;
+    var subsequentReadOnly = !isDentalExamDentist;
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
         ServiceMembersChildId = sm.Id,
@@ -25,8 +25,8 @@
     var vitalsCompleted = ViewBag.VitalsCompleted as bool? ?? false;
     var showSubsequentDiseasesSection = dentalExam.QuestionnaireReviewed && dentalExam.DentistSignatureEntered;
     var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
-    var showFinalCommentsReadOnly = isDentalExamAssistantOnly && dentalExam.QuestionnaireReviewed;
-    var showSignatureReadOnly = isDentalExamAssistantOnly && dentalExam.DentistSignatureEntered;
+    var showFinalCommentsReadOnly = subsequentReadOnly && dentalExam.QuestionnaireReviewed;
+    var showSignatureReadOnly = subsequentReadOnly && dentalExam.DentistSignatureEntered;
 }
 
 <style>
@@ -493,7 +493,6 @@
                     <div class="row g-2 align-items-center">
                         <div class="col-md-7">
                             <input type="text"
-                                   name="DentistSignatureName"
                                    id="DentistSignatureName"
                                    class="form-control read-only-style"
                                    value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
@@ -514,13 +513,12 @@
                     <textarea id="DentistSignatureRoles"
                               class="form-control read-only-style"
                               rows="3"
-                              readonly>@(ViewBag.CurrentUserRoles as string ?? "")</textarea>
+                              readonly>@(ViewBag.DentistSignatureRoles as string ?? "")</textarea>
                 </div>
             }
             else if (showSignatureReadOnly)
             {
                 <input type="hidden" name="DentistSignatureEntered" value="true" />
-                <input type="hidden" name="DentistSignatureName" value="@dentalExam.DentistSignatureName" />
                 <p class="fw-semibold mb-2">Dentist Signature</p>
                 <div id="dentistSignatureSection">
                     <label class="form-label" for="DentistSignatureNameDisplay">Name</label>
@@ -529,7 +527,7 @@
                             <input type="text"
                                    id="DentistSignatureNameDisplay"
                                    class="form-control read-only-style"
-                                   value="@dentalExam.DentistSignatureName"
+                                   value="@(ViewBag.DentistSignatureDisplayName as string ?? "")"
                                    readonly />
                         </div>
                         <div class="col-md-5">
@@ -542,15 +540,16 @@
                                    style="@(dentalExam.DentistSignatureDateTime.HasValue ? "" : "display:none;")" />
                         </div>
                     </div>
+                    <label class="form-label mt-2" for="DentistSignatureRolesDisplay">Roles</label>
+                    <textarea id="DentistSignatureRolesDisplay"
+                              class="form-control read-only-style"
+                              rows="3"
+                              readonly>@(ViewBag.DentistSignatureRoles as string ?? "")</textarea>
                 </div>
             }
             else
             {
                 <input type="hidden" name="DentistSignatureEntered" value="@(dentalExam.DentistSignatureEntered ? "true" : "false")" />
-                @if (!string.IsNullOrWhiteSpace(dentalExam.DentistSignatureName))
-                {
-                    <input type="hidden" name="DentistSignatureName" value="@dentalExam.DentistSignatureName" />
-                }
             }
         </div>
     </div>
@@ -657,6 +656,10 @@
                 var findingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
                 findingsViewData["XRayStation"] = Model.XRayStation;
                 findingsViewData["SubsequentReadOnly"] = subsequentReadOnly;
+                findingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
+                findingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
+                findingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
+                    ?? new Dictionary<string, string>();
             }
             @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam, findingsViewData)
             @{

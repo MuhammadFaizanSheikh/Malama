@@ -531,7 +531,7 @@ namespace Malama.Migrations
                     b.Property<bool>("DentistSignatureEntered")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("DentistSignatureName")
+                    b.Property<string>("DentistSignatureUserId")
                         .HasColumnType("text");
 
                     b.Property<string>("FinalComments")
@@ -624,6 +624,18 @@ namespace Malama.Migrations
                     b.Property<string>("DiseaseConditionType")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("ExaminationAddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ExaminationAddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ExaminationUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ExaminationUpdatedOn")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsPrimaryTooth")
                         .HasColumnType("boolean");

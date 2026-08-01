@@ -7,7 +7,6 @@ using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Claims;
 
 namespace ExcelFilesCompiler.Controllers
 {
@@ -178,20 +177,27 @@ namespace ExcelFilesCompiler.Controllers
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
-                var currentUserRoles = User.FindAll(ClaimTypes.Role)
-                    .Select(c => c.Value)
-                    .Where(v => !string.IsNullOrWhiteSpace(v))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(r => r)
-                    .ToList();
-
-                ViewBag.CurrentUserRoles = string.Join(Environment.NewLine, currentUserRoles);
-
                 var currentUser = await _userManager.GetUserAsync(User);
-                var currentUserDisplayName = await ResolveDentistDisplayNameAsync(currentUser);
-                ViewBag.DentistSignatureDisplayName = !string.IsNullOrWhiteSpace(dentalExam.DentistSignatureName)
-                    ? dentalExam.DentistSignatureName
-                    : currentUserDisplayName;
+                var eventManagementId = DentalExamSignatureHelper.TryResolveEventManagementId(
+                    User,
+                    HttpContext.Session,
+                    result.EventId);
+                var (signatureDisplayName, signatureRoles) = await DentalExamSignatureHelper.ResolveDisplayAsync(
+                    dentalExam.DentistSignatureEntered,
+                    dentalExam.DentistSignatureUserId,
+                    currentUser,
+                    eventManagementId,
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
+
+                ViewBag.DentistSignatureDisplayName = signatureDisplayName;
+                ViewBag.DentistSignatureRoles = signatureRoles;
+                ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
+                ViewBag.CurrentUserDisplayName = currentUser != null
+                    ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
+                    : string.Empty;
+                ViewBag.ExaminerNamesByUserId = await ResolveFindingExaminerNamesAsync(dentalExam);
 
                 var pageModel = new DentalExamStationPageViewModel
                 {
@@ -267,16 +273,21 @@ namespace ExcelFilesCompiler.Controllers
                     dto.PanoXRayAcknowledged = FormCheckboxHelper.IsChecked(Request.Form, "PanoXRayAcknowledged");
                 }
 
+                // Non-dentists (assistant, Event Manager, any future Dental Exam role) cannot change review/signature/subsequent fields.
                 var isDentalExamDentist = User.IsInRole("DE- Dentist");
-                var isDentalExamAssistantOnly = User.IsInRole("DE-Dental Assistant") && !isDentalExamDentist;
 
-                if (isDentalExamAssistantOnly && !dto.GoToVitalStation)
+                if (!isDentalExamDentist && !dto.GoToVitalStation)
                 {
                     await ApplyAssistantLockedDentalExamFieldsAsync(dto);
                 }
                 else if (dto.DentistSignatureEntered && !dto.GoToVitalStation)
                 {
-                    dto.DentistSignatureName = await ResolveDentistSignatureNameForSaveAsync(dto.ServiceMembersChildId, user);
+                    var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                    dto.DentistSignatureUserId = ResolveDentistSignatureUserIdForSave(existingExam, user);
+                }
+                else if (!dto.GoToVitalStation)
+                {
+                    dto.DentistSignatureUserId = null;
                 }
 
                 var validationError = dto.GoToVitalStation
@@ -293,7 +304,7 @@ namespace ExcelFilesCompiler.Controllers
                 if (!dto.GoToVitalStation)
                 {
                     await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
-                    await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
+                    await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName, user.Id);
                 }
 
                 if (dto.GoToVitalStation)
@@ -357,18 +368,18 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     dto.QuestionnaireReviewed = false;
                     dto.DentistSignatureEntered = false;
-                    dto.DentistSignatureName = null;
+                    dto.DentistSignatureUserId = null;
                     dto.FinalComments = null;
                     ClearSubsequentDiseasesDto(dto);
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, No existing dental exam. Cleared dentist-locked fields for assistant save. ServiceMembersChildId={ServiceMembersChildId}",
+                        "{ClassName}, {MethodName}, No existing dental exam. Cleared dentist-locked fields for non-dentist save. ServiceMembersChildId={ServiceMembersChildId}",
                         CLASSNAME, methodName, dto.ServiceMembersChildId);
                     return;
                 }
 
                 dto.QuestionnaireReviewed = existing.QuestionnaireReviewed;
                 dto.DentistSignatureEntered = existing.DentistSignatureEntered;
-                dto.DentistSignatureName = existing.DentistSignatureName;
+                dto.DentistSignatureUserId = existing.DentistSignatureUserId;
                 dto.FinalComments = existing.FinalComments;
 
                 dto.PsrUpperRight = existing.PsrUpperRight;
@@ -403,7 +414,7 @@ namespace ExcelFilesCompiler.Controllers
                     .ToList() ?? new List<int>();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Preserved dentist-locked fields for assistant save. ServiceMembersChildId={ServiceMembersChildId}, FindingCount={FindingCount}",
+                    "{ClassName}, {MethodName}, Preserved dentist-locked fields for non-dentist save. ServiceMembersChildId={ServiceMembersChildId}, FindingCount={FindingCount}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId, dto.Findings.Count);
             }
             catch (Exception ex)
@@ -434,65 +445,23 @@ namespace ExcelFilesCompiler.Controllers
             dto.PsrSelectedTeeth = new List<int>();
         }
 
-        private async Task<string> ResolveDentistSignatureNameForSaveAsync(long serviceMembersChildId, ApplicationUser user)
+        private async Task<Dictionary<string, string>> ResolveFindingExaminerNamesAsync(DentalExam dentalExam)
         {
-            try
-            {
-                var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
-                if (existingExam != null && !string.IsNullOrWhiteSpace(existingExam.DentistSignatureName))
-                {
-                    return existingExam.DentistSignatureName.Trim();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex,
-                    "{ClassName}, ResolveDentistSignatureNameForSaveAsync, Could not load existing dental exam for ServiceMembersChildId={ServiceMembersChildId}",
-                    CLASSNAME, serviceMembersChildId);
-            }
-
-            return await ResolveDentistDisplayNameAsync(user);
+            return await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
+                dentalExam.Findings,
+                _userManager,
+                _eventStaffService,
+                _logger);
         }
 
-        private async Task<string> ResolveDentistDisplayNameAsync(ApplicationUser? user)
+        private static string? ResolveDentistSignatureUserIdForSave(DentalExam? existingExam, ApplicationUser user)
         {
-            if (user == null)
+            if (existingExam != null && !string.IsNullOrWhiteSpace(existingExam.DentistSignatureUserId))
             {
-                return string.Empty;
+                return existingExam.DentistSignatureUserId;
             }
 
-            if (!user.IsEventUser)
-            {
-                return user.UserName?.Trim() ?? string.Empty;
-            }
-
-            try
-            {
-                var staff = await _eventStaffService.GetEventStaffWithAttributesByUserId(user.Id);
-                return FormatEventStaffDisplayName(staff);
-            }
-            catch (KeyNotFoundException)
-            {
-                _logger.LogWarning(
-                    "{ClassName}, ResolveDentistDisplayNameAsync, EventStaff not found for UserId={UserId}. Falling back to UserName.",
-                    CLASSNAME, user.Id);
-                return user.UserName?.Trim() ?? string.Empty;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "{ClassName}, ResolveDentistDisplayNameAsync, Failed to resolve EventStaff name for UserId={UserId}",
-                    CLASSNAME, user.Id);
-                return user.UserName?.Trim() ?? string.Empty;
-            }
-        }
-
-        private static string FormatEventStaffDisplayName(EventStaff staff)
-        {
-            return string.Join(" ",
-                new[] { staff.StaffFirstName, staff.StaffMiddleInitial, staff.StaffLastName }
-                    .Where(part => !string.IsNullOrWhiteSpace(part))
-                    .Select(part => part!.Trim()));
+            return user.Id;
         }
 
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)

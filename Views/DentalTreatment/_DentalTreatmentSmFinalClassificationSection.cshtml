@@ -1,0 +1,57 @@
+<div class="mb-4" id="treatmentSmFinalClassificationSection">
+    <div class="questionnaire-heading" id="smFinalClassificationHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleSmFinalClassificationSectionSwitch"
+                   aria-controls="smFinalClassificationContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">SM Final Classification</h4>
+    </div>
+
+    <div id="smFinalClassificationContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body">
+                <div class="mb-0" style="max-width: 320px;">
+                    <label class="form-label" for="smFinalClassification">SM Final Classification</label>
+                    <select id="smFinalClassification" class="form-select">
+                        <option value=""></option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleSmFinalClassificationSectionSwitch"
+                            data-target-heading="smFinalClassificationHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse SM Final Classification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        function toggleSmFinalClassificationSectionFromSwitch() {
+            const isOn = $("#toggleSmFinalClassificationSectionSwitch").is(":checked");
+            const $section = $("#smFinalClassificationContentSection");
+            if (isOn) {
+                $section.slideDown(200);
+            } else {
+                $section.slideUp(200);
+            }
+            $("#toggleSmFinalClassificationSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+        }
+
+        $(document).ready(function () {
+            $("#toggleSmFinalClassificationSectionSwitch").on("change", toggleSmFinalClassificationSectionFromSwitch);
+        });
+    })();
+</script>

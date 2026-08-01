@@ -1,0 +1,300 @@
+@{
+    var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string
+        ?? ViewBag.CurrentUserDisplayName as string
+        ?? string.Empty;
+}
+
+<style>
+    #overallNotesFormCard .overall-note-action-btn,
+    #overallNotesTable .overall-note-action-btn {
+        min-width: 2rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    #overallNotesFormCard .overall-note-action-btn i,
+    #overallNotesTable .overall-note-action-btn i {
+        pointer-events: none;
+    }
+
+    #overallNotesTable .overall-note-text {
+        white-space: pre-wrap;
+        max-width: 28rem;
+    }
+</style>
+
+<div class="mb-4" id="treatmentOverallNotesSection">
+    <div class="questionnaire-heading" id="overallNotesHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleOverallNotesSectionSwitch"
+                   aria-controls="overallNotesContentSection"
+                   aria-expanded="false" />
+        </div>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Overall Notes</h4>
+    </div>
+
+    <div id="overallNotesContentSection" style="display:none;">
+        <div class="card mb-0">
+            <div class="card-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-striped align-middle mb-0" id="overallNotesTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">S.No</th>
+                                <th>Notes</th>
+                                <th style="width: 200px;">Dentist</th>
+                                <th style="width: 170px;">Date/Time</th>
+                                <th style="width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overallNotesTableBody">
+                            <tr id="overallNotesEmptyRow">
+                                <td colspan="5" class="text-center text-muted py-4">No overall notes added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mb-3" id="addOverallNoteBtn">
+                    <i class="fas fa-plus-circle"></i> Add Another Note
+                </button>
+
+                <div id="overallNotesFormCard" class="card border-primary mb-0" style="display:none;">
+                    <div class="card-header bg-light fw-semibold" id="overallNotesFormTitle">Add Overall Note</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="overallNoteText">Notes <span class="text-danger">*</span></label>
+                            <textarea id="overallNoteText" class="form-control" rows="4"></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-0">
+                            <div class="col-md-6">
+                                <label class="form-label" for="overallNoteDentist">Dentist</label>
+                                <input type="text"
+                                       id="overallNoteDentist"
+                                       class="form-control read-only-style"
+                                       readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="overallNoteDateTime">Date/Time</label>
+                                <input type="text"
+                                       id="overallNoteDateTime"
+                                       class="form-control read-only-style"
+                                       readonly />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-start gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" id="cancelOverallNoteFormBtn">Cancel</button>
+                            <button type="button" class="btn btn-general" id="saveOverallNoteBtn">
+                                <i class="fas fa-list-ul"></i> Add to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleOverallNotesSectionSwitch"
+                            data-target-heading="overallNotesHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Overall Notes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        let overallNotes = [];
+        let editingOverallNoteIndex = null;
+
+        function escapeHtml(value) {
+            return $("<div>").text(value ?? "").html();
+        }
+
+        function formatOverallNoteDateTime(date) {
+            const d = date || new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const yyyy = d.getFullYear();
+            let hours = d.getHours();
+            const minutes = String(d.getMinutes()).padStart(2, "0");
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const hh = String(hours).padStart(2, "0");
+            return mm + "/" + dd + "/" + yyyy + " " + hh + ":" + minutes + " " + ampm;
+        }
+
+        function renderOverallNotesTable() {
+            const $tbody = $("#overallNotesTableBody");
+            $tbody.empty();
+
+            if (!overallNotes.length) {
+                $tbody.append(
+                    '<tr id="overallNotesEmptyRow"><td colspan="5" class="text-center text-muted py-4">No overall notes added yet.</td></tr>'
+                );
+                return;
+            }
+
+            overallNotes.forEach(function (note, index) {
+                const actionButtons =
+                    "<button type='button' class='btn btn-sm btn-outline-primary me-1 overall-note-action-btn edit-overall-note-btn' data-index='" + index + "' title='Edit'>" +
+                    "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
+                    "<button type='button' class='btn btn-sm btn-outline-danger overall-note-action-btn delete-overall-note-btn' data-index='" + index + "' title='Delete'>" +
+                    "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+
+                $tbody.append(
+                    "<tr data-overall-note-index='" + index + "'>" +
+                    "<td>" + (index + 1) + "</td>" +
+                    "<td class='overall-note-text'>" + escapeHtml(note.notes || "") + "</td>" +
+                    "<td>" + escapeHtml(note.dentist || "") + "</td>" +
+                    "<td>" + escapeHtml(note.dateTime || "") + "</td>" +
+                    "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                    "</tr>"
+                );
+            });
+        }
+
+        function clearOverallNoteForm() {
+            editingOverallNoteIndex = null;
+            $("#overallNotesFormTitle").text("Add Overall Note");
+            $("#saveOverallNoteBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("#overallNoteText").val("");
+            $("#overallNoteDentist").val(CURRENT_USER_DISPLAY_NAME || "");
+            $("#overallNoteDateTime").val(formatOverallNoteDateTime());
+        }
+
+        function showOverallNoteForm() {
+            $("#overallNotesFormCard").slideDown(200);
+        }
+
+        function hideOverallNoteForm() {
+            $("#overallNotesFormCard").slideUp(200);
+            clearOverallNoteForm();
+        }
+
+        function writeOverallNoteForm(note) {
+            $("#overallNoteText").val(note.notes || "");
+            $("#overallNoteDentist").val(note.dentist || CURRENT_USER_DISPLAY_NAME || "");
+            $("#overallNoteDateTime").val(note.dateTime || formatOverallNoteDateTime());
+        }
+
+        function readOverallNote() {
+            const notes = $("#overallNoteText").val()?.trim() || "";
+            if (!notes) {
+                return null;
+            }
+
+            return {
+                notes: notes,
+                dentist: $("#overallNoteDentist").val()?.trim() || CURRENT_USER_DISPLAY_NAME || "",
+                dateTime: $("#overallNoteDateTime").val()?.trim() || formatOverallNoteDateTime()
+            };
+        }
+
+        function addOrUpdateOverallNote() {
+            const note = readOverallNote();
+            if (!note) {
+                Swal.fire("Invalid Data", "Please enter Notes.", "warning");
+                return;
+            }
+
+            if (editingOverallNoteIndex != null) {
+                const existing = overallNotes[editingOverallNoteIndex] || {};
+                overallNotes[editingOverallNoteIndex] = {
+                    notes: note.notes,
+                    dentist: existing.dentist || note.dentist,
+                    dateTime: existing.dateTime || note.dateTime
+                };
+            } else {
+                overallNotes.push(note);
+            }
+
+            renderOverallNotesTable();
+            hideOverallNoteForm();
+        }
+
+        function editOverallNote(index) {
+            const note = overallNotes[index];
+            if (!note) {
+                return;
+            }
+
+            editingOverallNoteIndex = index;
+            $("#overallNotesFormTitle").text("Edit Overall Note");
+            $("#saveOverallNoteBtn").html('<i class="fas fa-check-circle"></i> Update Note');
+            writeOverallNoteForm(note);
+            showOverallNoteForm();
+
+            $("html, body").animate({
+                scrollTop: $("#overallNotesFormCard").offset().top - 80
+            }, 300);
+        }
+
+        function deleteOverallNote(index) {
+            Swal.fire({
+                title: "Delete overall note?",
+                text: "This note will be removed from the list.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                overallNotes.splice(index, 1);
+                if (editingOverallNoteIndex === index) {
+                    hideOverallNoteForm();
+                } else if (editingOverallNoteIndex != null && editingOverallNoteIndex > index) {
+                    editingOverallNoteIndex -= 1;
+                }
+                renderOverallNotesTable();
+            });
+        }
+
+        function toggleOverallNotesSectionFromSwitch() {
+            const isOn = $("#toggleOverallNotesSectionSwitch").is(":checked");
+            const $section = $("#overallNotesContentSection");
+            if (isOn) {
+                $section.slideDown(200);
+            } else {
+                $section.slideUp(200);
+            }
+            $("#toggleOverallNotesSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+        }
+
+        $(document).ready(function () {
+            renderOverallNotesTable();
+            clearOverallNoteForm();
+
+            $("#toggleOverallNotesSectionSwitch").on("change", toggleOverallNotesSectionFromSwitch);
+
+            $("#addOverallNoteBtn").on("click", function () {
+                clearOverallNoteForm();
+                showOverallNoteForm();
+                $("html, body").animate({
+                    scrollTop: $("#overallNotesFormCard").offset().top - 80
+                }, 300);
+            });
+
+            $("#cancelOverallNoteFormBtn").on("click", hideOverallNoteForm);
+            $("#saveOverallNoteBtn").on("click", addOrUpdateOverallNote);
+
+            $(document).on("click", ".edit-overall-note-btn", function () {
+                editOverallNote(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".delete-overall-note-btn", function () {
+                deleteOverallNote(parseInt($(this).data("index"), 10));
+            });
+        });
+    })();
+</script>

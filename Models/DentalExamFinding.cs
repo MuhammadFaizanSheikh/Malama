@@ -72,6 +72,14 @@ namespace Malama.Models
         public string? Classification { get; set; }
 
         public int SortOrder { get; set; }
+
+        public string? ExaminationAddedBy { get; set; }
+
+        public DateTime? ExaminationAddedOn { get; set; }
+
+        public string? ExaminationUpdatedBy { get; set; }
+
+        public DateTime? ExaminationUpdatedOn { get; set; }
     }
 
     public class DentalExamFindingDto
@@ -95,6 +103,14 @@ namespace Malama.Models
         public string? Classification { get; set; }
 
         public int SortOrder { get; set; }
+
+        public string? ExaminationAddedBy { get; set; }
+
+        public DateTime? ExaminationAddedOn { get; set; }
+
+        public string? ExaminationUpdatedBy { get; set; }
+
+        public DateTime? ExaminationUpdatedOn { get; set; }
     }
 
     public static class DentalExamFindingMapper
@@ -117,7 +133,11 @@ namespace Malama.Models
                 CdtCodesNotes = entity.CdtCodesNotes,
                 DescriptionDetails = entity.DescriptionDetails,
                 Classification = entity.Classification,
-                SortOrder = entity.SortOrder
+                SortOrder = entity.SortOrder,
+                ExaminationAddedBy = entity.ExaminationAddedBy,
+                ExaminationAddedOn = entity.ExaminationAddedOn,
+                ExaminationUpdatedBy = entity.ExaminationUpdatedBy,
+                ExaminationUpdatedOn = entity.ExaminationUpdatedOn
             };
         }
 
@@ -134,7 +154,11 @@ namespace Malama.Models
                 CdtCodesNotes = dto.CdtCodesNotes?.Trim(),
                 DescriptionDetails = dto.DescriptionDetails?.Trim(),
                 Classification = dto.Classification?.Trim(),
-                SortOrder = sortOrder
+                SortOrder = sortOrder,
+                ExaminationAddedBy = dto.ExaminationAddedBy,
+                ExaminationAddedOn = dto.ExaminationAddedOn,
+                ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
+                ExaminationUpdatedOn = dto.ExaminationUpdatedOn
             };
         }
 

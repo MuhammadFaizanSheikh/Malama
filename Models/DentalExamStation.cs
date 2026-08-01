@@ -95,7 +95,7 @@ namespace Malama.Models
 
         public bool DentistSignatureEntered { get; set; }
 
-        public string? DentistSignatureName { get; set; }
+        public string? DentistSignatureUserId { get; set; }
 
         public string? FindingsJson { get; set; }
 

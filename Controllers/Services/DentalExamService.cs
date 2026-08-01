@@ -58,7 +58,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName)
+        public async Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName, string userId)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
             IDbContextTransaction? transaction = null;
@@ -80,7 +80,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (existing != null)
                 {
                     MapFormDataToEntity(dto, existing);
-                    ApplySubsequentDiseasesData(existing, dto);
+                    ApplySubsequentDiseasesData(existing, dto, userId);
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
                     existing.Status = DentalExamValidator.ComputeOverallStatus(dto);
@@ -105,7 +105,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _unitOfWork.DentalExam.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                ApplySubsequentDiseasesData(entity, dto);
+                ApplySubsequentDiseasesData(entity, dto, userId);
                 await _unitOfWork.SaveAsync();
 
                 await transaction.CommitAsync();
@@ -145,22 +145,25 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private void ApplySubsequentDiseasesData(DentalExam target, DentalExamStationSaveDto dto)
+        private void ApplySubsequentDiseasesData(DentalExam target, DentalExamStationSaveDto dto, string userId)
         {
             if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
             {
-                ReplaceFindings(target, dto.Findings);
+                ReplaceFindings(target, dto.Findings, userId);
                 ReplaceSelectedTeeth(target, dto.PsrSelectedTeeth);
                 return;
             }
 
-            ReplaceFindings(target, new List<DentalExamFindingDto>());
+            ReplaceFindings(target, new List<DentalExamFindingDto>(), userId);
             ReplaceSelectedTeeth(target, new List<int>());
         }
 
-        private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings)
+        private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings, string userId)
         {
             target.Findings ??= new List<DentalExamFinding>();
+            var existingById = target.Findings
+                .Where(f => f.Id > 0)
+                .ToDictionary(f => f.Id);
             var existingFindings = target.Findings.ToList();
 
             if (existingFindings.Count > 0)
@@ -169,10 +172,62 @@ namespace ExcelFilesCompiler.Controllers.Services
                 target.Findings.Clear();
             }
 
+            var now = DateTime.Now;
             foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
             {
-                target.Findings.Add(DentalExamFindingMapper.ToEntity(finding, target.Id, index));
+                var entity = DentalExamFindingMapper.ToEntity(finding, target.Id, index);
+
+                if (finding.Id > 0
+                    && existingById.TryGetValue(finding.Id, out var existing)
+                    && !string.IsNullOrWhiteSpace(existing.ExaminationAddedBy))
+                {
+                    entity.ExaminationAddedBy = existing.ExaminationAddedBy;
+                    entity.ExaminationAddedOn = existing.ExaminationAddedOn;
+
+                    var wasEdited = !string.IsNullOrWhiteSpace(finding.ExaminationUpdatedBy)
+                        || finding.ExaminationUpdatedOn.HasValue
+                        || !FindingClinicalContentEquals(existing, finding);
+
+                    if (wasEdited)
+                    {
+                        entity.ExaminationUpdatedBy = userId;
+                        entity.ExaminationUpdatedOn = now;
+                    }
+                    else
+                    {
+                        entity.ExaminationUpdatedBy = existing.ExaminationUpdatedBy;
+                        entity.ExaminationUpdatedOn = existing.ExaminationUpdatedOn;
+                    }
+                }
+                else
+                {
+                    entity.ExaminationAddedBy = userId;
+                    entity.ExaminationAddedOn = now;
+                    entity.ExaminationUpdatedBy = null;
+                    entity.ExaminationUpdatedOn = null;
+                }
+
+                target.Findings.Add(entity);
             }
+        }
+
+        private static bool FindingClinicalContentEquals(DentalExamFinding existing, DentalExamFindingDto dto)
+        {
+            var existingSurfaces = DentalExamFindingMapper.DeserializeList(existing.AffectedSurfacesJson);
+            var existingCdt = DentalExamFindingMapper.DeserializeList(existing.CdtCodesJson);
+            var dtoSurfaces = dto.AffectedSurfaces ?? new List<string>();
+            var dtoCdt = dto.CdtCodes ?? new List<string>();
+
+            return existing.IsPrimaryTooth == dto.IsPrimaryTooth
+                && string.Equals(existing.AffectedTooth?.Trim(), dto.AffectedTooth?.Trim(), StringComparison.OrdinalIgnoreCase)
+                && string.Equals(existing.DiseaseConditionType?.Trim(), dto.DiseaseConditionType?.Trim(), StringComparison.OrdinalIgnoreCase)
+                && string.Equals(existing.CdtCodesNotes?.Trim(), dto.CdtCodesNotes?.Trim(), StringComparison.Ordinal)
+                && string.Equals(existing.DescriptionDetails?.Trim(), dto.DescriptionDetails?.Trim(), StringComparison.Ordinal)
+                && string.Equals(existing.Classification?.Trim(), dto.Classification?.Trim(), StringComparison.OrdinalIgnoreCase)
+                && existingSurfaces.Count == dtoSurfaces.Count
+                && existingSurfaces.All(s => dtoSurfaces.Contains(s, StringComparer.OrdinalIgnoreCase))
+                && existingCdt.Count == dtoCdt.Count
+                && existingCdt.All(c => dtoCdt.Contains(c, StringComparer.OrdinalIgnoreCase));
         }
 
         private void ReplaceSelectedTeeth(DentalExam target, List<int> selectedTeeth)
@@ -232,16 +287,18 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.DentistSignatureEntered = dto.DentistSignatureEntered;
             if (dto.DentistSignatureEntered)
             {
-                entity.DentistSignatureName = dto.DentistSignatureName?.Trim();
+                entity.DentistSignatureUserId = string.IsNullOrWhiteSpace(dto.DentistSignatureUserId)
+                    ? null
+                    : dto.DentistSignatureUserId.Trim();
                 if (entity.DentistSignatureDateTime == null
-                    && !string.IsNullOrWhiteSpace(entity.DentistSignatureName))
+                    && !string.IsNullOrWhiteSpace(entity.DentistSignatureUserId))
                 {
                     entity.DentistSignatureDateTime = DateTime.Now;
                 }
             }
             else
             {
-                entity.DentistSignatureName = null;
+                entity.DentistSignatureUserId = null;
             }
 
             entity.Status = ComputeOverallStatus(dto);

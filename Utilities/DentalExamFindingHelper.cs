@@ -127,9 +127,12 @@ namespace ExcelFilesCompiler.Utilities
                 return prefix + "Classification is required.";
             }
 
-            if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
-                && finding.CdtCodes != null
-                && finding.CdtCodes.Count > 0)
+            if (finding.CdtCodes == null || finding.CdtCodes.Count == 0)
+            {
+                return prefix + "CDT Code is required.";
+            }
+
+            if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
             {
                 var allowedCdtCodes = GetRestorativeCdtCodes(finding.AffectedTooth, finding.AffectedSurfaces?.Count ?? 0);
                 if (allowedCdtCodes.Length == 0

@@ -6,6 +6,9 @@
 @{
     var exam = Model ?? new DentalExam();
     var findingsXrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
+    var examinerNamesByUserId = ViewData["ExaminerNamesByUserId"] as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
+    var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalExamFindingMapper.ToDto)
@@ -16,6 +19,7 @@
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     });
     var cdtCodesJson = JsonSerializer.Serialize(cdtCodesByType);
+    var examinerNamesJson = JsonSerializer.Serialize(examinerNamesByUserId);
 }
 
 <style>
@@ -48,7 +52,7 @@
     }
 
     #treatmentFindingsTable {
-        min-width: 1400px;
+        min-width: 1600px;
     }
 </style>
 
@@ -78,6 +82,7 @@
                                 <th style="width: 160px;">Disease / Condition Type</th>
                                 <th style="width: 180px;">Classification</th>
                                 <th>Description / Details</th>
+                                <th style="width: 180px;">Examiner</th>
                                 <th style="width: 120px;">Post Service Treatment</th>
                                 <th style="width: 120px;">Reason</th>
                                 <th style="width: 140px;">Notes</th>
@@ -90,7 +95,7 @@
                         </thead>
                         <tbody id="treatmentFindingsTableBody">
                             <tr id="treatmentFindingsEmptyRow">
-                                <td colspan="14" class="text-center text-muted py-4">No findings added yet.</td>
+                                <td colspan="15" class="text-center text-muted py-4">No findings added yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -99,8 +104,11 @@
                 <div id="treatmentFindingFormCard" class="card border-primary mb-0" style="display:none;">
                     <div class="card-header bg-light fw-semibold" id="treatmentFindingFormTitle">Required Treatment Services</div>
                     <div class="card-body">
-                        <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Initial Exam Finding</h5>
-                        <div id="initialExamFindingSection">
+                        <div class="card mb-3">
+                            <div class="card-header fw-semibold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+                                Initial Exam Finding
+                            </div>
+                            <div class="card-body" id="initialExamFindingSection">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label" for="treatmentFindingDiseaseType">Disease / Condition Type</label>
@@ -157,11 +165,31 @@
                                     </div>
                                 }
                             </div>
+
+                            <div class="row g-3 mb-0">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="treatmentFindingExaminerName">Examiner Name</label>
+                                    <input type="text"
+                                           id="treatmentFindingExaminerName"
+                                           class="form-control read-only-style"
+                                           readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="treatmentFindingExaminerDateTime">Examination Date/Time</label>
+                                    <input type="text"
+                                           id="treatmentFindingExaminerDateTime"
+                                           class="form-control read-only-style"
+                                           readonly />
+                                </div>
+                            </div>
+                            </div>
                         </div>
 
-                        <hr class="my-4" />
-
-                        <h5 class="mb-3" style="color: rgba(80, 90, 201, 1);">Treatment Section</h5>
+                        <div class="card mb-3">
+                            <div class="card-header fw-semibold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+                                Treatment Section
+                            </div>
+                            <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label d-block">Treatment Completed</label>
                     <div class="form-check form-check-inline">
@@ -176,21 +204,29 @@
                     </div>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label" for="treatmentSectionAffectedTooth">Affected Tooth</label>
+                    <input type="text"
+                           id="treatmentSectionAffectedTooth"
+                           class="form-control read-only-style"
+                           readonly />
+                </div>
+
                 <div id="treatmentCompletedYesFields" style="display:none;">
                     <div class="row g-4">
                         <div class="col-md-6">
                             <div class="mb-3" id="treatmentPostServiceSection" style="display:none;">
-                                <label class="form-label" for="treatmentPostServiceTreatment">Post Service Treatment</label>
+                                <label class="form-label" for="treatmentPostServiceTreatment">Post Service Treatment <span class="text-danger">*</span></label>
                                 <select id="treatmentPostServiceTreatment" class="form-select treatment-finding-multiselect" multiple></select>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="treatmentSectionCdtCodes">CDT Code</label>
+                                <label class="form-label" for="treatmentSectionCdtCodes">CDT Code <span class="text-danger">*</span></label>
                                 <select id="treatmentSectionCdtCodes" class="form-select treatment-finding-multiselect" multiple></select>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="treatmentFinalDrc">Final DRC</label>
+                                <label class="form-label" for="treatmentFinalDrc">Final DRC <span class="text-danger">*</span></label>
                                 <select id="treatmentFinalDrc" class="form-select">
                                     <option value=""></option>
                                     <option value="1">1</option>
@@ -202,7 +238,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label" for="treatmentDentistProfessional">Dentist/Professional Completing/Recommending Final Treatment</label>
-                                <input type="text" id="treatmentDentistProfessional" class="form-control" />
+                                <input type="text" id="treatmentDentistProfessional" class="form-control read-only-style" readonly />
                             </div>
 
                             <div class="mb-3">
@@ -222,7 +258,7 @@
 
                 <div id="treatmentCompletedNoFields" style="display:none;">
                     <div class="mb-3">
-                        <label class="form-label" for="treatmentReason">Reason</label>
+                        <label class="form-label" for="treatmentReason">Reason <span class="text-danger">*</span></label>
                         <select id="treatmentReason" class="form-select">
                             <option value=""></option>
                             <option value="Service Not Offered at Event">Service Not Offered at Event</option>
@@ -236,12 +272,14 @@
                     </div>
                 </div>
 
-                <div class="mb-3" id="treatmentNotesSection" style="display:none;">
+                <div class="mb-0" id="treatmentNotesSection" style="display:none;">
                     <label class="form-label" for="treatmentNotes">Notes</label>
                     <textarea id="treatmentNotes" class="form-control" rows="4"></textarea>
                 </div>
+                            </div>
+                        </div>
 
-                <div class="d-flex justify-content-start gap-2 mt-4">
+                <div class="d-flex justify-content-start gap-2 mt-3">
                     <button type="button" class="btn btn-secondary" id="cancelTreatmentFindingFormBtn">Cancel</button>
                     <button type="button" class="btn btn-general" id="updateTreatmentFindingBtn">
                         <i class="fas fa-check-circle"></i> Update Finding
@@ -270,6 +308,8 @@
         const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
+        const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
+        const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
 
         let treatmentFindings = (@Html.Raw(findingsJson) || []).map(function (item) {
             return normalizeTreatmentFinding(item);
@@ -280,6 +320,7 @@
         function normalizeTreatmentFinding(item) {
             const affectedSurfaces = item.affectedSurfaces || [];
             const cdtCodes = item.cdtCodes || [];
+            const finalDrc = item.finalDrc || "";
             return {
                 id: item.id || 0,
                 isPrimaryTooth: !!item.isPrimaryTooth,
@@ -291,6 +332,10 @@
                 descriptionDetails: item.descriptionDetails || "",
                 classification: item.classification || "",
                 sortOrder: item.sortOrder || 0,
+                examinationAddedBy: item.examinationAddedBy || null,
+                examinationAddedOn: item.examinationAddedOn || null,
+                examinationUpdatedBy: item.examinationUpdatedBy || null,
+                examinationUpdatedOn: item.examinationUpdatedOn || null,
                 treatmentCompleted: item.treatmentCompleted || "",
                 postServiceTreatment: (item.postServiceTreatment && item.postServiceTreatment.length)
                     ? item.postServiceTreatment
@@ -300,11 +345,39 @@
                     : cdtCodes.slice(),
                 reason: item.reason || "",
                 notes: item.notes || "",
-                finalDrc: item.finalDrc || "",
+                finalDrc: finalDrc,
                 dentistProfessional: item.dentistProfessional || "",
-                treatmentStatus: item.treatmentStatus || "",
+                treatmentStatus: resolveTreatmentStatus({
+                    treatmentCompleted: item.treatmentCompleted || "",
+                    finalDrc: finalDrc,
+                    reason: item.reason || ""
+                }),
                 treatmentDateTime: item.treatmentDateTime || ""
             };
+        }
+
+        function resolveTreatmentStatus(source) {
+            const treatmentCompleted = source?.treatmentCompleted || "";
+            const finalDrc = source?.finalDrc || "";
+            const reason = source?.reason || "";
+
+            if (treatmentCompleted === "No" && reason) {
+                return "Complete with Reason";
+            }
+            if (finalDrc) {
+                return "Complete";
+            }
+            return "Incomplete";
+        }
+
+        function formatTreatmentStatusBadge(status) {
+            if (status === "Complete") {
+                return '<span class="badge bg-success">Complete</span>';
+            }
+            if (status === "Complete with Reason") {
+                return '<span class="badge" style="background-color:#33cc33;color:#ffffff;">Complete with Reason</span>';
+            }
+            return '<span class="badge bg-warning text-dark">Incomplete</span>';
         }
 
         function escapeHtml(value) {
@@ -553,13 +626,53 @@
             return value ? escapeHtml(value) : "";
         }
 
+        function formatExaminerDateTime(value) {
+            if (!value) {
+                return "";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return String(value);
+            }
+            return date.toLocaleString(undefined, {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function getExaminerUserId(finding) {
+            return finding.examinationUpdatedBy || finding.examinationAddedBy || "";
+        }
+
+        function getExaminerDateTime(finding) {
+            return finding.examinationUpdatedOn || finding.examinationAddedOn || "";
+        }
+
+        function formatExaminerDetail(finding) {
+            const userId = getExaminerUserId(finding);
+            const when = getExaminerDateTime(finding);
+            if (!userId && !when) {
+                return "-";
+            }
+
+            const name = userId && examinerNamesByUserId[userId] ? examinerNamesByUserId[userId] : "";
+            const nameHtml = name ? escapeHtml(name) : "-";
+            const whenHtml = when
+                ? ("<div class='small text-muted'>" + escapeHtml(formatExaminerDateTime(when)) + "</div>")
+                : "";
+            return nameHtml + whenHtml;
+        }
+
         function renderFindingsTable() {
             const $tbody = $("#treatmentFindingsTableBody");
             $tbody.empty();
 
             if (!treatmentFindings.length) {
                 $tbody.append(
-                    '<tr id="treatmentFindingsEmptyRow"><td colspan="14" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                    '<tr id="treatmentFindingsEmptyRow"><td colspan="15" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 return;
             }
@@ -570,6 +683,7 @@
                 const classificationBadge = formatClassificationBadge(finding.classification);
                 const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
                 const postServiceTreatment = displayOrDash(finding.treatmentCompleted);
+                const examinerDetail = formatExaminerDetail(finding);
                 const actionButtons =
                     "<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
                     index +
@@ -583,12 +697,13 @@
                     "<td>" + escapeHtml(finding.diseaseConditionType || "-") + "</td>" +
                     "<td>" + classificationBadge + "</td>" +
                     "<td>" + description + "</td>" +
+                    "<td>" + examinerDetail + "</td>" +
                     "<td>" + postServiceTreatment + "</td>" +
                     "<td>" + displayOrDash(finding.reason) + "</td>" +
                     "<td>" + displayOrDash(finding.notes) + "</td>" +
                     "<td>" + displayOrDash(finding.finalDrc) + "</td>" +
                     "<td>" + displayOrDash(finding.dentistProfessional) + "</td>" +
-                    "<td>" + displayOrDash(finding.treatmentStatus) + "</td>" +
+                    "<td>" + formatTreatmentStatusBadge(resolveTreatmentStatus(finding)) + "</td>" +
                     "<td>" + displayOrDash(finding.treatmentDateTime) + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
@@ -656,6 +771,9 @@
             if (isYes && !$("#treatmentDateTime").val()) {
                 $("#treatmentDateTime").val(formatTreatmentDateTime());
             }
+            if (isYes) {
+                $("#treatmentDentistProfessional").val(CURRENT_USER_DISPLAY_NAME || "");
+            }
         }
 
         function writeFindingForm(finding) {
@@ -683,19 +801,42 @@
                 $(this).prop("checked", $(this).val() === (finding.classification || ""));
             });
 
+            const examinerUserId = getExaminerUserId(finding);
+            const examinerWhen = getExaminerDateTime(finding);
+            $("#treatmentFindingExaminerName").val(
+                examinerUserId && examinerNamesByUserId[examinerUserId]
+                    ? examinerNamesByUserId[examinerUserId]
+                    : ""
+            );
+            $("#treatmentFindingExaminerDateTime").val(
+                examinerWhen ? formatExaminerDateTime(examinerWhen) : ""
+            );
+
             $("input[name='TreatmentCompleted']").prop("checked", false);
             if (finding.treatmentCompleted === "Yes" || finding.treatmentCompleted === "No") {
                 $("input[name='TreatmentCompleted'][value='" + finding.treatmentCompleted + "']").prop("checked", true);
             }
 
+            const toothLabel = finding.affectedTooth
+                ? (finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : ""))
+                : "";
+            $("#treatmentSectionAffectedTooth").val(toothLabel);
+
             $("#treatmentFinalDrc").val(finding.finalDrc || "");
-            $("#treatmentDentistProfessional").val(finding.dentistProfessional || "");
+            $("#treatmentDentistProfessional").val(
+                finding.treatmentCompleted === "Yes"
+                    ? (CURRENT_USER_DISPLAY_NAME || finding.dentistProfessional || "")
+                    : (finding.dentistProfessional || "")
+            );
             $("#treatmentDateTime").val(finding.treatmentDateTime || "");
             $("#treatmentReason").val(finding.reason || "");
             $("#treatmentNotes").val(finding.notes || "");
 
             if (finding.treatmentCompleted === "Yes" && !$("#treatmentDateTime").val()) {
                 $("#treatmentDateTime").val(formatTreatmentDateTime());
+            }
+            if (finding.treatmentCompleted === "Yes") {
+                $("#treatmentDentistProfessional").val(CURRENT_USER_DISPLAY_NAME || "");
             }
 
             toggleTreatmentCompletedFields();
@@ -724,7 +865,10 @@
             $("#treatmentFindingCdtCodesNotes").val("");
             $("#treatmentFindingDescription").val("");
             $("input[name='TreatmentFindingClassification']").prop("checked", false);
+            $("#treatmentFindingExaminerName").val("");
+            $("#treatmentFindingExaminerDateTime").val("");
             $("input[name='TreatmentCompleted']").prop("checked", false);
+            $("#treatmentSectionAffectedTooth").val("");
             populatePostServiceTreatmentOptions([]);
             populateTreatmentCdtOptions([]);
             $("#treatmentFinalDrc").val("");
@@ -772,39 +916,96 @@
             clearTreatmentForm();
         }
 
+        function validateTreatmentSectionForm() {
+            const treatmentCompleted = $("input[name='TreatmentCompleted']:checked").val() || "";
+            if (!treatmentCompleted) {
+                Swal.fire("Invalid Data", "Treatment Completed is required.", "warning");
+                return null;
+            }
+
+            if (treatmentCompleted === "Yes") {
+                const postServiceVisible = $("#treatmentPostServiceSection").is(":visible");
+                const postServiceTreatment = getSelectedValues($("#treatmentPostServiceTreatment"));
+                const treatmentCdtCodes = getSelectedValues($("#treatmentSectionCdtCodes"));
+                const finalDrc = $("#treatmentFinalDrc").val() || "";
+
+                if (postServiceVisible && postServiceTreatment.length === 0) {
+                    Swal.fire("Invalid Data", "Post Service Treatment is required.", "warning");
+                    return null;
+                }
+                if (treatmentCdtCodes.length === 0) {
+                    Swal.fire("Invalid Data", "CDT Code is required.", "warning");
+                    return null;
+                }
+                if (!finalDrc) {
+                    Swal.fire("Invalid Data", "Final DRC is required.", "warning");
+                    return null;
+                }
+
+                return {
+                    treatmentCompleted: treatmentCompleted,
+                    postServiceTreatment: postServiceTreatment,
+                    treatmentCdtCodes: treatmentCdtCodes,
+                    finalDrc: finalDrc,
+                    dentistProfessional: CURRENT_USER_DISPLAY_NAME || "",
+                    treatmentDateTime: $("#treatmentDateTime").val()?.trim() || "",
+                    reason: "",
+                    notes: $("#treatmentNotes").val()?.trim() || "",
+                    treatmentStatus: resolveTreatmentStatus({
+                        treatmentCompleted: treatmentCompleted,
+                        finalDrc: finalDrc,
+                        reason: ""
+                    })
+                };
+            }
+
+            if (treatmentCompleted === "No") {
+                const reason = $("#treatmentReason").val() || "";
+                if (!reason) {
+                    Swal.fire("Invalid Data", "Reason is required.", "warning");
+                    return null;
+                }
+
+                return {
+                    treatmentCompleted: treatmentCompleted,
+                    postServiceTreatment: [],
+                    treatmentCdtCodes: [],
+                    finalDrc: "",
+                    dentistProfessional: "",
+                    treatmentDateTime: "",
+                    reason: reason,
+                    notes: $("#treatmentNotes").val()?.trim() || "",
+                    treatmentStatus: resolveTreatmentStatus({
+                        treatmentCompleted: treatmentCompleted,
+                        finalDrc: "",
+                        reason: reason
+                    })
+                };
+            }
+
+            return null;
+        }
+
         function updateFindingFromTreatmentSection() {
             if (editingFindingIndex == null || !treatmentFindings[editingFindingIndex]) {
                 return;
             }
 
-            const existing = treatmentFindings[editingFindingIndex];
-            const treatmentCompleted = $("input[name='TreatmentCompleted']:checked").val() || "";
-            existing.treatmentCompleted = treatmentCompleted;
-            existing.notes = $("#treatmentNotes").val()?.trim() || "";
-
-            if (treatmentCompleted === "Yes") {
-                existing.postServiceTreatment = getSelectedValues($("#treatmentPostServiceTreatment"));
-                existing.treatmentCdtCodes = getSelectedValues($("#treatmentSectionCdtCodes"));
-                existing.finalDrc = $("#treatmentFinalDrc").val() || "";
-                existing.dentistProfessional = $("#treatmentDentistProfessional").val()?.trim() || "";
-                existing.treatmentDateTime = $("#treatmentDateTime").val()?.trim() || "";
-                existing.reason = "";
-            } else if (treatmentCompleted === "No") {
-                existing.reason = $("#treatmentReason").val() || "";
-                existing.postServiceTreatment = [];
-                existing.treatmentCdtCodes = [];
-                existing.finalDrc = "";
-                existing.dentistProfessional = "";
-                existing.treatmentDateTime = "";
-            } else {
-                existing.reason = "";
-                existing.postServiceTreatment = [];
-                existing.treatmentCdtCodes = [];
-                existing.finalDrc = "";
-                existing.dentistProfessional = "";
-                existing.treatmentDateTime = "";
-                existing.notes = "";
+            const validated = validateTreatmentSectionForm();
+            if (!validated) {
+                return;
             }
+
+            const existing = treatmentFindings[editingFindingIndex];
+            existing.treatmentCompleted = validated.treatmentCompleted;
+            existing.postServiceTreatment = validated.postServiceTreatment;
+            existing.treatmentCdtCodes = validated.treatmentCdtCodes;
+            existing.finalDrc = validated.finalDrc;
+            existing.dentistProfessional = validated.dentistProfessional;
+            existing.treatmentDateTime = validated.treatmentDateTime;
+            existing.reason = validated.reason;
+            existing.notes = validated.notes;
+            existing.treatmentStatus = validated.treatmentStatus;
 
             treatmentFindings[editingFindingIndex] = existing;
             renderFindingsTable();

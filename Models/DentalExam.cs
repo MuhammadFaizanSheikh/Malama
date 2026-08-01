@@ -53,7 +53,7 @@ namespace Malama.Models
         public bool QuestionnaireReviewed { get; set; }
         public string? FinalComments { get; set; }
         public bool DentistSignatureEntered { get; set; }
-        public string? DentistSignatureName { get; set; }
+        public string? DentistSignatureUserId { get; set; }
         public DateTime? DentistSignatureDateTime { get; set; }
 
         public string? DenClass { get; set; }

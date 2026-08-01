@@ -94,9 +94,9 @@ namespace ExcelFilesCompiler.Utilities
                 return "Final Comments is required when Dental Questionnaire has been reviewed.";
             }
 
-            if (dto.DentistSignatureEntered && string.IsNullOrWhiteSpace(dto.DentistSignatureName))
+            if (dto.DentistSignatureEntered && string.IsNullOrWhiteSpace(dto.DentistSignatureUserId))
             {
-                return "Dentist name is required when Dentist Signature is entered.";
+                return "Dentist signature is required when Dentist Signature is entered.";
             }
 
             return null;

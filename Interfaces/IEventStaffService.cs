@@ -12,6 +12,7 @@ namespace ExcelFilesCompiler.Interfaces
         IQueryable<EventStaff> GetEventStaffForSearchingByStaffId(string staffId);
         Task<EventStaff> GetEventStaffWithoutIncludeById(long id);
         Task<EventStaff> GetEventStaffWithAttributesByUserId(string userId);
+        Task<List<string>> GetEventAssignedRoleNamesByUserIdAsync(string userId, long eventManagementId);
         Task<List<CombinedEventStaffRolesNameAndLicense>> GetAllEventStaffWithRolesAndLicenses();
         Task<bool> CheckSSNExistsAsync(string ssn);
         Task<List<EventStaffDetail>> GetAllEventStaffByEventId(long id);
