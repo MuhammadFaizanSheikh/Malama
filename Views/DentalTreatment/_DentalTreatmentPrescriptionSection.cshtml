@@ -1,5 +1,6 @@
 @{
     var canEditTreatment = ViewBag.IsDtDentist == true;
+    var currentUserDisplayName = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
     var prescriptionProducts = new[]
     {
         "Augmentin 875mg",
@@ -24,7 +25,7 @@
     }
 
     #prescriptionTable {
-        min-width: 1200px;
+        min-width: 1400px;
     }
 </style>
 
@@ -49,7 +50,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 60px;">S.No</th>
-                                <th style="width: 110px;">Type</th>
+                                <th style="width: 140px;">Type</th>
                                 <th>Product</th>
                                 <th style="width: 110px;">Start Date</th>
                                 <th style="width: 110px;">End Date</th>
@@ -58,12 +59,14 @@
                                 <th style="width: 90px;">Frequency</th>
                                 <th style="width: 120px;">Prescribed Amount</th>
                                 <th>Notes</th>
+                                <th style="width: 160px;">PrescribedBy</th>
+                                <th style="width: 160px;">PrescribedOn</th>
                                 <th style="width: 100px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="prescriptionTableBody">
                             <tr id="prescriptionEmptyRow">
-                                <td colspan="11" class="text-center text-muted py-4">No prescriptions added yet.</td>
+                                <td colspan="13" class="text-center text-muted py-4">No prescriptions added yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -80,8 +83,8 @@
                             <label class="form-label d-block">Type</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="PrescriptionType"
-                                       id="prescriptionTypeOtc" value="OTC" />
-                                <label class="form-check-label" for="prescriptionTypeOtc">OTC</label>
+                                       id="prescriptionTypeOtc" value="OTC Recommended" />
+                                <label class="form-check-label" for="prescriptionTypeOtc">OTC Recommended</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="PrescriptionType"
@@ -90,57 +93,59 @@
                             </div>
                         </div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-12">
-                                <label class="form-label" for="prescriptionProduct">Product</label>
-                                <select id="prescriptionProduct" class="form-select">
-                                    <option value=""></option>
-                                    @foreach (var product in prescriptionProducts)
-                                    {
-                                        <option value="@product">@product</option>
-                                    }
-                                </select>
-                                <div class="form-text">Select a product or type a custom medicine name.</div>
+                        <div id="prescriptionDetailsFields" style="display:none;">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label" for="prescriptionProduct">Product</label>
+                                    <select id="prescriptionProduct" class="form-select">
+                                        <option value=""></option>
+                                        @foreach (var product in prescriptionProducts)
+                                        {
+                                            <option value="@product">@product</option>
+                                        }
+                                    </select>
+                                    <div class="form-text">Select a product or type a custom medicine name.</div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionStartDate">Start Date</label>
-                                <input type="text" id="prescriptionStartDate" class="form-control" placeholder="MM/DD/YYYY" />
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionStartDate">Start Date</label>
+                                    <input type="text" id="prescriptionStartDate" class="form-control" placeholder="MM/DD/YYYY" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionEndDate">End Date</label>
+                                    <input type="text" id="prescriptionEndDate" class="form-control" placeholder="MM/DD/YYYY" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionDuration">Duration</label>
+                                    <div class="input-group">
+                                        <input type="text" id="prescriptionDuration" class="form-control" inputmode="decimal" maxlength="5" />
+                                        <span class="input-group-text">Day(s)</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionEndDate">End Date</label>
-                                <input type="text" id="prescriptionEndDate" class="form-control" placeholder="MM/DD/YYYY" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionDuration">Duration</label>
-                                <div class="input-group">
-                                    <input type="text" id="prescriptionDuration" class="form-control" inputmode="decimal" maxlength="5" />
-                                    <span class="input-group-text">Day(s)</span>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionDosage">Dosage</label>
+                                    <div class="input-group">
+                                        <input type="text" id="prescriptionDosage" class="form-control" inputmode="decimal" maxlength="5" />
+                                        <span class="input-group-text">mg</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionFrequency">Frequency</label>
+                                    <input type="text" id="prescriptionFrequency" class="form-control" inputmode="decimal" maxlength="5" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="prescriptionPrescribedAmount">Prescribed Amount</label>
+                                    <input type="text" id="prescriptionPrescribedAmount" class="form-control" readonly />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionDosage">Dosage</label>
-                                <div class="input-group">
-                                    <input type="text" id="prescriptionDosage" class="form-control" inputmode="decimal" maxlength="5" />
-                                    <span class="input-group-text">mg</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionFrequency">Frequency</label>
-                                <input type="text" id="prescriptionFrequency" class="form-control" inputmode="decimal" maxlength="5" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label" for="prescriptionPrescribedAmount">Prescribed Amount</label>
-                                <input type="text" id="prescriptionPrescribedAmount" class="form-control" readonly />
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
+                        <div class="mb-3" id="prescriptionNotesSection" style="display:none;">
                             <label class="form-label" for="prescriptionNotes">Notes</label>
                             <textarea id="prescriptionNotes" class="form-control" rows="3"></textarea>
                         </div>
@@ -170,6 +175,9 @@
     (function () {
         const PRESCRIPTION_PRODUCTS = @Json.Serialize(prescriptionProducts);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
+        const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const PRESCRIPTION_TYPE_OTC = "OTC Recommended";
+        const PRESCRIPTION_TYPE_RX = "Prescription";
         let prescriptionRecords = [];
         let editingPrescriptionIndex = null;
         let suppressPrescriptionDateSync = false;
@@ -211,16 +219,64 @@
             return mm + "/" + dd + "/" + yyyy;
         }
 
+        function formatPrescriptionDateTime(date) {
+            const d = date || new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const yyyy = d.getFullYear();
+            let hours = d.getHours();
+            const minutes = String(d.getMinutes()).padStart(2, "0");
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const hh = String(hours).padStart(2, "0");
+            return mm + "/" + dd + "/" + yyyy + " " + hh + ":" + minutes + " " + ampm;
+        }
+
         function addDays(date, days) {
             const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             result.setDate(result.getDate() + days);
             return result;
         }
 
-        function daysBetween(start, end) {
+        // Inclusive day count: 08/05-08/05 = 1, 08/05-08/06 = 2.
+        function daysBetweenInclusive(start, end) {
             const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
             const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-            return Math.round((endUtc - startUtc) / 86400000);
+            return Math.round((endUtc - startUtc) / 86400000) + 1;
+        }
+
+        function normalizePrescriptionType(type) {
+            if (!type) {
+                return "";
+            }
+            if (type === "OTC" || type === PRESCRIPTION_TYPE_OTC) {
+                return PRESCRIPTION_TYPE_OTC;
+            }
+            if (type === PRESCRIPTION_TYPE_RX) {
+                return PRESCRIPTION_TYPE_RX;
+            }
+            return type;
+        }
+
+        function isOtcRecommended(type) {
+            return normalizePrescriptionType(type) === PRESCRIPTION_TYPE_OTC;
+        }
+
+        function togglePrescriptionTypeFields() {
+            const selectedType = $("input[name='PrescriptionType']:checked").val() || "";
+            const isOtc = isOtcRecommended(selectedType);
+            const isRx = selectedType === PRESCRIPTION_TYPE_RX;
+            const hasType = isOtc || isRx;
+
+            // Product/date/dosage fields only for Prescription.
+            $("#prescriptionDetailsFields").toggle(isRx);
+            // Notes for either type once a selection is made.
+            $("#prescriptionNotesSection").toggle(hasType);
+
+            if (isRx && !$("#prescriptionProduct").hasClass("select2-hidden-accessible")) {
+                initPrescriptionProductSelect($("#prescriptionProduct").val() || "");
+            }
         }
 
         function destroyPrescriptionProductSelect() {
@@ -304,8 +360,8 @@
             if (!start || !end) {
                 return;
             }
-            const duration = daysBetween(start, end);
-            if (duration < 0) {
+            const duration = daysBetweenInclusive(start, end);
+            if (duration < 1) {
                 return;
             }
             suppressPrescriptionDateSync = true;
@@ -320,10 +376,11 @@
                 return;
             }
             const duration = parseInt(durationText, 10);
-            if (isNaN(duration) || duration < 0) {
+            // Inclusive days: duration 1 = same day end; duration 2 = start + 1 day, etc.
+            if (isNaN(duration) || duration < 1) {
                 return;
             }
-            const end = addDays(start, duration);
+            const end = addDays(start, duration - 1);
             suppressPrescriptionDateSync = true;
             if (prescriptionEndPicker) {
                 prescriptionEndPicker.setDate(end, false);
@@ -386,7 +443,7 @@
 
             if (!prescriptionRecords.length) {
                 $tbody.append(
-                    '<tr id="prescriptionEmptyRow"><td colspan="11" class="text-center text-muted py-4">No prescriptions added yet.</td></tr>'
+                    '<tr id="prescriptionEmptyRow"><td colspan="13" class="text-center text-muted py-4">No prescriptions added yet.</td></tr>'
                 );
                 return;
             }
@@ -402,7 +459,7 @@
                 $tbody.append(
                     "<tr data-prescription-index='" + index + "'>" +
                     "<td>" + (index + 1) + "</td>" +
-                    "<td>" + escapeHtml(record.type || "") + "</td>" +
+                    "<td>" + escapeHtml(normalizePrescriptionType(record.type) || record.type || "") + "</td>" +
                     "<td>" + escapeHtml(record.product || "") + "</td>" +
                     "<td>" + escapeHtml(record.startDate || "") + "</td>" +
                     "<td>" + escapeHtml(record.endDate || "") + "</td>" +
@@ -411,6 +468,8 @@
                     "<td>" + escapeHtml(record.frequency || "") + "</td>" +
                     "<td>" + escapeHtml(record.prescribedAmount || "") + "</td>" +
                     "<td>" + escapeHtml(record.notes || "") + "</td>" +
+                    "<td>" + escapeHtml(record.prescribedBy || "") + "</td>" +
+                    "<td>" + escapeHtml(record.prescribedOn || "") + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
                 );
@@ -448,11 +507,15 @@
             $("#prescriptionFrequency").val("");
             $("#prescriptionPrescribedAmount").val("");
             $("#prescriptionNotes").val("");
+            togglePrescriptionTypeFields();
         }
 
         function showPrescriptionForm(selectedProduct) {
             $("#prescriptionFormCard").slideDown(200, function () {
-                initPrescriptionProductSelect(selectedProduct || "");
+                togglePrescriptionTypeFields();
+                if ($("input[name='PrescriptionType']:checked").val() === PRESCRIPTION_TYPE_RX) {
+                    initPrescriptionProductSelect(selectedProduct || "");
+                }
             });
         }
 
@@ -464,8 +527,9 @@
 
         function writePrescriptionForm(record) {
             $("input[name='PrescriptionType']").prop("checked", false);
-            if (record.type === "OTC" || record.type === "Prescription") {
-                $("input[name='PrescriptionType'][value='" + record.type + "']").prop("checked", true);
+            const type = normalizePrescriptionType(record.type);
+            if (type === PRESCRIPTION_TYPE_OTC || type === PRESCRIPTION_TYPE_RX) {
+                $("input[name='PrescriptionType'][value='" + type + "']").prop("checked", true);
             }
 
             suppressPrescriptionDateSync = true;
@@ -490,12 +554,30 @@
             $("#prescriptionFrequency").val(record.frequency || "");
             $("#prescriptionPrescribedAmount").val(record.prescribedAmount || "");
             $("#prescriptionNotes").val(record.notes || "");
+            togglePrescriptionTypeFields();
             updatePrescribedAmount();
         }
 
         function readPrescriptionForm() {
+            const type = normalizePrescriptionType($("input[name='PrescriptionType']:checked").val() || "");
+            if (isOtcRecommended(type)) {
+                return {
+                    type: PRESCRIPTION_TYPE_OTC,
+                    product: "",
+                    startDate: "",
+                    endDate: "",
+                    dosage: "",
+                    duration: "",
+                    frequency: "",
+                    prescribedAmount: "",
+                    notes: $("#prescriptionNotes").val()?.trim() || "",
+                    prescribedBy: "",
+                    prescribedOn: ""
+                };
+            }
+
             return {
-                type: $("input[name='PrescriptionType']:checked").val() || "",
+                type: type,
                 product: $("#prescriptionProduct").val() || "",
                 startDate: $("#prescriptionStartDate").val() || "",
                 endDate: $("#prescriptionEndDate").val() || "",
@@ -503,15 +585,22 @@
                 duration: $("#prescriptionDuration").val()?.trim() || "",
                 frequency: $("#prescriptionFrequency").val()?.trim() || "",
                 prescribedAmount: $("#prescriptionPrescribedAmount").val()?.trim() || "",
-                notes: $("#prescriptionNotes").val()?.trim() || ""
+                notes: $("#prescriptionNotes").val()?.trim() || "",
+                prescribedBy: "",
+                prescribedOn: ""
             };
         }
 
         function validatePrescriptionForm(record) {
             if (!record.type) {
-                Swal.fire("Invalid Data", "Please select OTC or Prescription.", "warning");
+                Swal.fire("Invalid Data", "Please select OTC Recommended or Prescription.", "warning");
                 return false;
             }
+
+            if (isOtcRecommended(record.type)) {
+                return true;
+            }
+
             if (!record.product) {
                 Swal.fire("Invalid Data", "Product is required.", "warning");
                 return false;
@@ -528,6 +617,10 @@
                 Swal.fire("Invalid Data", "Duration must be a valid number.", "warning");
                 return false;
             }
+            if (parseFloat(record.duration) < 1) {
+                Swal.fire("Invalid Data", "Duration must be at least 1 day.", "warning");
+                return false;
+            }
             if (!record.frequency || isNaN(parseFloat(record.frequency))) {
                 Swal.fire("Invalid Data", "Frequency must be a valid number.", "warning");
                 return false;
@@ -538,7 +631,7 @@
             }
             const start = parseUsDate(record.startDate);
             const end = parseUsDate(record.endDate);
-            if (start && end && daysBetween(start, end) < 0) {
+            if (start && end && daysBetweenInclusive(start, end) < 1) {
                 Swal.fire("Invalid Data", "End Date cannot be before Start Date.", "warning");
                 return false;
             }
@@ -550,15 +643,22 @@
                 return;
             }
 
-            updatePrescribedAmount();
+            if (!isOtcRecommended($("input[name='PrescriptionType']:checked").val())) {
+                updatePrescribedAmount();
+            }
             const record = readPrescriptionForm();
             if (!validatePrescriptionForm(record)) {
                 return;
             }
 
             if (editingPrescriptionIndex != null) {
+                const existing = prescriptionRecords[editingPrescriptionIndex] || {};
+                record.prescribedBy = existing.prescribedBy || CURRENT_USER_DISPLAY_NAME || "";
+                record.prescribedOn = existing.prescribedOn || formatPrescriptionDateTime();
                 prescriptionRecords[editingPrescriptionIndex] = record;
             } else {
+                record.prescribedBy = CURRENT_USER_DISPLAY_NAME || "";
+                record.prescribedOn = formatPrescriptionDateTime();
                 prescriptionRecords.push(record);
             }
 
@@ -632,6 +732,10 @@
             clearPrescriptionForm();
 
             $("#togglePrescriptionSectionSwitch").on("change", togglePrescriptionSectionFromSwitch);
+
+            $(document).on("change", "input[name='PrescriptionType']", function () {
+                togglePrescriptionTypeFields();
+            });
 
             $("#addPrescriptionBtn").on("click", function () {
                 if (!CAN_EDIT_TREATMENT) {

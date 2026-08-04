@@ -12,6 +12,10 @@
     var canEditTreatment = ViewData["CanEditTreatment"] as bool?
         ?? (ViewBag.IsDtDentist == true);
     var findings = exam.Findings?
+        .Where(f => string.Equals(
+            f.Classification,
+            DentalExamFindingConstants.ClassificationClass3,
+            StringComparison.OrdinalIgnoreCase))
         .OrderBy(f => f.SortOrder)
         .Select(DentalExamFindingMapper.ToDto)
         .ToList() ?? new List<DentalExamFindingDto>();
@@ -88,7 +92,7 @@
                                 <th style="width: 120px;">Post Service Treatment</th>
                                 <th style="width: 120px;">Reason</th>
                                 <th style="width: 140px;">Notes</th>
-                                <th style="width: 120px;">Final DRC</th>
+                                <th style="width: 120px;">Procedured DRC</th>
                                 <th style="width: 180px;">Dentist/Professional Completing / Recommending Final Treatment</th>
                                 <th style="width: 100px;">Status</th>
                                 <th style="width: 140px;">Date/Time</th>
@@ -228,7 +232,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="treatmentFinalDrc">Final DRC <span class="text-danger">*</span></label>
+                                <label class="form-label" for="treatmentFinalDrc">Procedured DRC <span class="text-danger">*</span></label>
                                 <select id="treatmentFinalDrc" class="form-select">
                                     <option value=""></option>
                                     <option value="1">1</option>
@@ -427,27 +431,42 @@
         }
 
         function getRestorativeSurfacesForTooth(tooth) {
-            const n = parseInt(tooth, 10);
-            if (!n || n < 1 || n > 32) {
-                return [];
-            }
-            if ((n >= 6 && n <= 11) || (n >= 22 && n <= 27)) {
+            if (isRestorativeAnteriorTooth(tooth)) {
                 return RESTORATIVE_SURFACES_ANTERIOR.slice();
             }
-            if ((n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32)) {
+            if (isRestorativePosteriorTooth(tooth)) {
                 return RESTORATIVE_SURFACES_POSTERIOR.slice();
             }
             return [];
         }
 
+        // Permanent: 6-11, 22-27 | Primary: C-H, M-R
+        function isRestorativeAnteriorTooth(tooth) {
+            const value = (tooth || "").toString().trim();
+            const n = parseInt(value, 10);
+            if (!isNaN(n) && String(n) === value) {
+                return (n >= 6 && n <= 11) || (n >= 22 && n <= 27);
+            }
+            return value.length === 1 && "CDEFGHMNOPQR".indexOf(value.toUpperCase()) >= 0;
+        }
+
+        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,K,L,S,T
+        function isRestorativePosteriorTooth(tooth) {
+            const value = (tooth || "").toString().trim();
+            const n = parseInt(value, 10);
+            if (!isNaN(n) && String(n) === value) {
+                return (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
+            }
+            return value.length === 1 && "ABIKLST".indexOf(value.toUpperCase()) >= 0;
+        }
+
         function getRestorativeCdtCodes(tooth, surfaceCount) {
-            const n = parseInt(tooth, 10);
-            if (!n || n < 1 || n > 32 || !surfaceCount || surfaceCount < 1) {
+            if (!surfaceCount || surfaceCount < 1) {
                 return [];
             }
 
-            const isAnterior = (n >= 6 && n <= 11) || (n >= 22 && n <= 27);
-            const isPosterior = (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
+            const isAnterior = isRestorativeAnteriorTooth(tooth);
+            const isPosterior = isRestorativePosteriorTooth(tooth);
             if (!isAnterior && !isPosterior) {
                 return [];
             }
@@ -812,7 +831,7 @@
 
         function writeFindingForm(finding) {
             $("#treatmentFindingDiseaseType").val(finding.diseaseConditionType || "");
-            $("#treatmentFindingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth && finding.diseaseConditionType !== "Restorative");
+            $("#treatmentFindingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth);
             populateToothOptions();
             $("#treatmentFindingAffectedTooth").val(finding.affectedTooth || "");
 
@@ -974,7 +993,7 @@
                     return null;
                 }
                 if (!finalDrc) {
-                    Swal.fire("Invalid Data", "Final DRC is required.", "warning");
+                    Swal.fire("Invalid Data", "Procedured DRC is required.", "warning");
                     return null;
                 }
 

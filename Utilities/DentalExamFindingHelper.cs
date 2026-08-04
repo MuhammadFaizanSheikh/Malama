@@ -105,7 +105,7 @@ namespace ExcelFilesCompiler.Utilities
                 if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
                     && allowedSurfaces.Length == 0)
                 {
-                    return prefix + "Affected Surface(s) require a permanent tooth number (1-32).";
+                    return prefix + "Affected Surface(s) require a valid permanent (1-32) or primary tooth.";
                 }
 
                 if (finding.AffectedSurfaces == null || finding.AffectedSurfaces.Count == 0)
@@ -181,48 +181,34 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         /// <summary>
-        /// Posterior (1-5, 12-21, 28-32): M,D,L,B,O.
-        /// Anterior (6-11, 22-27): M,D,L,F,I.
+        /// Posterior permanent (1-5, 12-21, 28-32) / primary (A,B,I,K,L,S,T): M,D,L,B,O.
+        /// Anterior permanent (6-11, 22-27) / primary (C-H, M-R): M,D,L,F,I.
+        /// Primary letter groups map to permanent ranges:
+        /// 1-5 → A,B | 6-11 → C-H | 12-21 → I,K,L | 22-27 → M-R | 28-32 → S,T.
         /// </summary>
         public static string[] GetRestorativeSurfacesForTooth(string? affectedTooth)
         {
-            if (!int.TryParse(affectedTooth?.Trim(), out var tooth) || tooth < 1 || tooth > 32)
+            return ClassifyRestorativeToothGroup(affectedTooth) switch
             {
-                return Array.Empty<string>();
-            }
-
-            if ((tooth >= 6 && tooth <= 11) || (tooth >= 22 && tooth <= 27))
-            {
-                return DentalExamFindingConstants.RestorativeSurfacesAnterior;
-            }
-
-            if ((tooth >= 1 && tooth <= 5) || (tooth >= 12 && tooth <= 21) || (tooth >= 28 && tooth <= 32))
-            {
-                return DentalExamFindingConstants.RestorativeSurfacesPosterior;
-            }
-
-            return Array.Empty<string>();
+                RestorativeToothGroup.Anterior => DentalExamFindingConstants.RestorativeSurfacesAnterior,
+                RestorativeToothGroup.Posterior => DentalExamFindingConstants.RestorativeSurfacesPosterior,
+                _ => Array.Empty<string>()
+            };
         }
 
         /// <summary>
         /// Restorative CDT options by tooth group (anterior/posterior) and selected surface count.
+        /// Supports permanent 1-32 and primary A-T (same groups as surfaces).
         /// </summary>
         public static string[] GetRestorativeCdtCodes(string? affectedTooth, int surfaceCount)
         {
-            if (surfaceCount < 1
-                || !int.TryParse(affectedTooth?.Trim(), out var tooth)
-                || tooth < 1
-                || tooth > 32)
+            if (surfaceCount < 1)
             {
                 return Array.Empty<string>();
             }
 
-            var isAnterior = (tooth >= 6 && tooth <= 11) || (tooth >= 22 && tooth <= 27);
-            var isPosterior = (tooth >= 1 && tooth <= 5)
-                || (tooth >= 12 && tooth <= 21)
-                || (tooth >= 28 && tooth <= 32);
-
-            if (!isAnterior && !isPosterior)
+            var group = ClassifyRestorativeToothGroup(affectedTooth);
+            if (group == RestorativeToothGroup.Unknown)
             {
                 return Array.Empty<string>();
             }
@@ -235,7 +221,7 @@ namespace ExcelFilesCompiler.Utilities
                 _ => "D2161 - Amalgam-Four or More Surfaces"
             };
 
-            var resin = isAnterior
+            var resin = group == RestorativeToothGroup.Anterior
                 ? surfaceCount switch
                 {
                     1 => "D2330 - Resin Based Composite-One Surface, Anterior",
@@ -253,5 +239,63 @@ namespace ExcelFilesCompiler.Utilities
 
             return new[] { amalgam, resin };
         }
+
+        private enum RestorativeToothGroup
+        {
+            Unknown = 0,
+            Anterior = 1,
+            Posterior = 2
+        }
+
+        /// <summary>
+        /// Classifies permanent (1-32) and primary (A-T) teeth into anterior/posterior surface groups.
+        /// </summary>
+        private static RestorativeToothGroup ClassifyRestorativeToothGroup(string? affectedTooth)
+        {
+            var tooth = affectedTooth?.Trim() ?? string.Empty;
+            if (tooth.Length == 0)
+            {
+                return RestorativeToothGroup.Unknown;
+            }
+
+            if (int.TryParse(tooth, out var n))
+            {
+                if ((n >= 6 && n <= 11) || (n >= 22 && n <= 27))
+                {
+                    return RestorativeToothGroup.Anterior;
+                }
+
+                if ((n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32))
+                {
+                    return RestorativeToothGroup.Posterior;
+                }
+
+                return RestorativeToothGroup.Unknown;
+            }
+
+            // Primary letters: 1-5→A,B | 6-11→C-H | 12-21→I,K,L | 22-27→M-R | 28-32→S,T
+            var letter = tooth.ToUpperInvariant();
+            return letter switch
+            {
+                "C" or "D" or "E" or "F" or "G" or "H"
+                    or "M" or "N" or "O" or "P" or "Q" or "R"
+                    => RestorativeToothGroup.Anterior,
+                "A" or "B" or "I" or "K" or "L" or "S" or "T"
+                    => RestorativeToothGroup.Posterior,
+                _ => RestorativeToothGroup.Unknown
+            };
+        }
+
+        /// <summary>
+        /// Anterior: permanent 6-11, 22-27; primary C-H, M-R.
+        /// </summary>
+        public static bool IsRestorativeAnteriorTooth(string? affectedTooth)
+            => ClassifyRestorativeToothGroup(affectedTooth) == RestorativeToothGroup.Anterior;
+
+        /// <summary>
+        /// Posterior: permanent 1-5, 12-21, 28-32; primary A,B,I,K,L,S,T.
+        /// </summary>
+        public static bool IsRestorativePosteriorTooth(string? affectedTooth)
+            => ClassifyRestorativeToothGroup(affectedTooth) == RestorativeToothGroup.Posterior;
     }
 }

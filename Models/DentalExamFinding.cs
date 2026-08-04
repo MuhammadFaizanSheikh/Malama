@@ -20,10 +20,10 @@ namespace Malama.Models
 
         public static readonly string[] PeriodontalSurfaces = { "UL", "UR", "LL", "LR" };
 
-        /// <summary>Restorative surfaces for posterior teeth (1-5, 12-21, 28-32).</summary>
+        /// <summary>Restorative surfaces for posterior teeth (1-5, 12-21, 28-32 and primary A,B,I,K,L,S,T).</summary>
         public static readonly string[] RestorativeSurfacesPosterior = { "M", "D", "L", "B", "O" };
 
-        /// <summary>Restorative surfaces for anterior teeth (6-11, 22-27).</summary>
+        /// <summary>Restorative surfaces for anterior teeth (6-11, 22-27 and primary C-H, M-R).</summary>
         public static readonly string[] RestorativeSurfacesAnterior = { "M", "D", "L", "F", "I" };
 
         public static readonly string[] PermanentTeeth =

@@ -281,17 +281,33 @@
         }
 
         function getRestorativeSurfacesForTooth(tooth) {
-            const n = parseInt(tooth, 10);
-            if (!n || n < 1 || n > 32) {
-                return [];
-            }
-            if ((n >= 6 && n <= 11) || (n >= 22 && n <= 27)) {
+            if (isRestorativeAnteriorTooth(tooth)) {
                 return RESTORATIVE_SURFACES_ANTERIOR.slice();
             }
-            if ((n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32)) {
+            if (isRestorativePosteriorTooth(tooth)) {
                 return RESTORATIVE_SURFACES_POSTERIOR.slice();
             }
             return [];
+        }
+
+        // Permanent: 6-11, 22-27 | Primary: C-H, M-R
+        function isRestorativeAnteriorTooth(tooth) {
+            const value = (tooth || "").toString().trim();
+            const n = parseInt(value, 10);
+            if (!isNaN(n) && String(n) === value) {
+                return (n >= 6 && n <= 11) || (n >= 22 && n <= 27);
+            }
+            return value.length === 1 && "CDEFGHMNOPQR".indexOf(value.toUpperCase()) >= 0;
+        }
+
+        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,K,L,S,T
+        function isRestorativePosteriorTooth(tooth) {
+            const value = (tooth || "").toString().trim();
+            const n = parseInt(value, 10);
+            if (!isNaN(n) && String(n) === value) {
+                return (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
+            }
+            return value.length === 1 && "ABIKLST".indexOf(value.toUpperCase()) >= 0;
         }
 
         function populateToothOptions() {
@@ -352,13 +368,12 @@
         }
 
         function getRestorativeCdtCodes(tooth, surfaceCount) {
-            const n = parseInt(tooth, 10);
-            if (!n || n < 1 || n > 32 || !surfaceCount || surfaceCount < 1) {
+            if (!surfaceCount || surfaceCount < 1) {
                 return [];
             }
 
-            const isAnterior = (n >= 6 && n <= 11) || (n >= 22 && n <= 27);
-            const isPosterior = (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
+            const isAnterior = isRestorativeAnteriorTooth(tooth);
+            const isPosterior = isRestorativePosteriorTooth(tooth);
             if (!isAnterior && !isPosterior) {
                 return [];
             }
@@ -417,28 +432,12 @@
             }
         }
 
-        function syncPrimaryToothAvailability() {
-            const $primary = $("#findingPrimaryTooth");
-            const isRestorative = $("#findingDiseaseType").val() === "Restorative";
-
-            if (isRestorative) {
-                if ($primary.is(":checked")) {
-                    $primary.prop("checked", false);
-                    populateToothOptions();
-                }
-                $primary.prop("disabled", true);
-            } else {
-                $primary.prop("disabled", false);
-            }
-        }
-
         function clearFindingForm() {
             editingFindingIndex = null;
             $("#dentalFindingFormTitle").text("Add Finding");
             $("#addFindingToListBtn").html('<i class="fas fa-list-ul"></i> Add to List');
-            $("#findingPrimaryTooth").prop("checked", false);
+            $("#findingPrimaryTooth").prop("checked", false).prop("disabled", false);
             $("#findingDiseaseType").val("");
-            syncPrimaryToothAvailability();
             populateToothOptions();
             $("#findingAffectedTooth").val("");
             populateSurfaceOptions([]);
@@ -497,7 +496,7 @@
             if (finding.diseaseConditionType === "Restorative") {
                 const allowedSurfaces = getRestorativeSurfacesForTooth(finding.affectedTooth);
                 if (!allowedSurfaces.length) {
-                    Swal.fire("Invalid Data", "For Restorative findings, select a permanent tooth (1-32) to choose Affected Surface(s).", "warning");
+                    Swal.fire("Invalid Data", "For Restorative findings, select a valid permanent (1-32) or primary tooth to choose Affected Surface(s).", "warning");
                     return null;
                 }
                 if (!finding.affectedSurfaces || finding.affectedSurfaces.length === 0) {
@@ -538,8 +537,7 @@
 
         function writeFindingForm(finding) {
             $("#findingDiseaseType").val(finding.diseaseConditionType || "");
-            syncPrimaryToothAvailability();
-            $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth && finding.diseaseConditionType !== "Restorative");
+            $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth).prop("disabled", false);
             populateToothOptions();
             $("#findingAffectedTooth").val(finding.affectedTooth || "");
             suppressRestorativeCdtReset = true;
@@ -825,7 +823,6 @@
                 }
             });
             $("#findingDiseaseType").on("change", function () {
-                syncPrimaryToothAvailability();
                 populateToothOptions();
                 populateSurfaceOptions([]);
                 populateCdtOptions([]);
