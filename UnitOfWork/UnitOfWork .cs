@@ -43,6 +43,12 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<DentalExam> DentalExam { get; private set; }
         public IGenericRepository<DentalExamFinding> DentalExamFinding { get; private set; }
         public IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; private set; }
+        public IGenericRepository<DentalTreatment> DentalTreatment { get; private set; }
+        public IGenericRepository<DentalTreatmentFinding> DentalTreatmentFinding { get; private set; }
+        public IGenericRepository<DentalTreatmentSelectedTooth> DentalTreatmentSelectedTooth { get; private set; }
+        public IGenericRepository<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; private set; }
+        public IGenericRepository<DentalTreatmentPrescription> DentalTreatmentPrescription { get; private set; }
+        public IGenericRepository<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; private set; }
 
 
         public UnitOfWork(ApplicationDbContext context)
@@ -83,6 +89,12 @@ namespace ExcelFilesCompiler.UnitOfWork
             DentalExam = new GenericRepository<DentalExam>(_context);
             DentalExamFinding = new GenericRepository<DentalExamFinding>(_context);
             DentalExamSelectedTooth = new GenericRepository<DentalExamSelectedTooth>(_context);
+            DentalTreatment = new GenericRepository<DentalTreatment>(_context);
+            DentalTreatmentFinding = new GenericRepository<DentalTreatmentFinding>(_context);
+            DentalTreatmentSelectedTooth = new GenericRepository<DentalTreatmentSelectedTooth>(_context);
+            DentalTreatmentAnesthesia = new GenericRepository<DentalTreatmentAnesthesia>(_context);
+            DentalTreatmentPrescription = new GenericRepository<DentalTreatmentPrescription>(_context);
+            DentalTreatmentOverallNote = new GenericRepository<DentalTreatmentOverallNote>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

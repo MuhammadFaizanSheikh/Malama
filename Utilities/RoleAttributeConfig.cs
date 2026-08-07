@@ -99,6 +99,10 @@ namespace Malama.Utilities
             ("DT-Dental Assistant", "Treatment Assist"),
             ("Event Manager", null)
         },
+            ["DentalTreatment_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("DT-Dentist", "Treatment")
+        },
 
             // Dental X-Ray
             ["DentalXRay_View"] = new List<(string Role, string Attribute)>

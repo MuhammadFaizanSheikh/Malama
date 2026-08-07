@@ -187,6 +187,48 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.VitalStationId, opt => opt.Ignore())
                 .ForMember(dest => dest.VitalStation, opt => opt.Ignore());
+
+            CreateMap<DentalTreatmentStationSaveDto, DentalTreatment>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ServiceMembersChild, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalExam, opt => opt.Ignore())
+                .ForMember(dest => dest.Findings, opt => opt.Ignore())
+                .ForMember(dest => dest.SelectedTeeth, opt => opt.Ignore())
+                .ForMember(dest => dest.AnesthesiaRecords, opt => opt.Ignore())
+                .ForMember(dest => dest.Prescriptions, opt => opt.Ignore())
+                .ForMember(dest => dest.OverallNotes, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.AddedOn, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedOn, opt => opt.Ignore());
+
+            CreateMap<DentalTreatmentFindingFormDto, DentalTreatmentFinding>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalExamFinding, opt => opt.Ignore())
+                .ForMember(dest => dest.AffectedSurfacesJson, opt => opt.Ignore())
+                .ForMember(dest => dest.CdtCodesJson, opt => opt.Ignore())
+                .ForMember(dest => dest.PostServiceTreatmentJson, opt => opt.Ignore())
+                .ForMember(dest => dest.TreatmentCdtCodesJson, opt => opt.Ignore())
+                .ForMember(dest => dest.ProceduredDrc, opt => opt.MapFrom(src => src.FinalDrc));
+
+            CreateMap<DentalTreatmentAnesthesiaDto, DentalTreatmentAnesthesia>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore())
+                .ForMember(dest => dest.CarpulesByTypeJson, opt => opt.Ignore());
+
+            CreateMap<DentalTreatmentPrescriptionDto, DentalTreatmentPrescription>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore());
+
+            CreateMap<DentalTreatmentOverallNoteDto, DentalTreatmentOverallNote>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore());
         }
     }
 }

@@ -3,7 +3,7 @@
 @using Malama.Models
 @using Malama.Utilities
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
-@model DentalExamStationPageViewModel
+@model DentalTreatmentStationPageViewModel
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
@@ -12,10 +12,13 @@
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
     var dentalExam = Model.DentalExam;
+    var dentalTreatment = Model.DentalTreatment;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var isDentalExamDentist = User.IsInRole("DE- Dentist") || User.IsInRole("DT-Dentist");
     var isDtDentist = User.IsInRole("DT-Dentist");
+    var canSaveDentalTreatment = isDtDentist && DashboardAuthorizationHelper.HasAccess(User, "DentalTreatment_Save");
     ViewBag.IsDtDentist = isDtDentist;
+    ViewBag.DentalTreatment = dentalTreatment;
     var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
@@ -284,6 +287,15 @@
 }
 
 <div id="DentalTreatmentStation">
+<form id="SaveDentalTreatmentStation" asp-action="SaveDentalTreatmentStation" method="post">
+    <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
+    <input type="hidden" name="DentalExamId" value="@dentalExam.Id" />
+    <input type="hidden" name="FindingsJson" id="TreatmentFindingsJson" value="[]" />
+    <input type="hidden" name="AnesthesiaJson" id="TreatmentAnesthesiaJson" value="[]" />
+    <input type="hidden" name="PrescriptionsJson" id="TreatmentPrescriptionsJson" value="[]" />
+    <input type="hidden" name="OverallNotesJson" id="TreatmentOverallNotesJson" value="[]" />
+    <div id="psrSelectedTeethHiddenFields"></div>
+
     <h3 class="mb-4">Personal Information</h3>
     <div class="card mb-4">
         <div class="card-body">
@@ -647,8 +659,10 @@
             treatmentFindingsViewData["XRayStation"] = Model.XRayStation;
             treatmentFindingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                 ?? new Dictionary<string, string>();
+            treatmentFindingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
             treatmentFindingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
             treatmentFindingsViewData["CanEditTreatment"] = isDtDentist;
+            treatmentFindingsViewData["DentalTreatment"] = dentalTreatment;
         }
         @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
 
@@ -669,16 +683,89 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <label class="form-label" for="DentalTreatmentStatus">Overall Status</label>
+            <select id="DentalTreatmentStatus" class="form-select read-only-style" disabled>
+                @if (string.Equals(dentalTreatment?.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="Pending">Pending</option>
+                    <option value="Completed" selected="selected">Completed</option>
+                }
+                else
+                {
+                    <option value="Pending" selected="selected">Pending</option>
+                    <option value="Completed">Completed</option>
+                }
+            </select>
+            <input type="hidden" name="Status" id="DentalTreatmentStatusHidden" value="@(string.IsNullOrWhiteSpace(dentalTreatment?.Status) ? "Pending" : dentalTreatment!.Status)" />
+        </div>
+    </div>
+
     <div class="d-flex justify-content-end mt-4 gap-3">
+        <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalTreatment ? null : "disabled")>
+            <i class="bi bi-check-circle"></i> Save
+        </button>
         <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
             <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>
+</form>
 </div>
 
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
     const IS_DT_DENTIST = @Json.Serialize(isDtDentist);
+
+    function resolveFindingStatusForOverall(finding) {
+        const treatmentCompleted = finding?.treatmentCompleted || "";
+        const finalDrc = finding?.finalDrc || "";
+        const reason = finding?.reason || "";
+        const treatmentStatus = finding?.treatmentStatus || "";
+
+        if (treatmentCompleted === "No" && reason) {
+            return "Complete with Reason";
+        }
+        if (finalDrc) {
+            return "Complete";
+        }
+        if (treatmentStatus === "Complete" || treatmentStatus === "Complete with Reason") {
+            return treatmentStatus;
+        }
+        return "Incomplete";
+    }
+
+    function areAllDentalTreatmentFindingsComplete() {
+        try {
+            const findings = JSON.parse($("#TreatmentFindingsJson").val() || "[]");
+            if (!Array.isArray(findings) || findings.length === 0) {
+                return true;
+            }
+
+            return findings.every(function (finding) {
+                const status = resolveFindingStatusForOverall(finding);
+                return status === "Complete" || status === "Complete with Reason";
+            });
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function updateDentalTreatmentOverallStatus() {
+        if (typeof window.syncDentalTreatmentFindingsJson === "function") {
+            window.syncDentalTreatmentFindingsJson();
+        }
+
+        const smFinal = $("#smFinalClassification").val() || "";
+        const status = smFinal && areAllDentalTreatmentFindingsComplete()
+            ? "Completed"
+            : "Pending";
+
+        $("#DentalTreatmentStatus").val(status);
+        $("#DentalTreatmentStatusHidden").val(status);
+    }
+
+    window.updateDentalTreatmentOverallStatus = updateDentalTreatmentOverallStatus;
 
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
@@ -1099,20 +1186,47 @@
 
         initXrayPreviewWidgets();
 
+        $("#SaveDentalTreatmentStation").on("submit", function () {
+            if (typeof window.syncDentalTreatmentFindingsJson === "function") {
+                window.syncDentalTreatmentFindingsJson();
+            }
+            if (typeof window.syncDentalTreatmentAnesthesiaJson === "function") {
+                window.syncDentalTreatmentAnesthesiaJson();
+            }
+            if (typeof window.syncDentalTreatmentPrescriptionsJson === "function") {
+                window.syncDentalTreatmentPrescriptionsJson();
+            }
+            if (typeof window.syncDentalTreatmentOverallNotesJson === "function") {
+                window.syncDentalTreatmentOverallNotesJson();
+            }
+
+            updateDentalTreatmentOverallStatus();
+
+            // Avoid duplicate PsrSelectedTeeth posts from the shared tooth-chart inputs.
+            $("#psrInteractiveToothChart .psr-tooth-input").removeAttr("name");
+            const $container = $("#psrSelectedTeethHiddenFields");
+            $container.empty();
+            $("#psrInteractiveToothChart .psr-tooth-input:checked").each(function () {
+                $container.append(
+                    $("<input>", {
+                        type: "hidden",
+                        name: "PsrSelectedTeeth",
+                        value: $(this).val()
+                    })
+                );
+            });
+        });
+
+        $(document).on("change", "#smFinalClassification", function () {
+            updateDentalTreatmentOverallStatus();
+        });
+
+        updateDentalTreatmentOverallStatus();
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
-            const href = $(this).attr('href');
-            const result = await Swal.fire({
-                title: 'Leave this page?',
-                text: 'Any unsaved changes will be lost.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, go back',
-                cancelButtonText: 'Stay'
-            });
-            if (result.isConfirmed) {
-                window.location.href = href;
-            }
+            const url = $(this).attr('href');
+            const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?");
+            if (confirmed) window.location.href = url;
         });
     });
 

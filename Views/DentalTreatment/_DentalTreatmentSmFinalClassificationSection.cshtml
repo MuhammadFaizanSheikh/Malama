@@ -1,5 +1,8 @@
+@using Malama.Models
 @{
     var canEditTreatment = ViewBag.IsDtDentist == true;
+    var dentalTreatment = ViewBag.DentalTreatment as DentalTreatment;
+    var selectedSmFinal = dentalTreatment?.SmFinalClassification ?? string.Empty;
 }
 
 <div class="mb-4" id="treatmentSmFinalClassificationSection">
@@ -20,14 +23,19 @@
             <div class="card-body">
                 <div class="mb-0" style="max-width: 320px;">
                     <label class="form-label" for="smFinalClassification">SM Final Classification</label>
+                    @if (!canEditTreatment)
+                    {
+                        <input type="hidden" name="SmFinalClassification" value="@selectedSmFinal" />
+                    }
                     <select id="smFinalClassification"
+                            name="@(canEditTreatment ? "SmFinalClassification" : null)"
                             class="form-select @(canEditTreatment ? null : "read-only-style")"
                             @(canEditTreatment ? null : "disabled")>
                         <option value=""></option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
+                        <option value="1" selected="@(selectedSmFinal == "1")">1</option>
+                        <option value="2" selected="@(selectedSmFinal == "2")">2</option>
+                        <option value="3" selected="@(selectedSmFinal == "3")">3</option>
+                        <option value="4" selected="@(selectedSmFinal == "4")">4</option>
                     </select>
                 </div>
 

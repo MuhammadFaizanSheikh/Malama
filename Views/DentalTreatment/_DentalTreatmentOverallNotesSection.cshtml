@@ -1,8 +1,24 @@
+@using Malama.Models
+@using System.Text.Json
 @{
+    var currentUserId = ViewBag.CurrentUserId as string ?? string.Empty;
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string
         ?? ViewBag.CurrentUserDisplayName as string
         ?? string.Empty;
+    var staffNamesByUserId = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
     var canEditTreatment = ViewBag.IsDtDentist == true;
+    var dentalTreatment = ViewBag.DentalTreatment as DentalTreatment;
+    var seededOverallNotes = (dentalTreatment?.OverallNotes ?? Enumerable.Empty<DentalTreatmentOverallNote>())
+        .OrderBy(n => n.SortOrder)
+        .Select(n => new
+        {
+            notes = n.Notes,
+            dentist = n.Dentist,
+            dateTime = n.NoteDateTime
+        })
+        .ToList();
+    var staffNamesJson = JsonSerializer.Serialize(staffNamesByUserId);
 }
 
 <style>
@@ -110,10 +126,29 @@
 
 <script>
     (function () {
+        const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const staffNamesByUserId = @Html.Raw(staffNamesJson);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
-        let overallNotes = [];
+        let overallNotes = @Html.Raw(Json.Serialize(seededOverallNotes)) || [];
         let editingOverallNoteIndex = null;
+
+        if (CURRENT_USER_ID) {
+            staffNamesByUserId[CURRENT_USER_ID] = CURRENT_USER_DISPLAY_NAME || staffNamesByUserId[CURRENT_USER_ID] || "";
+        }
+
+        function resolveStaffDisplayName(userId) {
+            if (!userId) {
+                return "";
+            }
+            if (staffNamesByUserId[userId]) {
+                return staffNamesByUserId[userId];
+            }
+            if (userId === CURRENT_USER_ID) {
+                return CURRENT_USER_DISPLAY_NAME || "";
+            }
+            return userId;
+        }
 
         function escapeHtml(value) {
             return $("<div>").text(value ?? "").html();
@@ -141,6 +176,7 @@
                 $tbody.append(
                     '<tr id="overallNotesEmptyRow"><td colspan="5" class="text-center text-muted py-4">No overall notes added yet.</td></tr>'
                 );
+                syncDentalTreatmentOverallNotesJson();
                 return;
             }
 
@@ -156,12 +192,17 @@
                     "<tr data-overall-note-index='" + index + "'>" +
                     "<td>" + (index + 1) + "</td>" +
                     "<td class='overall-note-text'>" + escapeHtml(note.notes || "") + "</td>" +
-                    "<td>" + escapeHtml(note.dentist || "") + "</td>" +
+                    "<td>" + escapeHtml(resolveStaffDisplayName(note.dentist) || "") + "</td>" +
                     "<td>" + escapeHtml(note.dateTime || "") + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
                 );
             });
+            syncDentalTreatmentOverallNotesJson();
+        }
+
+        function syncDentalTreatmentOverallNotesJson() {
+            $("#TreatmentOverallNotesJson").val(JSON.stringify(overallNotes || []));
         }
 
         function clearOverallNoteForm() {
@@ -169,7 +210,7 @@
             $("#overallNotesFormTitle").text("Add Overall Note");
             $("#saveOverallNoteBtn").html('<i class="fas fa-list-ul"></i> Add to List');
             $("#overallNoteText").val("");
-            $("#overallNoteDentist").val(CURRENT_USER_DISPLAY_NAME || "");
+            $("#overallNoteDentist").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
             $("#overallNoteDateTime").val(formatOverallNoteDateTime());
         }
 
@@ -184,7 +225,7 @@
 
         function writeOverallNoteForm(note) {
             $("#overallNoteText").val(note.notes || "");
-            $("#overallNoteDentist").val(note.dentist || CURRENT_USER_DISPLAY_NAME || "");
+            $("#overallNoteDentist").val(resolveStaffDisplayName(note.dentist) || resolveStaffDisplayName(CURRENT_USER_ID) || "");
             $("#overallNoteDateTime").val(note.dateTime || formatOverallNoteDateTime());
         }
 
@@ -196,7 +237,7 @@
 
             return {
                 notes: notes,
-                dentist: $("#overallNoteDentist").val()?.trim() || CURRENT_USER_DISPLAY_NAME || "",
+                dentist: CURRENT_USER_ID || "",
                 dateTime: $("#overallNoteDateTime").val()?.trim() || formatOverallNoteDateTime()
             };
         }
@@ -287,6 +328,7 @@
         }
 
         $(document).ready(function () {
+            window.syncDentalTreatmentOverallNotesJson = syncDentalTreatmentOverallNotesJson;
             renderOverallNotesTable();
             clearOverallNoteForm();
 

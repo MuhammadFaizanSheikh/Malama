@@ -1,5 +1,16 @@
+@using ExcelFilesCompiler.Utilities
+@using Malama.Models
 @{
     var canEditTreatment = ViewBag.IsDtDentist == true;
+    var dentalTreatment = ViewBag.DentalTreatment as DentalTreatment;
+    var seededAnesthesia = (dentalTreatment?.AnesthesiaRecords ?? Enumerable.Empty<DentalTreatmentAnesthesia>())
+        .OrderBy(a => a.SortOrder)
+        .Select(a => new
+        {
+            date = a.Date,
+            carpulesByType = DentalTreatmentJson.DeserializeDictionary(a.CarpulesByTypeJson)
+        })
+        .ToList();
     var carpuleOptions = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     var anesthesiaTypes = new[]
     {
@@ -72,6 +83,12 @@
                             <input type="text" id="anesthesiaDate" class="form-control" readonly style="max-width: 220px;" />
                         </div>
 
+                        <div class="d-flex justify-content-end mb-2">
+                            <button type="button" class="btn btn-outline-warning btn-sm" id="unlockAnesthesiaBtn" style="display:none;">
+                                <i class="fas fa-unlock"></i> Unlock
+                            </button>
+                        </div>
+
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered align-middle mb-0">
                                 <thead class="table-light">
@@ -128,8 +145,9 @@
     (function () {
         const ANESTHESIA_TYPES = @Json.Serialize(anesthesiaTypes);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
-        let anesthesiaRecords = [];
+        let anesthesiaRecords = @Html.Raw(Json.Serialize(seededAnesthesia)) || [];
         let editingAnesthesiaIndex = null;
+        let anesthesiaFieldsLocked = false;
 
         function escapeHtml(value) {
             return $("<div>").text(value ?? "").html();
@@ -143,6 +161,52 @@
             return mm + "/" + dd + "/" + yyyy;
         }
 
+        function parseAnesthesiaDate(value) {
+            if (!value) {
+                return null;
+            }
+            const parts = String(value).split("/");
+            if (parts.length !== 3) {
+                return null;
+            }
+            const month = parseInt(parts[0], 10);
+            const day = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            if (!month || !day || !year) {
+                return null;
+            }
+            const date = new Date(year, month - 1, day);
+            if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+                return null;
+            }
+            return date;
+        }
+
+        function isAnesthesiaDateToday(value) {
+            const date = parseAnesthesiaDate(value);
+            if (!date) {
+                return true;
+            }
+            const today = new Date();
+            return date.getFullYear() === today.getFullYear()
+                && date.getMonth() === today.getMonth()
+                && date.getDate() === today.getDate();
+        }
+
+        function setAnesthesiaCarpulesEditable(isEditable) {
+            anesthesiaFieldsLocked = !isEditable;
+            $(".anesthesia-carpules-select").each(function () {
+                const $select = $(this);
+                $select.prop("disabled", !isEditable);
+                if (isEditable) {
+                    $select.removeClass("read-only-style");
+                } else {
+                    $select.addClass("read-only-style");
+                }
+            });
+            $("#unlockAnesthesiaBtn").toggle(!isEditable && CAN_EDIT_TREATMENT);
+        }
+
         function renderAnesthesiaTable() {
             const $tbody = $("#anesthesiaTableBody");
             $tbody.empty();
@@ -152,6 +216,7 @@
                 $tbody.append(
                     '<tr id="anesthesiaEmptyRow"><td colspan="' + colCount + '" class="text-center text-muted py-4">No anesthesia records added yet.</td></tr>'
                 );
+                syncDentalTreatmentAnesthesiaJson();
                 return;
             }
 
@@ -180,6 +245,11 @@
                     "</tr>"
                 );
             });
+            syncDentalTreatmentAnesthesiaJson();
+        }
+
+        function syncDentalTreatmentAnesthesiaJson() {
+            $("#TreatmentAnesthesiaJson").val(JSON.stringify(anesthesiaRecords || []));
         }
 
         function clearAnesthesiaForm() {
@@ -187,7 +257,8 @@
             $("#anesthesiaFormTitle").text("Add Anesthesia");
             $("#saveAnesthesiaBtn").html('<i class="fas fa-list-ul"></i> Add to List');
             $("#anesthesiaDate").val(formatAnesthesiaDate());
-            $(".anesthesia-carpules-select").prop("disabled", false).val("");
+            $(".anesthesia-carpules-select").val("");
+            setAnesthesiaCarpulesEditable(true);
         }
 
         function showAnesthesiaForm() {
@@ -201,7 +272,7 @@
 
         function writeAnesthesiaForm(record) {
             $("#anesthesiaDate").val(record.date || formatAnesthesiaDate());
-            $(".anesthesia-carpules-select").prop("disabled", false).each(function () {
+            $(".anesthesia-carpules-select").each(function () {
                 const type = $(this).data("type");
                 const value = record.carpulesByType && record.carpulesByType[type]
                     ? record.carpulesByType[type]
@@ -239,6 +310,11 @@
                 return;
             }
 
+            if (anesthesiaFieldsLocked) {
+                Swal.fire("Locked", "Click Unlock to edit this past-date anesthesia record.", "info");
+                return;
+            }
+
             const record = readAnesthesiaRecord();
             if (!record) {
                 Swal.fire("Invalid Data", "Please select # of Carpules for at least one Type.", "warning");
@@ -269,6 +345,10 @@
             $("#anesthesiaFormTitle").text("Edit Anesthesia");
             $("#saveAnesthesiaBtn").html('<i class="fas fa-check-circle"></i> Update Anesthesia');
             writeAnesthesiaForm(record);
+
+            const isToday = isAnesthesiaDateToday(record.date);
+            setAnesthesiaCarpulesEditable(isToday);
+
             showAnesthesiaForm();
 
             $("html, body").animate({
@@ -315,6 +395,7 @@
         }
 
         $(document).ready(function () {
+            window.syncDentalTreatmentAnesthesiaJson = syncDentalTreatmentAnesthesiaJson;
             renderAnesthesiaTable();
             clearAnesthesiaForm();
 
@@ -333,6 +414,12 @@
 
             $("#cancelAnesthesiaFormBtn").on("click", hideAnesthesiaForm);
             $("#saveAnesthesiaBtn").on("click", addOrUpdateAnesthesia);
+            $("#unlockAnesthesiaBtn").on("click", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
+                setAnesthesiaCarpulesEditable(true);
+            });
 
             $(document).on("click", ".edit-anesthesia-btn", function () {
                 editAnesthesia(parseInt($(this).data("index"), 10));

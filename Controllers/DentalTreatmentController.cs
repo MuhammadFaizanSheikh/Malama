@@ -16,6 +16,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
+        private readonly IDentalTreatmentService _dentalTreatmentService;
         private readonly IVitalStationService _vitalStationService;
         private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
@@ -30,6 +31,7 @@ namespace ExcelFilesCompiler.Controllers
             IDentalQuestionnaireService dentalQuestionnaireService,
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
+            IDentalTreatmentService dentalTreatmentService,
             IVitalStationService vitalStationService,
             IEventStaffService eventStaffService,
             IFileUploadDownloadService fileService,
@@ -40,6 +42,7 @@ namespace ExcelFilesCompiler.Controllers
             _dentalQuestionnaireService = dentalQuestionnaireService;
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
+            _dentalTreatmentService = dentalTreatmentService;
             _vitalStationService = vitalStationService;
             _eventStaffService = eventStaffService;
             _fileService = fileService;
@@ -140,6 +143,9 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                ApplyTreatmentSelectedTeethToExamChart(dentalExam, dentalTreatment);
+
                 ViewBag.EventId = result.EventId;
 
                 try
@@ -198,18 +204,24 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.CurrentUserDisplayName = currentUser != null
                     ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
                     : string.Empty;
-                ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
-                    dentalExam.Findings,
+                ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
+
+                var treatmentStaffUserIds = CollectTreatmentStaffUserIds(dentalTreatment);
+                var examinerUserIds = (dentalExam.Findings ?? Enumerable.Empty<DentalExamFinding>())
+                    .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy });
+                ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    examinerUserIds.Concat(treatmentStaffUserIds),
                     _userManager,
                     _eventStaffService,
                     _logger);
 
-                var pageModel = new DentalExamStationPageViewModel
+                var pageModel = new DentalTreatmentStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
                     Questionnaire = questionnaire,
                     XRayStation = xRayStation,
-                    DentalExam = dentalExam
+                    DentalExam = dentalExam,
+                    DentalTreatment = dentalTreatment
                 };
 
                 return View(pageModel);
@@ -220,6 +232,91 @@ namespace ExcelFilesCompiler.Controllers
                     "{ClassName}, {MethodName}, Exception occurred while loading Dental Treatment station page",
                     CLASSNAME, methodName);
                 throw;
+            }
+        }
+
+        [RoleAttributeAuthorizeFromConfig("DentalTreatment_Save")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveDentalTreatmentStation(DentalTreatmentStationSaveDto dto)
+        {
+            const string methodName = nameof(SaveDentalTreatmentStation);
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, Called. ServiceMembersChildId={ServiceMembersChildId}",
+                CLASSNAME, methodName, dto.ServiceMembersChildId);
+
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Unauthorized";
+                    TempData["ResponseMessage"] = "Please login and try again.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (dto.ServiceMembersChildId <= 0)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = "Service member is required.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var serviceMemberResult = await _fileUploader.GetServiceMemberChildWithEventIdAsync(dto.ServiceMembersChildId);
+                if (serviceMemberResult.ServiceMembersChild == null)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = "Service member not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                if (dentalExam == null
+                    || !string.Equals(dentalExam.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(dentalExam.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Treatment.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                dto.DentalExamId = dentalExam.Id;
+                dto.Findings = DentalTreatmentJson.ParseList<DentalTreatmentFindingFormDto>(dto.FindingsJson);
+                dto.AnesthesiaRecords = DentalTreatmentJson.ParseList<DentalTreatmentAnesthesiaDto>(dto.AnesthesiaJson);
+                dto.Prescriptions = DentalTreatmentJson.ParseList<DentalTreatmentPrescriptionDto>(dto.PrescriptionsJson);
+                dto.OverallNotes = DentalTreatmentJson.ParseList<DentalTreatmentOverallNoteDto>(dto.OverallNotesJson);
+                dto.PsrSelectedTeeth = DentalTreatmentValidator.NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
+
+                var validationError = DentalTreatmentValidator.ValidateSaveDto(dto, dentalExam);
+                if (!string.IsNullOrWhiteSpace(validationError))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = validationError;
+                    return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                }
+
+                await _dentalTreatmentService.SaveOrUpdateFromFormDataAsync(dto, user.UserName ?? user.Id, user.Id);
+
+                TempData["ResponseStatus"] = "success";
+                TempData["ResponseTitle"] = "Success";
+                TempData["ResponseMessage"] = "Dental Treatment record saved successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while saving Dental Treatment record",
+                    CLASSNAME, methodName);
+
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Error";
+                TempData["ResponseMessage"] = ex.Message;
+                return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
             }
         }
 
@@ -251,6 +348,38 @@ namespace ExcelFilesCompiler.Controllers
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
                 return StatusCode(500, "Error while downloading file");
             }
+        }
+
+        private static void ApplyTreatmentSelectedTeethToExamChart(DentalExam dentalExam, DentalTreatment? dentalTreatment)
+        {
+            if (dentalTreatment == null)
+            {
+                return;
+            }
+
+            dentalExam.SelectedTeeth = dentalTreatment.SelectedTeeth
+                .Select(t => new DentalExamSelectedTooth
+                {
+                    DentalExamId = dentalExam.Id,
+                    ToothNumber = t.ToothNumber
+                })
+                .OrderBy(t => t.ToothNumber)
+                .ToList();
+        }
+
+        private static IEnumerable<string?> CollectTreatmentStaffUserIds(DentalTreatment? dentalTreatment)
+        {
+            if (dentalTreatment == null)
+            {
+                return Enumerable.Empty<string?>();
+            }
+
+            return (dentalTreatment.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
+                .Select(f => f.DentistProfessional)
+                .Concat((dentalTreatment.OverallNotes ?? Enumerable.Empty<DentalTreatmentOverallNote>())
+                    .Select(n => n.Dentist))
+                .Concat((dentalTreatment.Prescriptions ?? Enumerable.Empty<DentalTreatmentPrescription>())
+                    .Select(p => p.PrescribedBy));
         }
     }
 }

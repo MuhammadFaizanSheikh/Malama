@@ -172,7 +172,7 @@
             <thead>
                 <tr>
                     <th>Action</th>
-                    <th>Dental Exam Status</th>
+                    <th>Status</th>
                     <th>DEN Class</th>
                     <th>SM ID</th>
                     <th>DRC</th>
@@ -194,7 +194,7 @@
                             <a asp-action="DentalTreatmentStation" asp-route-serviceMembersChildId="@c.Id"
                                class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
-                        <td>@(c.DentalExamRecord?.Status ?? "Pending")</td>
+                        <td>@(c.DentalTreatmentRecord?.Status ?? "Pending")</td>
                         <td>@(c.DentalExamRecord?.DenClass ?? "-")</td>
                         <td>@c.SmId</td>
                         <td>@c.Drc</td>

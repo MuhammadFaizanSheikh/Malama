@@ -117,14 +117,25 @@ namespace Malama.Utilities
             IEventStaffService eventStaffService,
             ILogger logger)
         {
-            var names = new Dictionary<string, string>(StringComparer.Ordinal);
             var userIds = (findings ?? Enumerable.Empty<DentalExamFinding>())
-                .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy })
+                .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy });
+
+            return await ResolveDisplayNamesByUserIdAsync(userIds, userManager, eventStaffService, logger);
+        }
+
+        public static async Task<Dictionary<string, string>> ResolveDisplayNamesByUserIdAsync(
+            IEnumerable<string?> userIds,
+            UserManager<ApplicationUser> userManager,
+            IEventStaffService eventStaffService,
+            ILogger logger)
+        {
+            var names = new Dictionary<string, string>(StringComparer.Ordinal);
+            var distinctIds = (userIds ?? Enumerable.Empty<string?>())
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
 
-            foreach (var userId in userIds)
+            foreach (var userId in distinctIds)
             {
                 var user = await userManager.FindByIdAsync(userId!);
                 names[userId!] = await ResolveDisplayNameAsync(user, eventStaffService, logger);

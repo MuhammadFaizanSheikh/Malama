@@ -8,17 +8,91 @@
     var findingsXrayStation = ViewData["XRayStation"] as DentalXRayStation ?? new DentalXRayStation();
     var examinerNamesByUserId = ViewData["ExaminerNamesByUserId"] as Dictionary<string, string>
         ?? new Dictionary<string, string>();
+    var currentUserId = ViewData["CurrentUserId"] as string ?? string.Empty;
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
     var canEditTreatment = ViewData["CanEditTreatment"] as bool?
         ?? (ViewBag.IsDtDentist == true);
-    var findings = exam.Findings?
+    var dentalTreatment = ViewData["DentalTreatment"] as DentalTreatment
+        ?? ViewBag.DentalTreatment as DentalTreatment;
+    var treatmentFindingsByExamFindingId = (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
+        .Where(f => f.DentalExamFindingId.HasValue && f.DentalExamFindingId.Value > 0)
+        .GroupBy(f => f.DentalExamFindingId!.Value)
+        .ToDictionary(g => g.Key, g => g.First());
+    var findings = new List<DentalTreatmentFindingFormDto>();
+
+    foreach (var f in (exam.Findings ?? Enumerable.Empty<DentalExamFinding>())
         .Where(f => string.Equals(
             f.Classification,
             DentalExamFindingConstants.ClassificationClass3,
             StringComparison.OrdinalIgnoreCase))
-        .OrderBy(f => f.SortOrder)
-        .Select(DentalExamFindingMapper.ToDto)
-        .ToList() ?? new List<DentalExamFindingDto>();
+        .OrderBy(f => f.SortOrder))
+    {
+        var dto = DentalExamFindingMapper.ToDto(f);
+        treatmentFindingsByExamFindingId.TryGetValue(f.Id, out var treatmentFinding);
+        findings.Add(new DentalTreatmentFindingFormDto
+        {
+            Id = treatmentFinding?.Id ?? 0,
+            DentalExamFindingId = f.Id,
+            IsTreatmentOnly = false,
+            IsPrimaryTooth = dto.IsPrimaryTooth,
+            AffectedTooth = dto.AffectedTooth,
+            DiseaseConditionType = dto.DiseaseConditionType,
+            AffectedSurfaces = dto.AffectedSurfaces,
+            CdtCodes = dto.CdtCodes,
+            CdtCodesNotes = dto.CdtCodesNotes,
+            DescriptionDetails = dto.DescriptionDetails,
+            Classification = dto.Classification,
+            SortOrder = dto.SortOrder,
+            ExaminationAddedBy = dto.ExaminationAddedBy,
+            ExaminationAddedOn = dto.ExaminationAddedOn,
+            ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
+            ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
+            TreatmentCompleted = treatmentFinding?.TreatmentCompleted,
+            PostServiceTreatment = treatmentFinding != null
+                ? DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson)
+                : new List<string>(),
+            TreatmentCdtCodes = treatmentFinding != null
+                ? DentalTreatmentJson.DeserializeList(treatmentFinding.TreatmentCdtCodesJson)
+                : new List<string>(),
+            Reason = treatmentFinding?.Reason,
+            Notes = treatmentFinding?.Notes,
+            FinalDrc = treatmentFinding?.ProceduredDrc,
+            DentistProfessional = treatmentFinding?.DentistProfessional,
+            TreatmentStatus = treatmentFinding?.TreatmentStatus,
+            TreatmentDateTime = treatmentFinding?.TreatmentDateTime
+        });
+    }
+
+    foreach (var treatmentFinding in (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
+        .Where(f => !f.DentalExamFindingId.HasValue || f.DentalExamFindingId.Value <= 0)
+        .OrderBy(f => f.SortOrder))
+    {
+        findings.Add(new DentalTreatmentFindingFormDto
+        {
+            Id = treatmentFinding.Id,
+            DentalExamFindingId = null,
+            IsTreatmentOnly = true,
+            IsPrimaryTooth = treatmentFinding.IsPrimaryTooth,
+            AffectedTooth = treatmentFinding.AffectedTooth,
+            DiseaseConditionType = treatmentFinding.DiseaseConditionType,
+            AffectedSurfaces = DentalTreatmentJson.DeserializeList(treatmentFinding.AffectedSurfacesJson),
+            CdtCodes = DentalTreatmentJson.DeserializeList(treatmentFinding.CdtCodesJson),
+            CdtCodesNotes = treatmentFinding.CdtCodesNotes,
+            DescriptionDetails = treatmentFinding.DescriptionDetails,
+            Classification = treatmentFinding.Classification,
+            SortOrder = treatmentFinding.SortOrder,
+            TreatmentCompleted = treatmentFinding.TreatmentCompleted,
+            PostServiceTreatment = DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson),
+            TreatmentCdtCodes = DentalTreatmentJson.DeserializeList(treatmentFinding.TreatmentCdtCodesJson),
+            Reason = treatmentFinding.Reason,
+            Notes = treatmentFinding.Notes,
+            FinalDrc = treatmentFinding.ProceduredDrc,
+            DentistProfessional = treatmentFinding.DentistProfessional,
+            TreatmentStatus = treatmentFinding.TreatmentStatus,
+            TreatmentDateTime = treatmentFinding.TreatmentDateTime
+        });
+    }
+
     var cdtCodesByType = DentalExamCdtCodeProvider.GetCodesByDiseaseType();
     var findingsJson = JsonSerializer.Serialize(findings, new JsonSerializerOptions
     {
@@ -107,11 +181,15 @@
                     </table>
                 </div>
 
+                <button type="button" class="btn btn-outline-primary mb-3" id="addTreatmentFindingBtn" style="@(canEditTreatment ? null : "display:none;")">
+                    <i class="fas fa-plus-circle"></i> Add Treatment
+                </button>
+
                 <div id="treatmentFindingFormCard" class="card border-primary mb-0" style="display:none;">
                     <div class="card-header bg-light fw-semibold" id="treatmentFindingFormTitle">Required Treatment Services</div>
                     <div class="card-body">
-                        <div class="card mb-3">
-                            <div class="card-header fw-semibold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
+                        <div class="card mb-3" id="treatmentFindingDetailsCard">
+                            <div class="card-header fw-semibold" id="initialExamFindingHeader" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
                                 Initial Exam Finding
                             </div>
                             <div class="card-body" id="initialExamFindingSection">
@@ -172,7 +250,7 @@
                                 }
                             </div>
 
-                            <div class="row g-3 mb-0">
+                            <div class="row g-3 mb-0" id="treatmentFindingExaminerSection">
                                 <div class="col-md-6">
                                     <label class="form-label" for="treatmentFindingExaminerName">Examiner Name</label>
                                     <input type="text"
@@ -210,7 +288,7 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3" id="treatmentSectionAffectedToothGroup">
                     <label class="form-label" for="treatmentSectionAffectedTooth">Affected Tooth</label>
                     <input type="text"
                            id="treatmentSectionAffectedTooth"
@@ -288,7 +366,7 @@
                 <div class="d-flex justify-content-start gap-2 mt-3">
                     <button type="button" class="btn btn-secondary" id="cancelTreatmentFindingFormBtn">Cancel</button>
                     <button type="button" class="btn btn-general" id="updateTreatmentFindingBtn">
-                        <i class="fas fa-check-circle"></i> Update Finding
+                        <i class="fas fa-list-ul"></i> Add to List
                     </button>
                 </div>
                     </div>
@@ -315,8 +393,26 @@
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
+        const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
+
+        if (CURRENT_USER_ID) {
+            examinerNamesByUserId[CURRENT_USER_ID] = CURRENT_USER_DISPLAY_NAME || examinerNamesByUserId[CURRENT_USER_ID] || "";
+        }
+
+        function resolveStaffDisplayName(userId) {
+            if (!userId) {
+                return "";
+            }
+            if (examinerNamesByUserId[userId]) {
+                return examinerNamesByUserId[userId];
+            }
+            if (userId === CURRENT_USER_ID) {
+                return CURRENT_USER_DISPLAY_NAME || "";
+            }
+            return userId;
+        }
 
         let treatmentFindings = (@Html.Raw(findingsJson) || []).map(function (item) {
             return normalizeTreatmentFinding(item);
@@ -328,8 +424,14 @@
             const affectedSurfaces = item.affectedSurfaces || [];
             const cdtCodes = item.cdtCodes || [];
             const finalDrc = item.finalDrc || "";
+            const examFindingId = item.dentalExamFindingId && item.dentalExamFindingId > 0
+                ? item.dentalExamFindingId
+                : null;
+            const isTreatmentOnly = !!item.isTreatmentOnly || !examFindingId;
             return {
                 id: item.id || 0,
+                dentalExamFindingId: examFindingId,
+                isTreatmentOnly: isTreatmentOnly,
                 isPrimaryTooth: !!item.isPrimaryTooth,
                 affectedTooth: item.affectedTooth || "",
                 diseaseConditionType: item.diseaseConditionType || "",
@@ -616,6 +718,15 @@
                     $("#treatmentFindingAffectedTooth").val(),
                     getSelectedValues($("#treatmentPostServiceTreatment")).length
                 );
+            } else if (!diseaseType) {
+                codes = [];
+                Object.keys(CDT_CODES_BY_TYPE || {}).forEach(function (key) {
+                    (CDT_CODES_BY_TYPE[key] || []).forEach(function (code) {
+                        if (codes.indexOf(code) < 0) {
+                            codes.push(code);
+                        }
+                    });
+                });
             }
 
             codes.forEach(function (code) {
@@ -680,7 +791,7 @@
                 return "-";
             }
 
-            const name = userId && examinerNamesByUserId[userId] ? examinerNamesByUserId[userId] : "";
+            const name = resolveStaffDisplayName(userId);
             const nameHtml = name ? escapeHtml(name) : "-";
             const whenHtml = when
                 ? ("<div class='small text-muted'>" + escapeHtml(formatExaminerDateTime(when)) + "</div>")
@@ -696,6 +807,7 @@
                 $tbody.append(
                     '<tr id="treatmentFindingsEmptyRow"><td colspan="15" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
+                syncDentalTreatmentFindingsJson();
                 return;
             }
 
@@ -705,14 +817,25 @@
                 const classificationBadge = formatClassificationBadge(finding.classification);
                 const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
                 const postServiceTreatment = displayOrDash(finding.treatmentCompleted);
-                const examinerDetail = formatExaminerDetail(finding);
-                const actionButtons = CAN_EDIT_TREATMENT
-                    ? ("<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
+                const examinerDetail = finding.isTreatmentOnly ? "-" : formatExaminerDetail(finding);
+                let actionButtons = "-";
+                if (CAN_EDIT_TREATMENT) {
+                    actionButtons =
+                        "<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
                         index +
-                        "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>")
-                    : ("<button type='button' class='btn btn-sm btn-outline-secondary finding-action-btn edit-treatment-finding-btn' data-index='" +
+                        "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>";
+                    if (finding.isTreatmentOnly) {
+                        actionButtons +=
+                            " <button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-treatment-finding-btn' data-index='" +
+                            index +
+                            "' title='Delete'><i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>";
+                    }
+                } else {
+                    actionButtons =
+                        "<button type='button' class='btn btn-sm btn-outline-secondary finding-action-btn edit-treatment-finding-btn' data-index='" +
                         index +
-                        "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>");
+                        "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>";
+                }
 
                 $tbody.append(
                     "<tr data-finding-index='" + index + "'>" +
@@ -727,33 +850,82 @@
                     "<td>" + displayOrDash(finding.reason) + "</td>" +
                     "<td>" + displayOrDash(finding.notes) + "</td>" +
                     "<td>" + displayOrDash(finding.finalDrc) + "</td>" +
-                    "<td>" + displayOrDash(finding.dentistProfessional) + "</td>" +
+                    "<td>" + displayOrDash(resolveStaffDisplayName(finding.dentistProfessional)) + "</td>" +
                     "<td>" + formatTreatmentStatusBadge(resolveTreatmentStatus(finding)) + "</td>" +
                     "<td>" + displayOrDash(finding.treatmentDateTime) + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
                 );
             });
+            syncDentalTreatmentFindingsJson();
+            if (typeof window.updateDentalTreatmentOverallStatus === "function") {
+                window.updateDentalTreatmentOverallStatus();
+            }
         }
 
-        function applyFindingSectionReadOnly() {
-            const $findingFields = $("#treatmentFindingDiseaseType, #treatmentFindingAffectedTooth, #treatmentFindingPrimaryTooth, #treatmentFindingAffectedSurfaces, #treatmentFindingCdtCodes, #treatmentFindingCdtCodesNotes, #treatmentFindingDescription, input[name='TreatmentFindingClassification']");
+        function syncDentalTreatmentFindingsJson() {
+            const payload = treatmentFindings.map(function (item, index) {
+                return {
+                    id: item.id || 0,
+                    dentalExamFindingId: item.dentalExamFindingId || null,
+                    isTreatmentOnly: !!item.isTreatmentOnly,
+                    isPrimaryTooth: !!item.isPrimaryTooth,
+                    affectedTooth: item.affectedTooth || "",
+                    diseaseConditionType: item.diseaseConditionType || "",
+                    affectedSurfaces: item.affectedSurfaces || [],
+                    cdtCodes: item.cdtCodes || [],
+                    cdtCodesNotes: item.cdtCodesNotes || "",
+                    descriptionDetails: item.descriptionDetails || "",
+                    classification: item.classification || "",
+                    sortOrder: index,
+                    examinationAddedBy: item.examinationAddedBy || null,
+                    examinationAddedOn: item.examinationAddedOn || null,
+                    examinationUpdatedBy: item.examinationUpdatedBy || null,
+                    examinationUpdatedOn: item.examinationUpdatedOn || null,
+                    treatmentCompleted: item.treatmentCompleted || "",
+                    postServiceTreatment: item.postServiceTreatment || [],
+                    treatmentCdtCodes: item.treatmentCdtCodes || [],
+                    reason: item.reason || "",
+                    notes: item.notes || "",
+                    finalDrc: item.finalDrc || "",
+                    dentistProfessional: item.dentistProfessional || "",
+                    treatmentStatus: item.treatmentStatus || "",
+                    treatmentDateTime: item.treatmentDateTime || ""
+                };
+            });
+            $("#TreatmentFindingsJson").val(JSON.stringify(payload));
+        }
+
+        function setFindingSectionEditable(isEditable) {
+            const $findingFields = $(
+                "#treatmentFindingDiseaseType, #treatmentFindingAffectedTooth, #treatmentFindingPrimaryTooth, #treatmentFindingAffectedSurfaces, #treatmentFindingCdtCodes, #treatmentFindingCdtCodesNotes, #treatmentFindingDescription, input[name='TreatmentFindingClassification']"
+            );
             $findingFields.each(function () {
                 const $el = $(this);
                 if ($el.is("input:checkbox, input:radio, select")) {
-                    $el.prop("disabled", true);
+                    $el.prop("disabled", !isEditable);
+                } else if (isEditable) {
+                    $el.prop("readonly", false).removeClass("read-only-style");
                 } else {
                     $el.prop("readonly", true).addClass("read-only-style");
                 }
             });
 
-            // Keep Select2 visuals disabled for finding multi-selects.
             ["#treatmentFindingAffectedSurfaces", "#treatmentFindingCdtCodes"].forEach(function (selector) {
                 const $select = $(selector);
                 if ($select.hasClass("select2-hidden-accessible")) {
-                    $select.next(".select2-container").css("pointer-events", "none").addClass("read-only-style");
+                    const $container = $select.next(".select2-container");
+                    if (isEditable) {
+                        $container.css("pointer-events", "").removeClass("read-only-style");
+                    } else {
+                        $container.css("pointer-events", "none").addClass("read-only-style");
+                    }
                 }
             });
+        }
+
+        function applyFindingSectionReadOnly() {
+            setFindingSectionEditable(false);
         }
 
         function applyTreatmentSectionReadOnly() {
@@ -825,7 +997,7 @@
                 $("#treatmentDateTime").val(formatTreatmentDateTime());
             }
             if (isYes) {
-                $("#treatmentDentistProfessional").val(CURRENT_USER_DISPLAY_NAME || "");
+                $("#treatmentDentistProfessional").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
             }
         }
 
@@ -856,14 +1028,22 @@
 
             const examinerUserId = getExaminerUserId(finding);
             const examinerWhen = getExaminerDateTime(finding);
-            $("#treatmentFindingExaminerName").val(
-                examinerUserId && examinerNamesByUserId[examinerUserId]
-                    ? examinerNamesByUserId[examinerUserId]
-                    : ""
-            );
-            $("#treatmentFindingExaminerDateTime").val(
-                examinerWhen ? formatExaminerDateTime(examinerWhen) : ""
-            );
+            if (finding.isTreatmentOnly) {
+                $("#treatmentFindingDetailsCard").hide();
+                $("#treatmentSectionAffectedToothGroup").hide();
+                $("#treatmentFindingExaminerSection").hide();
+                $("#treatmentFindingExaminerName").val("");
+                $("#treatmentFindingExaminerDateTime").val("");
+            } else {
+                $("#treatmentFindingDetailsCard").show();
+                $("#treatmentSectionAffectedToothGroup").show();
+                $("#treatmentFindingExaminerSection").show();
+                $("#initialExamFindingHeader").text("Initial Exam Finding");
+                $("#treatmentFindingExaminerName").val(resolveStaffDisplayName(examinerUserId));
+                $("#treatmentFindingExaminerDateTime").val(
+                    examinerWhen ? formatExaminerDateTime(examinerWhen) : ""
+                );
+            }
 
             $("input[name='TreatmentCompleted']").prop("checked", false);
             if (finding.treatmentCompleted === "Yes" || finding.treatmentCompleted === "No") {
@@ -878,8 +1058,8 @@
             $("#treatmentFinalDrc").val(finding.finalDrc || "");
             $("#treatmentDentistProfessional").val(
                 finding.treatmentCompleted === "Yes"
-                    ? (CURRENT_USER_DISPLAY_NAME || finding.dentistProfessional || "")
-                    : (finding.dentistProfessional || "")
+                    ? (resolveStaffDisplayName(CURRENT_USER_ID) || resolveStaffDisplayName(finding.dentistProfessional) || "")
+                    : ""
             );
             $("#treatmentDateTime").val(finding.treatmentDateTime || "");
             $("#treatmentReason").val(finding.reason || "");
@@ -889,7 +1069,7 @@
                 $("#treatmentDateTime").val(formatTreatmentDateTime());
             }
             if (finding.treatmentCompleted === "Yes") {
-                $("#treatmentDentistProfessional").val(CURRENT_USER_DISPLAY_NAME || "");
+                $("#treatmentDentistProfessional").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
             }
 
             toggleTreatmentCompletedFields();
@@ -908,7 +1088,10 @@
 
         function clearTreatmentForm() {
             editingFindingIndex = null;
-            $("#treatmentFindingFormTitle").text("Required Treatment Services");
+            $("#treatmentFindingFormTitle").text("Add Treatment");
+            $("#updateTreatmentFindingBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("#treatmentFindingDetailsCard").hide();
+            $("#treatmentSectionAffectedToothGroup").hide();
             $("#treatmentFindingPrimaryTooth").prop("checked", false);
             $("#treatmentFindingDiseaseType").val("");
             populateToothOptions();
@@ -920,6 +1103,7 @@
             $("input[name='TreatmentFindingClassification']").prop("checked", false);
             $("#treatmentFindingExaminerName").val("");
             $("#treatmentFindingExaminerDateTime").val("");
+            $("#treatmentFindingExaminerSection").hide();
             $("input[name='TreatmentCompleted']").prop("checked", false);
             $("#treatmentSectionAffectedTooth").val("");
             populatePostServiceTreatmentOptions([]);
@@ -935,18 +1119,33 @@
         function showFindingForm(finding) {
             const postServiceValues = getTreatmentPostServiceValues(finding);
             const treatmentCdtValues = getTreatmentCdtValues(finding);
+            const isTreatmentOnly = !!finding.isTreatmentOnly;
+
+            if (isTreatmentOnly) {
+                $("#treatmentFindingDetailsCard").hide();
+                $("#treatmentSectionAffectedToothGroup").hide();
+            } else {
+                $("#treatmentFindingDetailsCard").show();
+                $("#treatmentSectionAffectedToothGroup").show();
+            }
 
             $("#treatmentFindingFormCard").slideDown(200, function () {
                 suppressTreatmentCdtReset = true;
                 try {
-                    populateFindingSurfaceOptions(finding.affectedSurfaces || []);
-                    populateFindingCdtOptions(finding.cdtCodes || []);
+                    if (!isTreatmentOnly) {
+                        populateFindingSurfaceOptions(finding.affectedSurfaces || []);
+                        populateFindingCdtOptions(finding.cdtCodes || []);
+                    }
                     populatePostServiceTreatmentOptions(postServiceValues);
                     populateTreatmentCdtOptions(treatmentCdtValues);
                 } finally {
                     suppressTreatmentCdtReset = false;
                 }
-                applyFindingSectionReadOnly();
+
+                if (!isTreatmentOnly) {
+                    applyFindingSectionReadOnly();
+                }
+
                 applyTreatmentSectionReadOnly();
                 toggleTreatmentCompletedFields();
                 if ($("input[name='TreatmentCompleted']:checked").val() === "Yes") {
@@ -958,6 +1157,9 @@
                         suppressTreatmentCdtReset = false;
                     }
                     applyTreatmentSectionReadOnly();
+                    if (!isTreatmentOnly) {
+                        applyFindingSectionReadOnly();
+                    }
                 }
             });
         }
@@ -1002,7 +1204,7 @@
                     postServiceTreatment: postServiceTreatment,
                     treatmentCdtCodes: treatmentCdtCodes,
                     finalDrc: finalDrc,
-                    dentistProfessional: CURRENT_USER_DISPLAY_NAME || "",
+                    dentistProfessional: CURRENT_USER_ID || "",
                     treatmentDateTime: $("#treatmentDateTime").val()?.trim() || "",
                     reason: "",
                     notes: $("#treatmentNotes").val()?.trim() || "",
@@ -1046,29 +1248,101 @@
                 return;
             }
 
-            if (editingFindingIndex == null || !treatmentFindings[editingFindingIndex]) {
+            const isNew = editingFindingIndex == null;
+            const existing = isNew ? null : treatmentFindings[editingFindingIndex];
+            if (!isNew && !existing) {
                 return;
             }
+
+            const isTreatmentOnly = isNew || !!existing.isTreatmentOnly;
 
             const validated = validateTreatmentSectionForm();
             if (!validated) {
                 return;
             }
 
-            const existing = treatmentFindings[editingFindingIndex];
-            existing.treatmentCompleted = validated.treatmentCompleted;
-            existing.postServiceTreatment = validated.postServiceTreatment;
-            existing.treatmentCdtCodes = validated.treatmentCdtCodes;
-            existing.finalDrc = validated.finalDrc;
-            existing.dentistProfessional = validated.dentistProfessional;
-            existing.treatmentDateTime = validated.treatmentDateTime;
-            existing.reason = validated.reason;
-            existing.notes = validated.notes;
-            existing.treatmentStatus = validated.treatmentStatus;
+            if (!isTreatmentOnly) {
+                const toothLabel = existing.affectedTooth
+                    ? (existing.affectedTooth + (existing.isPrimaryTooth ? " (Primary)" : ""))
+                    : "";
+                $("#treatmentSectionAffectedTooth").val(toothLabel);
+            }
 
-            treatmentFindings[editingFindingIndex] = existing;
+            if (isNew) {
+                treatmentFindings.push({
+                    id: 0,
+                    dentalExamFindingId: null,
+                    isTreatmentOnly: true,
+                    isPrimaryTooth: false,
+                    affectedTooth: "",
+                    diseaseConditionType: "",
+                    affectedSurfaces: [],
+                    cdtCodes: [],
+                    cdtCodesNotes: "",
+                    descriptionDetails: "",
+                    classification: "",
+                    sortOrder: treatmentFindings.length,
+                    examinationAddedBy: null,
+                    examinationAddedOn: null,
+                    examinationUpdatedBy: null,
+                    examinationUpdatedOn: null,
+                    treatmentCompleted: validated.treatmentCompleted,
+                    postServiceTreatment: validated.postServiceTreatment,
+                    treatmentCdtCodes: validated.treatmentCdtCodes,
+                    reason: validated.reason,
+                    notes: validated.notes,
+                    finalDrc: validated.finalDrc,
+                    dentistProfessional: validated.dentistProfessional,
+                    treatmentStatus: validated.treatmentStatus,
+                    treatmentDateTime: validated.treatmentDateTime
+                });
+            } else {
+                existing.treatmentCompleted = validated.treatmentCompleted;
+                existing.postServiceTreatment = validated.postServiceTreatment;
+                existing.treatmentCdtCodes = validated.treatmentCdtCodes;
+                existing.finalDrc = validated.finalDrc;
+                existing.dentistProfessional = validated.dentistProfessional;
+                existing.treatmentDateTime = validated.treatmentDateTime;
+                existing.reason = validated.reason;
+                existing.notes = validated.notes;
+                existing.treatmentStatus = validated.treatmentStatus;
+                treatmentFindings[editingFindingIndex] = existing;
+            }
+
             renderFindingsTable();
             hideFindingForm();
+        }
+
+        function startAddTreatmentFinding() {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
+            editingFindingIndex = null;
+            clearTreatmentForm();
+            $("#treatmentFindingFormTitle").text("Add Treatment");
+            $("#updateTreatmentFindingBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            $("#treatmentFindingDetailsCard").hide();
+            $("#treatmentSectionAffectedToothGroup").hide();
+
+            if (!$("#toggleSubsequentSectionSwitch").is(":checked")) {
+                $("#toggleSubsequentSectionSwitch").prop("checked", true).trigger("change");
+            }
+            if (!$("#toggleDentalFindingsSectionSwitch").is(":checked")) {
+                $("#toggleDentalFindingsSectionSwitch").prop("checked", true).trigger("change");
+            }
+
+            showFindingForm({
+                isTreatmentOnly: true,
+                affectedSurfaces: [],
+                cdtCodes: [],
+                postServiceTreatment: [],
+                treatmentCdtCodes: []
+            });
+
+            $("html, body").animate({
+                scrollTop: $("#treatmentFindingFormCard").offset().top - 80
+            }, 300);
         }
 
         function editFinding(index) {
@@ -1078,7 +1352,12 @@
             }
 
             editingFindingIndex = index;
-            $("#treatmentFindingFormTitle").text("Required Treatment Services");
+            $("#treatmentFindingFormTitle").text(finding.isTreatmentOnly ? "Edit Treatment" : "Required Treatment Services");
+            $("#updateTreatmentFindingBtn").html(
+                finding.isTreatmentOnly
+                    ? '<i class="fas fa-check-circle"></i> Update Treatment'
+                    : '<i class="fas fa-check-circle"></i> Update Finding'
+            );
             writeFindingForm(finding);
             showFindingForm(finding);
 
@@ -1097,6 +1376,38 @@
             }, 300);
         }
 
+        function deleteTreatmentFinding(index) {
+            if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
+            const finding = treatmentFindings[index];
+            if (!finding || !finding.isTreatmentOnly) {
+                return;
+            }
+
+            Swal.fire({
+                title: "Delete finding?",
+                text: "This treatment-only finding will be removed from the list.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                treatmentFindings.splice(index, 1);
+                if (editingFindingIndex === index) {
+                    hideFindingForm();
+                } else if (editingFindingIndex != null && editingFindingIndex > index) {
+                    editingFindingIndex -= 1;
+                }
+                renderFindingsTable();
+            });
+        }
+
         function toggleDentalFindingsSectionFromSwitch() {
             const isOn = $("#toggleDentalFindingsSectionSwitch").is(":checked");
             const $section = $("#dentalFindingsContentSection");
@@ -1113,11 +1424,14 @@
             renderFindingsTable();
         };
 
+        window.syncDentalTreatmentFindingsJson = syncDentalTreatmentFindingsJson;
+
         $(document).ready(function () {
             initDentalTreatmentFindingsSection();
 
             $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
 
+            $("#addTreatmentFindingBtn").on("click", startAddTreatmentFinding);
             $("#cancelTreatmentFindingFormBtn").on("click", hideFindingForm);
             $("#updateTreatmentFindingBtn").on("click", function () {
                 if (!CAN_EDIT_TREATMENT) {
@@ -1126,17 +1440,68 @@
                 updateFindingFromTreatmentSection();
             });
 
+            $(document).on("change", "#treatmentFindingDiseaseType, #treatmentFindingAffectedTooth, #treatmentFindingPrimaryTooth", function () {
+                if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
+                const isTreatmentOnly = editingFindingIndex == null
+                    || !!(treatmentFindings[editingFindingIndex] && treatmentFindings[editingFindingIndex].isTreatmentOnly);
+                if (!isTreatmentOnly) {
+                    return;
+                }
+
+                if (this.id === "treatmentFindingPrimaryTooth") {
+                    populateToothOptions();
+                }
+
+                const toothLabel = $("#treatmentFindingAffectedTooth").val()
+                    ? ($("#treatmentFindingAffectedTooth").val() + ($("#treatmentFindingPrimaryTooth").is(":checked") ? " (Primary)" : ""))
+                    : "";
+                $("#treatmentSectionAffectedTooth").val(toothLabel);
+
+                if (suppressTreatmentCdtReset) {
+                    return;
+                }
+                populateFindingSurfaceOptions([]);
+                populateFindingCdtOptions([]);
+                if ($("input[name='TreatmentCompleted']:checked").val() === "Yes") {
+                    populatePostServiceTreatmentOptions([]);
+                    populateTreatmentCdtOptions([]);
+                }
+            });
+
+            $(document).on("change", "#treatmentFindingAffectedSurfaces", function () {
+                if (suppressTreatmentCdtReset) {
+                    return;
+                }
+                const isTreatmentOnly = editingFindingIndex == null
+                    || !!(treatmentFindings[editingFindingIndex] && treatmentFindings[editingFindingIndex].isTreatmentOnly);
+                if (!isTreatmentOnly || !CAN_EDIT_TREATMENT) {
+                    return;
+                }
+                if ($("#treatmentFindingDiseaseType").val() === "Restorative") {
+                    populateFindingCdtOptions([]);
+                }
+            });
+
             $(document).on("change", "input[name='TreatmentCompleted']", function () {
                 toggleTreatmentCompletedFields();
-                if ($(this).val() === "Yes" && editingFindingIndex != null) {
-                    const finding = treatmentFindings[editingFindingIndex];
-                    if (!finding) {
-                        return;
-                    }
+                if ($(this).val() === "Yes") {
+                    const toothLabel = $("#treatmentFindingAffectedTooth").val()
+                        ? ($("#treatmentFindingAffectedTooth").val() + ($("#treatmentFindingPrimaryTooth").is(":checked") ? " (Primary)" : ""))
+                        : "";
+                    $("#treatmentSectionAffectedTooth").val(toothLabel);
+
                     suppressTreatmentCdtReset = true;
                     try {
-                        populatePostServiceTreatmentOptions(getTreatmentPostServiceValues(finding));
-                        populateTreatmentCdtOptions(getTreatmentCdtValues(finding));
+                        if (editingFindingIndex != null && treatmentFindings[editingFindingIndex]) {
+                            const finding = treatmentFindings[editingFindingIndex];
+                            populatePostServiceTreatmentOptions(getTreatmentPostServiceValues(finding));
+                            populateTreatmentCdtOptions(getTreatmentCdtValues(finding));
+                        } else {
+                            populatePostServiceTreatmentOptions(getSelectedValues($("#treatmentFindingAffectedSurfaces")));
+                            populateTreatmentCdtOptions(getSelectedValues($("#treatmentFindingCdtCodes")));
+                        }
                     } finally {
                         suppressTreatmentCdtReset = false;
                     }
@@ -1154,6 +1519,10 @@
 
             $(document).on("click", ".edit-treatment-finding-btn", function () {
                 editFinding(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".delete-treatment-finding-btn", function () {
+                deleteTreatmentFinding(parseInt($(this).data("index"), 10));
             });
         });
     })();

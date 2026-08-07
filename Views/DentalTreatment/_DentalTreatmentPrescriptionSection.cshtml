@@ -1,6 +1,30 @@
+@using ExcelFilesCompiler.Utilities
+@using Malama.Models
+@using System.Text.Json
 @{
     var canEditTreatment = ViewBag.IsDtDentist == true;
+    var currentUserId = ViewBag.CurrentUserId as string ?? string.Empty;
     var currentUserDisplayName = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
+    var staffNamesByUserId = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
+    var dentalTreatment = ViewBag.DentalTreatment as DentalTreatment;
+    var seededPrescriptions = (dentalTreatment?.Prescriptions ?? Enumerable.Empty<DentalTreatmentPrescription>())
+        .OrderBy(p => p.SortOrder)
+        .Select(p => new
+        {
+            type = p.Type,
+            product = p.Product,
+            startDate = p.StartDate,
+            endDate = p.EndDate,
+            dosage = p.Dosage,
+            duration = p.Duration,
+            frequency = p.Frequency,
+            prescribedAmount = p.PrescribedAmount,
+            notes = p.Notes,
+            prescribedBy = p.PrescribedBy,
+            prescribedOn = p.PrescribedOn
+        })
+        .ToList();
     var prescriptionProducts = new[]
     {
         "Augmentin 875mg",
@@ -10,6 +34,7 @@
         "Tylenol #3/ codeine",
         "Norco5/325mg"
     };
+    var staffNamesJson = JsonSerializer.Serialize(staffNamesByUserId);
 }
 
 <style>
@@ -175,14 +200,33 @@
     (function () {
         const PRESCRIPTION_PRODUCTS = @Json.Serialize(prescriptionProducts);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
+        const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const staffNamesByUserId = @Html.Raw(staffNamesJson);
         const PRESCRIPTION_TYPE_OTC = "OTC Recommended";
         const PRESCRIPTION_TYPE_RX = "Prescription";
-        let prescriptionRecords = [];
+        let prescriptionRecords = @Html.Raw(Json.Serialize(seededPrescriptions)) || [];
         let editingPrescriptionIndex = null;
         let suppressPrescriptionDateSync = false;
         let prescriptionStartPicker = null;
         let prescriptionEndPicker = null;
+
+        if (CURRENT_USER_ID) {
+            staffNamesByUserId[CURRENT_USER_ID] = CURRENT_USER_DISPLAY_NAME || staffNamesByUserId[CURRENT_USER_ID] || "";
+        }
+
+        function resolveStaffDisplayName(userId) {
+            if (!userId) {
+                return "";
+            }
+            if (staffNamesByUserId[userId]) {
+                return staffNamesByUserId[userId];
+            }
+            if (userId === CURRENT_USER_ID) {
+                return CURRENT_USER_DISPLAY_NAME || "";
+            }
+            return userId;
+        }
 
         function escapeHtml(value) {
             return $("<div>").text(value ?? "").html();
@@ -445,6 +489,7 @@
                 $tbody.append(
                     '<tr id="prescriptionEmptyRow"><td colspan="13" class="text-center text-muted py-4">No prescriptions added yet.</td></tr>'
                 );
+                syncDentalTreatmentPrescriptionsJson();
                 return;
             }
 
@@ -468,12 +513,17 @@
                     "<td>" + escapeHtml(record.frequency || "") + "</td>" +
                     "<td>" + escapeHtml(record.prescribedAmount || "") + "</td>" +
                     "<td>" + escapeHtml(record.notes || "") + "</td>" +
-                    "<td>" + escapeHtml(record.prescribedBy || "") + "</td>" +
+                    "<td>" + escapeHtml(resolveStaffDisplayName(record.prescribedBy) || "") + "</td>" +
                     "<td>" + escapeHtml(record.prescribedOn || "") + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>"
                 );
             });
+            syncDentalTreatmentPrescriptionsJson();
+        }
+
+        function syncDentalTreatmentPrescriptionsJson() {
+            $("#TreatmentPrescriptionsJson").val(JSON.stringify(prescriptionRecords || []));
         }
 
         function clearPrescriptionForm() {
@@ -653,11 +703,11 @@
 
             if (editingPrescriptionIndex != null) {
                 const existing = prescriptionRecords[editingPrescriptionIndex] || {};
-                record.prescribedBy = existing.prescribedBy || CURRENT_USER_DISPLAY_NAME || "";
+                record.prescribedBy = existing.prescribedBy || CURRENT_USER_ID || "";
                 record.prescribedOn = existing.prescribedOn || formatPrescriptionDateTime();
                 prescriptionRecords[editingPrescriptionIndex] = record;
             } else {
-                record.prescribedBy = CURRENT_USER_DISPLAY_NAME || "";
+                record.prescribedBy = CURRENT_USER_ID || "";
                 record.prescribedOn = formatPrescriptionDateTime();
                 prescriptionRecords.push(record);
             }
@@ -726,6 +776,7 @@
         }
 
         $(document).ready(function () {
+            window.syncDentalTreatmentPrescriptionsJson = syncDentalTreatmentPrescriptionsJson;
             initPrescriptionDatePickers();
             bindDecimalOnlyFields();
             renderPrescriptionTable();

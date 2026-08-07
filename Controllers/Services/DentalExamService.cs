@@ -164,51 +164,79 @@ namespace ExcelFilesCompiler.Controllers.Services
             var existingById = target.Findings
                 .Where(f => f.Id > 0)
                 .ToDictionary(f => f.Id);
-            var existingFindings = target.Findings.ToList();
+            var incomingIds = new HashSet<long>(
+                findings.Where(f => f.Id > 0).Select(f => f.Id));
 
-            if (existingFindings.Count > 0)
+            var toRemove = target.Findings
+                .Where(f => f.Id > 0 && !incomingIds.Contains(f.Id))
+                .ToList();
+
+            if (toRemove.Count > 0)
             {
-                _unitOfWork.DentalExamFinding.RemoveRange(existingFindings);
-                target.Findings.Clear();
+                var removeIds = toRemove.Select(f => f.Id).ToList();
+                var hasTreatmentLinks = _unitOfWork.DentalTreatmentFinding
+                    .GetAllWithConditionNoTracking(tf =>
+                        tf.DentalExamFindingId.HasValue
+                        && removeIds.Contains(tf.DentalExamFindingId.Value))
+                    .Any();
+
+                if (hasTreatmentLinks)
+                {
+                    throw new InvalidOperationException(
+                        "One or more Dental Exam findings cannot be removed because treatment has already been recorded against them.");
+                }
+
+                _unitOfWork.DentalExamFinding.RemoveRange(toRemove);
+                foreach (var finding in toRemove)
+                {
+                    target.Findings.Remove(finding);
+                }
             }
 
             var now = DateTime.Now;
             foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
             {
+                if (finding.Id > 0 && existingById.TryGetValue(finding.Id, out var existing))
+                {
+                    var clinicalChanged = !FindingClinicalContentEquals(existing, finding);
+                    ApplyFindingClinicalFields(existing, finding, index);
+
+                    if (string.IsNullOrWhiteSpace(existing.ExaminationAddedBy))
+                    {
+                        existing.ExaminationAddedBy = userId;
+                        existing.ExaminationAddedOn = now;
+                    }
+
+                    if (clinicalChanged)
+                    {
+                        existing.ExaminationUpdatedBy = userId;
+                        existing.ExaminationUpdatedOn = now;
+                    }
+
+                    continue;
+                }
+
                 var entity = DentalExamFindingMapper.ToEntity(finding, target.Id, index);
-
-                if (finding.Id > 0
-                    && existingById.TryGetValue(finding.Id, out var existing)
-                    && !string.IsNullOrWhiteSpace(existing.ExaminationAddedBy))
-                {
-                    entity.ExaminationAddedBy = existing.ExaminationAddedBy;
-                    entity.ExaminationAddedOn = existing.ExaminationAddedOn;
-
-                    var wasEdited = !string.IsNullOrWhiteSpace(finding.ExaminationUpdatedBy)
-                        || finding.ExaminationUpdatedOn.HasValue
-                        || !FindingClinicalContentEquals(existing, finding);
-
-                    if (wasEdited)
-                    {
-                        entity.ExaminationUpdatedBy = userId;
-                        entity.ExaminationUpdatedOn = now;
-                    }
-                    else
-                    {
-                        entity.ExaminationUpdatedBy = existing.ExaminationUpdatedBy;
-                        entity.ExaminationUpdatedOn = existing.ExaminationUpdatedOn;
-                    }
-                }
-                else
-                {
-                    entity.ExaminationAddedBy = userId;
-                    entity.ExaminationAddedOn = now;
-                    entity.ExaminationUpdatedBy = null;
-                    entity.ExaminationUpdatedOn = null;
-                }
-
+                entity.Id = 0;
+                entity.ExaminationAddedBy = userId;
+                entity.ExaminationAddedOn = now;
+                entity.ExaminationUpdatedBy = null;
+                entity.ExaminationUpdatedOn = null;
                 target.Findings.Add(entity);
             }
+        }
+
+        private static void ApplyFindingClinicalFields(DentalExamFinding entity, DentalExamFindingDto dto, int sortOrder)
+        {
+            entity.IsPrimaryTooth = dto.IsPrimaryTooth;
+            entity.AffectedTooth = dto.AffectedTooth?.Trim() ?? string.Empty;
+            entity.DiseaseConditionType = dto.DiseaseConditionType?.Trim() ?? string.Empty;
+            entity.AffectedSurfacesJson = DentalExamFindingMapper.SerializeList(dto.AffectedSurfaces);
+            entity.CdtCodesJson = DentalExamFindingMapper.SerializeList(dto.CdtCodes);
+            entity.CdtCodesNotes = dto.CdtCodesNotes?.Trim();
+            entity.DescriptionDetails = dto.DescriptionDetails?.Trim();
+            entity.Classification = dto.Classification?.Trim();
+            entity.SortOrder = sortOrder;
         }
 
         private static bool FindingClinicalContentEquals(DentalExamFinding existing, DentalExamFindingDto dto)

@@ -430,7 +430,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                              c.DentalExamRecord != null &&
                              c.DentalExamRecord.Status == AppConstants.Status.Completed &&
                              c.DentalExamRecord.DenClass == DentalExamDenClass.Class3,
-                        c => c.DentalExamRecord)
+                        c => c.DentalExamRecord,
+                        c => c.DentalTreatmentRecord)
                     .ToListAsync();
 
                 _logger.LogInformation(
