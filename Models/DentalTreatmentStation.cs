@@ -48,6 +48,11 @@ namespace Malama.Models
 
         public long? DentalExamFindingId { get; set; }
 
+        /// <summary>
+        /// <see cref="DentalTreatmentFindingOrigin.Exam"/> or <see cref="DentalTreatmentFindingOrigin.Treatment"/>.
+        /// </summary>
+        public string Origin { get; set; } = DentalTreatmentFindingOrigin.Exam;
+
         public bool IsTreatmentOnly { get; set; }
 
         public bool IsPrimaryTooth { get; set; }

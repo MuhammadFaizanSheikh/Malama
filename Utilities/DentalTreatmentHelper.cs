@@ -105,12 +105,14 @@ namespace ExcelFilesCompiler.Utilities
             for (var i = 0; i < dto.Findings.Count; i++)
             {
                 var finding = dto.Findings[i];
+                var isTreatmentOrigin = DentalTreatmentFindingOrigin.IsTreatmentOrigin(finding.Origin)
+                    || finding.IsTreatmentOnly
+                    || finding.DentalExamFindingId.GetValueOrDefault() <= 0;
                 var examFindingId = finding.DentalExamFindingId.GetValueOrDefault();
-                var isTreatmentOnly = examFindingId <= 0;
 
-                if (!isTreatmentOnly)
+                if (!isTreatmentOrigin)
                 {
-                    if (!class3FindingIds.Contains(examFindingId))
+                    if (examFindingId <= 0 || !class3FindingIds.Contains(examFindingId))
                     {
                         return "One or more treatment findings do not match a Class 3 Dental Exam finding.";
                     }
@@ -123,6 +125,32 @@ namespace ExcelFilesCompiler.Utilities
                         && !string.Equals(finding.TreatmentCompleted, "No", StringComparison.OrdinalIgnoreCase)))
                 {
                     return $"Finding #{i + 1}: Treatment Completed is required.";
+                }
+
+                if (string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase))
+                {
+                    finding.Classification = DentalExamFindingConstants.ClassificationClass3;
+                    var surfaces = (finding.PostServiceTreatment != null && finding.PostServiceTreatment.Count > 0)
+                        ? finding.PostServiceTreatment
+                        : (finding.AffectedSurfaces ?? new List<string>());
+                    var clinicalError = DentalExamFindingValidator.ValidateFinding(
+                        new DentalExamFindingDto
+                        {
+                            IsPrimaryTooth = finding.IsPrimaryTooth,
+                            AffectedTooth = finding.AffectedTooth,
+                            DiseaseConditionType = finding.DiseaseConditionType,
+                            AffectedSurfaces = surfaces,
+                            CdtCodes = (finding.TreatmentCdtCodes != null && finding.TreatmentCdtCodes.Count > 0)
+                                ? finding.TreatmentCdtCodes
+                                : (finding.CdtCodes ?? new List<string>()),
+                            Classification = DentalExamFindingConstants.ClassificationClass3
+                        },
+                        i + 1);
+
+                    if (!string.IsNullOrWhiteSpace(clinicalError))
+                    {
+                        return clinicalError;
+                    }
                 }
             }
 

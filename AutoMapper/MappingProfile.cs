@@ -208,8 +208,6 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
                 .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore())
                 .ForMember(dest => dest.DentalExamFinding, opt => opt.Ignore())
-                .ForMember(dest => dest.AffectedSurfacesJson, opt => opt.Ignore())
-                .ForMember(dest => dest.CdtCodesJson, opt => opt.Ignore())
                 .ForMember(dest => dest.PostServiceTreatmentJson, opt => opt.Ignore())
                 .ForMember(dest => dest.TreatmentCdtCodesJson, opt => opt.Ignore())
                 .ForMember(dest => dest.ProceduredDrc, opt => opt.MapFrom(src => src.FinalDrc));

@@ -181,14 +181,14 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
             {
-                var examFindingId = finding.DentalExamFindingId.GetValueOrDefault() > 0
+                var origin = ResolveFindingOrigin(finding);
+                var isTreatmentOrigin = DentalTreatmentFindingOrigin.IsTreatmentOrigin(origin);
+                var examFindingId = !isTreatmentOrigin && finding.DentalExamFindingId.GetValueOrDefault() > 0
                     ? finding.DentalExamFindingId
                     : null;
-                var isTreatmentOnly = !examFindingId.HasValue;
 
-                if (!isTreatmentOnly)
+                if (!isTreatmentOrigin)
                 {
-                    // Exam-linked rows must reference a Class 3 exam finding id.
                     if (examFindingId.GetValueOrDefault() <= 0)
                     {
                         continue;
@@ -203,6 +203,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 entity.Id = 0;
                 entity.DentalTreatmentId = target.Id;
                 entity.DentalExamFindingId = examFindingId;
+                entity.Origin = origin;
                 entity.SortOrder = index;
                 entity.PostServiceTreatmentJson = DentalTreatmentJson.SerializeList(finding.PostServiceTreatment);
                 entity.TreatmentCdtCodesJson = DentalTreatmentJson.SerializeList(finding.TreatmentCdtCodes);
@@ -212,16 +213,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ? (!string.IsNullOrWhiteSpace(finding.DentistProfessional) ? finding.DentistProfessional : userId)
                     : null;
 
-                if (isTreatmentOnly)
+                if (isTreatmentOrigin)
                 {
                     entity.IsPrimaryTooth = finding.IsPrimaryTooth;
                     entity.AffectedTooth = finding.AffectedTooth?.Trim();
                     entity.DiseaseConditionType = finding.DiseaseConditionType?.Trim();
-                    entity.AffectedSurfacesJson = DentalTreatmentJson.SerializeList(finding.AffectedSurfaces);
-                    entity.CdtCodesJson = DentalTreatmentJson.SerializeList(finding.CdtCodes);
-                    entity.CdtCodesNotes = finding.CdtCodesNotes;
-                    entity.DescriptionDetails = finding.DescriptionDetails;
-                    entity.Classification = finding.Classification?.Trim();
                 }
                 else
                 {
@@ -229,15 +225,33 @@ namespace ExcelFilesCompiler.Controllers.Services
                     entity.IsPrimaryTooth = false;
                     entity.AffectedTooth = null;
                     entity.DiseaseConditionType = null;
-                    entity.AffectedSurfacesJson = null;
-                    entity.CdtCodesJson = null;
-                    entity.CdtCodesNotes = null;
-                    entity.DescriptionDetails = null;
-                    entity.Classification = null;
                 }
 
                 target.Findings.Add(entity);
             }
+        }
+
+        private static string ResolveFindingOrigin(DentalTreatmentFindingFormDto finding)
+        {
+            if (!string.IsNullOrWhiteSpace(finding.Origin))
+            {
+                if (DentalTreatmentFindingOrigin.IsTreatmentOrigin(finding.Origin))
+                {
+                    return DentalTreatmentFindingOrigin.Treatment;
+                }
+
+                if (DentalTreatmentFindingOrigin.IsExamOrigin(finding.Origin))
+                {
+                    return DentalTreatmentFindingOrigin.Exam;
+                }
+            }
+
+            if (finding.IsTreatmentOnly || finding.DentalExamFindingId.GetValueOrDefault() <= 0)
+            {
+                return DentalTreatmentFindingOrigin.Treatment;
+            }
+
+            return DentalTreatmentFindingOrigin.Exam;
         }
 
         private void ReplaceSelectedTeeth(DentalTreatment target, List<int> toothNumbers)

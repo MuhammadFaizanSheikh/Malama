@@ -46,6 +46,21 @@ namespace Malama.Models
         public virtual ICollection<DentalTreatmentOverallNote> OverallNotes { get; set; } = new List<DentalTreatmentOverallNote>();
     }
 
+    public static class DentalTreatmentFindingOrigin
+    {
+        /// <summary>Record originated from a Dental Exam Class 3 finding (examiner).</summary>
+        public const string Exam = "Exam";
+
+        /// <summary>Record added in Dental Treatment by the treatment dentist.</summary>
+        public const string Treatment = "Treatment";
+
+        public static bool IsTreatmentOrigin(string? origin) =>
+            string.Equals(origin, Treatment, StringComparison.OrdinalIgnoreCase);
+
+        public static bool IsExamOrigin(string? origin) =>
+            string.Equals(origin, Exam, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Table("DentalTreatmentFinding")]
     public class DentalTreatmentFinding
     {
@@ -55,21 +70,17 @@ namespace Malama.Models
 
         public long? DentalExamFindingId { get; set; }
 
+        /// <summary>
+        /// Identifies how the finding entered treatment:
+        /// <see cref="DentalTreatmentFindingOrigin.Exam"/> or <see cref="DentalTreatmentFindingOrigin.Treatment"/>.
+        /// </summary>
+        public string Origin { get; set; } = DentalTreatmentFindingOrigin.Exam;
+
         public bool IsPrimaryTooth { get; set; }
 
         public string? AffectedTooth { get; set; }
 
         public string? DiseaseConditionType { get; set; }
-
-        public string? AffectedSurfacesJson { get; set; }
-
-        public string? CdtCodesJson { get; set; }
-
-        public string? CdtCodesNotes { get; set; }
-
-        public string? DescriptionDetails { get; set; }
-
-        public string? Classification { get; set; }
 
         public string? TreatmentCompleted { get; set; }
 
