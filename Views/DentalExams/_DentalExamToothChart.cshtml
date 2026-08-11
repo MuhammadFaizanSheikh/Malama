@@ -16,10 +16,23 @@
         Model?.SelectedTeeth?.Select(t => t.ToothNumber) ?? Enumerable.Empty<int>());
     string ToothImg(int n, bool selected) =>
         Url.Content($"~/images/teeth/{(selected ? "selected" : "normal")}/tooth-{n}.png");
+
+    var chartId = ViewData["ToothChartId"] as string ?? "psrInteractiveToothChart";
+    var chartTitle = ViewData["ToothChartTitle"] as string ?? "Select missing teeth";
+    var inputIdPrefix = ViewData["ToothInputIdPrefix"] as string ?? "psrToothCheck_";
+    var inputName = ViewData["ToothInputName"] as string ?? "PsrSelectedTeeth";
+    var isReadonly = ViewData["ToothChartReadonly"] as bool? ?? false;
+    var isCompact = ViewData["ToothChartCompact"] as bool? ?? false;
+    var chartClasses = "psr-interactive-tooth-chart"
+        + (isCompact ? " psr-tooth-chart-compact" : "")
+        + (isReadonly ? " psr-tooth-chart-readonly" : "");
 }
-<div id="psrInteractiveToothChart" class="psr-interactive-tooth-chart" data-psr-tooth-chart="1">
-    <h5 class="mb-2 text-center">Select missing teeth</h5>
-    <div class="psr-tooth-chart-board" role="group" aria-label="Select missing teeth">
+<div id="@chartId"
+     class="@chartClasses"
+     data-psr-tooth-chart="1"
+     @(isReadonly ? Html.Raw("data-readonly=\"true\"") : null)>
+    <h5 class="mb-2 text-center">@chartTitle</h5>
+    <div class="psr-tooth-chart-board" role="group" aria-label="@chartTitle">
         <div class="psr-tooth-side psr-tooth-side-left" aria-hidden="true">RIGHT</div>
         <div class="psr-tooth-side psr-tooth-side-right" aria-hidden="true">LEFT</div>
 
@@ -40,7 +53,9 @@
                             class="psr-tooth-image-btn"
                             data-tooth="@n"
                             aria-pressed="@(isSelected ? "true" : "false")"
-                            title="Tooth @n">
+                            title="Tooth @n"
+                            @(isReadonly ? "disabled" : null)
+                            tabindex="@(isReadonly ? -1 : 0)">
                         <img class="psr-tooth-img"
                              src="@ToothImg(n, isSelected)"
                              data-normal="@ToothImg(n, false)"
@@ -59,14 +74,15 @@
                 @foreach (var n in upperTeeth)
                 {
                     var isSelected = selectedTeeth.Contains(n);
-                    <label class="psr-tooth-check-label" title="Select tooth @n">
+                    <label class="psr-tooth-check-label" title="Tooth @n">
                         <input type="checkbox"
                                class="psr-tooth-input"
-                               id="psrToothCheck_@n"
-                               name="PsrSelectedTeeth"
+                               id="@(inputIdPrefix)@n"
+                               name="@(string.IsNullOrWhiteSpace(inputName) ? null : inputName)"
                                value="@n"
                                data-tooth="@n"
-                               @(isSelected ? "checked" : null) />
+                               @(isSelected ? "checked" : null)
+                               @(isReadonly ? "disabled" : null) />
                         <span class="psr-tooth-check-box" aria-hidden="true"></span>
                     </label>
                 }
@@ -80,14 +96,15 @@
                 @foreach (var n in lowerTeeth)
                 {
                     var isSelected = selectedTeeth.Contains(n);
-                    <label class="psr-tooth-check-label" title="Select tooth @n">
+                    <label class="psr-tooth-check-label" title="Tooth @n">
                         <input type="checkbox"
                                class="psr-tooth-input"
-                               id="psrToothCheck_@n"
-                               name="PsrSelectedTeeth"
+                               id="@(inputIdPrefix)@n"
+                               name="@(string.IsNullOrWhiteSpace(inputName) ? null : inputName)"
                                value="@n"
                                data-tooth="@n"
-                               @(isSelected ? "checked" : null) />
+                               @(isSelected ? "checked" : null)
+                               @(isReadonly ? "disabled" : null) />
                         <span class="psr-tooth-check-box" aria-hidden="true"></span>
                     </label>
                 }
@@ -106,7 +123,9 @@
                             class="psr-tooth-image-btn"
                             data-tooth="@n"
                             aria-pressed="@(isSelected ? "true" : "false")"
-                            title="Tooth @n">
+                            title="Tooth @n"
+                            @(isReadonly ? "disabled" : null)
+                            tabindex="@(isReadonly ? -1 : 0)">
                         <img class="psr-tooth-img"
                              src="@ToothImg(n, isSelected)"
                              data-normal="@ToothImg(n, false)"

@@ -181,10 +181,10 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         /// <summary>
-        /// Posterior permanent (1-5, 12-21, 28-32) / primary (A,B,I,K,L,S,T): M,D,L,B,O.
+        /// Posterior permanent (1-5, 12-21, 28-32) / primary (A,B,I,J,K,L,S,T): M,D,L,B,O.
         /// Anterior permanent (6-11, 22-27) / primary (C-H, M-R): M,D,L,F,I.
         /// Primary letter groups map to permanent ranges:
-        /// 1-5 → A,B | 6-11 → C-H | 12-21 → I,K,L | 22-27 → M-R | 28-32 → S,T.
+        /// 1-5 → A,B | 6-11 → C-H | 12-21 → I,J,K,L | 22-27 → M-R | 28-32 → S,T.
         /// </summary>
         public static string[] GetRestorativeSurfacesForTooth(string? affectedTooth)
         {
@@ -273,14 +273,14 @@ namespace ExcelFilesCompiler.Utilities
                 return RestorativeToothGroup.Unknown;
             }
 
-            // Primary letters: 1-5→A,B | 6-11→C-H | 12-21→I,K,L | 22-27→M-R | 28-32→S,T
+            // Primary letters: 1-5→A,B | 6-11→C-H | 12-21→I,J,K,L | 22-27→M-R | 28-32→S,T
             var letter = tooth.ToUpperInvariant();
             return letter switch
             {
                 "C" or "D" or "E" or "F" or "G" or "H"
                     or "M" or "N" or "O" or "P" or "Q" or "R"
                     => RestorativeToothGroup.Anterior,
-                "A" or "B" or "I" or "K" or "L" or "S" or "T"
+                "A" or "B" or "I" or "J" or "K" or "L" or "S" or "T"
                     => RestorativeToothGroup.Posterior,
                 _ => RestorativeToothGroup.Unknown
             };
@@ -293,7 +293,7 @@ namespace ExcelFilesCompiler.Utilities
             => ClassifyRestorativeToothGroup(affectedTooth) == RestorativeToothGroup.Anterior;
 
         /// <summary>
-        /// Posterior: permanent 1-5, 12-21, 28-32; primary A,B,I,K,L,S,T.
+        /// Posterior: permanent 1-5, 12-21, 28-32; primary A,B,I,J,K,L,S,T.
         /// </summary>
         public static bool IsRestorativePosteriorTooth(string? affectedTooth)
             => ClassifyRestorativeToothGroup(affectedTooth) == RestorativeToothGroup.Posterior;

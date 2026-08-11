@@ -1048,6 +1048,37 @@
         if ($img.length) {
             $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
         }
+
+        setFindingReadonlyToothSelected(tooth, selected);
+    }
+
+    function setFindingReadonlyToothSelected(toothNumber, selected) {
+        const tooth = String(toothNumber);
+        const $chart = $("#findingReadonlyToothChart");
+        if (!$chart.length) {
+            return;
+        }
+
+        const $input = $("#findingToothCheck_" + tooth);
+        const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+        const $img = $btn.find(".psr-tooth-img");
+
+        $input.prop("checked", !!selected);
+        $btn.attr("aria-pressed", selected ? "true" : "false");
+        if ($img.length) {
+            $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+        }
+    }
+
+    function syncFindingReadonlyToothChartFromPsr() {
+        const $findingChart = $("#findingReadonlyToothChart");
+        if (!$findingChart.length) {
+            return;
+        }
+
+        $("#psrInteractiveToothChart .psr-tooth-input").each(function () {
+            setFindingReadonlyToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+        });
     }
 
     function togglePsrTooth(toothNumber) {
@@ -1076,6 +1107,7 @@
         $chart.find(".psr-tooth-input").each(function () {
             setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
         });
+        syncFindingReadonlyToothChartFromPsr();
 
         if ($chart.attr("data-readonly") === "true" || SUBSEQUENT_READONLY) {
             $chart.find(".psr-tooth-input").prop("disabled", true);

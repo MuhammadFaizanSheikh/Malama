@@ -43,21 +43,20 @@
         pointer-events: none;
     }
 
-    #dentalFindingReferenceImage {
-        width: 100%;
-        max-width: 100%;
-        min-height: 520px;
-        max-height: 620px;
-        object-fit: contain;
-    }
-
-    #dentalFindingImageColumn {
-        min-height: 580px;
-    }
-
     #dentalFindingImageColumn .dental-finding-image-wrap {
-        min-height: 560px;
-        padding: 1rem;
+        min-height: 0;
+        padding: 0.75rem;
+        background: #fff;
+    }
+
+    #findingReadonlyToothChart.psr-tooth-chart-readonly {
+        pointer-events: none;
+        user-select: none;
+    }
+
+    #findingReadonlyToothChart.psr-tooth-chart-readonly .psr-tooth-image-btn,
+    #findingReadonlyToothChart.psr-tooth-chart-readonly .psr-tooth-check-label {
+        cursor: default;
     }
 
     .finding-classification-badge {
@@ -189,12 +188,19 @@
                     <div class="col-md-6" id="dentalFindingImageColumn">
                         @await Html.PartialAsync("_DentalExamXrayPreview", findingsXrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "findingsXray" })
 
-                        <div class="border rounded p-3 bg-light mt-3 d-flex flex-column justify-content-center align-items-center text-center dental-finding-image-wrap">
-                            <img src="~/images/dental-tooth-chart-reference-without-checkbox.png"
-                                 id="dentalFindingReferenceImage"
-                                 alt="Dental tooth chart reference"
-                                 class="img-fluid mb-2" />
-                            <div class="small text-muted">Universal numbering reference (1-32)</div>
+                        <div class="border rounded p-3 bg-light mt-3 dental-finding-image-wrap">
+                            @{
+                                var findingToothChartViewData = new ViewDataDictionary(ViewData)
+                                {
+                                    ["ToothChartId"] = "findingReadonlyToothChart",
+                                    ["ToothChartTitle"] = "Selected missing teeth",
+                                    ["ToothInputIdPrefix"] = "findingToothCheck_",
+                                    ["ToothInputName"] = "",
+                                    ["ToothChartReadonly"] = true,
+                                    ["ToothChartCompact"] = false
+                                };
+                            }
+                            @await Html.PartialAsync("~/Views/DentalExams/_DentalExamToothChart.cshtml", exam, findingToothChartViewData)
                         </div>
                     </div>
                 </div>
@@ -300,14 +306,14 @@
             return value.length === 1 && "CDEFGHMNOPQR".indexOf(value.toUpperCase()) >= 0;
         }
 
-        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,K,L,S,T
+        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,J,K,L,S,T
         function isRestorativePosteriorTooth(tooth) {
             const value = (tooth || "").toString().trim();
             const n = parseInt(value, 10);
             if (!isNaN(n) && String(n) === value) {
                 return (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
             }
-            return value.length === 1 && "ABIKLST".indexOf(value.toUpperCase()) >= 0;
+            return value.length === 1 && "ABIJKLST".indexOf(value.toUpperCase()) >= 0;
         }
 
         function populateToothOptions() {
@@ -740,6 +746,10 @@
             $("#dentalFindingFormCard").find("input, select, textarea, button").each(function () {
                 const $el = $(this);
                 if ($el.closest(".xray-preview-widget").length) {
+                    return;
+                }
+                if ($el.closest("#findingReadonlyToothChart").length) {
+                    $el.prop("disabled", true);
                     return;
                 }
                 if ($el.attr("id") === "cancelFindingFormBtn") {

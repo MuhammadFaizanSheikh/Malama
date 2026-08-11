@@ -20,7 +20,7 @@ namespace Malama.Models
 
         public static readonly string[] PeriodontalSurfaces = { "UL", "UR", "LL", "LR" };
 
-        /// <summary>Restorative surfaces for posterior teeth (1-5, 12-21, 28-32 and primary A,B,I,K,L,S,T).</summary>
+        /// <summary>Restorative surfaces for posterior teeth (1-5, 12-21, 28-32 and primary A,B,I,J,K,L,S,T).</summary>
         public static readonly string[] RestorativeSurfacesPosterior = { "M", "D", "L", "B", "O" };
 
         /// <summary>Restorative surfaces for anterior teeth (6-11, 22-27 and primary C-H, M-R).</summary>
@@ -31,7 +31,7 @@ namespace Malama.Models
 
         public static readonly string[] PrimaryTeeth =
         {
-            "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"
         };
 
         public const string ClassificationClass2 =

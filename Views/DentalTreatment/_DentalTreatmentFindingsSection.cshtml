@@ -715,14 +715,14 @@
             return value.length === 1 && "CDEFGHMNOPQR".indexOf(value.toUpperCase()) >= 0;
         }
 
-        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,K,L,S,T
+        // Permanent: 1-5, 12-21, 28-32 | Primary: A,B,I,J,K,L,S,T
         function isRestorativePosteriorTooth(tooth) {
             const value = (tooth || "").toString().trim();
             const n = parseInt(value, 10);
             if (!isNaN(n) && String(n) === value) {
                 return (n >= 1 && n <= 5) || (n >= 12 && n <= 21) || (n >= 28 && n <= 32);
             }
-            return value.length === 1 && "ABIKLST".indexOf(value.toUpperCase()) >= 0;
+            return value.length === 1 && "ABIJKLST".indexOf(value.toUpperCase()) >= 0;
         }
 
         function getRestorativeCdtCodes(tooth, surfaceCount) {
