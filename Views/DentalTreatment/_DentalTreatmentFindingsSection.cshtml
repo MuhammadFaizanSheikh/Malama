@@ -136,7 +136,116 @@
     }
 
     #treatmentFindingsTable {
-        min-width: 1600px;
+        min-width: 1100px;
+    }
+
+    #treatmentFindingsTable .toggle-finding-treatment-detail {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 0.375rem;
+        color: rgba(80, 90, 201, 1);
+        border-color: rgba(120, 130, 221, 0.45);
+        background: #fff;
+    }
+
+    #treatmentFindingsTable .toggle-finding-treatment-detail:hover,
+    #treatmentFindingsTable .toggle-finding-treatment-detail[aria-expanded="true"] {
+        background: rgba(120, 130, 221, 0.12);
+        border-color: rgba(80, 90, 201, 0.55);
+        color: rgba(80, 90, 201, 1);
+    }
+
+    #treatmentFindingsTable tr.finding-main-row.finding-row-expanded {
+        background-color: rgba(120, 130, 221, 0.06);
+    }
+
+    #treatmentFindingsTable tr.finding-detail-row > td {
+        padding: 0;
+        border-top: 0;
+        background: #f7f8fc !important;
+        box-shadow: none;
+    }
+
+    #treatmentFindingsTable.table-striped > tbody > tr.finding-detail-row:nth-of-type(odd) > * {
+        --bs-table-bg-type: #f7f8fc;
+        background-color: #f7f8fc;
+    }
+
+    .finding-treatment-detail {
+        margin: 0.65rem 0.85rem 0.9rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid rgba(120, 130, 221, 0.28);
+        border-left: 4px solid rgba(80, 90, 201, 1);
+        border-radius: 0.5rem;
+        background: #fff;
+    }
+
+    .finding-treatment-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.55rem;
+        border-bottom: 1px solid rgba(120, 130, 221, 0.2);
+    }
+
+    .finding-treatment-detail-title {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: rgba(80, 90, 201, 1);
+    }
+
+    .finding-origin-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.3em 0.65em;
+        border-radius: 0.375rem;
+        letter-spacing: 0.01em;
+    }
+
+    .finding-origin-exam {
+        background-color: rgba(120, 130, 221, 0.16);
+        color: rgba(80, 90, 201, 1);
+    }
+
+    .finding-origin-treatment {
+        background-color: #e8f5ef;
+        color: #1b6b45;
+    }
+
+    .finding-treatment-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem 1rem;
+    }
+
+    .finding-treatment-detail-item label {
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #6c757d;
+    }
+
+    .finding-treatment-detail-item .value {
+        font-size: 0.92rem;
+        color: #212529;
+        word-break: break-word;
+    }
+
+    .finding-treatment-detail-item .value.is-empty {
+        color: #adb5bd;
+    }
+
+    .finding-treatment-detail-empty {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.9rem;
     }
 </style>
 
@@ -160,26 +269,22 @@
                     <table class="table table-bordered table-striped align-middle mb-0" id="treatmentFindingsTable">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 60px;">S.No</th>
+                                <th style="width: 44px;"></th>
+                                <th style="width: 55px;">S.No</th>
+                                <th style="width: 100px;">Source</th>
                                 <th style="width: 110px;">Affected Tooth</th>
                                 <th style="width: 140px;">Affected Surface(s)</th>
                                 <th style="width: 160px;">Disease / Condition Type</th>
-                                <th style="width: 180px;">Classification</th>
+                                <th style="width: 120px;">Classification</th>
                                 <th>Description / Details</th>
-                                <th style="width: 180px;">Examiner</th>
-                                <th style="width: 120px;">Post Service Treatment</th>
-                                <th style="width: 120px;">Reason</th>
-                                <th style="width: 140px;">Notes</th>
-                                <th style="width: 120px;">Procedured DRC</th>
-                                <th style="width: 180px;">Dentist/Professional Completing / Recommending Final Treatment</th>
-                                <th style="width: 100px;">Status</th>
-                                <th style="width: 140px;">Date/Time</th>
-                                <th style="width: 80px;">Action</th>
+                                <th style="width: 160px;">Examiner</th>
+                                <th style="width: 120px;">Status</th>
+                                <th style="width: 90px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="treatmentFindingsTableBody">
                             <tr id="treatmentFindingsEmptyRow">
-                                <td colspan="15" class="text-center text-muted py-4">No findings added yet.</td>
+                                <td colspan="11" class="text-center text-muted py-4">No findings added yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -508,12 +613,8 @@
                 examinationUpdatedBy: item.examinationUpdatedBy || null,
                 examinationUpdatedOn: item.examinationUpdatedOn || null,
                 treatmentCompleted: item.treatmentCompleted || "",
-                postServiceTreatment: (item.postServiceTreatment && item.postServiceTreatment.length)
-                    ? item.postServiceTreatment
-                    : affectedSurfaces.slice(),
-                treatmentCdtCodes: (item.treatmentCdtCodes && item.treatmentCdtCodes.length)
-                    ? item.treatmentCdtCodes
-                    : cdtCodes.slice(),
+                postServiceTreatment: item.postServiceTreatment || [],
+                treatmentCdtCodes: item.treatmentCdtCodes || [],
                 reason: item.reason || "",
                 notes: item.notes || "",
                 finalDrc: finalDrc,
@@ -867,34 +968,121 @@
             return nameHtml + whenHtml;
         }
 
+        function formatOriginBadge(finding) {
+            const isTreatment = finding.origin === FINDING_ORIGIN_TREATMENT || !!finding.isTreatmentOnly;
+            if (isTreatment) {
+                return "<span class='badge finding-origin-badge finding-origin-treatment'>Treatment</span>";
+            }
+            return "<span class='badge finding-origin-badge finding-origin-exam'>Exam</span>";
+        }
+
+        function formatDetailValue(value) {
+            if (value === null || value === undefined || value === "") {
+                return "<span class='value is-empty'>—</span>";
+            }
+            return "<span class='value'>" + escapeHtml(String(value)) + "</span>";
+        }
+
+        function formatDetailListValue(values) {
+            const list = (values || []).filter(function (item) { return !!item; });
+            if (!list.length) {
+                return formatDetailValue("");
+            }
+            return formatDetailValue(list.join(", "));
+        }
+
+        function buildTreatmentDetailPanel(finding) {
+            const isTreatmentOrigin = finding.origin === FINDING_ORIGIN_TREATMENT || !!finding.isTreatmentOnly;
+            const hasTreatmentData = !!(finding.treatmentCompleted
+                || (finding.postServiceTreatment && finding.postServiceTreatment.length)
+                || (finding.treatmentCdtCodes && finding.treatmentCdtCodes.length)
+                || finding.reason
+                || finding.notes
+                || finding.finalDrc
+                || finding.dentistProfessional
+                || finding.treatmentDateTime);
+
+            const originLabel = isTreatmentOrigin ? "Treatment" : "Exam";
+            const toothLabel = finding.affectedTooth
+                ? (finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : ""))
+                : "";
+
+            let bodyHtml;
+            if (!hasTreatmentData) {
+                bodyHtml = "<p class='finding-treatment-detail-empty mb-0'>No treatment details recorded yet.</p>";
+            } else {
+                bodyHtml =
+                    "<div class='finding-treatment-detail-grid'>" +
+                    "<div class='finding-treatment-detail-item'><label>Treatment Completed</label>" + formatDetailValue(finding.treatmentCompleted) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Post Service Treatment</label>" + formatDetailListValue(finding.postServiceTreatment) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Treatment CDT Code(s)</label>" + formatDetailListValue(finding.treatmentCdtCodes) + "</div>";
+
+                // Tooth / disease in this panel are treatment-entered values only (not exam copy).
+                if (isTreatmentOrigin) {
+                    bodyHtml +=
+                        "<div class='finding-treatment-detail-item'><label>Affected Tooth</label>" + formatDetailValue(toothLabel) + "</div>" +
+                        "<div class='finding-treatment-detail-item'><label>Disease / Condition Type (Treatment)</label>" + formatDetailValue(finding.diseaseConditionType) + "</div>";
+                }
+
+                bodyHtml +=
+                    "<div class='finding-treatment-detail-item'><label>Procedured DRC</label>" + formatDetailValue(finding.finalDrc) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Treated By</label>" + formatDetailValue(resolveStaffDisplayName(finding.dentistProfessional)) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Treated On</label>" + formatDetailValue(finding.treatmentDateTime) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Reason</label>" + formatDetailValue(finding.reason) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Notes</label>" + formatDetailValue(finding.notes) + "</div>" +
+                    "</div>";
+            }
+
+            return "" +
+                "<div class='finding-treatment-detail'>" +
+                "<div class='finding-treatment-detail-header'>" +
+                "<h6 class='finding-treatment-detail-title'>Treatment details</h6>" +
+                "<span class='badge finding-origin-badge " +
+                (originLabel === "Treatment" ? "finding-origin-treatment" : "finding-origin-exam") +
+                "'>Source: " + originLabel + "</span>" +
+                "</div>" +
+                bodyHtml +
+                "</div>";
+        }
+
         function renderFindingsTable() {
             const $tbody = $("#treatmentFindingsTableBody");
             $tbody.empty();
 
             if (!treatmentFindings.length) {
                 $tbody.append(
-                    '<tr id="treatmentFindingsEmptyRow"><td colspan="15" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                    '<tr id="treatmentFindingsEmptyRow"><td colspan="11" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 syncDentalTreatmentFindingsJson();
                 return;
             }
 
             treatmentFindings.forEach(function (finding, index) {
-                const surfaces = (finding.affectedSurfaces || []).join(", ") || "-";
-                const toothLabel = finding.affectedTooth
-                    ? (finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : ""))
-                    : "-";
-                const classificationBadge = formatClassificationBadge(finding.classification);
-                const description = finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-";
-                const postServiceTreatment = displayOrDash(finding.treatmentCompleted);
-                const examinerDetail = finding.isTreatmentOnly ? "-" : formatExaminerDetail(finding);
+                const isTreatmentOrigin = finding.origin === FINDING_ORIGIN_TREATMENT || !!finding.isTreatmentOnly;
+                const surfaces = isTreatmentOrigin
+                    ? "-"
+                    : ((finding.affectedSurfaces || []).join(", ") || "-");
+                const toothLabel = isTreatmentOrigin
+                    ? "-"
+                    : (finding.affectedTooth
+                        ? (finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : ""))
+                        : "-");
+                const diseaseType = isTreatmentOrigin ? "-" : (finding.diseaseConditionType || "-");
+                const classificationBadge = isTreatmentOrigin
+                    ? "-"
+                    : formatClassificationBadge(finding.classification);
+                const description = isTreatmentOrigin
+                    ? "-"
+                    : (finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-");
+                const examinerDetail = isTreatmentOrigin ? "-" : formatExaminerDetail(finding);
+                const detailId = "findingTreatmentDetail_" + index;
                 let actionButtons = "-";
                 if (CAN_EDIT_TREATMENT) {
                     actionButtons =
                         "<button type='button' class='btn btn-sm btn-outline-primary finding-action-btn edit-treatment-finding-btn' data-index='" +
                         index +
                         "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>";
-                    if (finding.isTreatmentOnly) {
+                    if (isTreatmentOrigin) {
                         actionButtons +=
                             " <button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-treatment-finding-btn' data-index='" +
                             index +
@@ -907,23 +1095,31 @@
                         "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>";
                 }
 
+                const toggleButton =
+                    "<button type='button' class='btn btn-sm toggle-finding-treatment-detail' data-index='" +
+                    index +
+                    "' data-target='#" + detailId + "' aria-expanded='false' aria-controls='" + detailId +
+                    "' title='Show treatment details'>" +
+                    "<i class='fas fa-chevron-right' aria-hidden='true'></i>" +
+                    "<span class='visually-hidden'>Show treatment details</span>" +
+                    "</button>";
+
                 $tbody.append(
-                    "<tr data-finding-index='" + index + "'>" +
+                    "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
+                    "<td class='text-center'>" + toggleButton + "</td>" +
                     "<td>" + (index + 1) + "</td>" +
+                    "<td>" + formatOriginBadge(finding) + "</td>" +
                     "<td>" + escapeHtml(toothLabel) + "</td>" +
                     "<td>" + escapeHtml(surfaces) + "</td>" +
-                    "<td>" + escapeHtml(finding.diseaseConditionType || "-") + "</td>" +
+                    "<td>" + escapeHtml(diseaseType) + "</td>" +
                     "<td>" + classificationBadge + "</td>" +
                     "<td>" + description + "</td>" +
                     "<td>" + examinerDetail + "</td>" +
-                    "<td>" + postServiceTreatment + "</td>" +
-                    "<td>" + displayOrDash(finding.reason) + "</td>" +
-                    "<td>" + displayOrDash(finding.notes) + "</td>" +
-                    "<td>" + displayOrDash(finding.finalDrc) + "</td>" +
-                    "<td>" + displayOrDash(resolveStaffDisplayName(finding.dentistProfessional)) + "</td>" +
                     "<td>" + formatTreatmentStatusBadge(resolveTreatmentStatus(finding)) + "</td>" +
-                    "<td>" + displayOrDash(finding.treatmentDateTime) + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                    "</tr>" +
+                    "<tr class='finding-detail-row' id='" + detailId + "' style='display:none;' data-finding-index='" + index + "'>" +
+                    "<td colspan='11'>" + buildTreatmentDetailPanel(finding) + "</td>" +
                     "</tr>"
                 );
             });
@@ -1031,14 +1227,22 @@
             if (finding.postServiceTreatment && finding.postServiceTreatment.length) {
                 return finding.postServiceTreatment.slice();
             }
-            return (finding.affectedSurfaces || []).slice();
+            // Prefill edit form from exam surfaces only when opening Treatment Completed = Yes.
+            // Do not treat this as saved treatment data in the table detail panel.
+            if (!finding.isTreatmentOnly && finding.origin !== FINDING_ORIGIN_TREATMENT) {
+                return (finding.affectedSurfaces || []).slice();
+            }
+            return [];
         }
 
         function getTreatmentCdtValues(finding) {
             if (finding.treatmentCdtCodes && finding.treatmentCdtCodes.length) {
                 return finding.treatmentCdtCodes.slice();
             }
-            return (finding.cdtCodes || []).slice();
+            if (!finding.isTreatmentOnly && finding.origin !== FINDING_ORIGIN_TREATMENT) {
+                return (finding.cdtCodes || []).slice();
+            }
+            return [];
         }
 
         function formatTreatmentDateTime(date) {
@@ -1655,6 +1859,23 @@
                 if (getActiveDiseaseType() === "Restorative") {
                     populateTreatmentCdtOptions([]);
                 }
+            });
+
+            $(document).on("click", ".toggle-finding-treatment-detail", function () {
+                const $btn = $(this);
+                const target = $btn.attr("data-target");
+                const $detail = $(target);
+                if (!$detail.length) {
+                    return;
+                }
+
+                const willOpen = !$detail.is(":visible");
+                $detail.toggle(willOpen);
+                $btn.attr("aria-expanded", willOpen ? "true" : "false");
+                $btn.attr("title", willOpen ? "Hide treatment details" : "Show treatment details");
+                $btn.find("i").toggleClass("fa-chevron-right", !willOpen).toggleClass("fa-chevron-down", willOpen);
+                $btn.closest("tr.finding-main-row").toggleClass("finding-row-expanded", willOpen);
+                $btn.find(".visually-hidden").text(willOpen ? "Hide treatment details" : "Show treatment details");
             });
 
             $(document).on("click", ".edit-treatment-finding-btn", function () {
