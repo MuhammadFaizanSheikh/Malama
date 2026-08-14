@@ -78,6 +78,13 @@ namespace ExcelFilesCompiler.Utilities
     {
         private static readonly string[] AllowedSmFinalClassifications = { "1", "2", "3", "4" };
         private static readonly string[] AllowedPrescriptionTypes = { "OTC Recommended", "Prescription" };
+        private static readonly string[] FindingOnlyDrcValues = { "1", "2", "4" };
+
+        public static bool IsFindingOnlyDrc(string? drc) =>
+            FindingOnlyDrcValues.Contains((drc ?? string.Empty).Trim(), StringComparer.OrdinalIgnoreCase);
+
+        public static bool IsUrgentTreatmentDrc(string? drc) =>
+            string.Equals((drc ?? string.Empty).Trim(), "3", StringComparison.OrdinalIgnoreCase);
 
         public static string? ValidateSaveDto(DentalTreatmentStationSaveDto dto, DentalExam exam)
         {
@@ -120,38 +127,89 @@ namespace ExcelFilesCompiler.Utilities
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(finding.TreatmentCompleted)
-                    || (!string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(finding.TreatmentCompleted, "No", StringComparison.OrdinalIgnoreCase)))
+                if (string.IsNullOrWhiteSpace(finding.DiseaseConditionType)
+                    || string.IsNullOrWhiteSpace(finding.AffectedTooth))
                 {
-                    return $"Finding #{i + 1}: Treatment Completed is required.";
+                    return $"Finding #{i + 1}: Disease / Condition Type and Affected Tooth are required.";
                 }
 
-                if (string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(finding.FinalDrc)
+                    || !AllowedSmFinalClassifications.Contains(finding.FinalDrc.Trim()))
                 {
-                    finding.Classification = DentalExamFindingConstants.ClassificationClass3;
-                    var surfaces = (finding.PostServiceTreatment != null && finding.PostServiceTreatment.Count > 0)
-                        ? finding.PostServiceTreatment
-                        : (finding.AffectedSurfaces ?? new List<string>());
-                    var clinicalError = DentalExamFindingValidator.ValidateFinding(
-                        new DentalExamFindingDto
-                        {
-                            IsPrimaryTooth = finding.IsPrimaryTooth,
-                            AffectedTooth = finding.AffectedTooth,
-                            DiseaseConditionType = finding.DiseaseConditionType,
-                            AffectedSurfaces = surfaces,
-                            CdtCodes = (finding.TreatmentCdtCodes != null && finding.TreatmentCdtCodes.Count > 0)
-                                ? finding.TreatmentCdtCodes
-                                : (finding.CdtCodes ?? new List<string>()),
-                            Classification = DentalExamFindingConstants.ClassificationClass3
-                        },
-                        i + 1);
+                    return $"Finding #{i + 1}: DRC is required.";
+                }
 
-                    if (!string.IsNullOrWhiteSpace(clinicalError))
+                if (IsFindingOnlyDrc(finding.FinalDrc))
+                {
+                    finding.TreatmentCompleted = null;
+                    finding.Reason = null;
+                    finding.TreatmentDateTime = null;
+                }
+                else if (IsUrgentTreatmentDrc(finding.FinalDrc))
+                {
+                    if (string.IsNullOrWhiteSpace(finding.TreatmentCompleted)
+                        || (!string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(finding.TreatmentCompleted, "No", StringComparison.OrdinalIgnoreCase)))
                     {
-                        return clinicalError;
+                        return $"Finding #{i + 1}: Treatment Completed is required.";
+                    }
+
+                    if (string.Equals(finding.TreatmentCompleted, "No", StringComparison.OrdinalIgnoreCase)
+                        && string.IsNullOrWhiteSpace(finding.Reason))
+                    {
+                        return $"Finding #{i + 1}: Reason is required.";
+                    }
+
+                    if (string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase))
+                    {
+                        finding.Reason = null;
+                        finding.FindingDateTime = null;
+                    }
+                    else
+                    {
+                        finding.TreatmentDateTime = null;
                     }
                 }
+
+                finding.Classification = DentalExamFindingConstants.ClassificationClass3;
+                var surfaces = (finding.PostServiceTreatment != null && finding.PostServiceTreatment.Count > 0)
+                    ? finding.PostServiceTreatment
+                    : (finding.AffectedSurfaces ?? new List<string>());
+                var clinicalError = DentalExamFindingValidator.ValidateFinding(
+                    new DentalExamFindingDto
+                    {
+                        IsPrimaryTooth = finding.IsPrimaryTooth,
+                        AffectedTooth = finding.AffectedTooth,
+                        DiseaseConditionType = finding.DiseaseConditionType,
+                        AffectedSurfaces = surfaces,
+                        CdtCodes = (finding.TreatmentCdtCodes != null && finding.TreatmentCdtCodes.Count > 0)
+                            ? finding.TreatmentCdtCodes
+                            : (finding.CdtCodes ?? new List<string>()),
+                        Classification = DentalExamFindingConstants.ClassificationClass3
+                    },
+                    i + 1,
+                    dto.PsrSelectedTeeth);
+
+                if (!string.IsNullOrWhiteSpace(clinicalError))
+                {
+                    return clinicalError;
+                }
+            }
+
+            var findingsForMissingCheck = dto.Findings
+                .Where(f => !string.IsNullOrWhiteSpace(f.AffectedTooth))
+                .Select(f => new DentalExamFindingDto
+                {
+                    IsPrimaryTooth = f.IsPrimaryTooth,
+                    AffectedTooth = f.AffectedTooth
+                })
+                .ToList();
+            var missingConflict = DentalExamFindingValidator.ValidateMissingTeethNotUsedInFindings(
+                findingsForMissingCheck,
+                dto.PsrSelectedTeeth);
+            if (missingConflict != null)
+            {
+                return missingConflict;
             }
 
             foreach (var prescription in dto.Prescriptions)

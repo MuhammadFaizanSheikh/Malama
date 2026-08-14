@@ -194,7 +194,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         continue;
                     }
                 }
-                else if (string.IsNullOrWhiteSpace(finding.TreatmentCompleted))
+                else if (string.IsNullOrWhiteSpace(finding.FinalDrc))
                 {
                     continue;
                 }
@@ -209,7 +209,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                 entity.TreatmentCdtCodesJson = DentalTreatmentJson.SerializeList(finding.TreatmentCdtCodes);
                 entity.ProceduredDrc = finding.FinalDrc;
                 entity.TreatmentStatus = DentalTreatmentValidator.ResolveFindingTreatmentStatus(finding);
-                entity.DentistProfessional = string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase)
+                entity.FindingDateTime = string.IsNullOrWhiteSpace(finding.FindingDateTime) ? null : finding.FindingDateTime.Trim();
+                entity.TreatmentDateTime = string.IsNullOrWhiteSpace(finding.TreatmentDateTime) ? null : finding.TreatmentDateTime.Trim();
+
+                var persistDentist = isTreatmentOrigin
+                    || string.Equals(finding.TreatmentCompleted, "Yes", StringComparison.OrdinalIgnoreCase);
+                entity.DentistProfessional = persistDentist
                     ? (!string.IsNullOrWhiteSpace(finding.DentistProfessional) ? finding.DentistProfessional : userId)
                     : null;
 

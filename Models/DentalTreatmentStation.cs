@@ -98,6 +98,8 @@ namespace Malama.Models
         public string? TreatmentStatus { get; set; }
 
         public string? TreatmentDateTime { get; set; }
+
+        public string? FindingDateTime { get; set; }
     }
 
     public class DentalTreatmentAnesthesiaDto

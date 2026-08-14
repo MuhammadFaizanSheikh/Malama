@@ -62,7 +62,8 @@
             FinalDrc = treatmentFinding?.ProceduredDrc,
             DentistProfessional = treatmentFinding?.DentistProfessional,
             TreatmentStatus = treatmentFinding?.TreatmentStatus,
-            TreatmentDateTime = treatmentFinding?.TreatmentDateTime
+            TreatmentDateTime = treatmentFinding?.TreatmentDateTime,
+            FindingDateTime = treatmentFinding?.FindingDateTime
         });
     }
 
@@ -93,7 +94,8 @@
             FinalDrc = treatmentFinding.ProceduredDrc,
             DentistProfessional = treatmentFinding.DentistProfessional,
             TreatmentStatus = treatmentFinding.TreatmentStatus,
-            TreatmentDateTime = treatmentFinding.TreatmentDateTime
+            TreatmentDateTime = treatmentFinding.TreatmentDateTime,
+            FindingDateTime = treatmentFinding.FindingDateTime
         });
     }
 
@@ -291,7 +293,7 @@
                 </div>
 
                 <button type="button" class="btn btn-outline-primary mb-3" id="addTreatmentFindingBtn" style="@(canEditTreatment ? null : "display:none;")">
-                    <i class="fas fa-plus-circle"></i> Add Treatment
+                    <i class="fas fa-plus-circle"></i> Add Finding/Treatment
                 </button>
 
                 <div id="treatmentFindingFormCard" class="card border-primary mb-0" style="display:none;">
@@ -380,22 +382,10 @@
 
                         <div class="card mb-3">
                             <div class="card-header fw-semibold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
-                                Treatment Section
+                                Finding / Treatment
                             </div>
                             <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label d-block">Treatment Completed</label>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="TreatmentCompleted"
-                               id="treatmentCompletedYes" value="Yes" />
-                        <label class="form-check-label" for="treatmentCompletedYes">YES</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="TreatmentCompleted"
-                               id="treatmentCompletedNo" value="No" />
-                        <label class="form-check-label" for="treatmentCompletedNo">NO</label>
-                    </div>
-                </div>
+                <div id="treatmentCompletedExamSlot"></div>
 
                 <div id="treatmentOnlyClinicalFields" style="display:none;">
                     <div class="row g-3 mb-3">
@@ -428,7 +418,7 @@
                            readonly />
                 </div>
 
-                <div id="treatmentCompletedYesFields" style="display:none;">
+                <div id="treatmentWorkFields" style="display:none;">
                     <div class="row g-4">
                         <div class="col-md-6">
                             <div class="mb-3" id="treatmentPostServiceSection" style="display:none;">
@@ -442,7 +432,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="treatmentFinalDrc">Procedured DRC <span class="text-danger">*</span></label>
+                                <label class="form-label" for="treatmentFinalDrc">DRC <span class="text-danger">*</span></label>
                                 <select id="treatmentFinalDrc" class="form-select">
                                     <option value=""></option>
                                     <option value="1">1</option>
@@ -452,14 +442,33 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3" id="treatmentCompletedGroup" style="display:none;">
+                                <label class="form-label d-block">Treatment Completed</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="TreatmentCompleted"
+                                           id="treatmentCompletedYes" value="Yes" />
+                                    <label class="form-check-label" for="treatmentCompletedYes">YES</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="TreatmentCompleted"
+                                           id="treatmentCompletedNo" value="No" />
+                                    <label class="form-check-label" for="treatmentCompletedNo">NO</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" id="treatmentDentistProfessionalGroup" style="display:none;">
                                 <label class="form-label" for="treatmentDentistProfessional">Dentist/Professional Completing/Recommending Final Treatment</label>
                                 <input type="text" id="treatmentDentistProfessional" class="form-control read-only-style" readonly />
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-3" id="treatmentDateTimeGroup" style="display:none;">
                                 <label class="form-label" for="treatmentDateTime">Treatment Date/Time</label>
                                 <input type="text" id="treatmentDateTime" class="form-control" readonly />
+                            </div>
+
+                            <div class="mb-3" id="treatmentFindingDateTimeGroup" style="display:none;">
+                                <label class="form-label" for="treatmentFindingDateTime">Finding Date/Time</label>
+                                <input type="text" id="treatmentFindingDateTime" class="form-control" readonly />
                             </div>
                         </div>
 
@@ -520,6 +529,7 @@
     (function () {
         const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
         const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
+        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalExamFindingConstants.PrimaryToothToPermanentNumber);
         const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
         const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
@@ -624,8 +634,99 @@
                     finalDrc: finalDrc,
                     reason: item.reason || ""
                 }),
-                treatmentDateTime: item.treatmentDateTime || ""
+                treatmentDateTime: item.treatmentDateTime || "",
+                findingDateTime: item.findingDateTime || ""
             };
+        }
+
+        function isFindingOnlyDrc(drc) {
+            return drc === "1" || drc === "2" || drc === "4";
+        }
+
+        function isUrgentTreatmentDrc(drc) {
+            return drc === "3";
+        }
+
+        function fillCurrentDentistAndTimestamp($input) {
+            if (!$input.val()) {
+                $input.val(formatTreatmentDateTime());
+            }
+            $("#treatmentDentistProfessional").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
+        }
+
+        function applyTreatmentFormLayout() {
+            const treatmentOnly = isTreatmentOnlyMode();
+            const drc = $("#treatmentFinalDrc").val() || "";
+            const selected = $("input[name='TreatmentCompleted']:checked").val();
+            const isYes = selected === "Yes";
+            const isNo = selected === "No";
+
+            if (treatmentOnly) {
+                setTreatmentOnlyClinicalVisible(true);
+                $("#treatmentWorkFields").show();
+                $("#treatmentNotesSection").show();
+                $("#treatmentCompletedGroup").insertAfter($("#treatmentFinalDrc").closest(".mb-3"));
+                $("#treatmentCompletedGroup").toggle(isUrgentTreatmentDrc(drc));
+
+                if (isFindingOnlyDrc(drc)) {
+                    $("input[name='TreatmentCompleted']").prop("checked", false);
+                    $("#treatmentReason").val("");
+                    $("#treatmentCompletedNoFields").hide();
+                    $("#treatmentDentistProfessionalGroup").show();
+                    $("#treatmentFindingDateTimeGroup").show();
+                    $("#treatmentDateTimeGroup").hide();
+                    $("#treatmentDateTime").val("");
+                    fillCurrentDentistAndTimestamp($("#treatmentFindingDateTime"));
+                    return;
+                }
+
+                if (isUrgentTreatmentDrc(drc)) {
+                    $("#treatmentCompletedNoFields").toggle(isNo);
+                    $("#treatmentDentistProfessionalGroup").toggle(isYes || isNo);
+                    $("#treatmentDateTimeGroup").toggle(isYes);
+                    $("#treatmentFindingDateTimeGroup").toggle(isNo);
+                    if (isYes) {
+                        $("#treatmentReason").val("");
+                        $("#treatmentFindingDateTime").val("");
+                        fillCurrentDentistAndTimestamp($("#treatmentDateTime"));
+                    } else if (isNo) {
+                        $("#treatmentDateTime").val("");
+                        fillCurrentDentistAndTimestamp($("#treatmentFindingDateTime"));
+                    } else {
+                        $("#treatmentDentistProfessional").val("");
+                        $("#treatmentDateTime").val("");
+                        $("#treatmentFindingDateTime").val("");
+                    }
+                    return;
+                }
+
+                $("input[name='TreatmentCompleted']").prop("checked", false);
+                $("#treatmentCompletedNoFields").hide();
+                $("#treatmentDentistProfessionalGroup").hide();
+                $("#treatmentDateTimeGroup").hide();
+                $("#treatmentFindingDateTimeGroup").hide();
+                $("#treatmentDentistProfessional").val("");
+                $("#treatmentDateTime").val("");
+                $("#treatmentFindingDateTime").val("");
+                return;
+            }
+
+            setTreatmentOnlyClinicalVisible(false);
+            $("#treatmentCompletedGroup").appendTo("#treatmentCompletedExamSlot");
+            $("#treatmentCompletedGroup").show();
+            $("#treatmentWorkFields").toggle(isYes);
+            $("#treatmentCompletedNoFields").toggle(isNo);
+            $("#treatmentNotesSection").toggle(isYes || isNo);
+            $("#treatmentFindingDateTimeGroup").hide();
+            $("#treatmentFindingDateTime").val("");
+            $("#treatmentDentistProfessionalGroup").toggle(isYes);
+            $("#treatmentDateTimeGroup").toggle(isYes);
+            if (isYes) {
+                fillCurrentDentistAndTimestamp($("#treatmentDateTime"));
+            } else {
+                $("#treatmentDentistProfessional").val("");
+                $("#treatmentDateTime").val("");
+            }
         }
 
         function resolveTreatmentStatus(source) {
@@ -792,14 +893,90 @@
             const teeth = isPrimary ? PRIMARY_TEETH : PERMANENT_TEETH;
             const current = $("#treatmentOnlyAffectedTooth").val();
             const $select = $("#treatmentOnlyAffectedTooth");
+            const missing = getPsrMissingToothNumbers();
             $select.empty().append('<option value=""></option>');
             teeth.forEach(function (tooth) {
-                $select.append($("<option>").val(tooth).text(tooth));
+                const toothValue = String(tooth);
+                let isMissing = false;
+                if (isPrimary) {
+                    const permanentNumber = PRIMARY_TO_PERMANENT[toothValue] || PRIMARY_TO_PERMANENT[toothValue.toUpperCase()];
+                    isMissing = !!permanentNumber && missing.indexOf(permanentNumber) >= 0;
+                } else {
+                    const permanentNumber = parseInt(toothValue, 10);
+                    isMissing = !isNaN(permanentNumber) && missing.indexOf(permanentNumber) >= 0;
+                }
+
+                const $option = $("<option>").val(toothValue);
+                if (isMissing) {
+                    $option.text(toothValue + " - missing tooth").prop("disabled", true);
+                } else {
+                    $option.text(toothValue);
+                }
+                $select.append($option);
             });
-            if (current && teeth.includes(current)) {
+
+            if (current && teeth.map(String).indexOf(String(current)) >= 0 && !isAffectedToothMissing(current, isPrimary)) {
                 $select.val(current);
+            } else {
+                $select.val("");
             }
         }
+
+        function getPsrMissingToothNumbers() {
+            const missing = [];
+            $("#psrInteractiveToothChart .psr-tooth-input:checked").each(function () {
+                const tooth = parseInt($(this).attr("data-tooth") || $(this).val(), 10);
+                if (!isNaN(tooth)) {
+                    missing.push(tooth);
+                }
+            });
+            return missing;
+        }
+
+        function resolveFindingAffectedToothToPermanent(tooth, isPrimary) {
+            const value = (tooth || "").toString().trim();
+            if (!value) {
+                return null;
+            }
+
+            if (isPrimary) {
+                const permanentNumber = PRIMARY_TO_PERMANENT[value] || PRIMARY_TO_PERMANENT[value.toUpperCase()];
+                return permanentNumber ? parseInt(permanentNumber, 10) : null;
+            }
+
+            const permanentNumber = parseInt(value, 10);
+            return isNaN(permanentNumber) ? null : permanentNumber;
+        }
+
+        function isAffectedToothMissing(tooth, isPrimary) {
+            const permanentNumber = resolveFindingAffectedToothToPermanent(tooth, isPrimary);
+            if (permanentNumber == null) {
+                return false;
+            }
+            return getPsrMissingToothNumbers().indexOf(permanentNumber) >= 0;
+        }
+
+        function getDentalFindingUsedPermanentTeeth() {
+            const used = [];
+            treatmentFindings.forEach(function (finding) {
+                const permanentNumber = resolveFindingAffectedToothToPermanent(
+                    finding.affectedTooth,
+                    !!finding.isPrimaryTooth
+                );
+                if (permanentNumber != null && used.indexOf(permanentNumber) < 0) {
+                    used.push(permanentNumber);
+                }
+            });
+            return used;
+        }
+
+        window.getDentalFindingUsedPermanentTeeth = getDentalFindingUsedPermanentTeeth;
+        window.refreshDentalFindingToothOptions = function () {
+            if (!$("#treatmentOnlyAffectedTooth").length) {
+                return;
+            }
+            populateTreatmentOnlyToothOptions();
+        };
 
         function populateFindingSurfaceOptions(selectedValues) {
             const diseaseType = $("#treatmentFindingDiseaseType").val();
@@ -1000,7 +1177,8 @@
                 || finding.notes
                 || finding.finalDrc
                 || finding.dentistProfessional
-                || finding.treatmentDateTime);
+                || finding.treatmentDateTime
+                || finding.findingDateTime);
 
             const originLabel = isTreatmentOrigin ? "Treatment" : "Exam";
             const toothLabel = finding.affectedTooth
@@ -1025,9 +1203,10 @@
                 }
 
                 bodyHtml +=
-                    "<div class='finding-treatment-detail-item'><label>Procedured DRC</label>" + formatDetailValue(finding.finalDrc) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>DRC</label>" + formatDetailValue(finding.finalDrc) + "</div>" +
                     "<div class='finding-treatment-detail-item'><label>Treated By</label>" + formatDetailValue(resolveStaffDisplayName(finding.dentistProfessional)) + "</div>" +
                     "<div class='finding-treatment-detail-item'><label>Treated On</label>" + formatDetailValue(finding.treatmentDateTime) + "</div>" +
+                    "<div class='finding-treatment-detail-item'><label>Finding Date/Time</label>" + formatDetailValue(finding.findingDateTime) + "</div>" +
                     "<div class='finding-treatment-detail-item'><label>Reason</label>" + formatDetailValue(finding.reason) + "</div>" +
                     "<div class='finding-treatment-detail-item'><label>Notes</label>" + formatDetailValue(finding.notes) + "</div>" +
                     "</div>";
@@ -1157,7 +1336,8 @@
                     finalDrc: item.finalDrc || "",
                     dentistProfessional: item.dentistProfessional || "",
                     treatmentStatus: item.treatmentStatus || "",
-                    treatmentDateTime: item.treatmentDateTime || ""
+                    treatmentDateTime: item.treatmentDateTime || "",
+                    findingDateTime: item.findingDateTime || ""
                 };
             });
             $("#TreatmentFindingsJson").val(JSON.stringify(payload));
@@ -1260,22 +1440,7 @@
         }
 
         function toggleTreatmentCompletedFields() {
-            const selected = $("input[name='TreatmentCompleted']:checked").val();
-            const isYes = selected === "Yes";
-            const isNo = selected === "No";
-
-            $("#treatmentCompletedYesFields").toggle(isYes);
-            $("#treatmentCompletedNoFields").toggle(isNo);
-            $("#treatmentNotesSection").toggle(isYes || isNo);
-            // Treatment-only clinical fields (disease/tooth) only after Yes.
-            setTreatmentOnlyClinicalVisible(isTreatmentOnlyMode() && isYes);
-
-            if (isYes && !$("#treatmentDateTime").val()) {
-                $("#treatmentDateTime").val(formatTreatmentDateTime());
-            }
-            if (isYes) {
-                $("#treatmentDentistProfessional").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
-            }
+            applyTreatmentFormLayout();
         }
 
         function writeFindingForm(finding) {
@@ -1335,24 +1500,13 @@
             $("#treatmentSectionAffectedTooth").val(toothLabel);
 
             $("#treatmentFinalDrc").val(finding.finalDrc || "");
-            $("#treatmentDentistProfessional").val(
-                finding.treatmentCompleted === "Yes"
-                    ? (resolveStaffDisplayName(CURRENT_USER_ID) || resolveStaffDisplayName(finding.dentistProfessional) || "")
-                    : ""
-            );
+            $("#treatmentFindingDateTime").val(finding.findingDateTime || "");
             $("#treatmentDateTime").val(finding.treatmentDateTime || "");
             $("#treatmentReason").val(finding.reason || "");
             $("#treatmentNotes").val(finding.notes || "");
 
-            if (finding.treatmentCompleted === "Yes" && !$("#treatmentDateTime").val()) {
-                $("#treatmentDateTime").val(formatTreatmentDateTime());
-            }
-            if (finding.treatmentCompleted === "Yes") {
-                $("#treatmentDentistProfessional").val(resolveStaffDisplayName(CURRENT_USER_ID) || "");
-            }
-
             toggleTreatmentCompletedFields();
-            if (finding.treatmentCompleted === "Yes") {
+            if (isTreatmentOnlyMode() || finding.treatmentCompleted === "Yes") {
                 suppressTreatmentCdtReset = true;
                 try {
                     populatePostServiceTreatmentOptions(postServiceValues);
@@ -1375,8 +1529,8 @@
         function writeTreatmentOnlyClinicalFields(finding) {
             $("#treatmentOnlyDiseaseType").val(finding.diseaseConditionType || "");
             $("#treatmentOnlyPrimaryTooth").prop("checked", !!finding.isPrimaryTooth);
-            populateTreatmentOnlyToothOptions();
             $("#treatmentOnlyAffectedTooth").val(finding.affectedTooth || "");
+            populateTreatmentOnlyToothOptions();
         }
 
         function readTreatmentOnlyClinicalFields() {
@@ -1398,6 +1552,10 @@
                 Swal.fire("Invalid Data", "Affected Tooth is required.", "warning");
                 return null;
             }
+            if (isAffectedToothMissing(clinical.affectedTooth, !!clinical.isPrimaryTooth)) {
+                Swal.fire("Invalid Data", "Affected Tooth cannot be a missing tooth selected in PSR.", "warning");
+                return null;
+            }
             if (clinical.diseaseConditionType === "Restorative") {
                 const allowedSurfaces = getRestorativeSurfacesForTooth(clinical.affectedTooth);
                 if (!allowedSurfaces.length) {
@@ -1410,7 +1568,7 @@
 
         function clearTreatmentForm() {
             editingFindingIndex = null;
-            $("#treatmentFindingFormTitle").text("Add Treatment");
+            $("#treatmentFindingFormTitle").text("Add Finding/Treatment");
             $("#updateTreatmentFindingBtn").html('<i class="fas fa-list-ul"></i> Add to List');
             $("#treatmentFindingDetailsCard").hide();
             $("#treatmentSectionAffectedToothGroup").hide();
@@ -1434,6 +1592,7 @@
             $("#treatmentFinalDrc").val("");
             $("#treatmentDentistProfessional").val("");
             $("#treatmentDateTime").val("");
+            $("#treatmentFindingDateTime").val("");
             $("#treatmentReason").val("");
             $("#treatmentNotes").val("");
             toggleTreatmentCompletedFields();
@@ -1473,7 +1632,7 @@
 
                 applyTreatmentSectionReadOnly();
                 toggleTreatmentCompletedFields();
-                if ($("input[name='TreatmentCompleted']:checked").val() === "Yes") {
+                if (isTreatmentOnly || $("input[name='TreatmentCompleted']:checked").val() === "Yes") {
                     suppressTreatmentCdtReset = true;
                     try {
                         populatePostServiceTreatmentOptions(postServiceValues);
@@ -1499,28 +1658,19 @@
         }
 
         function validateTreatmentSectionForm() {
-            const treatmentCompleted = $("input[name='TreatmentCompleted']:checked").val() || "";
-            if (!treatmentCompleted) {
-                Swal.fire("Invalid Data", "Treatment Completed is required.", "warning");
-                return null;
-            }
-
             const treatmentOnly = isTreatmentOnlyMode();
-            let clinical = null;
-            if (treatmentOnly && treatmentCompleted === "Yes") {
-                clinical = validateTreatmentOnlyClinicalFields();
+            const finalDrc = $("#treatmentFinalDrc").val() || "";
+            let treatmentCompleted = $("input[name='TreatmentCompleted']:checked").val() || "";
+
+            if (treatmentOnly) {
+                const clinical = validateTreatmentOnlyClinicalFields();
                 if (!clinical) {
                     return null;
                 }
-            } else if (treatmentOnly) {
-                clinical = readTreatmentOnlyClinicalFields();
-            }
 
-            if (treatmentCompleted === "Yes") {
                 const postServiceVisible = $("#treatmentPostServiceSection").is(":visible");
                 const postServiceTreatment = getSelectedValues($("#treatmentPostServiceTreatment"));
                 const treatmentCdtCodes = getSelectedValues($("#treatmentSectionCdtCodes"));
-                const finalDrc = $("#treatmentFinalDrc").val() || "";
 
                 if (postServiceVisible && postServiceTreatment.length === 0) {
                     Swal.fire("Invalid Data", "Post Service Treatment is required.", "warning");
@@ -1531,7 +1681,58 @@
                     return null;
                 }
                 if (!finalDrc) {
-                    Swal.fire("Invalid Data", "Procedured DRC is required.", "warning");
+                    Swal.fire("Invalid Data", "DRC is required.", "warning");
+                    return null;
+                }
+
+                if (isFindingOnlyDrc(finalDrc)) {
+                    return {
+                        clinical: clinical,
+                        treatmentCompleted: "",
+                        postServiceTreatment: postServiceTreatment,
+                        treatmentCdtCodes: treatmentCdtCodes,
+                        finalDrc: finalDrc,
+                        dentistProfessional: CURRENT_USER_ID || "",
+                        treatmentDateTime: "",
+                        findingDateTime: $("#treatmentFindingDateTime").val()?.trim() || "",
+                        reason: "",
+                        notes: $("#treatmentNotes").val()?.trim() || "",
+                        treatmentStatus: resolveTreatmentStatus({
+                            treatmentCompleted: "",
+                            finalDrc: finalDrc,
+                            reason: ""
+                        })
+                    };
+                }
+
+                if (!treatmentCompleted) {
+                    Swal.fire("Invalid Data", "Treatment Completed is required.", "warning");
+                    return null;
+                }
+
+                if (treatmentCompleted === "Yes") {
+                    return {
+                        clinical: clinical,
+                        treatmentCompleted: treatmentCompleted,
+                        postServiceTreatment: postServiceTreatment,
+                        treatmentCdtCodes: treatmentCdtCodes,
+                        finalDrc: finalDrc,
+                        dentistProfessional: CURRENT_USER_ID || "",
+                        treatmentDateTime: $("#treatmentDateTime").val()?.trim() || "",
+                        findingDateTime: "",
+                        reason: "",
+                        notes: $("#treatmentNotes").val()?.trim() || "",
+                        treatmentStatus: resolveTreatmentStatus({
+                            treatmentCompleted: treatmentCompleted,
+                            finalDrc: finalDrc,
+                            reason: ""
+                        })
+                    };
+                }
+
+                const reason = $("#treatmentReason").val() || "";
+                if (!reason) {
+                    Swal.fire("Invalid Data", "Reason is required.", "warning");
                     return null;
                 }
 
@@ -1542,7 +1743,50 @@
                     treatmentCdtCodes: treatmentCdtCodes,
                     finalDrc: finalDrc,
                     dentistProfessional: CURRENT_USER_ID || "",
+                    treatmentDateTime: "",
+                    findingDateTime: $("#treatmentFindingDateTime").val()?.trim() || "",
+                    reason: reason,
+                    notes: $("#treatmentNotes").val()?.trim() || "",
+                    treatmentStatus: resolveTreatmentStatus({
+                        treatmentCompleted: treatmentCompleted,
+                        finalDrc: finalDrc,
+                        reason: reason
+                    })
+                };
+            }
+
+            if (!treatmentCompleted) {
+                Swal.fire("Invalid Data", "Treatment Completed is required.", "warning");
+                return null;
+            }
+
+            if (treatmentCompleted === "Yes") {
+                const postServiceVisible = $("#treatmentPostServiceSection").is(":visible");
+                const postServiceTreatment = getSelectedValues($("#treatmentPostServiceTreatment"));
+                const treatmentCdtCodes = getSelectedValues($("#treatmentSectionCdtCodes"));
+
+                if (postServiceVisible && postServiceTreatment.length === 0) {
+                    Swal.fire("Invalid Data", "Post Service Treatment is required.", "warning");
+                    return null;
+                }
+                if (treatmentCdtCodes.length === 0) {
+                    Swal.fire("Invalid Data", "CDT Code is required.", "warning");
+                    return null;
+                }
+                if (!finalDrc) {
+                    Swal.fire("Invalid Data", "DRC is required.", "warning");
+                    return null;
+                }
+
+                return {
+                    clinical: null,
+                    treatmentCompleted: treatmentCompleted,
+                    postServiceTreatment: postServiceTreatment,
+                    treatmentCdtCodes: treatmentCdtCodes,
+                    finalDrc: finalDrc,
+                    dentistProfessional: CURRENT_USER_ID || "",
                     treatmentDateTime: $("#treatmentDateTime").val()?.trim() || "",
+                    findingDateTime: "",
                     reason: "",
                     notes: $("#treatmentNotes").val()?.trim() || "",
                     treatmentStatus: resolveTreatmentStatus({
@@ -1553,32 +1797,29 @@
                 };
             }
 
-            if (treatmentCompleted === "No") {
-                const reason = $("#treatmentReason").val() || "";
-                if (!reason) {
-                    Swal.fire("Invalid Data", "Reason is required.", "warning");
-                    return null;
-                }
-
-                return {
-                    clinical: clinical,
-                    treatmentCompleted: treatmentCompleted,
-                    postServiceTreatment: [],
-                    treatmentCdtCodes: [],
-                    finalDrc: "",
-                    dentistProfessional: "",
-                    treatmentDateTime: "",
-                    reason: reason,
-                    notes: $("#treatmentNotes").val()?.trim() || "",
-                    treatmentStatus: resolveTreatmentStatus({
-                        treatmentCompleted: treatmentCompleted,
-                        finalDrc: "",
-                        reason: reason
-                    })
-                };
+            const reason = $("#treatmentReason").val() || "";
+            if (!reason) {
+                Swal.fire("Invalid Data", "Reason is required.", "warning");
+                return null;
             }
 
-            return null;
+            return {
+                clinical: null,
+                treatmentCompleted: treatmentCompleted,
+                postServiceTreatment: [],
+                treatmentCdtCodes: [],
+                finalDrc: "",
+                dentistProfessional: "",
+                treatmentDateTime: "",
+                findingDateTime: "",
+                reason: reason,
+                notes: $("#treatmentNotes").val()?.trim() || "",
+                treatmentStatus: resolveTreatmentStatus({
+                    treatmentCompleted: treatmentCompleted,
+                    finalDrc: "",
+                    reason: reason
+                })
+            };
         }
 
         function updateFindingFromTreatmentSection() {
@@ -1608,9 +1849,7 @@
 
             if (isNew) {
                 const clinical = validated.clinical || readTreatmentOnlyClinicalFields();
-                const surfacesForStore = validated.treatmentCompleted === "Yes"
-                    ? (validated.postServiceTreatment || [])
-                    : [];
+                const surfacesForStore = validated.postServiceTreatment || [];
                 treatmentFindings.push({
                     id: 0,
                     dentalExamFindingId: null,
@@ -1637,7 +1876,8 @@
                     finalDrc: validated.finalDrc,
                     dentistProfessional: validated.dentistProfessional,
                     treatmentStatus: validated.treatmentStatus,
-                    treatmentDateTime: validated.treatmentDateTime
+                    treatmentDateTime: validated.treatmentDateTime,
+                    findingDateTime: validated.findingDateTime
                 });
             } else {
                 if (isTreatmentOnly && validated.clinical) {
@@ -1647,11 +1887,7 @@
                     existing.classification = TREATMENT_ONLY_CLASSIFICATION;
                 }
                 if (isTreatmentOnly) {
-                    existing.affectedSurfaces = validated.treatmentCompleted === "Yes"
-                        ? (validated.postServiceTreatment || [])
-                        : [];
-                }
-                if (isTreatmentOnly && validated.treatmentCompleted === "Yes") {
+                    existing.affectedSurfaces = validated.postServiceTreatment || [];
                     existing.cdtCodes = validated.treatmentCdtCodes || [];
                 }
 
@@ -1661,6 +1897,7 @@
                 existing.finalDrc = validated.finalDrc;
                 existing.dentistProfessional = validated.dentistProfessional;
                 existing.treatmentDateTime = validated.treatmentDateTime;
+                existing.findingDateTime = validated.findingDateTime;
                 existing.reason = validated.reason;
                 existing.notes = validated.notes;
                 existing.treatmentStatus = validated.treatmentStatus;
@@ -1678,7 +1915,7 @@
 
             editingFindingIndex = null;
             clearTreatmentForm();
-            $("#treatmentFindingFormTitle").text("Add Treatment");
+            $("#treatmentFindingFormTitle").text("Add Finding/Treatment");
             $("#updateTreatmentFindingBtn").html('<i class="fas fa-list-ul"></i> Add to List');
             $("#treatmentFindingDetailsCard").hide();
             $("#treatmentSectionAffectedToothGroup").hide();
@@ -1712,7 +1949,7 @@
             }
 
             editingFindingIndex = index;
-            $("#treatmentFindingFormTitle").text(finding.isTreatmentOnly ? "Edit Treatment" : "Required Treatment Services");
+            $("#treatmentFindingFormTitle").text(finding.isTreatmentOnly ? "Edit Finding/Treatment" : "Required Treatment Services");
             $("#updateTreatmentFindingBtn").html(
                 finding.isTreatmentOnly
                     ? '<i class="fas fa-check-circle"></i> Update Treatment'
@@ -1814,17 +2051,17 @@
                     return;
                 }
 
-                if ($("input[name='TreatmentCompleted']:checked").val() === "Yes") {
-                    populatePostServiceTreatmentOptions([]);
-                    populateTreatmentCdtOptions([]);
-                } else {
-                    populateTreatmentCdtOptions([]);
-                }
+                populatePostServiceTreatmentOptions([]);
+                populateTreatmentCdtOptions([]);
+            });
+
+            $(document).on("change", "#treatmentFinalDrc", function () {
+                toggleTreatmentCompletedFields();
             });
 
             $(document).on("change", "input[name='TreatmentCompleted']", function () {
                 toggleTreatmentCompletedFields();
-                if ($(this).val() !== "Yes") {
+                if ($(this).val() !== "Yes" || isTreatmentOnlyMode()) {
                     return;
                 }
 

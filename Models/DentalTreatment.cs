@@ -100,6 +100,8 @@ namespace Malama.Models
 
         public string? TreatmentDateTime { get; set; }
 
+        public string? FindingDateTime { get; set; }
+
         public int SortOrder { get; set; }
 
         [JsonIgnore]
