@@ -52,7 +52,7 @@ namespace ExcelFilesCompiler.Utilities
             if (string.IsNullOrWhiteSpace(dto.PsrCarrierRisk)
                 || !DentalExamPsr.CarrierRiskOptions.Contains(dto.PsrCarrierRisk, StringComparer.OrdinalIgnoreCase))
             {
-                return "PSR Carrier Risk is required.";
+                return "PSR Caries Risk is required.";
             }
 
             if (string.IsNullOrWhiteSpace(dto.SoftTissuesWnl))

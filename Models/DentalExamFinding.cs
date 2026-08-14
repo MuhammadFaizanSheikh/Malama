@@ -34,6 +34,18 @@ namespace Malama.Models
             "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"
         };
 
+        /// <summary>
+        /// Primary letter to permanent tooth number (aligned with PSR tooth chart labels).
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, int> PrimaryToothToPermanentNumber =
+            new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["A"] = 4, ["B"] = 5, ["C"] = 6, ["D"] = 7, ["E"] = 8,
+                ["F"] = 9, ["G"] = 10, ["H"] = 11, ["I"] = 12, ["J"] = 13,
+                ["K"] = 20, ["L"] = 21, ["M"] = 22, ["N"] = 23, ["O"] = 24,
+                ["P"] = 25, ["Q"] = 26, ["R"] = 27, ["S"] = 28, ["T"] = 29
+            };
+
         public const string ClassificationClass2 =
             "Class 2 - Treatment needed but not expected within 12 months";
 

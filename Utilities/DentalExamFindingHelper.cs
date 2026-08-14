@@ -72,7 +72,10 @@ namespace ExcelFilesCompiler.Utilities
 
     public static class DentalExamFindingValidator
     {
-        public static string? ValidateFinding(DentalExamFindingDto finding, int rowNumber)
+        public static string? ValidateFinding(
+            DentalExamFindingDto finding,
+            int rowNumber,
+            IReadOnlyCollection<int>? missingTeeth = null)
         {
             var prefix = $"Finding #{rowNumber}: ";
 
@@ -88,6 +91,11 @@ namespace ExcelFilesCompiler.Utilities
             if (!allowedTeeth.Contains(finding.AffectedTooth.Trim(), StringComparer.OrdinalIgnoreCase))
             {
                 return prefix + "Affected Tooth selection is invalid.";
+            }
+
+            if (IsMissingAffectedTooth(finding.AffectedTooth, finding.IsPrimaryTooth, missingTeeth))
+            {
+                return prefix + "Affected Tooth cannot be a missing tooth selected in PSR.";
             }
 
             if (string.IsNullOrWhiteSpace(finding.DiseaseConditionType)
@@ -145,18 +153,88 @@ namespace ExcelFilesCompiler.Utilities
             return null;
         }
 
-        public static string? ValidateFindings(IReadOnlyList<DentalExamFindingDto> findings)
+        public static string? ValidateFindings(
+            IReadOnlyList<DentalExamFindingDto> findings,
+            IReadOnlyCollection<int>? missingTeeth = null)
         {
             for (var i = 0; i < findings.Count; i++)
             {
-                var error = ValidateFinding(findings[i], i + 1);
+                var error = ValidateFinding(findings[i], i + 1, missingTeeth);
                 if (error != null)
                 {
                     return error;
                 }
             }
 
+            var missingConflict = ValidateMissingTeethNotUsedInFindings(findings, missingTeeth);
+            if (missingConflict != null)
+            {
+                return missingConflict;
+            }
+
             return null;
+        }
+
+        public static string? ValidateMissingTeethNotUsedInFindings(
+            IReadOnlyList<DentalExamFindingDto> findings,
+            IReadOnlyCollection<int>? missingTeeth)
+        {
+            if (findings == null || findings.Count == 0 || missingTeeth == null || missingTeeth.Count == 0)
+            {
+                return null;
+            }
+
+            var usedPermanentTeeth = new HashSet<int>();
+            foreach (var finding in findings)
+            {
+                var permanent = ResolveAffectedToothToPermanentNumber(finding.AffectedTooth, finding.IsPrimaryTooth);
+                if (permanent.HasValue)
+                {
+                    usedPermanentTeeth.Add(permanent.Value);
+                }
+            }
+
+            foreach (var missingTooth in missingTeeth.Distinct().OrderBy(t => t))
+            {
+                if (usedPermanentTeeth.Contains(missingTooth))
+                {
+                    return $"Tooth {missingTooth} cannot be marked missing because it is already used in a Dental Finding.";
+                }
+            }
+
+            return null;
+        }
+
+        public static int? ResolveAffectedToothToPermanentNumber(string? affectedTooth, bool isPrimaryTooth)
+        {
+            if (string.IsNullOrWhiteSpace(affectedTooth))
+            {
+                return null;
+            }
+
+            var tooth = affectedTooth.Trim();
+            if (isPrimaryTooth)
+            {
+                return DentalExamFindingConstants.PrimaryToothToPermanentNumber.TryGetValue(tooth, out var permanentNumber)
+                    ? permanentNumber
+                    : null;
+            }
+
+            return int.TryParse(tooth, out var permanentTooth) ? permanentTooth : null;
+        }
+
+        public static bool IsMissingAffectedTooth(
+            string? affectedTooth,
+            bool isPrimaryTooth,
+            IReadOnlyCollection<int>? missingTeeth)
+        {
+            if (missingTeeth == null || missingTeeth.Count == 0)
+            {
+                return false;
+            }
+
+            var permanent = ResolveAffectedToothToPermanentNumber(affectedTooth, isPrimaryTooth);
+            return permanent.HasValue && missingTeeth.Contains(permanent.Value);
         }
 
         public static bool RequiresSurfaces(string? diseaseConditionType)

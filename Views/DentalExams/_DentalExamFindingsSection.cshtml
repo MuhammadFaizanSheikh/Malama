@@ -230,6 +230,7 @@
     (function () {
         const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
         const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
+        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalExamFindingConstants.PrimaryToothToPermanentNumber);
         const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
         const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
@@ -316,19 +317,113 @@
             return value.length === 1 && "ABIJKLST".indexOf(value.toUpperCase()) >= 0;
         }
 
+        function resolveFindingAffectedToothToPermanent(tooth, isPrimary) {
+            const value = (tooth || "").toString().trim();
+            if (!value) {
+                return null;
+            }
+
+            if (isPrimary) {
+                const permanentNumber = PRIMARY_TO_PERMANENT[value] || PRIMARY_TO_PERMANENT[value.toUpperCase()];
+                return permanentNumber ? parseInt(permanentNumber, 10) : null;
+            }
+
+            const permanentNumber = parseInt(value, 10);
+            return isNaN(permanentNumber) ? null : permanentNumber;
+        }
+
+        function getDentalFindingUsedPermanentTeeth() {
+            const used = [];
+            dentalFindings.forEach(function (finding) {
+                const permanentNumber = resolveFindingAffectedToothToPermanent(
+                    finding.affectedTooth,
+                    !!finding.isPrimaryTooth
+                );
+                if (permanentNumber != null && used.indexOf(permanentNumber) < 0) {
+                    used.push(permanentNumber);
+                }
+            });
+            return used;
+        }
+
+        window.getDentalFindingUsedPermanentTeeth = getDentalFindingUsedPermanentTeeth;
+
+        function getPsrMissingToothNumbers() {
+            const missing = [];
+            $("#psrInteractiveToothChart .psr-tooth-input:checked").each(function () {
+                const tooth = parseInt($(this).attr("data-tooth") || $(this).val(), 10);
+                if (!isNaN(tooth)) {
+                    missing.push(tooth);
+                }
+            });
+            return missing;
+        }
+
+        function isAffectedToothMissing(tooth, isPrimary) {
+            const value = (tooth || "").toString().trim();
+            if (!value) {
+                return false;
+            }
+
+            const missing = getPsrMissingToothNumbers();
+            if (!missing.length) {
+                return false;
+            }
+
+            if (isPrimary) {
+                const permanentNumber = PRIMARY_TO_PERMANENT[value] || PRIMARY_TO_PERMANENT[value.toUpperCase()];
+                return !!permanentNumber && missing.indexOf(permanentNumber) >= 0;
+            }
+
+            const permanentNumber = parseInt(value, 10);
+            return !isNaN(permanentNumber) && missing.indexOf(permanentNumber) >= 0;
+        }
+
         function populateToothOptions() {
             const isPrimary = $("#findingPrimaryTooth").is(":checked");
             const teeth = isPrimary ? PRIMARY_TEETH : PERMANENT_TEETH;
             const current = $("#findingAffectedTooth").val();
             const $select = $("#findingAffectedTooth");
+            const missing = getPsrMissingToothNumbers();
             $select.empty().append('<option value=""></option>');
             teeth.forEach(function (tooth) {
-                $select.append($("<option>").val(tooth).text(tooth));
+                const toothValue = String(tooth);
+                let isMissing = false;
+                if (isPrimary) {
+                    const permanentNumber = PRIMARY_TO_PERMANENT[toothValue] || PRIMARY_TO_PERMANENT[toothValue.toUpperCase()];
+                    isMissing = !!permanentNumber && missing.indexOf(permanentNumber) >= 0;
+                } else {
+                    const permanentNumber = parseInt(toothValue, 10);
+                    isMissing = !isNaN(permanentNumber) && missing.indexOf(permanentNumber) >= 0;
+                }
+
+                const $option = $("<option>").val(toothValue);
+                if (isMissing) {
+                    $option.text(toothValue + " - missing tooth").prop("disabled", true);
+                } else {
+                    $option.text(toothValue);
+                }
+                $select.append($option);
             });
-            if (current && teeth.includes(current)) {
+
+            if (current && teeth.map(String).indexOf(String(current)) >= 0 && !isAffectedToothMissing(current, isPrimary)) {
                 $select.val(current);
+            } else {
+                $select.val("");
+                if (current && isAffectedToothMissing(current, isPrimary)
+                    && $("#findingDiseaseType").val() === "Restorative") {
+                    populateSurfaceOptions([]);
+                    populateCdtOptions([]);
+                }
             }
         }
+
+        window.refreshDentalFindingToothOptions = function () {
+            if (!$("#findingAffectedTooth").length) {
+                return;
+            }
+            populateToothOptions();
+        };
 
         function populateSurfaceOptions(selectedValues) {
             const diseaseType = $("#findingDiseaseType").val();
@@ -488,6 +583,10 @@
                 Swal.fire("Invalid Data", "Affected Tooth is required.", "warning");
                 return null;
             }
+            if (isAffectedToothMissing(finding.affectedTooth, !!finding.isPrimaryTooth)) {
+                Swal.fire("Invalid Data", "Affected Tooth cannot be a missing tooth selected in PSR.", "warning");
+                return null;
+            }
             if (!finding.diseaseConditionType) {
                 Swal.fire("Invalid Data", "Disease / Condition Type is required.", "warning");
                 return null;
@@ -544,8 +643,8 @@
         function writeFindingForm(finding) {
             $("#findingDiseaseType").val(finding.diseaseConditionType || "");
             $("#findingPrimaryTooth").prop("checked", !!finding.isPrimaryTooth).prop("disabled", false);
-            populateToothOptions();
             $("#findingAffectedTooth").val(finding.affectedTooth || "");
+            populateToothOptions();
             suppressRestorativeCdtReset = true;
             try {
                 populateSurfaceOptions(finding.affectedSurfaces || []);

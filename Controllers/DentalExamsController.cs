@@ -482,7 +482,7 @@ namespace ExcelFilesCompiler.Controllers
 
             if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
             {
-                var findingsError = DentalExamFindingValidator.ValidateFindings(dto.Findings);
+                var findingsError = DentalExamFindingValidator.ValidateFindings(dto.Findings, dto.PsrSelectedTeeth);
                 if (findingsError != null)
                 {
                     return Task.FromResult<string?>(findingsError);

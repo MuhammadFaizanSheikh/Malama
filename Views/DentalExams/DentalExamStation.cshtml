@@ -1036,8 +1036,33 @@
         applySubsequentReadOnlyMode();
     }
 
+    function isPsrToothUsedInDentalFindings(toothNumber) {
+        const tooth = parseInt(toothNumber, 10);
+        if (isNaN(tooth)) {
+            return false;
+        }
+        if (typeof window.getDentalFindingUsedPermanentTeeth !== "function") {
+            return false;
+        }
+        const used = window.getDentalFindingUsedPermanentTeeth() || [];
+        return used.indexOf(tooth) >= 0;
+    }
+
+    function showPsrToothUsedInFindingMessage(toothNumber) {
+        Swal.fire(
+            "Cannot select missing tooth",
+            "Tooth " + toothNumber + " is already used in a Dental Finding.",
+            "warning"
+        );
+    }
+
     function setPsrToothSelected(toothNumber, selected) {
         const tooth = String(toothNumber);
+        if (selected && isPsrToothUsedInDentalFindings(tooth)) {
+            showPsrToothUsedInFindingMessage(tooth);
+            return false;
+        }
+
         const $input = $("#psrToothCheck_" + tooth);
         const $chart = $("#psrInteractiveToothChart");
         const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
@@ -1050,6 +1075,10 @@
         }
 
         setFindingReadonlyToothSelected(tooth, selected);
+        if (typeof window.refreshDentalFindingToothOptions === "function") {
+            window.refreshDentalFindingToothOptions();
+        }
+        return true;
     }
 
     function setFindingReadonlyToothSelected(toothNumber, selected) {
@@ -1086,7 +1115,12 @@
         if (!$input.length) {
             return;
         }
-        setPsrToothSelected(toothNumber, !$input.is(":checked"));
+        const willSelect = !$input.is(":checked");
+        if (willSelect && isPsrToothUsedInDentalFindings(toothNumber)) {
+            showPsrToothUsedInFindingMessage(toothNumber);
+            return;
+        }
+        setPsrToothSelected(toothNumber, willSelect);
     }
 
     function initPsrToothChart() {
@@ -1105,9 +1139,21 @@
         });
 
         $chart.find(".psr-tooth-input").each(function () {
-            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+            // Sync UI from existing checked state; do not re-apply finding conflict on load.
+            const tooth = $(this).attr("data-tooth");
+            const selected = $(this).is(":checked");
+            const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+            const $img = $btn.find(".psr-tooth-img");
+            $btn.attr("aria-pressed", selected ? "true" : "false");
+            if ($img.length) {
+                $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+            }
+            setFindingReadonlyToothSelected(tooth, selected);
         });
         syncFindingReadonlyToothChartFromPsr();
+        if (typeof window.refreshDentalFindingToothOptions === "function") {
+            window.refreshDentalFindingToothOptions();
+        }
 
         if ($chart.attr("data-readonly") === "true" || SUBSEQUENT_READONLY) {
             $chart.find(".psr-tooth-input").prop("disabled", true);
@@ -1120,7 +1166,14 @@
         });
 
         $chart.off("change.psrTooth").on("change.psrTooth", ".psr-tooth-input", function () {
-            setPsrToothSelected($(this).attr("data-tooth"), $(this).is(":checked"));
+            const tooth = $(this).attr("data-tooth");
+            if ($(this).is(":checked") && isPsrToothUsedInDentalFindings(tooth)) {
+                $(this).prop("checked", false);
+                showPsrToothUsedInFindingMessage(tooth);
+                setPsrToothSelected(tooth, false);
+                return;
+            }
+            setPsrToothSelected(tooth, $(this).is(":checked"));
         });
     }
 
