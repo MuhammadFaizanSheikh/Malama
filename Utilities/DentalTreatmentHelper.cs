@@ -235,7 +235,46 @@ namespace ExcelFilesCompiler.Utilities
                 }
             }
 
+            var anesthesiaDates = new HashSet<DateTime>();
+            foreach (var record in dto.AnesthesiaRecords)
+            {
+                var date = TryParseAnesthesiaDate(record.Date);
+                if (!date.HasValue)
+                {
+                    continue;
+                }
+
+                if (!anesthesiaDates.Add(date.Value.Date))
+                {
+                    return "Only one anesthesia record can be added per day.";
+                }
+            }
+
             return null;
+        }
+
+        private static DateTime? TryParseAnesthesiaDate(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var trimmed = value.Trim();
+            string[] formats = { "MM/dd/yyyy", "M/d/yyyy", "MM/dd/yyyy h:mm tt", "M/d/yyyy h:mm tt" };
+            if (DateTime.TryParseExact(
+                    trimmed,
+                    formats,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None,
+                    out var exact))
+            {
+                return exact.Date;
+            }
+
+            return DateTime.TryParse(trimmed, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed)
+                ? parsed.Date
+                : null;
         }
 
         public static string ComputeStatus(string? smFinalClassification, IEnumerable<DentalTreatmentFindingFormDto>? findings)

@@ -217,6 +217,7 @@
                     '<tr id="anesthesiaEmptyRow"><td colspan="' + colCount + '" class="text-center text-muted py-4">No anesthesia records added yet.</td></tr>'
                 );
                 syncDentalTreatmentAnesthesiaJson();
+                updateAddAnesthesiaButtonVisibility();
                 return;
             }
 
@@ -246,6 +247,37 @@
                 );
             });
             syncDentalTreatmentAnesthesiaJson();
+            updateAddAnesthesiaButtonVisibility();
+        }
+
+        function anesthesiaDateKey(value) {
+            const date = parseAnesthesiaDate(value);
+            return date ? formatAnesthesiaDate(date) : String(value || "").trim();
+        }
+
+        function hasAnesthesiaRecordForDate(dateValue, excludeIndex) {
+            const key = anesthesiaDateKey(dateValue);
+            if (!key) {
+                return false;
+            }
+            return anesthesiaRecords.some(function (record, index) {
+                if (excludeIndex != null && index === excludeIndex) {
+                    return false;
+                }
+                return anesthesiaDateKey(record.date) === key;
+            });
+        }
+
+        function hasAnesthesiaRecordForToday() {
+            return hasAnesthesiaRecordForDate(formatAnesthesiaDate());
+        }
+
+        function updateAddAnesthesiaButtonVisibility() {
+            if (!CAN_EDIT_TREATMENT || hasAnesthesiaRecordForToday()) {
+                $("#addAnesthesiaBtn").hide();
+                return;
+            }
+            $("#addAnesthesiaBtn").show();
         }
 
         function syncDentalTreatmentAnesthesiaJson() {
@@ -318,6 +350,11 @@
             const record = readAnesthesiaRecord();
             if (!record) {
                 Swal.fire("Invalid Data", "Please select # of Carpules for at least one Type.", "warning");
+                return;
+            }
+
+            if (hasAnesthesiaRecordForDate(record.date, editingAnesthesiaIndex)) {
+                Swal.fire("Invalid Data", "Only one anesthesia record can be added per day.", "warning");
                 return;
             }
 
@@ -403,6 +440,11 @@
 
             $("#addAnesthesiaBtn").on("click", function () {
                 if (!CAN_EDIT_TREATMENT) {
+                    return;
+                }
+                if (hasAnesthesiaRecordForToday()) {
+                    Swal.fire("Invalid Data", "Only one anesthesia record can be added per day.", "warning");
+                    updateAddAnesthesiaButtonVisibility();
                     return;
                 }
                 clearAnesthesiaForm();
