@@ -9,105 +9,299 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- Bootstrap CSS -->
-
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
     <link href="~/css/fixedColumns.dataTables.min.css" rel="stylesheet" />
     <link href="~/css/jquery.dataTables.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/all.min.css" />@* it is font-awesome library *@
+    <link rel="stylesheet" href="~/css/all.min.css" />
     <link href="~/css/select2.min.css" rel="stylesheet" />
     <link href="~/css/jquery-ui.css" rel="stylesheet" />
     <link href="~/css/flatpickr.min.css" rel="stylesheet" />
-    
+    <link href="~/css/plus-jakarta-sans.css" rel="stylesheet" />
 
     <style>
-        /* Custom styling for sidebar */
+        :root {
+            --malama-indigo: rgba(80, 90, 201, 1);
+            --malama-indigo-soft: rgba(80, 90, 201, 0.12);
+            --malama-indigo-mid: rgba(80, 90, 201, 0.22);
+            --sidebar-bg: #151821;
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 78px;
+            --page-bg-1: #eef1f8;
+            --page-bg-2: #f7f8fc;
+            --surface: #ffffff;
+            --text-main: #1f2430;
+            --text-muted: #6b7285;
+            --border-soft: rgba(31, 36, 48, 0.08);
+            --shadow-soft: 0 10px 30px rgba(21, 24, 33, 0.08);
+            --radius-lg: 18px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif; /* Or any other font you prefer */
-        }
-
-        h1, h2, h3 {
-            font-family: inherit; /* Or any specific font you prefer */
-            font-weight: normal; /* Ensure consistency across pages */
-        }
-
-        #sidebar {
-            width: 250px; /* Fixed width for the sidebar */
-            position: fixed; /* Keep the sidebar fixed */
-            top: 0;
-            left: 0;
-            height: 100vh; /* Full height of the viewport */
-            background-color: #1c1f26; /* Dark background */
-            padding-top: 20px;
-            color: #fff;
-            z-index: 1000;
-        }
-
-            #sidebar .sidebar-header {
-                background-color: rgba(80, 90, 201, 1); /* Header color */
-                padding: 15px; /* Keep padding */
-                font-size: 20px; /* Larger header font size */
-                font-weight: bold;
-                text-align: center;
-                margin: 0; /* Remove margin to eliminate space above */
-            }
-
-            #sidebar ul {
-                list-style-type: none; /* Remove bullets from the menu items */
-                padding-left: 0; /* Remove default padding */
-            }
-
-            #sidebar .nav-item {
-                margin-bottom: 10px; /* Add space between menu items */
-            }
-
-            #sidebar .nav-link {
-                color: #cfd8dc !important; /* Light gray color */
-                font-size: 18px !important; /* Font size */
-                padding: 15px 20px !important; /* Padding */
-                border-radius: 5px; /* Rounded corners */
-                display: block; /* Fill the space */
-                text-decoration: none; /* Remove underline */
-                font-family: inherit !important; /* Inherit font family to ensure consistency */
-                font-weight: normal !important; /* Ensure normal font weight for all links */
-                transition: background-color 0.3s, color 0.3s; /* Smooth transition */
-            }
-
-                #sidebar .nav-link:hover {
-                    background-color: rgba(80, 90, 201, 1) !important; /* Background color for hover */
-                    color: #fff !important; /* Font color on hover */
-                }
-
-                #sidebar .nav-link.active {
-                    background-color: rgba(80, 90, 201, 1) !important; /* Active background */
-                    color: #fff !important; /* Active font color */
-                }
-
-                /* Ensure the active link styles are consistent */
-                #sidebar .nav-link:hover,
-                #sidebar .nav-link.active {
-                    font-family: inherit !important; /* Ensure font family remains the same */
-                    font-size: 18px !important; /* Keep the same font size */
-                    font-weight: normal !important; /* Keep font weight normal */
-                }
-
-        main {
-            margin-left: 250px; /* Offset the main content by sidebar width */
-            padding: 20px;
-            background-color: #f4f5f7;
+            margin: 0;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(1200px 500px at 10% -10%, rgba(80, 90, 201, 0.16), transparent 55%),
+                radial-gradient(900px 420px at 100% 0%, rgba(56, 189, 248, 0.10), transparent 50%),
+                linear-gradient(180deg, var(--page-bg-1) 0%, var(--page-bg-2) 100%);
             min-height: 100vh;
         }
 
-        .sidebar-logo {
-            max-width: 140px;
-            height: auto;
-            display: block;
-            margin: 0 auto;
+        h1, h2, h3, h4, h5, h6 {
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        #sidebar {
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background:
+                linear-gradient(180deg, rgba(80, 90, 201, 0.18) 0%, transparent 28%),
+                var(--sidebar-bg);
+            padding: 18px 14px 24px;
+            color: #fff;
+            z-index: 1000;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.28s ease, padding 0.28s ease;
+            overflow: hidden;
         }
 
         #sidebar .sidebar-header {
-            background-color: transparent;
+            background: transparent;
+            padding: 10px 8px 18px;
+            text-align: center;
+            margin: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .sidebar-logo {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25));
+            transition: opacity 0.2s ease, max-width 0.28s ease, transform 0.28s ease;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 8px;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            z-index: 2;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--malama-indigo);
+            border-color: transparent;
+            transform: scale(1.04);
+        }
+
+        .sidebar-toggle:focus-visible {
+            outline: 2px solid rgba(80, 90, 201, 0.7);
+            outline-offset: 2px;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            padding: 18px 0 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #sidebar .nav-item {
+            margin: 0;
+        }
+
+        #sidebar .nav-link {
+            color: rgba(226, 232, 240, 0.88) !important;
+            font-size: 0.95rem !important;
+            padding: 12px 14px !important;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-family: inherit !important;
+            font-weight: 500 !important;
+            border: 1px solid transparent;
+            transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, border-color 0.25s ease, padding 0.28s ease, justify-content 0.28s ease;
+            white-space: nowrap;
+        }
+
+        #sidebar .nav-link i {
+            width: 18px;
+            flex: 0 0 18px;
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        #sidebar .nav-link .nav-text {
+            overflow: hidden;
+            opacity: 1;
+            max-width: 180px;
+            transition: opacity 0.18s ease, max-width 0.28s ease;
+        }
+
+        #sidebar .nav-link:hover {
+            background-color: var(--malama-indigo-soft) !important;
+            color: #fff !important;
+            border-color: var(--malama-indigo-mid);
+            transform: translateX(3px);
+        }
+
+        #sidebar .nav-link.active {
+            background-color: var(--malama-indigo) !important;
+            color: #fff !important;
+            box-shadow: 0 8px 20px rgba(80, 90, 201, 0.35);
+        }
+
+        #sidebar .nav-link:hover,
+        #sidebar .nav-link.active {
+            font-family: inherit !important;
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
+        }
+
+        #sidebar form {
+            margin: 0;
+        }
+
+        #sidebar button.nav-link {
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            padding: 22px 28px 36px;
+            min-height: 100vh;
+            background: transparent;
+            transition: margin-left 0.28s ease;
+        }
+
+        body.sidebar-collapsed {
+            --sidebar-width: var(--sidebar-width-collapsed);
+        }
+
+        body.sidebar-collapsed #sidebar {
+            width: var(--sidebar-width-collapsed);
+            padding: 18px 10px 24px;
+        }
+
+        body.sidebar-collapsed #sidebar .sidebar-header {
+            padding: 42px 0 16px;
+        }
+
+        body.sidebar-collapsed .sidebar-logo {
+            max-width: 42px;
+            transform: scale(1.05);
+        }
+
+        body.sidebar-collapsed .sidebar-toggle {
+            right: 50%;
+            transform: translateX(50%);
+        }
+
+        body.sidebar-collapsed .sidebar-toggle:hover {
+            transform: translateX(50%) scale(1.04);
+        }
+
+        body.sidebar-collapsed #sidebar .nav-link {
+            justify-content: center;
+            padding: 12px 0 !important;
+            gap: 0;
+            transform: none;
+        }
+
+        body.sidebar-collapsed #sidebar .nav-link:hover {
+            transform: none;
+        }
+
+        body.sidebar-collapsed #sidebar .nav-link .nav-text {
+            opacity: 0;
+            max-width: 0;
+            pointer-events: none;
+        }
+
+        body.sidebar-collapsed #sidebar button.nav-link {
+            text-align: center;
+        }
+
+        .dashboard-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            margin-bottom: 22px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--malama-indigo-soft);
+            color: var(--malama-indigo);
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .dashboard-chip i {
+            opacity: 0.9;
+        }
+
+        .dashboard-user {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            text-align: right;
+        }
+
+        .dashboard-user .name {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .dashboard-user .roles {
+            color: var(--text-muted);
+            font-size: 0.8rem;
         }
 
         .main-logo {
@@ -117,160 +311,199 @@
             margin: 0 auto;
         }
 
+        .content {
+            animation: dashboardFadeIn 0.45s ease;
+        }
 
+        @@keyframes dashboardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 900px) {
+            :root {
+                --sidebar-width: 220px;
+            }
+
+            main {
+                padding: 16px;
+            }
+
+            .dashboard-topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .dashboard-user {
+                align-items: flex-start;
+                text-align: left;
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem("malama.sidebarCollapsed") === "1") {
+                    document.documentElement.classList.add("sidebar-collapsed-pending");
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        html.sidebar-collapsed-pending body,
+        body.sidebar-collapsed {
+            --sidebar-width: var(--sidebar-width-collapsed);
+        }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem("malama.sidebarCollapsed") === "1") {
+                    document.body.classList.add("sidebar-collapsed");
+                }
+                document.documentElement.classList.remove("sidebar-collapsed-pending");
+            } catch (e) { }
+        })();
+    </script>
     @{
         var user = await UserManager.GetUserAsync(User);
         bool isEventUser = user?.IsEventUser ?? false;
-        // var isEventAssignedClaim = User.Claims.FirstOrDefault(c => c.Type == "IsEventAssignedToStaff")?.Value;
-        // bool isEventAssigned = string.Equals(isEventAssignedClaim, "true", StringComparison.OrdinalIgnoreCase);
+        var eventId = User.Claims.FirstOrDefault(c => c.Type == "EventIdString")?.Value;
+        var eventVersion = User.Claims.FirstOrDefault(c => c.Type == "EventVersion")?.Value;
+        var roleClaims = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(r => r.Value);
+        var rolesDisplay = string.Join(", ", roleClaims);
     }
 
-    <nav id="sidebar">
+    <nav id="sidebar" aria-label="Main navigation">
         <div class="sidebar-header">
-            <a href="/Dashboard/Index" class="logo-link">
+            <button type="button"
+                    id="sidebarToggle"
+                    class="sidebar-toggle"
+                    aria-expanded="true"
+                    aria-controls="sidebar"
+                    title="Collapse menu">
+                <i class="fas fa-angle-double-left" aria-hidden="true"></i>
+            </button>
+            <a href="/Dashboard/Index" class="logo-link" title="Malama">
                 <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="sidebar-logo" />
             </a>
         </div>
 
-
         <ul class="nav flex-column">
-
-            <!-- Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="/Dashboard/Index">
-                    Dashboard
+                <a class="nav-link" href="/Dashboard/Index" title="Dashboard">
+                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                    <span class="nav-text">Dashboard</span>
                 </a>
             </li>
 
-            <!-- Show Select Event only if session is null -->
             @if (isEventUser || User.IsInRole("Event Manager"))
             {
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="EventSelection" asp-action="Index">
-                        Select Event
+                    <a class="nav-link" asp-controller="EventSelection" asp-action="Index" title="Select Event">
+                        <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                        <span class="nav-text">Select Event</span>
                     </a>
                 </li>
             }
 
-            <!-- Change Password -->
             <li class="nav-item">
-                <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
-                    Change Password
+                <a class="nav-link" asp-controller="Account" asp-action="ChangePassword" title="Change Password">
+                    <i class="fas fa-key" aria-hidden="true"></i>
+                    <span class="nav-text">Change Password</span>
                 </a>
             </li>
 
-            <!-- Logout -->
             <li class="nav-item">
-                <form asp-action="Logout" asp-controller="Account" method="post" style="display:inline;">
-                    <button type="submit" class="nav-link" style="border:none; background:none; padding:0;">
-                        Logout
+                <form asp-action="Logout" asp-controller="Account" method="post">
+                    <button type="submit" class="nav-link" title="Logout">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                        <span class="nav-text">Logout</span>
                     </button>
                 </form>
             </li>
         </ul>
     </nav>
 
-
-    <!-- Main Content -->
     <main>
-        <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="dashboard-topbar">
             <div>
-                @{
-                    var eventId = User.Claims.FirstOrDefault(c => c.Type == "EventIdString")?.Value;
-                    var eventVersion = User.Claims.FirstOrDefault(c => c.Type == "EventVersion")?.Value;
-                }
                 @if (!string.IsNullOrEmpty(eventId) && !string.IsNullOrEmpty(eventVersion))
                 {
-                    <span>Event ID:</span>
-                    <span>@($"{eventId} (V{eventVersion})")</span>
+                    <span class="dashboard-chip">
+                        <i class="fas fa-calendar-alt"></i>
+                        Event @($"{eventId} (V{eventVersion})")
+                    </span>
                 }
-            </div>
-            <div>
-                <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="main-logo" style="display:none"/>
-            </div>
-            <div>
-                @{
-                    var roleClaims = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(r => r.Value);
-                    var rolesDisplay = string.Join(", ", roleClaims);
-                }
-                <span class="text-muted" >
-                    @User.Identity.Name
-                    @if (!string.IsNullOrEmpty(rolesDisplay))
-                    {
-                        <text> (@rolesDisplay)</text>
-                    }
-                </span>
-                @* <span class="text-muted">
-                @User.Identity.Name
-                @if (!string.IsNullOrEmpty(ViewBag.UserRole))
+                else
                 {
-                <text> (@ViewBag.UserRole)</text>
+                    <span class="dashboard-chip">
+                        <i class="fas fa-home"></i>
+                        Malama Workspace
+                    </span>
                 }
-                </span> *@
-                <!-- Alternatively, if you want to use a custom property from Identity, fetch the user data from UserManager -->
+            </div>
+            <div style="display:none;">
+                <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="main-logo" />
+            </div>
+            <div class="dashboard-user">
+                <span class="name">@User.Identity?.Name</span>
+                @if (!string.IsNullOrEmpty(rolesDisplay))
+                {
+                    <span class="roles">@rolesDisplay</span>
+                }
             </div>
         </div>
         <div class="content">
             <script src="~/js/jquery-3.6.0.min.js"></script>
             <script src="~/js/jquery.dataTables.min.js"></script>
-
             <script src="~/js/select2.min.js"></script>
             <script src="~/js/jquery-ui.min.js"></script>
             <script src="~/js/jspdf.umd.min.js"></script>
-
-
-
 
             @RenderBody()
         </div>
     </main>
 
-    <!-- Bootstrap JS (optional) -->
     <script src="~/js/flatpickr.js"></script>
     <script src="~/js/popper.min.js"></script>
     <script src="~/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/dataTables.fixedColumns.min.js"></script>
     <script src="~/js/jquery.validate.min.js"></script>
     <script src="~/js/jquery.validate.unobtrusive.min.js"></script>
-
     <script src="~/js/xlsx.full.min.js"></script>
     <script src="~/js/JsBarcode.all.min.js"></script>
     <script src="~/js/sweetalert2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.10/signalr.min.js"></script>
+    <script src="~/js/signalr.min.js"></script>
     <script src="~/js/Common/yesNoModal.js"></script>
     <script src="~/js/Common/Methods.js"></script>
 
     <script>
         console.log("Temperature alert scripts loaded");
 
-        // Build SignalR connection
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/temperatureHub")       // Match your hub URL
-            .withAutomaticReconnect()         // Auto-reconnect if disconnected
+            .withUrl("/temperatureHub")
+            .withAutomaticReconnect()
             .build();
 
-        // Queue to hold incoming alerts
         const alertQueue = [];
-
-        // Flag to indicate if an alert is currently showing
         let alertShowing = false;
 
-        // Listen for SignalR alerts
         connection.on("TemperatureAlert", function (alert) {
-            // Add alert to queue
             alertQueue.push(alert);
-
-            // Show next alert if none is currently showing
             if (!alertShowing) {
                 showNextAlert();
             }
         });
 
-        // Function to show alerts sequentially
         function showNextAlert() {
             if (alertQueue.length === 0) {
                 alertShowing = false;
@@ -290,23 +523,58 @@
                 confirmButtonText: 'OK'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Notify server that user acknowledged
                     fetch('/Container/AcknowledgeNotification', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(alert.notificationId) // Send notification ID
+                        body: JSON.stringify(alert.notificationId)
                     }).catch(err => console.error('Ack failed', err));
                 }
 
-                // Show next alert in queue
                 showNextAlert();
             });
         }
 
-        // Start the SignalR connection
         connection.start()
             .then(() => console.log("SignalR connected"))
             .catch(err => console.error("SignalR connection error:", err));
+    </script>
+
+    <script>
+        (function () {
+            const storageKey = "malama.sidebarCollapsed";
+            const body = document.body;
+            const toggleBtn = document.getElementById("sidebarToggle");
+            const toggleIcon = toggleBtn ? toggleBtn.querySelector("i") : null;
+
+            function applySidebarState(collapsed) {
+                body.classList.toggle("sidebar-collapsed", collapsed);
+                document.documentElement.classList.remove("sidebar-collapsed-pending");
+
+                if (!toggleBtn || !toggleIcon) return;
+
+                toggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+                toggleBtn.setAttribute("title", collapsed ? "Expand menu" : "Collapse menu");
+                toggleBtn.setAttribute("aria-label", collapsed ? "Expand menu" : "Collapse menu");
+                toggleIcon.className = collapsed ? "fas fa-angle-double-right" : "fas fa-angle-double-left";
+            }
+
+            let collapsed = false;
+            try {
+                collapsed = localStorage.getItem(storageKey) === "1";
+            } catch (e) { }
+
+            applySidebarState(collapsed);
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function () {
+                    collapsed = !body.classList.contains("sidebar-collapsed");
+                    applySidebarState(collapsed);
+                    try {
+                        localStorage.setItem(storageKey, collapsed ? "1" : "0");
+                    } catch (e) { }
+                });
+            }
+        })();
     </script>
 
     @await Html.PartialAsync("_YesNoModal")

@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Select Event";
-    Layout = null; // No layout for standalone form
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -10,107 +10,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"] - Your Application Name</title>
+    <title>@ViewData["Title"] - Malama</title>
 
-    <!-- Bootstrap CSS (CDN) -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
-    <link href="~/css/jquery.dataTables.min.css" rel="stylesheet" />
-    <link href="~/css/font-awesome.css" rel="stylesheet" />
-
-    <script src="~/js/jquery-3.6.0.min.js"></script>
-    <script src="~/js/popper.min.js"></script>
-    <script src="~/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/jquery.dataTables.min.js"></script>
+    <link href="~/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <link href="~/css/plus-jakarta-sans.css" rel="stylesheet" />
 
     <style>
-        body {
-            background-color: rgba(80, 90, 201, 0.1);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
+        :root {
+            --malama-indigo: rgba(80, 90, 201, 1);
+            --malama-indigo-soft: rgba(80, 90, 201, 0.12);
+            --text-main: #1f2430;
+            --text-muted: #6b7285;
+            --surface: rgba(255, 255, 255, 0.92);
+            --border-soft: rgba(31, 36, 48, 0.08);
         }
 
-        .event-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(1100px 520px at 8% -8%, rgba(80, 90, 201, 0.28), transparent 55%),
+                radial-gradient(900px 480px at 100% 0%, rgba(56, 189, 248, 0.14), transparent 52%),
+                radial-gradient(700px 420px at 70% 110%, rgba(80, 90, 201, 0.12), transparent 50%),
+                linear-gradient(165deg, #e8ecf8 0%, #f4f6fb 48%, #eef1f8 100%);
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(80, 90, 201, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(80, 90, 201, 0.035) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .event-shell {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
+            animation: eventRise 0.55s ease both;
+        }
+
+        .event-panel {
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            box-shadow:
+                0 20px 50px rgba(21, 24, 33, 0.1),
+                0 2px 0 rgba(255, 255, 255, 0.7) inset;
+            backdrop-filter: blur(12px);
+            padding: 1.7rem 1.55rem 1.45rem;
+            overflow: visible;
+            position: relative;
+        }
+
+        .event-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--malama-indigo), transparent);
+        }
+
+        .event-brand {
+            text-align: center;
+            margin: 0 0 1.35rem;
+            padding-bottom: 1.15rem;
+            border-bottom: 1px solid rgba(31, 36, 48, 0.08);
+        }
+
+        .event-brand img {
+            width: min(120px, 38vw);
+            height: auto;
+            display: block;
+            margin: 0.15rem auto 0.7rem;
+            filter: drop-shadow(0 10px 20px rgba(80, 90, 201, 0.18));
+        }
+
+        .event-brand-name {
+            margin: 0;
+            font-size: clamp(1.55rem, 3.5vw, 1.85rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--malama-indigo);
+            line-height: 1.1;
+        }
+
+        .event-brand-tag {
+            margin: 0.35rem 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .event-panel-title {
+            margin: 0 0 0.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+
+        .event-panel-sub {
+            margin: 0 0 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .event-panel .form-label {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #4b5160;
+            margin-bottom: 0.4rem;
+        }
+
+        .event-field {
+            margin-bottom: 1.15rem;
+            position: relative;
+        }
+
+        .event-field .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 40px;
+            color: #8b91a1;
+            pointer-events: none;
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+
+        .event-panel .form-select,
+        .event-panel .form-control {
+            min-height: 46px;
+            border-radius: 12px;
+            border-color: rgba(31, 36, 48, 0.12);
+            padding: 0.65rem 0.9rem 0.65rem 2.35rem;
+            font-size: 0.95rem;
+            box-shadow: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .event-panel .select2-container {
+            width: 100% !important;
+        }
+
+        .event-panel .select2-container--default .select2-selection--single {
+            min-height: 46px;
+            border-radius: 12px;
+            border: 1px solid rgba(31, 36, 48, 0.12);
+            padding: 0.45rem 0.9rem 0.45rem 2.15rem;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .event-panel .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-main);
+            line-height: 1.4;
+            padding: 0;
+            font-size: 0.95rem;
+        }
+
+        .event-panel .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #8b91a1;
+        }
+
+        .event-panel .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 44px;
+            right: 8px;
+        }
+
+        .event-panel .select2-container--default.select2-container--focus .select2-selection--single,
+        .event-panel .select2-container--default.select2-container--open .select2-selection--single {
+            border-color: rgba(80, 90, 201, 0.55);
+            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.16);
+        }
+
+        .select2-dropdown {
+            border: 1px solid rgba(31, 36, 48, 0.12);
+            border-radius: 12px;
+            overflow: visible;
+            box-shadow: 0 14px 30px rgba(21, 24, 33, 0.12);
+            font-family: "Plus Jakarta Sans", sans-serif;
+            z-index: 2000 !important;
+        }
+
+        .select2-container--open {
+            z-index: 2000;
+        }
+
+        .select2-container--default .select2-results > .select2-results__options {
+            max-height: 280px !important;
+            overflow-y: auto !important;
+        }
+
+        .select2-search--dropdown .select2-search__field {
+            border-radius: 8px;
+            border: 1px solid rgba(31, 36, 48, 0.14);
+            padding: 0.45rem 0.65rem;
+            outline: none;
+        }
+
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: rgba(80, 90, 201, 0.55);
+        }
+
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+            background-color: rgba(80, 90, 201, 1);
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 0.55rem 0.75rem;
+            font-size: 0.92rem;
         }
 
         .btn-theme {
-            background-color: rgba(80, 90, 201, 1);
-            border-color: rgba(80, 90, 201, 1);
-            color: white;
+            background: var(--malama-indigo);
+            border: 1px solid var(--malama-indigo);
+            color: #fff;
+            border-radius: 12px;
+            min-height: 48px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
-            .btn-theme:hover {
-                background-color: rgba(80, 90, 201, 0.8);
-                border-color: rgba(80, 90, 201, 0.8);
-            }
+        .btn-theme:hover,
+        .btn-theme:focus {
+            background: rgb(60, 70, 180);
+            border-color: rgb(60, 70, 180);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(80, 90, 201, 0.28);
+        }
 
-        .logo-container {
-            margin-bottom: 40px;
+        .event-panel .alert {
+            border-radius: 12px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .event-panel .alert-info {
+            background: var(--malama-indigo-soft);
+            color: var(--malama-indigo);
+        }
+
+        .event-footer {
+            margin-top: 1rem;
             text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
         }
 
-        .logo {
-            width: 200px;
-            height: auto;
+        @@keyframes eventRise {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .event-panel {
+                padding: 1.3rem 1.15rem 1.2rem;
+                border-radius: 18px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="event-shell">
+        <div class="event-panel">
+            <div class="event-brand">
+                <img src="/images/Mālama-Circular.png" alt="Malama">
+                <h1 class="event-brand-name">Malama</h1>
+                <p class="event-brand-tag">Choose the event you want to work in</p>
+            </div>
 
-    <div class="event-container">
-        <div class="logo-container">
-            <img src="/images/Mālama-Circular.png" alt="Malama Logo" class="logo">
+            <h2 class="event-panel-title">Select Event</h2>
+            <p class="event-panel-sub">Pick an event to continue to your dashboard.</p>
+
+            <form method="post" asp-action="AssignEventRole">
+                <div class="event-field">
+                    <label class="form-label" for="selectedEventId">Event</label>
+                    <i class="fas fa-calendar-check input-icon" aria-hidden="true"></i>
+                    <select name="selectedEventId" id="selectedEventId" class="form-select" required>
+                        <option value="">-- Choose an Event --</option>
+                        @if (Model != null)
+                        {
+                            foreach (var eventModel in Model)
+                            {
+                                <option value="@eventModel.EventId">@eventModel.EventName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-theme w-100">
+                    <i class="fas fa-arrow-right me-1" aria-hidden="true"></i>
+                    Continue
+                </button>
+            </form>
+
+            @if (ViewBag.Message != null)
+            {
+                <div class="alert alert-info mt-3 mb-0">
+                    @ViewBag.Message
+                </div>
+            }
+
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger mt-3 mb-0">
+                    @ViewBag.ErrorMessage
+                </div>
+            }
         </div>
 
-        <h2 class="text-center mb-4" style="color: rgba(80, 90, 201, 1);">Select Event</h2>
-
-        <form method="post" asp-action="AssignEventRole">
-            <div class="form-group">
-                <label class="font-weight-bold">Select Event</label>
-                <select name="selectedEventId" class="form-control">
-                    <option value="">-- Choose an Event --</option>
-                    @if (Model != null)
-                    {
-                        foreach (var eventModel in Model)
-                        {
-                            <option value="@eventModel.EventId">@eventModel.EventName</option>
-                        }
-                    }
-                </select>
-
-            </div>
-
-            <button type="submit" class="btn btn-theme btn-block">Continue</button>
-        </form>
-
-        @if (ViewBag.Message != null)
-        {
-            <div class="alert alert-info mt-3">
-                @ViewBag.Message
-            </div>
-        }
-
-        @if (ViewBag.ErrorMessage != null)
-        {
-            <div class="alert alert-danger mt-3">
-                @ViewBag.ErrorMessage
-            </div>
-        }
+        <p class="event-footer">Your access is scoped to the selected event</p>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/select2.min.js"></script>
+    <script>
+        $(function () {
+            $('#selectedEventId').select2({
+                width: '100%',
+                placeholder: '-- Choose an Event --',
+                allowClear: true,
+                minimumResultsForSearch: 0
+            });
+        });
+    </script>
 </body>
 </html>

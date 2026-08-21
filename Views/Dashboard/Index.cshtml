@@ -2,294 +2,463 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
-<div class="dashboard-icons">
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountRegistration_View"))
-    {
-        <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
-            <img src="/images/Admin.jpg" alt="Admin" />
-            <span>Admin</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventUser_View"))
-    {
-        <a asp-controller="EventUsers" asp-action="Index" class="icon-box">
-            <img src="/images/EventUsers.jpg" alt="Admin" />
-            <span>Event Users</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DawsonUser_View"))
-    {
-        <a asp-controller="DawsonUsers" asp-action="Index" class="icon-box">
-            <img src="/images/Dawson User.jpg" alt="Admin" />
-            <span>Dawson Users</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ReportProcessor_View"))
-     {
-        <a asp-controller="ReportProcessor" asp-action="Index" class="icon-box">
-            <img src="/images/Report Processor.jpg" alt="Report Processor" />
-            <span>Report Processor</span>
-        </a>
-     }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ScrubbedSheetUploader_View"))
-    {
-        <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
-            <img src="/images/ScrubbedSheetUploader.png" alt="Malama Check In Out" />
-            <span>Scrubbed Sheet Uploader</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
-    {
-        <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
-            <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
-            <span>Malama Check In Out (Staff)</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SubContractorInfo_View"))
-    {
-        <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
-            <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
-            <span>Sub - Contractor Info</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ContractDetails_View"))
-    {
-        <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
-            <img src="/images/ContractDetails.jpg" alt="Contract Details" />
-            <span>Contract Details</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventManagement_View"))
-    {
-        <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
-            <img src="/images/Event Management.png" alt="Event Management" />
-            <span>Pre Event Management</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_View"))
-    {
-        <a asp-controller="PostEventManagement" asp-action="Index" class="icon-box">
-            <img src="/images/Post Event Management.jpg" alt="Post Event Management" />
-            <span>Post Event Management</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_View"))
-    {
-    <a asp-controller="PostEventDataAnalysis" asp-action="Index" class="icon-box">
-            <img src="/images/Post Event Data Analysis.jpg" alt="Post Event Data Analysis" />
-        <span>Post Event Data Analysis</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventStaff_View"))
-    {
-        <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
-            <img src="/images/Event Satff Icon.jpg" alt="Event Satff" />
-            <span>Event Staff</span>
-        </a>
-    }
-
-
-
-
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Audiologist_View"))
-    {
-        <a asp-controller="Audiologist" asp-action="Index" class="icon-box">
-            <img src="/images/Audiologist.jpg" alt="Audiologist" />
-            <span>Audiologist</span>
-        </a>
-    }
-
-
-    <a asp-controller="CaseManagement" asp-action="Index" class="icon-box" style="display:none;">
-        <img src="/images/Case Management.jpg" alt="Case Management" />
-        <span>Case Management</span>
-    </a>
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalExams_View"))
-    {
-        <a asp-controller="DentalExams" asp-action="Index" class="icon-box">
-            <img src="/images/Dental Exams.jpg" alt="Dental Exams" />
-            <span>Dental Exams</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalTreatment_View"))
-    {
-        <a asp-controller="DentalTreatment" asp-action="Index" class="icon-box">
-            <img src="/images/Dental Treatment.jpg" alt="Dental Treatment" />
-            <span>Dental Treatment</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
-    {
-        <a asp-controller="DentalXRay" asp-action="Index" class="icon-box">
-            <img src="/images/Dental X-Ray.jpg" alt="Dental X-Ray" />
-            <span>Dental X-Ray</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EKG_View"))
-    {
-        <a asp-controller="EKG" asp-action="Index" class="icon-box">
-            <img src="/images/EKG.jpg" alt="EKG" />
-            <span>EKG</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Hearing_View"))
-    {
-        <a asp-controller="Hearing" asp-action="Index" class="icon-box">
-            <img src="/images/Hearing.jpg" alt="Hearing" />
-            <span>Hearing</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
-    {
-        <a asp-controller="ImmunizationStation" asp-action="Index" class="icon-box">
-            <img src="/images/Immunizations.jpg" alt="Immunizations" />
-            <span>Immunizations</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationVaccineInfo_View"))
-    {
-        <a asp-controller="ImmunizationVaccineInfo" asp-action="Index" class="icon-box">
-            <img src="/images/Vaccine Info.png" alt="Vaccine Info" />
-            <span>Vaccine Info</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
-    {
-        <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
-            <img src="/images/Monitor Container Temperature.png" alt="Vaccine information icon" />
-            <span>Monitor Container Temperature</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "LabStation_View"))
-    {
-        <a asp-controller="LabStation" asp-action="Index" class="icon-box">
-            <img src="/images/Labs.jpg" alt="Labs" />
-            <span>Labs</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Optometrist_View"))
-    {
-        <a asp-controller="Optometrist" asp-action="Index" class="icon-box">
-            <img src="/images/Optometrist.jpg" alt="Optometrist" />
-            <span>Optometrist</span>
-        </a>
-    }
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PanoramicDentalXRay_View"))
-    {
-        <a asp-controller="PanoramicDentalXRay" asp-action="Index" class="icon-box">
-            <img src="/images/Panoramic Dental X-Ray.jpg" alt="Panoramic Dental X-Ray" />
-            <span>Panoramic Dental X-Ray</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "RecordsReview_View"))
-    {
-        <a asp-controller="RecordsReview" asp-action="Index" class="icon-box">
-            <img src="/images/Records Review.jpg" alt="Records Review" />
-            <span>Records Review</span>
-        </a>
-    }
-
-
-
-    <a asp-controller="SelfAssessment" asp-action="Index" class="icon-box" style="display:none;">
-        <img src="/images/Self-Assessment.jpg" alt="Self-Assessment" />
-        <span>Self-Assessment</span>
-    </a>
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VisionScreening_View"))
-    {
-        <a asp-controller="VisionScreening" asp-action="Index" class="icon-box">
-            <img src="/images/Vision Screening.jpg" alt="Vision Screening" />
-            <span>Vision Screening</span>
-        </a>
-    }
-
-
-    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VitalStation_View"))
-    {
-        <a asp-controller="VitalStation" asp-action="Index" class="icon-box">
-            <img src="/images/Vitals.jpg" alt="Vitals" />
-            <span>Vitals</span>
-        </a>
-    }
+<section class="dashboard-home">
    
-</div>
+
+    <div class="dashboard-icons">
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "AccountRegistration_View"))
+        {
+            <a asp-controller="AccountRegistration" asp-action="Register" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Admin.jpg" alt="Admin" />
+                </span>
+                <span class="icon-label">Admin</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventUser_View"))
+        {
+            <a asp-controller="EventUsers" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/EventUsers.jpg" alt="Event Users" />
+                </span>
+                <span class="icon-label">Event Users</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DawsonUser_View"))
+        {
+            <a asp-controller="DawsonUsers" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Dawson User.jpg" alt="Dawson Users" />
+                </span>
+                <span class="icon-label">Dawson Users</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ReportProcessor_View"))
+        {
+            <a asp-controller="ReportProcessor" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Report Processor.jpg" alt="Report Processor" />
+                </span>
+                <span class="icon-label">Report Processor</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ScrubbedSheetUploader_View"))
+        {
+            <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="admin" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/ScrubbedSheetUploader.png" alt="Scrubbed Sheet Uploader" />
+                </span>
+                <span class="icon-label">Scrubbed Sheet Uploader</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "CheckInOutStaff_View"))
+        {
+            <a asp-controller="ExcelFileUploader" asp-action="Index" asp-route-userType="client" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Check-In.jpg" alt="Malama Check In Out" />
+                </span>
+                <span class="icon-label">Malama Check In Out (Staff)</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "SubContractorInfo_View"))
+        {
+            <a asp-controller="SubContractorInfo" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Sub-contractorInfo.jpg" alt="Sub - Contractor Info" />
+                </span>
+                <span class="icon-label">Sub - Contractor Info</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ContractDetails_View"))
+        {
+            <a asp-controller="ContractDetails" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/ContractDetails.jpg" alt="Contract Details" />
+                </span>
+                <span class="icon-label">Contract Details</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventManagement_View"))
+        {
+            <a asp-controller="EventManagement" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Event Management.png" alt="Event Management" />
+                </span>
+                <span class="icon-label">Pre Event Management</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventManagement_View"))
+        {
+            <a asp-controller="PostEventManagement" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Post Event Management.jpg" alt="Post Event Management" />
+                </span>
+                <span class="icon-label">Post Event Management</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PostEventDataAnalysis_View"))
+        {
+            <a asp-controller="PostEventDataAnalysis" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Post Event Data Analysis.jpg" alt="Post Event Data Analysis" />
+                </span>
+                <span class="icon-label">Post Event Data Analysis</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EventStaff_View"))
+        {
+            <a asp-controller="EventStaff" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Event Satff Icon.jpg" alt="Event Staff" />
+                </span>
+                <span class="icon-label">Event Staff</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Audiologist_View"))
+        {
+            <a asp-controller="Audiologist" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Audiologist.jpg" alt="Audiologist" />
+                </span>
+                <span class="icon-label">Audiologist</span>
+            </a>
+        }
+
+        <a asp-controller="CaseManagement" asp-action="Index" class="icon-box" style="display:none;">
+            <span class="icon-media">
+                <img src="/images/Case Management.jpg" alt="Case Management" />
+            </span>
+            <span class="icon-label">Case Management</span>
+        </a>
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalExams_View"))
+        {
+            <a asp-controller="DentalExams" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Dental Exams.jpg" alt="Dental Exams" />
+                </span>
+                <span class="icon-label">Dental Exams</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalTreatment_View"))
+        {
+            <a asp-controller="DentalTreatment" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Dental Treatment.jpg" alt="Dental Treatment" />
+                </span>
+                <span class="icon-label">Dental Treatment</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
+        {
+            <a asp-controller="DentalXRay" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Dental X-Ray.jpg" alt="Dental X-Ray" />
+                </span>
+                <span class="icon-label">Dental X-Ray</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "EKG_View"))
+        {
+            <a asp-controller="EKG" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/EKG.jpg" alt="EKG" />
+                </span>
+                <span class="icon-label">EKG</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Hearing_View"))
+        {
+            <a asp-controller="Hearing" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Hearing.jpg" alt="Hearing" />
+                </span>
+                <span class="icon-label">Hearing</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
+        {
+            <a asp-controller="ImmunizationStation" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Immunizations.jpg" alt="Immunizations" />
+                </span>
+                <span class="icon-label">Immunizations</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationVaccineInfo_View"))
+        {
+            <a asp-controller="ImmunizationVaccineInfo" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Vaccine Info.png" alt="Vaccine Info" />
+                </span>
+                <span class="icon-label">Vaccine Info</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ImmunizationStation_View"))
+        {
+            <a asp-controller="Container" asp-action="Index" asp-route-eventId="" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Monitor Container Temperature.png" alt="Monitor Container Temperature" />
+                </span>
+                <span class="icon-label">Monitor Container Temperature</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "LabStation_View"))
+        {
+            <a asp-controller="LabStation" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Labs.jpg" alt="Labs" />
+                </span>
+                <span class="icon-label">Labs</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "Optometrist_View"))
+        {
+            <a asp-controller="Optometrist" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Optometrist.jpg" alt="Optometrist" />
+                </span>
+                <span class="icon-label">Optometrist</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "PanoramicDentalXRay_View"))
+        {
+            <a asp-controller="PanoramicDentalXRay" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Panoramic Dental X-Ray.jpg" alt="Panoramic Dental X-Ray" />
+                </span>
+                <span class="icon-label">Panoramic Dental X-Ray</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "RecordsReview_View"))
+        {
+            <a asp-controller="RecordsReview" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Records Review.jpg" alt="Records Review" />
+                </span>
+                <span class="icon-label">Records Review</span>
+            </a>
+        }
+
+        <a asp-controller="SelfAssessment" asp-action="Index" class="icon-box" style="display:none;">
+            <span class="icon-media">
+                <img src="/images/Self-Assessment.jpg" alt="Self-Assessment" />
+            </span>
+            <span class="icon-label">Self-Assessment</span>
+        </a>
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VisionScreening_View"))
+        {
+            <a asp-controller="VisionScreening" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Vision Screening.jpg" alt="Vision Screening" />
+                </span>
+                <span class="icon-label">Vision Screening</span>
+            </a>
+        }
+
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "VitalStation_View"))
+        {
+            <a asp-controller="VitalStation" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Vitals.jpg" alt="Vitals" />
+                </span>
+                <span class="icon-label">Vitals</span>
+            </a>
+        }
+    </div>
+</section>
+
 <style>
-.dashboard-icons {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    padding: 20px;
-}
+    .dashboard-home {
+        --tile-accent: rgba(80, 90, 201, 1);
+    }
+
+    .dashboard-home-intro {
+        margin-bottom: 1.25rem;
+        padding: 0.25rem 0.35rem 0.5rem;
+    }
+
+    .dashboard-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tile-accent);
+    }
+
+    .dashboard-title {
+        margin: 0;
+        font-size: clamp(1.7rem, 2.4vw, 2.15rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #1f2430;
+    }
+
+    .dashboard-subtitle {
+        margin: 0.4rem 0 0;
+        color: #6b7285;
+        font-size: 0.98rem;
+    }
+
+    .dashboard-icons {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+        gap: 1rem;
+        padding: 0.25rem 0 0.5rem;
+    }
 
     .icon-box {
-        flex-basis: calc(20% - 20px); /* 20% width minus margin/padding */
-        max-width: calc(20% - 20px);
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        text-align: center;
-        height: 120px;
-        background-color: #ffffff;
-        border-radius: 10px;
+        justify-content: flex-start;
+        gap: 0.85rem;
+        min-height: 168px;
+        padding: 1.1rem 0.9rem 1rem;
         text-decoration: none;
-        color: #333;
-        margin: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        color: #1f2430;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 248, 252, 0.96) 100%);
+        border: 1px solid rgba(31, 36, 48, 0.08);
+        border-radius: 18px;
+        box-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        overflow: hidden;
+        transition:
+            transform 0.28s ease,
+            box-shadow 0.28s ease,
+            border-color 0.28s ease,
+            background 0.28s ease;
+        animation: tileRise 0.45s ease both;
     }
 
-        .icon-box:hover {
-            background-color: #d6e6f2;
-            transform: translateY(-5px);
+    .icon-box::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--tile-accent), transparent);
+        opacity: 0;
+        transition: opacity 0.28s ease;
+    }
+
+    .icon-box:hover,
+    .icon-box:focus-visible {
+        transform: translateY(-7px);
+        border-color: rgba(80, 90, 201, 0.35);
+        box-shadow:
+            0 18px 36px rgba(80, 90, 201, 0.16),
+            0 8px 18px rgba(21, 24, 33, 0.08);
+        background: #fff;
+        color: #1f2430;
+        outline: none;
+    }
+
+    .icon-box:hover::before,
+    .icon-box:focus-visible::before {
+        opacity: 1;
+    }
+
+    .icon-media {
+        width: 78px;
+        height: 78px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        background:
+            radial-gradient(circle at 30% 25%, rgba(80, 90, 201, 0.16), transparent 55%),
+            linear-gradient(160deg, #f4f6ff 0%, #eef2fb 100%);
+        border: 1px solid rgba(80, 90, 201, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        transition: transform 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .icon-box:hover .icon-media {
+        transform: scale(1.04);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.18);
+    }
+
+    .icon-box img {
+        width: 54px;
+        height: 54px;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+
+    .icon-label {
+        font-size: 0.92rem;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        max-width: 12.5rem;
+    }
+
+    .dashboard-icons .icon-box:nth-child(1) { animation-delay: 0.02s; }
+    .dashboard-icons .icon-box:nth-child(2) { animation-delay: 0.04s; }
+    .dashboard-icons .icon-box:nth-child(3) { animation-delay: 0.06s; }
+    .dashboard-icons .icon-box:nth-child(4) { animation-delay: 0.08s; }
+    .dashboard-icons .icon-box:nth-child(5) { animation-delay: 0.10s; }
+    .dashboard-icons .icon-box:nth-child(6) { animation-delay: 0.12s; }
+    .dashboard-icons .icon-box:nth-child(7) { animation-delay: 0.14s; }
+    .dashboard-icons .icon-box:nth-child(8) { animation-delay: 0.16s; }
+    .dashboard-icons .icon-box:nth-child(n+9) { animation-delay: 0.18s; }
+
+    @@keyframes tileRise {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .dashboard-icons {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+        }
+
+        .icon-box {
+            min-height: 150px;
+            padding: 0.95rem 0.7rem;
+        }
+
+        .icon-media {
+            width: 68px;
+            height: 68px;
+            border-radius: 16px;
         }
 
         .icon-box img {
-            width: 75px;
-            height: 70px;
-            margin-bottom: 10px;
+            width: 46px;
+            height: 46px;
         }
-
-        .icon-box span {
-            font-size: 16px;
-        }
-
-    .dashboard-icons {
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        padding: 20px;
     }
 </style>

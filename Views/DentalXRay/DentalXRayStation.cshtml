@@ -47,44 +47,288 @@
 }
 
 <style>
-    #page-heading { text-align: center; margin: 20px auto; }
-    .btn-general {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-        color: white;
+    .dxr-station {
+        --dxr-indigo: rgba(80, 90, 201, 1);
+        --dxr-indigo-soft: rgba(80, 90, 201, 0.12);
+        --dxr-indigo-mid: rgba(80, 90, 201, 0.22);
+        --dxr-text: #1f2430;
+        --dxr-muted: #6b7285;
+        --dxr-surface: #ffffff;
+        --dxr-border: rgba(31, 36, 48, 0.08);
+        --dxr-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --dxr-radius: 16px;
     }
-    .btn-general:hover {
-        background-color: rgba(60, 70, 180, 1);
-        border-color: rgba(60, 70, 180, 1);
-        color: white;
+
+    .dxr-station .btn-general {
+        background: var(--dxr-indigo);
+        border: 1px solid var(--dxr-indigo);
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-    h2, h3 { color: rgba(80, 90, 201, 1); }
+
+    .dxr-station .btn-general:hover:not(:disabled) {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
+    }
+
+    .dxr-station .btn-general:disabled {
+        opacity: 0.55;
+    }
+
+    .dxr-station .btn-back-confirm {
+        border-radius: 10px;
+        font-weight: 600;
+        background: #fff;
+        color: #4b5160;
+        border: 1px solid rgba(31, 36, 48, 0.14);
+    }
+
+    .dxr-station .btn-back-confirm:hover {
+        background: #f3f4f8;
+        color: #1f2430;
+        border-color: rgba(31, 36, 48, 0.22);
+    }
+
+    .dxr-hero {
+        margin-bottom: 1.25rem;
+        padding: 0.1rem 0.15rem 0.25rem;
+    }
+
+    .dxr-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dxr-indigo);
+    }
+
+    .dxr-title {
+        margin: 0;
+        font-size: clamp(1.45rem, 2.1vw, 1.9rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dxr-text);
+    }
+
+    .dxr-subtitle {
+        margin: 0.4rem 0 0;
+        color: var(--dxr-muted);
+        font-size: 0.95rem;
+    }
+
+    .dxr-panel {
+        background: var(--dxr-surface);
+        border: 1px solid var(--dxr-border);
+        border-radius: var(--dxr-radius);
+        box-shadow: var(--dxr-shadow);
+        padding: 1.15rem 1.25rem 1.2rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dxr-panel-title {
+        margin: 0 0 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dxr-text);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .dxr-panel-title i {
+        color: var(--dxr-indigo);
+    }
+
+    .dxr-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem 1rem;
+    }
+
+    .dxr-info-item {
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #f8f9fc 0%, #f3f5fa 100%);
+        border: 1px solid var(--dxr-border);
+    }
+
+    .dxr-info-label {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--dxr-muted);
+    }
+
+    .dxr-info-value {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--dxr-text);
+        word-break: break-word;
+    }
+
+    .dxr-station .form-label {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #4b5160;
+    }
+
+    .dxr-station .form-control,
+    .dxr-station .form-select {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+    }
+
+    .dxr-station .form-control:focus,
+    .dxr-station .form-select:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .dxr-station .card,
+    .dxr-station .xray-upload-card {
+        border: 1px solid var(--dxr-border) !important;
+        border-radius: 14px !important;
+        box-shadow: var(--dxr-shadow);
+        background: var(--dxr-surface);
+        overflow: hidden;
+    }
+
+    .dxr-station .xray-upload-card .card-body {
+        padding: 1rem 1.05rem 1.1rem;
+    }
+
+    .dxr-station .xray-upload-card .card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dxr-text);
+        margin-bottom: 0.75rem;
+    }
+
+    .dxr-station .open-xray-picker,
+    .dxr-station .xray-zoom-in,
+    .dxr-station .xray-zoom-out {
+        background: var(--dxr-indigo) !important;
+        border-color: var(--dxr-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .dxr-station .open-xray-picker:hover,
+    .dxr-station .xray-zoom-in:hover,
+    .dxr-station .xray-zoom-out:hover {
+        background: rgb(60, 70, 180) !important;
+        border-color: rgb(60, 70, 180) !important;
+    }
+
+    .dxr-station .preview-xray-file,
+    .dxr-station .xray-zoom-reset,
+    .dxr-station #addPaCardBtn {
+        border-radius: 8px;
+        font-weight: 600;
+        border-color: var(--dxr-indigo-mid);
+        color: var(--dxr-indigo);
+    }
+
+    .dxr-station .preview-xray-file:hover,
+    .dxr-station .xray-zoom-reset:hover,
+    .dxr-station #addPaCardBtn:hover {
+        background: var(--dxr-indigo-soft);
+        border-color: var(--dxr-indigo);
+        color: var(--dxr-indigo);
+    }
+
+    .dxr-station .remove-xray-file,
+    .dxr-station .remove-pa-card {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .dxr-station .xray-file-status {
+        padding: 0.55rem 0.7rem;
+        border-radius: 10px;
+        background: #f7f8fc;
+        border: 1px solid var(--dxr-border);
+    }
+
+    .dxr-notice {
+        margin: 0 0 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        background: var(--dxr-indigo-soft);
+        border: 1px solid var(--dxr-indigo-mid);
+        color: var(--dxr-indigo);
+        font-weight: 700;
+    }
+
+    .dxr-notice.is-warning {
+        background: rgba(217, 119, 6, 0.1);
+        border-color: rgba(217, 119, 6, 0.28);
+        color: #b45309;
+    }
+
+    .dxr-footer-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        padding: 1rem 0 0.25rem;
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(180deg, transparent, rgba(247, 248, 252, 0.95) 28%);
+        z-index: 5;
+    }
+
     .xray-cards-row {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
     }
+
     @@media (max-width: 992px) {
         .xray-cards-row { grid-template-columns: 1fr; }
+        .dxr-info-grid { grid-template-columns: 1fr; }
     }
-    .xray-upload-card { border: 1px solid #dee2e6; }
+
     .xray-upload-full-width { width: 100%; }
     .xray-preview-viewport-full { height: 360px; }
-    .bwx-upload-mode-option { margin-bottom: 0.5rem; }
+    .bwx-upload-mode-option { margin-bottom: 0.65rem; }
+
     .xray-preview-viewport {
         width: 100%;
         height: 280px;
         overflow: auto;
-        border: 1px solid #ced4da;
-        background: #f8f9fa;
+        border: 1px solid rgba(31, 36, 48, 0.1);
+        border-radius: 12px;
+        background:
+            linear-gradient(45deg, #eef0f5 25%, transparent 25%),
+            linear-gradient(-45deg, #eef0f5 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #eef0f5 75%),
+            linear-gradient(-45deg, transparent 75%, #eef0f5 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        background-color: #f4f6fa;
     }
-    .xray-preview-viewport.can-pan {
-        cursor: grab;
-    }
+
+    .xray-preview-viewport.can-pan { cursor: grab; }
     .xray-preview-viewport.can-pan.is-panning {
         cursor: grabbing;
         user-select: none;
     }
+
     .xray-preview-viewport img {
         display: block;
         width: 100%;
@@ -94,16 +338,43 @@
         -webkit-user-drag: none;
         user-select: none;
     }
+
     .read-only-style {
-        background-color: #f8f9fa;
+        background-color: #f3f5fa !important;
         pointer-events: none;
-        border-color: #ced4da;
+        border-color: rgba(31, 36, 48, 0.1) !important;
     }
+
     .condition-detail { display: none; }
-    .condition-item { margin-bottom: 0.75rem; }
+    .condition-item { margin-bottom: 0.85rem; }
+
+    .dxr-station .condition-item .form-check {
+        padding: 0.55rem 0.7rem;
+        border-radius: 10px;
+        background: #f7f8fc;
+        border: 1px solid transparent;
+    }
+
+    .dxr-station .condition-item .form-check:hover {
+        border-color: var(--dxr-indigo-mid);
+    }
+
+    .questionnaire-detail,
+    .tobacco-type-detail { display: none; }
+
+    #tobaccoDetailsSection {
+        border: 1px solid var(--dxr-border) !important;
+        border-radius: 12px !important;
+        background: #f9fafc;
+    }
 </style>
 
-<h2 id="page-heading">Edit Service Member at Dental X-Ray Station</h2>
+<section class="dxr-station">
+<div class="dxr-hero">
+    <p class="dxr-kicker">Clinical station</p>
+    <h1 class="dxr-title" id="page-heading">Dental X-Ray Station</h1>
+    <p class="dxr-subtitle">Review member details, complete the questionnaire, and upload required X-Ray images.</p>
+</div>
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -130,43 +401,43 @@
     <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
     <input type="hidden" name="GoToVitalStation" id="GoToVitalStationFlag" value="false" />
 
-    <h3 class="mb-4">Personal Information</h3>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Full Name:</span> @sm?.FullName</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DOD ID:</span> @sm?.DodId</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @sm?.Barcode</p>
-                </div>
+    <div class="dxr-panel">
+        <h2 class="dxr-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
+        <div class="dxr-info-grid">
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">Full Name</span>
+                <p class="dxr-info-value">@sm?.FullName</p>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DOB:</span> @sm?.Dob</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Age:</span> @sm?.Age</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Sex:</span> @sm?.Sex</p>
-                </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">DOD ID</span>
+                <p class="dxr-info-value">@sm?.DodId</p>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
-                </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">Routing Sheet Barcode</span>
+                <p class="dxr-info-value">@sm?.Barcode</p>
+            </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">DOB</span>
+                <p class="dxr-info-value">@sm?.Dob</p>
+            </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">Age</span>
+                <p class="dxr-info-value">@sm?.Age</p>
+            </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">Sex</span>
+                <p class="dxr-info-value">@sm?.Sex</p>
+            </div>
+            <div class="dxr-info-item">
+                <span class="dxr-info-label">DRC</span>
+                <p class="dxr-info-value">@sm?.Drc</p>
             </div>
         </div>
     </div>
 
-    <hr class="my-4" />
-
-    <h3 class="mb-4">Questionnaire</h3>
-    @await Html.PartialAsync("_DentalXRayQuestionnaire", questionnaire)
+    <div class="dxr-panel">
+        <h2 class="dxr-panel-title"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Questionnaire</h2>
+        @await Html.PartialAsync("_DentalXRayQuestionnaire", questionnaire)
 
     @if (isFemale)
     {
@@ -180,9 +451,9 @@
             </div>
         </div>
 
-        <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
+        <div class="row mb-3" id="pregnancyApprovalSection" style="display:none;">
             <div class="col-md-12">
-                <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
+                <p class="dxr-notice is-warning">Approval is needed from Service Member before going to X-Ray</p>
                 <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
                     <option value=""></option>
                     <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
@@ -203,61 +474,58 @@
         string GetConditionDetail(string condition) =>
             savedByCondition.TryGetValue(condition, out var item) ? item.Detail ?? "" : "";
     }
-    <div class="card mb-4">
-        <div class="card-body">
-            <label class="form-label fw-semibold">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
-            <div class="row condition-checkboxes">
-                @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
-                {
-                    var condition = DentalXRayQuestionnaire.HealthConditions[ci];
-                    var isSelected = IsConditionSelected(condition);
-                    var detail = GetConditionDetail(condition);
-                    <div class="col-md-6 condition-item">
-                        <input type="hidden" name="HealthConditionDetails[@ci].Condition" value="@condition" />
-                        <div class="form-check">
-                            <input class="form-check-input condition-checkbox" type="checkbox"
-                                   name="ApplicableHealthConditions"
-                                   value="@condition"
-                                   id="condition_@ci"
-                                   checked="@isSelected" />
-                            <label class="form-check-label" for="condition_@ci">@condition</label>
-                        </div>
-                        <div class="condition-detail ms-4 mt-1">
-                            <textarea name="HealthConditionDetails[@ci].Detail"
-                                      class="form-control condition-detail-text"
-                                      rows="3"
-                                      placeholder="Please provide details">@detail</textarea>
-                        </div>
-                    </div>
-                }
-                @{
-                    var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
-                    var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
-                    var otherSelected = IsConditionSelected(otherCondition);
-                    var otherDetail = GetConditionDetail(otherCondition);
-                }
+    <div class="dxr-panel mb-0" style="box-shadow:none; border:1px dashed rgba(80,90,201,0.25); background:#f9fafd;">
+        <label class="form-label fw-semibold mb-3">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
+        <div class="row condition-checkboxes">
+            @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
+            {
+                var condition = DentalXRayQuestionnaire.HealthConditions[ci];
+                var isSelected = IsConditionSelected(condition);
+                var detail = GetConditionDetail(condition);
                 <div class="col-md-6 condition-item">
-                    <input type="hidden" name="HealthConditionDetails[@otherIndex].Condition" value="@otherCondition" />
+                    <input type="hidden" name="HealthConditionDetails[@ci].Condition" value="@condition" />
                     <div class="form-check">
                         <input class="form-check-input condition-checkbox" type="checkbox"
                                name="ApplicableHealthConditions"
-                               value="@otherCondition"
-                               id="condition_other"
-                               checked="@otherSelected" />
-                        <label class="form-check-label" for="condition_other">@otherCondition</label>
+                               value="@condition"
+                               id="condition_@ci"
+                               checked="@isSelected" />
+                        <label class="form-check-label" for="condition_@ci">@condition</label>
                     </div>
                     <div class="condition-detail ms-4 mt-1">
-                        <textarea name="HealthConditionDetails[@otherIndex].Detail"
+                        <textarea name="HealthConditionDetails[@ci].Detail"
                                   class="form-control condition-detail-text"
                                   rows="3"
-                                  placeholder="Please provide details">@otherDetail</textarea>
+                                  placeholder="Please provide details">@detail</textarea>
                     </div>
+                </div>
+            }
+            @{
+                var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
+                var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
+                var otherSelected = IsConditionSelected(otherCondition);
+                var otherDetail = GetConditionDetail(otherCondition);
+            }
+            <div class="col-md-6 condition-item">
+                <input type="hidden" name="HealthConditionDetails[@otherIndex].Condition" value="@otherCondition" />
+                <div class="form-check">
+                    <input class="form-check-input condition-checkbox" type="checkbox"
+                           name="ApplicableHealthConditions"
+                           value="@otherCondition"
+                           id="condition_other"
+                           checked="@otherSelected" />
+                    <label class="form-check-label" for="condition_other">@otherCondition</label>
+                </div>
+                <div class="condition-detail ms-4 mt-1">
+                    <textarea name="HealthConditionDetails[@otherIndex].Detail"
+                              class="form-control condition-detail-text"
+                              rows="3"
+                              placeholder="Please provide details">@otherDetail</textarea>
                 </div>
             </div>
         </div>
     </div>
-
-    <hr class="my-4" />
+    </div>
 
     @{
         var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
@@ -265,13 +533,15 @@
         vitalBpViewData["AllowVitalStationSubmit"] = canSaveDentalXRay;
         vitalBpViewData["BpCountdownIdPrefix"] = "dentalBpCountdown";
     }
-    @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
-
-    <hr class="my-4" />
+    <div class="dxr-panel">
+        <h2 class="dxr-panel-title"><i class="fas fa-heartbeat" aria-hidden="true"></i> Vitals</h2>
+        @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+    </div>
 
     <div id="clinicalStationSection" style="@(isFemale ? "display:none;" : "")">
         <div id="xrayStationSection">
-        <h3 class="mb-4">X-Ray Station</h3>
+        <div class="dxr-panel">
+        <h2 class="dxr-panel-title"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray Station</h2>
 
         @if (bwxNeeded)
         {
@@ -451,7 +721,7 @@
                     <div id="paUploadContainer" style="display:none;">
                         <div class="d-flex justify-content-end mb-2 gap-2">
                             <button type="button" class="btn btn-sm btn-outline-primary" id="addPaCardBtn">
-                                <i class="bi bi-plus"></i> Add PA Card
+                                <i class="fas fa-plus" aria-hidden="true"></i> Add PA Card
                             </button>
                         </div>
                         <div id="paCardsRow" class="xray-cards-row">
@@ -505,28 +775,28 @@
             </div>
         </div>
 
-        <p class="fw-bold mb-4">
-            @if (panoNeeded)
-            {
-                <text>Panorex (Pano) X-ray is Required for this Service member</text>
-            }
-            else
-            {
-                <text>Panorex (Pano) X-ray is NOT Required for this Service member</text>
-            }
-        </p>
+        @if (panoNeeded)
+        {
+            <p class="dxr-notice">Panorex (Pano) X-ray is Required for this Service member</p>
+        }
+        else
+        {
+            <p class="dxr-notice" style="background:#f3f4f8;border-color:rgba(31,36,48,0.1);color:#4b5160;">Panorex (Pano) X-ray is NOT Required for this Service member</p>
+        }
+        </div>
         </div>
     </div>
 
-    <div class="d-flex justify-content-end mt-4 gap-3">
+    <div class="dxr-footer-actions">
         <button type="submit" class="btn btn-general btn-lg" @(DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_Save") ? "" : "disabled")>
-            <i class="bi bi-check-circle"></i> Save
+            <i class="fas fa-check-circle" aria-hidden="true"></i> Save
         </button>
         <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
-            <i class="bi bi-arrow-left"></i> Back
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
         </a>
     </div>
 </form>
+</section>
 
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
@@ -1051,7 +1321,9 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="card-title mb-0">PA of tooth</h6>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card">Remove</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-pa-card" title="Remove">
+                            <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                        </button>
                     </div>
                     <input type="hidden" name="PaImages[${index}].Id" value="0" />
                     <input type="hidden" name="PaImages[${index}].SortOrder" value="${index}" class="pa-sort-order" />
@@ -1059,7 +1331,7 @@
                            data-prefix="${prefix}" accept=".jpg,.jpeg,image/jpeg"
                            onchange="toggleXRayUploadDate(this, '${prefix}')" />
                     <button type="button" class="btn btn-outline-primary btn-sm mt-1 open-xray-picker" data-prefix="${prefix}">
-                        <i class="bi bi-upload"></i> Upload
+                        <i class="fas fa-upload" aria-hidden="true"></i> Upload
                     </button>
                     <div class="align-items-center gap-2 mt-2 xray-file-status" id="${prefix}_fileStatus"
                          style="display:none;" data-download-prefix="pa_tooth">
@@ -1081,13 +1353,13 @@
                         <label class="form-label fw-semibold mt-2 mb-1">Zoom Controls:</label>
                         <div class="d-flex flex-wrap gap-2 mb-2">
                             <button type="button" class="btn btn-sm btn-primary xray-zoom-in" data-prefix="${prefix}">
-                                <i class="bi bi-zoom-in"></i> ZOOM IN
+                                <i class="fas fa-search-plus" aria-hidden="true"></i> Zoom In
                             </button>
                             <button type="button" class="btn btn-sm btn-primary xray-zoom-out" data-prefix="${prefix}">
-                                <i class="bi bi-zoom-out"></i> ZOOM OUT
+                                <i class="fas fa-search-minus" aria-hidden="true"></i> Zoom Out
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary xray-zoom-reset" data-prefix="${prefix}">
-                                <i class="bi bi-arrow-counterclockwise"></i> RESET
+                                <i class="fas fa-undo" aria-hidden="true"></i> Reset
                             </button>
                         </div>
                         <p class="mb-0 small">Zoom Level: <span id="${prefix}_zoomLevel" class="text-primary fw-semibold">100%</span></p>

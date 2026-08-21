@@ -1,322 +1,161 @@
 @using System.Text.Json
-
 @model DentalQuestionnaire
 
-
-
 @{
-
     string YesNo(string? value) => string.IsNullOrWhiteSpace(value) ? "No" : value;
 
-
-
     var tobaccoDetails = new List<DentalXRayTobaccoUseDetail>();
-
     if (!string.IsNullOrWhiteSpace(Model.TobaccoUseDetailsJson))
-
     {
-
         try
-
         {
-
             tobaccoDetails = JsonSerializer.Deserialize<List<DentalXRayTobaccoUseDetail>>(Model.TobaccoUseDetailsJson) ?? new();
-
         }
-
         catch { }
-
     }
 
-
-
     DentalXRayTobaccoUseDetail GetTobaccoDetail(string type) =>
-
         tobaccoDetails.FirstOrDefault(t => string.Equals(t.Type, type, StringComparison.OrdinalIgnoreCase))
-
         ?? new DentalXRayTobaccoUseDetail { Type = type, Used = "No" };
-
 }
 
-
-
 <style>
-
     .questionnaire-detail { display: none; }
-
     .tobacco-type-detail { display: none; }
-
     .condition-checkboxes .form-check { margin-bottom: 0.35rem; }
-
 </style>
 
-
-
 <div class="row mb-3">
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">1. Have you been under a Health Care Provider's care in the last 2 years?</label>
-
         <select name="HealthcareProviderCareLast2Years" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.HealthcareProviderCareLast2Years) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.HealthcareProviderCareLast2Years) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">2. Have you had any serious illness, operation, or hospitalization in the past?</label>
-
         <select name="SeriousIllnessOperationHospitalization" id="SeriousIllnessOperationHospitalization" class="form-select dental-q-yesno dental-q-detail-toggle" data-detail="#seriousIllnessDetail" required>
-
             <option value="No" selected="@(YesNo(Model.SeriousIllnessOperationHospitalization) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.SeriousIllnessOperationHospitalization) == "Yes")">Yes</option>
-
         </select>
-
         <div id="seriousIllnessDetail" class="questionnaire-detail mt-2">
-
             <textarea name="SeriousIllnessOperationHospitalizationDetail" class="form-control" rows="3" placeholder="Detail is required">@Model.SeriousIllnessOperationHospitalizationDetail</textarea>
-
         </div>
-
     </div>
-
 </div>
 
-
-
 <div class="row mb-3">
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">3. Do you have allergies to medication, food, a vaccine component, or latex?</label>
-
         <select name="MedicationFoodAllergy" id="MedicationFoodAllergy" class="form-select dental-q-yesno dental-q-detail-toggle" data-detail="#allergyDetail" required>
-
             <option value="No" selected="@(YesNo(Model.MedicationFoodAllergy) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.MedicationFoodAllergy) == "Yes")">Yes</option>
-
         </select>
-
         <div id="allergyDetail" class="questionnaire-detail mt-2">
-
             <textarea name="MedicationFoodAllergyDetail" class="form-control" rows="3" placeholder="Detail is required">@Model.MedicationFoodAllergyDetail</textarea>
-
         </div>
-
     </div>
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">4. Are you presently taking any drugs or medications (to include birth control pills)?</label>
-
         <select name="TakingMedications" id="TakingMedications" class="form-select dental-q-yesno dental-q-detail-toggle" data-detail="#medicationsDetail" required>
-
             <option value="No" selected="@(YesNo(Model.TakingMedications) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.TakingMedications) == "Yes")">Yes</option>
-
         </select>
-
         <div id="medicationsDetail" class="questionnaire-detail mt-2">
-
             <textarea name="TakingMedicationsDetail" class="form-control" rows="3" placeholder="Detail is required">@Model.TakingMedicationsDetail</textarea>
-
         </div>
-
     </div>
-
 </div>
 
-
-
 <div class="row mb-3">
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">5. Have you ever had hepatitis or jaundice?</label>
-
         <select name="HepatitisOrJaundice" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.HepatitisOrJaundice) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.HepatitisOrJaundice) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">6. Has there been a change in your health in the last two years?</label>
-
         <select name="HealthChangeLastTwoYears" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.HealthChangeLastTwoYears) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.HealthChangeLastTwoYears) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
 </div>
 
-
-
 <div class="row mb-3">
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">7. Do you use tobacco or vape?</label>
-
         <select name="UseTobaccoOrVape" id="UseTobaccoOrVape" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.UseTobaccoOrVape) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.UseTobaccoOrVape) == "Yes")">Yes</option>
-
         </select>
-
         <div id="tobaccoDetailsSection" class="questionnaire-detail mt-3 border rounded p-3">
-
             @for (var i = 0; i < DentalXRayQuestionnaire.TobaccoTypes.Length; i++)
-
             {
-
                 var tobaccoType = DentalXRayQuestionnaire.TobaccoTypes[i];
-
                 var detail = GetTobaccoDetail(tobaccoType);
-
                 <div class="mb-3 tobacco-type-row" data-index="@i">
-
                     <input type="hidden" name="TobaccoUseDetails[@i].Type" value="@tobaccoType" />
-
                     <label class="form-label fw-semibold">@tobaccoType</label>
-
                     <select name="TobaccoUseDetails[@i].Used" class="form-select tobacco-used-select" data-index="@i" required>
-
                         <option value="No" selected="@(YesNo(detail.Used) == "No")">No</option>
-
                         <option value="Yes" selected="@(YesNo(detail.Used) == "Yes")">Yes</option>
-
                     </select>
-
                     <div id="tobaccoTypeDetail_@i" class="tobacco-type-detail mt-2">
-
                         <label class="form-label small">How often?</label>
-
                         <div class="row g-2">
-
                             <div class="col-md-6">
-
                                 <label class="form-label small text-muted">Times per day</label>
-
                                 <input type="text" name="TobaccoUseDetails[@i].TimesPerDay" class="form-control tobacco-frequency-input" value="@detail.TimesPerDay" />
-
                             </div>
-
                             <div class="col-md-6">
-
                                 <label class="form-label small text-muted">Times per week</label>
-
                                 <input type="text" name="TobaccoUseDetails[@i].TimesPerWeek" class="form-control tobacco-frequency-input" value="@detail.TimesPerWeek" />
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             }
-
         </div>
-
     </div>
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">8. Do you drink alcoholic beverages?</label>
-
         <select name="DrinkAlcoholicBeverages" id="DrinkAlcoholicBeverages" class="form-select dental-q-yesno dental-q-detail-toggle" data-detail="#alcoholDetail" required>
-
             <option value="No" selected="@(YesNo(Model.DrinkAlcoholicBeverages) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.DrinkAlcoholicBeverages) == "Yes")">Yes</option>
-
         </select>
-
         <div id="alcoholDetail" class="questionnaire-detail mt-2">
-
             <textarea name="AlcoholicBeveragesFrequencyQuantity" class="form-control" rows="3" placeholder="Frequency / Quantity">@Model.AlcoholicBeveragesFrequencyQuantity</textarea>
-
         </div>
-
     </div>
-
 </div>
-
-
 
 <div class="row mb-3">
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">9. Have you ever been sick because of dental treatments?</label>
-
         <select name="SickFromDentalTreatment" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.SickFromDentalTreatment) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.SickFromDentalTreatment) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
     <div class="col-md-6 mb-3">
-
         <label class="form-label">10. Are you a bleeder or have you had excessive bleeding following dental treatment?</label>
-
         <select name="BleederOrExcessiveBleeding" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.BleederOrExcessiveBleeding) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.BleederOrExcessiveBleeding) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
 </div>
 
-
-
-<div class="row mb-4">
-
+<div class="row mb-2">
     <div class="col-md-6 mb-3">
-
         <label class="form-label">11. Do you get short of breath after climbing one flight of stairs?</label>
-
         <select name="ShortOfBreathOneFlightStairs" class="form-select dental-q-yesno" required>
-
             <option value="No" selected="@(YesNo(Model.ShortOfBreathOneFlightStairs) == "No")">No</option>
-
             <option value="Yes" selected="@(YesNo(Model.ShortOfBreathOneFlightStairs) == "Yes")">Yes</option>
-
         </select>
-
     </div>
-
 </div>
-

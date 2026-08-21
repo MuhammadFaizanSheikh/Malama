@@ -1,246 +1,491 @@
 ﻿@model IEnumerable<Malama.Models.ServiceMembersChild>
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
-    ViewData["Title"] = "Immunization";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Dental X-Ray";
     var selectedEventId = ViewBag.EventId;
+    var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
+    var pendingCount = ViewBag.Summary != null ? ViewBag.Summary["Pending"] : null;
+    var completedCount = ViewBag.Summary != null ? ViewBag.Summary["Completed"] : null;
 }
 
 <style>
-    #page-heading {
-        text-align: center;
-        margin: 20px auto;
+    .dxr-page {
+        --dxr-indigo: rgba(80, 90, 201, 1);
+        --dxr-indigo-soft: rgba(80, 90, 201, 0.12);
+        --dxr-indigo-mid: rgba(80, 90, 201, 0.22);
+        --dxr-text: #1f2430;
+        --dxr-muted: #6b7285;
+        --dxr-surface: #ffffff;
+        --dxr-border: rgba(31, 36, 48, 0.08);
+        --dxr-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --dxr-radius: 16px;
     }
 
-    .btn-general {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-        color: white; /* ensures text is visible */
+    .dxr-page .btn-general {
+        background: var(--dxr-indigo);
+        border: 1px solid var(--dxr-indigo);
+        color: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 1.15rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-        .btn-general:hover {
-            background-color: rgba(60, 70, 180, 1); /* slightly darker on hover */
-            border-color: rgba(60, 70, 180, 1);
-            color: white;
-        }
-
-        .btn-general:focus,
-        .btn-general:active {
-            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
-            outline: none;
-        }
-
-    .button-container {
-        gap: 15px;
+    .dxr-page .btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
     }
 
-    h2, h3 {
-        color: rgba(80, 90, 201, 1);
+    .dxr-page .btn-general:focus,
+    .dxr-page .btn-general:active {
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.35);
+        outline: none;
+        color: #fff;
     }
 
-    body {
-        background-color: #f8f9fa;
+    .dxr-page .btn-general.btn-secondary-action {
+        background: #fff;
+        color: var(--dxr-indigo);
+        border-color: var(--dxr-indigo-mid);
     }
 
-    table {
-        border: 1px solid #ddd;
-        border-collapse: collapse;
+    .dxr-page .btn-general.btn-secondary-action:hover {
+        background: var(--dxr-indigo-soft);
+        color: var(--dxr-indigo);
+        border-color: var(--dxr-indigo);
+    }
+
+    .dxr-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 0.15rem 0.2rem 0.35rem;
+    }
+
+    .dxr-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dxr-indigo);
+    }
+
+    .dxr-title {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dxr-text);
+    }
+
+    .dxr-subtitle {
+        margin: 0.4rem 0 0;
+        color: var(--dxr-muted);
+        font-size: 0.95rem;
+    }
+
+    .dxr-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dxr-stat {
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 248, 252, 0.96) 100%);
+        border: 1px solid var(--dxr-border);
+        border-radius: var(--dxr-radius);
+        box-shadow: var(--dxr-shadow);
+        padding: 1rem 1.1rem 1.05rem;
+        min-height: 96px;
+    }
+
+    .dxr-stat::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--dxr-indigo);
+        opacity: 0.85;
+    }
+
+    .dxr-stat.is-pending::before {
+        background: #d97706;
+    }
+
+    .dxr-stat.is-completed::before {
+        background: #059669;
+    }
+
+    .dxr-stat-label {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--dxr-muted);
+    }
+
+    .dxr-stat-value {
+        margin: 0.35rem 0 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--dxr-text);
+        line-height: 1.1;
+    }
+
+    .dxr-panel {
+        background: var(--dxr-surface);
+        border: 1px solid var(--dxr-border);
+        border-radius: var(--dxr-radius);
+        box-shadow: var(--dxr-shadow);
+        padding: 1.15rem 1.2rem 1.25rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dxr-panel-title {
+        margin: 0 0 0.95rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dxr-text);
+    }
+
+    .dxr-page .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #4b5160;
+        margin-bottom: 0.35rem;
+    }
+
+    .dxr-page .form-control {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dxr-page .form-control:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .dxr-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-top: 0.35rem;
+    }
+
+    .dxr-table-panel {
+        background: var(--dxr-surface);
+        border: 1px solid var(--dxr-border);
+        border-radius: var(--dxr-radius);
+        box-shadow: var(--dxr-shadow);
+        padding: 1rem 1rem 0.85rem;
+        overflow: hidden;
+    }
+
+    .dxr-page #datatableWrapper {
         width: 100%;
+        overflow-x: auto;
     }
 
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center; /* Aligns the text in the middle of the cell */
+    .dxr-page #contractsTable {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border: none;
+    }
+
+    .dxr-page #contractsTable thead th {
+        background: linear-gradient(180deg, #5a64d0 0%, rgba(80, 90, 201, 1) 100%) !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 0.85rem 0.75rem !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .dxr-page #contractsTable thead th:first-child {
+        border-top-left-radius: 12px;
+    }
+
+    .dxr-page #contractsTable thead th:last-child {
+        border-top-right-radius: 12px;
+    }
+
+    .dxr-page #contractsTable tbody td {
+        border: none !important;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.06) !important;
+        padding: 0.8rem 0.75rem !important;
+        text-align: center;
+        vertical-align: middle;
+        color: var(--dxr-text);
+        background: transparent !important;
+        font-size: 0.9rem;
+    }
+
+    .dxr-page #contractsTable tbody tr {
+        background: #fff !important;
+        transition: background 0.18s ease;
+    }
+
+    .dxr-page #contractsTable tbody tr:nth-child(even) {
+        background: rgba(247, 248, 252, 0.9) !important;
+    }
+
+    .dxr-page #contractsTable tbody tr:hover {
+        background: rgba(80, 90, 201, 0.07) !important;
+    }
+
+    .dxr-page .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 10px;
+        border: none;
+        background: var(--dxr-indigo) !important;
+        color: #fff !important;
+        font-size: 0.9rem;
+        line-height: 1;
+        text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .dxr-page .edit-btn:hover {
+        background: rgb(60, 70, 180) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(80, 90, 201, 0.28);
+    }
+
+    .dxr-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .dxr-status.is-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dxr-status.is-completed {
+        background: rgba(5, 150, 105, 0.12);
+        color: #047857;
+    }
+
+    .dxr-page .dataTables_wrapper .dataTables_filter input,
+    .dxr-page .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        padding: 0.35rem 0.55rem;
+    }
+
+    .dxr-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--dxr-indigo) !important;
+        border-color: var(--dxr-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+    }
+
+    .dxr-page .dataTables_wrapper .dataTables_info,
+    .dxr-page .dataTables_wrapper .dataTables_length,
+    .dxr-page .dataTables_wrapper .dataTables_filter {
+        color: var(--dxr-muted);
+        font-size: 0.88rem;
+        margin-bottom: 0.65rem;
+    }
+
+    @@media (max-width: 900px) {
+        .dxr-stats {
+            grid-template-columns: 1fr;
         }
 
-        table th {
-            background-color: #f4f4f4;
+        .dxr-hero {
+            flex-direction: column;
+            align-items: flex-start;
         }
-
-        table tbody tr {
-            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
-        }
-
-            table tbody tr:hover {
-                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
-            }
-
-        table td button,
-        table td a {
-            display: inline-block; /* Makes the buttons appear side by side */
-            margin-right: 5px; /* Optional: Adds space between the buttons */
-        }
-
-        table td .button-container {
-            display: flex;
-            justify-content: center; /* Aligns buttons horizontally in the center */
-        }
-
-            table td .button-container a {
-                margin-right: 5px; /* Optional: Adds space between the buttons */
-            }
-
-        table thead th {
-            background-color: rgba(120, 130, 221, 1); /* Header background color */
-            color: white; /* Header text color */
-            text-align: center; /* Center-align header text */
-        }
-
-    .read-only-style {
-        background-color: #f8f9fa; /* Light gray background */
-        pointer-events: none; /* Disable click and focus */
-        border-color: #ced4da; /* Light border color */
     }
 </style>
 
+<section class="dxr-page">
+    <div class="dxr-hero">
+        <div>
+            <p class="dxr-kicker">Clinical station</p>
+            <h1 class="dxr-title">Dental X-Ray</h1>
+            <p class="dxr-subtitle">Search service members and open their X-Ray station record.</p>
+        </div>
+    </div>
 
-<h2 id="page-heading">Dental X-Ray</h2>
-
-@if (TempData["ResponseMessage"] != null)
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-
-            Swal.fire({
-                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
-                title: '@TempData["ResponseTitle"]',
-                text: '@TempData["ResponseMessage"]',
-                confirmButtonText: 'OK',
-                confirmButtonColor: buttonColor, // Conditional button color
-                iconColor: iconColor // Conditional icon color
-            });
-        });
-    </script>
-}
-
-@if (Model != null)
-{
-    @if (ViewBag.Summary != null)
+    @if (TempData["ResponseMessage"] != null)
     {
-        <!-- Summary Table -->
-        <table id="labSummaryTable" class="display nowrap table table-bordered mb-4">
-            <thead>
-                <tr style="background-color: #7b83eb;">
-                    <th>Event Summary</th>
-                    <th>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr bgcolor="ffffff">
-                    <td>Total number of SM</td>
-                    <td>@ViewBag.Summary["Total"]</td>
-                </tr>
-                <tr>
-                    <td>Number of SM (Pending)</td>
-                    <td>@ViewBag.Summary["Pending"]</td>
-                </tr>
-                <tr bgcolor="ffffff">
-                    <td>Number of SM (Completed)</td>
-                    <td>@ViewBag.Summary["Completed"]</td>
-                </tr>
-            </tbody>
-        </table>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
     }
 
-    <div class="card p-3 mb-4">
-        <div class="container">
-            <div class="row g-2">
-                <!-- First Row -->
-                <div class="col-md-3">
+    @if (Model != null)
+    {
+        @if (ViewBag.Summary != null)
+        {
+            <div class="dxr-stats" aria-label="Event summary">
+                <div class="dxr-stat">
+                    <p class="dxr-stat-label">Total SM</p>
+                    <p class="dxr-stat-value">@totalCount</p>
+                </div>
+                <div class="dxr-stat is-pending">
+                    <p class="dxr-stat-label">Pending</p>
+                    <p class="dxr-stat-value">@pendingCount</p>
+                </div>
+                <div class="dxr-stat is-completed">
+                    <p class="dxr-stat-label">Completed</p>
+                    <p class="dxr-stat-value">@completedCount</p>
+                </div>
+            </div>
+        }
+
+        <div class="dxr-panel">
+            <h2 class="dxr-panel-title">Filters</h2>
+            <div class="row g-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
                     <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
-
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterFullName" class="form-label">Full Name</label>
                     <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
-
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterDodId" class="form-label">DoD ID</label>
                     <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
-
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterDob" class="form-label">DOB</label>
                     <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
                     <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
                 </div>
-                <div class="col-md-3">
-                    <label for="filterStatus" class="form-label">Dental X-Ray Station SMs status</label>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterStatus" class="form-label">Station status</label>
                     <select id="filterStatus" class="form-control">
                         <option value="">All</option>
                         <option value="Pending">Pending</option>
                         <option value="Completed">Completed</option>
                     </select>
                 </div>
-                <!-- Search Button (Centered) -->
-                <div class="col-12 text-center mt-3">
-                    <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
-                    <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                <div class="col-12">
+                    <div class="dxr-actions">
+                        <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                        <button id="resetFiltersBtn" type="button" class="btn btn-general btn-secondary-action">Reset Filters</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <div class="dxr-table-panel">
+            <div id="datatableWrapper" class="datatable-wrapper">
+                <table id="contractsTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>SM ID</th>
+                            <th>DRC</th>
+                            <th>FULL NAME</th>
+                            <th>Last 4 SSN</th>
+                            <th>DOD Id</th>
+                            <th>Sex</th>
+                            <th>DOB</th>
+                            <th>Barcode</th>
+                            <th>Completed By (Staff Name)</th>
+                            <th>Completed At (Date/time)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            var statusText = c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status;
+                            var statusClass = string.Equals(statusText, "Completed", StringComparison.OrdinalIgnoreCase)
+                                ? "is-completed"
+                                : "is-pending";
+                            <tr>
+                                <td>
+                                    <a asp-action="DentalXRayStation"
+                                       asp-route-dentalXRayStationId="@c.DentalXRayStationRecord?.Id"
+                                       asp-route-serviceMembersChildId="@c.Id"
+                                       class="btn btn-primary edit-btn"
+                                       title="Edit"
+                                       aria-label="Edit">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="dxr-status @statusClass">@statusText</span>
+                                </td>
+                                <td>@c.SmId</td>
+                                <td>@c.Drc</td>
+                                <td>@c.FullName</td>
+                                <td>@c.Last4</td>
+                                <td>@c.DodId</td>
+                                <td>@c.Sex</td>
+                                <td>@c.Dob</td>
+                                <td>@c.Barcode</td>
+                                <td>@c.DentalXRayStationRecord?.AddedBy</td>
+                                <td>@c.DentalXRayStationRecord?.AddedOn</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>
 
-    <div id="datatableWrapper" class="datatable-wrapper">
-        <table id="contractsTable" class="display">
-            <thead>
-                <tr>
-                    <th>Action</th>
-                    <th>Status</th>
-                    <th>SM ID</th>
-                    <th>DRC</th>
-                    <th>FULL NAME</th>
-                    <th>Last 4 SSN</th>
-                    <th>DOD Id</th>
-                    <th>Sex</th>
-                    <th>DOB</th>
-                    <th>Barcode</th>
-                    <th>Completed By (Staff Name)</th>
-                    <th>Completed At (Date/time)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in Model)
-                {
-                    <tr>
-                        @* <td>
-                            <a asp-action="LabStation" asp-route-labStationId="@c.LabStationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
-                        </td>
-                        <td>@(c.LabStationRecord == null ? "Pending" : c.LabStationRecord.Status)</td> *@
-                        <td>
-                            <a asp-action="DentalXRayStation" asp-route-dentalXRayStationId="@c.DentalXRayStationRecord?.Id" asp-route-serviceMembersChildId="@c.Id" class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
-                        </td>
-                        <td>@(c.DentalXRayStationRecord == null ? "Pending" : c.DentalXRayStationRecord.Status)</td>
-                        <td>@c.SmId</td>
-                        <td>@c.Drc</td>
-                        <td>@c.FullName</td>
-                        <td>@c.Last4</td>
-                        <td>@c.DodId</td>
-                        <td>@c.Sex</td>
-                        <td>@c.Dob</td>
-                        <td>@c.Barcode</td>
-                        <td>@c.DentalXRayStationRecord?.AddedBy</td>
-                        <td>@c.DentalXRayStationRecord?.AddedOn</td>
-                        @*  <td>@c.ContractEndDate.ToShortDateString()</td> *@
-
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-}
 <script>
+    function allowOnlyDigits(input) {
+        input.value = input.value.replace(/\D/g, '');
+    }
+
     $(document).ready(function () {
         let filterDobPicker = flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
 
@@ -248,29 +493,24 @@
             paging: true,
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-
             searching: true,
             ordering: true,
             info: true,
-
             responsive: true
         });
 
         $('#searchStaffBtn').on('click', function () {
-
             var barcode = $('#filterBarcode').val().trim().toLowerCase();
             var fullName = $('#filterFullName').val().trim().toLowerCase();
             var dodId = $('#filterDodId').val().trim();
             var last4Ssn = $('#filterLast4Ssn').val().trim();
             var status = $('#filterStatus').val().trim().toLowerCase();
 
-            // 🔹 Get Flatpickr instance
             let dobPicker = $('#filterDob')[0]?._flatpickr;
             let dobDate = dobPicker?.selectedDates?.[0] || null;
 
             var contractsTable = $('#contractsTable').DataTable();
 
-            // Clear previous searches
             contractsTable.columns().search('');
 
             if (barcode) {
@@ -287,19 +527,15 @@
             }
 
             if (dobDate) {
-                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0');
                 const day = dobDate.getDate().toString().padStart(2, '0');
                 const year = dobDate.getFullYear();
-
-                // Format as MM/DD/YYYY (matches table display)
                 const dobFormatted = `${month}/${day}/${year}`;
 
-                // exact match only
                 contractsTable
                     .column(7)
                     .search('^' + dobFormatted + '$', true, false);
             }
-
 
             if (last4Ssn) {
                 contractsTable.column(4).search('^' + last4Ssn + '$', true, false);
@@ -313,9 +549,6 @@
         });
 
         function resetAllFilters() {
-
-
-            // Clear all input and select fields
             $('#filterBarcode').val('');
             $('#filterFullName').val('');
             $('#filterDodId').val('');
@@ -325,20 +558,13 @@
             var previewTable = $('#contractsTable').DataTable();
             previewTable.columns().search('');
             previewTable.search('').draw();
-
         }
-        // Reset button
+
         document.getElementById("resetFiltersBtn").addEventListener("click", function () {
             resetAllFilters();
         });
 
-        function allowOnlyDigits(input) {
-            // Allow only digits
-            input.value = input.value.replace(/\D/g, '');
-        }
-
         $(document).on('click', '#btnHivReport', function () {
-
             const eventId = '@ViewBag.EventId';
 
             if (!eventId) {
@@ -351,13 +577,12 @@
                 type: 'GET',
                 data: { eventId: eventId },
                 xhrFields: {
-                    responseType: 'blob'   // important for binary PDF
+                    responseType: 'blob'
                 },
                 beforeSend: function () {
                     $('#btnHivReport').prop('disabled', true).text('Generating...');
                 },
                 success: function (data, status, xhr) {
-
                     if (!data || data.size === 0) {
                         alert('No records found to generate report.');
                         return;
@@ -365,17 +590,13 @@
 
                     const blob = new Blob([data], { type: 'application/pdf' });
                     const url = window.URL.createObjectURL(blob);
-
-                    // Open PDF in new tab
                     window.open(url, '_blank');
-
-                    // Cleanup
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                 },
                 error: function (xhr) {
-                    if (xhr.status === 404) {      // NotFound from backend
+                    if (xhr.status === 404) {
                         alert('No HIV records found for this event.');
-                    } else if (xhr.status === 400) { // BadRequest
+                    } else if (xhr.status === 400) {
                         alert(xhr.responseText);
                     } else {
                         alert('Failed to generate PDF. Please try again.');
@@ -386,6 +607,5 @@
                 }
             });
         });
-
     });
 </script>
