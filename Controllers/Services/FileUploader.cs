@@ -486,6 +486,39 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<List<ServiceMembersChild>> GetDentalCoordinatorByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetDentalCoordinatorByEventIdAsync);
+
+            try
+            {
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Fetching ServiceMembers where CheckIn=Yes for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                var result = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(
+                        c => c.ServiceMembersParent.EventManagement.Id == eventId &&
+                             c.CheckIn == AppConstants.YesNo.Yes)
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}.{MethodName} - Retrieved {Count} checked-in ServiceMembers for EventId={EventId}",
+                    CLASSNAME, methodName, result.Count, eventId);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "{ClassName}.{MethodName} - Error fetching Dental Coordinator records for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+
+                throw;
+            }
+        }
+
         public async Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId)
         {
             const string methodName = nameof(GetPreAndPostLabStationByEventIdAsync);
