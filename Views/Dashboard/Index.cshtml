@@ -163,6 +163,13 @@
             </a>
         }
 
+        <a asp-controller="DentalCoordinator" asp-action="Index" class="icon-box">
+            <span class="icon-media">
+                <img src="/images/Dental Exams.jpg" alt="Dental Coordinator" />
+            </span>
+            <span class="icon-label">Dental Coordinator</span>
+        </a>
+
         @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
         {
             <a asp-controller="DentalXRay" asp-action="Index" class="icon-box">

@@ -1,0 +1,527 @@
+@model IEnumerable<Malama.Models.ServiceMembersChild>
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Dental Coordinator";
+    var selectedEventId = ViewBag.EventId;
+    var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
+}
+
+<style>
+    .dco-page {
+        --dco-indigo: rgba(80, 90, 201, 1);
+        --dco-indigo-soft: rgba(80, 90, 201, 0.12);
+        --dco-indigo-mid: rgba(80, 90, 201, 0.22);
+        --dco-text: #1f2430;
+        --dco-muted: #6b7285;
+        --dco-surface: #ffffff;
+        --dco-border: rgba(31, 36, 48, 0.08);
+        --dco-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --dco-radius: 16px;
+    }
+
+    .dco-page .btn-general {
+        background: var(--dco-indigo);
+        border: 1px solid var(--dco-indigo);
+        color: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 1.15rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .dco-page .btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
+    }
+
+    .dco-page .btn-general:focus,
+    .dco-page .btn-general:active {
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.35);
+        outline: none;
+        color: #fff;
+    }
+
+    .dco-page .btn-general.btn-secondary-action {
+        background: #fff;
+        color: var(--dco-indigo);
+        border-color: var(--dco-indigo-mid);
+    }
+
+    .dco-page .btn-general.btn-secondary-action:hover {
+        background: var(--dco-indigo-soft);
+        color: var(--dco-indigo);
+        border-color: var(--dco-indigo);
+    }
+
+    .dco-hero {
+        margin-bottom: 1.25rem;
+        padding: 0.15rem 0.2rem 0.35rem;
+    }
+
+    .dco-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dco-indigo);
+    }
+
+    .dco-title {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dco-text);
+    }
+
+    .dco-subtitle {
+        margin: 0.4rem 0 0;
+        color: var(--dco-muted);
+        font-size: 0.95rem;
+    }
+
+    .dco-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dco-stat {
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 248, 252, 0.96) 100%);
+        border: 1px solid var(--dco-border);
+        border-radius: var(--dco-radius);
+        box-shadow: var(--dco-shadow);
+        padding: 1rem 1.1rem 1.05rem;
+        min-height: 96px;
+    }
+
+    .dco-stat::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--dco-indigo);
+        opacity: 0.85;
+    }
+
+    .dco-stat-label {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--dco-muted);
+    }
+
+    .dco-stat-value {
+        margin: 0.35rem 0 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--dco-text);
+        line-height: 1.1;
+    }
+
+    .dco-panel {
+        background: var(--dco-surface);
+        border: 1px solid var(--dco-border);
+        border-radius: var(--dco-radius);
+        box-shadow: var(--dco-shadow);
+        padding: 1.15rem 1.2rem 1.25rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dco-panel-title {
+        margin: 0 0 0.95rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dco-text);
+    }
+
+    .dco-page .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #4b5160;
+        margin-bottom: 0.35rem;
+    }
+
+    .dco-page .form-control {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dco-page .form-control:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .dco-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-top: 0.35rem;
+    }
+
+    .dco-table-panel {
+        background: var(--dco-surface);
+        border: 1px solid var(--dco-border);
+        border-radius: var(--dco-radius);
+        box-shadow: var(--dco-shadow);
+        padding: 1rem 1rem 0.85rem;
+        overflow: hidden;
+    }
+
+    .dco-page #datatableWrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .dco-page #contractsTable {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border: none;
+    }
+
+    .dco-page #contractsTable thead th {
+        background: linear-gradient(180deg, #5a64d0 0%, rgba(80, 90, 201, 1) 100%) !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 0.85rem 0.75rem !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .dco-page #contractsTable thead th:first-child {
+        border-top-left-radius: 12px;
+    }
+
+    .dco-page #contractsTable thead th:last-child {
+        border-top-right-radius: 12px;
+    }
+
+    .dco-page #contractsTable tbody td {
+        border: none !important;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.06) !important;
+        padding: 0.8rem 0.75rem !important;
+        text-align: center;
+        vertical-align: middle;
+        color: var(--dco-text);
+        background: transparent !important;
+        font-size: 0.9rem;
+    }
+
+    .dco-page #contractsTable tbody tr {
+        background: #fff !important;
+        transition: background 0.18s ease;
+    }
+
+    .dco-page #contractsTable tbody tr:nth-child(even) {
+        background: rgba(247, 248, 252, 0.9) !important;
+    }
+
+    .dco-page #contractsTable tbody tr:hover {
+        background: rgba(80, 90, 201, 0.07) !important;
+    }
+
+    .dco-page .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 10px;
+        border: none;
+        background: var(--dco-indigo) !important;
+        color: #fff !important;
+        font-size: 0.9rem;
+        line-height: 1;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .dco-page .edit-btn:hover {
+        background: rgb(60, 70, 180) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(80, 90, 201, 0.28);
+    }
+
+    .dco-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .dco-status.is-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dco-page .dataTables_wrapper .dataTables_filter input,
+    .dco-page .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        padding: 0.35rem 0.55rem;
+    }
+
+    .dco-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--dco-indigo) !important;
+        border-color: var(--dco-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+    }
+
+    .dco-page .dataTables_wrapper .dataTables_info,
+    .dco-page .dataTables_wrapper .dataTables_length,
+    .dco-page .dataTables_wrapper .dataTables_filter {
+        color: var(--dco-muted);
+        font-size: 0.88rem;
+        margin-bottom: 0.65rem;
+    }
+
+    @@media (max-width: 900px) {
+        .dco-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="dco-page">
+    <div class="dco-hero">
+        <div>
+            <p class="dco-kicker">Clinical station</p>
+            <h1 class="dco-title">Dental Coordinator</h1>
+            <p class="dco-subtitle">View checked-in service members for the selected event.</p>
+        </div>
+    </div>
+
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
+    }
+
+    @if (Model != null)
+    {
+        @if (ViewBag.Summary != null)
+        {
+            <div class="dco-stats" aria-label="Event summary">
+                <div class="dco-stat">
+                    <p class="dco-stat-label">Total SM (Checked In)</p>
+                    <p class="dco-stat-value">@totalCount</p>
+                </div>
+            </div>
+        }
+
+        <div class="dco-panel">
+            <h2 class="dco-panel-title">Filters</h2>
+            <div class="row g-3">
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
+                    <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterFullName" class="form-label">Full Name</label>
+                    <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterDodId" class="form-label">DoD ID</label>
+                    <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterDob" class="form-label">DOB</label>
+                    <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
+                    <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label for="filterStatus" class="form-label">Station status</label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <div class="dco-actions">
+                        <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                        <button id="resetFiltersBtn" type="button" class="btn btn-general btn-secondary-action">Reset Filters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dco-table-panel">
+            <div id="datatableWrapper" class="datatable-wrapper">
+                <table id="contractsTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>SM ID</th>
+                            <th>DRC</th>
+                            <th>FULL NAME</th>
+                            <th>Last 4 SSN</th>
+                            <th>DOD Id</th>
+                            <th>Sex</th>
+                            <th>DOB</th>
+                            <th>Barcode</th>
+                            <th>Checked In By</th>
+                            <th>Checked In At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-primary edit-btn"
+                                            title="Edit"
+                                            aria-label="Edit">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <span class="dco-status is-pending">Pending</span>
+                                </td>
+                                <td>@c.SmId</td>
+                                <td>@c.Drc</td>
+                                <td>@c.FullName</td>
+                                <td>@c.Last4</td>
+                                <td>@c.DodId</td>
+                                <td>@c.Sex</td>
+                                <td>@c.Dob</td>
+                                <td>@c.Barcode</td>
+                                <td>@c.CheckInBy</td>
+                                <td>@c.CheckInTime</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>
+
+<script>
+    function allowOnlyDigits(input) {
+        input.value = input.value.replace(/\D/g, '');
+    }
+
+    $(document).ready(function () {
+        let filterDobPicker = flatpickr("#filterDob", { altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true });
+
+        $('#contractsTable').DataTable({
+            paging: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            searching: true,
+            ordering: true,
+            info: true,
+            responsive: true
+        });
+
+        $('#searchStaffBtn').on('click', function () {
+            var barcode = $('#filterBarcode').val().trim().toLowerCase();
+            var fullName = $('#filterFullName').val().trim().toLowerCase();
+            var dodId = $('#filterDodId').val().trim();
+            var last4Ssn = $('#filterLast4Ssn').val().trim();
+            var status = $('#filterStatus').val().trim().toLowerCase();
+
+            let dobPicker = $('#filterDob')[0]?._flatpickr;
+            let dobDate = dobPicker?.selectedDates?.[0] || null;
+
+            var contractsTable = $('#contractsTable').DataTable();
+            contractsTable.columns().search('');
+
+            // Columns: 0 Action, 1 Status, 2 SM ID, 3 DRC, 4 FULL NAME, 5 Last 4, 6 DOD, 7 Sex, 8 DOB, 9 Barcode, 10 CheckInBy, 11 CheckInTime
+            if (barcode) {
+                contractsTable.column(9).search(barcode, true, false, true);
+            }
+
+            if (fullName) {
+                const escapedFullName = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                contractsTable.column(4).search(escapedFullName, true, false, true);
+            }
+
+            if (dodId) {
+                contractsTable.column(6).search('^' + dodId + '$', true, false);
+            }
+
+            if (dobDate) {
+                const month = (dobDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = dobDate.getDate().toString().padStart(2, '0');
+                const year = dobDate.getFullYear();
+                const dobFormatted = `${month}/${day}/${year}`;
+                contractsTable.column(8).search('^' + dobFormatted + '$', true, false);
+            }
+
+            if (last4Ssn) {
+                contractsTable.column(5).search('^' + last4Ssn + '$', true, false);
+            }
+
+            if (status) {
+                contractsTable.column(1).search(status, true, false, true);
+            }
+
+            contractsTable.draw();
+        });
+
+        function resetAllFilters() {
+            $('#filterBarcode').val('');
+            $('#filterFullName').val('');
+            $('#filterDodId').val('');
+            filterDobPicker.clear();
+            $('#filterLast4Ssn').val('');
+            $('#filterStatus').val('');
+            var previewTable = $('#contractsTable').DataTable();
+            previewTable.columns().search('');
+            previewTable.search('').draw();
+        }
+
+        document.getElementById("resetFiltersBtn").addEventListener("click", function () {
+            resetAllFilters();
+        });
+    });
+</script>
