@@ -1,0 +1,1030 @@
+@model Malama.Models.ContractViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    var formMode = (ViewBag.FormMode as string) ?? "Add";
+    var isReadOnly = ViewBag.IsReadOnly as bool? ?? false;
+    var isAdd = string.Equals(formMode, "Add", StringComparison.OrdinalIgnoreCase);
+    var isEdit = string.Equals(formMode, "Edit", StringComparison.OrdinalIgnoreCase);
+    var isView = string.Equals(formMode, "View", StringComparison.OrdinalIgnoreCase) || isReadOnly;
+
+    ViewData["Title"] = isView ? "View Contract" : (isEdit ? "Edit Contract" : "Add New Contract");
+
+    var heroTitle = isView ? "View Contract" : (isEdit ? "Edit Contract" : "Add New Contract");
+    var heroSubtitle = isView
+        ? "Review contract details in read-only mode."
+        : (isEdit ? "Update an existing Dawson contract record." : "Create a new Dawson contract record.");
+
+    var startDateValue = Model?.SingleContract != null
+        && Model.SingleContract.ContractStartDate != default
+        && Model.SingleContract.ContractStartDate != DateTime.MinValue
+            ? Model.SingleContract.ContractStartDate.ToString("yyyy-MM-dd")
+            : string.Empty;
+
+    var endDateValue = Model?.SingleContract != null
+        && Model.SingleContract.ContractEndDate != default
+        && Model.SingleContract.ContractEndDate != DateTime.MinValue
+            ? Model.SingleContract.ContractEndDate.ToString("yyyy-MM-dd")
+            : string.Empty;
+
+    var existingClientName = Model?.SingleContract?.ClientName ?? string.Empty;
+    var modelStateInvalid = !ViewData.ModelState.IsValid;
+}
+
+<style>
+    .ccd-page {
+        --ccd-indigo: rgba(80, 90, 201, 1);
+        --ccd-indigo-soft: rgba(80, 90, 201, 0.12);
+        --ccd-indigo-mid: rgba(80, 90, 201, 0.22);
+        --ccd-text: #1f2430;
+        --ccd-muted: #6b7285;
+        --ccd-surface: #ffffff;
+        --ccd-border: rgba(31, 36, 48, 0.08);
+        --ccd-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --ccd-radius: 16px;
+    }
+
+    .ccd-page .btn-general {
+        background: var(--ccd-indigo);
+        border: 1px solid var(--ccd-indigo);
+        color: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 1.15rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .ccd-page .btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
+    }
+
+    .ccd-page .btn-general:focus,
+    .ccd-page .btn-general:active {
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.35);
+        outline: none;
+        color: #fff;
+    }
+
+    .ccd-page .btn-general.btn-secondary-action {
+        background: #fff;
+        color: var(--ccd-indigo);
+        border-color: var(--ccd-indigo-mid);
+    }
+
+    .ccd-page .btn-general.btn-secondary-action:hover {
+        background: var(--ccd-indigo-soft);
+        color: var(--ccd-indigo);
+        border-color: var(--ccd-indigo);
+    }
+
+    .ccd-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 0.15rem 0.2rem 0.35rem;
+    }
+
+    .ccd-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ccd-indigo);
+    }
+
+    .ccd-title {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ccd-text);
+    }
+
+    .ccd-subtitle {
+        margin: 0.4rem 0 0;
+        color: var(--ccd-muted);
+        font-size: 0.95rem;
+    }
+
+    .ccd-page .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #4b5160;
+        margin-bottom: 0.35rem;
+    }
+
+    .ccd-page .form-control,
+    .ccd-page .form-select {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ccd-page .form-control:focus,
+    .ccd-page .form-select:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .ccd-form-panel {
+        background: var(--ccd-surface);
+        border: 1px solid var(--ccd-border);
+        border-radius: var(--ccd-radius);
+        box-shadow: var(--ccd-shadow);
+        padding: 1.35rem 1.35rem 1.4rem;
+        margin-top: 0.5rem;
+    }
+
+    .ccd-section-title {
+        margin: 1.75rem 0 1rem;
+        padding-bottom: 0.45rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ccd-indigo);
+        border-bottom: 1px solid var(--ccd-indigo-soft);
+    }
+
+    .ccd-section-title:first-of-type {
+        margin-top: 0.35rem;
+    }
+
+    .ccd-form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.65rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--ccd-border);
+    }
+
+    .ccd-form-actions .btn-general i {
+        margin-right: 0.35rem;
+    }
+
+    .read-only-style {
+        background-color: #f8f9fa;
+        pointer-events: none;
+        border-color: #ced4da;
+    }
+
+    @@media (max-width: 900px) {
+        .ccd-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .ccd-form-actions {
+            justify-content: stretch;
+        }
+
+        .ccd-form-actions .btn-general {
+            flex: 1 1 auto;
+        }
+    }
+</style>
+
+<section class="ccd-page">
+    <div class="ccd-hero">
+        <div>
+            <p class="ccd-kicker">Contracts</p>
+            <h1 class="ccd-title">@heroTitle</h1>
+            <p class="ccd-subtitle">@heroSubtitle</p>
+        </div>
+    </div>
+
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
+    }
+
+    @if (modelStateInvalid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+    {
+        <div class="alert alert-danger">
+            <strong>Validation failed!</strong>
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="ccd-form-panel">
+        <form id="contractForm" asp-action="CreateContractDetails" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
+            <input type="hidden" asp-for="SubmissionToken" id="SubmissionToken" />
+
+            <h3 class="ccd-section-title">Contract Information</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractID" class="form-label">Contract ID # (Dawson)</label>
+                    <input id="ContractID" asp-for="SingleContract.ContractID" class="form-control" placeholder="Enter Contract ID" maxLength="13" required />
+                    <span asp-validation-for="SingleContract.ContractID" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ContractName" class="form-label">Dawson Contract Name</label>
+                    <input id="ContractName" asp-for="SingleContract.ContractName" class="form-control" placeholder="Enter Contract Name" maxLength="32" required />
+                    <span asp-validation-for="SingleContract.ContractName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractAgency" class="form-label">Contract Agency</label>
+                    <input id="ContractAgency" asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.ContractAgency" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
+                    <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" maxLength="20" required>
+                        <option value="">Select Branch</option>
+                        <option>Army</option>
+                        <option>Airforce</option>
+                        <option>Navy</option>
+                        <option>Marines</option>
+                        <option>Coast Guard</option>
+                        <option>Space Force</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractComponent" class="form-label">Contract Component</label>
+                    <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" maxLength="20" required>
+                        <option value="">Select Component</option>
+                        <option>Active Duty</option>
+                        <option>National Guard</option>
+                        <option>Reserve</option>
+                    </select>
+                    <span asp-validation-for="SingleContract.ContractComponent" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ContractClient" class="form-label">Contract Client</label>
+                    <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" maxLength="20" required>
+                        <option value="">Select Client</option>
+                        <option>Command</option>
+                        <option>State</option>
+                    </select>
+                    <span asp-validation-for="SingleContract.ContractClient" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractType" class="form-label">Contract Type</label>
+                    <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" maxLength="20" required>
+                        <option value="">Select Type</option>
+                        <option>FFP</option>
+                        <option>CPFF</option>
+                        <option>T&M</option>
+                    </select>
+                    <span asp-validation-for="SingleContract.ContractType" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
+                    <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" maxLength="20" required>
+                        <option value="">Select Role</option>
+                        <option>Prime</option>
+                        <option>Sub</option>
+                    </select>
+                    <span asp-validation-for="SingleContract.DawsonRoleOnContract" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractStatus" class="form-label">Contract Status</label>
+                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" maxLength="20" required>
+                        <option value="">Select Status</option>
+                        <option>Bidding</option>
+                        <option>Active</option>
+                        <option>Complete</option>
+                    </select>
+                    <span asp-validation-for="SingleContract.ContractStatus" class="text-danger"></span>
+                </div>
+                <div class="col-md-6" id="clientNameContainer" style="display:none;">
+                    <label for="ClientName" class="form-label">Client Name</label>
+
+                    <input type="text"
+                           id="ClientNameTextbox"
+                           asp-for="SingleContract.ClientName"
+                           class="form-control"
+                           style="display:none;" />
+
+                    <select id="ClientNameDropdown"
+                            class="form-select"
+                            style="display:none;">
+                        <option value="">Select Client Name</option>
+                    </select>
+
+                    <span asp-validation-for="SingleContract.ClientName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ContractStartDate" class="form-label">Contract Start Date</label>
+                    <input id="ContractStartDate"
+                           name="SingleContract.ContractStartDate"
+                           type="text"
+                           class="form-control"
+                           value="@startDateValue"
+                           placeholder="MM/DD/YYYY"
+                           required />
+                    <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ContractEndDate" class="form-label">Contract End Date</label>
+                    <input id="ContractEndDate"
+                           name="SingleContract.ContractEndDate"
+                           type="text"
+                           class="form-control"
+                           value="@endDateValue"
+                           placeholder="MM/DD/YYYY"
+                           required />
+                    <span asp-validation-for="SingleContract.ContractEndDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="SiteId" class="form-label">Site ID</label>
+                    <input id="SiteId" asp-for="SingleContract.SiteId" class="form-control" placeholder="Enter Site ID" maxLength="20" required />
+                    <span asp-validation-for="SingleContract.SiteId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="ccd-section-title">Contract Officer (KO)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="KoLastName" class="form-label">Last Name</label>
+                    <input id="KoLastName" asp-for="SingleContract.KoLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.KoLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="KoFirstName" class="form-label">First Name</label>
+                    <input id="KoFirstName" asp-for="SingleContract.KoFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.KoFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="KOPhone" class="form-label">KO Phone</label>
+                    <input id="KOPhone" asp-for="SingleContract.KOPhone" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="KOPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
+                    <span asp-validation-for="SingleContract.KOPhone" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="KOPhone2" class="form-label">KO Phone 2</label>
+                    <input id="KOPhone2" asp-for="SingleContract.KOPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="KOPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
+                    <span asp-validation-for="SingleContract.KOPhone2" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="KOEmail" class="form-label">KO Email</label>
+                    <input id="KOEmail" asp-for="SingleContract.KOEmail" class="form-control" type="email" placeholder="Enter KO Email" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.KOEmail" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="KONotes" class="form-label">KO Notes</label>
+                    <textarea id="KONotes" asp-for="SingleContract.KONotes" class="form-control" rows="4" placeholder="Enter KO Notes" maxLength="300" required></textarea>
+                    <span asp-validation-for="SingleContract.KONotes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="ccd-section-title">Contract Officer Representative (COR)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="CORLastName" class="form-label">Last Name</label>
+                    <input id="CORLastName" asp-for="SingleContract.CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.CORLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORKORank" class="form-label">Rank</label>
+                    <input asp-for="SingleContract.CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" id="CORKORank" required />
+                    <span asp-validation-for="SingleContract.CORKORank" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORPrefix" class="form-label">Prefix</label>
+                    <select id="CORPrefix" asp-for="SingleContract.CORPrefix" class="form-select" required>
+                        <option value="">Select</option>
+                        <option value="Mr">Mr</option>
+                        <option value="Mrs">Mrs</option>
+                        <option value="Ms">Ms</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="CORFirstName" class="form-label">First Name</label>
+                    <input id="CORFirstName" asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.CORFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORPhone" class="form-label">COR Phone</label>
+                    <input asp-for="SingleContract.CORPhone" class="form-control" id="CorPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="CorPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
+                    <span asp-validation-for="SingleContract.CORPhone" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORPhone2" class="form-label">COR Phone 2</label>
+                    <input asp-for="SingleContract.CORPhone2" class="form-control" id="CorPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
+                    <span id="CorPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
+                    <span asp-validation-for="SingleContract.CORPhone2" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.COREmail" class="form-label">COR Email</label>
+                    <input asp-for="SingleContract.COREmail" class="form-control" type="email" id="COREmail" placeholder="Enter COR Email" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.COREmail" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.CORNotes" class="form-label">COR Notes</label>
+                    <textarea asp-for="SingleContract.CORNotes" class="form-control" id="CORNotes" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
+                    <span asp-validation-for="SingleContract.CORNotes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="ccd-section-title">DAWSON Program Manager</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonProgramManagerLastName" class="form-label">Last Name</label>
+                    <input asp-for="SingleContract.DawsonProgramManagerLastName" class="form-control" id="DawsonProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonProgramManagerLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-label">First Name</label>
+                    <input asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-control" id="DawsonProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonProgramManagerFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="ccd-section-title">DAWSON Deputy Program Manager (DDPM)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-label">Last Name</label>
+                    <input asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-control" id="DawsonDeputyProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-label">First Name</label>
+                    <input asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-control" id="DawsonDeputyProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h3 class="ccd-section-title">DAWSON Project Manager (DPM)</h3>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonProjectManagerLastName" class="form-label">Last Name</label>
+                    <input asp-for="SingleContract.DawsonProjectManagerLastName" class="form-control" id="DawsonProjectManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonProjectManagerLastName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-label">First Name</label>
+                    <input asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-control" id="DawsonProjectManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
+                    <span asp-validation-for="SingleContract.DawsonProjectManagerFirstName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="ccd-form-actions">
+                @if (isAdd)
+                {
+                    <button type="submit" id="submitBtn" class="btn btn-general" name="action" value="Add">
+                        <i class="fas fa-check" aria-hidden="true"></i> Submit
+                    </button>
+                    <button type="reset" id="resetBtn" class="btn btn-general btn-secondary-action">
+                        <i class="fas fa-undo" aria-hidden="true"></i> Reset
+                    </button>
+                }
+                else if (isEdit && !isView)
+                {
+                    <button type="submit" class="btn btn-general" id="updateBtn" name="action" value="Update">
+                        <i class="fas fa-save" aria-hidden="true"></i> Update
+                    </button>
+                }
+
+                <a asp-action="Index" class="btn btn-general btn-secondary-action" id="backToTableBtn">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Contracts
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    var isContractIDExists = false;
+    var isContractNameExists = false;
+    var formMode = '@formMode';
+    var isReadOnly = @(isView ? "true" : "false");
+    var isAddMode = @(isAdd ? "true" : "false");
+    var existingClientName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(existingClientName));
+    var startDateValue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(startDateValue));
+    var endDateValue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(endDateValue));
+
+    function setControlsEditable(controlIds, editable) {
+        controlIds.forEach(function (id) {
+            const control = $('#' + id);
+            if (!control.length) {
+                return;
+            }
+
+            if (control.is('select')) {
+                control.prop('disabled', !editable);
+            } else {
+                control.prop('readonly', !editable);
+            }
+
+            if (editable) {
+                control.removeClass('read-only-style');
+            } else {
+                control.addClass('read-only-style');
+            }
+        });
+    }
+
+    function syncClientNameForSubmit() {
+        const clientTextbox = document.getElementById("ClientNameTextbox");
+        const clientDropdown = document.getElementById("ClientNameDropdown");
+
+        if (!clientTextbox || !clientDropdown) {
+            return;
+        }
+
+        if (clientDropdown.style.display !== "none") {
+            clientTextbox.value = clientDropdown.value;
+        }
+
+        clientTextbox.disabled = false;
+    }
+
+    function applyExistingClientName() {
+        const component = document.getElementById("ContractComponent");
+        const clientTextbox = document.getElementById("ClientNameTextbox");
+        const clientDropdown = document.getElementById("ClientNameDropdown");
+        const siteIdInput = document.getElementById("SiteId");
+
+        if (!existingClientName) {
+            return;
+        }
+
+        if (component && component.value === "National Guard") {
+            clientDropdown.value = existingClientName;
+            clientTextbox.value = existingClientName;
+        } else {
+            clientTextbox.value = existingClientName;
+        }
+
+        if (typeof updateSiteId === 'function') {
+            updateSiteId();
+        }
+
+        if (siteIdInput && siteIdInput.dataset.savedSiteId) {
+            siteIdInput.value = siteIdInput.dataset.savedSiteId;
+        }
+    }
+
+    $(document).ready(function () {
+        const siteIdInput = document.getElementById("SiteId");
+        if (siteIdInput) {
+            siteIdInput.dataset.savedSiteId = siteIdInput.value || '';
+        }
+
+        const clickOpens = !isReadOnly;
+        const contractStartPicker = flatpickr("#ContractStartDate", {
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: !isReadOnly, clickOpens: clickOpens
+        });
+
+        const contractEndPicker = flatpickr("#ContractEndDate", {
+            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: !isReadOnly, clickOpens: clickOpens
+        });
+
+        if (startDateValue) {
+            contractStartPicker.setDate(startDateValue, true);
+        }
+        if (endDateValue) {
+            contractEndPicker.setDate(endDateValue, true);
+        }
+
+        const component = document.getElementById("ContractComponent");
+        const client = document.getElementById("ContractClient");
+        const clientTextbox = document.getElementById("ClientNameTextbox");
+        const clientDropdown = document.getElementById("ClientNameDropdown");
+        const clientContainer = document.getElementById("clientNameContainer");
+
+        let stateList = [];
+
+        $.getJSON('/data/statesAndTerritories.json', function (data) {
+            stateList = data;
+            populateClientDropdown();
+            applyExistingClientName();
+            if (isReadOnly) {
+                applyReadOnlyState();
+            }
+        });
+
+        function populateClientDropdown() {
+            clientDropdown.innerHTML = '<option value="">Select State / Territory</option>';
+
+            stateList.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                clientDropdown.appendChild(option);
+            });
+        }
+
+        function updateSiteId() {
+            let clientName = "";
+
+            if (clientTextbox.style.display !== "none") {
+                clientName = clientTextbox.value;
+            } else if (clientDropdown.style.display !== "none") {
+                clientName = clientDropdown.value;
+            }
+
+            switch (clientName) {
+                case "California":
+                    siteIdInput.value = "GO06";
+                    siteIdInput.readOnly = true;
+                    break;
+                case "Florida":
+                    siteIdInput.value = "GO12";
+                    siteIdInput.readOnly = true;
+                    break;
+                default:
+                    siteIdInput.value = "";
+                    siteIdInput.readOnly = isReadOnly;
+            }
+        }
+
+        function updateClientFields() {
+            client.onmousedown = null;
+            client.onkeydown = null;
+
+            switch (component.value) {
+                case "Active Duty":
+                case "Reserve":
+                    clientContainer.style.display = "block";
+                    client.value = "Command";
+                    client.onmousedown = (e) => e.preventDefault();
+                    client.onkeydown = (e) => e.preventDefault();
+
+                    clientTextbox.style.display = "block";
+                    clientDropdown.style.display = "none";
+
+                    clientTextbox.disabled = false;
+                    clientDropdown.disabled = true;
+                    clientDropdown.value = "";
+                    break;
+
+                case "National Guard":
+                    clientContainer.style.display = "block";
+                    client.value = "State";
+                    client.onmousedown = (e) => e.preventDefault();
+                    client.onkeydown = (e) => e.preventDefault();
+
+                    clientDropdown.style.display = "block";
+                    clientTextbox.style.display = "none";
+
+                    clientDropdown.disabled = false;
+                    clientTextbox.disabled = false;
+                    clientTextbox.value = clientDropdown.value;
+
+                    if (stateList.length > 0) {
+                        populateClientDropdown();
+                    }
+                    break;
+
+                default:
+                    clientContainer.style.display = "none";
+                    client.value = "";
+                    client.onmousedown = null;
+                    client.onkeydown = null;
+
+                    clientTextbox.style.display = "none";
+                    clientDropdown.style.display = "none";
+
+                    clientTextbox.disabled = true;
+                    clientDropdown.disabled = true;
+
+                    clientTextbox.value = "";
+                    clientDropdown.value = "";
+            }
+
+            updateSiteId();
+        }
+
+        window.updateClientFields = updateClientFields;
+        window.updateSiteId = updateSiteId;
+
+        component.addEventListener("change", function () {
+            if (isReadOnly) {
+                return;
+            }
+            updateClientFields();
+        });
+
+        clientDropdown.addEventListener("change", function () {
+            clientTextbox.value = clientDropdown.value;
+            updateSiteId();
+        });
+
+        function applyReadOnlyState() {
+            const allControlIds = [
+                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
+                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
+                'ContractStatus', 'ClientNameTextbox', 'ClientNameDropdown', 'SiteId',
+                'ContractStartDate', 'ContractEndDate',
+                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
+                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
+                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
+                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
+                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
+                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
+            ];
+
+            setControlsEditable(allControlIds, false);
+
+            ['ContractStartDate', 'ContractEndDate'].forEach(function (id) {
+                const input = document.getElementById(id);
+                if (input && input._flatpickr) {
+                    input._flatpickr.set('clickOpens', false);
+                    input._flatpickr.set('allowInput', false);
+                }
+            });
+        }
+
+        window.applyReadOnlyState = applyReadOnlyState;
+
+        updateClientFields();
+        applyExistingClientName();
+
+        if (formMode === 'Edit' && !isReadOnly) {
+            var controlId = $('#ContractID');
+            controlId.prop('readonly', true);
+            controlId.addClass('read-only-style');
+
+            var controlName = $('#ContractName');
+            controlName.prop('readonly', true);
+            controlName.addClass('read-only-style');
+        }
+
+        if (isReadOnly) {
+            applyReadOnlyState();
+        }
+
+        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
+        phoneFields.forEach(function (fieldId) {
+            applyPhoneNumberMask(document.getElementById(fieldId));
+        });
+
+        function applyPhoneNumberMask(inputElement) {
+            if (!inputElement) {
+                return;
+            }
+            inputElement.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 3 && value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else if (value.length > 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+                e.target.value = value;
+            });
+        }
+
+        $('#resetBtn').on('click', async function (e) {
+            e.preventDefault();
+
+            const confirmed = await showYesNoModal("Are you sure you want to reset all fields?");
+
+            if (!confirmed) {
+                return;
+            }
+
+            $(this).closest('form')[0].reset();
+            existingClientName = '';
+            if (siteIdInput) {
+                siteIdInput.dataset.savedSiteId = '';
+            }
+            updateClientFields();
+        });
+    });
+
+    var submitBtn = document.getElementById("submitBtn");
+    if (submitBtn) {
+        submitBtn.addEventListener("click", function (event) {
+            syncClientNameForSubmit();
+
+            if (!validatePhoneFields()) {
+                event.preventDefault();
+                return;
+            }
+
+            if (isContractIDExists) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contract ID already exists',
+                    text: 'Please choose a different Contract ID.',
+                    confirmButtonColor: '#FF0000'
+                });
+                event.preventDefault();
+                return;
+            }
+
+            if (isContractNameExists) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contract Name already exists',
+                    text: 'Please choose a different Contract Name.',
+                    confirmButtonColor: '#FF0000'
+                });
+                event.preventDefault();
+                return;
+            }
+
+            const startDate = document.getElementById("ContractStartDate").value;
+            const endDate = document.getElementById("ContractEndDate").value;
+
+            if (!startDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation',
+                    text: 'Please enter Contract Start Date',
+                    confirmButtonColor: '#FF0000'
+                });
+                event.preventDefault();
+                return;
+            }
+
+            if (!endDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation',
+                    text: 'Please enter Contract End Date',
+                    confirmButtonColor: '#FF0000'
+                });
+                event.preventDefault();
+                return;
+            }
+        });
+    }
+
+    function checkIfContractExists(contractID, contractName, checkType) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: '/ContractDetails/CheckIfContractExists',
+                type: 'GET',
+                data: { contractId: contractID, contractName: contractName, checkType: checkType },
+                success: function (response) {
+                    if (response && response.exists) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    function validatePhoneFields() {
+        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
+        let isValid = true;
+
+        phoneFields.forEach(function (fieldId) {
+            const phoneInput = document.getElementById(fieldId);
+            const errorMessage = document.getElementById(fieldId + 'Error');
+
+            phoneInput.classList.remove('is-invalid');
+            errorMessage.style.display = 'none';
+
+            const phoneValue = phoneInput.value.trim();
+            const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
+
+            if (phoneValue && !phonePattern.test(phoneValue)) {
+                phoneInput.classList.add('is-invalid');
+                errorMessage.textContent = 'Please enter a valid phone number.';
+                errorMessage.style.display = 'block';
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    var updateBtn = document.getElementById("updateBtn");
+    if (updateBtn) {
+        updateBtn.addEventListener("click", function (event) {
+            syncClientNameForSubmit();
+
+            if (!validatePhoneFields()) {
+                event.preventDefault();
+                return;
+            }
+        });
+    }
+
+    if (isAddMode) {
+        $('#ContractID, #ContractName').on('blur', function () {
+            var inputField = $(this);
+            var inputValue = inputField.val().trim();
+            var checkType = inputField.attr('id') === 'ContractID' ? 'id' : 'name';
+
+            if (inputValue !== '') {
+                checkIfContractExists(
+                    checkType === 'id' ? inputValue : null,
+                    checkType === 'name' ? inputValue : null,
+                    checkType
+                )
+                    .then(function (exists) {
+                        if (exists) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: checkType === 'id' ? 'Contract ID already exists' : 'Contract Name already exists',
+                                text: 'Please choose a different ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
+                                confirmButtonColor: '#FF0000'
+                            });
+
+                            inputField.addClass('is-invalid');
+
+                            if (checkType === 'id') {
+                                isContractIDExists = true;
+                            } else {
+                                isContractNameExists = true;
+                            }
+                        } else {
+                            inputField.removeClass('is-invalid');
+
+                            if (checkType === 'id') {
+                                isContractIDExists = false;
+                            } else {
+                                isContractNameExists = false;
+                            }
+                        }
+                    })
+                    .catch(function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while checking the ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
+                            confirmButtonColor: '#FF0000'
+                        });
+                    });
+            } else {
+                inputField.removeClass('is-invalid');
+                if (checkType === 'id') {
+                    isContractIDExists = false;
+                } else {
+                    isContractNameExists = false;
+                }
+            }
+        });
+    }
+</script>

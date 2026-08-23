@@ -1,129 +1,266 @@
 ﻿@model Malama.Models.ContractViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml"; // Adjust the path to your layout file if necessary
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Contract Details";
 }
 
-<script src="~/js/Common/Methods.js"></script>
-
 <style>
-    h2 {
-        color: rgba(80, 90, 201, 1);
+    .ccd-page {
+        --ccd-indigo: rgba(80, 90, 201, 1);
+        --ccd-indigo-soft: rgba(80, 90, 201, 0.12);
+        --ccd-indigo-mid: rgba(80, 90, 201, 0.22);
+        --ccd-text: #1f2430;
+        --ccd-muted: #6b7285;
+        --ccd-surface: #ffffff;
+        --ccd-border: rgba(31, 36, 48, 0.08);
+        --ccd-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --ccd-radius: 16px;
     }
 
-    h3 {
-        color: rgba(80, 90, 201, 1);
+    .ccd-page .btn-general {
+        background: var(--ccd-indigo);
+        border: 1px solid var(--ccd-indigo);
+        color: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 1.15rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-    body {
-        background-color: #f8f9fa;
+    .ccd-page .btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
     }
 
-    #contractsTable {
-        border: 1px solid #ddd;
-        border-collapse: collapse;
+    .ccd-page .btn-general:focus,
+    .ccd-page .btn-general:active {
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.35);
+        outline: none;
+        color: #fff;
+    }
+
+    .ccd-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 0.15rem 0.2rem 0.35rem;
+    }
+
+    .ccd-kicker {
+        margin: 0 0 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ccd-indigo);
+    }
+
+    .ccd-title {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ccd-text);
+    }
+
+    .ccd-subtitle {
+        margin: 0.4rem 0 0;
+        color: var(--ccd-muted);
+        font-size: 0.95rem;
+    }
+
+    .ccd-table-panel {
+        background: var(--ccd-surface);
+        border: 1px solid var(--ccd-border);
+        border-radius: var(--ccd-radius);
+        box-shadow: var(--ccd-shadow);
+        padding: 1rem 1rem 0.85rem;
+        overflow: hidden;
+    }
+
+    .ccd-page #datatableWrapper {
         width: 100%;
+        overflow-x: auto;
     }
 
-        #contractsTable th, #contractsTable td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+    .ccd-page #contractsTable {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border: none;
+    }
+
+    .ccd-page #contractsTable thead th {
+        background: linear-gradient(180deg, #5a64d0 0%, rgba(80, 90, 201, 1) 100%) !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 0.85rem 0.75rem !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .ccd-page #contractsTable thead th:first-child {
+        border-top-left-radius: 12px;
+    }
+
+    .ccd-page #contractsTable thead th:last-child {
+        border-top-right-radius: 12px;
+    }
+
+    .ccd-page #contractsTable tbody td {
+        border: none !important;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.06) !important;
+        padding: 0.8rem 0.75rem !important;
+        text-align: center;
+        vertical-align: middle;
+        color: var(--ccd-text);
+        background: transparent !important;
+        font-size: 0.9rem;
+    }
+
+    .ccd-page #contractsTable tbody tr {
+        background: #fff !important;
+        transition: background 0.18s ease;
+    }
+
+    .ccd-page #contractsTable tbody tr:nth-child(even) {
+        background: rgba(247, 248, 252, 0.9) !important;
+    }
+
+    .ccd-page #contractsTable tbody tr:hover {
+        background: rgba(80, 90, 201, 0.07) !important;
+    }
+
+    .ccd-page #contractsTable td .button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .ccd-page .edit-btn,
+    .ccd-page .view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.9rem;
+        line-height: 1;
+        text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .ccd-page .edit-btn {
+        background: var(--ccd-indigo) !important;
+        color: #fff !important;
+    }
+
+    .ccd-page .edit-btn:hover {
+        background: rgb(60, 70, 180) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(80, 90, 201, 0.28);
+    }
+
+    .ccd-page .view-btn {
+        background: #fff !important;
+        color: var(--ccd-indigo) !important;
+        border: 1px solid var(--ccd-indigo-mid) !important;
+    }
+
+    .ccd-page .view-btn:hover {
+        background: var(--ccd-indigo-soft) !important;
+        color: var(--ccd-indigo) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(80, 90, 201, 0.16);
+    }
+
+    .ccd-page .dataTables_wrapper .dataTables_filter input,
+    .ccd-page .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        padding: 0.35rem 0.55rem;
+    }
+
+    .ccd-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--ccd-indigo) !important;
+        border-color: var(--ccd-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+    }
+
+    .ccd-page .dataTables_wrapper .dataTables_info,
+    .ccd-page .dataTables_wrapper .dataTables_length,
+    .ccd-page .dataTables_wrapper .dataTables_filter {
+        color: var(--ccd-muted);
+        font-size: 0.88rem;
+        margin-bottom: 0.65rem;
+    }
+
+    @@media (max-width: 900px) {
+        .ccd-hero {
+            flex-direction: column;
+            align-items: flex-start;
         }
-
-        #contractsTable th {
-            background-color: #f4f4f4;
-        }
-
-        #contractsTable tbody tr {
-            background-color: rgba(240, 245, 255, 1); /* Very lighter version */
-        }
-
-            #contractsTable tbody tr:hover {
-                background-color: rgba(245, 250, 255, 1); /* Even lighter version on hover */
-            }
-
-        #contractsTable td, #contractsTable th {
-            text-align: center; /* Aligns the text in the middle of the cell */
-        }
-
-            #contractsTable td button, #contractsTable td a {
-                display: inline-block; /* Makes the buttons appear side by side */
-                margin-right: 5px; /* Optional: Adds space between the buttons */
-            }
-
-            #contractsTable td .button-container {
-                display: flex;
-                justify-content: center; /* Aligns buttons horizontally in the center */
-            }
-
-                #contractsTable td .button-container a {
-                    margin-right: 5px; /* Optional: Adds space between the buttons */
-                }
-
-        #contractsTable thead th {
-            background-color: rgba(120, 130, 221, 1); /* Header background color */
-            color: white; /* Header text color */
-            text-align: center; /* Optional: Center-align header text */
-        }
-
-    .read-only-style {
-        background-color: #f8f9fa; /* Light gray background */
-        pointer-events: none; /* Disable click and focus */
-        border-color: #ced4da; /* Light border color */
     }
 </style>
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-
-@if (TempData["ResponseMessage"] != null)
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-
-            Swal.fire({
-                icon: '@TempData["ResponseStatus"]', // success, error, warning, info, or question
-                title: '@TempData["ResponseTitle"]',
-                text: '@TempData["ResponseMessage"]',
-                confirmButtonText: 'OK',
-                confirmButtonColor: buttonColor, // Conditional button color
-                iconColor: iconColor // Conditional icon color
-            });
-        });
-    </script>
-}
-
-
-<h2 class="text-center mb-4">@ViewData["Title"]</h2>
-
-
-    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
-    {
-        <div class="alert alert-danger">
-            <strong>Validation failed!</strong>
-            <ul>
-                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@modelError.ErrorMessage</li>
-                }
-            </ul>
+<section class="ccd-page">
+    <div class="ccd-hero">
+        <div>
+            <p class="ccd-kicker">Contracts</p>
+            <h1 class="ccd-title">Contract Details</h1>
         </div>
+        <div>
+            @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ContractDetails_Save"))
+            {
+                <a asp-action="Create" class="btn btn-general" id="addContractBtn">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Add New Contract
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
     }
 
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
 
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <button class="btn btn-primary" id="addContractBtn"
-                style="background-color: rgba(80, 90, 201, 1); border-color: rgba(80, 90, 201, 1);">
-            Add New Contract
-        </button>
-    </div>
-    <div id="datatableWrapper" class="datatable-wrapper">
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
+    }
+
+    <div id="datatableWrapper" class="datatable-wrapper ccd-table-panel">
         <table id="contractsTable" class="display">
             <thead>
                 <tr>
@@ -157,1042 +294,43 @@
                             <td>@contract.DawsonRoleOnContract</td>
                             <td>@contract.ContractStatus</td>
                             <td>@contract.ContractStartDate.ToString("MM-dd-yyyy")</td>
-                        <td>@contract.ContractEndDate.ToString("MM-dd-yyyy")</td>
+                            <td>@contract.ContractEndDate.ToString("MM-dd-yyyy")</td>
                             <td>
                                 <div class="button-container">
-                                    <a href="javascript:void(0);" class="btn btn-primary edit-btn" data-id="@contract.Id" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
-                                    <a href="javascript:void(0);" class="btn btn-secondary view-btn" data-id="@contract.Id">View</a>
+                                    @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "ContractDetails_Save"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@contract.Id" class="edit-btn" title="Edit" aria-label="Edit">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </a>
+                                    }
+                                    <a asp-action="ViewContract" asp-route-id="@contract.Id" class="view-btn" title="View" aria-label="View">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </a>
                                 </div>
                             </td>
-
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                        <td class="text-center">No data available</td>
-                    </tr>
                 }
             </tbody>
         </table>
     </div>
+</section>
 
-
-    <div class="card-body" style="display: none;">
-        <form id="contractForm" asp-action="CreateContractDetails" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="SingleContract.Id" id="hiddenId" />
-        <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
-            <!-- Row 1 -->
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ContractID" class="form-label">Contract ID # (Dawson)</label>
-                    <input id="ContractID" asp-for="SingleContract.ContractID" class="form-control" placeholder="Enter Contract ID" maxLength="13" required />
-                    <span asp-validation-for="SingleContract.ContractID" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="ContractName" class="form-label">Dawson Contract Name</label>
-                    <input id="ContractName" asp-for="SingleContract.ContractName" class="form-control" placeholder="Enter Contract Name" maxLength="32" required />
-                    <span asp-validation-for="SingleContract.ContractName" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Row 2 -->
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ContractAgency" class="form-label">Contract Agency</label>
-                    <input id="ContractAgency" asp-for="SingleContract.ContractAgency" class="form-control" placeholder="Enter Contract Agency" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.ContractAgency" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="ContractServiceBranch" class="form-label">Contract Service Branch</label>
-                    <select id="ContractServiceBranch" asp-for="SingleContract.ContractServiceBranch" class="form-select" maxLength="20" required>
-                        <option value="">Select Branch</option>
-                        <option>Army</option>
-                        <option>Airforce</option>
-                        <option>Navy</option>
-                        <option>Marines</option>
-                        <option>Coast Guard</option>
-                        <option>Space Force</option>
-                    </select>
-                </div>
-
-            </div>
-
-            <!-- Row 3 -->
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ContractComponent" class="form-label">Contract Component</label>
-                    <select id="ContractComponent" asp-for="SingleContract.ContractComponent" class="form-select" maxLength="20" required>
-                        <option value="">Select Component</option>
-                        <option>Active Duty</option>
-                        <option>National Guard</option>
-                        <option>Reserve</option>
-                    </select>
-                    <span asp-validation-for="SingleContract.ContractComponent" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="ContractClient" class="form-label">Contract Client</label>
-                    <select id="ContractClient" asp-for="SingleContract.ContractClient" class="form-select" maxLength="20" required>
-                        <option value="">Select Client</option>
-                        <option>Command</option>
-                        <option>State</option>
-                    </select>
-                    <span asp-validation-for="SingleContract.ContractClient" class="text-danger"></span>
-                </div>
-
-            </div>
-
-            <!-- Row 4 -->
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ContractType" class="form-label">Contract Type</label>
-                    <select id="ContractType" asp-for="SingleContract.ContractType" class="form-select" maxLength="20" required>
-                        <option value="">Select Type</option>
-                        <option>FFP</option>
-                        <option>CPFF</option>
-                        <option>T&M</option>
-                    </select>
-                    <span asp-validation-for="SingleContract.ContractType" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="DawsonRoleOnContract" class="form-label">DAWSON Role on Contract</label>
-                    <select id="DawsonRoleOnContract" asp-for="SingleContract.DawsonRoleOnContract" class="form-select" maxLength="20" required>
-                        <option value="">Select Role</option>
-                        <option>Prime</option>
-                        <option>Sub</option>
-                    </select>
-                    <span asp-validation-for="SingleContract.DawsonRoleOnContract" class="text-danger"></span>
-                </div>
-
-            </div>
-
-            <!-- Row 5 -->
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="ContractStatus" class="form-label">Contract Status</label>
-                    <select id="ContractStatus" asp-for="SingleContract.ContractStatus" class="form-select" maxLength="20" required>
-                        <option value="">Select Status</option>
-                        <option>Bidding</option>
-                        <option>Active</option>
-                        <option>Complete</option>
-                    </select>
-                    <span asp-validation-for="SingleContract.ContractStatus" class="text-danger"></span>
-                </div>
-            <div class="col-md-6" id="clientNameContainer" style="display:none;">
-
-                <label for="ClientName" class="form-label">Client Name</label>
-
-                <!-- Textbox for Active Duty / Reserve -->
-                <input type="text"
-                       id="ClientNameTextbox"
-                       asp-for="SingleContract.ClientName"
-                       class="form-control"
-                       style="display:none;" />
-
-                <!-- Dropdown for National Guard -->
-                <select id="ClientNameDropdown"
-                        asp-for="SingleContract.ClientName"
-                        class="form-select"
-                        style="display:none;">
-
-                    <option value="">Select Client Name</option>
-                </select>
-
-                <span asp-validation-for="SingleContract.ClientName"
-                      class="text-danger"></span>
-
-            </div>
-            </div>
-
-            <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="ContractStartDate" class="form-label">Contract Start Date</label>
-                <input id="ContractStartDate"
-                       asp-for="SingleContract.ContractStartDate"
-                       type="text"
-                       class="form-control"
-                       placeholder="MM/DD/YYYY"
-                       required />
-                <span asp-validation-for="SingleContract.ContractStartDate" class="text-danger"></span>
-            </div>
-                <div class="col-md-6 mb-3">
-                    <label for="ContractEndDate" class="form-label">Contract End Date</label>
-                <input id="ContractEndDate"
-                       asp-for="SingleContract.ContractEndDate"
-                       type="text"
-                       class="form-control"
-                       placeholder="MM/DD/YYYY"
-                       required />
-                    <span asp-validation-for="SingleContract.ContractEndDate" class="text-danger"></span>
-                </div>
-            </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="SiteId" class="form-label">Site ID</label>
-                <input id="SiteId" asp-for="SingleContract.SiteId" class="form-control" placeholder="Enter Site ID" maxLength="20" required />
-                <span asp-validation-for="SingleContract.SiteId" class="text-danger"></span>
-            </div>
-        </div>
-
-            <h3 class="mt-5 mb-3">Contract Officer (KO)</h3>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="KoLastName" class="form-label">Last Name</label>
-                    <input id="KoLastName" asp-for="SingleContract.KoLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.KoLastName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="KoFirstName" class="form-label">First Name</label>
-                    <input id="KoFirstName" asp-for="SingleContract.KoFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.KoFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="KOPhone" class="form-label">KO Phone</label>
-                    <input id="KOPhone" asp-for="SingleContract.KOPhone" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-                    <span id="KOPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
-                    <span asp-validation-for="SingleContract.KOPhone" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="KOPhone2" class="form-label">KO Phone 2</label>
-                    <input id="KOPhone2" asp-for="SingleContract.KOPhone2" class="form-control" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-                    <span id="KOPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
-                    <span asp-validation-for="SingleContract.KOPhone2" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="KOEmail" class="form-label">KO Email</label>
-                    <input id="KOEmail" asp-for="SingleContract.KOEmail" class="form-control" type="email" placeholder="Enter KO Email" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.KOEmail" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="KONotes" class="form-label">KO Notes</label>
-                    <textarea id="KONotes" asp-for="SingleContract.KONotes" class="form-control" rows="4" placeholder="Enter KO Notes" maxLength="300" required></textarea>
-                    <span asp-validation-for="SingleContract.KONotes" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- New Contract Officer Representative (COR) Section -->
-            <h3 class="mt-5 mb-3">Contract Officer Representative (COR)</h3>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="CORLastName" class="form-label">Last Name</label>
-                    <input id="CORLastName" asp-for="SingleContract.CORLastName" class="form-control" placeholder="Enter Last Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.CORLastName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORKORank" class="form-label">Rank</label>
-                    <input asp-for="SingleContract.CORKORank" class="form-control" placeholder="Enter Rank" maxLength="50" id="CORKORank" required />
-                    <span asp-validation-for="SingleContract.CORKORank" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORPrefix" class="form-label">Prefix</label>
-                    <select id="CORPrefix" asp-for="SingleContract.CORPrefix" class="form-select" required>
-                        <option value="">Select</option>
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Ms">Ms</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="CORFirstName" class="form-label">First Name</label>
-                    <input id="CORFirstName" asp-for="SingleContract.CORFirstName" class="form-control" placeholder="Enter First Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.CORFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORPhone" class="form-label">COR Phone</label>
-                    <input asp-for="SingleContract.CORPhone" class="form-control" id="CorPhone" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-                    <span id="CorPhoneError" class="text-danger invalid-feedback" style="display: none;"></span>
-                    <span asp-validation-for="SingleContract.CORPhone" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORPhone2" class="form-label">COR Phone 2</label>
-                    <input asp-for="SingleContract.CORPhone2" class="form-control" id="CorPhone2" placeholder="xxx-xxx-xxxx" inputmode="numeric" maxlength="12" required />
-                    <span id="CorPhone2Error" class="text-danger invalid-feedback" style="display: none;"></span>
-                    <span asp-validation-for="SingleContract.CORPhone2" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.COREmail" class="form-label">COR Email</label>
-                    <input asp-for="SingleContract.COREmail" class="form-control" type="email" id="COREmail" placeholder="Enter COR Email" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.COREmail" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.CORNotes" class="form-label">COR Notes</label>
-                    <textarea asp-for="SingleContract.CORNotes" class="form-control" id="CORNotes" rows="4" placeholder="Enter COR Notes" maxLength="300" required></textarea>
-                    <span asp-validation-for="SingleContract.CORNotes" class="text-danger"></span>
-                </div>
-            </div>
-
-            <h3 class="mt-5 mb-3">DAWSON Program Manager</h3>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonProgramManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonProgramManagerLastName" class="form-control" id="DawsonProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonProgramManagerLastName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonProgramManagerFirstName" class="form-control" id="DawsonProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonProgramManagerFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-            <h3 class="mt-5 mb-3">DAWSON Deputy Program Manager (DDPM)</h3>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonDeputyProgramManagerLastName" class="form-control" id="DawsonDeputyProgramManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerLastName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="form-control" id="DawsonDeputyProgramManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonDeputyProgramManagerFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-            <h3 class="mt-5 mb-3">DAWSON Project Manager (DPM)</h3>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonProjectManagerLastName" class="form-label">Last Name</label>
-                    <input asp-for="SingleContract.DawsonProjectManagerLastName" class="form-control" id="DawsonProjectManagerLastName" placeholder="Enter Last Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonProjectManagerLastName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-label">First Name</label>
-                    <input asp-for="SingleContract.DawsonProjectManagerFirstName" class="form-control" id="DawsonProjectManagerFirstName" placeholder="Enter First Name" maxLength="50" required />
-                    <span asp-validation-for="SingleContract.DawsonProjectManagerFirstName" class="text-danger"></span>
-                </div>
-            </div>
-
-
-
-            <div class="d-flex justify-content-end mt-4">
-                <button type="submit" id="submitBtn" class="btn btn-success btn-lg me-3" name="action" value="Add">
-                    <i class="bi bi-check-circle"></i> Submit
-                </button>
-                <button type="reset" id="resetBtn" class="btn btn-secondary btn-lg me-3">
-                    <i class="bi bi-arrow-repeat"></i> Reset
-                </button>
-                <button type="submit" class="btn btn-warning btn-lg me-3" id="updateBtn" style="display:none;" name="action" value="Update">
-                    <i class="bi bi-pencil"></i> Update
-                </button>
-                <button id="backToTableBtn" type="button" class="btn btn-secondary">
-                    Back to Contracts
-                </button>
-            </div>
-
-        </form>
-    </div>
 <script>
     $(document).ready(function () {
-
-        //     $('#ContractID').val('12345');
-        // $('#ContractAgency').val('Department of Defense');
-        // $('#ContractServiceBranch').val('Army');
-        // $('#ContractComponent').val('Active Duty');
-        // $('#ContractClient').val('State');
-        // $('#ContractType').val('FFP');
-        // $('#DawsonRoleOnContract').val('Prime');
-        // $('#ContractStatus').val('Active');
-
-        // $('#ContractStartDate').val('2024-01-01');
-        // $('#ContractEndDate').val('2025-12-31');
-
-        // // KO
-        // // $('#KoLastName').val('Smith');
-        // $('#KoFirstName').val('John');
-        // $('#KOPhone').val('123-456-7890');
-        // $('#KOPhone2').val('987-654-3210');
-        // $('#KOEmail').val('john.smith@example.com');
-        // $('#KONotes').val('Key contact for the project.');
-        // $('#CORLastName').val('Johnson');
-        // $('#CORPrefix').val('M.');
-        // $('#CORFirstName').val('Alice');
-
-        // $('#CORKORank').val('Colonel');
-        // $('#CorPhone').val('123-456-7890');
-        // $('#CorPhone2').val('987-654-3210');
-        // $('#COREmail').val('alice.johnson@example.com');
-        // $('#CORNotes').val('Responsible for oversight.');
-
-        // $('#DawsonProgramManagerLastName').val('Taylor');
-        // $('#DawsonProgramManagerFirstName').val('Michael');
-
-        // $('#DawsonDeputyProgramManagerLastName').val('Brown');
-        // $('#DawsonDeputyProgramManagerFirstName').val('Jessica');
-
-        // $('#DawsonProjectManagerLastName').val('Williams');
-        // $('#DawsonProjectManagerFirstName').val('David');
-
-
-        $('.card-body').hide();
-        $('#contractsTable').show();
-
-        const contractStartPicker = flatpickr("#ContractStartDate", {
-            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
-        });
-
-        const contractEndPicker = flatpickr("#ContractEndDate", {
-            altInput: true, altFormat: 'm/d/Y', dateFormat: 'Y-m-d', allowInput: true
-        });
-
-
-
-        const component = document.getElementById("ContractComponent");
-        const client = document.getElementById("ContractClient");
-
-        const clientTextbox = document.getElementById("ClientNameTextbox");
-        const clientDropdown = document.getElementById("ClientNameDropdown");
-
-        const siteIdInput = document.getElementById("SiteId");
-
-        // Load states JSON once
-        let stateList = [];
-
-        $.getJSON('/data/statesAndTerritories.json', function (data) {
-            stateList = data; // data is already an array of strings
-            populateClientDropdown(); // in case something is preselected
-        });
-
-        // Populate dropdown dynamically
-        function populateClientDropdown() {
-            clientDropdown.innerHTML = '<option value="">Select State / Territory</option>'; // reset
-
-            stateList.forEach(state => {
-                const option = document.createElement('option');
-                option.value = state;
-                option.textContent = state;
-                clientDropdown.appendChild(option);
-            });
-        }
-
-
-        // Update Site ID based on Client Name selection
-        function updateSiteId() {
-            let clientName = "";
-
-            if (clientTextbox.style.display !== "none") {
-                clientName = clientTextbox.value;
-            } else if (clientDropdown.style.display !== "none") {
-                clientName = clientDropdown.value;
-            }
-
-            switch (clientName) {
-                case "California":
-                    siteIdInput.value = "GO06";
-                    siteIdInput.readOnly = true;
-                    break;
-                case "Florida":
-                    siteIdInput.value = "GO12";
-                    siteIdInput.readOnly = true;
-                    break;
-                default:
-                    siteIdInput.value = "";
-                    siteIdInput.readOnly = false;
-            }
-        }
-
-        const clientContainer = document.getElementById("clientNameContainer");
-
-        function updateClientFields() {
-
-            client.onmousedown = null;
-            client.onkeydown = null;
-
-            switch (component.value) {
-
-                case "Active Duty":
-                case "Reserve":
-
-                    clientContainer.style.display = "block";
-
-                    client.value = "Command";
-
-                    client.onmousedown = (e) => e.preventDefault();
-                    client.onkeydown = (e) => e.preventDefault();
-
-                    clientTextbox.style.display = "block";
-                    clientDropdown.style.display = "none";
-
-                    clientTextbox.disabled = false;
-                    clientDropdown.disabled = true;
-                    clientDropdown.value = "";
-
-                    break;
-
-                case "National Guard":
-
-                    clientContainer.style.display = "block";
-
-                    client.value = "State";
-
-                    client.onmousedown = (e) => e.preventDefault();
-                    client.onkeydown = (e) => e.preventDefault();
-
-                    clientDropdown.style.display = "block";
-                    clientTextbox.style.display = "none";
-
-                    clientDropdown.disabled = false;
-                    clientTextbox.disabled = true;
-                    clientTextbox.value = "";
-
-                    if (stateList.length > 0) {
-                        populateClientDropdown();
-                    }
-
-                    break;
-
-                default:
-
-                    clientContainer.style.display = "none";
-
-                    client.value = "";
-                    client.onmousedown = null;
-                    client.onkeydown = null;
-
-                    clientTextbox.style.display = "none";
-                    clientDropdown.style.display = "none";
-
-                    clientTextbox.disabled = true;
-                    clientDropdown.disabled = true;
-
-                    clientTextbox.value = "";
-                    clientDropdown.value = "";
-            }
-
-            updateSiteId();
-        }
-
-
-
-        // Listen for Contract Component changes
-        component.addEventListener("change", updateClientFields);
-
-        // Listen for Client Name changes
-        clientDropdown.addEventListener("change", updateSiteId);
-
-        $('#addContractBtn').click(function () {
-
-            const controlIds = [
-                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
-                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                'ContractStatus',
-                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
-                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-            ];
-
-            controlIds.forEach(function (id) {
-                const control = $('#' + id);
-
-                if (control.is('select')) {
-                    // Enable dropdowns
-                    control.prop('disabled', false);
-                } else {
-                    // Remove readonly from input fields
-                    control.prop('readonly', false);
-                }
-
-                // Optional: Remove styling for disabled or read-only fields
-                control.removeClass('read-only-style');
-            });
-
-            // Show the form and hide the datatable
-            $('.card-body').show();
-            $('#datatableWrapper').hide();
-            // Hide Update button and show Submit/Reset buttons
-            $('#submitBtn').show();
-            $('#resetBtn').show();
-            $('#updateBtn').hide();
-            $('#addContractBtn').hide();
-
-            $('#hiddenId').val('');
-            $('#ContractID').val('');
-            $('#ContractName').val('');
-            $('#ContractAgency').val('');
-            $('#ContractServiceBranch').val('');
-            $('#ContractComponent').val('');
-            $('#ContractClient').val('');
-            $('#ContractType').val('');
-            $('#DawsonRoleOnContract').val('');
-            $('#ContractStatus').val('');
-
-            $('#ClientNameTextbox').val('');
-            $('#ClientNameDropdown').val('');
-            $('#SiteId').val('');
-
-            //contractStartPicker.clear();
-            // contractEndPicker.clear();
-
-            // KO
-            $('#KoLastName').val('');
-            $('#KoFirstName').val('');
-            $('#KOPhone').val('');
-            $('#KOPhone2').val('');
-            $('#KOEmail').val('');
-            $('#KONotes').val('');
-            $('#CORLastName').val('');
-            $('#CORPrefix').val('');
-            $('#CORFirstName').val('');
-
-            $('#CORKORank').val('');
-            $('#CorPhone').val('');
-            $('#CorPhone2').val('');
-            $('#COREmail').val('');
-            $('#CORNotes').val('');
-
-            $('#DawsonProgramManagerLastName').val('');
-            $('#DawsonProgramManagerFirstName').val('');
-
-            $('#DawsonDeputyProgramManagerLastName').val('');
-            $('#DawsonDeputyProgramManagerFirstName').val('');
-
-            $('#DawsonProjectManagerLastName').val('');
-            $('#DawsonProjectManagerFirstName').val('');
-        });
-
-
-
-        $('#backToTableBtn').on('click', async function () {
-
-            const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?"
-            );
-
-            if (!confirmed) {
-                return;
-            }
-
-            $('.card-body').hide();
-            $('#datatableWrapper').show();
-            $('#addContractBtn').show();
-        });
-
-        $('#resetBtn').on('click', async function (e) {
-            e.preventDefault();
-
-            const confirmed = await showYesNoModal(
-                "Are you sure you want to reset all fields?"
-            );
-
-            if (!confirmed) {
-                return;
-            }
-
-            $(this).closest('form')[0].reset();
-        });
-
-
         $('#contractsTable').DataTable({
-            "paging": true,  // Enables pagination
-            "lengthChange": true,  // Option to change number of records per page
-            "searching": true,  // Enables search box
-            "ordering": false,  // Enables column sorting
-            "info": true,  // Shows table information (e.g., "Showing 1 to 10 of 50 entries")
-            "autoWidth": true,  // Adjusts table width automatically
-            "responsive": true,  // Makes the table responsive on small screens
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": true,
+            "responsive": true,
             "language": {
-                "search": "Search:"  // Customizing the search box label
+                "search": "Search:",
+                "emptyTable": "No contracts available"
             },
-            "order": [[0, 'desc']]  // Set default sorting on the first column (ID) in descending order
+            "order": [[0, 'desc']]
         });
-
-
-        $('#contractsTable').on('click', '.edit-btn, .view-btn', function () {
-            debugger;
-            var contractId = $(this).data('id');  // Get contract ID from data-id attribute
-            var isViewButton = $(this).hasClass('view-btn');
-
-            // AJAX call to fetch contract details by ID
-            $.ajax({
-                url: '/ContractDetails/GetContractById/' + contractId,  // Make sure the URL is correct
-                type: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        var contract = response.contractDetails;
-                        $('#hiddenId').val(contract.id);
-                        $('#ContractID').val(contract.contractID);
-                        $('#ContractName').val(contract.contractName);
-                        $('#ContractAgency').val(contract.contractAgency);
-                        $('#ContractServiceBranch').val(contract.contractServiceBranch);
-                        $('#ContractComponent').val(contract.contractComponent);
-                        $('#ContractClient').val(contract.contractClient);
-                        $('#ContractType').val(contract.contractType);
-                        $('#DawsonRoleOnContract').val(contract.dawsonRoleOnContract);
-                        $('#ContractStatus').val(contract.contractStatus);
-
-                        updateClientFields();
-
-                        if (component.value === "National Guard") {
-                            clientDropdown.value = contract.clientName;
-                        } else {
-                            clientTextbox.value = contract.clientName;
-                        }
-
-                        updateSiteId();
-                        siteIdInput.value = contract.siteId;
-
-                        const startDate = getDateOnlyGlobal(contract.contractStartDate); // flatpicker automatically convert date to mm/dd/yyyy
-                        contractStartPicker.setDate(startDate, true);
-
-                        const endDate = getDateOnlyGlobal(contract.contractEndDate); // "YYYY-MM-DD"
-                        contractEndPicker.setDate(endDate, true);
-
-
-
-                        //KO
-                        $('#KoLastName').val(contract.koLastName);
-                        $('#KoFirstName').val(contract.koFirstName);
-                        $('#KOPhone').val(contract.koPhone);
-                        $('#KOPhone2').val(contract.koPhone2);
-                        $('#KOEmail').val(contract.koEmail);
-                        $('#KONotes').val(contract.koNotes);
-                        $('#CORLastName').val(contract.corLastName);
-                        $('#CORPrefix').val(contract.corPrefix);
-                        $('#CORFirstName').val(contract.corFirstName);
-
-                        $('#CORKORank').val(contract.corkoRank);
-                        $('#CorPhone').val(contract.corPhone);
-                        $('#CorPhone2').val(contract.corPhone2);
-                        $('#COREmail').val(contract.corEmail);
-                        $('#CORNotes').val(contract.corNotes);
-
-                        $('#DawsonProgramManagerLastName').val(contract.dawsonProgramManagerLastName);
-                        $('#DawsonProgramManagerFirstName').val(contract.dawsonProgramManagerFirstName);
-
-                        $('#DawsonDeputyProgramManagerLastName').val(contract.dawsonDeputyProgramManagerLastName);
-                        $('#DawsonDeputyProgramManagerFirstName').val(contract.dawsonDeputyProgramManagerFirstName);
-
-                        $('#DawsonProjectManagerLastName').val(contract.dawsonProjectManagerLastName);
-                        $('#DawsonProjectManagerFirstName').val(contract.dawsonProjectManagerFirstName);
-
-
-
-                        // Show the form and hide the table
-                        $('#datatableWrapper').hide();
-                        $('.card-body').show();
-                        $('#submitBtn').hide();
-                        $('#resetBtn').hide();
-                        $('#addContractBtn').hide();
-
-                        if (isViewButton) {
-                            const controlIds = [
-                                'hiddenId', 'ContractID', 'ContractName', 'ContractAgency', 'ContractServiceBranch',
-                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                                'ContractStatus', 'ClientNameTextbox', 'ClientNameDropdown', 'SiteId',
-                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail',
-                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-                            ];
-
-                            // Make controls read-only
-                            controlIds.forEach(function (id) {
-                                const control = $('#' + id);
-                                control.prop('readonly', true); // Make input read-only
-                                control.addClass('read-only-style'); // Optional: Add a class for read-only styling
-                            });
-
-                            ['ContractStartDate', 'ContractEndDate'].forEach(function (id) {
-                                const input = document.getElementById(id);
-                                if (input._flatpickr) {
-                                    input._flatpickr.set('clickOpens', false);
-                                }
-                            });
-
-                            $('#updateBtn').hide();  // Hide the Update button when View button is clicked
-                        } else {
-                            const controlIds = [
-                                'hiddenId', 'ContractAgency', 'ContractServiceBranch',
-                                'ContractComponent', 'ContractClient', 'ContractType', 'DawsonRoleOnContract',
-                                'ContractStatus',
-                                'KoLastName', 'KoFirstName', 'KOPhone', 'KOPhone2', 'KOEmail', 'ClientNameTextbox', 'ClientNameDropdown', 'SiteId',
-                                'KONotes', 'CORLastName', 'CORPrefix', 'CORFirstName', 'CORKORank',
-                                'CorPhone', 'CorPhone2', 'COREmail', 'CORNotes',
-                                'DawsonProgramManagerLastName', 'DawsonProgramManagerFirstName',
-                                'DawsonDeputyProgramManagerLastName', 'DawsonDeputyProgramManagerFirstName',
-                                'DawsonProjectManagerLastName', 'DawsonProjectManagerFirstName'
-                            ];
-
-                            // Make controls editable
-                            controlIds.forEach(function (id) {
-                                const control = $('#' + id);
-                                control.prop('readonly', false); // Remove readonly property
-                                control.removeClass('read-only-style'); // Remove read-only styling class if applied
-                            });
-
-                            ['ContractStartDate', 'ContractEndDate'].forEach(function (id) {
-                                const input = document.getElementById(id);
-                                if (input._flatpickr) {
-                                    input._flatpickr.set('clickOpens', true);
-                                }
-                            });
-
-                            var control = $('#ContractID');
-                            control.prop('readonly', true);
-                            control.addClass('read-only-style');
-
-                            var control = $('#ContractName');
-                            control.prop('readonly', true);
-                            control.addClass('read-only-style');
-                            $('#updateBtn').show();  // Show the Update button when Edit button is clicked
-                        }
-                    } else {
-                        alert(response.message);  // Show error message
-                    }
-                },
-                error: function () {
-                    alert('An error occurred while fetching contract data.');
-                }
-            });
-        });
-
-        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
-        phoneFields.forEach(function (fieldId) {
-            applyPhoneNumberMask(document.getElementById(fieldId));
-        });
-
-        function applyPhoneNumberMask(inputElement) {
-            inputElement.addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, ''); // Remove all non-digit characters
-                if (value.length > 3 && value.length <= 6) {
-                    value = value.slice(0, 3) + '-' + value.slice(3);
-                } else if (value.length > 6) {
-                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
-                }
-                e.target.value = value;
-            });
-        }
     });
-
-    // let isSubmitting = false;
-
-    document.getElementById("submitBtn").addEventListener("click", function (event) {
-        // Perform the default form validation first
-
-        // if (isSubmitting) {
-        // event.preventDefault();
-        // return;
-        // }
-
-        if (!validatePhoneFields()) {
-            event.preventDefault(); // Stop form submission if validation fails
-            return;
-        }
-
-        if (isContractIDExists) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Contract ID already exists',
-                text: 'Please choose a different Contract ID.',
-                confirmButtonColor: '#FF0000'
-            });
-
-            // Prevent form submission
-            event.preventDefault();
-            return;
-        }
-
-        if (isContractNameExists) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Contract Name already exists',
-                text: 'Please choose a different Contract ID.',
-                confirmButtonColor: '#FF0000'
-            });
-
-            // Prevent form submission
-            event.preventDefault();
-            return;
-        }
-
-        const startDate = document.getElementById("ContractStartDate").value;
-        const endDate = document.getElementById("ContractEndDate").value;
-
-        if (!startDate) {
-            alert('Please enter Contract Start Date')
-            event.preventDefault();
-            return;
-        }
-
-        if (!endDate) {
-            alert('Please enter Contract End Date')
-            event.preventDefault();
-            return;
-        }
-
-        // isSubmitting = true;
-
-        // const btn = this;
-        // btn.disabled = true;
-        // btn.innerText = "Submitting...";
-    });
-
-    function checkIfContractExists(contractID, contractName, checkType) {
-        return new Promise(function (resolve, reject) {
-            $.ajax({
-                url: '/ContractDetails/CheckIfContractExists',
-                type: 'GET',
-                data: { contractId: contractID, contractName: contractName, checkType: checkType },
-                success: function (response) {
-                    console.log(response); // Check the response
-                    if (response && response.exists) {
-                        // If the contract exists (based on the API response)
-                        resolve(true);
-                    } else {
-                        // If the contract does not exist
-                        resolve(false);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    reject(error);  // Reject the promise in case of an error
-                }
-            });
-        });
-    }
-
-
-    function validatePhoneFields() {
-        const phoneFields = ['KOPhone', 'KOPhone2', 'CorPhone', 'CorPhone2'];
-        let isValid = true;
-
-        phoneFields.forEach(function (fieldId) {
-            const phoneInput = document.getElementById(fieldId);
-            const errorMessage = document.getElementById(fieldId + 'Error');
-
-            // Reset previous validation state
-            phoneInput.classList.remove('is-invalid');
-            errorMessage.style.display = 'none';
-
-            const phoneValue = phoneInput.value.trim();
-            const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
-
-            // Validate only if the field has a value
-            if (phoneValue && !phonePattern.test(phoneValue)) {
-                phoneInput.classList.add('is-invalid');
-                errorMessage.textContent = 'Please enter a valid phone number.';
-                errorMessage.style.display = 'block';
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    }
-
-    document.getElementById("updateBtn").addEventListener("click", function (event) {
-
-        if (!validatePhoneFields()) {
-            event.preventDefault();
-            return;
-        }
-    });
-
-    var isContractIDExists = false; // To track if ContractID exists
-    var isContractNameExists = false; // To track if ContractName exists
-
-    $('#ContractID, #ContractName').on('blur', function () {
-        debugger;
-        var inputField = $(this); // Get the current input field
-        var inputValue = inputField.val().trim(); // Get and trim the input value
-        var checkType = inputField.attr('id') === 'ContractID' ? 'id' : 'name'; // Determine the check type
-
-        // Only call checkIfContractExists if the input value is not empty
-        if (inputValue !== '') {
-            checkIfContractExists(
-                checkType === 'id' ? inputValue : null, // Pass ContractID if checking by ID
-                checkType === 'name' ? inputValue : null, // Pass ContractName if checking by Name
-                checkType // Indicate the type of check
-            )
-                .then(function (exists) {
-                    if (exists) {
-                        // Show SweetAlert error if the value already exists
-                        Swal.fire({
-                            icon: 'error',
-                            title: checkType === 'id' ? 'Contract ID already exists' : 'Contract Name already exists',
-                            text: 'Please choose a different ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
-                            confirmButtonColor: '#FF0000'
-                        });
-
-                        // Add custom styling to highlight the field
-                        inputField.addClass('is-invalid');
-
-                        // Set the appropriate flag variable
-                        if (checkType === 'id') {
-                            isContractIDExists = true;
-                        } else {
-                            isContractNameExists = true;
-                        }
-                    } else {
-                        // If the value doesn't exist, remove invalid class (if any)
-                        inputField.removeClass('is-invalid');
-
-                        // Reset the appropriate flag variable
-                        if (checkType === 'id') {
-                            isContractIDExists = false;
-                        } else {
-                            isContractNameExists = false;
-                        }
-                    }
-                })
-                .catch(function (error) {
-                    // Handle errors in the API call
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'An error occurred while checking the ' + (checkType === 'id' ? 'Contract ID.' : 'Contract Name.'),
-                        confirmButtonColor: '#FF0000'
-                    });
-                });
-        } else {
-            // If input is empty, remove any invalid styling and reset the flag
-            inputField.removeClass('is-invalid');
-            if (checkType === 'id') {
-                isContractIDExists = false;
-            } else {
-                isContractNameExists = false;
-            }
-        }
-    });
-
-    
 </script>
