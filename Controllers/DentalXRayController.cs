@@ -359,7 +359,8 @@ namespace ExcelFilesCompiler.Controllers
 
                 SetSectionUploadedDateTimes(dto);
 
-                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
+                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
+                    dto, user.UserName, DentalQuestionnaireSources.DentalXRay);
 
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 

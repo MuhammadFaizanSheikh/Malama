@@ -25,7 +25,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task SaveOrUpdateFromFormDataAsync(IDentalQuestionnaireFormData dto, string userName)
+        public async Task SaveOrUpdateFromFormDataAsync(IDentalQuestionnaireFormData dto, string userName, string source)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
 
@@ -36,17 +36,19 @@ namespace ExcelFilesCompiler.Controllers.Services
             if (existing != null)
             {
                 MapFormDataToEntity(dto, existing);
+                existing.Source = source;
                 existing.UpdatedBy = userName;
                 existing.UpdatedOn = DateTime.Now;
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} by {User}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
+                    "{ClassName}, {MethodName}, Questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName);
                 return;
             }
 
             var entity = MapFormDataToEntity(dto);
+            entity.Source = source;
             entity.AddedOn = DateTime.Now;
             entity.AddedBy = userName;
 
@@ -54,8 +56,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             await _unitOfWork.SaveAsync();
 
             _logger.LogInformation(
-                "{ClassName}, {MethodName}, Questionnaire created for ServiceMembersChildId={ServiceMembersChildId} by {User}",
-                CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
+                "{ClassName}, {MethodName}, Questionnaire created for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}",
+                CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName);
         }
 
         public DentalQuestionnaire MapFormDataToEntity(IDentalQuestionnaireFormData dto, DentalQuestionnaire? existing = null)

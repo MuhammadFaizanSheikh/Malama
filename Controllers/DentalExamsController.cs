@@ -303,7 +303,8 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (!dto.GoToVitalStation)
                 {
-                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(dto, user.UserName);
+                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
+                        dto, user.UserName, DentalQuestionnaireSources.DentalExam);
                     await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName, user.Id);
                 }
 

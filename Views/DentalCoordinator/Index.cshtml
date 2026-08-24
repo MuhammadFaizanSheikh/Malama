@@ -415,12 +415,13 @@
                         {
                             <tr>
                                 <td>
-                                    <button type="button"
-                                            class="btn btn-primary edit-btn"
-                                            title="Edit"
-                                            aria-label="Edit">
+                                    <a asp-action="DentalCoordinatorStation"
+                                       asp-route-serviceMembersChildId="@c.Id"
+                                       class="btn btn-primary edit-btn"
+                                       title="Edit"
+                                       aria-label="Edit">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
-                                    </button>
+                                    </a>
                                 </td>
                                 <td>
                                     <span class="dco-status is-pending">Pending</span>

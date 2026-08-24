@@ -734,6 +734,9 @@ namespace Malama.Migrations
                     b.Property<string>("SickFromDentalTreatment")
                         .HasColumnType("text");
 
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
                     b.Property<string>("TakingMedications")
                         .HasColumnType("text");
 

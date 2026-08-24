@@ -1,21 +1,14 @@
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
-
 namespace Malama.Models
 {
-    [Table("DentalQuestionaire")]
-    public class DentalQuestionnaire : GenericProperties
+    public class DentalCoordinatorStationPageViewModel
     {
-        public long Id { get; set; }
+        public ServiceMembersChild ServiceMember { get; set; } = new();
+        public DentalQuestionnaire Questionnaire { get; set; } = new();
+    }
 
+    public class DentalCoordinatorStationSaveDto : IDentalQuestionnaireFormData
+    {
         public long ServiceMembersChildId { get; set; }
-
-        [JsonIgnore]
-        [ValidateNever]
-        public virtual ServiceMembersChild ServiceMembersChild { get; set; }
-
         public string? HealthcareProviderCareLast2Years { get; set; }
         public string? SeriousIllnessOperationHospitalization { get; set; }
         public string? SeriousIllnessOperationHospitalizationDetail { get; set; }
@@ -26,7 +19,7 @@ namespace Malama.Models
         public string? HepatitisOrJaundice { get; set; }
         public string? HealthChangeLastTwoYears { get; set; }
         public string? UseTobaccoOrVape { get; set; }
-        public string? TobaccoUseDetailsJson { get; set; }
+        public List<DentalXRayTobaccoUseDetail> TobaccoUseDetails { get; set; } = new();
         public string? DrinkAlcoholicBeverages { get; set; }
         public string? AlcoholicBeveragesFrequencyQuantity { get; set; }
         public string? SickFromDentalTreatment { get; set; }
@@ -34,20 +27,7 @@ namespace Malama.Models
         public string? ShortOfBreathOneFlightStairs { get; set; }
         public string? AreYouPregnant { get; set; }
         public string? PregnancyApproval { get; set; }
-        public string? ApplicableHealthConditionsJson { get; set; }
-        public string? Source { get; set; }
-    }
-
-    public static class DentalQuestionnaireSources
-    {
-        public const string DentalXRay = "DentalXRay";
-        public const string DentalExam = "DentalExam";
-        public const string DentalCoordinator = "DentalCoordinator";
-    }
-
-    public class DentalXRayStationPageViewModel
-    {
-        public DentalXRayStation Station { get; set; } = new();
-        public DentalQuestionnaire Questionnaire { get; set; } = new();
+        public List<string> ApplicableHealthConditions { get; set; } = new();
+        public List<DentalXRayHealthConditionDetail> HealthConditionDetails { get; set; } = new();
     }
 }
