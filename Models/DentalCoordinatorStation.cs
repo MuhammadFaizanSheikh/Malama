@@ -5,30 +5,29 @@ namespace Malama.Models
         public ServiceMembersChild ServiceMember { get; set; } = new();
         public DentalQuestionnaire Questionnaire { get; set; } = new();
         public DentalXRayStation XRayStation { get; set; } = new();
+        public DentalExam DentalExam { get; set; } = new();
     }
 
-    public class DentalCoordinatorStationSaveDto : IDentalQuestionnaireFormData
+    /// <summary>
+    /// Coordinator station post model: questionnaire + X-Ray uploads + subsequent diseases (PSR / DEN / Pano).
+    /// </summary>
+    public class DentalCoordinatorStationSaveDto : DentalXRayStationSaveDto
     {
-        public long ServiceMembersChildId { get; set; }
-        public string? HealthcareProviderCareLast2Years { get; set; }
-        public string? SeriousIllnessOperationHospitalization { get; set; }
-        public string? SeriousIllnessOperationHospitalizationDetail { get; set; }
-        public string? MedicationFoodAllergy { get; set; }
-        public string? MedicationFoodAllergyDetail { get; set; }
-        public string? TakingMedications { get; set; }
-        public string? TakingMedicationsDetail { get; set; }
-        public string? HepatitisOrJaundice { get; set; }
-        public string? HealthChangeLastTwoYears { get; set; }
-        public string? UseTobaccoOrVape { get; set; }
-        public List<DentalXRayTobaccoUseDetail> TobaccoUseDetails { get; set; } = new();
-        public string? DrinkAlcoholicBeverages { get; set; }
-        public string? AlcoholicBeveragesFrequencyQuantity { get; set; }
-        public string? SickFromDentalTreatment { get; set; }
-        public string? BleederOrExcessiveBleeding { get; set; }
-        public string? ShortOfBreathOneFlightStairs { get; set; }
-        public string? AreYouPregnant { get; set; }
-        public string? PregnancyApproval { get; set; }
-        public List<string> ApplicableHealthConditions { get; set; } = new();
-        public List<DentalXRayHealthConditionDetail> HealthConditionDetails { get; set; } = new();
+        public long DentalExamId { get; set; }
+
+        public string? PsrUpperRight { get; set; }
+        public string? PsrUpperAnterior { get; set; }
+        public string? PsrUpperLeft { get; set; }
+        public string? PsrLowerRight { get; set; }
+        public string? PsrLowerAnterior { get; set; }
+        public string? PsrLowerLeft { get; set; }
+        public string? PsrCarrierRisk { get; set; }
+        public List<int> PsrSelectedTeeth { get; set; } = new();
+        public string? SoftTissuesWnl { get; set; }
+        public string? SoftTissuesConditionDetail { get; set; }
+
+        public string? DenClass { get; set; }
+        public string? DenClassReasonComments { get; set; }
+        public bool PanoXRayAcknowledged { get; set; }
     }
 }

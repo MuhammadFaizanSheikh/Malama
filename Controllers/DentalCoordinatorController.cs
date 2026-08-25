@@ -14,8 +14,9 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IVitalStationService _vitalStationService;
         private readonly IDentalXRayStationService _dentalXRayStationService;
+        private readonly IDentalCoordinatorStationService _dentalCoordinatorStationService;
+        private readonly IDentalExamService _dentalExamService;
         private readonly IFileUploadDownloadService _fileService;
-        private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalCoordinatorController> _logger;
         private const string CLASSNAME = "DentalCoordinatorController";
@@ -27,8 +28,9 @@ namespace ExcelFilesCompiler.Controllers
             IDentalQuestionnaireService dentalQuestionnaireService,
             IVitalStationService vitalStationService,
             IDentalXRayStationService dentalXRayStationService,
+            IDentalCoordinatorStationService dentalCoordinatorStationService,
+            IDentalExamService dentalExamService,
             IFileUploadDownloadService fileService,
-            DentalXRayFileSaveCoordinator fileSaveCoordinator,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
@@ -36,8 +38,9 @@ namespace ExcelFilesCompiler.Controllers
             _dentalQuestionnaireService = dentalQuestionnaireService;
             _vitalStationService = vitalStationService;
             _dentalXRayStationService = dentalXRayStationService;
+            _dentalCoordinatorStationService = dentalCoordinatorStationService;
+            _dentalExamService = dentalExamService;
             _fileService = fileService;
-            _fileSaveCoordinator = fileSaveCoordinator;
             _userManager = userManager;
         }
 
@@ -165,11 +168,15 @@ namespace ExcelFilesCompiler.Controllers
 
                 xRayStation.ServiceMembersChild ??= result.ServiceMembersChild;
 
+                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                    ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+
                 var pageModel = new DentalCoordinatorStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
                     Questionnaire = questionnaire,
-                    XRayStation = xRayStation
+                    XRayStation = xRayStation,
+                    DentalExam = dentalExam
                 };
 
                 return View(pageModel);
@@ -186,17 +193,13 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(104857600)]
-        public async Task<IActionResult> SaveDentalCoordinatorStation(DentalXRayStationSaveDto dto)
+        public async Task<IActionResult> SaveDentalCoordinatorStation(DentalCoordinatorStationSaveDto dto)
         {
             const string methodName = nameof(SaveDentalCoordinatorStation);
             DentalQuestionnaireFormBinder.BindHealthConditions(dto, Request.Form);
+            dto.PanoXRayAcknowledged = FormCheckboxHelper.IsChecked(Request.Form, "PanoXRayAcknowledged");
 
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
-
-            DentalXRayStation? existingRecord = null;
-            DentalXRayFileUpdatePlan? filePlan = null;
-            DentalXRayFileUploadSession? fileSession = null;
-            var dbSaveCompleted = false;
 
             try
             {
@@ -227,13 +230,9 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var barcode = serviceMember.Barcode;
-                if (string.IsNullOrWhiteSpace(barcode))
+                if (DentalXRayStationService.IsNeeded(serviceMember.PanoNeeded))
                 {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Invalid Data";
-                    TempData["ResponseMessage"] = "Service member barcode is required for file upload.";
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    dto.PanoXRayAcknowledged = true;
                 }
 
                 var validationError = DentalXRayStationSaveValidator.Validate(dto, serviceMember, _dentalQuestionnaireService);
@@ -245,76 +244,26 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
-                if (dto.Id > 0)
-                {
-                    var existingResult = await _dentalXRayStationService
-                        .GetDentalXRayStationByIdWithEventIdAsync(dto.Id);
-                    existingRecord = existingResult.DentalXRayStation;
-                    if (existingRecord == null)
-                    {
-                        TempData["ResponseStatus"] = "error";
-                        TempData["ResponseTitle"] = "Not Found";
-                        TempData["ResponseMessage"] = "Dental X-Ray record not found.";
-                        return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
-                    }
-                }
+                var saveResult = await _dentalCoordinatorStationService.SaveStationAsync(
+                    dto,
+                    serviceMember,
+                    user.UserName ?? user.Id);
 
-                filePlan = _fileSaveCoordinator.BuildPlan(dto, existingRecord, barcode);
-                if (!string.IsNullOrWhiteSpace(filePlan.ErrorMessage))
+                if (!saveResult.Success)
                 {
                     TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Invalid Data";
-                    TempData["ResponseMessage"] = filePlan.ErrorMessage;
+                    TempData["ResponseTitle"] = saveResult.ErrorTitle ?? "Error";
+                    TempData["ResponseMessage"] = saveResult.ErrorMessage ?? "Save failed.";
                     return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
-
-                fileSession = await _fileSaveCoordinator.UploadToStagingAsync(filePlan, barcode);
-                if (!fileSession.Success)
-                {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Upload Failed";
-                    TempData["ResponseMessage"] = fileSession.ErrorMessage ?? "Failed to upload X-Ray image.";
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
-                }
-
-                DentalXRayStationSaveValidator.SetSectionUploadedDateTimes(dto);
-
-                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
-                    dto, user.UserName, DentalQuestionnaireSources.DentalCoordinator);
-
-                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-
-                var entity = _dentalXRayStationService.MapSaveDtoToEntity(dto);
-                entity.Status = _dentalXRayStationService.ComputeOverallStatus(entity, serviceMember, questionnaire);
-
-                if (dto.Id == 0)
-                {
-                    _logger.LogInformation("{ClassName}, {MethodName}, Add X-Ray operation started by User={UserName}",
-                        CLASSNAME, methodName, user.UserName);
-                    await _dentalXRayStationService.AddAsync(entity, user.UserName);
-                }
-                else
-                {
-                    _logger.LogInformation("{ClassName}, {MethodName}, Update X-Ray operation started for Id={Id} by User={UserName}",
-                        CLASSNAME, methodName, dto.Id, user.UserName);
-                    await _dentalXRayStationService.UpdateAsync(entity, user.UserName);
-                }
-
-                dbSaveCompleted = true;
-                _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
-                TempData["ResponseMessage"] = "Dental Coordinator questionnaire and X-Ray saved successfully.";
+                TempData["ResponseMessage"] = "Dental Coordinator record saved successfully.";
                 return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
             }
             catch (Exception ex)
             {
-                if (!dbSaveCompleted && fileSession != null)
-                {
-                    await _fileSaveCoordinator.RollbackStagingAsync(fileSession);
-                }
-
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Exception occurred while saving Dental Coordinator station",
                     CLASSNAME, methodName);

@@ -10,6 +10,7 @@
 
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
+    var dentalExam = Model.DentalExam ?? new DentalExam { ServiceMembersChildId = sm.Id };
     var xRayStation = Model.XRayStation ?? new DentalXRayStation
     {
         ServiceMembersChildId = sm.Id,
@@ -19,6 +20,7 @@
     xRayStation.ServiceMembersChild ??= sm;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
+    var serviceMemberPanoRequired = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
     var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
     {
         ServiceMembersChildId = sm.Id,
@@ -331,6 +333,8 @@
     }
 </style>
 
+<link rel="stylesheet" href="~/css/dental-psr-tooth-chart.css" asp-append-version="true" />
+
 <section class="dco-station">
     <div class="dco-hero">
         <h1 class="dco-title" id="page-heading">Dental Coordinator Station</h1>
@@ -528,12 +532,60 @@
             </div>
 
             <div id="xrayCoordinatorSection" style="display:none;">
-                @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayStationForm.cshtml", xRayStation)
+                @{
+                    var xrayFormViewData = new ViewDataDictionary<DentalXRayStation>(ViewData, xRayStation)
+                    {
+                        ["ShowPanoRequirementNotice"] = false
+                    };
+                }
+                @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayStationForm.cshtml", xRayStation, xrayFormViewData)
                 <div class="d-flex justify-content-center mt-3">
                     <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
                             data-target-switch="toggleXRaySectionSwitch"
                             data-target-heading="xrayHeading">
                         <i class="fas fa-chevron-up"></i> Collapse X-Ray
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="DentalExamId" value="@dentalExam.Id" />
+
+        <div class="dco-panel" id="subsequentDiseasesSection" data-subsequent-readonly="false">
+            <div class="questionnaire-heading" id="subsequentDiseasesHeading">
+                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toggleSubsequentDiseasesSectionSwitch"
+                           aria-controls="subsequentDiseasesContent"
+                           aria-expanded="false" />
+                </div>
+                <h3 class="mb-0">Subsequent diseases and abnormalities</h3>
+            </div>
+
+            <div id="subsequentDiseasesContent" style="display:none;">
+                @{
+                    var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                    psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
+                    psrViewData["RequirePsrFields"] = false;
+                    psrViewData["XRayStation"] = xRayStation;
+                    psrViewData["SubsequentReadOnly"] = false;
+                }
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", dentalExam, psrViewData)
+
+                @{
+                    var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                    denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
+                    denClassViewData["SubsequentReadOnly"] = false;
+                }
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", dentalExam, denClassViewData)
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleSubsequentDiseasesSectionSwitch"
+                            data-target-heading="subsequentDiseasesHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Subsequent diseases and abnormalities
                     </button>
                 </div>
             </div>
@@ -551,9 +603,17 @@
 </section>
 
 <script src="~/js/dental-xray-station-uploads.js" asp-append-version="true"></script>
+<script src="~/js/dental-psr-tooth-chart.js" asp-append-version="true"></script>
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
     const BWX_NEEDED = @Json.Serialize(bwxNeeded);
+    const XRAY_DOWNLOAD_URL = "/DentalCoordinator/DownloadXRayImage";
+    const XRAY_ZOOM_STEP = 25;
+    const XRAY_ZOOM_MIN = 50;
+    const XRAY_ZOOM_MAX = 300;
+    const xrayZoomLevels = {};
+    const xrayPreviewUrls = {};
+    const xrayPanState = { active: false, viewport: null, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 };
 
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
@@ -660,22 +720,162 @@
     function toggleXRaySectionFromSwitch() {
         const isOn = $("#toggleXRaySectionSwitch").is(":checked");
         const $section = $("#xrayCoordinatorSection");
-
-        if (isOn) {
-            $section.slideDown(200);
-        } else {
-            $section.slideUp(200);
-        }
-
+        if (isOn) { $section.slideDown(200); } else { $section.slideUp(200); }
         $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleSectionFromSwitch(switchSelector, sectionSelector) {
+        const isOn = $(switchSelector).is(":checked");
+        const $section = $(sectionSelector);
+        if (isOn) { $section.slideDown(200); } else { $section.slideUp(200); }
+        $(switchSelector).attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleSubsequentDiseasesContentFromSwitch() {
+        toggleSectionFromSwitch("#toggleSubsequentDiseasesSectionSwitch", "#subsequentDiseasesContent");
+    }
+
+    function togglePsrSectionFromSwitch() {
+        toggleSectionFromSwitch("#togglePsrSectionSwitch", "#psrContentSection");
+    }
+
+    function toggleDenClassSectionFromSwitch() {
+        toggleSectionFromSwitch("#toggleDenClassSectionSwitch", "#denClassContentSection");
+    }
+
+    function togglePanoXraySectionFromSwitch() {
+        toggleSectionFromSwitch("#togglePanoXraySectionSwitch", "#panoXrayContentSection");
+    }
+
+    function toggleSoftTissuesDetail() {
+        const isNotWnl = $("input[name='SoftTissuesWnl']:checked").val() === @Json.Serialize(DentalExamPsr.SoftTissuesWnlNo);
+        $("#softTissuesConditionSection").toggle(isNotWnl);
+        if (!isNotWnl) {
+            $("#SoftTissuesConditionDetail").val("");
+        }
+    }
+
+    function toggleDenClassCommentsRequired() {
+        const hasSelection = !!$("input[name='DenClass']:checked").val();
+        $("#DenClassReasonComments").prop("required", hasSelection);
+    }
+
+    function updatePsrTobaccoDisplay() {
+        const $display = $("#psrTobaccoDisplay");
+        if ($display.length) {
+            $display.text(@Json.Serialize(DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire)));
+        }
+    }
+
+    function setXRayZoom(prefix, level) {
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        const zoomLabel = document.getElementById(prefix + "_zoomLevel");
+        if (!previewImg || !zoomLabel) return;
+        const clamped = Math.max(XRAY_ZOOM_MIN, Math.min(XRAY_ZOOM_MAX, level));
+        xrayZoomLevels[prefix] = clamped;
+        previewImg.style.width = clamped + "%";
+        previewImg.style.height = "auto";
+        previewImg.style.transform = "";
+        zoomLabel.textContent = clamped + "%";
+    }
+
+    function updateXRayPanAvailability(prefix) {
+        const viewport = document.getElementById(prefix + "_previewViewport");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!viewport) return;
+        const canPan = !!previewImg?.src &&
+            (viewport.scrollWidth > viewport.clientWidth + 1 || viewport.scrollHeight > viewport.clientHeight + 1);
+        viewport.classList.toggle("can-pan", canPan);
+    }
+
+    function clearXrayPreviewInstance(prefix) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (previewImg) { previewImg.removeAttribute("src"); }
+        if (previewSection) { previewSection.style.display = "none"; }
+        xrayPreviewUrls[prefix] = "";
+        $("#" + prefix + "_fileNameDisplay").text("");
+        $("#" + prefix + "_emptyMsg").show();
+    }
+
+    function showXrayPreviewInstance(prefix, downloadPrefix, fileName, label) {
+        const previewSection = document.getElementById(prefix + "_previewSection");
+        const previewImg = document.getElementById(prefix + "_previewImg");
+        if (!previewSection || !previewImg || !fileName || !downloadPrefix) {
+            clearXrayPreviewInstance(prefix);
+            return;
+        }
+        const src = XRAY_DOWNLOAD_URL + "?prefix=" + encodeURIComponent(downloadPrefix) + "&fileName=" + encodeURIComponent(fileName);
+        xrayPreviewUrls[prefix] = src;
+        $("#" + prefix + "_fileNameDisplay").text(label || fileName);
+        previewImg.onload = function () {
+            setXRayZoom(prefix, 100);
+            updateXRayPanAvailability(prefix);
+        };
+        previewImg.onerror = function () { clearXrayPreviewInstance(prefix); };
+        previewImg.src = src;
+        previewSection.style.display = "block";
+        $("#" + prefix + "_emptyMsg").hide();
+    }
+
+    function initXrayPreviewWidgets() {
+        $(document).on("change", ".xray-preview-type-radio", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (!prefix) return;
+            const isBwx = this.value === "BWX";
+            $("#" + prefix + "_bwxSelectWrap").toggle(isBwx);
+            $("#" + prefix + "_paSelectWrap").toggle(!isBwx);
+            const bwxSel = document.getElementById(prefix + "_bwxSelect");
+            const paSel = document.getElementById(prefix + "_paSelect");
+            if (bwxSel) bwxSel.value = "";
+            if (paSel) paSel.value = "";
+            clearXrayPreviewInstance(prefix);
+        });
+
+        $(document).on("change", ".xray-preview-image-select", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (!prefix) return;
+            const opt = this.options[this.selectedIndex];
+            const fileName = opt ? opt.getAttribute("data-filename") : null;
+            const downloadPrefix = opt ? opt.getAttribute("data-prefix") : null;
+            const label = opt ? opt.text : null;
+            if (fileName && downloadPrefix) {
+                showXrayPreviewInstance(prefix, downloadPrefix, fileName, label);
+            } else {
+                clearXrayPreviewInstance(prefix);
+            }
+        });
+
+        $(document).on("click", ".xray-preview-open-btn", function () {
+            const prefix = $(this).closest(".xray-preview-widget").data("prefix");
+            if (prefix && xrayPreviewUrls[prefix]) {
+                window.open(xrayPreviewUrls[prefix], "_blank");
+            }
+        });
     }
 
     $(document).ready(function () {
         initQuestionnaireToggles();
+        toggleSoftTissuesDetail();
+        toggleDenClassCommentsRequired();
+        updatePsrTobaccoDisplay();
+
+        if (window.DentalPsrToothChart) {
+            DentalPsrToothChart.init({ chartSelector: "#psrInteractiveToothChart", editable: true });
+        }
+
+        initXrayPreviewWidgets();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+        $("#toggleSubsequentDiseasesSectionSwitch").on("change", toggleSubsequentDiseasesContentFromSwitch);
+        $("#togglePsrSectionSwitch").on("change", togglePsrSectionFromSwitch);
+        $("#toggleDenClassSectionSwitch").on("change", toggleDenClassSectionFromSwitch);
+        $("#togglePanoXraySectionSwitch").on("change", togglePanoXraySectionFromSwitch);
+
+        $(document).on("change", "input[name='SoftTissuesWnl']", toggleSoftTissuesDetail);
+        $(document).on("change", "input.den-class-radio, input[name='DenClass']", toggleDenClassCommentsRequired);
 
         $(document).on("click", ".section-collapse-btn", function () {
             const switchId = $(this).data("target-switch");
@@ -695,6 +895,21 @@
         });
         $(document).on("change", ".condition-checkbox", function () {
             toggleConditionDetail(this);
+        });
+
+        $(document).on("click", ".xray-zoom-in", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) + XRAY_ZOOM_STEP);
+            updateXRayPanAvailability(prefix);
+        });
+        $(document).on("click", ".xray-zoom-out", function () {
+            const prefix = $(this).data("prefix");
+            setXRayZoom(prefix, (xrayZoomLevels[prefix] || 100) - XRAY_ZOOM_STEP);
+            updateXRayPanAvailability(prefix);
+        });
+        $(document).on("click", ".xray-zoom-reset", function () {
+            setXRayZoom($(this).data("prefix"), 100);
+            updateXRayPanAvailability($(this).data("prefix"));
         });
 
         window.DentalXRayStationConfig = {

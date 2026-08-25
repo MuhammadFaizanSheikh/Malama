@@ -186,7 +186,7 @@
                     </div>
 
                     <div class="col-md-6" id="dentalFindingImageColumn">
-                        @await Html.PartialAsync("_DentalExamXrayPreview", findingsXrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "findingsXray" })
+                        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamXrayPreview.cshtml", findingsXrayStation, new ViewDataDictionary(ViewData) { ["Prefix"] = "findingsXray" })
 
                         <div class="border rounded p-3 bg-light mt-3 dental-finding-image-wrap">
                             @{

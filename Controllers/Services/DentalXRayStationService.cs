@@ -98,17 +98,20 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task AddAsync(DentalXRayStation model, string userName)
+        public async Task AddAsync(DentalXRayStation model, string userName, bool saveChanges = true)
         {
             model.AddedOn = DateTime.Now;
             model.AddedBy = userName;
             NormalizePaImages(model);
 
             await _unitOfWork.DentalXRayStation.AddAsync(model);
-            await _unitOfWork.SaveAsync();
+            if (saveChanges)
+            {
+                await _unitOfWork.SaveAsync();
+            }
         }
 
-        public async Task UpdateAsync(DentalXRayStation model, string userName)
+        public async Task UpdateAsync(DentalXRayStation model, string userName, bool saveChanges = true)
         {
             const string methodName = nameof(UpdateAsync);
 
@@ -126,10 +129,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 MapToEntity(model, existing, userName);
-                await _unitOfWork.SaveAsync();
+                if (saveChanges)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} successfully updated by user {User}",
-                    CLASSNAME, methodName, model.Id, userName);
+                _logger.LogInformation("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} successfully updated by user {User}. SaveChanges={SaveChanges}",
+                    CLASSNAME, methodName, model.Id, userName, saveChanges);
             }
             catch (KeyNotFoundException)
             {

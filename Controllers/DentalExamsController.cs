@@ -1,4 +1,4 @@
-using ExcelFilesCompiler.Controllers.Services;
+﻿using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
@@ -303,8 +303,6 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (!dto.GoToVitalStation)
                 {
-                    await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
-                        dto, user.UserName, DentalQuestionnaireSources.DentalExam);
                     await _dentalExamService.SaveOrUpdateFromFormDataAsync(dto, user.UserName, user.Id);
                 }
 

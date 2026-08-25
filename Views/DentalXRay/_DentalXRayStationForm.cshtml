@@ -8,6 +8,7 @@
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
     var panoNeeded = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
+    var showPanoRequirementNotice = ViewData["ShowPanoRequirementNotice"] as bool? ?? true;
     var paImages = station.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
     if (!paImages.Any())
     {
@@ -103,7 +104,7 @@
                         </div>
 
                         <div id="bwxConsolidatedUploadContainer" style="display:none;">
-                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                 Prefix = "bwx_consolidated",
                                 Title = "Consolidated BWX",
                                 FileInputName = "BwxConsolidatedFile",
@@ -121,7 +122,7 @@
                         </div>
 
                         <div id="bwxSeparateUploadContainer" style="display:none;" class="xray-cards-row">
-                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                 Prefix = "bwx_left_molar",
                                 Title = "BW Left Molar",
                                 FileInputName = "BwLeftMolarFile",
@@ -135,7 +136,7 @@
                                 OriginalFileName = station.BwLeftMolarOriginalFileName,
                                 UploadedDateTime = station.BwLeftMolarUploadedDateTime
                             })
-                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                 Prefix = "bwx_left_premolar",
                                 Title = "BW Left Premolar",
                                 FileInputName = "BwLeftPremolarFile",
@@ -149,7 +150,7 @@
                                 OriginalFileName = station.BwLeftPremolarOriginalFileName,
                                 UploadedDateTime = station.BwLeftPremolarUploadedDateTime
                             })
-                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                 Prefix = "bwx_right_molar",
                                 Title = "BW Right Molar",
                                 FileInputName = "BwRightMolarFile",
@@ -163,7 +164,7 @@
                                 OriginalFileName = station.BwRightMolarOriginalFileName,
                                 UploadedDateTime = station.BwRightMolarUploadedDateTime
                             })
-                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                            @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                 Prefix = "bwx_right_premolar",
                                 Title = "BW Right Premolar",
                                 FileInputName = "BwRightPremolarFile",
@@ -227,7 +228,7 @@
                                 {
                                     var pa = paImages[i];
                                     var prefix = $"pa_{i}";
-                                    @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                    @await Html.PartialAsync("~/Views/DentalXRay/_XRayImageUpload.cshtml", new DentalXRayImageUploadModel {
                                         Prefix = prefix,
                                         Title = "PA of tooth",
                                         FileInputName = $"PaImages[{i}].ImageFile",
@@ -273,13 +274,16 @@
                 </div>
             </div>
 
-            @if (panoNeeded)
+            @if (showPanoRequirementNotice)
             {
-                <p class="dxr-notice">Panorex (Pano) X-ray is Required for this Service member</p>
-            }
-            else
-            {
-                <p class="dxr-notice" style="background:#f3f4f8;border-color:rgba(31,36,48,0.1);color:#4b5160;">Panorex (Pano) X-ray is NOT Required for this Service member</p>
+                if (panoNeeded)
+                {
+                    <p class="dxr-notice">Panorex (Pano) X-ray is Required for this Service member</p>
+                }
+                else
+                {
+                    <p class="dxr-notice" style="background:#f3f4f8;border-color:rgba(31,36,48,0.1);color:#4b5160;">Panorex (Pano) X-ray is NOT Required for this Service member</p>
+                }
             }
         </div>
     </div>

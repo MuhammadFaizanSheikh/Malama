@@ -10,13 +10,18 @@ namespace ExcelFilesCompiler.Controllers.Services
     public class DentalExamService : IDentalExamService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly ILogger<DentalExamService> _logger;
         private const string CLASSNAME = "DentalExamService";
 
-        public DentalExamService(ILogger<DentalExamService> logger, IUnitOfWork unitOfWork)
+        public DentalExamService(
+            ILogger<DentalExamService> logger,
+            IUnitOfWork unitOfWork,
+            IDentalQuestionnaireService dentalQuestionnaireService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _dentalQuestionnaireService = dentalQuestionnaireService;
         }
 
         public async Task<DentalExam?> GetByServiceMembersChildIdAsync(long serviceMembersChildId)
@@ -70,6 +75,12 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 transaction = await _unitOfWork.BeginTransactionAsync();
 
+                await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
+                    dto,
+                    userName,
+                    DentalQuestionnaireSources.DentalExam,
+                    saveChanges: false);
+
                 var existing = await _unitOfWork.DentalExam
                     .GetWithIncludeTracking(
                         e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
@@ -89,7 +100,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     await transaction.CommitAsync();
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Dental exam updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. SubsequentSectionActive={SubsequentSectionActive}, FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
+                        "{ClassName}, {MethodName}, Dental exam and questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} by {User}. SubsequentSectionActive={SubsequentSectionActive}, FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
                         CLASSNAME, methodName, dto.ServiceMembersChildId, userName,
                         DentalExamValidator.IsSubsequentDiseasesSectionActive(dto),
                         dto.Findings.Count,
@@ -111,7 +122,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await transaction.CommitAsync();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Dental exam created for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
+                    "{ClassName}, {MethodName}, Dental exam and questionnaire created for ServiceMembersChildId={ServiceMembersChildId} by {User}. FindingCount={FindingCount}, SelectedToothCount={SelectedToothCount}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId, userName,
                     dto.Findings.Count, dto.PsrSelectedTeeth.Count);
             }
@@ -143,6 +154,83 @@ namespace ExcelFilesCompiler.Controllers.Services
                     await transaction.DisposeAsync();
                 }
             }
+        }
+
+        public async Task ApplyCoordinatorClinicalSectionsAsync(
+            DentalCoordinatorStationSaveDto dto,
+            string userName,
+            bool saveChanges = true)
+        {
+            const string methodName = nameof(ApplyCoordinatorClinicalSectionsAsync);
+
+            try
+            {
+                var selectedTeeth = NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
+
+                var existing = await _unitOfWork.DentalExam
+                    .GetWithIncludeTracking(
+                        e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
+                        e => e.SelectedTeeth)
+                    .FirstOrDefaultAsync();
+
+                if (existing != null)
+                {
+                    ApplyCoordinatorClinicalFields(existing, dto);
+                    ReplaceSelectedTeeth(existing, selectedTeeth);
+                    existing.UpdatedBy = userName;
+                    existing.UpdatedOn = DateTime.Now;
+                }
+                else
+                {
+                    var entity = new DentalExam
+                    {
+                        ServiceMembersChildId = dto.ServiceMembersChildId,
+                        AddedBy = userName,
+                        AddedOn = DateTime.Now,
+                        Status = AppConstants.Status.Pending
+                    };
+                    ApplyCoordinatorClinicalFields(entity, dto);
+                    await _unitOfWork.DentalExam.AddAsync(entity);
+                    await _unitOfWork.SaveAsync();
+                    ReplaceSelectedTeeth(entity, selectedTeeth);
+                }
+
+                if (saveChanges)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Coordinator clinical sections applied for ServiceMembersChildId={ServiceMembersChildId} by {User}. SaveChanges={SaveChanges}, SelectedToothCount={SelectedToothCount}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, saveChanges, selectedTeeth.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to apply coordinator clinical sections for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId);
+                throw;
+            }
+        }
+
+        private static void ApplyCoordinatorClinicalFields(DentalExam entity, DentalCoordinatorStationSaveDto dto)
+        {
+            entity.PsrUpperRight = dto.PsrUpperRight?.Trim();
+            entity.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
+            entity.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
+            entity.PsrLowerRight = dto.PsrLowerRight?.Trim();
+            entity.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
+            entity.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
+            entity.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
+            entity.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
+            entity.SoftTissuesConditionDetail = entity.SoftTissuesWnl != null
+                && entity.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
+                ? dto.SoftTissuesConditionDetail?.Trim()
+                : null;
+
+            entity.DenClass = dto.DenClass?.Trim();
+            entity.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
+            entity.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
         }
 
         private void ApplySubsequentDiseasesData(DentalExam target, DentalExamStationSaveDto dto, string userId)

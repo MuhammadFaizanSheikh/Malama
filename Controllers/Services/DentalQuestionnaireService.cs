@@ -25,7 +25,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task SaveOrUpdateFromFormDataAsync(IDentalQuestionnaireFormData dto, string userName, string source)
+        public async Task SaveOrUpdateFromFormDataAsync(
+            IDentalQuestionnaireFormData dto,
+            string userName,
+            string source,
+            bool saveChanges = true)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
 
@@ -39,11 +43,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 existing.Source = source;
                 existing.UpdatedBy = userName;
                 existing.UpdatedOn = DateTime.Now;
-                await _unitOfWork.SaveAsync();
+
+                if (saveChanges)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName);
+                    "{ClassName}, {MethodName}, Questionnaire updated for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}. SaveChanges={SaveChanges}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName, saveChanges);
                 return;
             }
 
@@ -53,11 +61,15 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.AddedBy = userName;
 
             await _unitOfWork.DentalQuestionnaire.AddAsync(entity);
-            await _unitOfWork.SaveAsync();
+
+            if (saveChanges)
+            {
+                await _unitOfWork.SaveAsync();
+            }
 
             _logger.LogInformation(
-                "{ClassName}, {MethodName}, Questionnaire created for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}",
-                CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName);
+                "{ClassName}, {MethodName}, Questionnaire created for ServiceMembersChildId={ServiceMembersChildId} Source={Source} by {User}. SaveChanges={SaveChanges}",
+                CLASSNAME, methodName, dto.ServiceMembersChildId, source, userName, saveChanges);
         }
 
         public DentalQuestionnaire MapFormDataToEntity(IDentalQuestionnaireFormData dto, DentalQuestionnaire? existing = null)
