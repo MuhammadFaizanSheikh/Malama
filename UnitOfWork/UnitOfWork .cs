@@ -1,4 +1,4 @@
-﻿using Malama.Models;
+using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using ExcelFilesCompiler.Repositories.Services;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -41,7 +41,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<DentalXRayPaImage> DentalXRayPaImage { get; private set; }
         public IGenericRepository<DentalQuestionnaire> DentalQuestionnaire { get; private set; }
         public IGenericRepository<DentalExam> DentalExam { get; private set; }
-        public IGenericRepository<DentalExamFinding> DentalExamFinding { get; private set; }
+        public IGenericRepository<DentalFinding> DentalFinding { get; private set; }
         public IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; private set; }
         public IGenericRepository<DentalTreatment> DentalTreatment { get; private set; }
         public IGenericRepository<DentalTreatmentFinding> DentalTreatmentFinding { get; private set; }
@@ -87,7 +87,7 @@ namespace ExcelFilesCompiler.UnitOfWork
             DentalXRayPaImage = new GenericRepository<DentalXRayPaImage>(_context);
             DentalQuestionnaire = new GenericRepository<DentalQuestionnaire>(_context);
             DentalExam = new GenericRepository<DentalExam>(_context);
-            DentalExamFinding = new GenericRepository<DentalExamFinding>(_context);
+            DentalFinding = new GenericRepository<DentalFinding>(_context);
             DentalExamSelectedTooth = new GenericRepository<DentalExamSelectedTooth>(_context);
             DentalTreatment = new GenericRepository<DentalTreatment>(_context);
             DentalTreatmentFinding = new GenericRepository<DentalTreatmentFinding>(_context);

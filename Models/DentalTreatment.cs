@@ -68,7 +68,7 @@ namespace Malama.Models
 
         public long DentalTreatmentId { get; set; }
 
-        public long? DentalExamFindingId { get; set; }
+        public long? DentalFindingId { get; set; }
 
         /// <summary>
         /// Identifies how the finding entered treatment:
@@ -110,7 +110,7 @@ namespace Malama.Models
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual DentalExamFinding? DentalExamFinding { get; set; }
+        public virtual DentalFinding? DentalFinding { get; set; }
     }
 
     [Table("DentalTreatmentSelectedTooth")]

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
-    public static class DentalExamFindingConstants
+    public static class DentalFindingConstants
     {
         public static readonly string[] DiseaseConditionTypes =
         {
@@ -57,8 +57,8 @@ namespace Malama.Models
         public const string Restorative = "Restorative";
     }
 
-    [Table("DentalExamFinding")]
-    public class DentalExamFinding
+    [Table("DentalFinding")]
+    public class DentalFinding
     {
         public long Id { get; set; }
 
@@ -94,7 +94,7 @@ namespace Malama.Models
         public DateTime? ExaminationUpdatedOn { get; set; }
     }
 
-    public class DentalExamFindingDto
+    public class DentalFindingDto
     {
         public long Id { get; set; }
 
@@ -125,16 +125,16 @@ namespace Malama.Models
         public DateTime? ExaminationUpdatedOn { get; set; }
     }
 
-    public static class DentalExamFindingMapper
+    public static class DentalFindingMapper
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public static DentalExamFindingDto ToDto(DentalExamFinding entity)
+        public static DentalFindingDto ToDto(DentalFinding entity)
         {
-            return new DentalExamFindingDto
+            return new DentalFindingDto
             {
                 Id = entity.Id,
                 IsPrimaryTooth = entity.IsPrimaryTooth,
@@ -153,9 +153,9 @@ namespace Malama.Models
             };
         }
 
-        public static DentalExamFinding ToEntity(DentalExamFindingDto dto, long dentalExamId, int sortOrder)
+        public static DentalFinding ToEntity(DentalFindingDto dto, long dentalExamId, int sortOrder)
         {
-            return new DentalExamFinding
+            return new DentalFinding
             {
                 DentalExamId = dentalExamId,
                 IsPrimaryTooth = dto.IsPrimaryTooth,

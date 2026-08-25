@@ -591,7 +591,7 @@ namespace Malama.Migrations
                     b.ToTable("DentalExam");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExamFinding", b =>
+            modelBuilder.Entity("Malama.Models.DentalFinding", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -647,7 +647,7 @@ namespace Malama.Migrations
 
                     b.HasIndex("DentalExamId");
 
-                    b.ToTable("DentalExamFinding");
+                    b.ToTable("DentalFinding");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalExamSelectedTooth", b =>
@@ -3730,7 +3730,7 @@ namespace Malama.Migrations
                     b.Navigation("ServiceMembersChild");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExamFinding", b =>
+            modelBuilder.Entity("Malama.Models.DentalFinding", b =>
                 {
                     b.HasOne("Malama.Models.DentalExam", "DentalExam")
                         .WithMany("Findings")

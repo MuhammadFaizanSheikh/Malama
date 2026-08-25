@@ -64,7 +64,7 @@ namespace Malama.Models
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual ICollection<DentalExamFinding> Findings { get; set; } = new List<DentalExamFinding>();
+        public virtual ICollection<DentalFinding> Findings { get; set; } = new List<DentalFinding>();
 
         [JsonIgnore]
         [ValidateNever]

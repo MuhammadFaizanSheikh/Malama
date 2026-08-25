@@ -183,8 +183,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var origin = ResolveFindingOrigin(finding);
                 var isTreatmentOrigin = DentalTreatmentFindingOrigin.IsTreatmentOrigin(origin);
-                var examFindingId = !isTreatmentOrigin && finding.DentalExamFindingId.GetValueOrDefault() > 0
-                    ? finding.DentalExamFindingId
+                var examFindingId = !isTreatmentOrigin && finding.DentalFindingId.GetValueOrDefault() > 0
+                    ? finding.DentalFindingId
                     : null;
 
                 if (!isTreatmentOrigin)
@@ -202,7 +202,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var entity = _mapper.Map<DentalTreatmentFinding>(finding);
                 entity.Id = 0;
                 entity.DentalTreatmentId = target.Id;
-                entity.DentalExamFindingId = examFindingId;
+                entity.DentalFindingId = examFindingId;
                 entity.Origin = origin;
                 entity.SortOrder = index;
                 entity.PostServiceTreatmentJson = DentalTreatmentJson.SerializeList(finding.PostServiceTreatment);
@@ -226,7 +226,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
                 else
                 {
-                    // Exam-linked rows keep clinical source of truth on DentalExamFinding.
+                    // Exam-linked rows keep clinical source of truth on DentalFinding.
                     entity.IsPrimaryTooth = false;
                     entity.AffectedTooth = null;
                     entity.DiseaseConditionType = null;
@@ -251,7 +251,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
             }
 
-            if (finding.IsTreatmentOnly || finding.DentalExamFindingId.GetValueOrDefault() <= 0)
+            if (finding.IsTreatmentOnly || finding.DentalFindingId.GetValueOrDefault() <= 0)
             {
                 return DentalTreatmentFindingOrigin.Treatment;
             }

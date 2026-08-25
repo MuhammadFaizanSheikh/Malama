@@ -46,7 +46,7 @@ namespace Malama.Models
     {
         public long Id { get; set; }
 
-        public long? DentalExamFindingId { get; set; }
+        public long? DentalFindingId { get; set; }
 
         /// <summary>
         /// <see cref="DentalTreatmentFindingOrigin.Exam"/> or <see cref="DentalTreatmentFindingOrigin.Treatment"/>.

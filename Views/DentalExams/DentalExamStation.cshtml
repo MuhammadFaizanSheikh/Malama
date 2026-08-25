@@ -661,7 +661,7 @@
                 findingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                     ?? new Dictionary<string, string>();
             }
-            @await Html.PartialAsync("_DentalExamFindingsSection", dentalExam, findingsViewData)
+            @await Html.PartialAsync("_DentalFindingsSection", dentalExam, findingsViewData)
             @{
                 var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
                 denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;

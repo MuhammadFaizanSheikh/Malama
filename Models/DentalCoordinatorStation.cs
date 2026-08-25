@@ -4,6 +4,7 @@ namespace Malama.Models
     {
         public ServiceMembersChild ServiceMember { get; set; } = new();
         public DentalQuestionnaire Questionnaire { get; set; } = new();
+        public DentalXRayStation XRayStation { get; set; } = new();
     }
 
     public class DentalCoordinatorStationSaveDto : IDentalQuestionnaireFormData

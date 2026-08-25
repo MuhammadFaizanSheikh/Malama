@@ -65,7 +65,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
-                dto.Findings = DentalExamFindingBinder.ParseFromJson(dto.FindingsJson);
+                dto.Findings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
                 dto.PsrSelectedTeeth = NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
 
                 transaction = await _unitOfWork.BeginTransactionAsync();
@@ -154,13 +154,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                 return;
             }
 
-            ReplaceFindings(target, new List<DentalExamFindingDto>(), userId);
+            ReplaceFindings(target, new List<DentalFindingDto>(), userId);
             ReplaceSelectedTeeth(target, new List<int>());
         }
 
-        private void ReplaceFindings(DentalExam target, List<DentalExamFindingDto> findings, string userId)
+        private void ReplaceFindings(DentalExam target, List<DentalFindingDto> findings, string userId)
         {
-            target.Findings ??= new List<DentalExamFinding>();
+            target.Findings ??= new List<DentalFinding>();
             var existingById = target.Findings
                 .Where(f => f.Id > 0)
                 .ToDictionary(f => f.Id);
@@ -176,8 +176,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var removeIds = toRemove.Select(f => f.Id).ToList();
                 var hasTreatmentLinks = _unitOfWork.DentalTreatmentFinding
                     .GetAllWithConditionNoTracking(tf =>
-                        tf.DentalExamFindingId.HasValue
-                        && removeIds.Contains(tf.DentalExamFindingId.Value))
+                        tf.DentalFindingId.HasValue
+                        && removeIds.Contains(tf.DentalFindingId.Value))
                     .Any();
 
                 if (hasTreatmentLinks)
@@ -186,7 +186,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "One or more Dental Exam findings cannot be removed because treatment has already been recorded against them.");
                 }
 
-                _unitOfWork.DentalExamFinding.RemoveRange(toRemove);
+                _unitOfWork.DentalFinding.RemoveRange(toRemove);
                 foreach (var finding in toRemove)
                 {
                     target.Findings.Remove(finding);
@@ -216,7 +216,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     continue;
                 }
 
-                var entity = DentalExamFindingMapper.ToEntity(finding, target.Id, index);
+                var entity = DentalFindingMapper.ToEntity(finding, target.Id, index);
                 entity.Id = 0;
                 entity.ExaminationAddedBy = userId;
                 entity.ExaminationAddedOn = now;
@@ -226,23 +226,23 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private static void ApplyFindingClinicalFields(DentalExamFinding entity, DentalExamFindingDto dto, int sortOrder)
+        private static void ApplyFindingClinicalFields(DentalFinding entity, DentalFindingDto dto, int sortOrder)
         {
             entity.IsPrimaryTooth = dto.IsPrimaryTooth;
             entity.AffectedTooth = dto.AffectedTooth?.Trim() ?? string.Empty;
             entity.DiseaseConditionType = dto.DiseaseConditionType?.Trim() ?? string.Empty;
-            entity.AffectedSurfacesJson = DentalExamFindingMapper.SerializeList(dto.AffectedSurfaces);
-            entity.CdtCodesJson = DentalExamFindingMapper.SerializeList(dto.CdtCodes);
+            entity.AffectedSurfacesJson = DentalFindingMapper.SerializeList(dto.AffectedSurfaces);
+            entity.CdtCodesJson = DentalFindingMapper.SerializeList(dto.CdtCodes);
             entity.CdtCodesNotes = dto.CdtCodesNotes?.Trim();
             entity.DescriptionDetails = dto.DescriptionDetails?.Trim();
             entity.Classification = dto.Classification?.Trim();
             entity.SortOrder = sortOrder;
         }
 
-        private static bool FindingClinicalContentEquals(DentalExamFinding existing, DentalExamFindingDto dto)
+        private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)
         {
-            var existingSurfaces = DentalExamFindingMapper.DeserializeList(existing.AffectedSurfacesJson);
-            var existingCdt = DentalExamFindingMapper.DeserializeList(existing.CdtCodesJson);
+            var existingSurfaces = DentalFindingMapper.DeserializeList(existing.AffectedSurfacesJson);
+            var existingCdt = DentalFindingMapper.DeserializeList(existing.CdtCodesJson);
             var dtoSurfaces = dto.AffectedSurfaces ?? new List<string>();
             var dtoCdt = dto.CdtCodes ?? new List<string>();
 

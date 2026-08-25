@@ -1,4 +1,4 @@
-﻿using ExcelFilesCompiler.Controllers.Services;
+using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
@@ -207,7 +207,7 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
 
                 var treatmentStaffUserIds = CollectTreatmentStaffUserIds(dentalTreatment);
-                var examinerUserIds = (dentalExam.Findings ?? Enumerable.Empty<DentalExamFinding>())
+                var examinerUserIds = (dentalExam.Findings ?? Enumerable.Empty<DentalFinding>())
                     .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy });
                 ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
                     examinerUserIds.Concat(treatmentStaffUserIds),

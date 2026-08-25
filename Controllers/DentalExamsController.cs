@@ -1,4 +1,4 @@
-﻿using ExcelFilesCompiler.Controllers.Services;
+using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
@@ -398,8 +398,8 @@ namespace ExcelFilesCompiler.Controllers
 
                 dto.Findings = existing.Findings?
                     .OrderBy(f => f.SortOrder)
-                    .Select(DentalExamFindingMapper.ToDto)
-                    .ToList() ?? new List<DentalExamFindingDto>();
+                    .Select(DentalFindingMapper.ToDto)
+                    .ToList() ?? new List<DentalFindingDto>();
 
                 dto.FindingsJson = System.Text.Json.JsonSerializer.Serialize(
                     dto.Findings,
@@ -441,7 +441,7 @@ namespace ExcelFilesCompiler.Controllers
             dto.DenClass = null;
             dto.DenClassReasonComments = null;
             dto.PanoXRayAcknowledged = false;
-            dto.Findings = new List<DentalExamFindingDto>();
+            dto.Findings = new List<DentalFindingDto>();
             dto.FindingsJson = "[]";
             dto.PsrSelectedTeeth = new List<int>();
         }
@@ -467,7 +467,7 @@ namespace ExcelFilesCompiler.Controllers
 
         private Task<string?> ValidateSaveDtoAsync(DentalExamStationSaveDto dto, ServiceMembersChild serviceMember)
         {
-            dto.Findings = DentalExamFindingBinder.ParseFromJson(dto.FindingsJson);
+            dto.Findings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
 
             var questionnaireError = DentalQuestionnaireValidator.Validate(dto, serviceMember);
             if (questionnaireError != null)
@@ -483,7 +483,7 @@ namespace ExcelFilesCompiler.Controllers
 
             if (DentalExamValidator.IsSubsequentDiseasesSectionActive(dto))
             {
-                var findingsError = DentalExamFindingValidator.ValidateFindings(dto.Findings, dto.PsrSelectedTeeth);
+                var findingsError = DentalFindingValidator.ValidateFindings(dto.Findings, dto.PsrSelectedTeeth);
                 if (findingsError != null)
                 {
                     return Task.FromResult<string?>(findingsError);

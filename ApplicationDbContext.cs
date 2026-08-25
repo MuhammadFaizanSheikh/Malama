@@ -1,4 +1,4 @@
-﻿using Malama.Models;
+using Malama.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +43,7 @@ namespace ExcelFilesCompiler
         public DbSet<DentalXRayPaImage> DentalXRayPaImage { get; set; }
         public DbSet<DentalQuestionnaire> DentalQuestionnaire { get; set; }
         public DbSet<DentalExam> DentalExam { get; set; }
-        public DbSet<DentalExamFinding> DentalExamFinding { get; set; }
+        public DbSet<DentalFinding> DentalFinding { get; set; }
         public DbSet<DentalExamSelectedTooth> DentalExamSelectedTooth { get; set; }
         public DbSet<DentalTreatment> DentalTreatment { get; set; }
         public DbSet<DentalTreatmentFinding> DentalTreatmentFinding { get; set; }
@@ -186,7 +186,7 @@ namespace ExcelFilesCompiler
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
             });
 
-            modelBuilder.Entity<DentalExamFinding>(entity =>
+            modelBuilder.Entity<DentalFinding>(entity =>
             {
                 entity.HasOne(e => e.DentalExam)
                     .WithMany(d => d.Findings)
@@ -227,13 +227,13 @@ namespace ExcelFilesCompiler
                     .HasForeignKey(e => e.DentalTreatmentId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.DentalExamFinding)
+                entity.HasOne(e => e.DentalFinding)
                     .WithMany()
-                    .HasForeignKey(e => e.DentalExamFindingId)
+                    .HasForeignKey(e => e.DentalFindingId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasIndex(e => new { e.DentalTreatmentId, e.DentalExamFindingId }).IsUnique();
+                entity.HasIndex(e => new { e.DentalTreatmentId, e.DentalFindingId }).IsUnique();
             });
 
             modelBuilder.Entity<DentalTreatmentSelectedTooth>(entity =>

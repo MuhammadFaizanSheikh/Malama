@@ -13,8 +13,8 @@
         ?? new Dictionary<string, string>();
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
-        .Select(DentalExamFindingMapper.ToDto)
-        .ToList() ?? new List<DentalExamFindingDto>();
+        .Select(DentalFindingMapper.ToDto)
+        .ToList() ?? new List<DentalFindingDto>();
     var cdtCodesByType = DentalExamCdtCodeProvider.GetCodesByDiseaseType();
     var findingsJson = JsonSerializer.Serialize(findings, new JsonSerializerOptions
     {
@@ -132,7 +132,7 @@
                                 <label class="form-label" for="findingDiseaseType">Disease / Condition Type</label>
                                 <select id="findingDiseaseType" class="form-select">
                                     <option value=""></option>
-                                    @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
+                                    @foreach (var diseaseType in DentalFindingConstants.DiseaseConditionTypes)
                                     {
                                         <option value="@diseaseType">@diseaseType</option>
                                     }
@@ -168,9 +168,9 @@
 
                         <div class="mb-0">
                             <label class="form-label d-block">Classification for selected tooth</label>
-                            @for (var i = 0; i < DentalExamFindingConstants.Classifications.Length; i++)
+                            @for (var i = 0; i < DentalFindingConstants.Classifications.Length; i++)
                             {
-                                var classification = DentalExamFindingConstants.Classifications[i];
+                                var classification = DentalFindingConstants.Classifications[i];
                                 <div class="form-check">
                                     <input class="form-check-input finding-classification-radio"
                                            type="radio"
@@ -228,12 +228,12 @@
 
 <script>
     (function () {
-        const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
-        const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
-        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalExamFindingConstants.PrimaryToothToPermanentNumber);
-        const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
-        const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
-        const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
+        const PERMANENT_TEETH = @Json.Serialize(DentalFindingConstants.PermanentTeeth);
+        const PRIMARY_TEETH = @Json.Serialize(DentalFindingConstants.PrimaryTeeth);
+        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalFindingConstants.PrimaryToothToPermanentNumber);
+        const PERIODONTAL_SURFACES = @Json.Serialize(DentalFindingConstants.PeriodontalSurfaces);
+        const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalFindingConstants.RestorativeSurfacesPosterior);
+        const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const FINDINGS_READ_ONLY = @Json.Serialize(subsequentReadOnly);
         const CURRENT_USER_ID = @Json.Serialize(currentUserId);
@@ -886,13 +886,13 @@
             });
         }
 
-        window.initDentalExamFindingsSection = function () {
+        window.initDentalFindingsSection = function () {
             populateToothOptions();
             renderFindingsTable();
         };
 
         $(document).ready(function () {
-            initDentalExamFindingsSection();
+            initDentalFindingsSection();
 
             $("#addNewFindingBtn").on("click", function () {
                 if (FINDINGS_READ_ONLY) {

@@ -43,7 +43,7 @@ namespace ExcelFilesCompiler.Utilities
         }
     }
 
-    public static class DentalExamFindingBinder
+    public static class DentalFindingBinder
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -51,29 +51,29 @@ namespace ExcelFilesCompiler.Utilities
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public static List<DentalExamFindingDto> ParseFromJson(string? json)
+        public static List<DentalFindingDto> ParseFromJson(string? json)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
-                return new List<DentalExamFindingDto>();
+                return new List<DentalFindingDto>();
             }
 
             try
             {
-                return JsonSerializer.Deserialize<List<DentalExamFindingDto>>(json, JsonOptions)
-                    ?? new List<DentalExamFindingDto>();
+                return JsonSerializer.Deserialize<List<DentalFindingDto>>(json, JsonOptions)
+                    ?? new List<DentalFindingDto>();
             }
             catch
             {
-                return new List<DentalExamFindingDto>();
+                return new List<DentalFindingDto>();
             }
         }
     }
 
-    public static class DentalExamFindingValidator
+    public static class DentalFindingValidator
     {
         public static string? ValidateFinding(
-            DentalExamFindingDto finding,
+            DentalFindingDto finding,
             int rowNumber,
             IReadOnlyCollection<int>? missingTeeth = null)
         {
@@ -85,8 +85,8 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             var allowedTeeth = finding.IsPrimaryTooth
-                ? DentalExamFindingConstants.PrimaryTeeth
-                : DentalExamFindingConstants.PermanentTeeth;
+                ? DentalFindingConstants.PrimaryTeeth
+                : DentalFindingConstants.PermanentTeeth;
 
             if (!allowedTeeth.Contains(finding.AffectedTooth.Trim(), StringComparer.OrdinalIgnoreCase))
             {
@@ -99,7 +99,7 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             if (string.IsNullOrWhiteSpace(finding.DiseaseConditionType)
-                || !DentalExamFindingConstants.DiseaseConditionTypes.Contains(
+                || !DentalFindingConstants.DiseaseConditionTypes.Contains(
                     finding.DiseaseConditionType.Trim(),
                     StringComparer.OrdinalIgnoreCase))
             {
@@ -110,7 +110,7 @@ namespace ExcelFilesCompiler.Utilities
             {
                 var allowedSurfaces = GetAllowedSurfaces(finding.DiseaseConditionType, finding.AffectedTooth);
 
-                if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
+                if (string.Equals(finding.DiseaseConditionType, DentalFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase)
                     && allowedSurfaces.Length == 0)
                 {
                     return prefix + "Affected Surface(s) require a valid permanent (1-32) or primary tooth.";
@@ -128,7 +128,7 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             if (string.IsNullOrWhiteSpace(finding.Classification)
-                || !DentalExamFindingConstants.Classifications.Contains(
+                || !DentalFindingConstants.Classifications.Contains(
                     finding.Classification.Trim(),
                     StringComparer.OrdinalIgnoreCase))
             {
@@ -140,7 +140,7 @@ namespace ExcelFilesCompiler.Utilities
                 return prefix + "CDT Code is required.";
             }
 
-            if (string.Equals(finding.DiseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(finding.DiseaseConditionType, DentalFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
             {
                 var allowedCdtCodes = GetRestorativeCdtCodes(finding.AffectedTooth, finding.AffectedSurfaces?.Count ?? 0);
                 if (allowedCdtCodes.Length == 0
@@ -154,7 +154,7 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         public static string? ValidateFindings(
-            IReadOnlyList<DentalExamFindingDto> findings,
+            IReadOnlyList<DentalFindingDto> findings,
             IReadOnlyCollection<int>? missingTeeth = null)
         {
             for (var i = 0; i < findings.Count; i++)
@@ -176,7 +176,7 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         public static string? ValidateMissingTeethNotUsedInFindings(
-            IReadOnlyList<DentalExamFindingDto> findings,
+            IReadOnlyList<DentalFindingDto> findings,
             IReadOnlyCollection<int>? missingTeeth)
         {
             if (findings == null || findings.Count == 0 || missingTeeth == null || missingTeeth.Count == 0)
@@ -215,7 +215,7 @@ namespace ExcelFilesCompiler.Utilities
             var tooth = affectedTooth.Trim();
             if (isPrimaryTooth)
             {
-                return DentalExamFindingConstants.PrimaryToothToPermanentNumber.TryGetValue(tooth, out var permanentNumber)
+                return DentalFindingConstants.PrimaryToothToPermanentNumber.TryGetValue(tooth, out var permanentNumber)
                     ? permanentNumber
                     : null;
             }
@@ -239,18 +239,18 @@ namespace ExcelFilesCompiler.Utilities
 
         public static bool RequiresSurfaces(string? diseaseConditionType)
         {
-            return string.Equals(diseaseConditionType, DentalExamFindingConstants.Periodontal, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(diseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(diseaseConditionType, DentalFindingConstants.Periodontal, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(diseaseConditionType, DentalFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase);
         }
 
         public static string[] GetAllowedSurfaces(string? diseaseConditionType, string? affectedTooth = null)
         {
-            if (string.Equals(diseaseConditionType, DentalExamFindingConstants.Periodontal, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(diseaseConditionType, DentalFindingConstants.Periodontal, StringComparison.OrdinalIgnoreCase))
             {
-                return DentalExamFindingConstants.PeriodontalSurfaces;
+                return DentalFindingConstants.PeriodontalSurfaces;
             }
 
-            if (string.Equals(diseaseConditionType, DentalExamFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(diseaseConditionType, DentalFindingConstants.Restorative, StringComparison.OrdinalIgnoreCase))
             {
                 return GetRestorativeSurfacesForTooth(affectedTooth);
             }
@@ -268,8 +268,8 @@ namespace ExcelFilesCompiler.Utilities
         {
             return ClassifyRestorativeToothGroup(affectedTooth) switch
             {
-                RestorativeToothGroup.Anterior => DentalExamFindingConstants.RestorativeSurfacesAnterior,
-                RestorativeToothGroup.Posterior => DentalExamFindingConstants.RestorativeSurfacesPosterior,
+                RestorativeToothGroup.Anterior => DentalFindingConstants.RestorativeSurfacesAnterior,
+                RestorativeToothGroup.Posterior => DentalFindingConstants.RestorativeSurfacesPosterior,
                 _ => Array.Empty<string>()
             };
         }

@@ -1,6 +1,7 @@
 @using ExcelFilesCompiler.Controllers.Services
 @using ExcelFilesCompiler.Utilities
 @using Malama.Models
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
 @model DentalCoordinatorStationPageViewModel
 
 @{
@@ -9,7 +10,20 @@
 
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
+    var xRayStation = Model.XRayStation ?? new DentalXRayStation
+    {
+        ServiceMembersChildId = sm.Id,
+        Status = "Pending",
+        PaImages = new List<DentalXRayPaImage>()
+    };
+    xRayStation.ServiceMembersChild ??= sm;
     var isFemale = DentalXRayStationService.IsFemale(sm);
+    var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
+    var vitalStationDto = ViewBag.VitalStation as VitalStationDto ?? new VitalStationDto
+    {
+        ServiceMembersChildId = sm.Id,
+        Status = "Pending"
+    };
 }
 
 <style>
@@ -183,18 +197,150 @@
             grid-template-columns: 1fr;
         }
     }
+
+    .dco-station .dxr-panel-title,
+    .dco-station .xray-section-title {
+        margin: 0 0 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dco-text);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .dco-station .dxr-panel-title i,
+    .dco-station .xray-section-title i {
+        color: var(--dco-indigo);
+    }
+
+    .dco-station .xray-clinical-panel {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .dco-station .card,
+    .dco-station .xray-upload-card {
+        border: 1px solid var(--dco-border) !important;
+        border-radius: 14px !important;
+        box-shadow: var(--dco-shadow);
+        background: var(--dco-surface);
+        overflow: hidden;
+    }
+
+    .dco-station .xray-upload-card .card-body {
+        padding: 1rem 1.05rem 1.1rem;
+    }
+
+    .dco-station .xray-upload-card .card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dco-text);
+        margin-bottom: 0.75rem;
+    }
+
+    .dco-station .open-xray-picker,
+    .dco-station .xray-zoom-in,
+    .dco-station .xray-zoom-out {
+        background: var(--dco-indigo) !important;
+        border-color: var(--dco-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .dco-station .preview-xray-file,
+    .dco-station .xray-zoom-reset,
+    .dco-station #addPaCardBtn {
+        border-radius: 8px;
+        font-weight: 600;
+        border-color: var(--dco-indigo-mid);
+        color: var(--dco-indigo);
+    }
+
+    .dco-station .xray-file-status {
+        padding: 0.55rem 0.7rem;
+        border-radius: 10px;
+        background: #f7f8fc;
+        border: 1px solid var(--dco-border);
+    }
+
+    .dxr-notice {
+        margin: 0 0 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        background: var(--dco-indigo-soft);
+        border: 1px solid var(--dco-indigo-mid);
+        color: var(--dco-indigo);
+        font-weight: 700;
+    }
+
+    .xray-cards-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    @@media (max-width: 992px) {
+        .xray-cards-row { grid-template-columns: 1fr; }
+    }
+
+    .xray-upload-full-width { width: 100%; }
+    .xray-preview-viewport-full { height: 360px; }
+    .bwx-upload-mode-option { margin-bottom: 0.65rem; }
+
+    .xray-preview-viewport {
+        width: 100%;
+        height: 280px;
+        overflow: auto;
+        border: 1px solid rgba(31, 36, 48, 0.1);
+        border-radius: 12px;
+        background:
+            linear-gradient(45deg, #eef0f5 25%, transparent 25%),
+            linear-gradient(-45deg, #eef0f5 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #eef0f5 75%),
+            linear-gradient(-45deg, transparent 75%, #eef0f5 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        background-color: #f4f6fa;
+    }
+
+    .xray-preview-viewport.can-pan { cursor: grab; }
+    .xray-preview-viewport.can-pan.is-panning {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+    .xray-preview-viewport img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        transform-origin: top left;
+        -webkit-user-drag: none;
+        user-select: none;
+    }
+
+    .read-only-style {
+        background-color: #f3f5fa !important;
+        pointer-events: none;
+        border-color: rgba(31, 36, 48, 0.1) !important;
+    }
 </style>
 
 <section class="dco-station">
     <div class="dco-hero">
-        <p class="dco-kicker">Clinical station</p>
         <h1 class="dco-title" id="page-heading">Dental Coordinator Station</h1>
-        <p class="dco-subtitle">Review personal information and update the dental questionnaire.</p>
     </div>
 
-    <form id="SaveDentalCoordinatorStation" asp-action="SaveDentalCoordinatorStation" method="post">
+    <form id="SaveDentalCoordinatorStation" asp-action="SaveDentalCoordinatorStation" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@xRayStation.Id" />
         <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
+        <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
         <div class="dco-panel">
             <h2 class="dco-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
@@ -335,6 +481,64 @@
             </div>
         </div>
 
+        <div class="dco-panel">
+            <div class="questionnaire-heading" id="vitalsHeading">
+                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toggleVitalsSectionSwitch"
+                           aria-controls="vitalsSection"
+                           aria-expanded="false" />
+                </div>
+                <h3>Blood Pressure (Vitals)</h3>
+            </div>
+
+            <div id="vitalsSection" style="display:none;">
+                @{
+                    var vitalBpViewData = new ViewDataDictionary<VitalStationDto>(ViewData, vitalStationDto);
+                    vitalBpViewData["ShowVitalRedirect"] = false;
+                    vitalBpViewData["AllowVitalStationSubmit"] = false;
+                    vitalBpViewData["BpCountdownIdPrefix"] = "dentalCoordinatorBpCountdown";
+                    vitalBpViewData["VitalRecommendationContext"] = "dental coordinator";
+                    vitalBpViewData["HideSectionHeading"] = true;
+                }
+                @await Html.PartialAsync("_VitalStationBpSummary", vitalStationDto, vitalBpViewData)
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleVitalsSectionSwitch"
+                            data-target-heading="vitalsHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Blood Pressure (Vitals)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dco-panel">
+            <div class="questionnaire-heading" id="xrayHeading">
+                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toggleXRaySectionSwitch"
+                           aria-controls="xrayCoordinatorSection"
+                           aria-expanded="false" />
+                </div>
+                <h3>X-Ray</h3>
+            </div>
+
+            <div id="xrayCoordinatorSection" style="display:none;">
+                @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayStationForm.cshtml", xRayStation)
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleXRaySectionSwitch"
+                            data-target-heading="xrayHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse X-Ray
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="dco-footer-actions">
             <button type="submit" class="btn btn-general btn-lg">
                 <i class="fas fa-check-circle" aria-hidden="true"></i> Save
@@ -346,8 +550,10 @@
     </form>
 </section>
 
+<script src="~/js/dental-xray-station-uploads.js" asp-append-version="true"></script>
 <script>
     const IS_FEMALE = @Json.Serialize(isFemale);
+    const BWX_NEEDED = @Json.Serialize(bwxNeeded);
 
     function toggleQuestionnaireDetail(selectEl) {
         const $select = $(selectEl);
@@ -417,28 +623,12 @@
         });
     }
 
-    function togglePregnancyFlow() {
-        if (!IS_FEMALE) {
-            return;
-        }
-
-        const pregnant = $("#AreYouPregnant").val();
-        $("#pregnancyApprovalSection").hide();
-        $("#PregnancyApproval").prop("required", false);
-
-        if (pregnant === "Yes") {
-            $("#pregnancyApprovalSection").show();
-            $("#PregnancyApproval").prop("required", true);
-        }
-    }
-
     function initQuestionnaireToggles() {
         $(".dental-q-detail-toggle").each(function () {
             toggleQuestionnaireDetail(this);
         });
         toggleTobaccoSection();
         initConditionToggles();
-        togglePregnancyFlow();
     }
 
     function toggleQuestionnaireSectionFromSwitch() {
@@ -454,10 +644,47 @@
         $("#toggleQuestionnaireSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
     }
 
+    function toggleVitalsSectionFromSwitch() {
+        const isOn = $("#toggleVitalsSectionSwitch").is(":checked");
+        const $section = $("#vitalsSection");
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $("#toggleVitalsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleXRaySectionFromSwitch() {
+        const isOn = $("#toggleXRaySectionSwitch").is(":checked");
+        const $section = $("#xrayCoordinatorSection");
+
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+
+        $("#toggleXRaySectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
     $(document).ready(function () {
         initQuestionnaireToggles();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
+        $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
+        $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
+
+        $(document).on("click", ".section-collapse-btn", function () {
+            const switchId = $(this).data("target-switch");
+            if (!switchId) return;
+            const $switch = $("#" + switchId);
+            if ($switch.length && $switch.is(":checked")) {
+                $switch.prop("checked", false).trigger("change");
+            }
+        });
 
         $(".dental-q-detail-toggle").on("change", function () {
             toggleQuestionnaireDetail(this);
@@ -469,14 +696,25 @@
         $(document).on("change", ".condition-checkbox", function () {
             toggleConditionDetail(this);
         });
-        $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
+
+        window.DentalXRayStationConfig = {
+            downloadImageUrl: "/DentalCoordinator/DownloadXRayImage",
+            formSelector: "#SaveDentalCoordinatorStation",
+            isFemale: IS_FEMALE,
+            bwxNeeded: BWX_NEEDED,
+            paCardIndex: @(ViewBag.DentalXRayFormPaCardCount ?? 1),
+            initialBwxReason: @Html.Raw(Json.Serialize(ViewBag.DentalXRayFormBwxReason as string ?? xRayStation.BwxReason ?? "")),
+            initialPaReason: @Html.Raw(Json.Serialize(ViewBag.DentalXRayFormPaReason as string ?? xRayStation.PaReason ?? "")),
+            enableGoToVitalStation: false
+        };
+        DentalXRayStationUploads.init(window.DentalXRayStationConfig);
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
             const href = $(this).attr('href');
             const result = await Swal.fire({
                 title: 'Leave without saving?',
-                text: 'Unsaved questionnaire changes will be lost.',
+                text: 'Unsaved changes will be lost.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Leave',

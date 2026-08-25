@@ -105,8 +105,8 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             var class3FindingIds = new HashSet<long>(
-                (exam.Findings ?? Array.Empty<DentalExamFinding>())
-                    .Where(f => string.Equals(f.Classification, DentalExamFindingConstants.ClassificationClass3, StringComparison.OrdinalIgnoreCase))
+                (exam.Findings ?? Array.Empty<DentalFinding>())
+                    .Where(f => string.Equals(f.Classification, DentalFindingConstants.ClassificationClass3, StringComparison.OrdinalIgnoreCase))
                     .Select(f => f.Id));
 
             for (var i = 0; i < dto.Findings.Count; i++)
@@ -114,8 +114,8 @@ namespace ExcelFilesCompiler.Utilities
                 var finding = dto.Findings[i];
                 var isTreatmentOrigin = DentalTreatmentFindingOrigin.IsTreatmentOrigin(finding.Origin)
                     || finding.IsTreatmentOnly
-                    || finding.DentalExamFindingId.GetValueOrDefault() <= 0;
-                var examFindingId = finding.DentalExamFindingId.GetValueOrDefault();
+                    || finding.DentalFindingId.GetValueOrDefault() <= 0;
+                var examFindingId = finding.DentalFindingId.GetValueOrDefault();
 
                 if (!isTreatmentOrigin)
                 {
@@ -171,12 +171,12 @@ namespace ExcelFilesCompiler.Utilities
                     }
                 }
 
-                finding.Classification = DentalExamFindingConstants.ClassificationClass3;
+                finding.Classification = DentalFindingConstants.ClassificationClass3;
                 var surfaces = (finding.PostServiceTreatment != null && finding.PostServiceTreatment.Count > 0)
                     ? finding.PostServiceTreatment
                     : (finding.AffectedSurfaces ?? new List<string>());
-                var clinicalError = DentalExamFindingValidator.ValidateFinding(
-                    new DentalExamFindingDto
+                var clinicalError = DentalFindingValidator.ValidateFinding(
+                    new DentalFindingDto
                     {
                         IsPrimaryTooth = finding.IsPrimaryTooth,
                         AffectedTooth = finding.AffectedTooth,
@@ -185,7 +185,7 @@ namespace ExcelFilesCompiler.Utilities
                         CdtCodes = (finding.TreatmentCdtCodes != null && finding.TreatmentCdtCodes.Count > 0)
                             ? finding.TreatmentCdtCodes
                             : (finding.CdtCodes ?? new List<string>()),
-                        Classification = DentalExamFindingConstants.ClassificationClass3
+                        Classification = DentalFindingConstants.ClassificationClass3
                     },
                     i + 1,
                     dto.PsrSelectedTeeth);
@@ -198,13 +198,13 @@ namespace ExcelFilesCompiler.Utilities
 
             var findingsForMissingCheck = dto.Findings
                 .Where(f => !string.IsNullOrWhiteSpace(f.AffectedTooth))
-                .Select(f => new DentalExamFindingDto
+                .Select(f => new DentalFindingDto
                 {
                     IsPrimaryTooth = f.IsPrimaryTooth,
                     AffectedTooth = f.AffectedTooth
                 })
                 .ToList();
-            var missingConflict = DentalExamFindingValidator.ValidateMissingTeethNotUsedInFindings(
+            var missingConflict = DentalFindingValidator.ValidateMissingTeethNotUsedInFindings(
                 findingsForMissingCheck,
                 dto.PsrSelectedTeeth);
             if (missingConflict != null)

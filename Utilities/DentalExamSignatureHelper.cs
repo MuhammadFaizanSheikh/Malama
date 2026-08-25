@@ -112,12 +112,12 @@ namespace Malama.Utilities
         }
 
         public static async Task<Dictionary<string, string>> ResolveExaminerNamesByUserIdAsync(
-            IEnumerable<DentalExamFinding>? findings,
+            IEnumerable<DentalFinding>? findings,
             UserManager<ApplicationUser> userManager,
             IEventStaffService eventStaffService,
             ILogger logger)
         {
-            var userIds = (findings ?? Enumerable.Empty<DentalExamFinding>())
+            var userIds = (findings ?? Enumerable.Empty<DentalFinding>())
                 .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy });
 
             return await ResolveDisplayNamesByUserIdAsync(userIds, userManager, eventStaffService, logger);

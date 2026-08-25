@@ -1,4 +1,4 @@
-﻿using Malama.Models;
+using Malama.Models;
 using ExcelFilesCompiler.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -39,7 +39,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<DentalXRayPaImage> DentalXRayPaImage { get; }
         IGenericRepository<DentalQuestionnaire> DentalQuestionnaire { get; }
         IGenericRepository<DentalExam> DentalExam { get; }
-        IGenericRepository<DentalExamFinding> DentalExamFinding { get; }
+        IGenericRepository<DentalFinding> DentalFinding { get; }
         IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; }
         IGenericRepository<DentalTreatment> DentalTreatment { get; }
         IGenericRepository<DentalTreatmentFinding> DentalTreatmentFinding { get; }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Malama.Models;
 
 namespace Malama.AutoMapper
@@ -207,7 +207,7 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
                 .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore())
-                .ForMember(dest => dest.DentalExamFinding, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalFinding, opt => opt.Ignore())
                 .ForMember(dest => dest.PostServiceTreatmentJson, opt => opt.Ignore())
                 .ForMember(dest => dest.TreatmentCdtCodesJson, opt => opt.Ignore())
                 .ForMember(dest => dest.ProceduredDrc, opt => opt.MapFrom(src => src.FinalDrc));

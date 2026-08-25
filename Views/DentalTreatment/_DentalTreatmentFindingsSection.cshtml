@@ -16,25 +16,25 @@
         ?? ViewBag.DentalTreatment as DentalTreatment;
     var treatmentFindingsByExamFindingId = (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
         .Where(f => DentalTreatmentFindingOrigin.IsExamOrigin(f.Origin)
-            && f.DentalExamFindingId.HasValue
-            && f.DentalExamFindingId.Value > 0)
-        .GroupBy(f => f.DentalExamFindingId!.Value)
+            && f.DentalFindingId.HasValue
+            && f.DentalFindingId.Value > 0)
+        .GroupBy(f => f.DentalFindingId!.Value)
         .ToDictionary(g => g.Key, g => g.First());
     var findings = new List<DentalTreatmentFindingFormDto>();
 
-    foreach (var f in (exam.Findings ?? Enumerable.Empty<DentalExamFinding>())
+    foreach (var f in (exam.Findings ?? Enumerable.Empty<DentalFinding>())
         .Where(f => string.Equals(
             f.Classification,
-            DentalExamFindingConstants.ClassificationClass3,
+            DentalFindingConstants.ClassificationClass3,
             StringComparison.OrdinalIgnoreCase))
         .OrderBy(f => f.SortOrder))
     {
-        var dto = DentalExamFindingMapper.ToDto(f);
+        var dto = DentalFindingMapper.ToDto(f);
         treatmentFindingsByExamFindingId.TryGetValue(f.Id, out var treatmentFinding);
         findings.Add(new DentalTreatmentFindingFormDto
         {
             Id = treatmentFinding?.Id ?? 0,
-            DentalExamFindingId = f.Id,
+            DentalFindingId = f.Id,
             Origin = DentalTreatmentFindingOrigin.Exam,
             IsTreatmentOnly = false,
             IsPrimaryTooth = dto.IsPrimaryTooth,
@@ -69,14 +69,14 @@
 
     foreach (var treatmentFinding in (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
         .Where(f => DentalTreatmentFindingOrigin.IsTreatmentOrigin(f.Origin)
-            || ((!f.DentalExamFindingId.HasValue || f.DentalExamFindingId.Value <= 0)
+            || ((!f.DentalFindingId.HasValue || f.DentalFindingId.Value <= 0)
                 && !DentalTreatmentFindingOrigin.IsExamOrigin(f.Origin)))
         .OrderBy(f => f.SortOrder))
     {
         findings.Add(new DentalTreatmentFindingFormDto
         {
             Id = treatmentFinding.Id,
-            DentalExamFindingId = null,
+            DentalFindingId = null,
             Origin = DentalTreatmentFindingOrigin.Treatment,
             IsTreatmentOnly = true,
             IsPrimaryTooth = treatmentFinding.IsPrimaryTooth,
@@ -84,7 +84,7 @@
             DiseaseConditionType = treatmentFinding.DiseaseConditionType,
             AffectedSurfaces = DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson),
             CdtCodes = DentalTreatmentJson.DeserializeList(treatmentFinding.TreatmentCdtCodesJson),
-            Classification = DentalExamFindingConstants.ClassificationClass3,
+            Classification = DentalFindingConstants.ClassificationClass3,
             SortOrder = treatmentFinding.SortOrder,
             TreatmentCompleted = treatmentFinding.TreatmentCompleted,
             PostServiceTreatment = DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson),
@@ -309,7 +309,7 @@
                                     <label class="form-label" for="treatmentFindingDiseaseType">Disease / Condition Type</label>
                                     <select id="treatmentFindingDiseaseType" class="form-select">
                                         <option value=""></option>
-                                        @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
+                                        @foreach (var diseaseType in DentalFindingConstants.DiseaseConditionTypes)
                                         {
                                             <option value="@diseaseType">@diseaseType</option>
                                         }
@@ -345,9 +345,9 @@
 
                             <div class="mb-3">
                                 <label class="form-label d-block">Classification for selected tooth</label>
-                                @for (var i = 0; i < DentalExamFindingConstants.Classifications.Length; i++)
+                                @for (var i = 0; i < DentalFindingConstants.Classifications.Length; i++)
                                 {
-                                    var classification = DentalExamFindingConstants.Classifications[i];
+                                    var classification = DentalFindingConstants.Classifications[i];
                                     <div class="form-check">
                                         <input class="form-check-input treatment-finding-classification-radio"
                                                type="radio"
@@ -393,7 +393,7 @@
                             <label class="form-label" for="treatmentOnlyDiseaseType">Disease / Condition Type</label>
                             <select id="treatmentOnlyDiseaseType" class="form-select">
                                 <option value=""></option>
-                                @foreach (var diseaseType in DentalExamFindingConstants.DiseaseConditionTypes)
+                                @foreach (var diseaseType in DentalFindingConstants.DiseaseConditionTypes)
                                 {
                                     <option value="@diseaseType">@diseaseType</option>
                                 }
@@ -527,18 +527,18 @@
 
 <script>
     (function () {
-        const PERMANENT_TEETH = @Json.Serialize(DentalExamFindingConstants.PermanentTeeth);
-        const PRIMARY_TEETH = @Json.Serialize(DentalExamFindingConstants.PrimaryTeeth);
-        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalExamFindingConstants.PrimaryToothToPermanentNumber);
-        const PERIODONTAL_SURFACES = @Json.Serialize(DentalExamFindingConstants.PeriodontalSurfaces);
-        const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesPosterior);
-        const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalExamFindingConstants.RestorativeSurfacesAnterior);
+        const PERMANENT_TEETH = @Json.Serialize(DentalFindingConstants.PermanentTeeth);
+        const PRIMARY_TEETH = @Json.Serialize(DentalFindingConstants.PrimaryTeeth);
+        const PRIMARY_TO_PERMANENT = @Json.Serialize(DentalFindingConstants.PrimaryToothToPermanentNumber);
+        const PERIODONTAL_SURFACES = @Json.Serialize(DentalFindingConstants.PeriodontalSurfaces);
+        const RESTORATIVE_SURFACES_POSTERIOR = @Json.Serialize(DentalFindingConstants.RestorativeSurfacesPosterior);
+        const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
         const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
         const CAN_EDIT_TREATMENT = @Json.Serialize(canEditTreatment);
-        const TREATMENT_ONLY_CLASSIFICATION = @Json.Serialize(DentalExamFindingConstants.ClassificationClass3);
+        const TREATMENT_ONLY_CLASSIFICATION = @Json.Serialize(DentalFindingConstants.ClassificationClass3);
         const FINDING_ORIGIN_EXAM = @Json.Serialize(DentalTreatmentFindingOrigin.Exam);
         const FINDING_ORIGIN_TREATMENT = @Json.Serialize(DentalTreatmentFindingOrigin.Treatment);
 
@@ -597,8 +597,8 @@
             const affectedSurfaces = item.affectedSurfaces || [];
             const cdtCodes = item.cdtCodes || [];
             const finalDrc = item.finalDrc || "";
-            const examFindingId = item.dentalExamFindingId && item.dentalExamFindingId > 0
-                ? item.dentalExamFindingId
+            const examFindingId = item.dentalFindingId && item.dentalFindingId > 0
+                ? item.dentalFindingId
                 : null;
             const origin = item.origin === FINDING_ORIGIN_TREATMENT || item.isTreatmentOnly || !examFindingId
                 ? FINDING_ORIGIN_TREATMENT
@@ -606,7 +606,7 @@
             const isTreatmentOnly = origin === FINDING_ORIGIN_TREATMENT;
             return {
                 id: item.id || 0,
-                dentalExamFindingId: examFindingId,
+                dentalFindingId: examFindingId,
                 origin: origin,
                 isTreatmentOnly: isTreatmentOnly,
                 isPrimaryTooth: !!item.isPrimaryTooth,
@@ -1312,7 +1312,7 @@
             const payload = treatmentFindings.map(function (item, index) {
                 return {
                     id: item.id || 0,
-                    dentalExamFindingId: item.dentalExamFindingId || null,
+                    dentalFindingId: item.dentalFindingId || null,
                     origin: item.origin || (item.isTreatmentOnly ? FINDING_ORIGIN_TREATMENT : FINDING_ORIGIN_EXAM),
                     isTreatmentOnly: !!item.isTreatmentOnly || item.origin === FINDING_ORIGIN_TREATMENT,
                     isPrimaryTooth: !!item.isPrimaryTooth,
@@ -1852,7 +1852,7 @@
                 const surfacesForStore = validated.postServiceTreatment || [];
                 treatmentFindings.push({
                     id: 0,
-                    dentalExamFindingId: null,
+                    dentalFindingId: null,
                     origin: FINDING_ORIGIN_TREATMENT,
                     isTreatmentOnly: true,
                     isPrimaryTooth: !!clinical.isPrimaryTooth,

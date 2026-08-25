@@ -1,0 +1,286 @@
+@using ExcelFilesCompiler.Controllers.Services
+@using Malama.Models
+@model DentalXRayStation
+
+@{
+    var station = Model;
+    var sm = station.ServiceMembersChild;
+    var isFemale = DentalXRayStationService.IsFemale(sm);
+    var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
+    var panoNeeded = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
+    var paImages = station.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
+    if (!paImages.Any())
+    {
+        paImages.Add(new DentalXRayPaImage { SortOrder = 0 });
+    }
+
+    var initialBwxUploadMode = station.BwxUploadMode;
+    if (string.IsNullOrWhiteSpace(initialBwxUploadMode))
+    {
+        if (!string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName))
+        {
+            initialBwxUploadMode = BwxUploadMode.Consolidated;
+        }
+        else if (!string.IsNullOrWhiteSpace(station.BwLeftMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightMolarFileName)
+            || !string.IsNullOrWhiteSpace(station.BwRightPremolarFileName))
+        {
+            initialBwxUploadMode = BwxUploadMode.Separate;
+        }
+    }
+
+    ViewBag.DentalXRayFormPaCardCount = paImages.Count;
+    ViewBag.DentalXRayFormBwxReason = station.BwxReason ?? "";
+    ViewBag.DentalXRayFormPaReason = station.PaReason ?? "";
+    ViewBag.DentalXRayFormBwxNeeded = bwxNeeded;
+}
+
+<div id="clinicalStationSection" style="@(isFemale ? "display:none;" : "")">
+    <div id="xrayStationSection">
+        <div class="dxr-panel xray-clinical-panel">
+            <h2 class="dxr-panel-title xray-section-title"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray Station</h2>
+
+            @if (bwxNeeded)
+            {
+                <div class="card mb-4" id="bwxSection">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">BWX Status</label>
+                                <select name="BwxStatus" id="BwxStatus" class="form-select">
+                                    <option value=""></option>
+                                    <option value="Completed" selected="@(station.BwxStatus == "Completed")">Completed</option>
+                                    <option value="Not Completed" selected="@(station.BwxStatus == "Not Completed")">Not Completed</option>
+                                </select>
+                            </div>
+                            @if (station.Id != 0 && station.BwxUploadedDateTime.HasValue)
+                            {
+                                <div class="col-md-4">
+                                    <label class="form-label">Uploaded datetime</label>
+                                    <input type="text" class="form-control read-only-style"
+                                           value="@station.BwxUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
+                                </div>
+                            }
+                        </div>
+
+                        <div id="bwxReasonContainer" style="display:none;" class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Reason</label>
+                                <select name="BwxReason" id="BwxReason" class="form-select">
+                                    <option value=""></option>
+                                    <option value="Insufficient Supplies">Insufficient Supplies</option>
+                                    <option value="Refused">Refused</option>
+                                    <option value="Contraindication">Contraindication</option>
+                                    <option value="Excused">Excused</option>
+                                    <option value="Proof of Service">Proof of Service</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="bwxUploadModeSection" style="display:none;" class="mb-3">
+                            <p class="mb-2">Do you want to upload BWX ray :</p>
+                            <div class="bwx-upload-mode-option">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="BwxUploadMode" id="BwxModeConsolidated"
+                                           value="@BwxUploadMode.Consolidated"
+                                           checked="@(initialBwxUploadMode == BwxUploadMode.Consolidated)" />
+                                    <label class="form-check-label" for="BwxModeConsolidated">
+                                        As a single JPG image file that consolidates all the BWX rays into one cohesive image?
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bwx-upload-mode-option">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="BwxUploadMode" id="BwxModeSeparate"
+                                           value="@BwxUploadMode.Separate"
+                                           checked="@(initialBwxUploadMode == BwxUploadMode.Separate)" />
+                                    <label class="form-check-label" for="BwxModeSeparate">
+                                        Upload each individual BWX ray separately?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="bwxConsolidatedUploadContainer" style="display:none;">
+                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                Prefix = "bwx_consolidated",
+                                Title = "Consolidated BWX",
+                                FileInputName = "BwxConsolidatedFile",
+                                UploadedFieldName = "BwxConsolidatedUploaded",
+                                FileNameFieldName = "BwxConsolidatedFileName",
+                                OriginalFileNameFieldName = "BwxConsolidatedOriginalFileName",
+                                DateFieldName = "BwxConsolidatedUploadedDateTime",
+                                RemovedFieldName = "BwxConsolidatedRemoved",
+                                Uploaded = !string.IsNullOrWhiteSpace(station.BwxConsolidatedFileName),
+                                StoredFileName = station.BwxConsolidatedFileName,
+                                OriginalFileName = station.BwxConsolidatedOriginalFileName,
+                                UploadedDateTime = station.BwxConsolidatedUploadedDateTime,
+                                IsFullWidth = true
+                            })
+                        </div>
+
+                        <div id="bwxSeparateUploadContainer" style="display:none;" class="xray-cards-row">
+                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                Prefix = "bwx_left_molar",
+                                Title = "BW Left Molar",
+                                FileInputName = "BwLeftMolarFile",
+                                UploadedFieldName = "BwLeftMolarUploaded",
+                                FileNameFieldName = "BwLeftMolarFileName",
+                                OriginalFileNameFieldName = "BwLeftMolarOriginalFileName",
+                                DateFieldName = "BwLeftMolarUploadedDateTime",
+                                RemovedFieldName = "BwLeftMolarRemoved",
+                                Uploaded = !string.IsNullOrWhiteSpace(station.BwLeftMolarFileName),
+                                StoredFileName = station.BwLeftMolarFileName,
+                                OriginalFileName = station.BwLeftMolarOriginalFileName,
+                                UploadedDateTime = station.BwLeftMolarUploadedDateTime
+                            })
+                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                Prefix = "bwx_left_premolar",
+                                Title = "BW Left Premolar",
+                                FileInputName = "BwLeftPremolarFile",
+                                UploadedFieldName = "BwLeftPremolarUploaded",
+                                FileNameFieldName = "BwLeftPremolarFileName",
+                                OriginalFileNameFieldName = "BwLeftPremolarOriginalFileName",
+                                DateFieldName = "BwLeftPremolarUploadedDateTime",
+                                RemovedFieldName = "BwLeftPremolarRemoved",
+                                Uploaded = !string.IsNullOrWhiteSpace(station.BwLeftPremolarFileName),
+                                StoredFileName = station.BwLeftPremolarFileName,
+                                OriginalFileName = station.BwLeftPremolarOriginalFileName,
+                                UploadedDateTime = station.BwLeftPremolarUploadedDateTime
+                            })
+                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                Prefix = "bwx_right_molar",
+                                Title = "BW Right Molar",
+                                FileInputName = "BwRightMolarFile",
+                                UploadedFieldName = "BwRightMolarUploaded",
+                                FileNameFieldName = "BwRightMolarFileName",
+                                OriginalFileNameFieldName = "BwRightMolarOriginalFileName",
+                                DateFieldName = "BwRightMolarUploadedDateTime",
+                                RemovedFieldName = "BwRightMolarRemoved",
+                                Uploaded = !string.IsNullOrWhiteSpace(station.BwRightMolarFileName),
+                                StoredFileName = station.BwRightMolarFileName,
+                                OriginalFileName = station.BwRightMolarOriginalFileName,
+                                UploadedDateTime = station.BwRightMolarUploadedDateTime
+                            })
+                            @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                Prefix = "bwx_right_premolar",
+                                Title = "BW Right Premolar",
+                                FileInputName = "BwRightPremolarFile",
+                                UploadedFieldName = "BwRightPremolarUploaded",
+                                FileNameFieldName = "BwRightPremolarFileName",
+                                OriginalFileNameFieldName = "BwRightPremolarOriginalFileName",
+                                DateFieldName = "BwRightPremolarUploadedDateTime",
+                                RemovedFieldName = "BwRightPremolarRemoved",
+                                Uploaded = !string.IsNullOrWhiteSpace(station.BwRightPremolarFileName),
+                                StoredFileName = station.BwRightPremolarFileName,
+                                OriginalFileName = station.BwRightPremolarOriginalFileName,
+                                UploadedDateTime = station.BwRightPremolarUploadedDateTime
+                            })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4" id="paSection">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">Periapical (PA) X-Rays Status</label>
+                                <select name="PaStatus" id="PaStatus" class="form-select">
+                                    <option value=""></option>
+                                    <option value="Completed" selected="@(station.PaStatus == "Completed")">Completed</option>
+                                    <option value="Not Completed" selected="@(station.PaStatus == "Not Completed")">Not Completed</option>
+                                </select>
+                            </div>
+                            @if (station.Id != 0 && station.PaUploadedDateTime.HasValue)
+                            {
+                                <div class="col-md-4">
+                                    <label class="form-label">Uploaded datetime</label>
+                                    <input type="text" class="form-control read-only-style"
+                                           value="@station.PaUploadedDateTime?.ToString("MM/dd/yyyy hh:mm tt")" readonly />
+                                </div>
+                            }
+                        </div>
+
+                        <div id="paReasonContainer" style="display:none;" class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Reason</label>
+                                <select name="PaReason" id="PaReason" class="form-select">
+                                    <option value=""></option>
+                                    <option value="Insufficient Supplies">Insufficient Supplies</option>
+                                    <option value="Refused">Refused</option>
+                                    <option value="Contraindication">Contraindication</option>
+                                    <option value="Excused">Excused</option>
+                                    <option value="Proof of Service">Proof of Service</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="paUploadContainer" style="display:none;">
+                            <div class="d-flex justify-content-end mb-2 gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addPaCardBtn">
+                                    <i class="fas fa-plus" aria-hidden="true"></i> Add PA Card
+                                </button>
+                            </div>
+                            <div id="paCardsRow" class="xray-cards-row">
+                                @for (var i = 0; i < paImages.Count; i++)
+                                {
+                                    var pa = paImages[i];
+                                    var prefix = $"pa_{i}";
+                                    @await Html.PartialAsync("_XRayImageUpload", new DentalXRayImageUploadModel {
+                                        Prefix = prefix,
+                                        Title = "PA of tooth",
+                                        FileInputName = $"PaImages[{i}].ImageFile",
+                                        UploadedFieldName = $"PaImages[{i}].Uploaded",
+                                        FileNameFieldName = $"PaImages[{i}].FileName",
+                                        OriginalFileNameFieldName = $"PaImages[{i}].OriginalFileName",
+                                        DateFieldName = $"PaImages[{i}].UploadedDateTime",
+                                        RemovedFieldName = $"PaImages[{i}].Removed",
+                                        DownloadPrefix = "pa_tooth",
+                                        Uploaded = !string.IsNullOrWhiteSpace(pa.FileName),
+                                        StoredFileName = pa.FileName,
+                                        OriginalFileName = pa.OriginalFileName,
+                                        UploadedDateTime = pa.UploadedDateTime,
+                                        IsPaCard = true,
+                                        PaCardIndex = i,
+                                        PaImageId = pa.Id,
+                                        ShowRemovePaCardButton = i > 0
+                                    })
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="mb-4" id="panoSection">
+                <div class="card">
+                    <div class="card-body">
+                        <label class="form-label" for="Comment">Comment</label>
+                        <textarea name="Comment" id="Comment" class="form-control" rows="4">@station.Comment</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="Status" id="Status" class="form-select read-only-style" disabled>
+                        <option value="Pending" selected="@(station.Status != "Completed")">Pending</option>
+                        <option value="Completed" selected="@(station.Status == "Completed")">Completed</option>
+                    </select>
+                    <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(station.Status) ? "Pending" : station.Status)" />
+                </div>
+            </div>
+
+            @if (panoNeeded)
+            {
+                <p class="dxr-notice">Panorex (Pano) X-ray is Required for this Service member</p>
+            }
+            else
+            {
+                <p class="dxr-notice" style="background:#f3f4f8;border-color:rgba(31,36,48,0.1);color:#4b5160;">Panorex (Pano) X-ray is NOT Required for this Service member</p>
+            }
+        </div>
+    </div>
+</div>
