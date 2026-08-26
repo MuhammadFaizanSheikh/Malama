@@ -17,6 +17,7 @@
     var showFindingAssignmentFields = ViewData["ShowFindingAssignmentFields"] as bool? ?? false;
     var eventAppointmentMinDate = ViewData["EventAppointmentMinDate"] as string ?? string.Empty;
     var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
+    var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
     // Assignment grid: compact main columns + expand for appointment/procedure details.
     var findingsTableColspan = showFindingAssignmentFields ? 10 : 9;
     var findings = exam.Findings?
@@ -363,6 +364,195 @@
         border-color: var(--findings-indigo);
     }
 
+    #dentalFindingsSection .finding-appt-calendar {
+        margin-top: 1.25rem;
+        border: 1px solid var(--findings-border);
+        border-radius: 12px;
+        background: var(--findings-surface);
+        overflow: hidden;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--findings-border);
+        background: rgba(80, 90, 201, 0.06);
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-toolbar h5 {
+        margin: 0;
+        color: var(--findings-indigo);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-day-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-width: 260px;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-day-wrap .form-label {
+        margin: 0;
+        font-weight: 600;
+        color: var(--findings-text);
+        white-space: nowrap;
+    }
+
+    #dentalFindingsSection .finding-appt-day-nav {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 8px;
+        border: 1px solid rgba(80, 90, 201, 0.3);
+        color: var(--findings-indigo);
+        background: rgba(80, 90, 201, 0.06);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    #dentalFindingsSection .finding-appt-day-nav:hover:not(:disabled) {
+        background: rgba(80, 90, 201, 0.14);
+        border-color: var(--findings-indigo);
+        color: var(--findings-indigo);
+    }
+
+    #dentalFindingsSection .finding-appt-day-nav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-day-wrap #findingCalendarDay,
+    #dentalFindingsSection .finding-appt-calendar-day-wrap .flatpickr-input {
+        min-width: 120px;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-scroll {
+        max-height: 520px;
+        overflow: auto;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-header,
+    #dentalFindingsSection .finding-appt-calendar-body {
+        display: grid;
+        grid-template-columns: 88px repeat(4, minmax(120px, 1fr));
+        min-width: 720px;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f3f4fb;
+        border-bottom: 1px solid var(--findings-border);
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-header > div {
+        padding: 0.55rem 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--findings-text);
+        text-align: center;
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-header > div:last-child {
+        border-right: 0;
+    }
+
+    #dentalFindingsSection .finding-appt-dentist-col {
+        position: relative;
+        min-height: calc(24px * 96);
+    }
+
+    #dentalFindingsSection .finding-appt-bookings {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    #dentalFindingsSection .finding-appt-slot {
+        height: 24px;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.05);
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+    }
+
+    #dentalFindingsSection .finding-appt-slot.is-hour {
+        border-bottom-color: rgba(31, 36, 48, 0.12);
+    }
+
+    #dentalFindingsSection .finding-appt-time-label {
+        height: 24px;
+        box-sizing: border-box;
+        padding: 0 0.35rem;
+        font-size: 0.62rem;
+        color: var(--findings-muted);
+        line-height: 24px;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.05);
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+        background: #fafbff;
+        white-space: nowrap;
+    }
+
+    #dentalFindingsSection .finding-appt-time-label.is-hour {
+        color: var(--findings-text);
+        font-weight: 700;
+        font-size: 0.68rem;
+        border-bottom-color: rgba(31, 36, 48, 0.12);
+    }
+
+    #dentalFindingsSection .finding-appt-dentist-col {
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 23px,
+            rgba(31, 36, 48, 0.03) 23px,
+            rgba(31, 36, 48, 0.03) 24px
+        );
+    }
+
+    #dentalFindingsSection .finding-appt-booking {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        z-index: 2;
+        border-radius: 8px;
+        padding: 0.2rem 0.4rem;
+        background: rgba(80, 90, 201, 0.88);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(80, 90, 201, 0.25);
+        pointer-events: none;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    #dentalFindingsSection .finding-appt-booking-label {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+    }
+
+    #dentalFindingsSection .finding-appt-calendar-empty {
+        padding: 0.75rem 1rem;
+        color: var(--findings-muted);
+        font-size: 0.88rem;
+        border-top: 1px solid var(--findings-border);
+    }
+
     #dentalFindingsSection .section-collapse-btn {
         border-radius: 999px;
         font-weight: 600;
@@ -620,6 +810,68 @@
         </div>
         </div>
 
+        @if (showFindingAssignmentFields)
+        {
+            <div id="findingAppointmentCalendar" class="finding-appt-calendar" aria-label="Appointment calendar">
+                <div class="finding-appt-calendar-toolbar">
+                    <h5>Appointment Calendar</h5>
+                    <div class="finding-appt-calendar-day-wrap">
+                        <label class="form-label" for="findingCalendarDay">Date</label>
+                        <button type="button"
+                                class="btn finding-appt-day-nav"
+                                id="findingCalendarPrevDayBtn"
+                                title="Previous day"
+                                aria-label="Previous day">
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <input type="text"
+                               id="findingCalendarDay"
+                               class="form-control form-control-sm"
+                               placeholder="MM/DD/YYYY"
+                               autocomplete="off" />
+                        <button type="button"
+                                class="btn finding-appt-day-nav"
+                                id="findingCalendarNextDayBtn"
+                                title="Next day"
+                                aria-label="Next day">
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="finding-appt-calendar-scroll">
+                    <div class="finding-appt-calendar-header">
+                        <div>Time</div>
+                        <div>Dentist 1</div>
+                        <div>Dentist 2</div>
+                        <div>Dentist 3</div>
+                        <div>Dentist 4</div>
+                    </div>
+                    <div class="finding-appt-calendar-body" id="findingApptCalendarBody">
+                        <div class="finding-appt-time-col" id="findingApptTimeCol"></div>
+                        <div class="finding-appt-dentist-col" data-dentist="Dentist 1">
+                            <div class="finding-appt-slots"></div>
+                            <div class="finding-appt-bookings"></div>
+                        </div>
+                        <div class="finding-appt-dentist-col" data-dentist="Dentist 2">
+                            <div class="finding-appt-slots"></div>
+                            <div class="finding-appt-bookings"></div>
+                        </div>
+                        <div class="finding-appt-dentist-col" data-dentist="Dentist 3">
+                            <div class="finding-appt-slots"></div>
+                            <div class="finding-appt-bookings"></div>
+                        </div>
+                        <div class="finding-appt-dentist-col" data-dentist="Dentist 4">
+                            <div class="finding-appt-slots"></div>
+                            <div class="finding-appt-bookings"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="finding-appt-calendar-empty" id="findingApptCalendarHint">
+                    Booked appointments for the selected date appear in the Assigned Dentist columns.
+                </div>
+            </div>
+        }
+
         <div class="d-flex justify-content-center mt-3">
             <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
                     data-target-switch="toggleDentalFindingsSectionSwitch"
@@ -646,11 +898,27 @@
         const FINDINGS_TABLE_COLSPAN = @Json.Serialize(findingsTableColspan);
         const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
+        const SERVICE_MEMBER_DISPLAY_NAME = @Json.Serialize(serviceMemberDisplayName);
+        const ASSIGNED_DENTISTS = ["Dentist 1", "Dentist 2", "Dentist 3", "Dentist 4"];
+        const APPT_SLOT_MINUTES = 15;
+        const APPT_SLOT_HEIGHT = 24;
+        const APPT_SLOTS_PER_DAY = (24 * 60) / APPT_SLOT_MINUTES;
+        const APPT_DURATION_MINUTES = {
+            "15 min": 15,
+            "30 min": 30,
+            "45 min": 45,
+            "1 hr": 60,
+            "1 hr 15 min": 75,
+            "1 hr 30 min": 90,
+            "1 hr 45 min": 105,
+            "2 hr": 120
+        };
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
 
         let dentalFindings = @Html.Raw(findingsJson);
         let editingFindingIndex = null;
         let suppressRestorativeCdtReset = false;
+        let appointmentCalendarDayPicker = null;
 
         function escapeHtml(value) {
             return $("<div>").text(value ?? "").html();
@@ -1011,7 +1279,8 @@
                     noCalendar: true,
                     dateFormat: "h:i K",
                     time_24hr: false,
-                    allowInput: true
+                    allowInput: true,
+                    minuteIncrement: 15
                 });
             }
         }
@@ -1131,6 +1400,15 @@
                 Swal.fire("Invalid Data", "CDT Code is required.", "warning");
                 return null;
             }
+
+            if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
+                const conflictMessage = getAppointmentConflictMessage(finding, editingFindingIndex);
+                if (conflictMessage) {
+                    Swal.fire("Appointment Conflict", conflictMessage, "error");
+                    return null;
+                }
+            }
+
             return finding;
         }
 
@@ -1369,6 +1647,7 @@
                     '<tr id="dentalFindingsEmptyRow"><td colspan="' + FINDINGS_TABLE_COLSPAN + '" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 syncFindingsJson();
+                renderAppointmentCalendar();
                 return;
             }
 
@@ -1452,6 +1731,7 @@
             });
 
             syncFindingsJson();
+            renderAppointmentCalendar();
         }
 
         function buildFindingDetailItem(label, valueHtml, isWide) {
@@ -1497,6 +1777,320 @@
             return raw;
         }
 
+        function parseAppointmentStartMinutes(timeValue) {
+            const raw = (timeValue || "").toString().trim();
+            if (!raw) {
+                return null;
+            }
+
+            const twelveHour = raw.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])$/);
+            if (twelveHour) {
+                let hour = parseInt(twelveHour[1], 10);
+                const minute = parseInt(twelveHour[2], 10);
+                const meridiem = twelveHour[3].toUpperCase();
+                if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+                    return null;
+                }
+                if (meridiem === "AM") {
+                    if (hour === 12) {
+                        hour = 0;
+                    }
+                } else if (hour !== 12) {
+                    hour += 12;
+                }
+                return (hour * 60) + minute;
+            }
+
+            const twentyFourHour = raw.match(/^(\d{1,2}):(\d{2})$/);
+            if (twentyFourHour) {
+                const hour = parseInt(twentyFourHour[1], 10);
+                const minute = parseInt(twentyFourHour[2], 10);
+                if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                    return null;
+                }
+                return (hour * 60) + minute;
+            }
+
+            return null;
+        }
+
+        function parseAppointmentDurationMinutes(durationValue) {
+            return APPT_DURATION_MINUTES[(durationValue || "").toString()] || 0;
+        }
+
+        function formatMinutesAsTimeLabel(totalMinutes) {
+            const minutesInDay = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+            let hour = Math.floor(minutesInDay / 60);
+            const minute = minutesInDay % 60;
+            const meridiem = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) {
+                hour = 12;
+            }
+            return hour + ":" + String(minute).padStart(2, "0") + " " + meridiem;
+        }
+
+        function getFindingAppointmentWindow(finding) {
+            if (!finding) {
+                return null;
+            }
+
+            const dentist = (finding.assignedDentist || "").toString().trim();
+            const date = (finding.appointmentDate || "").toString().trim();
+            const startMinutes = parseAppointmentStartMinutes(finding.appointmentStartTime);
+            const durationMinutes = parseAppointmentDurationMinutes(finding.appointmentDuration);
+
+            if (!dentist || !date || startMinutes == null || durationMinutes <= 0) {
+                return null;
+            }
+
+            return {
+                dentist: dentist,
+                date: date,
+                startMinutes: startMinutes,
+                endMinutes: startMinutes + durationMinutes,
+                durationMinutes: durationMinutes
+            };
+        }
+
+        function appointmentsOverlap(a, b) {
+            return !!a && !!b
+                && a.dentist === b.dentist
+                && a.date === b.date
+                && a.startMinutes < b.endMinutes
+                && b.startMinutes < a.endMinutes;
+        }
+
+        function getAppointmentConflictMessage(candidateFinding, excludeIndex) {
+            const candidate = getFindingAppointmentWindow(candidateFinding);
+            if (!candidate) {
+                return null;
+            }
+
+            if (candidate.endMinutes > (24 * 60)) {
+                return "Appointment duration extends past midnight. Choose an earlier start time or shorter duration.";
+            }
+
+            for (let i = 0; i < dentalFindings.length; i++) {
+                if (excludeIndex != null && i === excludeIndex) {
+                    continue;
+                }
+                const existing = getFindingAppointmentWindow(dentalFindings[i]);
+                if (!appointmentsOverlap(candidate, existing)) {
+                    continue;
+                }
+
+                return candidate.dentist + " already has an appointment on "
+                    + formatAppointmentDateForDisplay(candidate.date)
+                    + " from " + formatMinutesAsTimeLabel(existing.startMinutes)
+                    + " to " + formatMinutesAsTimeLabel(existing.endMinutes) + ".";
+            }
+
+            return null;
+        }
+
+        function buildAppointmentCalendarGrid() {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS || !$("#findingAppointmentCalendar").length) {
+                return;
+            }
+
+            const $timeCol = $("#findingApptTimeCol").empty();
+            $("#findingApptCalendarBody .finding-appt-dentist-col").each(function () {
+                const $col = $(this);
+                const $slots = $col.find(".finding-appt-slots").empty();
+                $col.find(".finding-appt-bookings").empty();
+
+                for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
+                    const minutes = i * APPT_SLOT_MINUTES;
+                    const isHour = minutes % 60 === 0;
+                    $slots.append(
+                        "<div class='finding-appt-slot" + (isHour ? " is-hour" : "") + "' data-minutes='" + minutes + "'></div>"
+                    );
+                }
+            });
+
+            for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
+                const minutes = i * APPT_SLOT_MINUTES;
+                const isHour = minutes % 60 === 0;
+                $timeCol.append(
+                    "<div class='finding-appt-time-label" + (isHour ? " is-hour" : "") + "'>" +
+                    escapeHtml(formatMinutesAsTimeLabel(minutes)) +
+                    "</div>"
+                );
+            }
+        }
+
+        function getSelectedCalendarDay() {
+            if (appointmentCalendarDayPicker) {
+                const selected = appointmentCalendarDayPicker.selectedDates[0];
+                if (selected) {
+                    return flatpickr.formatDate(selected, "Y-m-d");
+                }
+            }
+            return ($("#findingCalendarDay").val() || "").toString().trim();
+        }
+
+        function renderAppointmentCalendar() {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS || !$("#findingAppointmentCalendar").length) {
+                return;
+            }
+
+            const selectedDay = getSelectedCalendarDay();
+            $("#findingApptCalendarBody .finding-appt-bookings").empty();
+
+            if (!selectedDay) {
+                $("#findingApptCalendarHint").text("Select an event date to view booked appointments.");
+                return;
+            }
+
+            let bookingCount = 0;
+            dentalFindings.forEach(function (finding, index) {
+                const appt = getFindingAppointmentWindow(finding);
+                if (!appt || appt.date !== selectedDay) {
+                    return;
+                }
+
+                const $col = $("#findingApptCalendarBody .finding-appt-dentist-col").filter(function () {
+                    return ($(this).attr("data-dentist") || "") === appt.dentist;
+                }).first();
+                if (!$col.length) {
+                    return;
+                }
+
+                const top = (appt.startMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
+                const height = Math.max(
+                    APPT_SLOT_HEIGHT,
+                    (appt.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
+                );
+                const label = SERVICE_MEMBER_DISPLAY_NAME || "Service Member";
+                const title = label
+                    + " · " + formatMinutesAsTimeLabel(appt.startMinutes)
+                    + " – " + formatMinutesAsTimeLabel(appt.endMinutes)
+                    + " · " + (finding.appointmentDuration || "");
+
+                $col.find(".finding-appt-bookings").append(
+                    "<div class='finding-appt-booking' data-finding-index='" + index + "' " +
+                    "style='top:" + top + "px;height:" + height + "px;' title='" + escapeHtml(title) + "'>" +
+                    "<span class='finding-appt-booking-label'>" + escapeHtml(label) + "</span>" +
+                    "</div>"
+                );
+                bookingCount += 1;
+            });
+
+            $("#findingApptCalendarHint").text(
+                bookingCount
+                    ? (bookingCount + " booked appointment" + (bookingCount === 1 ? "" : "s") + " on " + formatAppointmentDateForDisplay(selectedDay) + ".")
+                    : ("No booked appointments on " + formatAppointmentDateForDisplay(selectedDay) + ".")
+            );
+        }
+
+        function syncAppointmentCalendarNavButtons() {
+            const selectedDay = getSelectedCalendarDay();
+            const $prev = $("#findingCalendarPrevDayBtn");
+            const $next = $("#findingCalendarNextDayBtn");
+            if (!$prev.length || !$next.length) {
+                return;
+            }
+
+            if (!selectedDay) {
+                $prev.prop("disabled", true);
+                $next.prop("disabled", true);
+                return;
+            }
+
+            const canGoPrev = !EVENT_APPOINTMENT_MIN_DATE || selectedDay > EVENT_APPOINTMENT_MIN_DATE;
+            const canGoNext = !EVENT_APPOINTMENT_MAX_DATE || selectedDay < EVENT_APPOINTMENT_MAX_DATE;
+            $prev.prop("disabled", !canGoPrev);
+            $next.prop("disabled", !canGoNext);
+        }
+
+        function shiftAppointmentCalendarDay(dayDelta) {
+            const selectedDay = getSelectedCalendarDay();
+            if (!selectedDay || !appointmentCalendarDayPicker) {
+                return;
+            }
+
+            const current = flatpickr.parseDate(selectedDay, "Y-m-d");
+            if (!current) {
+                return;
+            }
+
+            current.setDate(current.getDate() + dayDelta);
+            const nextValue = flatpickr.formatDate(current, "Y-m-d");
+
+            if (EVENT_APPOINTMENT_MIN_DATE && nextValue < EVENT_APPOINTMENT_MIN_DATE) {
+                return;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE && nextValue > EVENT_APPOINTMENT_MAX_DATE) {
+                return;
+            }
+
+            appointmentCalendarDayPicker.setDate(nextValue, true);
+        }
+
+        function initAppointmentCalendar() {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS || !$("#findingAppointmentCalendar").length) {
+                return;
+            }
+
+            buildAppointmentCalendarGrid();
+
+            $("#findingCalendarPrevDayBtn").off("click.findingApptNav").on("click.findingApptNav", function () {
+                shiftAppointmentCalendarDay(-1);
+            });
+            $("#findingCalendarNextDayBtn").off("click.findingApptNav").on("click.findingApptNav", function () {
+                shiftAppointmentCalendarDay(1);
+            });
+
+            if (typeof flatpickr === "undefined") {
+                renderAppointmentCalendar();
+                syncAppointmentCalendarNavButtons();
+                return;
+            }
+
+            const dayOptions = {
+                altInput: true,
+                altFormat: "m/d/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                onChange: function () {
+                    renderAppointmentCalendar();
+                    syncAppointmentCalendarNavButtons();
+                }
+            };
+            if (EVENT_APPOINTMENT_MIN_DATE) {
+                dayOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE) {
+                dayOptions.maxDate = EVENT_APPOINTMENT_MAX_DATE;
+            }
+
+            if (!appointmentCalendarDayPicker) {
+                appointmentCalendarDayPicker = flatpickr("#findingCalendarDay", dayOptions);
+            }
+
+            const defaultDay = EVENT_APPOINTMENT_MIN_DATE || EVENT_APPOINTMENT_MAX_DATE || "";
+            if (defaultDay) {
+                appointmentCalendarDayPicker.setDate(defaultDay, false);
+            }
+
+            renderAppointmentCalendar();
+            syncAppointmentCalendarNavButtons();
+        }
+
+        function syncAppointmentCalendarToDate(dateValue) {
+            if (!appointmentCalendarDayPicker || !dateValue) {
+                return;
+            }
+            const minOk = !EVENT_APPOINTMENT_MIN_DATE || dateValue >= EVENT_APPOINTMENT_MIN_DATE;
+            const maxOk = !EVENT_APPOINTMENT_MAX_DATE || dateValue <= EVENT_APPOINTMENT_MAX_DATE;
+            if (!minOk || !maxOk) {
+                return;
+            }
+            appointmentCalendarDayPicker.setDate(dateValue, true);
+            syncAppointmentCalendarNavButtons();
+        }
+
         function addOrUpdateFinding() {
             const finding = validateFindingForm();
             if (!finding) {
@@ -1513,6 +2107,11 @@
             }
 
             renderFindingsTable();
+            if (finding.appointmentDate) {
+                syncAppointmentCalendarToDate(finding.appointmentDate);
+            } else {
+                renderAppointmentCalendar();
+            }
             hideFindingForm();
         }
 
@@ -1591,6 +2190,7 @@
         window.initDentalFindingsSection = function () {
             populateToothOptions();
             initAppointmentPickers();
+            initAppointmentCalendar();
             renderFindingsTable();
         };
 
