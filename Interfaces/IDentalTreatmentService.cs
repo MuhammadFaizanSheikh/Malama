@@ -6,5 +6,16 @@ namespace ExcelFilesCompiler.Interfaces
     {
         Task<DentalTreatment?> GetByServiceMembersChildIdAsync(long serviceMembersChildId);
         Task SaveOrUpdateFromFormDataAsync(DentalTreatmentStationSaveDto dto, string userName, string userId);
+
+        /// <summary>
+        /// Upserts Treatment Coordinator name/datetime/comments on DentalTreatment without touching treatment children.
+        /// Requires an existing DentalExam for the service member.
+        /// </summary>
+        Task ApplyCoordinatorSectionAsync(
+            long serviceMembersChildId,
+            string? comments,
+            string userName,
+            string userId,
+            bool saveChanges = true);
     }
 }

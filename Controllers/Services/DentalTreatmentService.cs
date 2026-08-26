@@ -161,6 +161,76 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task ApplyCoordinatorSectionAsync(
+            long serviceMembersChildId,
+            string? comments,
+            string userName,
+            string userId,
+            bool saveChanges = true)
+        {
+            const string methodName = nameof(ApplyCoordinatorSectionAsync);
+
+            try
+            {
+                var exam = await _unitOfWork.DentalExam
+                    .GetWithIncludeNoTracking(e => e.ServiceMembersChildId == serviceMembersChildId)
+                    .Select(e => new { e.Id })
+                    .FirstOrDefaultAsync();
+
+                if (exam == null || exam.Id <= 0)
+                {
+                    throw new InvalidOperationException(
+                        "Dental Exam record is required before saving Treatment Coordinator details.");
+                }
+
+                var now = DateTime.Now;
+                var trimmedComments = string.IsNullOrWhiteSpace(comments) ? null : comments.Trim();
+
+                var existing = await _unitOfWork.DentalTreatment
+                    .GetWithIncludeTracking(e => e.ServiceMembersChildId == serviceMembersChildId)
+                    .FirstOrDefaultAsync();
+
+                if (existing != null)
+                {
+                    existing.TreatmentCoordinatorUserId = userId;
+                    existing.TreatmentCoordinatorDateTime = now;
+                    existing.TreatmentCoordinatorComments = trimmedComments;
+                    existing.UpdatedBy = userName;
+                    existing.UpdatedOn = now;
+                }
+                else
+                {
+                    await _unitOfWork.DentalTreatment.AddAsync(new DentalTreatment
+                    {
+                        ServiceMembersChildId = serviceMembersChildId,
+                        DentalExamId = exam.Id,
+                        Status = AppConstants.Status.Pending,
+                        TreatmentCoordinatorUserId = userId,
+                        TreatmentCoordinatorDateTime = now,
+                        TreatmentCoordinatorComments = trimmedComments,
+                        AddedBy = userName,
+                        AddedOn = now
+                    });
+                }
+
+                if (saveChanges)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Treatment Coordinator section applied for ServiceMembersChildId={ServiceMembersChildId} by UserId={UserId}. SaveChanges={SaveChanges}",
+                    CLASSNAME, methodName, serviceMembersChildId, userId, saveChanges);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to apply Treatment Coordinator section for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
+        }
+
         private void ReplaceChildren(DentalTreatment target, DentalTreatmentStationSaveDto dto, string userId)
         {
             ReplaceFindings(target, dto.Findings, userId);

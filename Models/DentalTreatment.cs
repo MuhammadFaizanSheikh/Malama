@@ -17,6 +17,13 @@ namespace Malama.Models
 
         public string Status { get; set; } = "Pending";
 
+        /// <summary>Logged-in Treatment Coordinator user id (display name is resolved for UI).</summary>
+        public string? TreatmentCoordinatorUserId { get; set; }
+
+        public DateTime? TreatmentCoordinatorDateTime { get; set; }
+
+        public string? TreatmentCoordinatorComments { get; set; }
+
         [JsonIgnore]
         [ValidateNever]
         public virtual ServiceMembersChild ServiceMembersChild { get; set; } = null!;

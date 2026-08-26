@@ -12,6 +12,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
+        private readonly IDentalTreatmentService _dentalTreatmentService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
         private readonly ILogger<DentalCoordinatorStationService> _logger;
         private const string CLASSNAME = nameof(DentalCoordinatorStationService);
@@ -22,6 +23,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             IDentalQuestionnaireService dentalQuestionnaireService,
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
+            IDentalTreatmentService dentalTreatmentService,
             DentalXRayFileSaveCoordinator fileSaveCoordinator)
         {
             _logger = logger;
@@ -29,13 +31,15 @@ namespace ExcelFilesCompiler.Controllers.Services
             _dentalQuestionnaireService = dentalQuestionnaireService;
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
+            _dentalTreatmentService = dentalTreatmentService;
             _fileSaveCoordinator = fileSaveCoordinator;
         }
 
         public async Task<DentalCoordinatorStationSaveResult> SaveStationAsync(
             DentalCoordinatorStationSaveDto dto,
             ServiceMembersChild serviceMember,
-            string userName)
+            string userName,
+            string userId)
         {
             const string methodName = nameof(SaveStationAsync);
 
@@ -114,6 +118,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 await _dentalExamService.ApplyCoordinatorClinicalSectionsAsync(
                     dto,
                     userName,
+                    saveChanges: false);
+
+                // Section: Treatment Coordinator (DentalTreatment)
+                await _dentalTreatmentService.ApplyCoordinatorSectionAsync(
+                    dto.ServiceMembersChildId,
+                    dto.TreatmentCoordinatorComments,
+                    userName,
+                    userId,
                     saveChanges: false);
 
                 await _unitOfWork.SaveAsync();

@@ -2,6 +2,7 @@ using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,6 +17,8 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalCoordinatorStationService _dentalCoordinatorStationService;
         private readonly IDentalExamService _dentalExamService;
+        private readonly IDentalTreatmentService _dentalTreatmentService;
+        private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalCoordinatorController> _logger;
@@ -30,6 +33,8 @@ namespace ExcelFilesCompiler.Controllers
             IDentalXRayStationService dentalXRayStationService,
             IDentalCoordinatorStationService dentalCoordinatorStationService,
             IDentalExamService dentalExamService,
+            IDentalTreatmentService dentalTreatmentService,
+            IEventStaffService eventStaffService,
             IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
         {
@@ -40,6 +45,8 @@ namespace ExcelFilesCompiler.Controllers
             _dentalXRayStationService = dentalXRayStationService;
             _dentalCoordinatorStationService = dentalCoordinatorStationService;
             _dentalExamService = dentalExamService;
+            _dentalTreatmentService = dentalTreatmentService;
+            _eventStaffService = eventStaffService;
             _fileService = fileService;
             _userManager = userManager;
         }
@@ -171,12 +178,27 @@ namespace ExcelFilesCompiler.Controllers
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
+                var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                ViewBag.TreatmentCoordinatorDisplayName = currentUser != null
+                    ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
+                    : string.Empty;
+                ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
+                ViewBag.CurrentUserDisplayName = ViewBag.TreatmentCoordinatorDisplayName;
+                ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
+                    dentalExam.Findings,
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
+
                 var pageModel = new DentalCoordinatorStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
                     Questionnaire = questionnaire,
                     XRayStation = xRayStation,
-                    DentalExam = dentalExam
+                    DentalExam = dentalExam,
+                    DentalTreatment = dentalTreatment
                 };
 
                 return View(pageModel);
@@ -247,7 +269,8 @@ namespace ExcelFilesCompiler.Controllers
                 var saveResult = await _dentalCoordinatorStationService.SaveStationAsync(
                     dto,
                     serviceMember,
-                    user.UserName ?? user.Id);
+                    user.UserName ?? user.Id,
+                    user.Id);
 
                 if (!saveResult.Success)
                 {

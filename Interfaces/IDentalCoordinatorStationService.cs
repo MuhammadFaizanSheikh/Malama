@@ -12,7 +12,8 @@ namespace ExcelFilesCompiler.Interfaces
         Task<DentalCoordinatorStationSaveResult> SaveStationAsync(
             DentalCoordinatorStationSaveDto dto,
             ServiceMembersChild serviceMember,
-            string userName);
+            string userName,
+            string userId);
     }
 
     public class DentalCoordinatorStationSaveResult

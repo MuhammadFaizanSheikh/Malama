@@ -11,6 +11,9 @@
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
     var examinerNamesByUserId = ViewData["ExaminerNamesByUserId"] as Dictionary<string, string>
         ?? new Dictionary<string, string>();
+    var sectionTitle = ViewData["SectionTitle"] as string ?? "Dental Findings";
+    var collapseLabel = ViewData["CollapseLabel"] as string ?? ("Collapse " + sectionTitle);
+    var postFindingsJson = ViewData["PostFindingsJson"] as bool? ?? true;
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalFindingMapper.ToDto)
@@ -87,13 +90,20 @@
                    aria-controls="dentalFindingsContentSection"
                    aria-expanded="false" />
         </div>
-        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Dental Findings</h4>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">@sectionTitle</h4>
     </div>
 
     <div id="dentalFindingsContentSection" style="display:none;">
         <div class="card mb-0">
             <div class="card-body">
-        <input type="hidden" name="FindingsJson" id="FindingsJson" value="@findingsJson" />
+        @if (postFindingsJson)
+        {
+            <input type="hidden" name="FindingsJson" id="FindingsJson" value="@findingsJson" />
+        }
+        else
+        {
+            <input type="hidden" id="FindingsJson" value="@findingsJson" />
+        }
 
         <div class="table-responsive mb-3">
             <table class="table table-bordered table-striped align-middle mb-0" id="dentalFindingsTable">
@@ -220,7 +230,7 @@
             <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
                     data-target-switch="toggleDentalFindingsSectionSwitch"
                     data-target-heading="dentalFindingsHeading">
-                <i class="fas fa-chevron-up"></i> Collapse Dental Findings
+                <i class="fas fa-chevron-up"></i> @collapseLabel
             </button>
         </div>
     </div>

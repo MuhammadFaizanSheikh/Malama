@@ -6,10 +6,12 @@ namespace Malama.Models
         public DentalQuestionnaire Questionnaire { get; set; } = new();
         public DentalXRayStation XRayStation { get; set; } = new();
         public DentalExam DentalExam { get; set; } = new();
+        public DentalTreatment? DentalTreatment { get; set; }
     }
 
     /// <summary>
-    /// Coordinator station post model: questionnaire + X-Ray uploads + subsequent diseases (PSR / DEN / Pano).
+    /// Coordinator station post model: questionnaire + X-Ray uploads + subsequent diseases (PSR / DEN / Pano)
+    /// + Treatment Coordinator comments.
     /// </summary>
     public class DentalCoordinatorStationSaveDto : DentalXRayStationSaveDto
     {
@@ -29,5 +31,7 @@ namespace Malama.Models
         public string? DenClass { get; set; }
         public string? DenClassReasonComments { get; set; }
         public bool PanoXRayAcknowledged { get; set; }
+
+        public string? TreatmentCoordinatorComments { get; set; }
     }
 }

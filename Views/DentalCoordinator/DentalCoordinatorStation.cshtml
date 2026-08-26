@@ -26,6 +26,20 @@
         ServiceMembersChildId = sm.Id,
         Status = "Pending"
     };
+    var treatmentXRayStatus = DentalCoordinatorTreatmentStatusHelper.ResolveXRayStatus(sm, Model.XRayStation);
+    var treatmentDentalExamStatus = DentalCoordinatorTreatmentStatusHelper.ResolveDentalExamStatus(sm, Model.DentalExam);
+    var dentalTreatment = Model.DentalTreatment;
+    var treatmentCoordinatorDisplayName = ViewBag.TreatmentCoordinatorDisplayName as string ?? string.Empty;
+    var treatmentCoordinatorDateTimeDisplay = (dentalTreatment?.TreatmentCoordinatorDateTime ?? DateTime.Now)
+        .ToString("MM/dd/yyyy hh:mm tt");
+    var treatmentCoordinatorComments = dentalTreatment?.TreatmentCoordinatorComments ?? string.Empty;
+
+    string TreatmentStatusBadgeClass(string status) => status switch
+    {
+        AppConstants.Status.Completed => "is-completed",
+        DentalCoordinatorTreatmentStatusHelper.NotApplicable => "is-na",
+        _ => "is-pending"
+    };
 }
 
 <style>
@@ -151,9 +165,290 @@
 
     .questionnaire-heading h3 {
         margin: 0;
-        font-size: 1.15rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--dco-indigo);
+    }
+
+    .questionnaire-heading h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .dco-treatment-status-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2.5rem 3.5rem;
+        margin: 0;
+        font-size: 1rem;
+        color: var(--dco-text);
+    }
+
+    .dco-treatment-status-line .dco-status-label {
+        font-weight: 600;
+        margin-right: 0.45rem;
+    }
+
+    .dco-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        vertical-align: middle;
+    }
+
+    .dco-status-badge.is-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dco-status-badge.is-completed {
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
+    }
+
+    .dco-status-badge.is-na {
+        background: rgba(107, 114, 133, 0.14);
+        color: #4b5563;
+    }
+
+    .dco-forms-card {
+        border: 1px solid var(--dco-border);
+        border-radius: 12px;
+        background: #fbfbfd;
+        padding: 1rem 1.15rem;
+        height: 100%;
+        margin-bottom: 0;
+    }
+
+    .dco-treatment-split {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+        align-items: stretch;
+    }
+
+    .dco-coordinator-details-card .form-label {
+        font-weight: 600;
+        color: var(--dco-text);
+    }
+
+    .dco-docs-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .dco-docs-empty {
+        margin: 0.75rem 0 0;
+        color: var(--dco-muted);
+        font-size: 0.9rem;
+    }
+
+    .dco-docs-list {
+        list-style: none;
+        margin: 0.75rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    .dco-docs-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid rgba(31, 36, 48, 0.08);
+    }
+
+    .dco-docs-item-meta {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .dco-docs-item-name {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--dco-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dco-docs-item-size {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--dco-muted);
+    }
+
+    .dco-docs-item-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-shrink: 0;
+    }
+
+    .dco-docs-remove-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 8px;
+        border: 1px solid rgba(220, 53, 69, 0.28);
+        background: rgba(220, 53, 69, 0.08);
+        color: #dc3545;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .dco-docs-remove-btn:hover {
+        background: rgba(220, 53, 69, 0.16);
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 1200px) {
+        .dco-treatment-split {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dco-docs-card {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .dco-treatment-split {
+            grid-template-columns: 1fr;
+        }
+
+        .dco-docs-card {
+            grid-column: auto;
+        }
+    }
+
+    .dco-forms-card-group {
+        margin-bottom: 1rem;
+    }
+
+    .dco-forms-card-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .dco-forms-card-group-title {
+        margin: 0 0 0.55rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dco-indigo);
+    }
+
+    .dco-forms-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid rgba(31, 36, 48, 0.08);
+        margin-bottom: 0.45rem;
+    }
+
+    .dco-forms-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .dco-forms-row-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--dco-text);
+    }
+
+    .dco-forms-row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-shrink: 0;
+    }
+
+    .dco-form-signed-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
+        font-size: 0.95rem;
+    }
+
+    .dco-form-preview-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 8px;
+        border: 1px solid rgba(80, 90, 201, 0.28);
+        background: rgba(80, 90, 201, 0.08);
+        color: var(--dco-indigo);
+        cursor: default;
+        pointer-events: none;
+    }
+
+    .dco-docs-preview-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 8px;
+        border: 1px solid rgba(80, 90, 201, 0.28);
+        background: rgba(80, 90, 201, 0.08);
+        color: var(--dco-indigo);
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .dco-docs-preview-btn:hover {
+        background: rgba(80, 90, 201, 0.16);
+        transform: translateY(-1px);
+    }
+
+    .dco-signed-form-preview {
+        text-align: left;
+        border: 1px solid rgba(31, 36, 48, 0.1);
+        border-radius: 10px;
+        padding: 1rem;
+        background: #f8f9fc;
+    }
+
+    .dco-signed-form-preview h5 {
+        margin: 0 0 0.5rem;
+        color: rgba(80, 90, 201, 1);
+        font-weight: 700;
+    }
+
+    .dco-signed-form-preview p {
+        margin: 0 0 0.35rem;
+        color: #4b5160;
+        font-size: 0.92rem;
     }
 
     .questionnaire-toggle-switch .form-check-input {
@@ -591,6 +886,157 @@
             </div>
         </div>
 
+        <div class="dco-panel" id="treatmentCoordinatorSection">
+            <div class="questionnaire-heading" id="treatmentCoordinatorHeading">
+                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toggleTreatmentCoordinatorSectionSwitch"
+                           aria-controls="treatmentCoordinatorContent"
+                           aria-expanded="false" />
+                </div>
+                <h3 class="mb-0">Treatment Coordinator Section</h3>
+            </div>
+
+            <div id="treatmentCoordinatorContent" style="display:none;">
+                <p class="dco-treatment-status-line mb-3">
+                    <span>
+                        <span class="dco-status-label">X-Ray Status :</span>
+                        <span class="dco-status-badge @TreatmentStatusBadgeClass(treatmentXRayStatus)">@treatmentXRayStatus</span>
+                    </span>
+                    <span>
+                        <span class="dco-status-label">Dental Exam Status :</span>
+                        <span class="dco-status-badge @TreatmentStatusBadgeClass(treatmentDentalExamStatus)">@treatmentDentalExamStatus</span>
+                    </span>
+                </p>
+
+                <div class="dco-treatment-split">
+                    <div class="dco-forms-card dco-coordinator-details-card" aria-label="Treatment coordinator details">
+                        <div class="mb-3">
+                            <label class="form-label" for="TreatmentCoordinatorNameDisplay">Treatment Coordinator Name</label>
+                            <input type="text"
+                                   id="TreatmentCoordinatorNameDisplay"
+                                   class="form-control read-only-style"
+                                   value="@treatmentCoordinatorDisplayName"
+                                   readonly
+                                   tabindex="-1" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="TreatmentCoordinatorDateTimeDisplay">Date / Time</label>
+                            <input type="text"
+                                   id="TreatmentCoordinatorDateTimeDisplay"
+                                   class="form-control read-only-style"
+                                   value="@treatmentCoordinatorDateTimeDisplay"
+                                   readonly
+                                   tabindex="-1" />
+                        </div>
+                        <div>
+                            <label class="form-label" for="TreatmentCoordinatorComments">Comments by Treatment Coordinator</label>
+                            <textarea name="TreatmentCoordinatorComments"
+                                      id="TreatmentCoordinatorComments"
+                                      class="form-control"
+                                      rows="5"
+                                      maxlength="4000">@treatmentCoordinatorComments</textarea>
+                        </div>
+                    </div>
+
+                    <div class="dco-forms-card" aria-label="Consent forms and questionnaire">
+                        <div class="dco-forms-card-group">
+                            <h4 class="dco-forms-card-group-title">Consent forms</h4>
+                            <div class="dco-forms-row">
+                                <span class="dco-forms-row-title">Dental Treatment Consent Form</span>
+                                <span class="dco-forms-row-actions">
+                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
+                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                    </span>
+                                    <button type="button"
+                                            class="dco-form-preview-btn"
+                                            title="Preview"
+                                            aria-label="Preview Dental Treatment Consent Form"
+                                            tabindex="-1">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="dco-forms-row">
+                                <span class="dco-forms-row-title">Oral Surgery Form</span>
+                                <span class="dco-forms-row-actions">
+                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
+                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                    </span>
+                                    <button type="button"
+                                            class="dco-form-preview-btn"
+                                            title="Preview"
+                                            aria-label="Preview Oral Surgery Form"
+                                            tabindex="-1">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="dco-forms-card-group">
+                            <h4 class="dco-forms-card-group-title">Questionnaire</h4>
+                            <div class="dco-forms-row">
+                                <span class="dco-forms-row-title">DA5570 (Completed by Service Member)</span>
+                                <span class="dco-forms-row-actions">
+                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
+                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                    </span>
+                                    <button type="button"
+                                            class="dco-form-preview-btn"
+                                            title="Preview"
+                                            aria-label="Preview DA5570 questionnaire"
+                                            tabindex="-1">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dco-forms-card dco-docs-card" aria-label="Treatment coordinator documents">
+                        <h4 class="dco-forms-card-group-title">Documents</h4>
+                        <input type="file"
+                               id="treatmentCoordinatorDocumentsInput"
+                               accept=".pdf,application/pdf"
+                               multiple
+                               hidden />
+                        <button type="button"
+                                id="treatmentCoordinatorUploadBtn"
+                                class="btn btn-outline-primary btn-sm dco-docs-upload-btn">
+                            <i class="fas fa-upload" aria-hidden="true"></i> Upload
+                        </button>
+                        <p class="dco-docs-empty" id="treatmentCoordinatorDocsEmpty">No documents uploaded yet. PDF only.</p>
+                        <ul class="dco-docs-list" id="treatmentCoordinatorDocsList" style="display:none;"></ul>
+                    </div>
+                </div>
+
+                @{
+                    var findingAssignmentViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                    findingAssignmentViewData["XRayStation"] = xRayStation;
+                    findingAssignmentViewData["SubsequentReadOnly"] = false;
+                    findingAssignmentViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
+                    findingAssignmentViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
+                    findingAssignmentViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
+                        ?? new Dictionary<string, string>();
+                    findingAssignmentViewData["SectionTitle"] = "Finding Assignment Grid";
+                    findingAssignmentViewData["CollapseLabel"] = "Collapse Finding Assignment Grid";
+                    findingAssignmentViewData["PostFindingsJson"] = false;
+                }
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", dentalExam, findingAssignmentViewData)
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleTreatmentCoordinatorSectionSwitch"
+                            data-target-heading="treatmentCoordinatorHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse Treatment Coordinator Section
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="dco-footer-actions">
             <button type="submit" class="btn btn-general btn-lg">
                 <i class="fas fa-check-circle" aria-hidden="true"></i> Save
@@ -735,6 +1181,130 @@
         toggleSectionFromSwitch("#toggleSubsequentDiseasesSectionSwitch", "#subsequentDiseasesContent");
     }
 
+    function toggleTreatmentCoordinatorSectionFromSwitch() {
+        toggleSectionFromSwitch("#toggleTreatmentCoordinatorSectionSwitch", "#treatmentCoordinatorContent");
+    }
+
+    function toggleDentalFindingsSectionFromSwitch() {
+        toggleSectionFromSwitch("#toggleDentalFindingsSectionSwitch", "#dentalFindingsContentSection");
+    }
+
+    const treatmentCoordinatorDocs = [];
+
+    function formatDocumentSize(bytes) {
+        if (!bytes && bytes !== 0) return "";
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function isPdfFile(file) {
+        if (!file) return false;
+        const name = (file.name || "").toLowerCase();
+        return file.type === "application/pdf" || name.endsWith(".pdf");
+    }
+
+    function renderTreatmentCoordinatorDocs() {
+        const $list = $("#treatmentCoordinatorDocsList");
+        const $empty = $("#treatmentCoordinatorDocsEmpty");
+        $list.empty();
+
+        if (!treatmentCoordinatorDocs.length) {
+            $list.hide();
+            $empty.show();
+            return;
+        }
+
+        $empty.hide();
+        $list.show();
+
+        treatmentCoordinatorDocs.forEach(function (doc, index) {
+            const $item = $('<li class="dco-docs-item"></li>');
+            const $meta = $('<div class="dco-docs-item-meta"></div>');
+            $meta.append($('<span class="dco-docs-item-name"></span>').text(doc.file.name));
+            $meta.append($('<span class="dco-docs-item-size"></span>').text(formatDocumentSize(doc.file.size)));
+
+            const $actions = $('<div class="dco-docs-item-actions"></div>');
+            const $preview = $('<button type="button" class="dco-docs-preview-btn" title="Preview" aria-label="Preview document"><i class="fas fa-eye" aria-hidden="true"></i></button>');
+            $preview.on("click", function () {
+                previewTreatmentCoordinatorDocument(index);
+            });
+            const $remove = $('<button type="button" class="dco-docs-remove-btn" title="Remove" aria-label="Remove document"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>');
+            $remove.on("click", function () {
+                removeTreatmentCoordinatorDocument(index);
+            });
+
+            $actions.append($preview, $remove);
+            $item.append($meta, $actions);
+            $list.append($item);
+        });
+    }
+
+    function addTreatmentCoordinatorDocuments(fileList) {
+        const files = Array.from(fileList || []);
+        if (!files.length) return;
+
+        const rejected = [];
+        files.forEach(function (file) {
+            if (!isPdfFile(file)) {
+                rejected.push(file.name || "file");
+                return;
+            }
+            const duplicate = treatmentCoordinatorDocs.some(function (doc) {
+                return doc.file.name === file.name && doc.file.size === file.size;
+            });
+            if (duplicate) return;
+            treatmentCoordinatorDocs.push({
+                id: "doc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+                file: file,
+                url: URL.createObjectURL(file)
+            });
+        });
+
+        renderTreatmentCoordinatorDocs();
+
+        if (rejected.length) {
+            Swal.fire("PDF only", "These files were skipped because they are not PDFs:\n" + rejected.join(", "), "warning");
+        }
+    }
+
+    function removeTreatmentCoordinatorDocument(index) {
+        const doc = treatmentCoordinatorDocs[index];
+        if (!doc) return;
+        if (doc.url) {
+            URL.revokeObjectURL(doc.url);
+        }
+        treatmentCoordinatorDocs.splice(index, 1);
+        renderTreatmentCoordinatorDocs();
+    }
+
+    function previewTreatmentCoordinatorDocument(index) {
+        const doc = treatmentCoordinatorDocs[index];
+        if (!doc || !doc.url) return;
+
+        Swal.fire({
+            title: doc.file.name,
+            width: "80%",
+            confirmButtonText: "Close",
+            confirmButtonColor: "rgba(80, 90, 201, 1)",
+            html:
+                '<iframe src="' + doc.url + '" title="PDF preview" ' +
+                'style="width:100%;height:70vh;border:1px solid rgba(31,36,48,0.12);border-radius:8px;background:#fff;"></iframe>'
+        });
+    }
+
+    function initTreatmentCoordinatorDocuments() {
+        const $input = $("#treatmentCoordinatorDocumentsInput");
+        $("#treatmentCoordinatorUploadBtn").on("click", function () {
+            $input.trigger("click");
+        });
+        $input.on("change", function () {
+            addTreatmentCoordinatorDocuments(this.files);
+            this.value = "";
+        });
+        renderTreatmentCoordinatorDocs();
+    }
+
     function togglePsrSectionFromSwitch() {
         toggleSectionFromSwitch("#togglePsrSectionSwitch", "#psrContentSection");
     }
@@ -861,15 +1431,68 @@
         updatePsrTobaccoDisplay();
 
         if (window.DentalPsrToothChart) {
-            DentalPsrToothChart.init({ chartSelector: "#psrInteractiveToothChart", editable: true });
+            DentalPsrToothChart.init({
+                chartSelector: "#psrInteractiveToothChart",
+                editable: true,
+                isToothBlocked: function (toothNumber) {
+                    const tooth = parseInt(toothNumber, 10);
+                    if (isNaN(tooth) || typeof window.getDentalFindingUsedPermanentTeeth !== "function") {
+                        return false;
+                    }
+                    const used = window.getDentalFindingUsedPermanentTeeth() || [];
+                    return used.indexOf(tooth) >= 0;
+                },
+                onBlocked: function (toothNumber) {
+                    Swal.fire(
+                        "Cannot select missing tooth",
+                        "Tooth " + toothNumber + " is already used in a Dental Finding.",
+                        "warning"
+                    );
+                },
+                onSelectionChanged: function (toothNumber, selected) {
+                    const tooth = String(toothNumber);
+                    const $chart = $("#findingReadonlyToothChart");
+                    if ($chart.length) {
+                        const $input = $("#findingToothCheck_" + tooth);
+                        const $btn = $chart.find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+                        const $img = $btn.find(".psr-tooth-img");
+                        $input.prop("checked", !!selected);
+                        $btn.attr("aria-pressed", selected ? "true" : "false");
+                        if ($img.length) {
+                            $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+                        }
+                    }
+                    if (typeof window.refreshDentalFindingToothOptions === "function") {
+                        window.refreshDentalFindingToothOptions();
+                    }
+                }
+            });
+
+            $("#psrInteractiveToothChart .psr-tooth-input").each(function () {
+                const tooth = $(this).attr("data-tooth");
+                const selected = $(this).is(":checked");
+                const $btn = $("#findingReadonlyToothChart").find('.psr-tooth-image-btn[data-tooth="' + tooth + '"]');
+                const $img = $btn.find(".psr-tooth-img");
+                $("#findingToothCheck_" + tooth).prop("checked", selected);
+                $btn.attr("aria-pressed", selected ? "true" : "false");
+                if ($img.length) {
+                    $img.attr("src", selected ? $img.attr("data-selected") : $img.attr("data-normal"));
+                }
+            });
+            if (typeof window.refreshDentalFindingToothOptions === "function") {
+                window.refreshDentalFindingToothOptions();
+            }
         }
 
         initXrayPreviewWidgets();
+        initTreatmentCoordinatorDocuments();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
         $("#toggleSubsequentDiseasesSectionSwitch").on("change", toggleSubsequentDiseasesContentFromSwitch);
+        $("#toggleTreatmentCoordinatorSectionSwitch").on("change", toggleTreatmentCoordinatorSectionFromSwitch);
+        $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
         $("#togglePsrSectionSwitch").on("change", togglePsrSectionFromSwitch);
         $("#toggleDenClassSectionSwitch").on("change", toggleDenClassSectionFromSwitch);
         $("#togglePanoXraySectionSwitch").on("change", togglePanoXraySectionFromSwitch);
