@@ -19,6 +19,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalExamService _dentalExamService;
         private readonly IDentalTreatmentService _dentalTreatmentService;
         private readonly IEventStaffService _eventStaffService;
+        private readonly IEventManagementService _eventManagementService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalCoordinatorController> _logger;
@@ -35,6 +36,7 @@ namespace ExcelFilesCompiler.Controllers
             IDentalExamService dentalExamService,
             IDentalTreatmentService dentalTreatmentService,
             IEventStaffService eventStaffService,
+            IEventManagementService eventManagementService,
             IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
         {
@@ -47,6 +49,7 @@ namespace ExcelFilesCompiler.Controllers
             _dentalExamService = dentalExamService;
             _dentalTreatmentService = dentalTreatmentService;
             _eventStaffService = eventStaffService;
+            _eventManagementService = eventManagementService;
             _fileService = fileService;
             _userManager = userManager;
         }
@@ -131,6 +134,24 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 ViewBag.EventId = result.EventId;
+                ViewBag.EventAppointmentMinDate = string.Empty;
+                ViewBag.EventAppointmentMaxDate = string.Empty;
+
+                try
+                {
+                    if (result.EventId > 0)
+                    {
+                        var eventDetails = await _eventManagementService.GetEventDetailsById(result.EventId);
+                        ViewBag.EventAppointmentMinDate = eventDetails.StartDate.ToString("yyyy-MM-dd");
+                        ViewBag.EventAppointmentMaxDate = eventDetails.EndDate.ToString("yyyy-MM-dd");
+                    }
+                }
+                catch (Exception eventEx)
+                {
+                    _logger.LogWarning(eventEx,
+                        "{ClassName}, {MethodName}, Failed to load event date range for EventId={EventId}",
+                        CLASSNAME, methodName, result.EventId);
+                }
 
                 try
                 {

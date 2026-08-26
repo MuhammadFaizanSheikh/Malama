@@ -1024,6 +1024,9 @@
                     findingAssignmentViewData["SectionTitle"] = "Finding Assignment Grid";
                     findingAssignmentViewData["CollapseLabel"] = "Collapse Finding Assignment Grid";
                     findingAssignmentViewData["PostFindingsJson"] = false;
+                    findingAssignmentViewData["ShowFindingAssignmentFields"] = true;
+                    findingAssignmentViewData["EventAppointmentMinDate"] = ViewBag.EventAppointmentMinDate as string ?? string.Empty;
+                    findingAssignmentViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
                 }
                 @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", dentalExam, findingAssignmentViewData)
 

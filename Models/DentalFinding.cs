@@ -92,6 +92,12 @@ namespace Malama.Models
         public string? ExaminationUpdatedBy { get; set; }
 
         public DateTime? ExaminationUpdatedOn { get; set; }
+
+        public string? ExternalExaminerName { get; set; }
+
+        public DateTime? ExternalExamDateTime { get; set; }
+
+        public string? ExternalDentistRemarks { get; set; }
     }
 
     public class DentalFindingDto
@@ -123,6 +129,12 @@ namespace Malama.Models
         public string? ExaminationUpdatedBy { get; set; }
 
         public DateTime? ExaminationUpdatedOn { get; set; }
+
+        public string? ExternalExaminerName { get; set; }
+
+        public DateTime? ExternalExamDateTime { get; set; }
+
+        public string? ExternalDentistRemarks { get; set; }
     }
 
     public static class DentalFindingMapper
@@ -149,7 +161,10 @@ namespace Malama.Models
                 ExaminationAddedBy = entity.ExaminationAddedBy,
                 ExaminationAddedOn = entity.ExaminationAddedOn,
                 ExaminationUpdatedBy = entity.ExaminationUpdatedBy,
-                ExaminationUpdatedOn = entity.ExaminationUpdatedOn
+                ExaminationUpdatedOn = entity.ExaminationUpdatedOn,
+                ExternalExaminerName = entity.ExternalExaminerName,
+                ExternalExamDateTime = entity.ExternalExamDateTime,
+                ExternalDentistRemarks = entity.ExternalDentistRemarks
             };
         }
 
@@ -170,7 +185,10 @@ namespace Malama.Models
                 ExaminationAddedBy = dto.ExaminationAddedBy,
                 ExaminationAddedOn = dto.ExaminationAddedOn,
                 ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
-                ExaminationUpdatedOn = dto.ExaminationUpdatedOn
+                ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
+                ExternalExaminerName = dto.ExternalExaminerName?.Trim(),
+                ExternalExamDateTime = dto.ExternalExamDateTime,
+                ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim()
             };
         }
 

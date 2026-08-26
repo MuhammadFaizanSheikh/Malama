@@ -325,6 +325,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.DescriptionDetails = dto.DescriptionDetails?.Trim();
             entity.Classification = dto.Classification?.Trim();
             entity.SortOrder = sortOrder;
+            entity.ExternalExaminerName = dto.ExternalExaminerName?.Trim();
+            entity.ExternalExamDateTime = dto.ExternalExamDateTime;
+            entity.ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim();
         }
 
         private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)
@@ -340,6 +343,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && string.Equals(existing.CdtCodesNotes?.Trim(), dto.CdtCodesNotes?.Trim(), StringComparison.Ordinal)
                 && string.Equals(existing.DescriptionDetails?.Trim(), dto.DescriptionDetails?.Trim(), StringComparison.Ordinal)
                 && string.Equals(existing.Classification?.Trim(), dto.Classification?.Trim(), StringComparison.OrdinalIgnoreCase)
+                && string.Equals(existing.ExternalExaminerName?.Trim(), dto.ExternalExaminerName?.Trim(), StringComparison.Ordinal)
+                && Nullable.Equals(existing.ExternalExamDateTime, dto.ExternalExamDateTime)
+                && string.Equals(existing.ExternalDentistRemarks?.Trim(), dto.ExternalDentistRemarks?.Trim(), StringComparison.Ordinal)
                 && existingSurfaces.Count == dtoSurfaces.Count
                 && existingSurfaces.All(s => dtoSurfaces.Contains(s, StringComparer.OrdinalIgnoreCase))
                 && existingCdt.Count == dtoCdt.Count

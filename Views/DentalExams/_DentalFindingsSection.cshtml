@@ -14,6 +14,11 @@
     var sectionTitle = ViewData["SectionTitle"] as string ?? "Dental Findings";
     var collapseLabel = ViewData["CollapseLabel"] as string ?? ("Collapse " + sectionTitle);
     var postFindingsJson = ViewData["PostFindingsJson"] as bool? ?? true;
+    var showFindingAssignmentFields = ViewData["ShowFindingAssignmentFields"] as bool? ?? false;
+    var eventAppointmentMinDate = ViewData["EventAppointmentMinDate"] as string ?? string.Empty;
+    var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
+    // Assignment grid: compact main columns + expand for appointment/procedure details.
+    var findingsTableColspan = showFindingAssignmentFields ? 10 : 9;
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalFindingMapper.ToDto)
@@ -28,28 +33,170 @@
 }
 
 <style>
-    #dentalFindingFormCard .finding-action-btn {
-        min-width: 2rem;
-        padding: 0.25rem 0.5rem;
+    #dentalFindingsSection {
+        --findings-indigo: rgba(80, 90, 201, 1);
+        --findings-indigo-soft: rgba(80, 90, 201, 0.12);
+        --findings-text: #1f2430;
+        --findings-muted: #6b7285;
+        --findings-border: rgba(31, 36, 48, 0.08);
+        --findings-surface: #ffffff;
+        --findings-panel: #fbfbfd;
     }
 
-    #dentalFindingFormCard .finding-action-btn i {
-        pointer-events: none;
+    #dentalFindingsSection > .questionnaire-heading h4 {
+        color: var(--findings-indigo);
+        font-weight: 700;
     }
 
+    #dentalFindingsSection .findings-panel {
+        border: 1px solid var(--findings-border);
+        border-radius: 14px;
+        background: var(--findings-panel);
+        box-shadow: 0 8px 22px rgba(21, 24, 33, 0.05);
+        padding: 1.1rem 1.2rem;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    #dentalFindingsSection .findings-table-wrap {
+        border: 1px solid var(--findings-border);
+        border-radius: 12px;
+        background: var(--findings-surface);
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    #dentalFindingsTable {
+        margin: 0;
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: rgba(80, 90, 201, 0.04);
+        --bs-table-hover-bg: rgba(80, 90, 201, 0.07);
+    }
+
+    #dentalFindingsTable thead th {
+        background: rgba(80, 90, 201, 0.08);
+        color: var(--findings-text);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        border-bottom: 1px solid var(--findings-border);
+        white-space: nowrap;
+        padding: 0.7rem 0.75rem;
+    }
+
+    #dentalFindingsTable tbody td {
+        border-color: rgba(31, 36, 48, 0.06);
+        color: var(--findings-text);
+        font-size: 0.9rem;
+        padding: 0.7rem 0.75rem;
+        vertical-align: middle;
+    }
+
+    #dentalFindingsEmptyRow td {
+        color: var(--findings-muted) !important;
+        font-weight: 500;
+        padding: 1.5rem 0.75rem !important;
+    }
+
+    #addNewFindingBtn {
+        border-radius: 10px;
+        font-weight: 600;
+        border-color: rgba(80, 90, 201, 0.35);
+        color: var(--findings-indigo);
+        background: rgba(80, 90, 201, 0.06);
+    }
+
+    #addNewFindingBtn:hover {
+        background: rgba(80, 90, 201, 0.14);
+        border-color: var(--findings-indigo);
+        color: var(--findings-indigo);
+    }
+
+    #dentalFindingFormCard {
+        border: 1px solid rgba(80, 90, 201, 0.22) !important;
+        border-radius: 14px !important;
+        overflow: hidden;
+        background: var(--findings-surface);
+        box-shadow: 0 10px 24px rgba(80, 90, 201, 0.08);
+    }
+
+    #dentalFindingFormCard .card-header {
+        background: rgba(80, 90, 201, 0.1) !important;
+        color: var(--findings-indigo);
+        border-bottom: 1px solid rgba(80, 90, 201, 0.16);
+        font-weight: 700;
+        padding: 0.85rem 1.1rem;
+    }
+
+    #dentalFindingFormCard .card-body {
+        padding: 1.15rem 1.2rem;
+    }
+
+    #dentalFindingFormCard .form-label {
+        font-weight: 600;
+        color: var(--findings-text);
+    }
+
+    #dentalFindingFormCard .form-control,
+    #dentalFindingFormCard .form-select {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+    }
+
+    #dentalFindingFormCard .form-control:focus,
+    #dentalFindingFormCard .form-select:focus {
+        border-color: rgba(80, 90, 201, 0.45);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    #dentalFindingFormCard .finding-action-btn,
     #dentalFindingsTable .finding-action-btn {
         min-width: 2rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.28rem 0.5rem;
+        border-radius: 8px;
     }
 
+    #dentalFindingFormCard .finding-action-btn i,
     #dentalFindingsTable .finding-action-btn i {
         pointer-events: none;
     }
 
+    #dentalFindingsTable .finding-action-btn.btn-outline-primary {
+        border-color: rgba(80, 90, 201, 0.3);
+        color: var(--findings-indigo);
+    }
+
+    #dentalFindingsTable .finding-action-btn.btn-outline-primary:hover {
+        background: rgba(80, 90, 201, 0.12);
+        border-color: var(--findings-indigo);
+        color: var(--findings-indigo);
+    }
+
+    #addFindingToListBtn.btn-general {
+        background: var(--findings-indigo);
+        border-color: var(--findings-indigo);
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    #addFindingToListBtn.btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+    }
+
+    #cancelFindingFormBtn {
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
     #dentalFindingImageColumn .dental-finding-image-wrap {
         min-height: 0;
-        padding: 0.75rem;
+        padding: 0.85rem;
         background: #fff;
+        border: 1px solid var(--findings-border) !important;
+        border-radius: 12px !important;
     }
 
     #findingReadonlyToothChart.psr-tooth-chart-readonly {
@@ -63,20 +210,162 @@
     }
 
     .finding-classification-badge {
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 0.35em 0.65em;
-        border-radius: 0.375rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 0.28em 0.7em;
+        border-radius: 999px;
+        letter-spacing: 0.02em;
+        min-width: 4.5rem;
     }
 
     .finding-class-2 {
-        background-color: #d4edda;
-        color: #155724;
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
     }
 
     .finding-class-3 {
-        background-color: #f8d7da;
-        color: #721c24;
+        background: rgba(220, 53, 69, 0.12);
+        color: #b42318;
+    }
+
+    .finding-external-examiner {
+        display: inline-block;
+        font-weight: 700;
+        color: #b45309;
+    }
+
+    .finding-external-examiner-meta {
+        color: #92400e;
+    }
+
+    #dentalFindingsTable .finding-expand-btn {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 8px;
+        border-color: rgba(80, 90, 201, 0.28);
+        color: var(--findings-indigo);
+        background: rgba(80, 90, 201, 0.06);
+        line-height: 1;
+    }
+
+    #dentalFindingsTable .finding-expand-btn:hover,
+    #dentalFindingsTable .finding-expand-btn[aria-expanded="true"] {
+        background: rgba(80, 90, 201, 0.14);
+        border-color: var(--findings-indigo);
+        color: var(--findings-indigo);
+    }
+
+    #dentalFindingsTable .finding-expand-btn i {
+        transition: transform 0.18s ease;
+        font-size: 0.75rem;
+    }
+
+    #dentalFindingsTable .finding-expand-btn[aria-expanded="true"] i {
+        transform: rotate(90deg);
+    }
+
+    #dentalFindingsTable tr.finding-detail-row > td {
+        background: rgba(80, 90, 201, 0.04);
+        padding: 0;
+        border-top: 0;
+    }
+
+    #dentalFindingsTable .finding-detail-panel {
+        padding: 0.85rem 1rem 1rem 2.75rem;
+    }
+
+    #dentalFindingsTable .finding-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem 1.25rem;
+    }
+
+    #dentalFindingsTable .finding-detail-item {
+        min-width: 0;
+    }
+
+    #dentalFindingsTable .finding-detail-item.is-wide {
+        grid-column: 1 / -1;
+    }
+
+    #dentalFindingsTable .finding-detail-label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--findings-muted);
+        margin-bottom: 0.2rem;
+    }
+
+    #dentalFindingsTable .finding-detail-value {
+        color: var(--findings-text);
+        font-size: 0.88rem;
+        word-break: break-word;
+    }
+
+    #dentalFindingsTable tr.finding-main-row.is-expanded {
+        --bs-table-bg: rgba(80, 90, 201, 0.06);
+        --bs-table-striped-bg: rgba(80, 90, 201, 0.06);
+        --bs-table-hover-bg: rgba(80, 90, 201, 0.08);
+    }
+
+    #dentalFindingsTable .finding-cdt-cell {
+        max-width: 150px;
+    }
+
+    #dentalFindingsTable .finding-cdt-codes {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #dentalFindingsTable .finding-cdt-notes {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        line-height: 1.25;
+        max-width: 150px;
+    }
+
+    #dentalFindingsSection .finding-assignment-fields {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(31, 36, 48, 0.08);
+    }
+
+    #dentalFindingsSection .finding-treatment-required {
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--findings-border);
+        border-radius: 12px;
+        background: var(--findings-surface);
+    }
+
+    #dentalFindingsSection .finding-treatment-required .form-label {
+        font-weight: 600;
+        color: var(--findings-text);
+    }
+
+    #dentalFindingsSection .finding-treatment-required .form-check-label {
+        font-weight: 600;
+        color: var(--findings-text);
+    }
+
+    #dentalFindingsSection .finding-treatment-required .form-check-input:checked {
+        background-color: var(--findings-indigo);
+        border-color: var(--findings-indigo);
+    }
+
+    #dentalFindingsSection .section-collapse-btn {
+        border-radius: 999px;
+        font-weight: 600;
     }
 </style>
 
@@ -90,12 +379,11 @@
                    aria-controls="dentalFindingsContentSection"
                    aria-expanded="false" />
         </div>
-        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">@sectionTitle</h4>
+        <h4 class="mb-0">@sectionTitle</h4>
     </div>
 
     <div id="dentalFindingsContentSection" style="display:none;">
-        <div class="card mb-0">
-            <div class="card-body">
+        <div class="findings-panel">
         @if (postFindingsJson)
         {
             <input type="hidden" name="FindingsJson" id="FindingsJson" value="@findingsJson" />
@@ -105,24 +393,40 @@
             <input type="hidden" id="FindingsJson" value="@findingsJson" />
         }
 
-        <div class="table-responsive mb-3">
-            <table class="table table-bordered table-striped align-middle mb-0" id="dentalFindingsTable">
-                <thead class="table-light">
+        <div class="table-responsive findings-table-wrap mb-3">
+            <table class="table table-striped table-hover align-middle mb-0" id="dentalFindingsTable">
+                <thead>
                     <tr>
-                        <th style="width: 60px;">S.No</th>
-                        <th style="width: 110px;">Affected Tooth</th>
-                        <th style="width: 140px;">Affected Surface(s)</th>
-                        <th style="width: 160px;">Disease / Condition Type</th>
-                        <th style="width: 180px;">Classification</th>
-                        <th>CDT Codes, Codes Notes</th>
-                        <th>Description / Details</th>
-                        <th style="width: 180px;">Examiner</th>
-                        <th style="width: 100px;">Action</th>
+                        @if (showFindingAssignmentFields)
+                        {
+                            <th style="width: 44px;" aria-label="Expand"></th>
+                            <th style="width: 60px;">S.No</th>
+                            <th style="width: 110px;">Affected Tooth</th>
+                            <th style="width: 120px;">Affected Surface(s)</th>
+                            <th style="width: 150px;">Disease / Condition Type</th>
+                            <th style="width: 120px;">Classification</th>
+                            <th style="width: 150px;">CDT Code / CDT Notes</th>
+                            <th style="width: 140px;">Examiner</th>
+                            <th style="width: 130px;">Assigned Dentist</th>
+                            <th style="width: 100px;">Action</th>
+                        }
+                        else
+                        {
+                            <th style="width: 60px;">S.No</th>
+                            <th style="width: 110px;">Affected Tooth</th>
+                            <th style="width: 140px;">Affected Surface(s)</th>
+                            <th style="width: 160px;">Disease / Condition Type</th>
+                            <th style="width: 180px;">Classification</th>
+                            <th>CDT Codes, Codes Notes</th>
+                            <th>Description / Details</th>
+                            <th style="width: 180px;">Examiner</th>
+                            <th style="width: 100px;">Action</th>
+                        }
                     </tr>
                 </thead>
                 <tbody id="dentalFindingsTableBody">
                     <tr id="dentalFindingsEmptyRow">
-                        <td colspan="9" class="text-center text-muted py-4">No findings added yet.</td>
+                        <td colspan="@findingsTableColspan" class="text-center py-4">No findings added yet.</td>
                     </tr>
                 </tbody>
             </table>
@@ -132,8 +436,8 @@
             <i class="fas fa-plus-circle"></i> Add New Finding
         </button>
 
-        <div id="dentalFindingFormCard" class="card border-primary mb-0" style="display:none;">
-            <div class="card-header bg-light fw-semibold" id="dentalFindingFormTitle">Add Finding</div>
+        <div id="dentalFindingFormCard" class="card mb-0" style="display:none;">
+            <div class="card-header" id="dentalFindingFormTitle">Add Finding</div>
             <div class="card-body">
                 <div class="row g-4">
                     <div class="col-md-6">
@@ -193,6 +497,97 @@
                                 </div>
                             }
                         </div>
+
+                        @if (showFindingAssignmentFields)
+                        {
+                            <div class="finding-assignment-fields" id="findingAssignmentFields">
+                                <div class="mb-3" id="externalExaminerNameSection">
+                                    <label class="form-label" for="findingExternalExaminerName">External (Dentist) Examiner Name</label>
+                                    <input type="text"
+                                           id="findingExternalExaminerName"
+                                           class="form-control"
+                                           maxlength="200"
+                                           autocomplete="off" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="findingExternalExamDateTime">Exam Date Time</label>
+                                    <input type="datetime-local"
+                                           id="findingExternalExamDateTime"
+                                           class="form-control" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="findingExternalDentistRemarks">Remarks by External Dentist</label>
+                                    <textarea id="findingExternalDentistRemarks"
+                                              class="form-control"
+                                              rows="3"
+                                              maxlength="4000"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="findingAssignedDentist">Assign Dentist</label>
+                                    <select id="findingAssignedDentist" class="form-select">
+                                        <option value=""></option>
+                                        <option value="Dentist 1">Dentist 1</option>
+                                        <option value="Dentist 2">Dentist 2</option>
+                                        <option value="Dentist 3">Dentist 3</option>
+                                        <option value="Dentist 4">Dentist 4</option>
+                                    </select>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="findingAppointmentDate">Appointment Date</label>
+                                        <input type="text"
+                                               id="findingAppointmentDate"
+                                               class="form-control"
+                                               placeholder="MM/DD/YYYY"
+                                               autocomplete="off" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="findingAppointmentStartTime">Start Time</label>
+                                        <input type="text"
+                                               id="findingAppointmentStartTime"
+                                               class="form-control"
+                                               placeholder="hh:mm AM"
+                                               autocomplete="off" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="findingAppointmentDuration">Duration</label>
+                                        <select id="findingAppointmentDuration" class="form-select">
+                                            <option value=""></option>
+                                            <option value="15 min">15 min</option>
+                                            <option value="30 min">30 min</option>
+                                            <option value="45 min">45 min</option>
+                                            <option value="1 hr">1 hr</option>
+                                            <option value="1 hr 15 min">1 hr 15 min</option>
+                                            <option value="1 hr 30 min">1 hr 30 min</option>
+                                            <option value="1 hr 45 min">1 hr 45 min</option>
+                                            <option value="2 hr">2 hr</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="finding-treatment-required mb-0"
+                                     role="group"
+                                     aria-labelledby="findingDentalTreatmentRequiredLabel">
+                                    <span class="form-label d-block mb-2" id="findingDentalTreatmentRequiredLabel">Dental Treatment is required</span>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="FindingDentalTreatmentRequired"
+                                               id="findingDentalTreatmentRequiredYes"
+                                               value="Yes"
+                                               checked />
+                                        <label class="form-check-label" for="findingDentalTreatmentRequiredYes">YES</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="FindingDentalTreatmentRequired"
+                                               id="findingDentalTreatmentRequiredNo"
+                                               value="No" />
+                                        <label class="form-check-label" for="findingDentalTreatmentRequiredNo">NO</label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
 
                     <div class="col-md-6" id="dentalFindingImageColumn">
@@ -223,7 +618,6 @@
                 </div>
             </div>
         </div>
-            </div>
         </div>
 
         <div class="d-flex justify-content-center mt-3">
@@ -246,6 +640,10 @@
         const RESTORATIVE_SURFACES_ANTERIOR = @Json.Serialize(DentalFindingConstants.RestorativeSurfacesAnterior);
         const CDT_CODES_BY_TYPE = @Html.Raw(cdtCodesJson);
         const FINDINGS_READ_ONLY = @Json.Serialize(subsequentReadOnly);
+        const SHOW_FINDING_ASSIGNMENT_FIELDS = @Json.Serialize(showFindingAssignmentFields);
+        const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
+        const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
+        const FINDINGS_TABLE_COLSPAN = @Json.Serialize(findingsTableColspan);
         const CURRENT_USER_ID = @Json.Serialize(currentUserId);
         const CURRENT_USER_DISPLAY_NAME = @Json.Serialize(currentUserDisplayName);
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
@@ -556,6 +954,111 @@
             $("#findingCdtCodesNotes").val("");
             $("#findingDescription").val("");
             $("input[name='FindingClassification']").prop("checked", false);
+            clearFindingAssignmentFields();
+            toggleExternalExaminerNameVisibility(null);
+        }
+
+        function clearFindingAssignmentFields() {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS) {
+                return;
+            }
+            $("#findingExternalExaminerName").val("");
+            $("#findingExternalExamDateTime").val("");
+            $("#findingExternalDentistRemarks").val("");
+            $("#findingAssignedDentist").val("");
+            if (appointmentDatePicker) {
+                appointmentDatePicker.clear();
+            } else {
+                $("#findingAppointmentDate").val("");
+            }
+            if (appointmentStartTimePicker) {
+                appointmentStartTimePicker.clear();
+            } else {
+                $("#findingAppointmentStartTime").val("");
+            }
+            $("#findingAppointmentDuration").val("");
+            $("#findingDentalTreatmentRequiredYes").prop("checked", true);
+            $("#findingDentalTreatmentRequiredNo").prop("checked", false);
+        }
+
+        let appointmentDatePicker = null;
+        let appointmentStartTimePicker = null;
+
+        function initAppointmentPickers() {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS || typeof flatpickr === "undefined") {
+                return;
+            }
+
+            const dateOptions = {
+                altInput: true,
+                altFormat: "m/d/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true
+            };
+            if (EVENT_APPOINTMENT_MIN_DATE) {
+                dateOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE) {
+                dateOptions.maxDate = EVENT_APPOINTMENT_MAX_DATE;
+            }
+
+            if (!appointmentDatePicker && $("#findingAppointmentDate").length) {
+                appointmentDatePicker = flatpickr("#findingAppointmentDate", dateOptions);
+            }
+            if (!appointmentStartTimePicker && $("#findingAppointmentStartTime").length) {
+                appointmentStartTimePicker = flatpickr("#findingAppointmentStartTime", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "h:i K",
+                    time_24hr: false,
+                    allowInput: true
+                });
+            }
+        }
+
+        function isDentalExamOriginFinding(finding) {
+            return !!(finding && finding.id > 0 && !((finding.externalExaminerName || "").toString().trim()));
+        }
+
+        function toggleExternalExaminerNameVisibility(finding) {
+            if (!SHOW_FINDING_ASSIGNMENT_FIELDS) {
+                return;
+            }
+            const $section = $("#externalExaminerNameSection");
+            if (!$section.length) {
+                return;
+            }
+            const isAdd = editingFindingIndex == null;
+            const showName = isAdd || !isDentalExamOriginFinding(finding);
+            $section.toggle(showName);
+            if (!showName) {
+                $("#findingExternalExaminerName").val("");
+            }
+        }
+
+        function toDateTimeLocalValue(value) {
+            if (!value) {
+                return "";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+            const pad = function (n) { return String(n).padStart(2, "0"); };
+            return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate())
+                + "T" + pad(date.getHours()) + ":" + pad(date.getMinutes());
+        }
+
+        function fromDateTimeLocalValue(value) {
+            const raw = (value || "").toString().trim();
+            if (!raw) {
+                return null;
+            }
+            const date = new Date(raw);
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
+            return date.toISOString();
         }
 
         function showFindingForm(preserveSelections) {
@@ -576,6 +1079,7 @@
                 } finally {
                     suppressRestorativeCdtReset = false;
                 }
+                initAppointmentPickers();
                 applyFindingFormReadOnly();
             });
         }
@@ -632,6 +1136,10 @@
 
         function readFindingForm() {
             const existing = editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null;
+            const assignmentEnabled = SHOW_FINDING_ASSIGNMENT_FIELDS;
+            const showExternalName = assignmentEnabled
+                && (editingFindingIndex == null || !isDentalExamOriginFinding(existing));
+
             return {
                 id: existing ? (existing.id || 0) : 0,
                 isPrimaryTooth: $("#findingPrimaryTooth").is(":checked"),
@@ -646,7 +1154,33 @@
                 examinationAddedBy: existing ? (existing.examinationAddedBy || null) : null,
                 examinationAddedOn: existing ? (existing.examinationAddedOn || null) : null,
                 examinationUpdatedBy: existing ? (existing.examinationUpdatedBy || null) : null,
-                examinationUpdatedOn: existing ? (existing.examinationUpdatedOn || null) : null
+                examinationUpdatedOn: existing ? (existing.examinationUpdatedOn || null) : null,
+                externalExaminerName: showExternalName
+                    ? ($("#findingExternalExaminerName").val()?.trim() || "")
+                    : (existing ? (existing.externalExaminerName || "") : ""),
+                externalExamDateTime: assignmentEnabled
+                    ? fromDateTimeLocalValue($("#findingExternalExamDateTime").val())
+                    : (existing ? (existing.externalExamDateTime || null) : null),
+                externalDentistRemarks: assignmentEnabled
+                    ? ($("#findingExternalDentistRemarks").val()?.trim() || "")
+                    : (existing ? (existing.externalDentistRemarks || "") : ""),
+                assignedDentist: assignmentEnabled
+                    ? ($("#findingAssignedDentist").val() || "")
+                    : (existing ? (existing.assignedDentist || "") : ""),
+                appointmentDate: assignmentEnabled
+                    ? ($("#findingAppointmentDate").val() || "")
+                    : (existing ? (existing.appointmentDate || "") : ""),
+                appointmentStartTime: assignmentEnabled
+                    ? ($("#findingAppointmentStartTime").val() || "")
+                    : (existing ? (existing.appointmentStartTime || "") : ""),
+                appointmentDuration: assignmentEnabled
+                    ? ($("#findingAppointmentDuration").val() || "")
+                    : (existing ? (existing.appointmentDuration || "") : ""),
+                dentalTreatmentRequired: assignmentEnabled
+                    ? ($("input[name='FindingDentalTreatmentRequired']:checked").val() || "Yes")
+                    : (existing ? (existing.dentalTreatmentRequired || "Yes") : "Yes"),
+                procedureStatus: existing ? (existing.procedureStatus || "") : "",
+                procedureDateTime: existing ? (existing.procedureDateTime || "") : ""
             };
         }
 
@@ -667,6 +1201,37 @@
             $("input[name='FindingClassification']").each(function () {
                 $(this).prop("checked", $(this).val() === (finding.classification || ""));
             });
+
+            if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
+                initAppointmentPickers();
+                $("#findingExternalExaminerName").val(finding.externalExaminerName || "");
+                $("#findingExternalExamDateTime").val(toDateTimeLocalValue(finding.externalExamDateTime));
+                $("#findingExternalDentistRemarks").val(finding.externalDentistRemarks || "");
+                $("#findingAssignedDentist").val(finding.assignedDentist || "");
+                if (appointmentDatePicker) {
+                    if (finding.appointmentDate) {
+                        appointmentDatePicker.setDate(finding.appointmentDate, true);
+                    } else {
+                        appointmentDatePicker.clear();
+                    }
+                } else {
+                    $("#findingAppointmentDate").val(finding.appointmentDate || "");
+                }
+                if (appointmentStartTimePicker) {
+                    if (finding.appointmentStartTime) {
+                        appointmentStartTimePicker.setDate(finding.appointmentStartTime, true);
+                    } else {
+                        appointmentStartTimePicker.clear();
+                    }
+                } else {
+                    $("#findingAppointmentStartTime").val(finding.appointmentStartTime || "");
+                }
+                $("#findingAppointmentDuration").val(finding.appointmentDuration || "");
+                const treatmentRequired = (finding.dentalTreatmentRequired || "Yes") === "No" ? "No" : "Yes";
+                $("input[name='FindingDentalTreatmentRequired']").prop("checked", false);
+                $("input[name='FindingDentalTreatmentRequired'][value='" + treatmentRequired + "']").prop("checked", true);
+                toggleExternalExaminerNameVisibility(finding);
+            }
         }
 
         function formatClassificationBadge(classification) {
@@ -685,6 +1250,22 @@
             return escapeHtml(classification);
         }
 
+        function formatCdtCodeForDisplay(code) {
+            const value = (code || "").toString().trim();
+            if (!value) {
+                return "";
+            }
+            const separatorIndex = value.indexOf(" - ");
+            return separatorIndex >= 0 ? value.substring(0, separatorIndex).trim() : value;
+        }
+
+        function formatCdtCodesForDisplay(codes) {
+            const list = (codes || [])
+                .map(formatCdtCodeForDisplay)
+                .filter(Boolean);
+            return list.length ? list.join("; ") : "-";
+        }
+
         function syncFindingsJson() {
             const normalized = dentalFindings.map(function (item, index) {
                 return {
@@ -701,7 +1282,17 @@
                     examinationAddedBy: item.examinationAddedBy || null,
                     examinationAddedOn: item.examinationAddedOn || null,
                     examinationUpdatedBy: item.examinationUpdatedBy || null,
-                    examinationUpdatedOn: item.examinationUpdatedOn || null
+                    examinationUpdatedOn: item.examinationUpdatedOn || null,
+                    externalExaminerName: item.externalExaminerName || "",
+                    externalExamDateTime: item.externalExamDateTime || null,
+                    externalDentistRemarks: item.externalDentistRemarks || "",
+                    assignedDentist: item.assignedDentist || "",
+                    appointmentDate: item.appointmentDate || "",
+                    appointmentStartTime: item.appointmentStartTime || "",
+                    appointmentDuration: item.appointmentDuration || "",
+                    dentalTreatmentRequired: item.dentalTreatmentRequired || "Yes",
+                    procedureStatus: item.procedureStatus || "",
+                    procedureDateTime: item.procedureDateTime || ""
                 };
             });
             $("#FindingsJson").val(JSON.stringify(normalized));
@@ -725,6 +1316,14 @@
         }
 
         function formatExaminerDetail(finding) {
+            const externalName = (finding.externalExaminerName || "").toString().trim();
+            if (externalName) {
+                const whenHtml = finding.externalExamDateTime
+                    ? ("<div class='small finding-external-examiner-meta'>" + formatExaminerDateTime(finding.externalExamDateTime) + "</div>")
+                    : "";
+                return "<span class='finding-external-examiner'>" + escapeHtml(externalName) + "</span>" + whenHtml;
+            }
+
             const userId = finding.examinationUpdatedBy || finding.examinationAddedBy;
             const when = finding.examinationUpdatedOn || finding.examinationAddedOn;
             if (!userId && !when) {
@@ -767,7 +1366,7 @@
 
             if (!dentalFindings.length) {
                 $tbody.append(
-                    '<tr id="dentalFindingsEmptyRow"><td colspan="9" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                    '<tr id="dentalFindingsEmptyRow"><td colspan="' + FINDINGS_TABLE_COLSPAN + '" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 syncFindingsJson();
                 return;
@@ -775,7 +1374,8 @@
 
             dentalFindings.forEach(function (finding, index) {
                 const surfaces = (finding.affectedSurfaces || []).join(", ") || "-";
-                const cdtCodes = (finding.cdtCodes || []).join("; ") || "-";
+                const cdtCodes = formatCdtCodesForDisplay(finding.cdtCodes);
+                const cdtCodesFull = (finding.cdtCodes || []).join("; ");
                 const codesNotes = finding.cdtCodesNotes ? "<div class='small text-muted mt-1'>" + escapeHtml(finding.cdtCodesNotes) + "</div>" : "";
                 const toothLabel = finding.affectedTooth + (finding.isPrimaryTooth ? " (Primary)" : "");
                 const classificationBadge = formatClassificationBadge(finding.classification);
@@ -787,6 +1387,55 @@
                     : ("<button type='button' class='btn btn-sm btn-outline-primary me-1 finding-action-btn edit-finding-btn' data-index='" + index + "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
                        "<button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-finding-btn' data-index='" + index + "' title='Delete'><i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>");
 
+                if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
+                    const detailId = "findingDetail_" + index;
+                    const expandBtn =
+                        "<button type='button' class='btn btn-sm finding-expand-btn' data-index='" + index + "' " +
+                        "aria-expanded='false' aria-controls='" + detailId + "' title='Show details'>" +
+                        "<i class='fas fa-chevron-right' aria-hidden='true'></i>" +
+                        "<span class='visually-hidden'>Show details</span></button>";
+
+                    const cdtTitle = [cdtCodesFull, finding.cdtCodesNotes || ""].filter(Boolean).join(" — ");
+                    const cdtNotesHtml = finding.cdtCodesNotes
+                        ? "<div class='small text-muted mt-1 finding-cdt-notes' title='" + escapeHtml(finding.cdtCodesNotes) + "'>" + escapeHtml(finding.cdtCodesNotes) + "</div>"
+                        : "";
+                    const cdtCell =
+                        "<td class='finding-cdt-cell'>" +
+                        "<div class='finding-cdt-codes' title='" + escapeHtml(cdtTitle) + "'>" + escapeHtml(cdtCodes) + "</div>" +
+                        cdtNotesHtml +
+                        "</td>";
+
+                    const detailPanel =
+                        "<div class='finding-detail-panel' id='" + detailId + "'>" +
+                        "<div class='finding-detail-grid'>" +
+                        buildFindingDetailItem("Appointment Date", escapeHtml(formatAppointmentDateForDisplay(finding.appointmentDate))) +
+                        buildFindingDetailItem("Start Time", escapeHtml(finding.appointmentStartTime || "-")) +
+                        buildFindingDetailItem("Duration", escapeHtml(finding.appointmentDuration || "-")) +
+                        buildFindingDetailItem("Dental Treatment is required", escapeHtml(finding.dentalTreatmentRequired || "Yes")) +
+                        buildFindingDetailItem("Procedure Status", escapeHtml(finding.procedureStatus || "")) +
+                        buildFindingDetailItem("Procedure Date/Time", escapeHtml(finding.procedureDateTime || "")) +
+                        "</div></div>";
+
+                    $tbody.append(
+                        "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
+                        "<td class='text-center'>" + expandBtn + "</td>" +
+                        "<td>" + (index + 1) + "</td>" +
+                        "<td>" + escapeHtml(toothLabel) + "</td>" +
+                        "<td>" + escapeHtml(surfaces) + "</td>" +
+                        "<td>" + escapeHtml(finding.diseaseConditionType || "-") + "</td>" +
+                        "<td>" + classificationBadge + "</td>" +
+                        cdtCell +
+                        "<td>" + examinerDetail + "</td>" +
+                        "<td>" + escapeHtml(finding.assignedDentist || "-") + "</td>" +
+                        "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                        "</tr>" +
+                        "<tr class='finding-detail-row' data-finding-index='" + index + "' style='display:none;'>" +
+                        "<td colspan='" + FINDINGS_TABLE_COLSPAN + "'>" + detailPanel + "</td>" +
+                        "</tr>"
+                    );
+                    return;
+                }
+
                 $tbody.append(
                     "<tr data-finding-index='" + index + "'>" +
                     "<td>" + (index + 1) + "</td>" +
@@ -794,7 +1443,7 @@
                     "<td>" + escapeHtml(surfaces) + "</td>" +
                     "<td>" + escapeHtml(finding.diseaseConditionType || "-") + "</td>" +
                     "<td>" + classificationBadge + "</td>" +
-                    "<td><div>" + escapeHtml(cdtCodes) + "</div>" + codesNotes + "</td>" +
+                    "<td><div title='" + escapeHtml(cdtCodesFull) + "'>" + escapeHtml(cdtCodes) + "</div>" + codesNotes + "</td>" +
                     "<td>" + description + "</td>" +
                     "<td>" + examinerDetail + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
@@ -803,6 +1452,49 @@
             });
 
             syncFindingsJson();
+        }
+
+        function buildFindingDetailItem(label, valueHtml, isWide) {
+            return "<div class='finding-detail-item" + (isWide ? " is-wide" : "") + "'>" +
+                "<span class='finding-detail-label'>" + escapeHtml(label) + "</span>" +
+                "<div class='finding-detail-value'>" + (valueHtml || "-") + "</div>" +
+                "</div>";
+        }
+
+        function toggleFindingDetailRow(index) {
+            const $main = $("#dentalFindingsTableBody tr.finding-main-row[data-finding-index='" + index + "']");
+            const $detail = $("#dentalFindingsTableBody tr.finding-detail-row[data-finding-index='" + index + "']");
+            const $btn = $main.find(".finding-expand-btn");
+            const $panel = $detail.find(".finding-detail-panel");
+            if (!$detail.length || !$btn.length) {
+                return;
+            }
+
+            const willExpand = !$main.hasClass("is-expanded");
+            $main.toggleClass("is-expanded", willExpand);
+            $btn.attr("aria-expanded", willExpand ? "true" : "false");
+            $btn.attr("title", willExpand ? "Hide details" : "Show details");
+            $btn.find(".visually-hidden").text(willExpand ? "Hide details" : "Show details");
+            if (willExpand) {
+                $detail.show();
+                $panel.hide().stop(true, true).slideDown(160);
+            } else {
+                $panel.stop(true, true).slideUp(160, function () {
+                    $detail.hide();
+                });
+            }
+        }
+
+        function formatAppointmentDateForDisplay(value) {
+            if (!value) {
+                return "-";
+            }
+            const raw = value.toString();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                const parts = raw.split("-");
+                return parts[1] + "/" + parts[2] + "/" + parts[0];
+            }
+            return raw;
         }
 
         function addOrUpdateFinding() {
@@ -898,6 +1590,7 @@
 
         window.initDentalFindingsSection = function () {
             populateToothOptions();
+            initAppointmentPickers();
             renderFindingsTable();
         };
 
@@ -953,6 +1646,12 @@
 
             $(document).on("click", ".delete-finding-btn", function () {
                 deleteFinding(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".finding-expand-btn", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFindingDetailRow(parseInt($(this).data("index"), 10));
             });
 
             $("#SaveDentalExamStation").on("submit", function () {
