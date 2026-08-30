@@ -98,10 +98,11 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task AddAsync(DentalXRayStation model, string userName, bool saveChanges = true)
+        public async Task AddAsync(DentalXRayStation model, string userName, string source, bool saveChanges = true)
         {
             model.AddedOn = DateTime.Now;
             model.AddedBy = userName;
+            model.Source = source;
             NormalizePaImages(model);
 
             await _unitOfWork.DentalXRayStation.AddAsync(model);
@@ -111,7 +112,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task UpdateAsync(DentalXRayStation model, string userName, bool saveChanges = true)
+        public async Task UpdateAsync(DentalXRayStation model, string userName, string source, bool saveChanges = true)
         {
             const string methodName = nameof(UpdateAsync);
 
@@ -129,13 +130,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 MapToEntity(model, existing, userName);
+                existing.Source = source;
                 if (saveChanges)
                 {
                     await _unitOfWork.SaveAsync();
                 }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} successfully updated by user {User}. SaveChanges={SaveChanges}",
-                    CLASSNAME, methodName, model.Id, userName, saveChanges);
+                _logger.LogInformation("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} successfully updated by user {User}. Source={Source}. SaveChanges={SaveChanges}",
+                    CLASSNAME, methodName, model.Id, userName, source, saveChanges);
             }
             catch (KeyNotFoundException)
             {
@@ -456,7 +458,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 target.PaImages.Add(new DentalXRayPaImage
                 {
-                    DentalXRayStationId = target.Id,
+                    DentalXRayId = target.Id,
                     FileName = image.FileName,
                     OriginalFileName = image.OriginalFileName,
                     UploadedDateTime = image.UploadedDateTime,

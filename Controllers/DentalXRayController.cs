@@ -371,13 +371,13 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Add operation started by User={UserName}",
                         CLASSNAME, methodName, user.UserName);
-                    await _dentalXRayStationService.AddAsync(entity, user.UserName);
+                    await _dentalXRayStationService.AddAsync(entity, user.UserName, DentalXRaySources.DentalXRay);
                 }
                 else
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for Id={Id} by User={UserName}",
                         CLASSNAME, methodName, dto.Id, user.UserName);
-                    await _dentalXRayStationService.UpdateAsync(entity, user.UserName);
+                    await _dentalXRayStationService.UpdateAsync(entity, user.UserName, DentalXRaySources.DentalXRay);
                 }
 
                 dbSaveCompleted = true;

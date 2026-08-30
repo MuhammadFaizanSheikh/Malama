@@ -573,6 +573,9 @@ namespace Malama.Migrations
                     b.Property<string>("SoftTissuesWnl")
                         .HasColumnType("text");
 
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -771,7 +774,7 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("DentalXRayStationId")
+                    b.Property<long>("DentalXRayId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("FileName")
@@ -788,7 +791,7 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DentalXRayStationId");
+                    b.HasIndex("DentalXRayId");
 
                     b.ToTable("DentalXRayPaImage");
                 });
@@ -879,6 +882,9 @@ namespace Malama.Migrations
                     b.Property<long>("ServiceMembersChildId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -894,7 +900,7 @@ namespace Malama.Migrations
                     b.HasIndex("ServiceMembersChildId")
                         .IsUnique();
 
-                    b.ToTable("DentalXRayStation");
+                    b.ToTable("DentalXRay");
                 });
 
             modelBuilder.Entity("Malama.Models.EventManagement", b =>
@@ -3767,7 +3773,7 @@ namespace Malama.Migrations
                 {
                     b.HasOne("Malama.Models.DentalXRayStation", "DentalXRayStation")
                         .WithMany("PaImages")
-                        .HasForeignKey("DentalXRayStationId")
+                        .HasForeignKey("DentalXRayId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

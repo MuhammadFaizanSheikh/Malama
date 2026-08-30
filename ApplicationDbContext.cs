@@ -162,7 +162,7 @@ namespace ExcelFilesCompiler
             {
                 entity.HasOne(e => e.DentalXRayStation)
                     .WithMany(d => d.PaImages)
-                    .HasForeignKey(e => e.DentalXRayStationId)
+                    .HasForeignKey(e => e.DentalXRayId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 

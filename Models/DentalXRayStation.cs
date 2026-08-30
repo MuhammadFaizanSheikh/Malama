@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Malama.Models
@@ -60,6 +61,7 @@ namespace Malama.Models
         public List<ServiceMembersChild> FileDataList { get; set; } = new();
     }
 
+    [Table("DentalXRay")]
     public class DentalXRayStation : GenericProperties
     {
         public long Id { get; set; }
@@ -105,12 +107,20 @@ namespace Malama.Models
         public string? Comment { get; set; }
 
         public string Status { get; set; } = "Pending";
+
+        public string? Source { get; set; }
+    }
+
+    public static class DentalXRaySources
+    {
+        public const string DentalXRay = "DentalXRay";
+        public const string DentalCoordinator = "DentalCoordinator";
     }
 
     public class DentalXRayPaImage
     {
         public long Id { get; set; }
-        public long DentalXRayStationId { get; set; }
+        public long DentalXRayId { get; set; }
 
         [JsonIgnore]
         [ValidateNever]

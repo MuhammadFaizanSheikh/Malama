@@ -94,6 +94,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ApplySubsequentDiseasesData(existing, dto, userId);
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
+                    existing.Source = DentalExamSources.DentalExam;
                     existing.Status = DentalExamValidator.ComputeOverallStatus(dto);
 
                     await _unitOfWork.SaveAsync();
@@ -111,6 +112,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var entity = MapFormDataToEntity(dto);
                 entity.AddedOn = DateTime.Now;
                 entity.AddedBy = userName;
+                entity.Source = DentalExamSources.DentalExam;
                 entity.Status = DentalExamValidator.ComputeOverallStatus(dto);
 
                 await _unitOfWork.DentalExam.AddAsync(entity);
@@ -179,6 +181,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     ReplaceSelectedTeeth(existing, selectedTeeth);
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = DateTime.Now;
+                    existing.Source = DentalExamSources.DentalCoordinator;
                 }
                 else
                 {
@@ -187,7 +190,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         ServiceMembersChildId = dto.ServiceMembersChildId,
                         AddedBy = userName,
                         AddedOn = DateTime.Now,
-                        Status = AppConstants.Status.Pending
+                        Status = AppConstants.Status.Pending,
+                        Source = DentalExamSources.DentalCoordinator
                     };
                     ApplyCoordinatorClinicalFields(entity, dto);
                     await _unitOfWork.DentalExam.AddAsync(entity);
@@ -201,8 +205,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Coordinator clinical sections applied for ServiceMembersChildId={ServiceMembersChildId} by {User}. SaveChanges={SaveChanges}, SelectedToothCount={SelectedToothCount}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, saveChanges, selectedTeeth.Count);
+                    "{ClassName}, {MethodName}, Coordinator clinical sections applied for ServiceMembersChildId={ServiceMembersChildId} by {User}. Source={Source}. SaveChanges={SaveChanges}, SelectedToothCount={SelectedToothCount}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, DentalExamSources.DentalCoordinator, saveChanges, selectedTeeth.Count);
             }
             catch (Exception ex)
             {

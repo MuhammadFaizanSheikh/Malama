@@ -107,11 +107,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (dto.Id == 0)
                 {
-                    await _dentalXRayStationService.AddAsync(entity, userName, saveChanges: false);
+                    await _dentalXRayStationService.AddAsync(entity, userName, DentalXRaySources.DentalCoordinator, saveChanges: false);
                 }
                 else
                 {
-                    await _dentalXRayStationService.UpdateAsync(entity, userName, saveChanges: false);
+                    await _dentalXRayStationService.UpdateAsync(entity, userName, DentalXRaySources.DentalCoordinator, saveChanges: false);
                 }
 
                 // Section: Subsequent diseases (PSR / DEN / Pano)

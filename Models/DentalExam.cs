@@ -62,6 +62,8 @@ namespace Malama.Models
 
         public string Status { get; set; } = "Pending";
 
+        public string? Source { get; set; }
+
         [JsonIgnore]
         [ValidateNever]
         public virtual ICollection<DentalFinding> Findings { get; set; } = new List<DentalFinding>();
@@ -69,5 +71,11 @@ namespace Malama.Models
         [JsonIgnore]
         [ValidateNever]
         public virtual ICollection<DentalExamSelectedTooth> SelectedTeeth { get; set; } = new List<DentalExamSelectedTooth>();
+    }
+
+    public static class DentalExamSources
+    {
+        public const string DentalExam = "DentalExam";
+        public const string DentalCoordinator = "DentalCoordinator";
     }
 }
