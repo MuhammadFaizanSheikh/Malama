@@ -646,6 +646,9 @@ namespace Malama.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DentalExamId");

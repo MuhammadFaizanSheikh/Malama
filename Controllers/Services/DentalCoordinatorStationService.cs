@@ -135,7 +135,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Dental Coordinator station saved atomically. ServiceMembersChildId={ServiceMembersChildId}, User={User}",
+                    "{ClassName}, {MethodName}, Treatment Coordinator station saved atomically. ServiceMembersChildId={ServiceMembersChildId}, User={User}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
 
                 return DentalCoordinatorStationSaveResult.Ok();
@@ -162,7 +162,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Failed to save Dental Coordinator station. ServiceMembersChildId={ServiceMembersChildId}",
+                    "{ClassName}, {MethodName}, Failed to save Treatment Coordinator station. ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId);
                 throw;
             }

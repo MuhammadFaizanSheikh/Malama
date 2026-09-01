@@ -512,7 +512,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 _logger.LogError(
                     ex,
-                    "{ClassName}.{MethodName} - Error fetching Dental Coordinator records for EventId={EventId}",
+                    "{ClassName}.{MethodName} - Error fetching Treatment Coordinator records for EventId={EventId}",
                     CLASSNAME, methodName, eventId);
 
                 throw;

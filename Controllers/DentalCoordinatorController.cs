@@ -96,7 +96,7 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while loading Dental Coordinator index page",
+                    "{ClassName}, {MethodName}, Exception occurred while loading Treatment Coordinator index page",
                     CLASSNAME, methodName);
 
                 ViewBag.EventIdList = new List<SelectListItem>();
@@ -227,7 +227,7 @@ namespace ExcelFilesCompiler.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while loading Dental Coordinator station page",
+                    "{ClassName}, {MethodName}, Exception occurred while loading Treatment Coordinator station page",
                     CLASSNAME, methodName);
                 throw;
             }
@@ -303,13 +303,13 @@ namespace ExcelFilesCompiler.Controllers
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
-                TempData["ResponseMessage"] = "Dental Coordinator record saved successfully.";
+                TempData["ResponseMessage"] = "Treatment Coordinator record saved successfully.";
                 return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "{ClassName}, {MethodName}, Exception occurred while saving Dental Coordinator station",
+                    "{ClassName}, {MethodName}, Exception occurred while saving Treatment Coordinator station",
                     CLASSNAME, methodName);
 
                 TempData["ResponseStatus"] = "error";

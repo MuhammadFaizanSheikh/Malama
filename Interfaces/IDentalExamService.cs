@@ -8,7 +8,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName, string userId);
 
         /// <summary>
-        /// Applies PSR / DEN Class / Pano / selected teeth from Dental Coordinator without touching findings or signature.
+        /// Applies PSR / DEN Class / Pano / selected teeth from Treatment Coordinator without touching findings or signature.
         /// </summary>
         Task ApplyCoordinatorClinicalSectionsAsync(
             DentalCoordinatorStationSaveDto dto,

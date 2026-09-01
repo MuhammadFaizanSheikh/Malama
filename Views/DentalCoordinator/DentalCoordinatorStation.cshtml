@@ -6,7 +6,7 @@
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-    ViewData["Title"] = "Dental Coordinator Station";
+    ViewData["Title"] = "Treatment Coordinator Station";
 
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
@@ -191,32 +191,28 @@
         margin-right: 0.45rem;
     }
 
-    .dco-questionnaire-ack {
+    .dco-treatment-required {
         margin: 0 0 1rem;
         padding: 0.85rem 1rem;
         border: 1px solid rgba(31, 36, 48, 0.08);
         border-radius: 12px;
         background: #fff;
-        min-height: auto;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.55rem;
     }
 
-    .dco-questionnaire-ack .form-check-input {
-        margin-top: 0.2rem;
-        flex-shrink: 0;
-    }
-
-    .dco-questionnaire-ack .form-check-input:checked {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-    }
-
-    .dco-questionnaire-ack .form-check-label {
+    .dco-treatment-required .form-label {
         font-weight: 600;
         color: var(--dco-text);
-        line-height: 1.4;
+        margin-bottom: 0.35rem;
+    }
+
+    .dco-treatment-required .form-check-label {
+        font-weight: 600;
+        color: var(--dco-text);
+    }
+
+    .dco-treatment-required .form-check-input:checked {
+        background-color: rgba(80, 90, 201, 1);
+        border-color: rgba(80, 90, 201, 1);
     }
 
     .dco-status-badge {
@@ -660,7 +656,7 @@
 
 <section class="dco-station">
     <div class="dco-hero">
-        <h1 class="dco-title" id="page-heading">Dental Coordinator Station</h1>
+        <h1 class="dco-title" id="page-heading">Treatment Coordinator Station</h1>
     </div>
 
     <form id="SaveDentalCoordinatorStation" asp-action="SaveDentalCoordinatorStation" method="post" enctype="multipart/form-data">
@@ -914,6 +910,22 @@
             </div>
         </div>
 
+        @{
+            var dentalFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            dentalFindingsViewData["XRayStation"] = xRayStation;
+            dentalFindingsViewData["SubsequentReadOnly"] = false;
+            dentalFindingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
+            dentalFindingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
+            dentalFindingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
+                ?? new Dictionary<string, string>();
+            dentalFindingsViewData["UsePrimarySectionHeading"] = true;
+            dentalFindingsViewData["FindingSourceDefault"] = DentalFindingSources.DentalCoordinator;
+            dentalFindingsViewData["ShowFindingAppointmentDetails"] = true;
+        }
+        <div class="dco-panel" id="dentalFindingsPanel">
+            @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", dentalExam, dentalFindingsViewData)
+        </div>
+
         <div class="dco-panel" id="treatmentCoordinatorSection">
             <div class="questionnaire-heading" id="treatmentCoordinatorHeading">
                 <div class="form-check form-switch questionnaire-toggle-switch mb-0">
@@ -939,17 +951,29 @@
                     </span>
                 </p>
 
-                <div class="dco-questionnaire-ack form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           id="treatmentCoordinatorQuestionnaireAck"
-                           aria-controls="treatmentCoordinatorDetails" />
-                    <label class="form-check-label" for="treatmentCoordinatorQuestionnaireAck">
-                        Dental Questionnaire has been add/reviewed by Treatment Coordinator
-                    </label>
+                <div class="dco-treatment-required"
+                     role="group"
+                     aria-labelledby="isTreatmentRequiredLabel">
+                    <span class="form-label d-block" id="isTreatmentRequiredLabel">Is Treatment Required?</span>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="IsTreatmentRequired"
+                               id="isTreatmentRequiredYes"
+                               value="Yes"
+                               checked />
+                        <label class="form-check-label" for="isTreatmentRequiredYes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="IsTreatmentRequired"
+                               id="isTreatmentRequiredNo"
+                               value="No" />
+                        <label class="form-check-label" for="isTreatmentRequiredNo">No</label>
+                    </div>
                 </div>
 
-                <div id="treatmentCoordinatorDetails" style="display:none;">
                 <div class="dco-treatment-split">
                     <div class="dco-forms-card dco-coordinator-details-card" aria-label="Treatment coordinator details">
                         <div class="mb-3">
@@ -1053,23 +1077,12 @@
                 </div>
 
                 @{
-                    var findingAssignmentViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
-                    findingAssignmentViewData["XRayStation"] = xRayStation;
-                    findingAssignmentViewData["SubsequentReadOnly"] = false;
-                    findingAssignmentViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
-                    findingAssignmentViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
-                    findingAssignmentViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
-                        ?? new Dictionary<string, string>();
-                    findingAssignmentViewData["SectionTitle"] = "Finding Assignment Grid";
-                    findingAssignmentViewData["CollapseLabel"] = "Collapse Finding Assignment Grid";
-                    findingAssignmentViewData["PostFindingsJson"] = false;
-                    findingAssignmentViewData["ShowFindingAssignmentFields"] = true;
-                    findingAssignmentViewData["EventAppointmentMinDate"] = ViewBag.EventAppointmentMinDate as string ?? string.Empty;
-                    findingAssignmentViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
-                    findingAssignmentViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
+                    var appointmentsViewData = new ViewDataDictionary(ViewData);
+                    appointmentsViewData["EventAppointmentMinDate"] = ViewBag.EventAppointmentMinDate as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
+                    appointmentsViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
                 }
-                @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", dentalExam, findingAssignmentViewData)
-                </div>
+                @await Html.PartialAsync("~/Views/DentalCoordinator/_TreatmentCoordinatorAppointmentsSection.cshtml", appointmentsViewData)
 
                 <div class="d-flex justify-content-center mt-3">
                     <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
@@ -1228,17 +1241,6 @@
 
     function toggleTreatmentCoordinatorSectionFromSwitch() {
         toggleSectionFromSwitch("#toggleTreatmentCoordinatorSectionSwitch", "#treatmentCoordinatorContent");
-    }
-
-    function toggleTreatmentCoordinatorDetailsFromAck() {
-        const isChecked = $("#treatmentCoordinatorQuestionnaireAck").is(":checked");
-        const $details = $("#treatmentCoordinatorDetails");
-        $("#treatmentCoordinatorQuestionnaireAck").attr("aria-expanded", isChecked ? "true" : "false");
-        if (isChecked) {
-            $details.slideDown(200);
-        } else {
-            $details.slideUp(200);
-        }
     }
 
     function toggleDentalFindingsSectionFromSwitch() {
@@ -1548,7 +1550,6 @@
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
         $("#toggleSubsequentDiseasesSectionSwitch").on("change", toggleSubsequentDiseasesContentFromSwitch);
         $("#toggleTreatmentCoordinatorSectionSwitch").on("change", toggleTreatmentCoordinatorSectionFromSwitch);
-        $("#treatmentCoordinatorQuestionnaireAck").on("change", toggleTreatmentCoordinatorDetailsFromAck);
         $("#toggleDentalFindingsSectionSwitch").on("change", toggleDentalFindingsSectionFromSwitch);
         $("#togglePsrSectionSwitch").on("change", togglePsrSectionFromSwitch);
         $("#toggleDenClassSectionSwitch").on("change", toggleDenClassSectionFromSwitch);

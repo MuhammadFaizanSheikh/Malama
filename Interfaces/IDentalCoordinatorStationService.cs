@@ -5,7 +5,7 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IDentalCoordinatorStationService
     {
         /// <summary>
-        /// Saves all Dental Coordinator station sections in one DB transaction.
+        /// Saves all Treatment Coordinator station sections in one DB transaction.
         /// X-Ray files are staged first, committed only after DB commit; staging is rolled back on failure.
         /// Add future section applies here with saveChanges:false before the shared SaveAsync/Commit.
         /// </summary>

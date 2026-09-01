@@ -1,0 +1,1368 @@
+@{
+    var eventAppointmentMinDate = ViewData["EventAppointmentMinDate"] as string ?? string.Empty;
+    var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
+    var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
+}
+
+<style>
+    #tcAppointmentsSection {
+        --tc-appt-indigo: rgba(80, 90, 201, 1);
+        --tc-appt-indigo-soft: rgba(80, 90, 201, 0.12);
+        --tc-appt-text: #1f2430;
+        --tc-appt-muted: #6b7285;
+        --tc-appt-border: rgba(31, 36, 48, 0.08);
+        --tc-appt-surface: #ffffff;
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--tc-appt-border);
+    }
+
+    #tcAppointmentsSection .tc-appt-title {
+        margin: 0 0 1rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--tc-appt-indigo);
+    }
+
+    #tcAppointmentsSection .tc-appt-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-summary-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: var(--tc-appt-indigo-soft);
+        color: var(--tc-appt-text);
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+
+    #tcAppointmentsSection .tc-appt-summary-pill.is-warning {
+        background: rgba(245, 158, 11, 0.14);
+        color: #92400e;
+    }
+
+    #tcAppointmentsSection .tc-appt-table-wrap {
+        border: 1px solid var(--tc-appt-border);
+        border-radius: 12px;
+        background: var(--tc-appt-surface);
+        overflow: auto;
+        flex: 1 1 auto;
+        min-height: 280px;
+        max-height: 420px;
+    }
+
+    #tcAppointmentsSection .tc-appt-workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+        gap: 1rem;
+        align-items: stretch;
+        margin-bottom: 1.25rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-list-panel {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    #tcAppointmentsSection .tc-appt-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-list-header h5 {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--tc-appt-text);
+    }
+
+    #tcAppointmentsSection .tc-appt-form-panel {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tcAppointmentsSection .tc-appt-table-wrap {
+        margin-bottom: 0;
+    }
+
+    #tcAppointmentsTable {
+        margin: 0;
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: rgba(80, 90, 201, 0.04);
+        --bs-table-hover-bg: rgba(80, 90, 201, 0.07);
+    }
+
+    #tcAppointmentsTable thead th {
+        background: rgba(80, 90, 201, 0.08);
+        color: var(--tc-appt-text);
+        font-size: 0.82rem;
+        font-weight: 700;
+        white-space: nowrap;
+        padding: 0.7rem 0.75rem;
+        border-bottom: 1px solid var(--tc-appt-border);
+    }
+
+    #tcAppointmentsTable tbody td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+        padding: 0.7rem 0.75rem;
+        border-color: rgba(31, 36, 48, 0.06);
+    }
+
+    #tcAppointmentsTable .tc-appt-finding-tag {
+        display: inline-block;
+        margin: 0.12rem 0.25rem 0.12rem 0;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(80, 90, 201, 0.1);
+        color: var(--tc-appt-indigo);
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    #tcAppointmentsTable .tc-appt-action-btn {
+        min-width: 2rem;
+        padding: 0.28rem 0.5rem;
+        border-radius: 8px;
+    }
+
+    #tcAppointmentFormCard {
+        border: 1px solid rgba(80, 90, 201, 0.22);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--tc-appt-surface);
+        box-shadow: 0 10px 24px rgba(80, 90, 201, 0.08);
+        margin-bottom: 0;
+    }
+
+    #tcAppointmentFormCard .card-header {
+        background: rgba(80, 90, 201, 0.1);
+        color: var(--tc-appt-indigo);
+        border-bottom: 1px solid rgba(80, 90, 201, 0.16);
+        font-weight: 700;
+        padding: 0.85rem 1.1rem;
+    }
+
+    #tcAppointmentFormCard .card-body {
+        padding: 1.15rem 1.2rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-findings-picker {
+        border: 1px solid var(--tc-appt-border);
+        border-radius: 12px;
+        background: #fbfbfd;
+        padding: 0.85rem 1rem;
+        max-height: 160px;
+        overflow-y: auto;
+    }
+
+    #tcAppointmentsSection .tc-appt-findings-picker .form-check {
+        margin-bottom: 0.55rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-findings-picker .form-check-label {
+        font-weight: 600;
+        color: var(--tc-appt-text);
+    }
+
+    #tcAppointmentsSection .tc-appt-findings-empty {
+        margin: 0;
+        color: var(--tc-appt-muted);
+        font-size: 0.9rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar {
+        border: 1px solid var(--tc-appt-border);
+        border-radius: 12px;
+        background: var(--tc-appt-surface);
+        overflow: hidden;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--tc-appt-border);
+        background: rgba(80, 90, 201, 0.06);
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-toolbar h5 {
+        margin: 0;
+        color: var(--tc-appt-indigo);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-day-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-width: 260px;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-day-wrap .form-label {
+        margin: 0;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    #tcAppointmentsSection .tc-appt-day-nav {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 8px;
+        border: 1px solid rgba(80, 90, 201, 0.3);
+        color: var(--tc-appt-indigo);
+        background: rgba(80, 90, 201, 0.06);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    #tcAppointmentsSection .tc-appt-day-nav:hover:not(:disabled) {
+        background: rgba(80, 90, 201, 0.14);
+        border-color: var(--tc-appt-indigo);
+    }
+
+    #tcAppointmentsSection .tc-appt-day-nav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-scroll {
+        max-height: 520px;
+        overflow: auto;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-header,
+    #tcAppointmentsSection .tc-appt-calendar-body {
+        display: grid;
+        grid-template-columns: 88px repeat(4, minmax(120px, 1fr));
+        min-width: 720px;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f3f4fb;
+        border-bottom: 1px solid var(--tc-appt-border);
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-header > div {
+        padding: 0.55rem 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-align: center;
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+    }
+
+    #tcAppointmentsSection .tc-appt-dentist-col {
+        position: relative;
+        min-height: calc(24px * 96);
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 23px,
+            rgba(31, 36, 48, 0.03) 23px,
+            rgba(31, 36, 48, 0.03) 24px
+        );
+    }
+
+    #tcAppointmentsSection .tc-appt-bookings {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    #tcAppointmentsSection .tc-appt-slot {
+        height: 24px;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.05);
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+    }
+
+    #tcAppointmentsSection .tc-appt-slot.is-hour {
+        border-bottom-color: rgba(31, 36, 48, 0.12);
+    }
+
+    #tcAppointmentsSection .tc-appt-time-label {
+        height: 24px;
+        box-sizing: border-box;
+        padding: 0 0.35rem;
+        font-size: 0.62rem;
+        color: var(--tc-appt-muted);
+        line-height: 24px;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.05);
+        border-right: 1px solid rgba(31, 36, 48, 0.06);
+        background: #fafbff;
+        white-space: nowrap;
+    }
+
+    #tcAppointmentsSection .tc-appt-time-label.is-hour {
+        color: var(--tc-appt-text);
+        font-weight: 700;
+        font-size: 0.68rem;
+        border-bottom-color: rgba(31, 36, 48, 0.12);
+    }
+
+    #tcAppointmentsSection .tc-appt-booking {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        z-index: 2;
+        border-radius: 8px;
+        padding: 0.2rem 0.4rem;
+        background: rgba(80, 90, 201, 0.88);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(80, 90, 201, 0.25);
+        cursor: pointer;
+        pointer-events: auto;
+        border: 0;
+        text-align: left;
+    }
+
+    #tcAppointmentsSection .tc-appt-booking:hover {
+        background: rgba(60, 70, 180, 0.95);
+    }
+
+    #tcAppointmentsSection .tc-appt-booking-label {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+    }
+
+    #tcAppointmentsSection .tc-appt-calendar-empty {
+        padding: 0.75rem 1rem;
+        color: var(--tc-appt-muted);
+        font-size: 0.88rem;
+        border-top: 1px solid var(--tc-appt-border);
+    }
+
+    @@media (max-width: 991px) {
+        #tcAppointmentsSection .tc-appt-workspace {
+            grid-template-columns: 1fr;
+        }
+
+        #tcAppointmentsSection .tc-appt-table-wrap {
+            max-height: 320px;
+        }
+    }
+</style>
+
+<div id="tcAppointmentsSection" aria-label="Treatment coordinator appointments">
+    <h4 class="tc-appt-title">Appointments</h4>
+
+    <input type="hidden" name="AppointmentsJson" id="AppointmentsJson" value="[]" />
+
+    <div class="tc-appt-summary" id="tcAppointmentsSummary" aria-live="polite"></div>
+
+    <div class="tc-appt-workspace">
+        <div class="tc-appt-list-panel">
+            <div class="tc-appt-list-header">
+                <h5>Scheduled Appointments</h5>
+            </div>
+            <div class="tc-appt-table-wrap">
+                <table class="table table-striped table-hover align-middle mb-0" id="tcAppointmentsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 44px;">#</th>
+                            <th style="width: 100px;">Dentist</th>
+                            <th style="width: 96px;">Date</th>
+                            <th style="width: 88px;">Start</th>
+                            <th style="width: 88px;">Duration</th>
+                            <th>Findings</th>
+                            <th style="width: 88px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tcAppointmentsTableBody">
+                        <tr id="tcAppointmentsEmptyRow">
+                            <td colspan="7" class="text-center py-4 text-muted">No appointments scheduled yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tc-appt-form-panel">
+            <div id="tcAppointmentFormCard" class="card h-100">
+                <div class="card-header" id="tcAppointmentFormTitle">Add Appointment</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="tcAppointmentDentist">Assign Dentist</label>
+                            <select id="tcAppointmentDentist" class="form-select">
+                                <option value=""></option>
+                                <option value="Dentist 1">Dentist 1</option>
+                                <option value="Dentist 2">Dentist 2</option>
+                                <option value="Dentist 3">Dentist 3</option>
+                                <option value="Dentist 4">Dentist 4</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="tcAppointmentDate">Appointment Date</label>
+                            <input type="text"
+                                   id="tcAppointmentDate"
+                                   class="form-control"
+                                   placeholder="MM/DD/YYYY"
+                                   autocomplete="off" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="tcAppointmentStartTime">Start Time</label>
+                            <input type="text"
+                                   id="tcAppointmentStartTime"
+                                   class="form-control"
+                                   placeholder="hh:mm AM"
+                                   autocomplete="off" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="tcAppointmentDuration">Duration</label>
+                            <select id="tcAppointmentDuration" class="form-select">
+                                <option value=""></option>
+                                <option value="15 min">15 min</option>
+                                <option value="30 min">30 min</option>
+                                <option value="45 min">45 min</option>
+                                <option value="1 hr">1 hr</option>
+                                <option value="1 hr 15 min">1 hr 15 min</option>
+                                <option value="1 hr 30 min">1 hr 30 min</option>
+                                <option value="1 hr 45 min">1 hr 45 min</option>
+                                <option value="2 hr">2 hr</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label d-block">Findings for this appointment</label>
+                            <div class="tc-appt-findings-picker" id="tcAppointmentFindingsPicker">
+                                <p class="tc-appt-findings-empty">Add dental findings above before scheduling appointments.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-start gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" id="tcCancelAppointmentBtn">Cancel</button>
+                        <button type="button" class="btn btn-general" id="tcSaveAppointmentBtn">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i> Save Appointment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tcAppointmentCalendar" class="tc-appt-calendar" aria-label="Appointment calendar">
+        <div class="tc-appt-calendar-toolbar">
+            <h5>Appointment Calendar</h5>
+            <div class="tc-appt-calendar-day-wrap">
+                <label class="form-label" for="tcCalendarDay">Date</label>
+                <button type="button"
+                        class="btn tc-appt-day-nav"
+                        id="tcCalendarPrevDayBtn"
+                        title="Previous day"
+                        aria-label="Previous day">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <input type="text"
+                       id="tcCalendarDay"
+                       class="form-control form-control-sm"
+                       placeholder="MM/DD/YYYY"
+                       autocomplete="off" />
+                <button type="button"
+                        class="btn tc-appt-day-nav"
+                        id="tcCalendarNextDayBtn"
+                        title="Next day"
+                        aria-label="Next day">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <div class="tc-appt-calendar-scroll">
+            <div class="tc-appt-calendar-header">
+                <div>Time</div>
+                <div>Dentist 1</div>
+                <div>Dentist 2</div>
+                <div>Dentist 3</div>
+                <div>Dentist 4</div>
+            </div>
+            <div class="tc-appt-calendar-body" id="tcApptCalendarBody">
+                <div class="tc-appt-time-col" id="tcApptTimeCol"></div>
+                <div class="tc-appt-dentist-col" data-dentist="Dentist 1">
+                    <div class="tc-appt-slots"></div>
+                    <div class="tc-appt-bookings"></div>
+                </div>
+                <div class="tc-appt-dentist-col" data-dentist="Dentist 2">
+                    <div class="tc-appt-slots"></div>
+                    <div class="tc-appt-bookings"></div>
+                </div>
+                <div class="tc-appt-dentist-col" data-dentist="Dentist 3">
+                    <div class="tc-appt-slots"></div>
+                    <div class="tc-appt-bookings"></div>
+                </div>
+                <div class="tc-appt-dentist-col" data-dentist="Dentist 4">
+                    <div class="tc-appt-slots"></div>
+                    <div class="tc-appt-bookings"></div>
+                </div>
+            </div>
+        </div>
+        <div class="tc-appt-calendar-empty" id="tcApptCalendarHint">
+            Select an event date to view booked appointments.
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
+        const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
+        const SERVICE_MEMBER_DISPLAY_NAME = @Json.Serialize(serviceMemberDisplayName);
+        const APPT_SLOT_MINUTES = 15;
+        const APPT_SLOT_HEIGHT = 24;
+        const APPT_SLOTS_PER_DAY = (24 * 60) / APPT_SLOT_MINUTES;
+        const APPT_DURATION_MINUTES = {
+            "15 min": 15,
+            "30 min": 30,
+            "45 min": 45,
+            "1 hr": 60,
+            "1 hr 15 min": 75,
+            "1 hr 30 min": 90,
+            "1 hr 45 min": 105,
+            "2 hr": 120
+        };
+
+        let tcAppointments = [];
+        let editingAppointmentIndex = null;
+        let tcAppointmentDatePicker = null;
+        let tcAppointmentStartTimePicker = null;
+        let tcCalendarDayPicker = null;
+
+        function generateAppointmentId() {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                return window.crypto.randomUUID();
+            }
+            return "appt-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+        }
+
+        function escapeHtml(value) {
+            return $("<div>").text(value ?? "").html();
+        }
+
+        function formatAppointmentDateForDisplay(value) {
+            if (!value) {
+                return "-";
+            }
+            const raw = value.toString();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                const parts = raw.split("-");
+                return parts[1] + "/" + parts[2] + "/" + parts[0];
+            }
+            return raw;
+        }
+
+        function parseAppointmentStartMinutes(timeValue) {
+            const raw = (timeValue || "").toString().trim();
+            if (!raw) {
+                return null;
+            }
+
+            const twelveHour = raw.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])$/);
+            if (twelveHour) {
+                let hour = parseInt(twelveHour[1], 10);
+                const minute = parseInt(twelveHour[2], 10);
+                const meridiem = twelveHour[3].toUpperCase();
+                if (hour < 1 || hour > 12 || minute < 0 || minute > 59) {
+                    return null;
+                }
+                if (meridiem === "AM") {
+                    if (hour === 12) {
+                        hour = 0;
+                    }
+                } else if (hour !== 12) {
+                    hour += 12;
+                }
+                return (hour * 60) + minute;
+            }
+
+            const twentyFourHour = raw.match(/^(\d{1,2}):(\d{2})$/);
+            if (twentyFourHour) {
+                const hour = parseInt(twentyFourHour[1], 10);
+                const minute = parseInt(twentyFourHour[2], 10);
+                if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                    return null;
+                }
+                return (hour * 60) + minute;
+            }
+
+            return null;
+        }
+
+        function parseAppointmentDurationMinutes(durationValue) {
+            return APPT_DURATION_MINUTES[(durationValue || "").toString()] || 0;
+        }
+
+        function formatMinutesAsTimeLabel(totalMinutes) {
+            const minutesInDay = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+            let hour = Math.floor(minutesInDay / 60);
+            const minute = minutesInDay % 60;
+            const meridiem = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) {
+                hour = 12;
+            }
+            return hour + ":" + String(minute).padStart(2, "0") + " " + meridiem;
+        }
+
+        function getAppointmentWindow(appointment) {
+            if (!appointment) {
+                return null;
+            }
+
+            const dentist = (appointment.assignedDentist || "").toString().trim();
+            const date = (appointment.appointmentDate || "").toString().trim();
+            const startMinutes = parseAppointmentStartMinutes(appointment.appointmentStartTime);
+            const durationMinutes = parseAppointmentDurationMinutes(appointment.appointmentDuration);
+
+            if (!dentist || !date || startMinutes == null || durationMinutes <= 0) {
+                return null;
+            }
+
+            return {
+                dentist: dentist,
+                date: date,
+                startMinutes: startMinutes,
+                endMinutes: startMinutes + durationMinutes,
+                durationMinutes: durationMinutes
+            };
+        }
+
+        function appointmentsOverlap(a, b) {
+            return !!a && !!b
+                && a.dentist === b.dentist
+                && a.date === b.date
+                && a.startMinutes < b.endMinutes
+                && b.startMinutes < a.endMinutes;
+        }
+
+        function getFindingsSnapshot() {
+            if (typeof window.getDentalFindingsForAppointments === "function") {
+                return window.getDentalFindingsForAppointments() || [];
+            }
+            return [];
+        }
+
+        function formatFindingLabel(finding, listIndex) {
+            const tooth = finding.affectedTooth || "?";
+            const toothLabel = finding.isPrimaryTooth ? (tooth + " (Primary)") : tooth;
+            const type = finding.diseaseConditionType || "Finding";
+            return "#" + (listIndex + 1) + " · Tooth " + toothLabel + " · " + type;
+        }
+
+        function getFindingByClientKey(clientKey) {
+            return getFindingsSnapshot().find(function (f) {
+                return f.clientKey === clientKey;
+            }) || null;
+        }
+
+        function getAssignedFindingKeys(excludeAppointmentIndex) {
+            const assigned = new Set();
+            tcAppointments.forEach(function (appt, index) {
+                if (excludeAppointmentIndex != null && index === excludeAppointmentIndex) {
+                    return;
+                }
+                (appt.findingClientKeys || []).forEach(function (key) {
+                    if (key) {
+                        assigned.add(key);
+                    }
+                });
+            });
+            return assigned;
+        }
+
+        function pruneInvalidFindingKeys() {
+            const validKeys = new Set(getFindingsSnapshot().map(function (f) { return f.clientKey; }));
+            tcAppointments.forEach(function (appt) {
+                appt.findingClientKeys = (appt.findingClientKeys || []).filter(function (key) {
+                    return validKeys.has(key);
+                });
+            });
+        }
+
+        function removeFindingKeyFromAppointments(deletedKey) {
+            if (!deletedKey) {
+                return;
+            }
+            tcAppointments = tcAppointments.filter(function (appt) {
+                appt.findingClientKeys = (appt.findingClientKeys || []).filter(function (key) {
+                    return key !== deletedKey;
+                });
+                return (appt.findingClientKeys || []).length > 0;
+            });
+            if (editingAppointmentIndex != null && editingAppointmentIndex >= tcAppointments.length) {
+                hideAppointmentForm();
+            }
+        }
+
+        function syncAppointmentsJson() {
+            const normalized = tcAppointments.map(function (appt) {
+                return {
+                    id: appt.id || "",
+                    assignedDentist: appt.assignedDentist || "",
+                    appointmentDate: appt.appointmentDate || "",
+                    appointmentStartTime: appt.appointmentStartTime || "",
+                    appointmentDuration: appt.appointmentDuration || "",
+                    findingClientKeys: appt.findingClientKeys || []
+                };
+            });
+            $("#AppointmentsJson").val(JSON.stringify(normalized));
+        }
+
+        function renderAppointmentsSummary() {
+            const findings = getFindingsSnapshot();
+            const totalFindings = findings.length;
+            const assignedKeys = getAssignedFindingKeys(null);
+            const scheduledFindings = assignedKeys.size;
+            const unscheduled = Math.max(0, totalFindings - scheduledFindings);
+            const $summary = $("#tcAppointmentsSummary").empty();
+
+            $summary.append(
+                "<span class='tc-appt-summary-pill'>" + totalFindings + " finding" + (totalFindings === 1 ? "" : "s") + "</span>"
+            );
+            $summary.append(
+                "<span class='tc-appt-summary-pill'>" + tcAppointments.length + " appointment" + (tcAppointments.length === 1 ? "" : "s") + "</span>"
+            );
+            if (unscheduled > 0) {
+                $summary.append(
+                    "<span class='tc-appt-summary-pill is-warning'>" + unscheduled + " unscheduled finding" + (unscheduled === 1 ? "" : "s") + "</span>"
+                );
+            } else if (totalFindings > 0) {
+                $summary.append(
+                    "<span class='tc-appt-summary-pill'>All findings scheduled</span>"
+                );
+            }
+        }
+
+        function renderFindingsPicker(selectedKeys) {
+            const selected = new Set(selectedKeys || []);
+            const assignedElsewhere = getAssignedFindingKeys(editingAppointmentIndex);
+            const findings = getFindingsSnapshot();
+            const $picker = $("#tcAppointmentFindingsPicker").empty();
+
+            if (!findings.length) {
+                $picker.append("<p class='tc-appt-findings-empty'>Add dental findings above before scheduling appointments.</p>");
+                return;
+            }
+
+            findings.forEach(function (finding) {
+                const key = finding.clientKey;
+                if (!key) {
+                    return;
+                }
+
+                const isSelected = selected.has(key);
+                const isTaken = assignedElsewhere.has(key);
+                if (isTaken && !isSelected) {
+                    return;
+                }
+
+                const inputId = "tcApptFinding_" + key.replace(/[^a-zA-Z0-9_-]/g, "_");
+                const $check = $(
+                    "<div class='form-check'>" +
+                    "<input class='form-check-input' type='checkbox' id='" + inputId + "' value='" + escapeHtml(key) + "'>" +
+                    "<label class='form-check-label' for='" + inputId + "'>" + escapeHtml(formatFindingLabel(finding, finding.index)) + "</label>" +
+                    "</div>"
+                );
+                $check.find("input").prop("checked", isSelected);
+                $picker.append($check);
+            });
+
+            if (!$picker.children(".form-check").length) {
+                $picker.append("<p class='tc-appt-findings-empty'>All findings are already assigned to other appointments.</p>");
+            }
+        }
+
+        function getSelectedFindingKeysFromForm() {
+            const keys = [];
+            $("#tcAppointmentFindingsPicker input[type='checkbox']:checked").each(function () {
+                keys.push($(this).val());
+            });
+            return keys;
+        }
+
+        function renderAppointmentsTable(options) {
+            options = options || {};
+            const $tbody = $("#tcAppointmentsTableBody");
+            $tbody.empty();
+
+            if (!tcAppointments.length) {
+                $tbody.append(
+                    "<tr id='tcAppointmentsEmptyRow'>" +
+                    "<td colspan='7' class='text-center py-4 text-muted'>No appointments scheduled yet.</td>" +
+                    "</tr>"
+                );
+                renderAppointmentsSummary();
+                syncAppointmentsJson();
+                renderAppointmentCalendar();
+                if (!options.suppressTcAppointmentsChanged) {
+                    $(document).trigger("tcAppointmentsChanged");
+                }
+                return;
+            }
+
+            tcAppointments.forEach(function (appt, index) {
+                const findingTags = (appt.findingClientKeys || []).map(function (key) {
+                    const finding = getFindingByClientKey(key);
+                    if (!finding) {
+                        return "<span class='tc-appt-finding-tag'>Removed finding</span>";
+                    }
+                    return "<span class='tc-appt-finding-tag'>" + escapeHtml(formatFindingLabel(finding, finding.index)) + "</span>";
+                }).join("");
+
+                const actionButtons =
+                    "<button type='button' class='btn btn-sm btn-outline-primary tc-appt-action-btn tc-appt-edit-btn' data-index='" + index + "' title='Edit'>" +
+                    "<i class='fas fa-edit' aria-hidden='true'></i></button> " +
+                    "<button type='button' class='btn btn-sm btn-outline-danger tc-appt-action-btn tc-appt-delete-btn' data-index='" + index + "' title='Delete'>" +
+                    "<i class='fas fa-trash-alt' aria-hidden='true'></i></button>";
+
+                $tbody.append(
+                    "<tr data-appointment-index='" + index + "'>" +
+                    "<td>" + (index + 1) + "</td>" +
+                    "<td>" + escapeHtml(appt.assignedDentist || "-") + "</td>" +
+                    "<td>" + escapeHtml(formatAppointmentDateForDisplay(appt.appointmentDate)) + "</td>" +
+                    "<td>" + escapeHtml(appt.appointmentStartTime || "-") + "</td>" +
+                    "<td>" + escapeHtml(appt.appointmentDuration || "-") + "</td>" +
+                    "<td>" + (findingTags || "-") + "</td>" +
+                    "<td class='text-nowrap'>" + actionButtons + "</td>" +
+                    "</tr>"
+                );
+            });
+
+            renderAppointmentsSummary();
+            syncAppointmentsJson();
+            renderAppointmentCalendar();
+            if (!options.suppressTcAppointmentsChanged) {
+                $(document).trigger("tcAppointmentsChanged");
+            }
+        }
+
+        function initAppointmentFormPickers() {
+            if (typeof flatpickr === "undefined") {
+                return;
+            }
+
+            const dateOptions = {
+                altInput: true,
+                altFormat: "m/d/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true
+            };
+            if (EVENT_APPOINTMENT_MIN_DATE) {
+                dateOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE) {
+                dateOptions.maxDate = EVENT_APPOINTMENT_MAX_DATE;
+            }
+
+            if (!tcAppointmentDatePicker && $("#tcAppointmentDate").length) {
+                tcAppointmentDatePicker = flatpickr("#tcAppointmentDate", dateOptions);
+            }
+            if (!tcAppointmentStartTimePicker && $("#tcAppointmentStartTime").length) {
+                tcAppointmentStartTimePicker = flatpickr("#tcAppointmentStartTime", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "h:i K",
+                    altInput: true,
+                    altFormat: "h:i K",
+                    time_24hr: false,
+                    allowInput: true
+                });
+            }
+        }
+
+        function destroyFlatpickrInstance(picker) {
+            if (picker) {
+                try {
+                    picker.destroy();
+                } catch (_error) {
+                    // ignore stale picker instances
+                }
+            }
+            return null;
+        }
+
+        function resetFlatpickrField(picker, inputSelector) {
+            destroyFlatpickrInstance(picker);
+            const $input = $(inputSelector);
+            $input.val("");
+            $input.siblings("input.form-control").not($input).remove();
+            return null;
+        }
+
+        function clearAppointmentForm() {
+            editingAppointmentIndex = null;
+            $("#tcAppointmentFormTitle").text("Add Appointment");
+            $("#tcSaveAppointmentBtn").html('<i class="fas fa-check-circle" aria-hidden="true"></i> Save Appointment');
+            $("#tcAppointmentDentist").val("");
+            tcAppointmentDatePicker = resetFlatpickrField(tcAppointmentDatePicker, "#tcAppointmentDate");
+            tcAppointmentStartTimePicker = resetFlatpickrField(tcAppointmentStartTimePicker, "#tcAppointmentStartTime");
+            $("#tcAppointmentDuration").val("");
+            initAppointmentFormPickers();
+            renderFindingsPicker([]);
+        }
+
+        function showAppointmentForm(selectedKeys) {
+            initAppointmentFormPickers();
+            if (selectedKeys !== undefined) {
+                renderFindingsPicker(selectedKeys);
+            } else if (editingAppointmentIndex == null) {
+                renderFindingsPicker([]);
+            }
+        }
+
+        function hideAppointmentForm() {
+            clearAppointmentForm();
+        }
+
+        function readAppointmentForm() {
+            return {
+                id: editingAppointmentIndex != null
+                    ? (tcAppointments[editingAppointmentIndex]?.id || generateAppointmentId())
+                    : generateAppointmentId(),
+                assignedDentist: ($("#tcAppointmentDentist").val() || "").toString().trim(),
+                appointmentDate: ($("#tcAppointmentDate").val() || "").toString().trim(),
+                appointmentStartTime: ($("#tcAppointmentStartTime").val() || "").toString().trim(),
+                appointmentDuration: ($("#tcAppointmentDuration").val() || "").toString().trim(),
+                findingClientKeys: getSelectedFindingKeysFromForm()
+            };
+        }
+
+        function writeAppointmentForm(appointment) {
+            $("#tcAppointmentDentist").val(appointment.assignedDentist || "");
+            initAppointmentFormPickers();
+            if (tcAppointmentDatePicker) {
+                if (appointment.appointmentDate) {
+                    tcAppointmentDatePicker.setDate(appointment.appointmentDate, true);
+                } else {
+                    tcAppointmentDatePicker.clear();
+                }
+            } else {
+                $("#tcAppointmentDate").val(appointment.appointmentDate || "");
+            }
+            if (tcAppointmentStartTimePicker) {
+                if (appointment.appointmentStartTime) {
+                    tcAppointmentStartTimePicker.setDate(appointment.appointmentStartTime, true);
+                } else {
+                    tcAppointmentStartTimePicker.clear();
+                }
+            } else {
+                $("#tcAppointmentStartTime").val(appointment.appointmentStartTime || "");
+            }
+            $("#tcAppointmentDuration").val(appointment.appointmentDuration || "");
+            renderFindingsPicker(appointment.findingClientKeys || []);
+        }
+
+        function validateAppointmentForm(appointment) {
+            if (!appointment.assignedDentist) {
+                Swal.fire("Invalid Data", "Assign Dentist is required.", "warning");
+                return false;
+            }
+            if (!appointment.appointmentDate) {
+                Swal.fire("Invalid Data", "Appointment Date is required.", "warning");
+                return false;
+            }
+            if (!appointment.appointmentStartTime) {
+                Swal.fire("Invalid Data", "Start Time is required.", "warning");
+                return false;
+            }
+            if (!appointment.appointmentDuration) {
+                Swal.fire("Invalid Data", "Duration is required.", "warning");
+                return false;
+            }
+            if (!appointment.findingClientKeys.length) {
+                Swal.fire("Invalid Data", "Select at least one finding for this appointment.", "warning");
+                return false;
+            }
+
+            const assignedElsewhere = getAssignedFindingKeys(editingAppointmentIndex);
+            for (let i = 0; i < appointment.findingClientKeys.length; i++) {
+                if (assignedElsewhere.has(appointment.findingClientKeys[i])) {
+                    Swal.fire("Invalid Data", "One or more selected findings are already assigned to another appointment.", "warning");
+                    return false;
+                }
+            }
+
+            const window = getAppointmentWindow(appointment);
+            if (!window) {
+                Swal.fire("Invalid Data", "Enter a valid start time and duration.", "warning");
+                return false;
+            }
+            if (window.endMinutes > (24 * 60)) {
+                Swal.fire("Invalid Data", "Appointment duration extends past midnight. Choose an earlier start time or shorter duration.", "warning");
+                return false;
+            }
+
+            for (let i = 0; i < tcAppointments.length; i++) {
+                if (editingAppointmentIndex != null && i === editingAppointmentIndex) {
+                    continue;
+                }
+                const existingWindow = getAppointmentWindow(tcAppointments[i]);
+                if (appointmentsOverlap(window, existingWindow)) {
+                    Swal.fire(
+                        "Appointment Conflict",
+                        appointment.assignedDentist + " already has an appointment on "
+                        + formatAppointmentDateForDisplay(window.date)
+                        + " from " + formatMinutesAsTimeLabel(existingWindow.startMinutes)
+                        + " to " + formatMinutesAsTimeLabel(existingWindow.endMinutes) + ".",
+                        "error"
+                    );
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function saveAppointment() {
+            const appointment = readAppointmentForm();
+            if (!validateAppointmentForm(appointment)) {
+                return;
+            }
+
+            if (editingAppointmentIndex != null) {
+                tcAppointments[editingAppointmentIndex] = appointment;
+            } else {
+                tcAppointments.push(appointment);
+            }
+
+            clearAppointmentForm();
+            renderAppointmentsTable();
+            if (appointment.appointmentDate) {
+                syncCalendarToDate(appointment.appointmentDate);
+            }
+        }
+
+        function editAppointment(index) {
+            const appointment = tcAppointments[index];
+            if (!appointment) {
+                return;
+            }
+
+            editingAppointmentIndex = index;
+            $("#tcAppointmentFormTitle").text("Edit Appointment");
+            $("#tcSaveAppointmentBtn").html('<i class="fas fa-check-circle" aria-hidden="true"></i> Update Appointment');
+            writeAppointmentForm(appointment);
+            showAppointmentForm(appointment.findingClientKeys || []);
+        }
+
+        function deleteAppointment(index) {
+            Swal.fire({
+                title: "Delete appointment?",
+                text: "This appointment will be removed. The linked findings will become available to schedule again.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Delete",
+                confirmButtonColor: "#dc3545"
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                tcAppointments.splice(index, 1);
+                if (editingAppointmentIndex === index) {
+                    hideAppointmentForm();
+                } else if (editingAppointmentIndex != null && editingAppointmentIndex > index) {
+                    editingAppointmentIndex -= 1;
+                }
+                renderAppointmentsTable();
+            });
+        }
+
+        function buildAppointmentCalendarGrid() {
+            const $timeCol = $("#tcApptTimeCol").empty();
+            $("#tcApptCalendarBody .tc-appt-dentist-col").each(function () {
+                const $col = $(this);
+                const $slots = $col.find(".tc-appt-slots").empty();
+                $col.find(".tc-appt-bookings").empty();
+
+                for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
+                    const minutes = i * APPT_SLOT_MINUTES;
+                    const isHour = minutes % 60 === 0;
+                    $slots.append(
+                        "<div class='tc-appt-slot" + (isHour ? " is-hour" : "") + "' data-minutes='" + minutes + "'></div>"
+                    );
+                }
+            });
+
+            for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
+                const minutes = i * APPT_SLOT_MINUTES;
+                const isHour = minutes % 60 === 0;
+                $timeCol.append(
+                    "<div class='tc-appt-time-label" + (isHour ? " is-hour" : "") + "'>" +
+                    escapeHtml(formatMinutesAsTimeLabel(minutes)) +
+                    "</div>"
+                );
+            }
+        }
+
+        function getSelectedCalendarDay() {
+            if (tcCalendarDayPicker) {
+                const selected = tcCalendarDayPicker.selectedDates[0];
+                if (selected) {
+                    return flatpickr.formatDate(selected, "Y-m-d");
+                }
+            }
+            return ($("#tcCalendarDay").val() || "").toString().trim();
+        }
+
+        function renderAppointmentCalendar() {
+            const selectedDay = getSelectedCalendarDay();
+            $("#tcApptCalendarBody .tc-appt-bookings").empty();
+
+            if (!selectedDay) {
+                $("#tcApptCalendarHint").text("Select an event date to view booked appointments.");
+                return;
+            }
+
+            let bookingCount = 0;
+            tcAppointments.forEach(function (appt, index) {
+                const window = getAppointmentWindow(appt);
+                if (!window || window.date !== selectedDay) {
+                    return;
+                }
+
+                const $col = $("#tcApptCalendarBody .tc-appt-dentist-col").filter(function () {
+                    return ($(this).attr("data-dentist") || "") === window.dentist;
+                }).first();
+                if (!$col.length) {
+                    return;
+                }
+
+                const top = (window.startMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
+                const height = Math.max(
+                    APPT_SLOT_HEIGHT,
+                    (window.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
+                );
+                const findingCount = (appt.findingClientKeys || []).length;
+                const label = SERVICE_MEMBER_DISPLAY_NAME || "Service Member";
+                const title = label
+                    + " · " + formatMinutesAsTimeLabel(window.startMinutes)
+                    + " – " + formatMinutesAsTimeLabel(window.endMinutes)
+                    + " · " + findingCount + " finding" + (findingCount === 1 ? "" : "s");
+
+                $col.find(".tc-appt-bookings").append(
+                    "<button type='button' class='tc-appt-booking' data-appointment-index='" + index + "' " +
+                    "style='top:" + top + "px;height:" + height + "px;' title='" + escapeHtml(title) + "'>" +
+                    "<span class='tc-appt-booking-label'>" + escapeHtml(label) + "</span>" +
+                    "</button>"
+                );
+                bookingCount += 1;
+            });
+
+            $("#tcApptCalendarHint").text(
+                bookingCount
+                    ? (bookingCount + " booked appointment" + (bookingCount === 1 ? "" : "s") + " on " + formatAppointmentDateForDisplay(selectedDay) + ".")
+                    : ("No booked appointments on " + formatAppointmentDateForDisplay(selectedDay) + ".")
+            );
+        }
+
+        function syncCalendarNavButtons() {
+            const selectedDay = getSelectedCalendarDay();
+            const $prev = $("#tcCalendarPrevDayBtn");
+            const $next = $("#tcCalendarNextDayBtn");
+            if (!selectedDay) {
+                $prev.prop("disabled", true);
+                $next.prop("disabled", true);
+                return;
+            }
+
+            $prev.prop("disabled", !!(EVENT_APPOINTMENT_MIN_DATE && selectedDay <= EVENT_APPOINTMENT_MIN_DATE));
+            $next.prop("disabled", !!(EVENT_APPOINTMENT_MAX_DATE && selectedDay >= EVENT_APPOINTMENT_MAX_DATE));
+        }
+
+        function shiftCalendarDay(dayDelta) {
+            const selectedDay = getSelectedCalendarDay();
+            if (!selectedDay || !tcCalendarDayPicker) {
+                return;
+            }
+
+            const current = flatpickr.parseDate(selectedDay, "Y-m-d");
+            if (!current) {
+                return;
+            }
+
+            current.setDate(current.getDate() + dayDelta);
+            const nextValue = flatpickr.formatDate(current, "Y-m-d");
+
+            if (EVENT_APPOINTMENT_MIN_DATE && nextValue < EVENT_APPOINTMENT_MIN_DATE) {
+                return;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE && nextValue > EVENT_APPOINTMENT_MAX_DATE) {
+                return;
+            }
+
+            tcCalendarDayPicker.setDate(nextValue, true);
+        }
+
+        function syncCalendarToDate(dateValue) {
+            if (!tcCalendarDayPicker || !dateValue) {
+                return;
+            }
+            const minOk = !EVENT_APPOINTMENT_MIN_DATE || dateValue >= EVENT_APPOINTMENT_MIN_DATE;
+            const maxOk = !EVENT_APPOINTMENT_MAX_DATE || dateValue <= EVENT_APPOINTMENT_MAX_DATE;
+            if (!minOk || !maxOk) {
+                return;
+            }
+            tcCalendarDayPicker.setDate(dateValue, true);
+            syncCalendarNavButtons();
+        }
+
+        function initAppointmentCalendar() {
+            buildAppointmentCalendarGrid();
+
+            $("#tcCalendarPrevDayBtn").off("click.tcApptNav").on("click.tcApptNav", function () {
+                shiftCalendarDay(-1);
+            });
+            $("#tcCalendarNextDayBtn").off("click.tcApptNav").on("click.tcApptNav", function () {
+                shiftCalendarDay(1);
+            });
+
+            if (typeof flatpickr === "undefined") {
+                renderAppointmentCalendar();
+                syncCalendarNavButtons();
+                return;
+            }
+
+            const dayOptions = {
+                altInput: true,
+                altFormat: "m/d/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                onChange: function () {
+                    renderAppointmentCalendar();
+                    syncCalendarNavButtons();
+                }
+            };
+            if (EVENT_APPOINTMENT_MIN_DATE) {
+                dayOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE) {
+                dayOptions.maxDate = EVENT_APPOINTMENT_MAX_DATE;
+            }
+
+            if (!tcCalendarDayPicker) {
+                tcCalendarDayPicker = flatpickr("#tcCalendarDay", dayOptions);
+            }
+
+            const defaultDay = EVENT_APPOINTMENT_MIN_DATE || EVENT_APPOINTMENT_MAX_DATE || "";
+            if (defaultDay) {
+                tcCalendarDayPicker.setDate(defaultDay, false);
+            }
+
+            renderAppointmentCalendar();
+            syncCalendarNavButtons();
+        }
+
+        function refreshFindingsPickerPreservingSelection() {
+            let selectedKeys = getSelectedFindingKeysFromForm();
+            if (!selectedKeys.length && editingAppointmentIndex != null) {
+                selectedKeys = tcAppointments[editingAppointmentIndex]?.findingClientKeys || [];
+            }
+            renderFindingsPicker(selectedKeys);
+        }
+
+        function refreshFromFindingsChange(deletedFindingKey) {
+            if (deletedFindingKey) {
+                removeFindingKeyFromAppointments(deletedFindingKey);
+            } else {
+                pruneInvalidFindingKeys();
+            }
+
+            if (editingAppointmentIndex != null) {
+                if (!tcAppointments[editingAppointmentIndex]) {
+                    hideAppointmentForm();
+                } else {
+                    const apptKeys = tcAppointments[editingAppointmentIndex].findingClientKeys || [];
+                    const formKeys = getSelectedFindingKeysFromForm().filter(function (key) {
+                        return apptKeys.indexOf(key) >= 0 || getFindingByClientKey(key);
+                    });
+                    renderFindingsPicker(formKeys.length ? formKeys : apptKeys);
+                }
+            } else {
+                refreshFindingsPickerPreservingSelection();
+            }
+
+            renderAppointmentsTable({ suppressTcAppointmentsChanged: true });
+        }
+
+        window.getFindingAppointmentAssignment = function (clientKey) {
+            if (!clientKey) {
+                return null;
+            }
+
+            for (let i = 0; i < tcAppointments.length; i++) {
+                const appt = tcAppointments[i];
+                if ((appt.findingClientKeys || []).indexOf(clientKey) >= 0) {
+                    return {
+                        appointmentIndex: i,
+                        assignedDentist: appt.assignedDentist || "",
+                        appointmentDate: appt.appointmentDate || "",
+                        appointmentStartTime: appt.appointmentStartTime || "",
+                        appointmentDuration: appt.appointmentDuration || ""
+                    };
+                }
+            }
+
+            return null;
+        };
+
+        window.initTreatmentCoordinatorAppointments = function () {
+            initAppointmentFormPickers();
+            initAppointmentCalendar();
+            clearAppointmentForm();
+            renderFindingsPicker([]);
+            renderAppointmentsTable();
+        };
+
+        $(document).ready(function () {
+            window.initTreatmentCoordinatorAppointments();
+
+            $("#tcCancelAppointmentBtn").on("click", hideAppointmentForm);
+            $("#tcSaveAppointmentBtn").on("click", saveAppointment);
+
+            $(document).on("click", ".tc-appt-edit-btn", function () {
+                editAppointment(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".tc-appt-delete-btn", function () {
+                deleteAppointment(parseInt($(this).data("index"), 10));
+            });
+
+            $(document).on("click", ".tc-appt-booking", function () {
+                editAppointment(parseInt($(this).data("appointment-index"), 10));
+            });
+
+            $(document).on("dentalFindingsChanged", function (_event, deletedFindingKey) {
+                refreshFromFindingsChange(deletedFindingKey);
+            });
+        });
+    })();
+</script>

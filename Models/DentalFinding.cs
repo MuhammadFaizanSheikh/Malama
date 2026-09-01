@@ -98,6 +98,15 @@ namespace Malama.Models
         public DateTime? ExternalExamDateTime { get; set; }
 
         public string? ExternalDentistRemarks { get; set; }
+
+        /// <summary>Where the finding was captured (Dental Exam station vs Treatment Coordinator).</summary>
+        public string? Source { get; set; }
+    }
+
+    public static class DentalFindingSources
+    {
+        public const string DentalExam = "DentalExam";
+        public const string DentalCoordinator = "DentalCoordinator";
     }
 
     public class DentalFindingDto
@@ -135,6 +144,8 @@ namespace Malama.Models
         public DateTime? ExternalExamDateTime { get; set; }
 
         public string? ExternalDentistRemarks { get; set; }
+
+        public string? Source { get; set; }
     }
 
     public static class DentalFindingMapper
@@ -164,7 +175,8 @@ namespace Malama.Models
                 ExaminationUpdatedOn = entity.ExaminationUpdatedOn,
                 ExternalExaminerName = entity.ExternalExaminerName,
                 ExternalExamDateTime = entity.ExternalExamDateTime,
-                ExternalDentistRemarks = entity.ExternalDentistRemarks
+                ExternalDentistRemarks = entity.ExternalDentistRemarks,
+                Source = entity.Source
             };
         }
 
@@ -188,7 +200,8 @@ namespace Malama.Models
                 ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
                 ExternalExaminerName = dto.ExternalExaminerName?.Trim(),
                 ExternalExamDateTime = dto.ExternalExamDateTime,
-                ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim()
+                ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim(),
+                Source = dto.Source?.Trim()
             };
         }
 

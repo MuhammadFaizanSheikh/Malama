@@ -293,6 +293,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                     var clinicalChanged = !FindingClinicalContentEquals(existing, finding);
                     ApplyFindingClinicalFields(existing, finding, index);
 
+                    if (string.IsNullOrWhiteSpace(existing.Source) && !string.IsNullOrWhiteSpace(finding.Source))
+                    {
+                        existing.Source = finding.Source.Trim();
+                    }
+
                     if (string.IsNullOrWhiteSpace(existing.ExaminationAddedBy))
                     {
                         existing.ExaminationAddedBy = userId;
