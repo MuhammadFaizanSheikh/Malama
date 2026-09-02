@@ -21,6 +21,8 @@
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
     var findingSourceDefault = ViewData["FindingSourceDefault"] as string ?? DentalFindingSources.DentalExam;
     var showFindingAppointmentDetails = ViewData["ShowFindingAppointmentDetails"] as bool? ?? false;
+    var showCoordinatorExternalExamFields = !showFindingAssignmentFields
+        && string.Equals(findingSourceDefault, DentalFindingSources.DentalCoordinator, StringComparison.Ordinal);
     var findingsTableColspan = showFindingAssignmentFields
         ? 11
         : (showFindingAppointmentDetails ? 11 : 10);
@@ -244,6 +246,14 @@
 
     .finding-external-examiner-meta {
         color: #92400e;
+    }
+
+    .finding-coordinator-external-fields {
+        border-top: 1px solid rgba(80, 90, 201, 0.14);
+    }
+
+    .finding-coordinator-external-fields .form-label {
+        font-weight: 600;
     }
 
     #dentalFindingsTable .finding-expand-btn {
@@ -640,7 +650,7 @@
                         @if (showFindingAssignmentFields)
                         {
                             <th style="width: 44px;" aria-label="Expand"></th>
-                            <th style="width: 60px;">S.No</th>
+                            <th style="width: 60px;">Finding #</th>
                             <th style="width: 110px;">Affected Tooth</th>
                             <th style="width: 120px;">Affected Surface(s)</th>
                             <th style="width: 150px;">Disease / Condition Type</th>
@@ -657,7 +667,7 @@
                             {
                                 <th style="width: 44px;" aria-label="Expand"></th>
                             }
-                            <th style="width: 60px;">S.No</th>
+                            <th style="width: 60px;">Finding #</th>
                             <th style="width: 110px;">Affected Tooth</th>
                             <th style="width: 140px;">Affected Surface(s)</th>
                             <th style="width: 160px;">Disease / Condition Type</th>
@@ -743,6 +753,33 @@
                                 </div>
                             }
                         </div>
+
+                        @if (showCoordinatorExternalExamFields)
+                        {
+                            <div class="finding-coordinator-external-fields mt-3 pt-3" id="findingCoordinatorExternalFields" style="display:none;">
+                                <div class="mb-3">
+                                    <label class="form-label" for="findingExternalExaminerName">External (Dentist) Examiner Name</label>
+                                    <input type="text"
+                                           id="findingExternalExaminerName"
+                                           class="form-control"
+                                           maxlength="200"
+                                           autocomplete="off" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="findingExternalExamDateTime">Exam Date Time</label>
+                                    <input type="datetime-local"
+                                           id="findingExternalExamDateTime"
+                                           class="form-control" />
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label" for="findingExternalDentistRemarks">Remarks by External Dentist</label>
+                                    <textarea id="findingExternalDentistRemarks"
+                                              class="form-control"
+                                              rows="3"
+                                              maxlength="4000"></textarea>
+                                </div>
+                            </div>
+                        }
 
                         @if (showFindingAssignmentFields)
                         {
@@ -957,6 +994,7 @@
         const FINDING_SOURCE_COORDINATOR = @Json.Serialize(DentalFindingSources.DentalCoordinator);
         const FINDING_SOURCE_DEFAULT = @Json.Serialize(findingSourceDefault);
         const SHOW_FINDING_APPOINTMENT_DETAILS = @Json.Serialize(showFindingAppointmentDetails);
+        const SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS = @Json.Serialize(showCoordinatorExternalExamFields);
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
         const FINDINGS_TABLE_COLSPAN = @Json.Serialize(findingsTableColspan);
@@ -1312,7 +1350,18 @@
             $("#findingDescription").val("");
             $("input[name='FindingClassification']").prop("checked", false);
             clearFindingAssignmentFields();
+            clearCoordinatorExternalFields();
             toggleExternalExaminerNameVisibility(null);
+            toggleCoordinatorExternalFieldsVisibility(null);
+        }
+
+        function clearCoordinatorExternalFields() {
+            if (!SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS) {
+                return;
+            }
+            $("#findingExternalExaminerName").val("");
+            $("#findingExternalExamDateTime").val("");
+            $("#findingExternalDentistRemarks").val("");
         }
 
         function clearFindingAssignmentFields() {
@@ -1378,6 +1427,39 @@
             return !!(finding && finding.id > 0 && !((finding.externalExaminerName || "").toString().trim()));
         }
 
+        function isCoordinatorSourceFinding(finding) {
+            const source = finding
+                ? (finding.source || FINDING_SOURCE_EXAM)
+                : FINDING_SOURCE_DEFAULT;
+            return source === FINDING_SOURCE_COORDINATOR;
+        }
+
+        function shouldShowCoordinatorExternalFields(finding) {
+            if (!SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS) {
+                return false;
+            }
+            if (editingFindingIndex == null) {
+                return FINDING_SOURCE_DEFAULT === FINDING_SOURCE_COORDINATOR;
+            }
+            const existing = finding || dentalFindings[editingFindingIndex];
+            return isCoordinatorSourceFinding(existing);
+        }
+
+        function toggleCoordinatorExternalFieldsVisibility(finding) {
+            if (!SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS) {
+                return;
+            }
+            const $section = $("#findingCoordinatorExternalFields");
+            if (!$section.length) {
+                return;
+            }
+            const show = shouldShowCoordinatorExternalFields(finding);
+            $section.toggle(show);
+            if (!show) {
+                clearCoordinatorExternalFields();
+            }
+        }
+
         function toggleExternalExaminerNameVisibility(finding) {
             if (!SHOW_FINDING_ASSIGNMENT_FIELDS) {
                 return;
@@ -1437,6 +1519,9 @@
                 }
                 initAppointmentPickers();
                 applyFindingFormReadOnly();
+                toggleCoordinatorExternalFieldsVisibility(
+                    editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null
+                );
             };
 
             const $card = $("#dentalFindingFormCard");
@@ -1495,6 +1580,21 @@
                 return null;
             }
 
+            if (shouldShowCoordinatorExternalFields(editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null)) {
+                if (!finding.externalExaminerName) {
+                    Swal.fire("Invalid Data", "External (Dentist) Examiner Name is required.", "warning");
+                    return null;
+                }
+                if (!finding.externalExamDateTime) {
+                    Swal.fire("Invalid Data", "Exam Date Time is required.", "warning");
+                    return null;
+                }
+                if (!finding.externalDentistRemarks) {
+                    Swal.fire("Invalid Data", "Remarks by External Dentist is required.", "warning");
+                    return null;
+                }
+            }
+
             if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
                 const conflictMessage = getAppointmentConflictMessage(finding, editingFindingIndex);
                 if (conflictMessage) {
@@ -1509,6 +1609,8 @@
         function readFindingForm() {
             const existing = editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null;
             const assignmentEnabled = SHOW_FINDING_ASSIGNMENT_FIELDS;
+            const coordinatorExternalEnabled = shouldShowCoordinatorExternalFields(existing);
+            const externalFieldsEnabled = assignmentEnabled || coordinatorExternalEnabled;
             const showExternalName = assignmentEnabled
                 && (editingFindingIndex == null || !isDentalExamOriginFinding(existing));
 
@@ -1528,13 +1630,13 @@
                 examinationAddedOn: existing ? (existing.examinationAddedOn || null) : null,
                 examinationUpdatedBy: existing ? (existing.examinationUpdatedBy || null) : null,
                 examinationUpdatedOn: existing ? (existing.examinationUpdatedOn || null) : null,
-                externalExaminerName: showExternalName
+                externalExaminerName: externalFieldsEnabled && (coordinatorExternalEnabled || showExternalName)
                     ? ($("#findingExternalExaminerName").val()?.trim() || "")
                     : (existing ? (existing.externalExaminerName || "") : ""),
-                externalExamDateTime: assignmentEnabled
+                externalExamDateTime: externalFieldsEnabled
                     ? fromDateTimeLocalValue($("#findingExternalExamDateTime").val())
                     : (existing ? (existing.externalExamDateTime || null) : null),
-                externalDentistRemarks: assignmentEnabled
+                externalDentistRemarks: externalFieldsEnabled
                     ? ($("#findingExternalDentistRemarks").val()?.trim() || "")
                     : (existing ? (existing.externalDentistRemarks || "") : ""),
                 assignedDentist: assignmentEnabled
@@ -1605,6 +1707,13 @@
                 $("input[name='FindingDentalTreatmentRequired']").prop("checked", false);
                 $("input[name='FindingDentalTreatmentRequired'][value='" + treatmentRequired + "']").prop("checked", true);
                 toggleExternalExaminerNameVisibility(finding);
+            }
+
+            if (SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS) {
+                $("#findingExternalExaminerName").val(finding.externalExaminerName || "");
+                $("#findingExternalExamDateTime").val(toDateTimeLocalValue(finding.externalExamDateTime));
+                $("#findingExternalDentistRemarks").val(finding.externalDentistRemarks || "");
+                toggleCoordinatorExternalFieldsVisibility(finding);
             }
         }
 
@@ -1693,6 +1802,15 @@
         }
 
         function formatExaminerDetail(finding) {
+            if (isCoordinatorSourceFinding(finding)) {
+                const externalName = (finding.externalExaminerName || "").toString().trim();
+                const nameHtml = externalName ? escapeHtml(externalName) : "-";
+                const whenHtml = finding.externalExamDateTime
+                    ? ("<div class='small finding-external-examiner-meta'>" + formatExaminerDateTime(finding.externalExamDateTime) + "</div>")
+                    : "";
+                return "<span class='finding-external-examiner'>" + nameHtml + "</span>" + whenHtml;
+            }
+
             const externalName = (finding.externalExaminerName || "").toString().trim();
             if (externalName) {
                 const whenHtml = finding.externalExamDateTime
@@ -1760,21 +1878,41 @@
             return window.getFindingAppointmentAssignment(clientKey);
         }
 
+        function buildCoordinatorExternalExamDetailSection(finding) {
+            if (!isCoordinatorSourceFinding(finding)) {
+                return "";
+            }
+
+            const remarks = (finding.externalDentistRemarks || "").toString().trim();
+            if (!remarks) {
+                return "";
+            }
+
+            return "<div class='finding-detail-subsection'>" +
+                "<div class='finding-detail-subsection-title'>External Examiner</div>" +
+                "<div class='finding-detail-grid'>" +
+                buildFindingDetailItem("Remarks by External Dentist", escapeHtml(remarks), true) +
+                "</div></div>";
+        }
+
         function buildFindingAppointmentDetailSection(finding) {
             if (!SHOW_FINDING_APPOINTMENT_DETAILS) {
                 return "";
             }
 
+            const externalSection = buildCoordinatorExternalExamDetailSection(finding);
             const assignment = getFindingAppointmentAssignmentSafe(finding.clientKey);
             if (!assignment) {
-                return "<div class='finding-detail-subsection'>" +
+                return externalSection +
+                    "<div class='finding-detail-subsection'>" +
                     "<div class='finding-detail-subsection-title'>Appointment</div>" +
                     "<div class='finding-detail-grid'>" +
                     buildFindingDetailItem("Status", "Not scheduled") +
                     "</div></div>";
             }
 
-            return "<div class='finding-detail-subsection'>" +
+            return externalSection +
+                "<div class='finding-detail-subsection'>" +
                 "<div class='finding-detail-subsection-title'>Appointment</div>" +
                 "<div class='finding-detail-grid'>" +
                 buildFindingDetailItem("Assigned Dentist", escapeHtml(assignment.assignedDentist || "-")) +
