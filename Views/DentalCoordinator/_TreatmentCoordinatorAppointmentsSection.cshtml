@@ -451,6 +451,10 @@
                                 <option value="1 hr 30 min">1 hr 30 min</option>
                                 <option value="1 hr 45 min">1 hr 45 min</option>
                                 <option value="2 hr">2 hr</option>
+                                <option value="2 hr 15 min">2 hr 15 min</option>
+                                <option value="2 hr 30 min">2 hr 30 min</option>
+                                <option value="2 hr 45 min">2 hr 45 min</option>
+                                <option value="3 hr">3 hr</option>
                             </select>
                         </div>
                         <div class="col-12">
@@ -547,7 +551,11 @@
             "1 hr 15 min": 75,
             "1 hr 30 min": 90,
             "1 hr 45 min": 105,
-            "2 hr": 120
+            "2 hr": 120,
+            "2 hr 15 min": 135,
+            "2 hr 30 min": 150,
+            "2 hr 45 min": 165,
+            "3 hr": 180
         };
 
         let tcAppointments = [];
@@ -657,7 +665,6 @@
 
         function appointmentsOverlap(a, b) {
             return !!a && !!b
-                && a.dentist === b.dentist
                 && a.date === b.date
                 && a.startMinutes < b.endMinutes
                 && b.startMinutes < a.endMinutes;
@@ -684,13 +691,18 @@
         }
 
         function getAssignedFindingKeys(excludeAppointmentIndex) {
+            const validKeys = new Set(
+                getFindingsSnapshot()
+                    .map(function (f) { return f.clientKey; })
+                    .filter(Boolean)
+            );
             const assigned = new Set();
             tcAppointments.forEach(function (appt, index) {
                 if (excludeAppointmentIndex != null && index === excludeAppointmentIndex) {
                     return;
                 }
                 (appt.findingClientKeys || []).forEach(function (key) {
-                    if (key) {
+                    if (key && validKeys.has(key)) {
                         assigned.add(key);
                     }
                 });
@@ -705,21 +717,43 @@
                     return validKeys.has(key);
                 });
             });
+            removeEmptyAppointments();
+        }
+
+        function removeEmptyAppointments() {
+            const editingApptId = editingAppointmentIndex != null
+                ? (tcAppointments[editingAppointmentIndex]?.id || null)
+                : null;
+
+            tcAppointments = tcAppointments.filter(function (appt) {
+                return (appt.findingClientKeys || []).length > 0;
+            });
+
+            if (editingApptId) {
+                const newIndex = tcAppointments.findIndex(function (appt) {
+                    return appt.id === editingApptId;
+                });
+                if (newIndex < 0) {
+                    hideAppointmentForm();
+                } else {
+                    editingAppointmentIndex = newIndex;
+                }
+            } else if (editingAppointmentIndex != null && editingAppointmentIndex >= tcAppointments.length) {
+                hideAppointmentForm();
+            }
         }
 
         function removeFindingKeyFromAppointments(deletedKey) {
             if (!deletedKey) {
                 return;
             }
-            tcAppointments = tcAppointments.filter(function (appt) {
+
+            tcAppointments.forEach(function (appt) {
                 appt.findingClientKeys = (appt.findingClientKeys || []).filter(function (key) {
                     return key !== deletedKey;
                 });
-                return (appt.findingClientKeys || []).length > 0;
             });
-            if (editingAppointmentIndex != null && editingAppointmentIndex >= tcAppointments.length) {
-                hideAppointmentForm();
-            }
+            removeEmptyAppointments();
         }
 
         function syncAppointmentsJson() {
@@ -808,6 +842,19 @@
             return keys;
         }
 
+        function syncAppointmentFormFindingsPicker() {
+            if (editingAppointmentIndex != null && tcAppointments[editingAppointmentIndex]) {
+                renderFindingsPicker(tcAppointments[editingAppointmentIndex].findingClientKeys || []);
+                return;
+            }
+
+            if (editingAppointmentIndex != null) {
+                return;
+            }
+
+            renderFindingsPicker([]);
+        }
+
         function renderAppointmentsTable(options) {
             options = options || {};
             const $tbody = $("#tcAppointmentsTableBody");
@@ -825,17 +872,23 @@
                 if (!options.suppressTcAppointmentsChanged) {
                     $(document).trigger("tcAppointmentsChanged");
                 }
+                if (!options.suppressFormPickerSync) {
+                    syncAppointmentFormFindingsPicker();
+                }
                 return;
             }
 
             tcAppointments.forEach(function (appt, index) {
-                const findingTags = (appt.findingClientKeys || []).map(function (key) {
-                    const finding = getFindingByClientKey(key);
-                    if (!finding) {
-                        return "<span class='tc-appt-finding-tag'>Removed finding</span>";
-                    }
-                    return "<span class='tc-appt-finding-tag'>" + escapeHtml(formatFindingLabel(finding, finding.index)) + "</span>";
-                }).join("");
+                const findingTags = (appt.findingClientKeys || [])
+                    .map(function (key) {
+                        const finding = getFindingByClientKey(key);
+                        if (!finding) {
+                            return "";
+                        }
+                        return "<span class='tc-appt-finding-tag'>" + escapeHtml(formatFindingLabel(finding, finding.index)) + "</span>";
+                    })
+                    .filter(Boolean)
+                    .join("");
 
                 const actionButtons =
                     "<button type='button' class='btn btn-sm btn-outline-primary tc-appt-action-btn tc-appt-edit-btn' data-index='" + index + "' title='Edit'>" +
@@ -861,6 +914,9 @@
             renderAppointmentCalendar();
             if (!options.suppressTcAppointmentsChanged) {
                 $(document).trigger("tcAppointmentsChanged");
+            }
+            if (!options.suppressFormPickerSync) {
+                syncAppointmentFormFindingsPicker();
             }
         }
 
@@ -1010,12 +1066,12 @@
                 }
             }
 
-            const window = getAppointmentWindow(appointment);
-            if (!window) {
+            const appointmentWindow = getAppointmentWindow(appointment);
+            if (!appointmentWindow) {
                 Swal.fire("Invalid Data", "Enter a valid start time and duration.", "warning");
                 return false;
             }
-            if (window.endMinutes > (24 * 60)) {
+            if (appointmentWindow.endMinutes > (24 * 60)) {
                 Swal.fire("Invalid Data", "Appointment duration extends past midnight. Choose an earlier start time or shorter duration.", "warning");
                 return false;
             }
@@ -1025,13 +1081,16 @@
                     continue;
                 }
                 const existingWindow = getAppointmentWindow(tcAppointments[i]);
-                if (appointmentsOverlap(window, existingWindow)) {
+                if (appointmentsOverlap(appointmentWindow, existingWindow)) {
                     Swal.fire(
                         "Appointment Conflict",
-                        appointment.assignedDentist + " already has an appointment on "
-                        + formatAppointmentDateForDisplay(window.date)
+                        "This time slot is already booked on "
+                        + formatAppointmentDateForDisplay(appointmentWindow.date)
                         + " from " + formatMinutesAsTimeLabel(existingWindow.startMinutes)
-                        + " to " + formatMinutesAsTimeLabel(existingWindow.endMinutes) + ".",
+                        + " to " + formatMinutesAsTimeLabel(existingWindow.endMinutes)
+                        + (tcAppointments[i].assignedDentist
+                            ? " (dentist: " + tcAppointments[i].assignedDentist + ")."
+                            : "."),
                         "error"
                     );
                     return false;
@@ -1144,28 +1203,28 @@
 
             let bookingCount = 0;
             tcAppointments.forEach(function (appt, index) {
-                const window = getAppointmentWindow(appt);
-                if (!window || window.date !== selectedDay) {
+                const appointmentWindow = getAppointmentWindow(appt);
+                if (!appointmentWindow || appointmentWindow.date !== selectedDay) {
                     return;
                 }
 
                 const $col = $("#tcApptCalendarBody .tc-appt-dentist-col").filter(function () {
-                    return ($(this).attr("data-dentist") || "") === window.dentist;
+                    return ($(this).attr("data-dentist") || "") === appointmentWindow.dentist;
                 }).first();
                 if (!$col.length) {
                     return;
                 }
 
-                const top = (window.startMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
+                const top = (appointmentWindow.startMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
                 const height = Math.max(
                     APPT_SLOT_HEIGHT,
-                    (window.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
+                    (appointmentWindow.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
                 );
                 const findingCount = (appt.findingClientKeys || []).length;
                 const label = SERVICE_MEMBER_DISPLAY_NAME || "Service Member";
                 const title = label
-                    + " · " + formatMinutesAsTimeLabel(window.startMinutes)
-                    + " – " + formatMinutesAsTimeLabel(window.endMinutes)
+                    + " · " + formatMinutesAsTimeLabel(appointmentWindow.startMinutes)
+                    + " – " + formatMinutesAsTimeLabel(appointmentWindow.endMinutes)
                     + " · " + findingCount + " finding" + (findingCount === 1 ? "" : "s");
 
                 $col.find(".tc-appt-bookings").append(
@@ -1281,37 +1340,52 @@
             syncCalendarNavButtons();
         }
 
-        function refreshFindingsPickerPreservingSelection() {
-            let selectedKeys = getSelectedFindingKeysFromForm();
-            if (!selectedKeys.length && editingAppointmentIndex != null) {
-                selectedKeys = tcAppointments[editingAppointmentIndex]?.findingClientKeys || [];
+        function refreshFindingsPickerFromState() {
+            const validKeys = new Set(
+                getFindingsSnapshot()
+                    .map(function (f) { return f.clientKey; })
+                    .filter(Boolean)
+            );
+            let selectedKeys = [];
+
+            if (editingAppointmentIndex != null && tcAppointments[editingAppointmentIndex]) {
+                selectedKeys = (tcAppointments[editingAppointmentIndex].findingClientKeys || []).filter(function (key) {
+                    return validKeys.has(key);
+                });
+            } else {
+                selectedKeys = getSelectedFindingKeysFromForm().filter(function (key) {
+                    return validKeys.has(key);
+                });
             }
+
             renderFindingsPicker(selectedKeys);
         }
 
         function refreshFromFindingsChange(deletedFindingKey) {
             if (deletedFindingKey) {
                 removeFindingKeyFromAppointments(deletedFindingKey);
-            } else {
-                pruneInvalidFindingKeys();
+            }
+            pruneInvalidFindingKeys();
+
+            if (editingAppointmentIndex != null && !tcAppointments[editingAppointmentIndex]) {
+                hideAppointmentForm();
+            } else if (editingAppointmentIndex != null && tcAppointments[editingAppointmentIndex]) {
+                writeAppointmentForm(tcAppointments[editingAppointmentIndex]);
             }
 
-            if (editingAppointmentIndex != null) {
-                if (!tcAppointments[editingAppointmentIndex]) {
-                    hideAppointmentForm();
-                } else {
-                    const apptKeys = tcAppointments[editingAppointmentIndex].findingClientKeys || [];
-                    const formKeys = getSelectedFindingKeysFromForm().filter(function (key) {
-                        return apptKeys.indexOf(key) >= 0 || getFindingByClientKey(key);
-                    });
-                    renderFindingsPicker(formKeys.length ? formKeys : apptKeys);
-                }
-            } else {
-                refreshFindingsPickerPreservingSelection();
+            renderAppointmentsTable({ suppressTcAppointmentsChanged: true, suppressFormPickerSync: true });
+            if (editingAppointmentIndex == null) {
+                syncAppointmentFormFindingsPicker();
             }
-
-            renderAppointmentsTable({ suppressTcAppointmentsChanged: true });
+            $(document).trigger("tcAppointmentsChanged");
         }
+
+        window.refreshTreatmentCoordinatorAppointmentsFromFindings = refreshFromFindingsChange;
+
+        document.addEventListener("malama-findings-changed", function (event) {
+            const deletedKey = event.detail && event.detail.deletedClientKey;
+            refreshFromFindingsChange(deletedKey || null);
+        });
 
         window.getFindingAppointmentAssignment = function (clientKey) {
             if (!clientKey) {
@@ -1360,8 +1434,9 @@
                 editAppointment(parseInt($(this).data("appointment-index"), 10));
             });
 
-            $(document).on("dentalFindingsChanged", function (_event, deletedFindingKey) {
-                refreshFromFindingsChange(deletedFindingKey);
+            $(document).on("dentalFindingsChanged", function (event, deletedFindingKey) {
+                const deletedKey = deletedFindingKey || event.deletedFindingKey || null;
+                refreshFromFindingsChange(deletedKey);
             });
         });
     })();

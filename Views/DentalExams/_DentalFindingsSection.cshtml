@@ -807,6 +807,10 @@
                                             <option value="1 hr 30 min">1 hr 30 min</option>
                                             <option value="1 hr 45 min">1 hr 45 min</option>
                                             <option value="2 hr">2 hr</option>
+                                            <option value="2 hr 15 min">2 hr 15 min</option>
+                                            <option value="2 hr 30 min">2 hr 30 min</option>
+                                            <option value="2 hr 45 min">2 hr 45 min</option>
+                                            <option value="3 hr">3 hr</option>
                                         </select>
                                     </div>
                                 </div>
@@ -971,7 +975,11 @@
             "1 hr 15 min": 75,
             "1 hr 30 min": 90,
             "1 hr 45 min": 105,
-            "2 hr": 120
+            "2 hr": 120,
+            "2 hr 15 min": 135,
+            "2 hr 30 min": 150,
+            "2 hr 45 min": 165,
+            "3 hr": 180
         };
         const examinerNamesByUserId = @Html.Raw(examinerNamesJson);
 
@@ -1790,6 +1798,9 @@
                 if (!options.suppressDentalFindingsChanged) {
                     $(document).trigger("dentalFindingsChanged");
                 }
+                if (options.syncAppointmentsAfterRender) {
+                    notifyAppointmentsSectionOfFindingsChange(options.deletedFindingKey || null);
+                }
                 return;
             }
 
@@ -1913,6 +1924,22 @@
             if (!options.suppressDentalFindingsChanged) {
                 $(document).trigger("dentalFindingsChanged");
             }
+            if (options.syncAppointmentsAfterRender) {
+                notifyAppointmentsSectionOfFindingsChange(options.deletedFindingKey || null);
+            }
+        }
+
+        function notifyAppointmentsSectionOfFindingsChange(deletedFindingKey) {
+            const deletedKey = deletedFindingKey || null;
+            window.setTimeout(function () {
+                if (typeof window.refreshTreatmentCoordinatorAppointmentsFromFindings === "function") {
+                    window.refreshTreatmentCoordinatorAppointmentsFromFindings(deletedKey);
+                } else {
+                    document.dispatchEvent(new CustomEvent("malama-findings-changed", {
+                        detail: { deletedClientKey: deletedKey }
+                    }));
+                }
+            }, 0);
         }
 
         function buildFindingDetailItem(label, valueHtml, isWide) {
@@ -2389,6 +2416,7 @@
                     return;
                 }
 
+                ensureFindingClientKeys();
                 const deletedKey = dentalFindings[index]?.clientKey || null;
                 dentalFindings.splice(index, 1);
                 if (editingFindingIndex === index) {
@@ -2396,8 +2424,11 @@
                 } else if (editingFindingIndex != null && editingFindingIndex > index) {
                     editingFindingIndex -= 1;
                 }
-                renderFindingsTable({ suppressDentalFindingsChanged: true });
-                $(document).trigger("dentalFindingsChanged", [deletedKey]);
+                renderFindingsTable({
+                    suppressDentalFindingsChanged: true,
+                    syncAppointmentsAfterRender: true,
+                    deletedFindingKey: deletedKey
+                });
             });
         }
 
