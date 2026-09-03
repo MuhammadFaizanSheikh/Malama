@@ -14,6 +14,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task ApplyCoordinatorSectionAsync(
             long serviceMembersChildId,
             string? comments,
+            string status,
             string userName,
             string userId,
             bool saveChanges = true);

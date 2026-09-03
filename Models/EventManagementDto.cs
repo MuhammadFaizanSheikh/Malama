@@ -62,6 +62,24 @@
         public TimeSpan? EndTimeLocal { get; set; }
     }
 
+    public class EventAppointmentDayWindowDto
+    {
+        public string Date { get; set; } = string.Empty;
+
+        public int StartMinutes { get; set; }
+
+        public int EndMinutes { get; set; }
+    }
+
+    public class EventAppointmentWindowDto
+    {
+        public string MinDate { get; set; } = string.Empty;
+
+        public string MaxDate { get; set; } = string.Empty;
+
+        public List<EventAppointmentDayWindowDto> Days { get; set; } = new();
+    }
+
     [Table("EventManagement")]
     public class EventManagement : GenericProperties
     {

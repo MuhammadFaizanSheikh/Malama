@@ -146,6 +146,9 @@ namespace Malama.Models
         public string? ExternalDentistRemarks { get; set; }
 
         public string? Source { get; set; }
+
+        /// <summary>Client-side stable key for appointment assignment (Treatment Coordinator).</summary>
+        public string? ClientKey { get; set; }
     }
 
     public static class DentalFindingMapper

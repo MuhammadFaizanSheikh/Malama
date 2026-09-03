@@ -121,9 +121,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                     saveChanges: false);
 
                 // Section: Treatment Coordinator (DentalTreatment)
+                var coordinatorOverallStatus = DentalCoordinatorTreatmentStatusHelper
+                    .ComputeCoordinatorOverallStatus(dto);
                 await _dentalTreatmentService.ApplyCoordinatorSectionAsync(
                     dto.ServiceMembersChildId,
                     dto.TreatmentCoordinatorComments,
+                    coordinatorOverallStatus,
                     userName,
                     userId,
                     saveChanges: false);

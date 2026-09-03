@@ -103,6 +103,16 @@ namespace Malama.Utilities
         {
             ("DT-Dentist", "Treatment")
         },
+            // Treatment Coordinator
+            ["TreatmentCoordinator_View"] = new List<(string Role, string Attribute)>
+        {
+            ("DT-Treatment Coordinator", null),
+            ("Event Manager", null)
+        },
+            ["TreatmentCoordinator_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("DT-Treatment Coordinator", null),
+        },
 
             // Dental X-Ray
             ["DentalXRay_View"] = new List<(string Role, string Attribute)>

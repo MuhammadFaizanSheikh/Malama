@@ -33,6 +33,9 @@
     var treatmentCoordinatorDateTimeDisplay = (dentalTreatment?.TreatmentCoordinatorDateTime ?? DateTime.Now)
         .ToString("MM/dd/yyyy hh:mm tt");
     var treatmentCoordinatorComments = dentalTreatment?.TreatmentCoordinatorComments ?? string.Empty;
+    var treatmentCoordinatorOverallStatus = string.IsNullOrWhiteSpace(dentalTreatment?.Status)
+        ? AppConstants.Status.Pending
+        : dentalTreatment!.Status;
 
     string TreatmentStatusBadgeClass(string status) => status switch
     {
@@ -975,35 +978,6 @@
                 </div>
 
                 <div class="dco-treatment-split">
-                    <div class="dco-forms-card dco-coordinator-details-card" aria-label="Treatment coordinator details">
-                        <div class="mb-3">
-                            <label class="form-label" for="TreatmentCoordinatorNameDisplay">Treatment Coordinator Name</label>
-                            <input type="text"
-                                   id="TreatmentCoordinatorNameDisplay"
-                                   class="form-control read-only-style"
-                                   value="@treatmentCoordinatorDisplayName"
-                                   readonly
-                                   tabindex="-1" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="TreatmentCoordinatorDateTimeDisplay">Date / Time</label>
-                            <input type="text"
-                                   id="TreatmentCoordinatorDateTimeDisplay"
-                                   class="form-control read-only-style"
-                                   value="@treatmentCoordinatorDateTimeDisplay"
-                                   readonly
-                                   tabindex="-1" />
-                        </div>
-                        <div>
-                            <label class="form-label" for="TreatmentCoordinatorComments">Comments by Treatment Coordinator</label>
-                            <textarea name="TreatmentCoordinatorComments"
-                                      id="TreatmentCoordinatorComments"
-                                      class="form-control"
-                                      rows="5"
-                                      maxlength="4000">@treatmentCoordinatorComments</textarea>
-                        </div>
-                    </div>
-
                     <div class="dco-forms-card" aria-label="Consent forms and questionnaire">
                         <div class="dco-forms-card-group">
                             <h4 class="dco-forms-card-group-title">Consent forms</h4>
@@ -1074,12 +1048,42 @@
                         <p class="dco-docs-empty" id="treatmentCoordinatorDocsEmpty">No documents uploaded yet. PDF only.</p>
                         <ul class="dco-docs-list" id="treatmentCoordinatorDocsList" style="display:none;"></ul>
                     </div>
+
+                    <div class="dco-forms-card dco-coordinator-details-card" aria-label="Treatment coordinator details">
+                        <div class="mb-3">
+                            <label class="form-label" for="TreatmentCoordinatorNameDisplay">Treatment Coordinator Name</label>
+                            <input type="text"
+                                   id="TreatmentCoordinatorNameDisplay"
+                                   class="form-control read-only-style"
+                                   value="@treatmentCoordinatorDisplayName"
+                                   readonly
+                                   tabindex="-1" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="TreatmentCoordinatorDateTimeDisplay">Date / Time</label>
+                            <input type="text"
+                                   id="TreatmentCoordinatorDateTimeDisplay"
+                                   class="form-control read-only-style"
+                                   value="@treatmentCoordinatorDateTimeDisplay"
+                                   readonly
+                                   tabindex="-1" />
+                        </div>
+                        <div>
+                            <label class="form-label" for="TreatmentCoordinatorComments">Comments by Treatment Coordinator</label>
+                            <textarea name="TreatmentCoordinatorComments"
+                                      id="TreatmentCoordinatorComments"
+                                      class="form-control"
+                                      rows="5"
+                                      maxlength="4000">@treatmentCoordinatorComments</textarea>
+                        </div>
+                    </div>
                 </div>
 
                 @{
                     var appointmentsViewData = new ViewDataDictionary(ViewData);
                     appointmentsViewData["EventAppointmentMinDate"] = ViewBag.EventAppointmentMinDate as string ?? string.Empty;
                     appointmentsViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentDayWindowsJson"] = ViewBag.EventAppointmentDayWindowsJson as string ?? "[]";
                     appointmentsViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
                 }
                 @await Html.PartialAsync("~/Views/DentalCoordinator/_TreatmentCoordinatorAppointmentsSection.cshtml", appointmentsViewData)
@@ -1091,6 +1095,28 @@
                         <i class="fas fa-chevron-up"></i> Collapse Treatment Coordinator Section
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label class="form-label" for="TreatmentCoordinatorOverallStatus">Overall Status</label>
+                <select id="TreatmentCoordinatorOverallStatus" class="form-select read-only-style" disabled>
+                    @if (treatmentCoordinatorOverallStatus == AppConstants.Status.Completed)
+                    {
+                        <option value="@AppConstants.Status.Pending">Pending</option>
+                        <option value="@AppConstants.Status.Completed" selected="selected">Completed</option>
+                    }
+                    else
+                    {
+                        <option value="@AppConstants.Status.Pending" selected="selected">Pending</option>
+                        <option value="@AppConstants.Status.Completed">Completed</option>
+                    }
+                </select>
+                <input type="hidden"
+                       name="DentalTreatmentStatus"
+                       id="TreatmentCoordinatorOverallStatusHidden"
+                       value="@treatmentCoordinatorOverallStatus" />
             </div>
         </div>
 
@@ -1386,7 +1412,55 @@
     function toggleDenClassCommentsRequired() {
         const hasSelection = !!$("input[name='DenClass']:checked").val();
         $("#DenClassReasonComments").prop("required", hasSelection);
+        updateTreatmentCoordinatorOverallStatus();
     }
+
+    function isDenClassCompleteForCoordinator() {
+        return !!$("input[name='DenClass']:checked").val()
+            && !!$("#DenClassReasonComments").val()?.trim();
+    }
+
+    function areAllCoordinatorFindingsAppointed() {
+        let findings = [];
+        let appointments = [];
+        try {
+            findings = JSON.parse($("#FindingsJson").val() || "[]");
+            appointments = JSON.parse($("#AppointmentsJson").val() || "[]");
+        } catch (e) {
+            return false;
+        }
+
+        if (!Array.isArray(findings) || findings.length === 0) {
+            return true;
+        }
+
+        const assignedKeys = new Set();
+        if (Array.isArray(appointments)) {
+            appointments.forEach(function (appt) {
+                (appt.findingClientKeys || []).forEach(function (key) {
+                    if (key) {
+                        assignedKeys.add(key);
+                    }
+                });
+            });
+        }
+
+        return findings.every(function (finding) {
+            const key = (finding.clientKey || "").toString().trim();
+            return key && assignedKeys.has(key);
+        });
+    }
+
+    function updateTreatmentCoordinatorOverallStatus() {
+        const status = isDenClassCompleteForCoordinator() && areAllCoordinatorFindingsAppointed()
+            ? "Completed"
+            : "Pending";
+
+        $("#TreatmentCoordinatorOverallStatus").val(status);
+        $("#TreatmentCoordinatorOverallStatusHidden").val(status);
+    }
+
+    window.updateTreatmentCoordinatorOverallStatus = updateTreatmentCoordinatorOverallStatus;
 
     function updatePsrTobaccoDisplay() {
         const $display = $("#psrTobaccoDisplay");
@@ -1486,6 +1560,7 @@
         initQuestionnaireToggles();
         toggleSoftTissuesDetail();
         toggleDenClassCommentsRequired();
+        updateTreatmentCoordinatorOverallStatus();
         updatePsrTobaccoDisplay();
 
         if (window.DentalPsrToothChart) {
@@ -1557,6 +1632,8 @@
 
         $(document).on("change", "input[name='SoftTissuesWnl']", toggleSoftTissuesDetail);
         $(document).on("change", "input.den-class-radio, input[name='DenClass']", toggleDenClassCommentsRequired);
+        $(document).on("input change", "#DenClassReasonComments", updateTreatmentCoordinatorOverallStatus);
+        $(document).on("dentalFindingsChanged tcAppointmentsChanged", updateTreatmentCoordinatorOverallStatus);
 
         $(document).on("click", ".section-collapse-btn", function () {
             const switchId = $(this).data("target-switch");

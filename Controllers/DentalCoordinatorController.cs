@@ -1,6 +1,7 @@
 using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
+using Malama.Attributes;
 using Malama.Models;
 using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +56,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_Save")]
         public async Task<IActionResult> Index()
         {
             const string methodName = "Index";
@@ -136,14 +138,21 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.EventId = result.EventId;
                 ViewBag.EventAppointmentMinDate = string.Empty;
                 ViewBag.EventAppointmentMaxDate = string.Empty;
+                ViewBag.EventAppointmentDayWindowsJson = "[]";
 
                 try
                 {
                     if (result.EventId > 0)
                     {
-                        var eventDetails = await _eventManagementService.GetEventDetailsById(result.EventId);
-                        ViewBag.EventAppointmentMinDate = eventDetails.StartDate.ToString("yyyy-MM-dd");
-                        ViewBag.EventAppointmentMaxDate = eventDetails.EndDate.ToString("yyyy-MM-dd");
+                        var appointmentWindow = await _eventManagementService.GetEventAppointmentWindowAsync(result.EventId);
+                        ViewBag.EventAppointmentMinDate = appointmentWindow.MinDate;
+                        ViewBag.EventAppointmentMaxDate = appointmentWindow.MaxDate;
+                        ViewBag.EventAppointmentDayWindowsJson = System.Text.Json.JsonSerializer.Serialize(
+                            appointmentWindow.Days,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                            });
                     }
                 }
                 catch (Exception eventEx)

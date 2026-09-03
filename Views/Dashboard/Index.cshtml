@@ -163,12 +163,15 @@
             </a>
         }
 
-        <a asp-controller="DentalCoordinator" asp-action="Index" class="icon-box">
-            <span class="icon-media">
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "TreatmentCoordinator_View"))
+        {
+            <a asp-controller="DentalCoordinator" asp-action="Index" class="icon-box">
+                <span class="icon-media">
                 <img src="/images/Treatment Coordinator.png" alt="Treatment Coordinator" />
             </span>
             <span class="icon-label">Treatment Coordinator</span>
         </a>
+        }
 
         @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
         {

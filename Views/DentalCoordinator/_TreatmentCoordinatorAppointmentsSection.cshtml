@@ -1,6 +1,7 @@
 @{
     var eventAppointmentMinDate = ViewData["EventAppointmentMinDate"] as string ?? string.Empty;
     var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
+    var eventAppointmentDayWindowsJson = ViewData["EventAppointmentDayWindowsJson"] as string ?? "[]";
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
 }
 
@@ -539,10 +540,20 @@
     (function () {
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
+        const EVENT_APPOINTMENT_DAY_WINDOWS = @Html.Raw(eventAppointmentDayWindowsJson);
         const SERVICE_MEMBER_DISPLAY_NAME = @Json.Serialize(serviceMemberDisplayName);
         const APPT_SLOT_MINUTES = 15;
         const APPT_SLOT_HEIGHT = 24;
-        const APPT_SLOTS_PER_DAY = (24 * 60) / APPT_SLOT_MINUTES;
+        const APPT_MIN_DURATION_MINUTES = 15;
+
+        let tcAppointments = [];
+        let editingAppointmentIndex = null;
+        let tcAppointmentDatePicker = null;
+        let tcAppointmentStartTimePicker = null;
+        let tcCalendarDayPicker = null;
+        let calendarDayStartMinutes = 0;
+        let calendarDayEndMinutes = 24 * 60;
+
         const APPT_DURATION_MINUTES = {
             "15 min": 15,
             "30 min": 30,
@@ -558,11 +569,92 @@
             "3 hr": 180
         };
 
-        let tcAppointments = [];
-        let editingAppointmentIndex = null;
-        let tcAppointmentDatePicker = null;
-        let tcAppointmentStartTimePicker = null;
-        let tcCalendarDayPicker = null;
+        function normalizeDayEndMinutes(startMinutes, endMinutes) {
+            startMinutes = Number(startMinutes) || 0;
+            endMinutes = Number(endMinutes);
+            if (!Number.isFinite(endMinutes)) {
+                return 24 * 60;
+            }
+
+            // 00:00 end with a later start means end-of-day (midnight), not 12:00 AM at day start.
+            if (endMinutes === 0 && startMinutes > 0) {
+                return 24 * 60;
+            }
+
+            if (endMinutes <= startMinutes && startMinutes > 0) {
+                return 24 * 60;
+            }
+
+            return endMinutes;
+        }
+
+        function getEventDayWindow(dateStr) {
+            const date = (dateStr || "").toString().trim();
+            if (!date || !Array.isArray(EVENT_APPOINTMENT_DAY_WINDOWS)) {
+                return null;
+            }
+
+            const match = EVENT_APPOINTMENT_DAY_WINDOWS.find(function (dayWindow) {
+                const windowDate = (dayWindow.date || dayWindow.Date || "").toString();
+                return windowDate === date;
+            });
+
+            if (!match) {
+                return null;
+            }
+
+            return {
+                date: date,
+                startMinutes: Number(match.startMinutes ?? match.StartMinutes ?? 0),
+                endMinutes: normalizeDayEndMinutes(
+                    Number(match.startMinutes ?? match.StartMinutes ?? 0),
+                    Number(match.endMinutes ?? match.EndMinutes ?? (24 * 60))
+                )
+            };
+        }
+
+        function minutesToFlatpickrTime(totalMinutes) {
+            const bounded = Math.max(0, Math.min((24 * 60) - 1, totalMinutes));
+            const hour = Math.floor(bounded / 60);
+            const minute = bounded % 60;
+            return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+        }
+
+        function getLatestAllowedStartMinutes(dayWindow) {
+            if (!dayWindow) {
+                return (24 * 60) - APPT_MIN_DURATION_MINUTES;
+            }
+
+            return Math.max(
+                dayWindow.startMinutes,
+                dayWindow.endMinutes - APPT_MIN_DURATION_MINUTES
+            );
+        }
+
+        function updateAppointmentStartTimeBounds() {
+            if (!tcAppointmentStartTimePicker) {
+                return;
+            }
+
+            const selectedDate = ($("#tcAppointmentDate").val() || "").toString().trim();
+            const dayWindow = getEventDayWindow(selectedDate);
+
+            if (!dayWindow) {
+                tcAppointmentStartTimePicker.set("minTime", null);
+                tcAppointmentStartTimePicker.set("maxTime", null);
+                return;
+            }
+
+            const maxStartMinutes = getLatestAllowedStartMinutes(dayWindow);
+            tcAppointmentStartTimePicker.set("minTime", minutesToFlatpickrTime(dayWindow.startMinutes));
+            tcAppointmentStartTimePicker.set("maxTime", minutesToFlatpickrTime(maxStartMinutes));
+
+            const currentStartMinutes = parseAppointmentStartMinutes($("#tcAppointmentStartTime").val());
+            if (currentStartMinutes != null
+                && (currentStartMinutes < dayWindow.startMinutes || currentStartMinutes > maxStartMinutes)) {
+                tcAppointmentStartTimePicker.clear();
+            }
+        }
 
         function generateAppointmentId() {
             if (window.crypto && typeof window.crypto.randomUUID === "function") {
@@ -929,7 +1021,10 @@
                 altInput: true,
                 altFormat: "m/d/Y",
                 dateFormat: "Y-m-d",
-                allowInput: true
+                allowInput: true,
+                onChange: function () {
+                    updateAppointmentStartTimeBounds();
+                }
             };
             if (EVENT_APPOINTMENT_MIN_DATE) {
                 dateOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
@@ -952,6 +1047,8 @@
                     allowInput: true
                 });
             }
+
+            updateAppointmentStartTimeBounds();
         }
 
         function destroyFlatpickrInstance(picker) {
@@ -1034,6 +1131,7 @@
             }
             $("#tcAppointmentDuration").val(appointment.appointmentDuration || "");
             renderFindingsPicker(appointment.findingClientKeys || []);
+            updateAppointmentStartTimeBounds();
         }
 
         function validateAppointmentForm(appointment) {
@@ -1045,6 +1143,13 @@
                 Swal.fire("Invalid Data", "Appointment Date is required.", "warning");
                 return false;
             }
+
+            const dayWindow = getEventDayWindow(appointment.appointmentDate);
+            if (!dayWindow) {
+                Swal.fire("Invalid Data", "Appointment Date must be within the event schedule.", "warning");
+                return false;
+            }
+
             if (!appointment.appointmentStartTime) {
                 Swal.fire("Invalid Data", "Start Time is required.", "warning");
                 return false;
@@ -1071,8 +1176,22 @@
                 Swal.fire("Invalid Data", "Enter a valid start time and duration.", "warning");
                 return false;
             }
-            if (appointmentWindow.endMinutes > (24 * 60)) {
-                Swal.fire("Invalid Data", "Appointment duration extends past midnight. Choose an earlier start time or shorter duration.", "warning");
+
+            if (appointmentWindow.startMinutes < dayWindow.startMinutes) {
+                Swal.fire(
+                    "Invalid Data",
+                    "Start Time must be at or after " + formatMinutesAsTimeLabel(dayWindow.startMinutes) + " on this event day.",
+                    "warning"
+                );
+                return false;
+            }
+
+            if (appointmentWindow.endMinutes > dayWindow.endMinutes) {
+                Swal.fire(
+                    "Invalid Data",
+                    "Appointment must end by " + formatMinutesAsTimeLabel(dayWindow.endMinutes) + " on this event day.",
+                    "warning"
+                );
                 return false;
             }
 
@@ -1156,14 +1275,27 @@
         }
 
         function buildAppointmentCalendarGrid() {
+            const selectedDay = getSelectedCalendarDay();
+            const dayWindow = getEventDayWindow(selectedDay);
+
+            calendarDayStartMinutes = dayWindow ? dayWindow.startMinutes : 0;
+            calendarDayEndMinutes = dayWindow ? dayWindow.endMinutes : (24 * 60);
+
+            const slotSpanMinutes = Math.max(APPT_SLOT_MINUTES, calendarDayEndMinutes - calendarDayStartMinutes);
+            const slotCount = Math.max(1, Math.ceil(slotSpanMinutes / APPT_SLOT_MINUTES));
+
             const $timeCol = $("#tcApptTimeCol").empty();
             $("#tcApptCalendarBody .tc-appt-dentist-col").each(function () {
                 const $col = $(this);
                 const $slots = $col.find(".tc-appt-slots").empty();
                 $col.find(".tc-appt-bookings").empty();
 
-                for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
-                    const minutes = i * APPT_SLOT_MINUTES;
+                for (let i = 0; i < slotCount; i++) {
+                    const minutes = calendarDayStartMinutes + (i * APPT_SLOT_MINUTES);
+                    if (minutes >= calendarDayEndMinutes) {
+                        break;
+                    }
+
                     const isHour = minutes % 60 === 0;
                     $slots.append(
                         "<div class='tc-appt-slot" + (isHour ? " is-hour" : "") + "' data-minutes='" + minutes + "'></div>"
@@ -1171,8 +1303,12 @@
                 }
             });
 
-            for (let i = 0; i < APPT_SLOTS_PER_DAY; i++) {
-                const minutes = i * APPT_SLOT_MINUTES;
+            for (let i = 0; i < slotCount; i++) {
+                const minutes = calendarDayStartMinutes + (i * APPT_SLOT_MINUTES);
+                if (minutes >= calendarDayEndMinutes) {
+                    break;
+                }
+
                 const isHour = minutes % 60 === 0;
                 $timeCol.append(
                     "<div class='tc-appt-time-label" + (isHour ? " is-hour" : "") + "'>" +
@@ -1194,10 +1330,17 @@
 
         function renderAppointmentCalendar() {
             const selectedDay = getSelectedCalendarDay();
+            buildAppointmentCalendarGrid();
             $("#tcApptCalendarBody .tc-appt-bookings").empty();
 
             if (!selectedDay) {
                 $("#tcApptCalendarHint").text("Select an event date to view booked appointments.");
+                return;
+            }
+
+            const dayWindow = getEventDayWindow(selectedDay);
+            if (!dayWindow) {
+                $("#tcApptCalendarHint").text("Selected date is outside the event schedule.");
                 return;
             }
 
@@ -1208,6 +1351,11 @@
                     return;
                 }
 
+                if (appointmentWindow.endMinutes <= dayWindow.startMinutes
+                    || appointmentWindow.startMinutes >= dayWindow.endMinutes) {
+                    return;
+                }
+
                 const $col = $("#tcApptCalendarBody .tc-appt-dentist-col").filter(function () {
                     return ($(this).attr("data-dentist") || "") === appointmentWindow.dentist;
                 }).first();
@@ -1215,7 +1363,7 @@
                     return;
                 }
 
-                const top = (appointmentWindow.startMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
+                const top = ((appointmentWindow.startMinutes - calendarDayStartMinutes) / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
                 const height = Math.max(
                     APPT_SLOT_HEIGHT,
                     (appointmentWindow.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
@@ -1238,8 +1386,10 @@
 
             $("#tcApptCalendarHint").text(
                 bookingCount
-                    ? (bookingCount + " booked appointment" + (bookingCount === 1 ? "" : "s") + " on " + formatAppointmentDateForDisplay(selectedDay) + ".")
-                    : ("No booked appointments on " + formatAppointmentDateForDisplay(selectedDay) + ".")
+                    ? (bookingCount + " booked appointment" + (bookingCount === 1 ? "" : "s") + " on " + formatAppointmentDateForDisplay(selectedDay)
+                        + " (" + formatMinutesAsTimeLabel(dayWindow.startMinutes) + " – " + formatMinutesAsTimeLabel(dayWindow.endMinutes) + ").")
+                    : ("No booked appointments on " + formatAppointmentDateForDisplay(selectedDay)
+                        + " (" + formatMinutesAsTimeLabel(dayWindow.startMinutes) + " – " + formatMinutesAsTimeLabel(dayWindow.endMinutes) + ").")
             );
         }
 

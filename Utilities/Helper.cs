@@ -17,6 +17,32 @@ namespace Malama.Utilities
             return DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
         }
 
+        /// <summary>
+        /// Event day end times of 00:00 with a later start mean end-of-day (24:00), not start-of-day.
+        /// </summary>
+        public static int ResolveEventDayEndMinutes(TimeSpan? startTime, TimeSpan? endTime, int defaultEndMinutes = 24 * 60)
+        {
+            if (!endTime.HasValue)
+            {
+                return defaultEndMinutes;
+            }
+
+            var endMinutes = (int)endTime.Value.TotalMinutes;
+            var startMinutes = startTime.HasValue ? (int)startTime.Value.TotalMinutes : 0;
+
+            if (endMinutes == 0 && startMinutes > 0)
+            {
+                return 24 * 60;
+            }
+
+            if (endMinutes <= startMinutes && startMinutes > 0)
+            {
+                return 24 * 60;
+            }
+
+            return endMinutes;
+        }
+
         public static DateTime ConvertToUtcBasedOnTimezone(DateTime localDate, TimeSpan? time, string timeZoneId, out string errorMessage)
         {
             errorMessage = null;
@@ -112,20 +138,14 @@ namespace Malama.Utilities
 
                     if (day.EventStartTime.HasValue)
                     {
-                        DateTime dayUtc = eventStartUtc.Date
-                            .AddDays(day.EventDay - 1)
-                            .Add(day.EventStartTime.Value);
-
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventStartTime.Value;
                         var local = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
                         dayResult.StartTimeLocal = local.TimeOfDay;
                     }
 
                     if (day.EventEndTime.HasValue)
                     {
-                        DateTime dayUtc = eventStartUtc.Date
-                            .AddDays(day.EventDay - 1)
-                            .Add(day.EventEndTime.Value);
-
+                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventEndTime.Value;
                         var local = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
                         dayResult.EndTimeLocal = local.TimeOfDay;
                     }

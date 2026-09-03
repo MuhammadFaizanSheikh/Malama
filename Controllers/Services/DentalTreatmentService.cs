@@ -164,6 +164,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         public async Task ApplyCoordinatorSectionAsync(
             long serviceMembersChildId,
             string? comments,
+            string status,
             string userName,
             string userId,
             bool saveChanges = true)
@@ -185,6 +186,9 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var now = DateTime.Now;
                 var trimmedComments = string.IsNullOrWhiteSpace(comments) ? null : comments.Trim();
+                var resolvedStatus = string.Equals(status?.Trim(), AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
+                    ? AppConstants.Status.Completed
+                    : AppConstants.Status.Pending;
 
                 var existing = await _unitOfWork.DentalTreatment
                     .GetWithIncludeTracking(e => e.ServiceMembersChildId == serviceMembersChildId)
@@ -195,6 +199,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     existing.TreatmentCoordinatorUserId = userId;
                     existing.TreatmentCoordinatorDateTime = now;
                     existing.TreatmentCoordinatorComments = trimmedComments;
+                    existing.Status = resolvedStatus;
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = now;
                 }
@@ -204,7 +209,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         ServiceMembersChildId = serviceMembersChildId,
                         DentalExamId = exam.Id,
-                        Status = AppConstants.Status.Pending,
+                        Status = resolvedStatus,
                         TreatmentCoordinatorUserId = userId,
                         TreatmentCoordinatorDateTime = now,
                         TreatmentCoordinatorComments = trimmedComments,

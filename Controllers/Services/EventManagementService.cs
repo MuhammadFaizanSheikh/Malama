@@ -1097,6 +1097,111 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<EventAppointmentWindowDto> GetEventAppointmentWindowAsync(long eventId)
+        {
+            const string methodName = nameof(GetEventAppointmentWindowAsync);
+            _logger.LogInformation("{ClassName}, {MethodName}, Called with EventID: {EventID}",
+                CLASSNAME, methodName, eventId);
+
+            try
+            {
+                var eventManagement = await _unitOfWork.EventManagement
+                    .GetWithIncludeNoTracking(
+                        x => x.Id == eventId,
+                        x => x.EventStartEndTimeDayWiseList)
+                    .FirstOrDefaultAsync();
+
+                if (eventManagement == null)
+                {
+                    _logger.LogWarning("{ClassName}, {MethodName}, Event not found for EventID: {EventID}",
+                        CLASSNAME, methodName, eventId);
+                    throw new KeyNotFoundException($"Event not found. EventId: {eventId}");
+                }
+
+                var dayWiseList = eventManagement.EventStartEndTimeDayWiseList?
+                    .OrderBy(d => d.EventDay)
+                    .ToList() ?? new List<EventStartEndTimeDayWise>();
+
+                // Day-wise EventStartTime/EventEndTime are the event-local hours shown in Pre Event Management.
+                // Snapshot before ConvertEventToLocalTime, which reinterprets these through UTC and can shift them.
+                var dayTimeSnapshots = dayWiseList
+                    .Select(d => new
+                    {
+                        d.EventDay,
+                        EventStartTime = d.EventStartTime,
+                        EventEndTime = d.EventEndTime
+                    })
+                    .ToList();
+
+                Helper.ConvertEventToLocalTime(eventManagement, eventManagement.Timezone);
+
+                var days = new List<EventAppointmentDayWindowDto>();
+
+                if (dayTimeSnapshots.Count > 0)
+                {
+                    var eventStartLocalDate = eventManagement.EventStartDateUtc.Date;
+                    foreach (var day in dayTimeSnapshots)
+                    {
+                        var date = eventStartLocalDate.AddDays(day.EventDay - 1);
+                        days.Add(new EventAppointmentDayWindowDto
+                        {
+                            Date = date.ToString("yyyy-MM-dd"),
+                            StartMinutes = day.EventStartTime.HasValue
+                                ? (int)day.EventStartTime.Value.TotalMinutes
+                                : 0,
+                            EndMinutes = Helper.ResolveEventDayEndMinutes(day.EventStartTime, day.EventEndTime)
+                        });
+                    }
+                }
+                else
+                {
+                    var startDate = eventManagement.EventStartDateUtc.Date;
+                    var endDate = eventManagement.EventEndDateUtc.Date;
+                    for (var date = startDate; date <= endDate; date = date.AddDays(1))
+                    {
+                        var isFirst = date == startDate;
+                        var isLast = date == endDate;
+                        days.Add(new EventAppointmentDayWindowDto
+                        {
+                            Date = date.ToString("yyyy-MM-dd"),
+                            StartMinutes = isFirst
+                                ? (int)eventManagement.EventStartDateUtc.TimeOfDay.TotalMinutes
+                                : 0,
+                            EndMinutes = isLast
+                                ? Helper.ResolveEventDayEndMinutes(
+                                    isFirst ? eventManagement.EventStartDateUtc.TimeOfDay : null,
+                                    eventManagement.EventEndDateUtc.TimeOfDay)
+                                : (24 * 60)
+                        });
+                    }
+                }
+
+                var window = new EventAppointmentWindowDto
+                {
+                    MinDate = days.FirstOrDefault()?.Date ?? string.Empty,
+                    MaxDate = days.LastOrDefault()?.Date ?? string.Empty,
+                    Days = days
+                };
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Appointment window built for EventID: {EventID}. DayCount={DayCount}, MinDate={MinDate}, MaxDate={MaxDate}",
+                    CLASSNAME, methodName, eventId, window.Days.Count, window.MinDate, window.MaxDate);
+
+                return window;
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Exception occurred while building appointment window for EventID: {EventID}",
+                    CLASSNAME, methodName, eventId);
+                throw new ApplicationException("An error occurred while retrieving event appointment window.", ex);
+            }
+        }
+
         public bool ValidateEventStatus(EventManagement model, string loggedinUserName, bool isUpdate, out string errorMessage)
         {
             const string methodName = nameof(ValidateEventStatus);

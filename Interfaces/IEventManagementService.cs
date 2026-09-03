@@ -18,6 +18,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<EventManagement> GetEventManagementForEventSelectionByIdWithoutInclude(long id);
         Task<EventManagement> GetEventManagementByEventIdWithoutInclude(string eventId);
         Task<(DateTime StartDate, DateTime EndDate, int Version)> GetEventDetailsById(long eventId);
+        Task<EventAppointmentWindowDto> GetEventAppointmentWindowAsync(long eventId);
         Task<bool> HasServiceMembersAsync(string eventId);
         Task<List<FileDataDto>> GetServiceMembersByEventAsync(long eventId);
     }

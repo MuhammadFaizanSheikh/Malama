@@ -33,5 +33,14 @@ namespace Malama.Models
         public bool PanoXRayAcknowledged { get; set; }
 
         public string? TreatmentCoordinatorComments { get; set; }
+
+        public string? FindingsJson { get; set; }
+
+        public string? AppointmentsJson { get; set; }
+    }
+
+    public class TreatmentCoordinatorAppointmentJsonDto
+    {
+        public List<string> FindingClientKeys { get; set; } = new();
     }
 }
