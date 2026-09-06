@@ -173,6 +173,16 @@
         </a>
         }
 
+        @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "TreatmentConsent_View"))
+        {
+            <a asp-controller="TreatmentConsent" asp-action="Index" class="icon-box">
+                <span class="icon-media">
+                    <img src="/images/Treatment Consent.png" alt="Treatment Consent" />
+                </span>
+                <span class="icon-label">Treatment Consent</span>
+            </a>
+        }
+
         @if (Malama.Utilities.DashboardAuthorizationHelper.HasAccess(User, "DentalXRay_View"))
         {
             <a asp-controller="DentalXRay" asp-action="Index" class="icon-box">

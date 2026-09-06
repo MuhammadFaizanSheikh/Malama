@@ -66,6 +66,7 @@ builder.Services.AddScoped<IDentalQuestionnaireService, DentalQuestionnaireServi
 builder.Services.AddScoped<IDentalExamService, DentalExamService>();
 builder.Services.AddScoped<IDentalTreatmentService, DentalTreatmentService>();
 builder.Services.AddScoped<IDentalCoordinatorStationService, DentalCoordinatorStationService>();
+builder.Services.AddScoped<ITreatmentConsentService, TreatmentConsentService>();
 builder.Services.AddScoped<DentalXRayFileSaveCoordinator>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();

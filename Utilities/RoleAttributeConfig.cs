@@ -114,6 +114,17 @@ namespace Malama.Utilities
             ("DT-Treatment Coordinator", null),
         },
 
+            // Treatment Consent
+            ["TreatmentConsent_View"] = new List<(string Role, string Attribute)>
+        {
+            ("DT-Treatment Coordinator", null),
+            ("Event Manager", null)
+        },
+            ["TreatmentConsent_Save"] = new List<(string Role, string Attribute)>
+        {
+            ("DT-Treatment Coordinator", null),
+        },
+
             // Dental X-Ray
             ["DentalXRay_View"] = new List<(string Role, string Attribute)>
         {
@@ -357,6 +368,8 @@ namespace Malama.Utilities
             ["Audiologist"] = "Audiologist",
             ["DentalExams"] = "Dental Exams",
             ["DentalTreatment"] = "Dental Treatment",
+            ["TreatmentCoordinator"] = "Treatment Coordinator",
+            ["TreatmentConsent"] = "Treatment Consent",
             ["DentalXRay"] = "Dental X-Ray",
             ["EKG"] = "EKG",
             ["Hearing"] = "Hearing",

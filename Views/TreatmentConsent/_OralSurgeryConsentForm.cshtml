@@ -1,0 +1,103 @@
+@* Oral Surgery Consent Form (UI only — pen/finger pads). *@
+
+<div class="tcn-consent-form" id="oralSurgeryConsentForm">
+    <h3 class="tcn-consent-form-title">ORAL SURGERY CONSENT FORM</h3>
+
+    <p class="tcn-consent-intro">
+        You have a right to be informed about your diagnosis and planned surgery so that you may decide whether to undergo a
+        procedure after knowing the risks and hazards. This is to make you better informed so you may give your informed
+        consent to the procedure.
+    </p>
+
+    <p class="fw-semibold mb-2">Possible conditions of:</p>
+
+    <div class="tcn-consent-section">
+        <h4>1. ALL SURGERIES</h4>
+        <ol class="tcn-consent-letter-list" type="a">
+            <li>Soreness, swelling, bruising, and restricted mouth opening during healing, sometimes related to swelling and muscle soreness or to stress on the jaw joints (TMJ), especially when TMJ problems already exist.</li>
+            <li>Bleeding, usually controllable, but maybe prolonged and require additional care.</li>
+            <li>Drug reactions or allergies.</li>
+            <li>Infection, possibly requiring additional care and/or surgeries.</li>
+        </ol>
+    </div>
+
+    <div class="tcn-consent-section">
+        <h4>2. ALL TOOTH EXTRACTIONS</h4>
+        <ol class="tcn-consent-letter-list" type="a">
+            <li>Dry socket, discomfort occurring a few days after extraction requires further care.</li>
+            <li>Damage to adjacent teeth or fillings.</li>
+            <li>Sharp ridges or bone splinters may require additional surgery to smooth area.</li>
+            <li>Portions of tooth remaining, sometimes fine root tips break off and may be deliberately left in place to avoid doing damage to nearby vital structures such as nerves or the sinus.</li>
+        </ol>
+    </div>
+
+    <div class="tcn-consent-section">
+        <h4>3. LOWER TEETH</h4>
+        <ol class="tcn-consent-letter-list" type="a">
+            <li>Numbness: due to the proximity of roots in the nerve especially wisdom teeth. It is possible to injure the nerve during the removal of the tooth. The lip, chin, gums or tongue could feel numb resembling local anesthetic injections, and this could remain for days, weeks, or very rarely, permanently.</li>
+        </ol>
+    </div>
+
+    <div class="tcn-consent-section">
+        <h4>4. UPPER TEETH</h4>
+        <ol class="tcn-consent-letter-list" type="a">
+            <li>Sinus involvement: due to the closeness of the roots of upper back teeth to the sinus or from the root tip being displaced to the sinus, a possible sinus infection or sinus opening may result, which may require a medication and/or later surgery to correct.</li>
+        </ol>
+    </div>
+
+    <div class="tcn-consent-section">
+        <h4>5. ANESTHESIA</h4>
+        <ol class="tcn-consent-letter-list" type="a">
+            <li>Local anesthesia: certain possible risks that, although rare, could include pain, swelling, bruising, infection, nerve damage, and unexpected allergic reactions which could result in heart attack, stroke, brain damage and/or death.</li>
+        </ol>
+    </div>
+
+    <div class="tcn-consent-auth">
+        <p class="mb-2">I,</p>
+        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_patient_name" data-pen-size="line">
+            <canvas aria-label="Patient name"></canvas>
+            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        </div>
+        <p class="mt-2 mb-2">hereby authorize Dr.</p>
+        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_doctor_name" data-pen-size="line">
+            <canvas aria-label="Doctor name"></canvas>
+            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        </div>
+        <p class="mt-2 mb-2">to perform the following procedure</p>
+        <div class="tcn-pen-pad tcn-pen-pad-block" data-pen-pad="os_procedure" data-pen-size="block">
+            <canvas aria-label="Procedure description"></canvas>
+            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        </div>
+        <p class="mt-2">
+            and to administer anesthesia. I understand that the doctor may discover other or different conditions that may require
+            additional or different procedures than those planned. I authorize him/her to perform such other procedures, as he/she
+            deems necessary in his/her professional judgment in order to complete my surgery.
+        </p>
+        <p class="mb-2">I have read and discussed the preceding with Dr.</p>
+        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_discussed_doctor" data-pen-size="line">
+            <canvas aria-label="Discussed with doctor name"></canvas>
+            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        </div>
+        <p class="mt-2">
+            and believe I have been given sufficient information to give my consent to the planned surgery.
+        </p>
+    </div>
+
+    <div class="tcn-signature-grid">
+        <div class="tcn-signature-block">
+            <label class="tcn-consent-label">Patient (or legal guardian) Signature</label>
+            <div class="tcn-pen-pad tcn-pen-pad-signature" data-pen-pad="os_patient_signature" data-pen-size="signature">
+                <canvas aria-label="Patient or guardian signature"></canvas>
+                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+            </div>
+        </div>
+        <div class="tcn-signature-block">
+            <label class="tcn-consent-label">Date (MM/DD/YYYY)</label>
+            <input type="text"
+                   class="form-control tcn-readonly-input"
+                   value="@ViewData["ConsentDate"]"
+                   readonly
+                   tabindex="-1" />
+        </div>
+    </div>
+</div>

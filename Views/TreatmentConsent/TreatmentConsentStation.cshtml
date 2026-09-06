@@ -1,0 +1,686 @@
+@using ExcelFilesCompiler.Controllers.Services
+@using ExcelFilesCompiler.Utilities
+@using Malama.Models
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@model Malama.Models.TreatmentConsentStationViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewData["Title"] = "Treatment Consent";
+    var sm = Model.ServiceMember;
+    var questionnaire = Model.Questionnaire;
+    var isFemale = DentalXRayStationService.IsFemale(sm);
+    var consentDateDisplay = DateTime.Now.ToString("MM/dd/yyyy");
+}
+
+<style>
+    .tcn-station {
+        --tcn-indigo: rgba(80, 90, 201, 1);
+        --tcn-indigo-soft: rgba(80, 90, 201, 0.12);
+        --tcn-text: #1f2430;
+        --tcn-muted: #6b7285;
+        --tcn-surface: #ffffff;
+        --tcn-border: rgba(31, 36, 48, 0.08);
+        --tcn-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --tcn-radius: 16px;
+    }
+
+    .tcn-station .tcn-title {
+        margin: 0 0 1.1rem;
+        font-size: clamp(1.45rem, 2vw, 1.85rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--tcn-text);
+    }
+
+    .tcn-station .tcn-panel {
+        background: var(--tcn-surface);
+        border: 1px solid var(--tcn-border);
+        border-radius: var(--tcn-radius);
+        box-shadow: var(--tcn-shadow);
+        padding: 1.15rem 1.25rem 1.25rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .tcn-station .tcn-panel-title {
+        margin: 0 0 0.95rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--tcn-text);
+    }
+
+    .tcn-station .tcn-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem 1.25rem;
+    }
+
+    .tcn-station .tcn-info-label {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--tcn-muted);
+    }
+
+    .tcn-station .tcn-info-value {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--tcn-text);
+        word-break: break-word;
+    }
+
+    .tcn-station .nav-tabs {
+        border-bottom: 1px solid rgba(80, 90, 201, 0.25);
+        gap: 0.35rem;
+    }
+
+    .tcn-station .nav-tabs .nav-link {
+        border: 1px solid transparent;
+        border-radius: 10px 10px 0 0;
+        color: var(--tcn-muted);
+        font-weight: 600;
+        padding: 0.7rem 1rem;
+    }
+
+    .tcn-station .nav-tabs .nav-link:hover {
+        border-color: rgba(80, 90, 201, 0.18);
+        color: var(--tcn-indigo);
+    }
+
+    .tcn-station .nav-tabs .nav-link.active {
+        background: var(--tcn-indigo-soft);
+        border-color: rgba(80, 90, 201, 0.28) rgba(80, 90, 201, 0.28) transparent;
+        color: var(--tcn-indigo);
+    }
+
+    .tcn-station .tab-content {
+        border: 1px solid var(--tcn-border);
+        border-top: none;
+        border-radius: 0 0 var(--tcn-radius) var(--tcn-radius);
+        background: #fff;
+        padding: 1.15rem 1.2rem 1.35rem;
+        min-height: 220px;
+    }
+
+    .tcn-station .tcn-empty-tab {
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--tcn-muted);
+        font-size: 0.95rem;
+    }
+
+    .tcn-station .questionnaire-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .tcn-station .questionnaire-heading h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--tcn-text);
+    }
+
+    .tcn-station .questionnaire-toggle-switch .form-check-input {
+        width: 2.4rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+
+    .tcn-station .questionnaire-toggle-switch .form-check-input:checked {
+        background-color: var(--tcn-indigo);
+        border-color: var(--tcn-indigo);
+    }
+
+    .tcn-station .condition-detail {
+        display: none;
+    }
+
+    .tcn-station .tcn-notice {
+        color: #b45309;
+        font-weight: 700;
+        margin-bottom: 0.65rem;
+    }
+
+    .tcn-station .tcn-consent-form {
+        color: var(--tcn-text);
+        line-height: 1.55;
+    }
+
+    .tcn-station .tcn-consent-form-title {
+        margin: 0 0 1rem;
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-align: center;
+        color: var(--tcn-text);
+    }
+
+    .tcn-station .tcn-consent-intro,
+    .tcn-station .tcn-consent-item p,
+    .tcn-station .tcn-consent-closing p,
+    .tcn-station .tcn-consent-auth p,
+    .tcn-station .tcn-consent-section li {
+        font-size: 0.95rem;
+        color: #2a3140;
+    }
+
+    .tcn-station .tcn-consent-item,
+    .tcn-station .tcn-consent-section,
+    .tcn-station .tcn-consent-auth {
+        margin-bottom: 1.15rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.08);
+    }
+
+    .tcn-station .tcn-consent-item-head {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .tcn-station .tcn-consent-item-head h4,
+    .tcn-station .tcn-consent-section h4 {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+    }
+
+    .tcn-station .tcn-consent-label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--tcn-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .tcn-station .tcn-consent-row-split {
+        display: grid;
+        grid-template-columns: minmax(180px, 320px) minmax(140px, 220px);
+        gap: 1rem;
+        margin-bottom: 1rem;
+        align-items: end;
+        justify-content: start;
+    }
+
+    .tcn-station .tcn-consent-field-name .tcn-pen-pad-line {
+        height: 48px;
+        max-width: 320px;
+    }
+
+    .tcn-station .tcn-readonly-input {
+        min-height: 48px;
+        background: #f3f4f8;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .tcn-station .tcn-consent-treatment-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin: 0.75rem 0 0.35rem;
+    }
+
+    .tcn-station .tcn-treatment-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        font-weight: 600;
+    }
+
+    .tcn-station .tcn-treatment-option-wide .tcn-pen-pad-line {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 160px;
+    }
+
+    .tcn-station .tcn-initials-row {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-top: 0.65rem;
+        font-weight: 600;
+    }
+
+    .tcn-station .tcn-consent-letter-list {
+        margin: 0.35rem 0 0 1.1rem;
+        padding: 0;
+    }
+
+    .tcn-station .tcn-consent-letter-list li {
+        margin-bottom: 0.4rem;
+    }
+
+    .tcn-station .tcn-consent-emergency {
+        font-weight: 700;
+        color: #b45309;
+    }
+
+    .tcn-station .tcn-signature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .tcn-station .tcn-pen-pad {
+        position: relative;
+        background: #fff;
+        border: 1.5px dashed rgba(80, 90, 201, 0.45);
+        border-radius: 10px;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    .tcn-station .tcn-pen-pad canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        cursor: crosshair;
+        touch-action: none;
+        background: linear-gradient(180deg, rgba(80, 90, 201, 0.03), rgba(255, 255, 255, 0.9));
+    }
+
+    .tcn-station .tcn-pen-pad-line { height: 56px; }
+    .tcn-station .tcn-pen-pad-initials,
+    .tcn-station .tcn-pen-pad-check,
+    .tcn-station .tcn-pen-pad-mini { width: 88px; height: 44px; flex: 0 0 auto; }
+    .tcn-station .tcn-pen-pad-block { height: 110px; }
+    .tcn-station .tcn-pen-pad-signature { height: 130px; }
+
+    .tcn-station .tcn-pen-clear {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 2;
+        border: none;
+        border-radius: 999px;
+        background: rgba(31, 36, 48, 0.78);
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.28rem 0.5rem;
+    }
+
+    .tcn-station .tcn-pen-clear:hover {
+        background: rgba(31, 36, 48, 0.92);
+    }
+
+    @@media (max-width: 900px) {
+        .tcn-station .tcn-info-grid,
+        .tcn-station .tcn-consent-row-split,
+        .tcn-station .tcn-signature-grid,
+        .tcn-station .tcn-consent-treatment-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="tcn-station">
+    <h1 class="tcn-title">Treatment Consent</h1>
+
+    @if (TempData["ResponseMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
+    }
+
+    <div class="tcn-panel">
+        <h2 class="tcn-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
+        <div class="tcn-info-grid">
+            <div>
+                <span class="tcn-info-label">Full Name</span>
+                <p class="tcn-info-value">@sm?.FullName</p>
+            </div>
+            <div>
+                <span class="tcn-info-label">DOB</span>
+                <p class="tcn-info-value">@sm?.Dob</p>
+            </div>
+            <div>
+                <span class="tcn-info-label">Barcode</span>
+                <p class="tcn-info-value">@sm?.Barcode</p>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" id="treatmentConsentTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active"
+                    id="da5570-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#da5570Pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="da5570Pane"
+                    aria-selected="true">
+                DA5570 Form
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="oralSurgery-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#oralSurgeryPane"
+                    type="button"
+                    role="tab"
+                    aria-controls="oralSurgeryPane"
+                    aria-selected="false">
+                Oral Surgery Form
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="dentalTreatmentConsent-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#dentalTreatmentConsentPane"
+                    type="button"
+                    role="tab"
+                    aria-controls="dentalTreatmentConsentPane"
+                    aria-selected="false">
+                Dental Treatment Consent
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="treatmentConsentTabContent">
+        <div class="tab-pane fade show active" id="da5570Pane" role="tabpanel" aria-labelledby="da5570-tab">
+            <div class="questionnaire-heading" id="da5570QuestionnaireHeading">
+                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toggleDa5570QuestionnaireSwitch"
+                           aria-controls="da5570QuestionnaireSection"
+                           aria-expanded="false" />
+                </div>
+                <h3>Questionnaire</h3>
+            </div>
+
+            <div id="da5570QuestionnaireSection" style="display:none;">
+                @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)
+
+                @if (isFemale)
+                {
+                    <div class="row mb-3" id="pregnancyQuestionSection">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">12. Are you pregnant?</label>
+                            <select name="AreYouPregnant" id="AreYouPregnant" class="form-select">
+                                <option value="No" selected="@(string.IsNullOrWhiteSpace(questionnaire.AreYouPregnant) || questionnaire.AreYouPregnant == "No")">No</option>
+                                <option value="Yes" selected="@(questionnaire.AreYouPregnant == "Yes")">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
+                        <div class="col-md-12">
+                            <p class="tcn-notice">Approval is needed from Service Member before going to X-Ray</p>
+                            <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
+                                <option value=""></option>
+                                <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
+                                <option value="Declined" selected="@(questionnaire.PregnancyApproval == "Declined")">Declined</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+
+                @{
+                    var healthConditionsQuestionNumber = isFemale ? 13 : 12;
+                    var savedHealthConditions = DentalQuestionnaireService.ParseHealthConditionsJson(questionnaire.ApplicableHealthConditionsJson);
+                    var savedByCondition = savedHealthConditions
+                        .Where(h => !string.IsNullOrWhiteSpace(h.Condition))
+                        .ToDictionary(h => h.Condition, h => h, StringComparer.OrdinalIgnoreCase);
+
+                    bool IsConditionSelected(string condition) => savedByCondition.ContainsKey(condition);
+                    string GetConditionDetail(string condition) =>
+                        savedByCondition.TryGetValue(condition, out var item) ? item.Detail ?? "" : "";
+                }
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">@healthConditionsQuestionNumber. Check the following conditions if they apply to you:</label>
+                    <div class="row condition-checkboxes">
+                        @for (var ci = 0; ci < DentalXRayQuestionnaire.HealthConditions.Length; ci++)
+                        {
+                            var condition = DentalXRayQuestionnaire.HealthConditions[ci];
+                            var isSelected = IsConditionSelected(condition);
+                            var detail = GetConditionDetail(condition);
+                            <div class="col-md-6 condition-item">
+                                <input type="hidden" name="HealthConditionDetails[@ci].Condition" value="@condition" />
+                                <div class="form-check">
+                                    <input class="form-check-input condition-checkbox" type="checkbox"
+                                           name="ApplicableHealthConditions"
+                                           value="@condition"
+                                           id="condition_@ci"
+                                           checked="@isSelected" />
+                                    <label class="form-check-label" for="condition_@ci">@condition</label>
+                                </div>
+                                <div class="condition-detail ms-4 mt-1">
+                                    <textarea name="HealthConditionDetails[@ci].Detail"
+                                              class="form-control condition-detail-text"
+                                              rows="3"
+                                              placeholder="Please provide details">@detail</textarea>
+                                </div>
+                            </div>
+                        }
+                        @{
+                            var otherIndex = DentalXRayQuestionnaire.HealthConditions.Length;
+                            var otherCondition = DentalXRayQuestionnaire.OtherHealthCondition;
+                            var otherSelected = IsConditionSelected(otherCondition);
+                            var otherDetail = GetConditionDetail(otherCondition);
+                        }
+                        <div class="col-md-6 condition-item">
+                            <input type="hidden" name="HealthConditionDetails[@otherIndex].Condition" value="@otherCondition" />
+                            <div class="form-check">
+                                <input class="form-check-input condition-checkbox" type="checkbox"
+                                       name="ApplicableHealthConditions"
+                                       value="@otherCondition"
+                                       id="condition_other"
+                                       checked="@otherSelected" />
+                                <label class="form-check-label" for="condition_other">@otherCondition</label>
+                            </div>
+                            <div class="condition-detail ms-4 mt-1">
+                                <textarea name="HealthConditionDetails[@otherIndex].Detail"
+                                          class="form-control condition-detail-text"
+                                          rows="3"
+                                          placeholder="Please provide details">@otherDetail</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="oralSurgeryPane" role="tabpanel" aria-labelledby="oralSurgery-tab">
+            @{
+                var oralSurgeryViewData = new ViewDataDictionary(ViewData);
+                oralSurgeryViewData["ConsentDate"] = consentDateDisplay;
+            }
+            @await Html.PartialAsync(
+                "~/Views/TreatmentConsent/_OralSurgeryConsentForm.cshtml",
+                null,
+                oralSurgeryViewData)
+        </div>
+
+        <div class="tab-pane fade" id="dentalTreatmentConsentPane" role="tabpanel" aria-labelledby="dentalTreatmentConsent-tab">
+            @{
+                var treatmentConsentViewData = new ViewDataDictionary(ViewData);
+                treatmentConsentViewData["PatientDob"] = sm?.Dob ?? string.Empty;
+                treatmentConsentViewData["ConsentDate"] = consentDateDisplay;
+            }
+            @await Html.PartialAsync(
+                "~/Views/TreatmentConsent/_DentalTreatmentConsentForm.cshtml",
+                null,
+                treatmentConsentViewData)
+        </div>
+    </div>
+</section>
+
+<script src="~/js/treatment-consent-pen-pads.js" asp-append-version="true"></script>
+<script>
+    const IS_FEMALE = @Json.Serialize(isFemale);
+
+    function toggleQuestionnaireDetail(selectEl) {
+        const $select = $(selectEl);
+        const target = $select.data("detail");
+        if (!target) return;
+        const $detail = $(target);
+        const $textarea = $detail.find("textarea");
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $textarea.prop("required", true);
+        } else {
+            $detail.hide();
+            $textarea.prop("required", false).val("");
+        }
+    }
+
+    function toggleTobaccoSection() {
+        const isYes = $("#UseTobaccoOrVape").val() === "Yes";
+        const $section = $("#tobaccoDetailsSection");
+        $section.toggle(isYes);
+        $section.find(".tobacco-used-select").prop("required", isYes);
+        if (!isYes) {
+            $section.find(".tobacco-used-select").val("No");
+            $section.find(".tobacco-type-detail").hide();
+            $section.find(".tobacco-frequency-input").prop("required", false).val("");
+        } else {
+            $(".tobacco-used-select").each(function () {
+                toggleTobaccoTypeDetail(this);
+            });
+        }
+    }
+
+    function toggleTobaccoTypeDetail(selectEl) {
+        const $select = $(selectEl);
+        const index = $select.data("index");
+        const $detail = $("#tobaccoTypeDetail_" + index);
+        const $inputs = $detail.find(".tobacco-frequency-input");
+        if ($("#UseTobaccoOrVape").val() !== "Yes") {
+            $detail.hide();
+            $inputs.prop("required", false);
+            return;
+        }
+        if ($select.val() === "Yes") {
+            $detail.show();
+            $inputs.prop("required", true);
+        } else {
+            $detail.hide();
+            $inputs.prop("required", false).val("");
+        }
+    }
+
+    function toggleConditionDetail(checkboxEl) {
+        const $item = $(checkboxEl).closest(".condition-item");
+        const $detail = $item.find(".condition-detail");
+        const $textarea = $detail.find("textarea");
+        if ($(checkboxEl).is(":checked")) {
+            $detail.show();
+        } else {
+            $detail.hide();
+            $textarea.val("");
+        }
+    }
+
+    function initConditionToggles() {
+        $(".condition-checkbox").each(function () {
+            toggleConditionDetail(this);
+        });
+    }
+
+    function togglePregnancyFlow() {
+        if (!IS_FEMALE) {
+            return;
+        }
+
+        const pregnant = $("#AreYouPregnant").val();
+        $("#pregnancyApprovalSection").hide();
+        $("#PregnancyApproval").prop("required", false);
+
+        if (pregnant === "Yes") {
+            $("#pregnancyApprovalSection").show();
+            $("#PregnancyApproval").prop("required", true);
+        }
+    }
+
+    function initQuestionnaireToggles() {
+        $(".dental-q-detail-toggle").each(function () {
+            toggleQuestionnaireDetail(this);
+        });
+        toggleTobaccoSection();
+        initConditionToggles();
+        togglePregnancyFlow();
+    }
+
+    function toggleDa5570QuestionnaireFromSwitch() {
+        const isOn = $("#toggleDa5570QuestionnaireSwitch").is(":checked");
+        const $section = $("#da5570QuestionnaireSection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleDa5570QuestionnaireSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    $(document).ready(function () {
+        initQuestionnaireToggles();
+
+        $("#toggleDa5570QuestionnaireSwitch").on("change", toggleDa5570QuestionnaireFromSwitch);
+        $(document).on("change", ".dental-q-detail-toggle", function () {
+            toggleQuestionnaireDetail(this);
+        });
+        $(document).on("change", "#UseTobaccoOrVape", toggleTobaccoSection);
+        $(document).on("change", ".tobacco-used-select", function () {
+            toggleTobaccoTypeDetail(this);
+        });
+        $(document).on("change", ".condition-checkbox", function () {
+            toggleConditionDetail(this);
+        });
+        $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
+
+        const penPads = window.TreatmentConsentPenPads
+            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"))
+            : {};
+
+        function resizeVisiblePenPads() {
+            Object.keys(penPads).forEach(function (key) {
+                if (penPads[key] && typeof penPads[key].resize === "function") {
+                    penPads[key].resize();
+                }
+            });
+        }
+
+        // Hidden tab canvases need a resize after they become visible.
+        document.querySelectorAll('#treatmentConsentTabs button[data-bs-toggle="tab"]').forEach(function (tabBtn) {
+            tabBtn.addEventListener("shown.bs.tab", function () {
+                window.setTimeout(resizeVisiblePenPads, 30);
+            });
+        });
+    });
+</script>
