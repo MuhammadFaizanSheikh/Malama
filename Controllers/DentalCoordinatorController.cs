@@ -296,6 +296,15 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
+                var documentsError = TreatmentCoordinatorDocumentsValidator.Validate(dto.TreatmentCoordinatorDocuments);
+                if (!string.IsNullOrWhiteSpace(documentsError))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = documentsError;
+                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                }
+
                 var saveResult = await _dentalCoordinatorStationService.SaveStationAsync(
                     dto,
                     serviceMember,

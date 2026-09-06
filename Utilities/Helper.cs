@@ -43,6 +43,37 @@ namespace Malama.Utilities
             return endMinutes;
         }
 
+        /// <summary>
+        /// Expands a same-day appointment window by grace minutes before start and after end.
+        /// Grace is clamped to the same calendar day (00:00–24:00); it never spills into another day.
+        /// Example: 1:00 AM start with 2h grace becomes 12:00 AM; 11:00 PM end becomes 12:00 AM (24:00).
+        /// </summary>
+        public static (int StartMinutes, int EndMinutes) ApplySameDayAppointmentGrace(
+            int startMinutes,
+            int endMinutes,
+            int graceMinutes = 2 * 60)
+        {
+            const int minutesInDay = 24 * 60;
+
+            startMinutes = Math.Max(0, Math.Min(startMinutes, minutesInDay));
+            endMinutes = Math.Max(0, Math.Min(endMinutes, minutesInDay));
+
+            if (graceMinutes <= 0)
+            {
+                return (startMinutes, endMinutes);
+            }
+
+            startMinutes = Math.Max(0, startMinutes - graceMinutes);
+            endMinutes = Math.Min(minutesInDay, endMinutes + graceMinutes);
+
+            if (endMinutes < startMinutes)
+            {
+                endMinutes = startMinutes;
+            }
+
+            return (startMinutes, endMinutes);
+        }
+
         public static DateTime ConvertToUtcBasedOnTimezone(DateTime localDate, TimeSpan? time, string timeZoneId, out string errorMessage)
         {
             errorMessage = null;
@@ -77,24 +108,41 @@ namespace Malama.Utilities
                     throw new ArgumentNullException(nameof(eventManagement));
 
                 TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
-                DateTime eventStartUtc = eventManagement.EventStartDateUtc;
-                DateTime eventEndUtc = eventManagement.EventEndDateUtc;
+                DateTime eventStartUtc = DateTime.SpecifyKind(eventManagement.EventStartDateUtc, DateTimeKind.Utc);
+                DateTime eventEndUtc = DateTime.SpecifyKind(eventManagement.EventEndDateUtc, DateTimeKind.Utc);
 
                 eventManagement.EventStartDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventStartUtc, tz);
                 eventManagement.EventEndDateUtc = TimeZoneInfo.ConvertTimeFromUtc(eventEndUtc, tz);
 
+                if (eventManagement.EventStartEndTimeDayWiseList == null)
+                {
+                    return;
+                }
+
                 foreach (var day in eventManagement.EventStartEndTimeDayWiseList)
                 {
-                    if (day.EventStartTime.HasValue)
+                    var startTimeUtc = day.EventStartTime;
+                    var endTimeUtc = day.EventEndTime;
+
+                    if (startTimeUtc.HasValue)
                     {
-                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventStartTime.Value;
+                        DateTime dayUtc = DateTime.SpecifyKind(
+                            eventStartUtc.AddDays(day.EventDay - 1).Date + startTimeUtc.Value,
+                            DateTimeKind.Utc);
                         DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
                         day.EventStartTime = dayLocal.TimeOfDay;
                     }
 
-                    if (day.EventEndTime.HasValue)
+                    if (endTimeUtc.HasValue)
                     {
-                        DateTime dayUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + day.EventEndTime.Value;
+                        var endBaseUtc = eventStartUtc.AddDays(day.EventDay - 1).Date + endTimeUtc.Value;
+                        // Overnight UTC spill: end TimeOfDay is earlier than start TimeOfDay.
+                        if (startTimeUtc.HasValue && endTimeUtc.Value < startTimeUtc.Value)
+                        {
+                            endBaseUtc = endBaseUtc.AddDays(1);
+                        }
+
+                        DateTime dayUtc = DateTime.SpecifyKind(endBaseUtc, DateTimeKind.Utc);
                         DateTime dayLocal = TimeZoneInfo.ConvertTimeFromUtc(dayUtc, tz);
                         day.EventEndTime = dayLocal.TimeOfDay;
                     }

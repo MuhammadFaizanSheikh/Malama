@@ -1122,34 +1122,36 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .OrderBy(d => d.EventDay)
                     .ToList() ?? new List<EventStartEndTimeDayWise>();
 
-                // Day-wise EventStartTime/EventEndTime are the event-local hours shown in Pre Event Management.
-                // Snapshot before ConvertEventToLocalTime, which reinterprets these through UTC and can shift them.
-                var dayTimeSnapshots = dayWiseList
-                    .Select(d => new
-                    {
-                        d.EventDay,
-                        EventStartTime = d.EventStartTime,
-                        EventEndTime = d.EventEndTime
-                    })
-                    .ToList();
+                // DB stores UTC; convert to the event timezone so the calendar matches
+                // the wall-clock date/time the user entered when creating the event.
+                if (string.IsNullOrWhiteSpace(eventManagement.Timezone))
+                {
+                    throw new InvalidOperationException($"Event timezone is required. EventId: {eventId}");
+                }
 
+                eventManagement.EventStartDateUtc = DateTime.SpecifyKind(eventManagement.EventStartDateUtc, DateTimeKind.Utc);
+                eventManagement.EventEndDateUtc = DateTime.SpecifyKind(eventManagement.EventEndDateUtc, DateTimeKind.Utc);
                 Helper.ConvertEventToLocalTime(eventManagement, eventManagement.Timezone);
 
                 var days = new List<EventAppointmentDayWindowDto>();
 
-                if (dayTimeSnapshots.Count > 0)
+                if (dayWiseList.Count > 0)
                 {
                     var eventStartLocalDate = eventManagement.EventStartDateUtc.Date;
-                    foreach (var day in dayTimeSnapshots)
+                    foreach (var day in dayWiseList)
                     {
                         var date = eventStartLocalDate.AddDays(day.EventDay - 1);
+                        var startMinutes = day.EventStartTime.HasValue
+                            ? (int)day.EventStartTime.Value.TotalMinutes
+                            : 0;
+                        var endMinutes = Helper.ResolveEventDayEndMinutes(day.EventStartTime, day.EventEndTime);
+                        var graced = Helper.ApplySameDayAppointmentGrace(startMinutes, endMinutes);
+
                         days.Add(new EventAppointmentDayWindowDto
                         {
                             Date = date.ToString("yyyy-MM-dd"),
-                            StartMinutes = day.EventStartTime.HasValue
-                                ? (int)day.EventStartTime.Value.TotalMinutes
-                                : 0,
-                            EndMinutes = Helper.ResolveEventDayEndMinutes(day.EventStartTime, day.EventEndTime)
+                            StartMinutes = graced.StartMinutes,
+                            EndMinutes = graced.EndMinutes
                         });
                     }
                 }
@@ -1161,17 +1163,21 @@ namespace ExcelFilesCompiler.Controllers.Services
                     {
                         var isFirst = date == startDate;
                         var isLast = date == endDate;
+                        var startMinutes = isFirst
+                            ? (int)eventManagement.EventStartDateUtc.TimeOfDay.TotalMinutes
+                            : 0;
+                        var endMinutes = isLast
+                            ? Helper.ResolveEventDayEndMinutes(
+                                isFirst ? eventManagement.EventStartDateUtc.TimeOfDay : null,
+                                eventManagement.EventEndDateUtc.TimeOfDay)
+                            : (24 * 60);
+                        var graced = Helper.ApplySameDayAppointmentGrace(startMinutes, endMinutes);
+
                         days.Add(new EventAppointmentDayWindowDto
                         {
                             Date = date.ToString("yyyy-MM-dd"),
-                            StartMinutes = isFirst
-                                ? (int)eventManagement.EventStartDateUtc.TimeOfDay.TotalMinutes
-                                : 0,
-                            EndMinutes = isLast
-                                ? Helper.ResolveEventDayEndMinutes(
-                                    isFirst ? eventManagement.EventStartDateUtc.TimeOfDay : null,
-                                    eventManagement.EventEndDateUtc.TimeOfDay)
-                                : (24 * 60)
+                            StartMinutes = graced.StartMinutes,
+                            EndMinutes = graced.EndMinutes
                         });
                     }
                 }

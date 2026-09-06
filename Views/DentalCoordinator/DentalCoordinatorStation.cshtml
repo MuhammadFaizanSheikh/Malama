@@ -1037,6 +1037,7 @@
                         <h4 class="dco-forms-card-group-title">Documents</h4>
                         <input type="file"
                                id="treatmentCoordinatorDocumentsInput"
+                               name="TreatmentCoordinatorDocuments"
                                accept=".pdf,application/pdf"
                                multiple
                                hidden />
@@ -1045,7 +1046,7 @@
                                 class="btn btn-outline-primary btn-sm dco-docs-upload-btn">
                             <i class="fas fa-upload" aria-hidden="true"></i> Upload
                         </button>
-                        <p class="dco-docs-empty" id="treatmentCoordinatorDocsEmpty">No documents uploaded yet. PDF only.</p>
+                        <p class="dco-docs-empty" id="treatmentCoordinatorDocsEmpty">No documents uploaded yet. PDF only. Max 3 files, 3 MB each.</p>
                         <ul class="dco-docs-list" id="treatmentCoordinatorDocsList" style="display:none;"></ul>
                     </div>
 
@@ -1274,6 +1275,8 @@
     }
 
     const treatmentCoordinatorDocs = [];
+    const TC_DOCS_MAX_COUNT = 3;
+    const TC_DOCS_MAX_BYTES = 3 * 1024 * 1024;
 
     function formatDocumentSize(bytes) {
         if (!bytes && bytes !== 0) return "";
@@ -1288,6 +1291,12 @@
         return file.type === "application/pdf" || name.endsWith(".pdf");
     }
 
+    function updateTreatmentCoordinatorUploadAvailability() {
+        const atLimit = treatmentCoordinatorDocs.length >= TC_DOCS_MAX_COUNT;
+        $("#treatmentCoordinatorUploadBtn").prop("disabled", atLimit);
+        $("#treatmentCoordinatorDocumentsInput").prop("disabled", atLimit);
+    }
+
     function renderTreatmentCoordinatorDocs() {
         const $list = $("#treatmentCoordinatorDocsList");
         const $empty = $("#treatmentCoordinatorDocsEmpty");
@@ -1295,7 +1304,8 @@
 
         if (!treatmentCoordinatorDocs.length) {
             $list.hide();
-            $empty.show();
+            $empty.text("No documents uploaded yet. PDF only. Max 3 files, 3 MB each.").show();
+            updateTreatmentCoordinatorUploadAvailability();
             return;
         }
 
@@ -1322,33 +1332,67 @@
             $item.append($meta, $actions);
             $list.append($item);
         });
+
+        updateTreatmentCoordinatorUploadAvailability();
     }
 
     function addTreatmentCoordinatorDocuments(fileList) {
         const files = Array.from(fileList || []);
         if (!files.length) return;
 
-        const rejected = [];
+        const rejectedType = [];
+        const rejectedSize = [];
+        const rejectedLimit = [];
+        let remainingSlots = TC_DOCS_MAX_COUNT - treatmentCoordinatorDocs.length;
+
+        if (remainingSlots <= 0) {
+            Swal.fire("Upload limit", "You can upload a maximum of " + TC_DOCS_MAX_COUNT + " documents.", "warning");
+            return;
+        }
+
         files.forEach(function (file) {
             if (!isPdfFile(file)) {
-                rejected.push(file.name || "file");
+                rejectedType.push(file.name || "file");
                 return;
             }
+
+            if (file.size > TC_DOCS_MAX_BYTES) {
+                rejectedSize.push((file.name || "file") + " (" + formatDocumentSize(file.size) + ")");
+                return;
+            }
+
+            if (remainingSlots <= 0) {
+                rejectedLimit.push(file.name || "file");
+                return;
+            }
+
             const duplicate = treatmentCoordinatorDocs.some(function (doc) {
                 return doc.file.name === file.name && doc.file.size === file.size;
             });
             if (duplicate) return;
+
             treatmentCoordinatorDocs.push({
                 id: "doc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
                 file: file,
                 url: URL.createObjectURL(file)
             });
+            remainingSlots -= 1;
         });
 
         renderTreatmentCoordinatorDocs();
 
-        if (rejected.length) {
-            Swal.fire("PDF only", "These files were skipped because they are not PDFs:\n" + rejected.join(", "), "warning");
+        const messages = [];
+        if (rejectedType.length) {
+            messages.push("Not PDF (skipped):\n" + rejectedType.join(", "));
+        }
+        if (rejectedSize.length) {
+            messages.push("Larger than 3 MB (skipped):\n" + rejectedSize.join(", "));
+        }
+        if (rejectedLimit.length) {
+            messages.push("Upload limit is " + TC_DOCS_MAX_COUNT + " documents. Skipped:\n" + rejectedLimit.join(", "));
+        }
+        if (messages.length) {
+            Swal.fire("Upload validation", messages.join("\n\n"), "warning");
         }
     }
 
@@ -1377,14 +1421,40 @@
         });
     }
 
+    function syncTreatmentCoordinatorDocumentsToForm() {
+        const input = document.getElementById("treatmentCoordinatorDocumentsInput");
+        if (!input) {
+            return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        treatmentCoordinatorDocs.forEach(function (doc) {
+            if (doc && doc.file) {
+                dataTransfer.items.add(doc.file);
+            }
+        });
+
+        // Disabled inputs are omitted from form posts; re-enable so validated files are submitted.
+        input.disabled = false;
+        input.files = dataTransfer.files;
+    }
+
     function initTreatmentCoordinatorDocuments() {
         const $input = $("#treatmentCoordinatorDocumentsInput");
         $("#treatmentCoordinatorUploadBtn").on("click", function () {
+            if (treatmentCoordinatorDocs.length >= TC_DOCS_MAX_COUNT) {
+                Swal.fire("Upload limit", "You can upload a maximum of " + TC_DOCS_MAX_COUNT + " documents.", "warning");
+                return;
+            }
             $input.trigger("click");
         });
         $input.on("change", function () {
             addTreatmentCoordinatorDocuments(this.files);
             this.value = "";
+            updateTreatmentCoordinatorUploadAvailability();
+        });
+        $("#SaveDentalCoordinatorStation").on("submit", function () {
+            syncTreatmentCoordinatorDocumentsToForm();
         });
         renderTreatmentCoordinatorDocs();
     }

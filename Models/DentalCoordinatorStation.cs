@@ -37,6 +37,11 @@ namespace Malama.Models
         public string? FindingsJson { get; set; }
 
         public string? AppointmentsJson { get; set; }
+
+        /// <summary>
+        /// Optional Treatment Coordinator document uploads (PDF only).
+        /// </summary>
+        public List<IFormFile>? TreatmentCoordinatorDocuments { get; set; }
     }
 
     public class TreatmentCoordinatorAppointmentJsonDto
