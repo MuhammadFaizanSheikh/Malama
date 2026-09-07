@@ -1,23 +1,17 @@
 @* Dental Treatment Consent form (UI only — pen/finger pads). *@
 @{
+    var patientName = ViewData["PatientFullName"] as string ?? "";
     var patientDob = ViewData["PatientDob"] as string ?? "";
 }
 
 <div class="tcn-consent-form" id="dentalTreatmentConsentForm">
     <h3 class="tcn-consent-form-title">CONSENT FOR DENTAL TREATMENT</h3>
 
-    <div class="tcn-consent-row tcn-consent-row-split">
-        <div class="tcn-consent-field tcn-consent-field-name">
-            <label class="tcn-consent-label">Patient’s Name</label>
-            <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="dtc_patient_name" data-pen-size="line">
-                <canvas aria-label="Patient name handwriting pad"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
-        </div>
-        <div class="tcn-consent-field tcn-consent-field-dob">
-            <label class="tcn-consent-label">Birth Date (MM/DD/YYYY)</label>
-            <input type="text" class="form-control tcn-readonly-input" value="@patientDob" readonly tabindex="-1" />
-        </div>
+    <div class="tcn-consent-identity-line">
+        <span class="tcn-consent-identity-label">Patient’s Name</span>
+        <span class="tcn-consent-identity-blank">@patientName</span>
+        <span class="tcn-consent-identity-label">Birth Date</span>
+        <span class="tcn-consent-identity-blank tcn-consent-identity-blank-dob">@patientDob</span>
     </div>
 
     <p class="tcn-consent-intro">
@@ -33,60 +27,60 @@
             <h4>1. TREATMENT TO BE PERFORMED</h4>
         </div>
         <p>I understand that I am having the following work done:</p>
-        <div class="tcn-consent-treatment-grid">
-            <div class="tcn-treatment-option">
+        <div class="tcn-consent-inline-blanks">
+            <span class="tcn-inline-blank-pair">
                 <span>Fillings</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_fillings" data-pen-size="initials">
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_fillings" data-pen-size="initials">
                     <canvas aria-label="Fillings mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option">
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair">
                 <span>Stainless Steel Crowns</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_crowns" data-pen-size="initials">
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_crowns" data-pen-size="initials">
                     <canvas aria-label="Crowns mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option">
-                <span>Extractions</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_extractions" data-pen-size="initials">
-                    <canvas aria-label="Extractions mark"></canvas>
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair">
+                <span>Extracted</span>
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_extractions" data-pen-size="initials">
+                    <canvas aria-label="Extracted mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option">
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair">
                 <span>Impacted Teeth Removed</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_impacted" data-pen-size="initials">
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_impacted" data-pen-size="initials">
                     <canvas aria-label="Impacted teeth mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option">
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair">
                 <span>Root Canal(s)</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_root_canal" data-pen-size="initials">
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_root_canal" data-pen-size="initials">
                     <canvas aria-label="Root canal mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option">
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair">
                 <span>FMD</span>
-                <div class="tcn-pen-pad tcn-pen-pad-mini" data-pen-pad="dtc_fmd" data-pen-size="initials">
+                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_fmd" data-pen-size="initials">
                     <canvas aria-label="FMD mark"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
-            <div class="tcn-treatment-option tcn-treatment-option-wide">
+                </span>
+            </span>
+            <span class="tcn-inline-blank-pair tcn-inline-blank-pair-other">
                 <span>Other</span>
-                <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="dtc_other_treatment" data-pen-size="line">
+                <span class="tcn-pen-pad tcn-pen-pad-underline tcn-pen-pad-underline-wide" data-pen-pad="dtc_other_treatment" data-pen-size="line">
                     <canvas aria-label="Other treatment handwriting"></canvas>
                     <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </div>
-            </div>
+                </span>
+            </span>
         </div>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item1_initials" data-pen-size="initials">
+            <div class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_item1_initials" data-pen-size="initials">
                 <canvas aria-label="Item 1 initials"></canvas>
                 <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
             </div>
@@ -128,12 +122,12 @@
             Alternatives to removal have been explained to me (root canal therapy, crowns, periodontal surgery, etc.) and I authorize
             Dr.
         </p>
-        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="dtc_removal_doctor" data-pen-size="line">
+        <div class="tcn-pen-pad tcn-pen-pad-doctor-names" data-pen-pad="dtc_removal_doctor" data-pen-size="line">
             <canvas aria-label="Doctor name for tooth removal"></canvas>
             <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
         </div>
         <p class="mt-2 mb-1">to remove the following teeth:</p>
-        <div class="tcn-pen-pad tcn-pen-pad-block" data-pen-pad="dtc_removal_teeth" data-pen-size="block">
+        <div class="tcn-pen-pad tcn-pen-pad-teeth-numbers" data-pen-pad="dtc_removal_teeth" data-pen-size="line">
             <canvas aria-label="Teeth to remove"></canvas>
             <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
         </div>
@@ -240,7 +234,7 @@
 
     <div class="tcn-signature-grid">
         <div class="tcn-signature-block">
-            <label class="tcn-consent-label">Signature of Patient, Parent, Guardian, or Personal Representative</label>
+            <label class="tcn-consent-label tcn-consent-label-signature-long">Signature of Patient, Parent, Guardian, or Personal Representative</label>
             <div class="tcn-pen-pad tcn-pen-pad-signature" data-pen-pad="dtc_patient_signature" data-pen-size="signature">
                 <canvas aria-label="Patient signature"></canvas>
                 <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>

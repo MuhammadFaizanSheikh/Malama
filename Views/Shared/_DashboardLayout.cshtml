@@ -1,5 +1,6 @@
 ﻿@using System.Security.Claims
 @using Malama.Models
+@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
 
@@ -360,19 +361,38 @@
         body.sidebar-collapsed {
             --sidebar-width: var(--sidebar-width-collapsed);
         }
+
+        body.tcn-sm-mode-lock #sidebar,
+        body.tcn-sm-mode-lock .dashboard-topbar {
+            display: none !important;
+        }
+
+        body.tcn-sm-mode-lock main {
+            margin-left: 0 !important;
+        }
+
+        body.tcn-sm-mode-lock .content {
+            max-width: 100%;
+        }
     </style>
 </head>
-<body>
-    <script>
-        (function () {
-            try {
-                if (localStorage.getItem("malama.sidebarCollapsed") === "1") {
-                    document.body.classList.add("sidebar-collapsed");
-                }
-                document.documentElement.classList.remove("sidebar-collapsed-pending");
-            } catch (e) { }
-        })();
-    </script>
+@{
+    var isTreatmentConsentSmMode = string.Equals(
+        Context.Session.GetString(ExcelFilesCompiler.Utilities.TreatmentConsentSmModeHelper.SessionActiveKey),
+        "1",
+        StringComparison.Ordinal);
+}
+<body class="@(isTreatmentConsentSmMode ? "tcn-sm-mode-lock" : null)">
+<script>
+    (function () {
+        try {
+            if (localStorage.getItem("malama.sidebarCollapsed") === "1") {
+                document.body.classList.add("sidebar-collapsed");
+            }
+            document.documentElement.classList.remove("sidebar-collapsed-pending");
+        } catch (e) { }
+    })();
+</script>
     @{
         var user = await UserManager.GetUserAsync(User);
         bool isEventUser = user?.IsEventUser ?? false;

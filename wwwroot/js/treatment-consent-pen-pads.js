@@ -8,6 +8,8 @@
         let lastX = 0;
         let lastY = 0;
         let dirty = false;
+        let enabled = opts.enabled !== false;
+        const wrap = canvas.closest("[data-pen-pad]");
 
         function resize() {
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -43,6 +45,7 @@
         }
 
         function start(event) {
+            if (!enabled) return;
             event.preventDefault();
             drawing = true;
             if (canvas.setPointerCapture && event.pointerId != null) {
@@ -54,7 +57,7 @@
         }
 
         function move(event) {
-            if (!drawing) return;
+            if (!enabled || !drawing) return;
             event.preventDefault();
             const pos = pointerPos(event);
             ctx.beginPath();
@@ -74,6 +77,7 @@
         }
 
         function clear() {
+            if (!enabled) return;
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -86,6 +90,16 @@
             canvas.dataset.hasInk = "false";
         }
 
+        function setEnabled(isEnabled) {
+            enabled = !!isEnabled;
+            drawing = false;
+            canvas.style.pointerEvents = enabled ? "auto" : "none";
+            canvas.style.cursor = enabled ? "crosshair" : "not-allowed";
+            if (wrap) {
+                wrap.classList.toggle("is-disabled", !enabled);
+            }
+        }
+
         canvas.style.touchAction = "none";
         canvas.addEventListener("pointerdown", start);
         canvas.addEventListener("pointermove", move);
@@ -95,18 +109,22 @@
 
         resize();
         window.addEventListener("resize", resize);
+        setEnabled(enabled);
 
         return {
             clear: clear,
             resize: resize,
+            setEnabled: setEnabled,
             isEmpty: function () { return !dirty; },
             toDataURL: function () { return dirty ? canvas.toDataURL("image/png") : ""; }
         };
     }
 
-    function initAll(root) {
+    function initAll(root, options) {
         const scope = root || document;
+        const opts = options || {};
         const pads = {};
+        const enabled = opts.enabled !== false;
 
         scope.querySelectorAll("[data-pen-pad]").forEach(function (wrap) {
             const canvas = wrap.querySelector("canvas");
@@ -115,7 +133,7 @@
 
             const size = wrap.getAttribute("data-pen-size") || "line";
             const lineWidth = size === "initials" ? 1.8 : (size === "signature" ? 2.4 : 2.1);
-            const pad = createPad(canvas, { lineWidth: lineWidth });
+            const pad = createPad(canvas, { lineWidth: lineWidth, enabled: enabled });
             const id = wrap.getAttribute("data-pen-pad") || ("pad_" + Math.random().toString(36).slice(2));
             pads[id] = pad;
 
@@ -129,7 +147,16 @@
         return pads;
     }
 
+    function setAllEnabled(pads, isEnabled) {
+        Object.keys(pads || {}).forEach(function (key) {
+            if (pads[key] && typeof pads[key].setEnabled === "function") {
+                pads[key].setEnabled(isEnabled);
+            }
+        });
+    }
+
     window.TreatmentConsentPenPads = {
-        initAll: initAll
+        initAll: initAll,
+        setAllEnabled: setAllEnabled
     };
 })(window);

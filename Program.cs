@@ -189,6 +189,7 @@ app.UseCors("*"); // Apply CORS middleware globally
 app.UseSession();
 app.UseAuthentication(); // Must be before UseAuthorization
 app.UseAuthorization();
+app.UseMiddleware<Malama.Middleware.TreatmentConsentSmModeMiddleware>();
 
 //if (env.IsDevelopment())
 //{

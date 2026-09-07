@@ -11,6 +11,7 @@
     var questionnaire = Model.Questionnaire;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var consentDateDisplay = DateTime.Now.ToString("MM/dd/yyyy");
+    var isSmMode = ViewBag.IsTreatmentConsentSmMode as bool? == true;
 }
 
 <style>
@@ -206,6 +207,18 @@
         letter-spacing: 0.04em;
     }
 
+    .tcn-station .tcn-consent-label-signature-long {
+        white-space: nowrap;
+        width: max-content;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tcn-station .tcn-signature-block:has(.tcn-consent-label-signature-long) {
+        max-width: none;
+    }
+
     .tcn-station .tcn-consent-row-split {
         display: grid;
         grid-template-columns: minmax(180px, 320px) minmax(140px, 220px);
@@ -227,11 +240,105 @@
         font-weight: 600;
     }
 
+    .tcn-station .tcn-consent-autofill-value {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--tcn-text);
+        word-break: break-word;
+    }
+
+    .tcn-station .tcn-consent-identity-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.45rem 0.65rem;
+        margin-bottom: 1rem;
+        font-size: 0.98rem;
+        color: #2a3140;
+    }
+
+    .tcn-station .tcn-consent-identity-label {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .tcn-station .tcn-consent-identity-blank {
+        flex: 0 1 240px;
+        min-width: 140px;
+        max-width: 240px;
+        border-bottom: 1.5px solid #1f2430;
+        padding: 0 0.35rem 0.15rem;
+        font-weight: 700;
+        color: var(--tcn-text);
+        word-break: break-word;
+    }
+
+    .tcn-station .tcn-consent-identity-blank-dob {
+        flex: 0 1 140px;
+        min-width: 110px;
+        max-width: 140px;
+    }
+
     .tcn-station .tcn-consent-treatment-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.75rem;
         margin: 0.75rem 0 0.35rem;
+    }
+
+    .tcn-station .tcn-consent-inline-blanks {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.55rem 0.85rem;
+        margin: 0.55rem 0 0.35rem;
+        line-height: 1.7;
+        font-size: 0.95rem;
+        color: #2a3140;
+    }
+
+    .tcn-station .tcn-inline-blank-pair {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .tcn-station .tcn-inline-blank-pair-other {
+        flex: 1 1 180px;
+        min-width: 140px;
+    }
+
+    .tcn-station .tcn-pen-pad-underline {
+        position: relative;
+        display: inline-block;
+        width: 72px;
+        height: 28px;
+        vertical-align: middle;
+        border: none;
+        border-bottom: 1.5px solid #1f2430;
+        border-radius: 0;
+        background: transparent;
+        overflow: visible;
+    }
+
+    .tcn-station .tcn-pen-pad-underline canvas {
+        background: transparent;
+    }
+
+    .tcn-station .tcn-pen-pad-underline-wide {
+        width: 140px;
+        flex: 1 1 auto;
+        min-width: 100px;
+    }
+
+    .tcn-station .tcn-pen-pad-underline .tcn-pen-clear {
+        top: -2px;
+        right: -2px;
+        padding: 0.18rem 0.35rem;
+        font-size: 0.58rem;
+        opacity: 0.75;
     }
 
     .tcn-station .tcn-treatment-option {
@@ -275,6 +382,18 @@
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
         margin-top: 1rem;
+        justify-items: start;
+    }
+
+    .tcn-station .tcn-signature-block {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .tcn-station .tcn-pen-pad-signature {
+        width: 100%;
+        max-width: 280px;
+        height: 72px;
     }
 
     .tcn-station .tcn-pen-pad {
@@ -296,11 +415,23 @@
     }
 
     .tcn-station .tcn-pen-pad-line { height: 56px; }
+    .tcn-station .tcn-pen-pad-teeth-numbers {
+        width: 280px;
+        max-width: 100%;
+        height: 44px;
+        margin-bottom: 0.35rem;
+    }
+    .tcn-station .tcn-pen-pad-doctor-names {
+        width: 320px;
+        max-width: 100%;
+        height: 44px;
+        margin-bottom: 0.35rem;
+    }
     .tcn-station .tcn-pen-pad-initials,
     .tcn-station .tcn-pen-pad-check,
     .tcn-station .tcn-pen-pad-mini { width: 88px; height: 44px; flex: 0 0 auto; }
     .tcn-station .tcn-pen-pad-block { height: 110px; }
-    .tcn-station .tcn-pen-pad-signature { height: 130px; }
+    .tcn-station .tcn-pen-pad-signature { height: 72px; max-width: 280px; }
 
     .tcn-station .tcn-pen-clear {
         position: absolute;
@@ -321,6 +452,87 @@
         background: rgba(31, 36, 48, 0.92);
     }
 
+    .tcn-station .tcn-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .tcn-station .tcn-title {
+        margin-bottom: 0;
+    }
+
+    .tcn-station .tcn-toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .tcn-station .btn-tcn-start,
+    .tcn-station .btn-tcn-unlock {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 0.55rem 1.05rem;
+        border: 1px solid transparent;
+    }
+
+    .tcn-station .btn-tcn-start {
+        background: var(--tcn-indigo);
+        border-color: var(--tcn-indigo);
+        color: #fff;
+    }
+
+    .tcn-station .btn-tcn-start:hover {
+        background: rgb(60, 70, 180);
+        color: #fff;
+    }
+
+    .tcn-station .btn-tcn-unlock {
+        background: #fff;
+        border-color: rgba(180, 83, 9, 0.45);
+        color: #b45309;
+    }
+
+    .tcn-station .btn-tcn-unlock:hover {
+        background: rgba(180, 83, 9, 0.08);
+        color: #b45309;
+    }
+
+    .tcn-station.tcn-fields-locked .tab-content input,
+    .tcn-station.tcn-fields-locked .tab-content select,
+    .tcn-station.tcn-fields-locked .tab-content textarea,
+    .tcn-station.tcn-fields-locked .tab-content button[data-pen-clear] {
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+
+    .tcn-station.tcn-fields-locked .tab-content input,
+    .tcn-station.tcn-fields-locked .tab-content select,
+    .tcn-station.tcn-fields-locked .tab-content textarea {
+        background-color: #f3f4f8 !important;
+        opacity: 0.92;
+    }
+
+    .tcn-station.tcn-fields-locked .tcn-pen-pad,
+    .tcn-station .tcn-pen-pad.is-disabled {
+        opacity: 0.72;
+        background: #f7f8fb;
+    }
+
+    .tcn-station.tcn-fields-locked .tcn-pen-pad canvas,
+    .tcn-station .tcn-pen-pad.is-disabled canvas {
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
+    .tcn-station.tcn-fields-locked .tcn-pen-clear,
+    .tcn-station .tcn-pen-pad.is-disabled .tcn-pen-clear {
+        display: none;
+    }
+
     @@media (max-width: 900px) {
         .tcn-station .tcn-info-grid,
         .tcn-station .tcn-consent-row-split,
@@ -331,8 +543,26 @@
     }
 </style>
 
-<section class="tcn-station">
-    <h1 class="tcn-title">Treatment Consent</h1>
+<section class="tcn-station @(isSmMode ? "" : "tcn-fields-locked")" data-sm-mode="@(isSmMode ? "true" : "false")" data-sm-id="@sm.Id">
+    @Html.AntiForgeryToken()
+
+    <div class="tcn-toolbar">
+        <h1 class="tcn-title">Treatment Consent</h1>
+        <div class="tcn-toolbar-actions">
+            @if (isSmMode)
+            {
+                <button type="button" id="tcnStaffUnlockBtn" class="btn btn-tcn-unlock">
+                    <i class="fas fa-lock-open" aria-hidden="true"></i> Staff Unlock
+                </button>
+            }
+            else
+            {
+                <button type="button" id="tcnStartSmModeBtn" class="btn btn-tcn-start">
+                    <i class="fas fa-play" aria-hidden="true"></i> Start
+                </button>
+            }
+        </div>
+    </div>
 
     @if (TempData["ResponseMessage"] != null)
     {
@@ -412,19 +642,9 @@
 
     <div class="tab-content" id="treatmentConsentTabContent">
         <div class="tab-pane fade show active" id="da5570Pane" role="tabpanel" aria-labelledby="da5570-tab">
-            <div class="questionnaire-heading" id="da5570QuestionnaireHeading">
-                <div class="form-check form-switch questionnaire-toggle-switch mb-0">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           role="switch"
-                           id="toggleDa5570QuestionnaireSwitch"
-                           aria-controls="da5570QuestionnaireSection"
-                           aria-expanded="false" />
-                </div>
-                <h3>Questionnaire</h3>
-            </div>
+            <h3 class="mb-3">Questionnaire</h3>
 
-            <div id="da5570QuestionnaireSection" style="display:none;">
+            <div id="da5570QuestionnaireSection">
                 @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)
 
                 @if (isFemale)
@@ -530,6 +750,7 @@
         <div class="tab-pane fade" id="dentalTreatmentConsentPane" role="tabpanel" aria-labelledby="dentalTreatmentConsent-tab">
             @{
                 var treatmentConsentViewData = new ViewDataDictionary(ViewData);
+                treatmentConsentViewData["PatientFullName"] = sm?.FullName ?? string.Empty;
                 treatmentConsentViewData["PatientDob"] = sm?.Dob ?? string.Empty;
                 treatmentConsentViewData["ConsentDate"] = consentDateDisplay;
             }
@@ -637,21 +858,9 @@
         togglePregnancyFlow();
     }
 
-    function toggleDa5570QuestionnaireFromSwitch() {
-        const isOn = $("#toggleDa5570QuestionnaireSwitch").is(":checked");
-        const $section = $("#da5570QuestionnaireSection");
-        if (isOn) {
-            $section.slideDown(200);
-        } else {
-            $section.slideUp(200);
-        }
-        $("#toggleDa5570QuestionnaireSwitch").attr("aria-expanded", isOn ? "true" : "false");
-    }
-
     $(document).ready(function () {
         initQuestionnaireToggles();
 
-        $("#toggleDa5570QuestionnaireSwitch").on("change", toggleDa5570QuestionnaireFromSwitch);
         $(document).on("change", ".dental-q-detail-toggle", function () {
             toggleQuestionnaireDetail(this);
         });
@@ -664,9 +873,36 @@
         });
         $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
 
+        const IS_SM_MODE = @Json.Serialize(isSmMode);
+        const SM_CHILD_ID = @Json.Serialize(sm.Id);
+        const antiforgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+        function applyFormFieldsLock(isWritable) {
+            const $station = $(".tcn-station");
+            $station.toggleClass("tcn-fields-locked", !isWritable);
+
+            $station.find(".tab-content").find("input, select, textarea").each(function () {
+                const $el = $(this);
+                if ($el.hasClass("tcn-readonly-input") || $el.attr("readonly") === "readonly" && $el.hasClass("tcn-readonly-input")) {
+                    return;
+                }
+                // Keep anti-forgery and other non-form controls alone; only lock editable fields.
+                if ($el.attr("name") === "__RequestVerificationToken") {
+                    return;
+                }
+                $el.prop("disabled", !isWritable);
+            });
+
+            if (window.TreatmentConsentPenPads && typeof window.TreatmentConsentPenPads.setAllEnabled === "function") {
+                window.TreatmentConsentPenPads.setAllEnabled(penPads, isWritable);
+            }
+        }
+
         const penPads = window.TreatmentConsentPenPads
-            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"))
+            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"), { enabled: IS_SM_MODE })
             : {};
+
+        applyFormFieldsLock(IS_SM_MODE);
 
         function resizeVisiblePenPads() {
             Object.keys(penPads).forEach(function (key) {
@@ -682,5 +918,128 @@
                 window.setTimeout(resizeVisiblePenPads, 30);
             });
         });
+
+        function getAntiforgeryHeaders() {
+            return {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": antiforgeryToken,
+                "X-XSRF-TOKEN": antiforgeryToken,
+                "X-Requested-With": "XMLHttpRequest"
+            };
+        }
+
+        async function enterFullscreenIfPossible() {
+            try {
+                const el = document.documentElement;
+                if (el.requestFullscreen) {
+                    await el.requestFullscreen();
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                }
+            } catch (e) {
+                // Fullscreen may be blocked by browser policy; SM mode still works.
+            }
+        }
+
+        function trapHistoryWhileSmMode() {
+            if (!IS_SM_MODE) {
+                return;
+            }
+
+            history.pushState({ tcnSmLock: true }, "", window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState({ tcnSmLock: true }, "", window.location.href);
+                Swal.fire({
+                    icon: "info",
+                    title: "Locked",
+                    text: "Service member mode is active. Ask staff to unlock.",
+                    confirmButtonColor: "rgba(80, 90, 201, 1)"
+                });
+            });
+        }
+
+        $("#tcnStartSmModeBtn").on("click", async function () {
+            const confirm = await Swal.fire({
+                title: "Start service member mode?",
+                text: "Menu and other pages will lock. Hand the tablet to the service member after starting.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Start",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "rgba(80, 90, 201, 1)"
+            });
+
+            if (!confirm.isConfirmed) {
+                return;
+            }
+
+            try {
+                const response = await fetch("@Url.Action("StartSmMode", "TreatmentConsent")", {
+                    method: "POST",
+                    headers: getAntiforgeryHeaders(),
+                    body: JSON.stringify({ serviceMembersChildId: SM_CHILD_ID })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    Swal.fire("Unable to start", data.message || "Please try again.", "error");
+                    return;
+                }
+
+                await enterFullscreenIfPossible();
+                window.location.href = data.redirectUrl
+                    || ("/TreatmentConsent/TreatmentConsentStation?serviceMembersChildId=" + SM_CHILD_ID);
+            } catch (e) {
+                Swal.fire("Error", "Unable to start service member mode.", "error");
+            }
+        });
+
+        $("#tcnStaffUnlockBtn").on("click", async function () {
+            const result = await Swal.fire({
+                title: "Staff Unlock",
+                html: '<p class="mb-2">Enter your account password to unlock.</p>'
+                    + '<input id="tcnUnlockPassword" type="password" class="swal2-input" placeholder="Password" autocomplete="current-password" />',
+                showCancelButton: true,
+                confirmButtonText: "Unlock",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "rgba(80, 90, 201, 1)",
+                focusConfirm: false,
+                preConfirm: function () {
+                    const password = (document.getElementById("tcnUnlockPassword")?.value || "").trim();
+                    if (!password) {
+                        Swal.showValidationMessage("Password is required.");
+                        return false;
+                    }
+                    return password;
+                }
+            });
+
+            if (!result.isConfirmed || !result.value) {
+                return;
+            }
+
+            try {
+                const response = await fetch("@Url.Action("UnlockSmMode", "TreatmentConsent")", {
+                    method: "POST",
+                    headers: getAntiforgeryHeaders(),
+                    body: JSON.stringify({ password: result.value })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    Swal.fire("Unlock failed", data.message || "Incorrect password.", "error");
+                    return;
+                }
+
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    try { await document.exitFullscreen(); } catch (e) { /* ignore */ }
+                }
+
+                window.location.href = data.redirectUrl
+                    || ("/TreatmentConsent/TreatmentConsentStation?serviceMembersChildId=" + SM_CHILD_ID);
+            } catch (e) {
+                Swal.fire("Error", "Unable to unlock service member mode.", "error");
+            }
+        });
+
+        trapHistoryWhileSmMode();
     });
 </script>
