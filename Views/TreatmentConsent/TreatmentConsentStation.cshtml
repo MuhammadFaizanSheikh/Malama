@@ -549,18 +549,12 @@
     <div class="tcn-toolbar">
         <h1 class="tcn-title">Treatment Consent</h1>
         <div class="tcn-toolbar-actions">
-            @if (isSmMode)
-            {
-                <button type="button" id="tcnStaffUnlockBtn" class="btn btn-tcn-unlock">
-                    <i class="fas fa-lock-open" aria-hidden="true"></i> Staff Unlock
-                </button>
-            }
-            else
-            {
-                <button type="button" id="tcnStartSmModeBtn" class="btn btn-tcn-start">
-                    <i class="fas fa-play" aria-hidden="true"></i> Start
-                </button>
-            }
+            <button type="button" id="tcnStaffUnlockBtn" class="btn btn-tcn-unlock" style="@(isSmMode ? null : "display:none")">
+                <i class="fas fa-lock-open" aria-hidden="true"></i> Staff Unlock
+            </button>
+            <button type="button" id="tcnStartSmModeBtn" class="btn btn-tcn-start" style="@(isSmMode ? "display:none" : null)">
+                <i class="fas fa-play" aria-hidden="true"></i> Start
+            </button>
         </div>
     </div>
 
@@ -873,12 +867,14 @@
         });
         $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
 
-        const IS_SM_MODE = @Json.Serialize(isSmMode);
+        let isSmModeActive = @Json.Serialize(isSmMode);
         const SM_CHILD_ID = @Json.Serialize(sm.Id);
         const antiforgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+        const $startBtn = $("#tcnStartSmModeBtn");
+        const $unlockBtn = $("#tcnStaffUnlockBtn");
+        const $station = $(".tcn-station");
 
         function applyFormFieldsLock(isWritable) {
-            const $station = $(".tcn-station");
             $station.toggleClass("tcn-fields-locked", !isWritable);
 
             $station.find(".tab-content").find("input, select, textarea").each(function () {
@@ -898,13 +894,27 @@
             }
         }
 
+        function setSmModeUi(active) {
+            isSmModeActive = !!active;
+            document.body.classList.toggle("tcn-sm-mode-lock", isSmModeActive);
+            $station.attr("data-sm-mode", isSmModeActive ? "true" : "false");
+            $unlockBtn.toggle(isSmModeActive);
+            $startBtn.toggle(!isSmModeActive);
+            applyFormFieldsLock(isSmModeActive);
+        }
+
         const penPads = window.TreatmentConsentPenPads
-            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"), { enabled: IS_SM_MODE })
+            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"), { enabled: isSmModeActive })
             : {};
 
-        applyFormFieldsLock(IS_SM_MODE);
+        applyFormFieldsLock(isSmModeActive);
 
-        function resizeVisiblePenPads() {
+        function resizeVisiblePenPads(paneEl) {
+            if (window.TreatmentConsentPenPads && typeof window.TreatmentConsentPenPads.resizePadsIn === "function") {
+                window.TreatmentConsentPenPads.resizePadsIn(penPads, paneEl || document.querySelector(".tcn-station .tab-pane.active"));
+                return;
+            }
+
             Object.keys(penPads).forEach(function (key) {
                 if (penPads[key] && typeof penPads[key].resize === "function") {
                     penPads[key].resize();
@@ -912,10 +922,14 @@
             });
         }
 
-        // Hidden tab canvases need a resize after they become visible.
+        // Only resize pads in the newly shown tab (hidden canvases are 0x0 and must not be reset).
         document.querySelectorAll('#treatmentConsentTabs button[data-bs-toggle="tab"]').forEach(function (tabBtn) {
-            tabBtn.addEventListener("shown.bs.tab", function () {
-                window.setTimeout(resizeVisiblePenPads, 30);
+            tabBtn.addEventListener("shown.bs.tab", function (event) {
+                const targetSelector = event.target.getAttribute("data-bs-target");
+                const paneEl = targetSelector ? document.querySelector(targetSelector) : null;
+                window.setTimeout(function () {
+                    resizeVisiblePenPads(paneEl);
+                }, 30);
             });
         });
 
@@ -941,21 +955,41 @@
             }
         }
 
+        async function exitFullscreenIfPossible() {
+            if (!document.fullscreenElement || !document.exitFullscreen) {
+                return;
+            }
+            try {
+                await document.exitFullscreen();
+            } catch (e) {
+                /* ignore */
+            }
+        }
+
+        function onSmModePopState() {
+            if (!isSmModeActive) {
+                return;
+            }
+            history.pushState({ tcnSmLock: true }, "", window.location.href);
+            Swal.fire({
+                icon: "info",
+                title: "Locked",
+                text: "Service member mode is active. Ask staff to unlock.",
+                confirmButtonColor: "rgba(80, 90, 201, 1)"
+            });
+        }
+
+        let historyTrapInstalled = false;
         function trapHistoryWhileSmMode() {
-            if (!IS_SM_MODE) {
+            if (!isSmModeActive) {
                 return;
             }
 
             history.pushState({ tcnSmLock: true }, "", window.location.href);
-            window.addEventListener("popstate", function () {
-                history.pushState({ tcnSmLock: true }, "", window.location.href);
-                Swal.fire({
-                    icon: "info",
-                    title: "Locked",
-                    text: "Service member mode is active. Ask staff to unlock.",
-                    confirmButtonColor: "rgba(80, 90, 201, 1)"
-                });
-            });
+            if (!historyTrapInstalled) {
+                window.addEventListener("popstate", onSmModePopState);
+                historyTrapInstalled = true;
+            }
         }
 
         $("#tcnStartSmModeBtn").on("click", async function () {
@@ -986,8 +1020,9 @@
                 }
 
                 await enterFullscreenIfPossible();
-                window.location.href = data.redirectUrl
-                    || ("/TreatmentConsent/TreatmentConsentStation?serviceMembersChildId=" + SM_CHILD_ID);
+                // Soft-start so any already-drawn ink is kept (no full page reload).
+                setSmModeUi(true);
+                trapHistoryWhileSmMode();
             } catch (e) {
                 Swal.fire("Error", "Unable to start service member mode.", "error");
             }
@@ -1029,12 +1064,9 @@
                     return;
                 }
 
-                if (document.fullscreenElement && document.exitFullscreen) {
-                    try { await document.exitFullscreen(); } catch (e) { /* ignore */ }
-                }
-
-                window.location.href = data.redirectUrl
-                    || ("/TreatmentConsent/TreatmentConsentStation?serviceMembersChildId=" + SM_CHILD_ID);
+                await exitFullscreenIfPossible();
+                // Soft-unlock: keep pen ink / form answers; do not reload the page.
+                setSmModeUi(false);
             } catch (e) {
                 Swal.fire("Error", "Unable to unlock service member mode.", "error");
             }
