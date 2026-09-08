@@ -362,4 +362,13 @@ namespace Malama.Models
         [Column(TypeName = "decimal(6,0)")]
         public decimal Rewards { get; set; }
     }
+
+    /// <summary>
+    /// Dentist option for Treatment Coordinator appointment assignment.
+    /// </summary>
+    public class TreatmentCoordinatorAssignableDentistDto
+    {
+        public long EventStaffId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+    }
 }

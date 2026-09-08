@@ -3,6 +3,19 @@
     var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
     var eventAppointmentDayWindowsJson = ViewData["EventAppointmentDayWindowsJson"] as string ?? "[]";
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
+    var assignableDentists = ViewData["AssignableDentists"] as List<TreatmentCoordinatorAssignableDentistDto>
+        ?? new List<TreatmentCoordinatorAssignableDentistDto>();
+    var dentistCount = Math.Max(assignableDentists.Count, 1);
+    var dentistListForJson = new List<Dictionary<string, string>>();
+    foreach (var dentist in assignableDentists)
+    {
+        dentistListForJson.Add(new Dictionary<string, string>
+        {
+            ["id"] = dentist.EventStaffId.ToString(),
+            ["name"] = dentist.DisplayName ?? string.Empty
+        });
+    }
+    var assignableDentistsJson = System.Text.Json.JsonSerializer.Serialize(dentistListForJson);
 }
 
 <style>
@@ -256,8 +269,8 @@
     #tcAppointmentsSection .tc-appt-calendar-header,
     #tcAppointmentsSection .tc-appt-calendar-body {
         display: grid;
-        grid-template-columns: 88px repeat(4, minmax(120px, 1fr));
-        min-width: 720px;
+        grid-template-columns: 88px repeat(var(--tc-appt-dentist-count, 1), minmax(140px, 1fr));
+        min-width: calc(88px + (var(--tc-appt-dentist-count, 1) * 140px));
     }
 
     #tcAppointmentsSection .tc-appt-calendar-header {
@@ -274,6 +287,9 @@
         font-weight: 700;
         text-align: center;
         border-right: 1px solid rgba(31, 36, 48, 0.06);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     #tcAppointmentsSection .tc-appt-dentist-col {
@@ -418,11 +434,15 @@
                             <label class="form-label" for="tcAppointmentDentist">Assign Dentist</label>
                             <select id="tcAppointmentDentist" class="form-select">
                                 <option value=""></option>
-                                <option value="Dentist 1">Dentist 1</option>
-                                <option value="Dentist 2">Dentist 2</option>
-                                <option value="Dentist 3">Dentist 3</option>
-                                <option value="Dentist 4">Dentist 4</option>
+                                @foreach (var dentist in assignableDentists)
+                                {
+                                    <option value="@dentist.EventStaffId">@dentist.DisplayName</option>
+                                }
                             </select>
+                            @if (assignableDentists.Count == 0)
+                            {
+                                <div class="form-text text-muted">No dentists with DT-Dentist role and Oral Surgery/Treatment attribute are assigned to this event.</div>
+                            }
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="tcAppointmentDate">Appointment Date</label>
@@ -502,32 +522,40 @@
                 </button>
             </div>
         </div>
-        <div class="tc-appt-calendar-scroll">
-            <div class="tc-appt-calendar-header">
+        <div class="tc-appt-calendar-scroll" style="--tc-appt-dentist-count: @dentistCount">
+            <div class="tc-appt-calendar-header" id="tcApptCalendarHeader">
                 <div>Time</div>
-                <div>Dentist 1</div>
-                <div>Dentist 2</div>
-                <div>Dentist 3</div>
-                <div>Dentist 4</div>
+                @if (assignableDentists.Count == 0)
+                {
+                    <div>No dentists</div>
+                }
+                else
+                {
+                    foreach (var dentist in assignableDentists)
+                    {
+                        <div title="@dentist.DisplayName">@dentist.DisplayName</div>
+                    }
+                }
             </div>
             <div class="tc-appt-calendar-body" id="tcApptCalendarBody">
                 <div class="tc-appt-time-col" id="tcApptTimeCol"></div>
-                <div class="tc-appt-dentist-col" data-dentist="Dentist 1">
-                    <div class="tc-appt-slots"></div>
-                    <div class="tc-appt-bookings"></div>
-                </div>
-                <div class="tc-appt-dentist-col" data-dentist="Dentist 2">
-                    <div class="tc-appt-slots"></div>
-                    <div class="tc-appt-bookings"></div>
-                </div>
-                <div class="tc-appt-dentist-col" data-dentist="Dentist 3">
-                    <div class="tc-appt-slots"></div>
-                    <div class="tc-appt-bookings"></div>
-                </div>
-                <div class="tc-appt-dentist-col" data-dentist="Dentist 4">
-                    <div class="tc-appt-slots"></div>
-                    <div class="tc-appt-bookings"></div>
-                </div>
+                @if (assignableDentists.Count == 0)
+                {
+                    <div class="tc-appt-dentist-col" data-dentist="">
+                        <div class="tc-appt-slots"></div>
+                        <div class="tc-appt-bookings"></div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var dentist in assignableDentists)
+                    {
+                        <div class="tc-appt-dentist-col" data-dentist="@dentist.EventStaffId">
+                            <div class="tc-appt-slots"></div>
+                            <div class="tc-appt-bookings"></div>
+                        </div>
+                    }
+                }
             </div>
         </div>
         <div class="tc-appt-calendar-empty" id="tcApptCalendarHint">
@@ -542,9 +570,25 @@
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
         const EVENT_APPOINTMENT_DAY_WINDOWS = @Html.Raw(eventAppointmentDayWindowsJson);
         const SERVICE_MEMBER_DISPLAY_NAME = @Json.Serialize(serviceMemberDisplayName);
+        const ASSIGNED_DENTISTS = @Html.Raw(assignableDentistsJson);
         const APPT_SLOT_MINUTES = 15;
         const APPT_SLOT_HEIGHT = 24;
         const APPT_MIN_DURATION_MINUTES = 15;
+
+        const dentistNameById = {};
+        (ASSIGNED_DENTISTS || []).forEach(function (dentist) {
+            if (dentist && dentist.id) {
+                dentistNameById[String(dentist.id)] = dentist.name || String(dentist.id);
+            }
+        });
+
+        function resolveDentistDisplayName(dentistValue) {
+            const key = (dentistValue || "").toString().trim();
+            if (!key) {
+                return "";
+            }
+            return dentistNameById[key] || key;
+        }
 
         let tcAppointments = [];
         let editingAppointmentIndex = null;
@@ -991,7 +1035,7 @@
                 $tbody.append(
                     "<tr data-appointment-index='" + index + "'>" +
                     "<td>" + (index + 1) + "</td>" +
-                    "<td>" + escapeHtml(appt.assignedDentist || "-") + "</td>" +
+                    "<td>" + escapeHtml(resolveDentistDisplayName(appt.assignedDentist) || "-") + "</td>" +
                     "<td>" + escapeHtml(formatAppointmentDateForDisplay(appt.appointmentDate)) + "</td>" +
                     "<td>" + escapeHtml(appt.appointmentStartTime || "-") + "</td>" +
                     "<td>" + escapeHtml(appt.appointmentDuration || "-") + "</td>" +
@@ -1208,7 +1252,7 @@
                         + " from " + formatMinutesAsTimeLabel(existingWindow.startMinutes)
                         + " to " + formatMinutesAsTimeLabel(existingWindow.endMinutes)
                         + (tcAppointments[i].assignedDentist
-                            ? " (dentist: " + tcAppointments[i].assignedDentist + ")."
+                            ? " (dentist: " + resolveDentistDisplayName(tcAppointments[i].assignedDentist) + ")."
                             : "."),
                         "error"
                     );

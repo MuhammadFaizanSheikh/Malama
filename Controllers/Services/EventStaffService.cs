@@ -786,5 +786,111 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new Exception("An error occurred while retrieving the EventStaffDetail.", ex);
             }
         }
+
+        public async Task<List<TreatmentCoordinatorAssignableDentistDto>> GetTreatmentCoordinatorDentistsByEventIdAsync(long eventId)
+        {
+            const string methodName = nameof(GetTreatmentCoordinatorDentistsByEventIdAsync);
+            const string dentistRoleName = "DT-Dentist";
+            var allowedAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Oral Surgery",
+                "Treatment"
+            };
+
+            try
+            {
+                if (eventId <= 0)
+                {
+                    return new List<TreatmentCoordinatorAssignableDentistDto>();
+                }
+
+                var eventStaffDetails = await GetAllEventStaffByEventId(eventId);
+                if (eventStaffDetails == null || eventStaffDetails.Count == 0)
+                {
+                    return new List<TreatmentCoordinatorAssignableDentistDto>();
+                }
+
+                var roleIds = eventStaffDetails
+                    .SelectMany(d => d.EventWiseStaffRoleList ?? new List<EventWiseStaffRole>())
+                    .Select(r => r.RoleId)
+                    .Concat(eventStaffDetails
+                        .SelectMany(d => d.EventWiseStaffSecondaryRoleList ?? new List<EventWiseStaffSecondaryRole>())
+                        .Select(r => r.RoleId))
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList();
+
+                var roleNameById = await _roleManager.Roles
+                    .Where(r => roleIds.Contains(r.Id))
+                    .ToDictionaryAsync(r => r.Id, r => r.Name ?? string.Empty);
+
+                var dentists = new List<TreatmentCoordinatorAssignableDentistDto>();
+                var seenStaffIds = new HashSet<long>();
+
+                foreach (var detail in eventStaffDetails)
+                {
+                    var staff = detail.EventStaff;
+                    if (staff == null || staff.Id <= 0 || !seenStaffIds.Add(staff.Id))
+                    {
+                        continue;
+                    }
+
+                    var roleNames = (detail.EventWiseStaffRoleList ?? new List<EventWiseStaffRole>())
+                        .Select(r => r.RoleId)
+                        .Concat((detail.EventWiseStaffSecondaryRoleList ?? new List<EventWiseStaffSecondaryRole>())
+                            .Select(r => r.RoleId))
+                        .Where(id => !string.IsNullOrWhiteSpace(id) && roleNameById.ContainsKey(id))
+                        .Select(id => roleNameById[id])
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    if (!roleNames.Any(name => string.Equals(name, dentistRoleName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
+
+                    var attributes = (staff.StaffQualification ?? new List<StaffQualification>())
+                        .SelectMany(q => q.StaffAttributeDetails ?? new List<StaffAttributeDetails>())
+                        .Select(a => a.Attribute)
+                        .Where(a => !string.IsNullOrWhiteSpace(a))
+                        .ToList();
+
+                    if (!attributes.Any(a => allowedAttributes.Contains(a)))
+                    {
+                        continue;
+                    }
+
+                    var displayName = DentalExamSignatureHelper.FormatEventStaffDisplayName(staff);
+                    if (string.IsNullOrWhiteSpace(displayName))
+                    {
+                        continue;
+                    }
+
+                    dentists.Add(new TreatmentCoordinatorAssignableDentistDto
+                    {
+                        EventStaffId = staff.Id,
+                        DisplayName = displayName
+                    });
+                }
+
+                dentists = dentists
+                    .OrderBy(d => d.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Found {Count} assignable dentists for EventId={EventId}",
+                    CLASSNAME, methodName, dentists.Count, eventId);
+
+                return dentists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
+                throw;
+            }
+        }
     }
 }

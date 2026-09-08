@@ -1,4 +1,4 @@
-@* Dental Treatment Consent form (UI only — pen/finger pads). *@
+@* Dental Treatment Consent form (UI only — checkboxes + pen pads for initials/signatures). *@
 @{
     var patientName = ViewData["PatientFullName"] as string ?? "";
     var patientDob = ViewData["PatientDob"] as string ?? "";
@@ -20,67 +20,53 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item1_mark" data-pen-size="initials">
-                <canvas aria-label="Item 1 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item1_mark" value="true" aria-label="Select item 1" />
+            </label>
             <h4>1. TREATMENT TO BE PERFORMED</h4>
         </div>
         <p>I understand that I am having the following work done:</p>
-        <div class="tcn-consent-inline-blanks">
-            <span class="tcn-inline-blank-pair">
+        <div class="tcn-treatment-checks">
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_fillings" value="true" />
                 <span>Fillings</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_fillings" data-pen-size="initials">
-                    <canvas aria-label="Fillings mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_crowns" value="true" />
                 <span>Stainless Steel Crowns</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_crowns" data-pen-size="initials">
-                    <canvas aria-label="Crowns mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_extractions" value="true" />
                 <span>Extracted</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_extractions" data-pen-size="initials">
-                    <canvas aria-label="Extracted mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_impacted" value="true" />
                 <span>Impacted Teeth Removed</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_impacted" data-pen-size="initials">
-                    <canvas aria-label="Impacted teeth mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_root_canal" value="true" />
                 <span>Root Canal(s)</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_root_canal" data-pen-size="initials">
-                    <canvas aria-label="Root canal mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_fmd" value="true" />
                 <span>FMD</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_fmd" data-pen-size="initials">
-                    <canvas aria-label="FMD mark"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
-            <span class="tcn-inline-blank-pair tcn-inline-blank-pair-other">
+            </label>
+            <label class="tcn-treatment-check">
+                <input type="checkbox" name="dtc_other_treatment" id="dtcOtherTreatmentCheck" value="true" />
                 <span>Other</span>
-                <span class="tcn-pen-pad tcn-pen-pad-underline tcn-pen-pad-underline-wide" data-pen-pad="dtc_other_treatment" data-pen-size="line">
-                    <canvas aria-label="Other treatment handwriting"></canvas>
-                    <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-                </span>
-            </span>
+            </label>
+        </div>
+        <div class="tcn-other-treatment-detail" id="dtcOtherTreatmentDetail" hidden>
+            <label class="tcn-consent-label" for="dtcOtherTreatmentText">Other treatment</label>
+            <textarea id="dtcOtherTreatmentText"
+                      name="dtc_other_treatment_text"
+                      class="form-control tcn-other-treatment-text"
+                      rows="3"
+                      placeholder="Describe other treatment"></textarea>
         </div>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-underline" data-pen-pad="dtc_item1_initials" data-pen-size="initials">
+            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item1_initials" data-pen-size="initials">
                 <canvas aria-label="Item 1 initials"></canvas>
                 <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
             </div>
@@ -90,10 +76,9 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item2_mark" data-pen-size="initials">
-                <canvas aria-label="Item 2 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item2_mark" value="true" aria-label="Select item 2" />
+            </label>
             <h4>2. DRUGS AND MEDICATION</h4>
         </div>
         <p>
@@ -112,10 +97,9 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item3_mark" data-pen-size="initials">
-                <canvas aria-label="Item 3 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item3_mark" value="true" aria-label="Select item 3" />
+            </label>
             <h4>3. REMOVAL OF TEETH</h4>
         </div>
         <p>
@@ -151,10 +135,9 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item4_mark" data-pen-size="initials">
-                <canvas aria-label="Item 4 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item4_mark" value="true" aria-label="Select item 4" />
+            </label>
             <h4>4. ENDODONTIC TREATMENT</h4>
         </div>
         <p>
@@ -175,10 +158,9 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item5_mark" data-pen-size="initials">
-                <canvas aria-label="Item 5 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item5_mark" value="true" aria-label="Select item 5" />
+            </label>
             <h4>5. SECTIONING OF BRIDGE/REMOVAL OF CROWN</h4>
         </div>
         <p>
@@ -197,10 +179,9 @@
 
     <div class="tcn-consent-item">
         <div class="tcn-consent-item-head">
-            <div class="tcn-pen-pad tcn-pen-pad-check" data-pen-pad="dtc_item6_mark" data-pen-size="initials">
-                <canvas aria-label="Item 6 mark"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <label class="tcn-item-check">
+                <input type="checkbox" name="dtc_item6_mark" value="true" aria-label="Select item 6" />
+            </label>
             <h4>6. OTHER</h4>
         </div>
         <p>Please handwrite any situation not listed above that requires consent.</p>

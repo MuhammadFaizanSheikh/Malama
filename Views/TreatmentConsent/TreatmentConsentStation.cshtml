@@ -189,6 +189,64 @@
         margin-bottom: 0.55rem;
     }
 
+    .tcn-station .tcn-item-check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .tcn-station .tcn-item-check input[type="checkbox"] {
+        width: 1.45rem;
+        height: 1.45rem;
+        margin: 0;
+        accent-color: rgba(80, 90, 201, 1);
+        cursor: pointer;
+    }
+
+    .tcn-station .tcn-treatment-checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem 1.1rem;
+        margin: 0.35rem 0 0.65rem;
+    }
+
+    .tcn-station .tcn-treatment-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .tcn-station .tcn-treatment-check input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin: 0;
+        accent-color: rgba(80, 90, 201, 1);
+        cursor: pointer;
+        flex: 0 0 auto;
+    }
+
+    .tcn-station .tcn-other-treatment-detail {
+        margin: 0 0 0.75rem;
+    }
+
+    .tcn-station .tcn-other-treatment-text {
+        min-height: 5.5rem;
+        resize: vertical;
+    }
+
+    .tcn-station.tcn-fields-locked .tcn-item-check,
+    .tcn-station.tcn-fields-locked .tcn-treatment-check {
+        cursor: not-allowed;
+        opacity: 0.85;
+    }
+
     .tcn-station .tcn-consent-item-head h4,
     .tcn-station .tcn-consent-section h4 {
         margin: 0;
@@ -427,9 +485,13 @@
         height: 44px;
         margin-bottom: 0.35rem;
     }
-    .tcn-station .tcn-pen-pad-initials,
     .tcn-station .tcn-pen-pad-check,
     .tcn-station .tcn-pen-pad-mini { width: 88px; height: 44px; flex: 0 0 auto; }
+    .tcn-station .tcn-pen-pad-initials {
+        width: 160px;
+        height: 72px;
+        flex: 0 0 auto;
+    }
     .tcn-station .tcn-pen-pad-block { height: 110px; }
     .tcn-station .tcn-pen-pad-signature { height: 72px; max-width: 280px; }
 
@@ -908,6 +970,26 @@
             : {};
 
         applyFormFieldsLock(isSmModeActive);
+
+        (function wireDentalTreatmentOtherToggle() {
+            const otherCheck = document.getElementById("dtcOtherTreatmentCheck");
+            const otherDetail = document.getElementById("dtcOtherTreatmentDetail");
+            const otherText = document.getElementById("dtcOtherTreatmentText");
+            if (!otherCheck || !otherDetail) {
+                return;
+            }
+
+            function syncOtherDetail() {
+                const show = otherCheck.checked;
+                otherDetail.hidden = !show;
+                if (!show && otherText) {
+                    otherText.value = "";
+                }
+            }
+
+            otherCheck.addEventListener("change", syncOtherDetail);
+            syncOtherDetail();
+        })();
 
         function resizeVisiblePenPads(paneEl) {
             if (window.TreatmentConsentPenPads && typeof window.TreatmentConsentPenPads.resizePadsIn === "function") {

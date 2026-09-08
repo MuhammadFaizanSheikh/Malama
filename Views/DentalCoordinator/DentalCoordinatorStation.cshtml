@@ -1086,6 +1086,8 @@
                     appointmentsViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
                     appointmentsViewData["EventAppointmentDayWindowsJson"] = ViewBag.EventAppointmentDayWindowsJson as string ?? "[]";
                     appointmentsViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
+                    appointmentsViewData["AssignableDentists"] = ViewBag.AssignableDentists as List<TreatmentCoordinatorAssignableDentistDto>
+                        ?? new List<TreatmentCoordinatorAssignableDentistDto>();
                 }
                 @await Html.PartialAsync("~/Views/DentalCoordinator/_TreatmentCoordinatorAppointmentsSection.cshtml", appointmentsViewData)
 

@@ -139,6 +139,7 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.EventAppointmentMinDate = string.Empty;
                 ViewBag.EventAppointmentMaxDate = string.Empty;
                 ViewBag.EventAppointmentDayWindowsJson = "[]";
+                ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
 
                 try
                 {
@@ -153,13 +154,21 @@ namespace ExcelFilesCompiler.Controllers
                             {
                                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
                             });
+
+                        ViewBag.AssignableDentists = await _eventStaffService
+                            .GetTreatmentCoordinatorDentistsByEventIdAsync(result.EventId);
+                    }
+                    else
+                    {
+                        ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
                     }
                 }
                 catch (Exception eventEx)
                 {
                     _logger.LogWarning(eventEx,
-                        "{ClassName}, {MethodName}, Failed to load event date range for EventId={EventId}",
+                        "{ClassName}, {MethodName}, Failed to load event date range/dentists for EventId={EventId}",
                         CLASSNAME, methodName, result.EventId);
+                    ViewBag.AssignableDentists ??= new List<TreatmentCoordinatorAssignableDentistDto>();
                 }
 
                 try
