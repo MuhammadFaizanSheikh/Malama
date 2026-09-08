@@ -29,5 +29,9 @@ namespace Malama.Models
     {
         public ServiceMembersChild ServiceMember { get; set; } = new();
         public DentalQuestionnaire Questionnaire { get; set; } = new();
+        public long EventId { get; set; }
+        public TreatmentConsentFormSelectionDto FormSelection { get; set; } = new();
+        public List<TreatmentCoordinatorAssignableDentistDto> OralSurgeryDentists { get; set; } = new();
+        public List<TreatmentCoordinatorAssignableDentistDto> DentalTreatmentDentists { get; set; } = new();
     }
 }

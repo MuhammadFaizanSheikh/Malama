@@ -51,6 +51,7 @@ namespace ExcelFilesCompiler
         public DbSet<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; set; }
         public DbSet<DentalTreatmentPrescription> DentalTreatmentPrescription { get; set; }
         public DbSet<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; set; }
+        public DbSet<TreatmentConsent> TreatmentConsent { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -134,6 +134,41 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RoleAttributeAuthorizeFromConfig("TreatmentConsent_View")]
+        public async Task<IActionResult> SaveFormSelection([FromBody] TreatmentConsentSaveFormSelectionRequest request)
+        {
+            const string methodName = nameof(SaveFormSelection);
+            _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
+
+            try
+            {
+                if (TreatmentConsentSmModeHelper.IsActive(HttpContext.Session))
+                {
+                    return Json(TreatmentConsentSaveFormSelectionResponse.Fail(
+                        "Unlock service member mode before changing form selection."));
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return Json(TreatmentConsentSaveFormSelectionResponse.Fail("Please login and try again."));
+                }
+
+                var result = await _treatmentConsentService.SaveFormSelectionAsync(
+                    request,
+                    user.UserName ?? user.Email ?? user.Id);
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception while saving form selection", CLASSNAME, methodName);
+                return Json(TreatmentConsentSaveFormSelectionResponse.Fail("Unable to save form selection."));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RoleAttributeAuthorizeFromConfig("TreatmentConsent_View")]
         public async Task<IActionResult> StartSmMode([FromBody] TreatmentConsentStartSmModeRequest request)
         {
             const string methodName = nameof(StartSmMode);

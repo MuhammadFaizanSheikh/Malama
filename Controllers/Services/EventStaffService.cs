@@ -789,17 +789,24 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<List<TreatmentCoordinatorAssignableDentistDto>> GetTreatmentCoordinatorDentistsByEventIdAsync(long eventId)
         {
-            const string methodName = nameof(GetTreatmentCoordinatorDentistsByEventIdAsync);
+            return await GetDtDentistsByEventIdAsync(eventId, "Oral Surgery", "Treatment");
+        }
+
+        public async Task<List<TreatmentCoordinatorAssignableDentistDto>> GetDtDentistsByEventIdAsync(
+            long eventId,
+            params string[] requiredAnyAttributes)
+        {
+            const string methodName = nameof(GetDtDentistsByEventIdAsync);
             const string dentistRoleName = "DT-Dentist";
-            var allowedAttributes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Oral Surgery",
-                "Treatment"
-            };
+            var allowedAttributes = new HashSet<string>(
+                (requiredAnyAttributes ?? Array.Empty<string>())
+                    .Where(a => !string.IsNullOrWhiteSpace(a))
+                    .Select(a => a.Trim()),
+                StringComparer.OrdinalIgnoreCase);
 
             try
             {
-                if (eventId <= 0)
+                if (eventId <= 0 || allowedAttributes.Count == 0)
                 {
                     return new List<TreatmentCoordinatorAssignableDentistDto>();
                 }
@@ -879,8 +886,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .ToList();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Found {Count} assignable dentists for EventId={EventId}",
-                    CLASSNAME, methodName, dentists.Count, eventId);
+                    "{ClassName}, {MethodName}, Found {Count} dentists for EventId={EventId}, Attributes={Attributes}",
+                    CLASSNAME, methodName, dentists.Count, eventId, string.Join("|", allowedAttributes));
 
                 return dentists;
             }

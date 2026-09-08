@@ -47,6 +47,7 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; }
         IGenericRepository<DentalTreatmentPrescription> DentalTreatmentPrescription { get; }
         IGenericRepository<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; }
+        IGenericRepository<TreatmentConsent> TreatmentConsent { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
         void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class;

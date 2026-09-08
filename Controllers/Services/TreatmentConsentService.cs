@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelFilesCompiler.Utilities;
@@ -10,17 +11,20 @@ namespace ExcelFilesCompiler.Controllers.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
+        private readonly IEventStaffService _eventStaffService;
         private readonly ILogger<TreatmentConsentService> _logger;
         private const string CLASSNAME = nameof(TreatmentConsentService);
 
         public TreatmentConsentService(
             ILogger<TreatmentConsentService> logger,
             IUnitOfWork unitOfWork,
-            IDentalQuestionnaireService dentalQuestionnaireService)
+            IDentalQuestionnaireService dentalQuestionnaireService,
+            IEventStaffService eventStaffService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _dentalQuestionnaireService = dentalQuestionnaireService;
+            _eventStaffService = eventStaffService;
         }
 
         public async Task<TreatmentConsentIndexViewModel> GetCheckedInServiceMembersByEventIdAsync(
@@ -87,7 +91,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 var serviceMember = await _unitOfWork.ServiceMembersChild
-                    .GetWithIncludeNoTracking(c => c.Id == serviceMembersChildId)
+                    .GetWithIncludeNoTracking(
+                        c => c.Id == serviceMembersChildId,
+                        c => c.ServiceMembersParent)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
@@ -98,17 +104,33 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return null;
                 }
 
+                var eventId = serviceMember.ServiceMembersParent?.EventManagementId ?? 0;
+
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
 
+                var formSelection = await GetFormSelectionAsync(serviceMembersChildId);
+
+                var oralSurgeryDentists = eventId > 0
+                    ? await _eventStaffService.GetDtDentistsByEventIdAsync(eventId, "Oral Surgery")
+                    : new List<TreatmentCoordinatorAssignableDentistDto>();
+
+                var dentalTreatmentDentists = eventId > 0
+                    ? await _eventStaffService.GetDtDentistsByEventIdAsync(eventId, "Treatment")
+                    : new List<TreatmentCoordinatorAssignableDentistDto>();
+
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Station page loaded for ServiceMembersChildId={ServiceMembersChildId}",
-                    CLASSNAME, methodName, serviceMembersChildId);
+                    "{ClassName}, {MethodName}, Station page loaded for ServiceMembersChildId={ServiceMembersChildId}, EventId={EventId}",
+                    CLASSNAME, methodName, serviceMembersChildId, eventId);
 
                 return new TreatmentConsentStationViewModel
                 {
                     ServiceMember = serviceMember,
-                    Questionnaire = questionnaire
+                    Questionnaire = questionnaire,
+                    EventId = eventId,
+                    FormSelection = formSelection,
+                    OralSurgeryDentists = oralSurgeryDentists,
+                    DentalTreatmentDentists = dentalTreatmentDentists
                 };
             }
             catch (Exception ex)
@@ -119,6 +141,156 @@ namespace ExcelFilesCompiler.Controllers.Services
                 throw new ApplicationException(
                     "An error occurred while loading the Treatment Consent station page.",
                     ex);
+            }
+        }
+
+        public async Task<TreatmentConsentFormSelectionDto> GetFormSelectionAsync(long serviceMembersChildId)
+        {
+            var entity = await _unitOfWork.TreatmentConsent
+                .GetWithIncludeNoTracking(x => x.ServiceMembersChildId == serviceMembersChildId)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+            {
+                return new TreatmentConsentFormSelectionDto
+                {
+                    ServiceMembersChildId = serviceMembersChildId,
+                    IncludeQuestionnaire = true
+                };
+            }
+
+            return MapToSelectionDto(entity);
+        }
+
+        public async Task<TreatmentConsentSaveFormSelectionResponse> SaveFormSelectionAsync(
+            TreatmentConsentSaveFormSelectionRequest request,
+            string userName)
+        {
+            const string methodName = nameof(SaveFormSelectionAsync);
+
+            try
+            {
+                if (request == null || request.ServiceMembersChildId <= 0)
+                {
+                    return TreatmentConsentSaveFormSelectionResponse.Fail("Service member is required.");
+                }
+
+                var serviceMemberExists = await _unitOfWork.ServiceMembersChild
+                    .GetWithIncludeNoTracking(c => c.Id == request.ServiceMembersChildId)
+                    .AnyAsync();
+
+                if (!serviceMemberExists)
+                {
+                    return TreatmentConsentSaveFormSelectionResponse.Fail("Service member not found.");
+                }
+
+                var includeOral = request.IncludeOralSurgeryForm;
+                var includeTreatment = request.IncludeDentalTreatmentConsent;
+                var oralIds = includeOral
+                    ? (request.OralSurgeryDentistEventStaffIds ?? new List<long>()).Where(id => id > 0).Distinct().ToList()
+                    : new List<long>();
+                var treatmentIds = includeTreatment
+                    ? (request.DentalTreatmentDentistEventStaffIds ?? new List<long>()).Where(id => id > 0).Distinct().ToList()
+                    : new List<long>();
+
+                if (includeOral && oralIds.Count == 0)
+                {
+                    return TreatmentConsentSaveFormSelectionResponse.Fail(
+                        "Select at least one Oral Surgery dentist when Oral Surgery Form is included.");
+                }
+
+                if (includeTreatment && treatmentIds.Count == 0)
+                {
+                    return TreatmentConsentSaveFormSelectionResponse.Fail(
+                        "Select at least one Treatment dentist when Dental Treatment Consent is included.");
+                }
+
+                var existing = await _unitOfWork.TreatmentConsent
+                    .GetWithIncludeTracking(x => x.ServiceMembersChildId == request.ServiceMembersChildId)
+                    .FirstOrDefaultAsync();
+
+                var now = DateTime.Now;
+                if (existing == null)
+                {
+                    existing = new TreatmentConsent
+                    {
+                        ServiceMembersChildId = request.ServiceMembersChildId,
+                        IncludeQuestionnaire = true,
+                        IncludeOralSurgeryForm = includeOral,
+                        IncludeDentalTreatmentConsent = includeTreatment,
+                        OralSurgeryDentistEventStaffIdsJson = SerializeIds(oralIds),
+                        DentalTreatmentDentistEventStaffIdsJson = SerializeIds(treatmentIds),
+                        AddedBy = userName,
+                        AddedOn = now
+                    };
+                    await _unitOfWork.TreatmentConsent.AddAsync(existing);
+                }
+                else
+                {
+                    existing.IncludeQuestionnaire = true;
+                    existing.IncludeOralSurgeryForm = includeOral;
+                    existing.IncludeDentalTreatmentConsent = includeTreatment;
+                    existing.OralSurgeryDentistEventStaffIdsJson = SerializeIds(oralIds);
+                    existing.DentalTreatmentDentistEventStaffIdsJson = SerializeIds(treatmentIds);
+                    existing.UpdatedBy = userName;
+                    existing.UpdatedOn = now;
+                }
+
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Saved selection for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, request.ServiceMembersChildId);
+
+                return TreatmentConsentSaveFormSelectionResponse.Ok(
+                    "Form selection saved.",
+                    MapToSelectionDto(existing));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, request?.ServiceMembersChildId);
+                return TreatmentConsentSaveFormSelectionResponse.Fail("Unable to save form selection.");
+            }
+        }
+
+        private static TreatmentConsentFormSelectionDto MapToSelectionDto(TreatmentConsent entity)
+        {
+            return new TreatmentConsentFormSelectionDto
+            {
+                ServiceMembersChildId = entity.ServiceMembersChildId,
+                IncludeQuestionnaire = true,
+                IncludeOralSurgeryForm = entity.IncludeOralSurgeryForm,
+                IncludeDentalTreatmentConsent = entity.IncludeDentalTreatmentConsent,
+                OralSurgeryDentistEventStaffIds = ParseIds(entity.OralSurgeryDentistEventStaffIdsJson),
+                DentalTreatmentDentistEventStaffIds = ParseIds(entity.DentalTreatmentDentistEventStaffIdsJson)
+            };
+        }
+
+        private static string SerializeIds(List<long> ids)
+        {
+            return JsonSerializer.Serialize(ids ?? new List<long>());
+        }
+
+        private static List<long> ParseIds(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new List<long>();
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<List<long>>(json)?
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList()
+                    ?? new List<long>();
+            }
+            catch
+            {
+                return new List<long>();
             }
         }
     }

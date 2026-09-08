@@ -12,6 +12,11 @@
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var consentDateDisplay = DateTime.Now.ToString("MM/dd/yyyy");
     var isSmMode = ViewBag.IsTreatmentConsentSmMode as bool? == true;
+    var formSelection = Model.FormSelection ?? new TreatmentConsentFormSelectionDto { ServiceMembersChildId = sm.Id };
+    var oralSurgeryDentists = Model.OralSurgeryDentists ?? new List<TreatmentCoordinatorAssignableDentistDto>();
+    var dentalTreatmentDentists = Model.DentalTreatmentDentists ?? new List<TreatmentCoordinatorAssignableDentistDto>();
+    var showOralSurgeryTab = formSelection.IncludeOralSurgeryForm;
+    var showDentalTreatmentTab = formSelection.IncludeDentalTreatmentConsent;
 }
 
 <style>
@@ -533,6 +538,100 @@
         gap: 0.55rem;
     }
 
+    .tcn-station .tcn-selection-panel {
+        margin-bottom: 1.15rem;
+    }
+
+    .tcn-station .tcn-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .tcn-station .tcn-selection-card {
+        border: 1px solid var(--tcn-border);
+        border-radius: 12px;
+        padding: 0.85rem 0.95rem;
+        background: #fafbff;
+        min-height: 100%;
+    }
+
+    .tcn-station .tcn-selection-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 0.65rem;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--tcn-text);
+    }
+
+    .tcn-station .tcn-selection-card-title input[type="checkbox"] {
+        width: 1.15rem;
+        height: 1.15rem;
+        accent-color: var(--tcn-indigo);
+        margin: 0;
+    }
+
+    .tcn-station .tcn-dentist-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        max-height: 180px;
+        overflow: auto;
+        padding-right: 0.15rem;
+    }
+
+    .tcn-station .tcn-dentist-option {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--tcn-text);
+        cursor: pointer;
+    }
+
+    .tcn-station .tcn-dentist-option input[type="checkbox"] {
+        width: 1.05rem;
+        height: 1.05rem;
+        accent-color: var(--tcn-indigo);
+        margin: 0;
+        flex: 0 0 auto;
+    }
+
+    .tcn-station .tcn-selection-hint {
+        margin: 0.35rem 0 0;
+        font-size: 0.78rem;
+        color: var(--tcn-muted);
+    }
+
+    .tcn-station .tcn-selection-actions {
+        margin-top: 0.9rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .tcn-station .btn-tcn-save-selection {
+        background: #fff;
+        color: var(--tcn-indigo);
+        border: 1px solid rgba(80, 90, 201, 0.45);
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.45rem 0.95rem;
+    }
+
+    .tcn-station .btn-tcn-save-selection:hover {
+        background: var(--tcn-indigo-soft);
+        color: var(--tcn-indigo);
+    }
+
+    .tcn-station[data-sm-mode="true"] .tcn-selection-panel {
+        opacity: 0.72;
+        pointer-events: none;
+    }
+
     .tcn-station .btn-tcn-start,
     .tcn-station .btn-tcn-unlock {
         border-radius: 10px;
@@ -599,7 +698,8 @@
         .tcn-station .tcn-info-grid,
         .tcn-station .tcn-consent-row-split,
         .tcn-station .tcn-signature-grid,
-        .tcn-station .tcn-consent-treatment-grid {
+        .tcn-station .tcn-consent-treatment-grid,
+        .tcn-station .tcn-selection-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -657,6 +757,78 @@
         </div>
     </div>
 
+    <div class="tcn-panel tcn-selection-panel" id="tcnFormSelectionPanel">
+        <h2 class="tcn-panel-title"><i class="fas fa-list-check" aria-hidden="true"></i> Forms &amp; Dentists</h2>
+        <div class="tcn-selection-grid">
+            <div class="tcn-selection-card">
+                <label class="tcn-selection-card-title">
+                    <input type="checkbox"
+                           id="tcnIncludeOralSurgery"
+                           @(formSelection.IncludeOralSurgeryForm ? "checked" : null) />
+                    <span>Oral Surgery Form</span>
+                </label>
+                <div id="tcnOralSurgeryDentistsWrap" style="@(formSelection.IncludeOralSurgeryForm ? null : "display:none")">
+                    @if (oralSurgeryDentists.Count == 0)
+                    {
+                        <p class="tcn-selection-hint">No DT-Dentist with Oral Surgery attribute on this event.</p>
+                    }
+                    else
+                    {
+                        <div class="tcn-dentist-list" id="tcnOralSurgeryDentists">
+                            @foreach (var dentist in oralSurgeryDentists)
+                            {
+                                var isChecked = formSelection.OralSurgeryDentistEventStaffIds.Contains(dentist.EventStaffId);
+                                <label class="tcn-dentist-option">
+                                    <input type="checkbox"
+                                           name="tcnOralSurgeryDentist"
+                                           value="@dentist.EventStaffId"
+                                           @(isChecked ? "checked" : null) />
+                                    <span>@dentist.DisplayName</span>
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="tcn-selection-card">
+                <label class="tcn-selection-card-title">
+                    <input type="checkbox"
+                           id="tcnIncludeDentalTreatment"
+                           @(formSelection.IncludeDentalTreatmentConsent ? "checked" : null) />
+                    <span>Dental Treatment Consent</span>
+                </label>
+                <div id="tcnDentalTreatmentDentistsWrap" style="@(formSelection.IncludeDentalTreatmentConsent ? null : "display:none")">
+                    @if (dentalTreatmentDentists.Count == 0)
+                    {
+                        <p class="tcn-selection-hint">No DT-Dentist with Treatment attribute on this event.</p>
+                    }
+                    else
+                    {
+                        <div class="tcn-dentist-list" id="tcnDentalTreatmentDentists">
+                            @foreach (var dentist in dentalTreatmentDentists)
+                            {
+                                var isChecked = formSelection.DentalTreatmentDentistEventStaffIds.Contains(dentist.EventStaffId);
+                                <label class="tcn-dentist-option">
+                                    <input type="checkbox"
+                                           name="tcnDentalTreatmentDentist"
+                                           value="@dentist.EventStaffId"
+                                           @(isChecked ? "checked" : null) />
+                                    <span>@dentist.DisplayName</span>
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="tcn-selection-actions">
+            <button type="button" class="btn btn-tcn-save-selection" id="tcnSaveFormSelectionBtn">
+                <i class="fas fa-save" aria-hidden="true"></i> Save Selection
+            </button>
+        </div>
+    </div>
+
     <ul class="nav nav-tabs" id="treatmentConsentTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active"
@@ -670,7 +842,7 @@
                 DA5570 Form
             </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li class="nav-item" role="presentation" id="oralSurgeryTabItem" style="@(showOralSurgeryTab ? null : "display:none")">
             <button class="nav-link"
                     id="oralSurgery-tab"
                     data-bs-toggle="tab"
@@ -682,7 +854,7 @@
                 Oral Surgery Form
             </button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li class="nav-item" role="presentation" id="dentalTreatmentConsentTabItem" style="@(showDentalTreatmentTab ? null : "display:none")">
             <button class="nav-link"
                     id="dentalTreatmentConsent-tab"
                     data-bs-toggle="tab"
@@ -971,6 +1143,112 @@
 
         applyFormFieldsLock(isSmModeActive);
 
+        function collectCheckedIds(selector) {
+            const ids = [];
+            $(selector).each(function () {
+                const value = parseInt($(this).val(), 10);
+                if (!isNaN(value) && value > 0) {
+                    ids.push(value);
+                }
+            });
+            return ids;
+        }
+
+        function buildFormSelectionPayload() {
+            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
+            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+            return {
+                serviceMembersChildId: SM_CHILD_ID,
+                includeOralSurgeryForm: includeOral,
+                includeDentalTreatmentConsent: includeTreatment,
+                oralSurgeryDentistEventStaffIds: includeOral
+                    ? collectCheckedIds('input[name="tcnOralSurgeryDentist"]:checked')
+                    : [],
+                dentalTreatmentDentistEventStaffIds: includeTreatment
+                    ? collectCheckedIds('input[name="tcnDentalTreatmentDentist"]:checked')
+                    : []
+            };
+        }
+
+        function syncFormSelectionUi() {
+            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
+            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+
+            $("#tcnOralSurgeryDentistsWrap").toggle(includeOral);
+            $("#tcnDentalTreatmentDentistsWrap").toggle(includeTreatment);
+            $("#oralSurgeryTabItem").toggle(includeOral);
+            $("#dentalTreatmentConsentTabItem").toggle(includeTreatment);
+
+            if (!includeOral) {
+                $('input[name="tcnOralSurgeryDentist"]').prop("checked", false);
+            }
+            if (!includeTreatment) {
+                $('input[name="tcnDentalTreatmentDentist"]').prop("checked", false);
+            }
+
+            const oralActive = $("#oralSurgery-tab").hasClass("active");
+            const treatmentActive = $("#dentalTreatmentConsent-tab").hasClass("active");
+            if ((!includeOral && oralActive) || (!includeTreatment && treatmentActive)) {
+                const questionnaireTab = document.getElementById("da5570-tab");
+                if (questionnaireTab && window.bootstrap && bootstrap.Tab) {
+                    bootstrap.Tab.getOrCreateInstance(questionnaireTab).show();
+                } else {
+                    $(questionnaireTab).tab("show");
+                }
+            }
+        }
+
+        async function saveFormSelection(options) {
+            const opts = options || {};
+            const payload = buildFormSelectionPayload();
+
+            if (payload.includeOralSurgeryForm && payload.oralSurgeryDentistEventStaffIds.length === 0) {
+                if (!opts.silent) {
+                    Swal.fire("Selection required", "Select at least one Oral Surgery dentist.", "warning");
+                }
+                return { success: false, message: "Select at least one Oral Surgery dentist." };
+            }
+
+            if (payload.includeDentalTreatmentConsent && payload.dentalTreatmentDentistEventStaffIds.length === 0) {
+                if (!opts.silent) {
+                    Swal.fire("Selection required", "Select at least one Treatment dentist.", "warning");
+                }
+                return { success: false, message: "Select at least one Treatment dentist." };
+            }
+
+            const response = await fetch("@Url.Action("SaveFormSelection", "TreatmentConsent")", {
+                method: "POST",
+                headers: getAntiforgeryHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (!data.success && !opts.silent) {
+                Swal.fire("Unable to save", data.message || "Please try again.", "error");
+            }
+            return data;
+        }
+
+        $("#tcnIncludeOralSurgery, #tcnIncludeDentalTreatment").on("change", syncFormSelectionUi);
+
+        $("#tcnSaveFormSelectionBtn").on("click", async function () {
+            try {
+                const data = await saveFormSelection();
+                if (data && data.success) {
+                    syncFormSelectionUi();
+                    Swal.fire({
+                        icon: "success",
+                        title: "Saved",
+                        text: data.message || "Form selection saved.",
+                        confirmButtonColor: "rgba(80, 90, 201, 1)"
+                    });
+                }
+            } catch (e) {
+                Swal.fire("Error", "Unable to save form selection.", "error");
+            }
+        });
+
+        syncFormSelectionUi();
+
         (function wireDentalTreatmentOtherToggle() {
             const otherCheck = document.getElementById("dtcOtherTreatmentCheck");
             const otherDetail = document.getElementById("dtcOtherTreatmentDetail");
@@ -1090,6 +1368,12 @@
             }
 
             try {
+                const saveResult = await saveFormSelection();
+                if (!saveResult || !saveResult.success) {
+                    return;
+                }
+                syncFormSelectionUi();
+
                 const response = await fetch("@Url.Action("StartSmMode", "TreatmentConsent")", {
                     method: "POST",
                     headers: getAntiforgeryHeaders(),
