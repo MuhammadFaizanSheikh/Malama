@@ -263,21 +263,56 @@ namespace ExcelFilesCompiler.Controllers
                     throw new ApplicationException("Invalid event data.");
                 }
 
-                var allowedStartDate = eventManagement.EventStartDateUtc.AddDays(-2).Date;
-                var allowedEndDate = eventManagement.EventEndDateUtc.Date;
-
-                var nowUtc = DateTime.UtcNow.Date;
-
-                if (nowUtc < allowedStartDate || nowUtc > allowedEndDate)
+                if (string.IsNullOrWhiteSpace(eventManagement.Timezone))
                 {
-                    _logger.LogWarning("{ClassName}, {MethodName}, Event not active. EventID: {EventID}, TodayUTC: {TodayUTC}, AllowedStart: {AllowedStart}, EventEnd: {EventEnd}",
-                        CLASSNAME, methodName, eventManagement.EventID, nowUtc, allowedStartDate, allowedEndDate);
-
-                    throw new ApplicationException("The selected event is not active today.");
+                    _logger.LogError(
+                        "{ClassName}, {MethodName}, Event timezone is missing. EventID: {EventID}",
+                        CLASSNAME, methodName, eventManagement.EventID);
+                    throw new ApplicationException("Event timezone is not configured.");
                 }
 
-                _logger.LogInformation("{ClassName}, {MethodName}, Event date validated successfully. EventID: {EventID}, TodayUTC: {TodayUTC}",
-                    CLASSNAME, methodName, eventManagement.EventID, nowUtc);
+                TimeZoneInfo eventTimeZone;
+                try
+                {
+                    eventTimeZone = TimeZoneInfo.FindSystemTimeZoneById(eventManagement.Timezone.Trim());
+                }
+                catch (Exception tzEx) when (tzEx is TimeZoneNotFoundException || tzEx is InvalidTimeZoneException)
+                {
+                    _logger.LogError(tzEx,
+                        "{ClassName}, {MethodName}, Invalid timezone '{Timezone}'. EventID: {EventID}",
+                        CLASSNAME, methodName, eventManagement.Timezone, eventManagement.EventID);
+                    throw new ApplicationException($"Invalid event timezone: {eventManagement.Timezone}.");
+                }
+
+                // Stored values are UTC wall-clock instants; compare "now" in the event timezone.
+                var startUtc = DateTime.SpecifyKind(eventManagement.EventStartDateUtc, DateTimeKind.Utc);
+                var endUtc = DateTime.SpecifyKind(eventManagement.EventEndDateUtc, DateTimeKind.Utc);
+                var nowUtc = DateTime.UtcNow;
+
+                var localStart = TimeZoneInfo.ConvertTimeFromUtc(startUtc, eventTimeZone);
+                var localEnd = TimeZoneInfo.ConvertTimeFromUtc(endUtc, eventTimeZone);
+                var nowInEventTz = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, eventTimeZone);
+
+                // Grace A: allow access starting exactly 2 days before local start (same clock time).
+                var allowedStart = localStart.AddDays(-2);
+                var allowedEnd = localEnd;
+
+                if (nowInEventTz < allowedStart || nowInEventTz > allowedEnd)
+                {
+                    var timezoneLabel = GetEventTimezoneDisplayName(eventManagement.Timezone, eventTimeZone);
+                    var message =
+                        $"Access is allowed from {allowedStart:MM/dd/yyyy h:mm tt} to {allowedEnd:MM/dd/yyyy h:mm tt} ({timezoneLabel}).";
+
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, Event not active. EventID: {EventID}, NowEventTz: {NowEventTz}, AllowedStart: {AllowedStart}, AllowedEnd: {AllowedEnd}, Timezone: {Timezone}",
+                        CLASSNAME, methodName, eventManagement.EventID, nowInEventTz, allowedStart, allowedEnd, eventManagement.Timezone);
+
+                    throw new ApplicationException(message);
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Event date validated successfully. EventID: {EventID}, NowEventTz: {NowEventTz}, Timezone: {Timezone}",
+                    CLASSNAME, methodName, eventManagement.EventID, nowInEventTz, eventManagement.Timezone);
             }
             catch (ApplicationException)
             {
@@ -289,6 +324,21 @@ namespace ExcelFilesCompiler.Controllers
                     CLASSNAME, methodName, eventManagement?.EventID);
                 throw new ApplicationException("An unexpected error occurred during event date validation.");
             }
+        }
+
+        private static string GetEventTimezoneDisplayName(string timeZoneId, TimeZoneInfo timeZoneInfo)
+        {
+            return (timeZoneId ?? string.Empty).Trim() switch
+            {
+                "Eastern Standard Time" => "Eastern Time",
+                "Central Standard Time" => "Central Time",
+                "Mountain Standard Time" => "Mountain Time",
+                "US Mountain Standard Time" => "Arizona Time",
+                "Pacific Standard Time" => "Pacific Time",
+                _ => string.IsNullOrWhiteSpace(timeZoneInfo?.DisplayName)
+                    ? (timeZoneId ?? "Event Timezone")
+                    : timeZoneInfo.DisplayName
+            };
         }
 
         private (bool IsAssigned, List<string> RoleNames, List<string> StaffAttributes)

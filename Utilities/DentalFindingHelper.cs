@@ -150,6 +150,21 @@ namespace ExcelFilesCompiler.Utilities
                 }
             }
 
+            if (finding.IsTreatmentPossible == false)
+            {
+                if (string.IsNullOrWhiteSpace(finding.TreatmentNotPossibleReason))
+                {
+                    return prefix + "Reason is required when Is Treatment Possible is No.";
+                }
+
+                if (!DentalFindingConstants.TreatmentNotPossibleReasons.Contains(
+                        finding.TreatmentNotPossibleReason.Trim(),
+                        StringComparer.Ordinal))
+                {
+                    return prefix + "Reason selection is invalid.";
+                }
+            }
+
             return null;
         }
 

@@ -55,6 +55,17 @@ namespace Malama.Models
 
         public const string Periodontal = "Periodontal";
         public const string Restorative = "Restorative";
+
+        public static readonly string[] TreatmentNotPossibleReasons =
+        {
+            "Service Not Offered at Event",
+            "Dentist Referred after review",
+            "Reclassified and service not perfomed",
+            "Missing Equipment",
+            "Not enouth time",
+            "Other",
+            "Sm Refused"
+        };
     }
 
     [Table("DentalFinding")]
@@ -101,6 +112,12 @@ namespace Malama.Models
 
         /// <summary>Where the finding was captured (Dental Exam station vs Treatment Coordinator).</summary>
         public string? Source { get; set; }
+
+        /// <summary>Treatment Coordinator: whether treatment is possible for this finding. Default Yes.</summary>
+        public bool IsTreatmentPossible { get; set; } = true;
+
+        /// <summary>Required when <see cref="IsTreatmentPossible"/> is false.</summary>
+        public string? TreatmentNotPossibleReason { get; set; }
     }
 
     public static class DentalFindingSources
@@ -147,6 +164,11 @@ namespace Malama.Models
 
         public string? Source { get; set; }
 
+        /// <summary>Null means Yes/true when omitted from older JSON payloads.</summary>
+        public bool? IsTreatmentPossible { get; set; }
+
+        public string? TreatmentNotPossibleReason { get; set; }
+
         /// <summary>Client-side stable key for appointment assignment (Treatment Coordinator).</summary>
         public string? ClientKey { get; set; }
     }
@@ -179,12 +201,15 @@ namespace Malama.Models
                 ExternalExaminerName = entity.ExternalExaminerName,
                 ExternalExamDateTime = entity.ExternalExamDateTime,
                 ExternalDentistRemarks = entity.ExternalDentistRemarks,
-                Source = entity.Source
+                Source = entity.Source,
+                IsTreatmentPossible = entity.IsTreatmentPossible,
+                TreatmentNotPossibleReason = entity.TreatmentNotPossibleReason
             };
         }
 
         public static DentalFinding ToEntity(DentalFindingDto dto, long dentalExamId, int sortOrder)
         {
+            var isTreatmentPossible = dto.IsTreatmentPossible ?? true;
             return new DentalFinding
             {
                 DentalExamId = dentalExamId,
@@ -204,7 +229,11 @@ namespace Malama.Models
                 ExternalExaminerName = dto.ExternalExaminerName?.Trim(),
                 ExternalExamDateTime = dto.ExternalExamDateTime,
                 ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim(),
-                Source = dto.Source?.Trim()
+                Source = dto.Source?.Trim(),
+                IsTreatmentPossible = isTreatmentPossible,
+                TreatmentNotPossibleReason = isTreatmentPossible
+                    ? null
+                    : dto.TreatmentNotPossibleReason?.Trim()
             };
         }
 

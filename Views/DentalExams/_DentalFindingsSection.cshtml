@@ -23,6 +23,10 @@
     var showFindingAppointmentDetails = ViewData["ShowFindingAppointmentDetails"] as bool? ?? false;
     var showCoordinatorExternalExamFields = !showFindingAssignmentFields
         && string.Equals(findingSourceDefault, DentalFindingSources.DentalCoordinator, StringComparison.Ordinal);
+    var showTreatmentPossibleFields = string.Equals(
+        findingSourceDefault,
+        DentalFindingSources.DentalCoordinator,
+        StringComparison.Ordinal);
     var findingsTableColspan = showFindingAssignmentFields
         ? 11
         : (showFindingAppointmentDetails ? 11 : 10);
@@ -754,6 +758,42 @@
                             }
                         </div>
 
+                        @if (showTreatmentPossibleFields)
+                        {
+                            <div class="mt-3 pt-3 finding-treatment-possible-fields" id="findingTreatmentPossibleFields">
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Is Treatment Possible?</label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="FindingIsTreatmentPossible"
+                                               id="findingIsTreatmentPossibleYes"
+                                               value="Yes"
+                                               checked />
+                                        <label class="form-check-label" for="findingIsTreatmentPossibleYes">Yes</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="FindingIsTreatmentPossible"
+                                               id="findingIsTreatmentPossibleNo"
+                                               value="No" />
+                                        <label class="form-check-label" for="findingIsTreatmentPossibleNo">No</label>
+                                    </div>
+                                </div>
+                                <div class="mb-0" id="findingTreatmentNotPossibleReasonSection" style="display:none;">
+                                    <label class="form-label" for="findingTreatmentNotPossibleReason">Reason <span class="text-danger">*</span></label>
+                                    <select id="findingTreatmentNotPossibleReason" class="form-select">
+                                        <option value=""></option>
+                                        @foreach (var reason in DentalFindingConstants.TreatmentNotPossibleReasons)
+                                        {
+                                            <option value="@reason">@reason</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        }
+
                         @if (showCoordinatorExternalExamFields)
                         {
                             <div class="finding-coordinator-external-fields mt-3 pt-3" id="findingCoordinatorExternalFields" style="display:none;">
@@ -995,6 +1035,7 @@
         const FINDING_SOURCE_DEFAULT = @Json.Serialize(findingSourceDefault);
         const SHOW_FINDING_APPOINTMENT_DETAILS = @Json.Serialize(showFindingAppointmentDetails);
         const SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS = @Json.Serialize(showCoordinatorExternalExamFields);
+        const SHOW_TREATMENT_POSSIBLE_FIELDS = @Json.Serialize(showTreatmentPossibleFields);
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
         const FINDINGS_TABLE_COLSPAN = @Json.Serialize(findingsTableColspan);
@@ -1338,6 +1379,7 @@
             editingFindingIndex = null;
             $("#dentalFindingFormTitle").text("Add Finding");
             $("#addFindingToListBtn").html('<i class="fas fa-list-ul"></i> Add to List');
+            resetFindingFormControlState();
             destroySelect2($("#findingAffectedSurfaces"));
             destroySelect2($("#findingCdtCodes"));
             $("#findingPrimaryTooth").prop("checked", false).prop("disabled", false);
@@ -1351,8 +1393,61 @@
             $("input[name='FindingClassification']").prop("checked", false);
             clearFindingAssignmentFields();
             clearCoordinatorExternalFields();
+            clearTreatmentPossibleFields();
             toggleExternalExaminerNameVisibility(null);
             toggleCoordinatorExternalFieldsVisibility(null);
+            toggleTreatmentPossibleReasonVisibility();
+        }
+
+        function resetFindingFormControlState() {
+            const $card = $("#dentalFindingFormCard");
+            $card.find("input, select, textarea, button").each(function () {
+                const $el = $(this);
+                $el.prop("disabled", false).prop("readonly", false).removeClass("read-only-style");
+            });
+            $card.find(".select2-hidden-accessible").each(function () {
+                $(this).prop("disabled", false).trigger("change.select2");
+            });
+        }
+
+        function isTreatmentPossibleOnlyEditMode() {
+            return SHOW_TREATMENT_POSSIBLE_FIELDS && editingFindingIndex != null && !FINDINGS_READ_ONLY;
+        }
+
+        function isTreatmentPossibleEditableControl($el) {
+            if (!$el || !$el.length) {
+                return false;
+            }
+            if ($el.attr("name") === "FindingIsTreatmentPossible") {
+                return true;
+            }
+            if ($el.attr("id") === "findingTreatmentNotPossibleReason") {
+                return true;
+            }
+            if ($el.attr("id") === "addFindingToListBtn" || $el.attr("id") === "cancelFindingFormBtn") {
+                return true;
+            }
+            return false;
+        }
+
+        function clearTreatmentPossibleFields() {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                return;
+            }
+            $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
+            $("#findingIsTreatmentPossibleYes").prop("checked", true);
+            $("#findingTreatmentNotPossibleReason").val("");
+        }
+
+        function toggleTreatmentPossibleReasonVisibility() {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                return;
+            }
+            const isNo = $("input[name='FindingIsTreatmentPossible']:checked").val() === "No";
+            $("#findingTreatmentNotPossibleReasonSection").toggle(isNo);
+            if (!isNo) {
+                $("#findingTreatmentNotPossibleReason").val("");
+            }
         }
 
         function clearCoordinatorExternalFields() {
@@ -1595,6 +1690,13 @@
                 }
             }
 
+            if (SHOW_TREATMENT_POSSIBLE_FIELDS
+                && finding.isTreatmentPossible === false
+                && !finding.treatmentNotPossibleReason) {
+                Swal.fire("Invalid Data", "Reason is required when Is Treatment Possible is No.", "warning");
+                return null;
+            }
+
             if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
                 const conflictMessage = getAppointmentConflictMessage(finding, editingFindingIndex);
                 if (conflictMessage) {
@@ -1656,7 +1758,15 @@
                     : (existing ? (existing.dentalTreatmentRequired || "Yes") : "Yes"),
                 procedureStatus: existing ? (existing.procedureStatus || "") : "",
                 procedureDateTime: existing ? (existing.procedureDateTime || "") : "",
-                source: existing ? (existing.source || FINDING_SOURCE_EXAM) : FINDING_SOURCE_DEFAULT
+                source: existing ? (existing.source || FINDING_SOURCE_EXAM) : FINDING_SOURCE_DEFAULT,
+                isTreatmentPossible: SHOW_TREATMENT_POSSIBLE_FIELDS
+                    ? (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") !== "No")
+                    : (existing ? (existing.isTreatmentPossible !== false) : true),
+                treatmentNotPossibleReason: SHOW_TREATMENT_POSSIBLE_FIELDS
+                    ? (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") === "No"
+                        ? ($("#findingTreatmentNotPossibleReason").val() || "")
+                        : "")
+                    : (existing ? (existing.treatmentNotPossibleReason || "") : "")
             };
         }
 
@@ -1714,6 +1824,14 @@
                 $("#findingExternalExamDateTime").val(toDateTimeLocalValue(finding.externalExamDateTime));
                 $("#findingExternalDentistRemarks").val(finding.externalDentistRemarks || "");
                 toggleCoordinatorExternalFieldsVisibility(finding);
+            }
+
+            if (SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                const isPossible = finding.isTreatmentPossible !== false;
+                $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
+                $("input[name='FindingIsTreatmentPossible'][value='" + (isPossible ? "Yes" : "No") + "']").prop("checked", true);
+                $("#findingTreatmentNotPossibleReason").val(isPossible ? "" : (finding.treatmentNotPossibleReason || ""));
+                toggleTreatmentPossibleReasonVisibility();
             }
         }
 
@@ -1778,6 +1896,10 @@
                     procedureStatus: item.procedureStatus || "",
                     procedureDateTime: item.procedureDateTime || "",
                     source: item.source || FINDING_SOURCE_EXAM,
+                    isTreatmentPossible: item.isTreatmentPossible !== false,
+                    treatmentNotPossibleReason: item.isTreatmentPossible === false
+                        ? (item.treatmentNotPossibleReason || "")
+                        : "",
                     clientKey: item.clientKey || ""
                 };
             });
@@ -1895,15 +2017,31 @@
                 "</div></div>";
         }
 
+        function buildTreatmentPossibleDetailSection(finding) {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                return "";
+            }
+
+            const isPossible = finding.isTreatmentPossible !== false;
+            const reason = (finding.treatmentNotPossibleReason || "").toString().trim();
+            return "<div class='finding-detail-subsection'>" +
+                "<div class='finding-detail-subsection-title'>Treatment Possibility</div>" +
+                "<div class='finding-detail-grid'>" +
+                buildFindingDetailItem("Is Treatment Possible?", escapeHtml(isPossible ? "Yes" : "No")) +
+                (isPossible ? "" : buildFindingDetailItem("Reason", escapeHtml(reason || "-"))) +
+                "</div></div>";
+        }
+
         function buildFindingAppointmentDetailSection(finding) {
             if (!SHOW_FINDING_APPOINTMENT_DETAILS) {
                 return "";
             }
 
+            const treatmentPossibleSection = buildTreatmentPossibleDetailSection(finding);
             const externalSection = buildCoordinatorExternalExamDetailSection(finding);
             const assignment = getFindingAppointmentAssignmentSafe(finding.clientKey);
             if (!assignment) {
-                return externalSection +
+                return treatmentPossibleSection + externalSection +
                     "<div class='finding-detail-subsection'>" +
                     "<div class='finding-detail-subsection-title'>Appointment</div>" +
                     "<div class='finding-detail-grid'>" +
@@ -1911,7 +2049,7 @@
                     "</div></div>";
             }
 
-            return externalSection +
+            return treatmentPossibleSection + externalSection +
                 "<div class='finding-detail-subsection'>" +
                 "<div class='finding-detail-subsection-title'>Appointment</div>" +
                 "<div class='finding-detail-grid'>" +
@@ -1956,7 +2094,9 @@
                 const actionButtons = FINDINGS_READ_ONLY
                     ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 finding-action-btn edit-finding-btn' data-index='" + index + "' title='View'><i class='fas fa-eye' aria-hidden='true'></i><span class='visually-hidden'>View</span></button>")
                     : ("<button type='button' class='btn btn-sm btn-outline-primary me-1 finding-action-btn edit-finding-btn' data-index='" + index + "' title='Edit'><i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
-                       "<button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-finding-btn' data-index='" + index + "' title='Delete'><i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>");
+                       (SHOW_TREATMENT_POSSIBLE_FIELDS
+                           ? ""
+                           : "<button type='button' class='btn btn-sm btn-outline-danger finding-action-btn delete-finding-btn' data-index='" + index + "' title='Delete'><i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>"));
 
                 if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
                     const detailId = "findingDetail_" + index;
@@ -2486,7 +2626,7 @@
         }
 
         function applyFindingFormReadOnly() {
-            if (!FINDINGS_READ_ONLY) {
+            if (!FINDINGS_READ_ONLY && !isTreatmentPossibleOnlyEditMode()) {
                 return;
             }
 
@@ -2503,12 +2643,25 @@
                     $el.prop("disabled", false);
                     return;
                 }
+                if (isTreatmentPossibleOnlyEditMode() && isTreatmentPossibleEditableControl($el)) {
+                    $el.prop("disabled", false).prop("readonly", false).removeClass("read-only-style");
+                    return;
+                }
+                if (FINDINGS_READ_ONLY && $el.attr("id") === "addFindingToListBtn") {
+                    $el.prop("disabled", true);
+                    return;
+                }
                 if ($el.is("input:checkbox, input:radio, select, button")) {
                     $el.prop("disabled", true);
                 } else {
                     $el.prop("readonly", true).addClass("read-only-style");
                 }
             });
+
+            if (isTreatmentPossibleOnlyEditMode()) {
+                $("#addFindingToListBtn").prop("disabled", false);
+                $("#findingAffectedSurfaces, #findingCdtCodes").prop("disabled", true).trigger("change.select2");
+            }
         }
 
         function formatFindingDeleteAppointmentMessage(assignment) {
@@ -2611,6 +2764,10 @@
                     return;
                 }
                 addOrUpdateFinding();
+            });
+
+            $(document).on("change", "input[name='FindingIsTreatmentPossible']", function () {
+                toggleTreatmentPossibleReasonVisibility();
             });
             $("#findingPrimaryTooth").on("change", function () {
                 populateToothOptions();
