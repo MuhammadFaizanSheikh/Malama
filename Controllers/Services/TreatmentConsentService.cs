@@ -220,6 +220,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                         IncludeDentalTreatmentConsent = includeTreatment,
                         OralSurgeryDentistEventStaffIdsJson = SerializeIds(oralIds),
                         DentalTreatmentDentistEventStaffIdsJson = SerializeIds(treatmentIds),
+                        OralSurgeryProcedureText = includeOral
+                            ? request.OralSurgeryProcedureText?.Trim()
+                            : null,
                         AddedBy = userName,
                         AddedOn = now
                     };
@@ -232,6 +235,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     existing.IncludeDentalTreatmentConsent = includeTreatment;
                     existing.OralSurgeryDentistEventStaffIdsJson = SerializeIds(oralIds);
                     existing.DentalTreatmentDentistEventStaffIdsJson = SerializeIds(treatmentIds);
+                    existing.OralSurgeryProcedureText = includeOral
+                        ? request.OralSurgeryProcedureText?.Trim()
+                        : null;
                     existing.UpdatedBy = userName;
                     existing.UpdatedOn = now;
                 }
@@ -264,7 +270,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 IncludeOralSurgeryForm = entity.IncludeOralSurgeryForm,
                 IncludeDentalTreatmentConsent = entity.IncludeDentalTreatmentConsent,
                 OralSurgeryDentistEventStaffIds = ParseIds(entity.OralSurgeryDentistEventStaffIdsJson),
-                DentalTreatmentDentistEventStaffIds = ParseIds(entity.DentalTreatmentDentistEventStaffIdsJson)
+                DentalTreatmentDentistEventStaffIds = ParseIds(entity.DentalTreatmentDentistEventStaffIdsJson),
+                OralSurgeryProcedureText = entity.OralSurgeryProcedureText
             };
         }
 

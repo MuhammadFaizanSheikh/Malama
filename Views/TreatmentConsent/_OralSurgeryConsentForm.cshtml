@@ -1,4 +1,9 @@
-@* Oral Surgery Consent Form (UI only — pen/finger pads). *@
+@* Oral Surgery Consent Form — staff-filled fields + SM signature. *@
+@{
+    var patientName = ViewData["PatientFullName"] as string ?? "";
+    var dentistName = ViewData["OralSurgeryDentistName"] as string ?? "";
+    var procedureText = ViewData["OralSurgeryProcedureText"] as string ?? "";
+}
 
 <div class="tcn-consent-form" id="oralSurgeryConsentForm">
     <h3 class="tcn-consent-form-title">ORAL SURGERY CONSENT FORM</h3>
@@ -53,32 +58,25 @@
     </div>
 
     <div class="tcn-consent-auth">
-        <p class="mb-2">I,</p>
-        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_patient_name" data-pen-size="line">
-            <canvas aria-label="Patient name"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-        </div>
-        <p class="mt-2 mb-2">hereby authorize Dr.</p>
-        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_doctor_name" data-pen-size="line">
-            <canvas aria-label="Doctor name"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-        </div>
-        <p class="mt-2 mb-2">to perform the following procedure</p>
-        <div class="tcn-pen-pad tcn-pen-pad-block" data-pen-pad="os_procedure" data-pen-size="block">
-            <canvas aria-label="Procedure description"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        <p class="mb-2">
+            I, <strong id="osPatientNameText" class="tcn-consent-autofill-value">@(string.IsNullOrWhiteSpace(patientName) ? "____________________" : patientName)</strong>
+            hereby authorize Dr. <strong id="osDoctorNameText" class="tcn-consent-autofill-value">@(string.IsNullOrWhiteSpace(dentistName) ? "____________________" : dentistName)</strong>
+            to perform the following procedure
+        </p>
+        <div class="mb-2">
+            <textarea id="osProcedureText"
+                      name="OralSurgeryProcedureText"
+                      class="form-control tcn-os-procedure-text"
+                      rows="4"
+                      placeholder="Describe the procedure">@procedureText</textarea>
         </div>
         <p class="mt-2">
             and to administer anesthesia. I understand that the doctor may discover other or different conditions that may require
             additional or different procedures than those planned. I authorize him/her to perform such other procedures, as he/she
             deems necessary in his/her professional judgment in order to complete my surgery.
         </p>
-        <p class="mb-2">I have read and discussed the preceding with Dr.</p>
-        <div class="tcn-pen-pad tcn-pen-pad-line" data-pen-pad="os_discussed_doctor" data-pen-size="line">
-            <canvas aria-label="Discussed with doctor name"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-        </div>
-        <p class="mt-2">
+        <p class="mb-2">
+            I have read and discussed the preceding with Dr. <strong id="osDiscussedDoctorText" class="tcn-consent-autofill-value">@(string.IsNullOrWhiteSpace(dentistName) ? "____________________" : dentistName)</strong>
             and believe I have been given sufficient information to give my consent to the planned surgery.
         </p>
     </div>

@@ -589,6 +589,7 @@
             }
             return dentistNameById[key] || key;
         }
+        window.resolveTreatmentCoordinatorDentistDisplayName = resolveDentistDisplayName;
 
         let tcAppointments = [];
         let editingAppointmentIndex = null;
@@ -938,7 +939,7 @@
             const $picker = $("#tcAppointmentFindingsPicker").empty();
 
             if (!findings.length) {
-                $picker.append("<p class='tc-appt-findings-empty'>Add dental findings above before scheduling appointments.</p>");
+                $picker.append("<p class='tc-appt-findings-empty'>No findings available for appointment.</p>");
                 return;
             }
 

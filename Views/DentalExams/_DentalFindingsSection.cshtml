@@ -1697,6 +1697,20 @@
                 return null;
             }
 
+            if (SHOW_TREATMENT_POSSIBLE_FIELDS && finding.isTreatmentPossible === false) {
+                const assignment = getEditingFindingAppointmentAssignment();
+                if (assignment) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Finding is scheduled",
+                        text: formatFindingTreatmentPossibleBlockedMessage(assignment),
+                        confirmButtonColor: "rgba(80, 90, 201, 1)"
+                    });
+                    snapTreatmentPossibleBackToYes();
+                    return null;
+                }
+            }
+
             if (SHOW_FINDING_ASSIGNMENT_FIELDS) {
                 const conflictMessage = getAppointmentConflictMessage(finding, editingFindingIndex);
                 if (conflictMessage) {
@@ -2685,6 +2699,45 @@
                 + ". Deleting it will remove it from that appointment.";
         }
 
+        function formatFindingTreatmentPossibleBlockedMessage(assignment) {
+            if (!assignment) {
+                return "This finding is already on an appointment and cannot be marked as No.";
+            }
+
+            const dateLabel = formatAppointmentDateForDisplay(assignment.appointmentDate);
+            const timeLabel = assignment.appointmentStartTime || "";
+            const durationLabel = assignment.appointmentDuration || "";
+            const dentistRaw = assignment.assignedDentist || "a dentist";
+            const dentistLabel = (typeof window.resolveTreatmentCoordinatorDentistDisplayName === "function"
+                ? window.resolveTreatmentCoordinatorDentistDisplayName(dentistRaw)
+                : dentistRaw) || dentistRaw;
+            let schedule = dateLabel;
+            if (timeLabel) {
+                schedule += " at " + timeLabel;
+            }
+            if (durationLabel) {
+                schedule += " (" + durationLabel + ")";
+            }
+
+            return "This finding is assigned to " + dentistLabel + " on " + schedule
+                + ". It cannot be marked as Is Treatment Possible = No while it is on an appointment.";
+        }
+
+        function snapTreatmentPossibleBackToYes() {
+            $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
+            $("#findingIsTreatmentPossibleYes").prop("checked", true);
+            toggleTreatmentPossibleReasonVisibility();
+        }
+
+        function getEditingFindingAppointmentAssignment() {
+            const finding = editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null;
+            const clientKey = finding && finding.clientKey ? finding.clientKey : null;
+            if (!clientKey || typeof window.getFindingAppointmentAssignment !== "function") {
+                return null;
+            }
+            return window.getFindingAppointmentAssignment(clientKey);
+        }
+
         function deleteFinding(index) {
             const finding = dentalFindings[index];
             const clientKey = finding?.clientKey || null;
@@ -2724,16 +2777,23 @@
         }
 
         window.getDentalFindingsForAppointments = function () {
-            return dentalFindings.map(function (finding, index) {
-                return {
-                    clientKey: finding.clientKey || "",
-                    index: index,
-                    affectedTooth: finding.affectedTooth || "",
-                    isPrimaryTooth: !!finding.isPrimaryTooth,
-                    diseaseConditionType: finding.diseaseConditionType || "",
-                    classification: finding.classification || ""
-                };
-            });
+            return dentalFindings
+                .filter(function (finding) {
+                    return finding.isTreatmentPossible !== false;
+                })
+                .map(function (finding, index) {
+                    // Keep original list index for labels where needed.
+                    const originalIndex = dentalFindings.indexOf(finding);
+                    return {
+                        clientKey: finding.clientKey || "",
+                        index: originalIndex >= 0 ? originalIndex : index,
+                        affectedTooth: finding.affectedTooth || "",
+                        isPrimaryTooth: !!finding.isPrimaryTooth,
+                        diseaseConditionType: finding.diseaseConditionType || "",
+                        classification: finding.classification || "",
+                        isTreatmentPossible: finding.isTreatmentPossible !== false
+                    };
+                });
         };
 
         window.initDentalFindingsSection = function () {
@@ -2767,6 +2827,19 @@
             });
 
             $(document).on("change", "input[name='FindingIsTreatmentPossible']", function () {
+                if (($(this).val() || "") === "No") {
+                    const assignment = getEditingFindingAppointmentAssignment();
+                    if (assignment) {
+                        snapTreatmentPossibleBackToYes();
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Finding is scheduled",
+                            text: formatFindingTreatmentPossibleBlockedMessage(assignment),
+                            confirmButtonColor: "rgba(80, 90, 201, 1)"
+                        });
+                        return;
+                    }
+                }
                 toggleTreatmentPossibleReasonVisibility();
             });
             $("#findingPrimaryTooth").on("change", function () {

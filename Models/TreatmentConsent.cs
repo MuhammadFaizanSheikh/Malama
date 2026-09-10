@@ -30,6 +30,9 @@ namespace Malama.Models
 
         /// <summary>JSON array of EventStaff Ids selected for Dental Treatment Consent.</summary>
         public string? DentalTreatmentDentistEventStaffIdsJson { get; set; }
+
+        /// <summary>Staff-entered procedure description on Oral Surgery Form.</summary>
+        public string? OralSurgeryProcedureText { get; set; }
     }
 
     public class TreatmentConsentFormSelectionDto
@@ -40,6 +43,7 @@ namespace Malama.Models
         public bool IncludeDentalTreatmentConsent { get; set; }
         public List<long> OralSurgeryDentistEventStaffIds { get; set; } = new();
         public List<long> DentalTreatmentDentistEventStaffIds { get; set; } = new();
+        public string? OralSurgeryProcedureText { get; set; }
     }
 
     public class TreatmentConsentSaveFormSelectionRequest
@@ -49,6 +53,7 @@ namespace Malama.Models
         public bool IncludeDentalTreatmentConsent { get; set; }
         public List<long> OralSurgeryDentistEventStaffIds { get; set; } = new();
         public List<long> DentalTreatmentDentistEventStaffIds { get; set; } = new();
+        public string? OralSurgeryProcedureText { get; set; }
     }
 
     public class TreatmentConsentSaveFormSelectionResponse

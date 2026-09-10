@@ -311,6 +311,11 @@
         word-break: break-word;
     }
 
+    .tcn-station .tcn-os-procedure-text {
+        min-height: 6rem;
+        resize: vertical;
+    }
+
     .tcn-station .tcn-consent-identity-line {
         display: flex;
         flex-wrap: wrap;
@@ -424,6 +429,31 @@
         gap: 0.45rem;
         margin-top: 0.65rem;
         font-weight: 600;
+    }
+
+    .tcn-station .tcn-initials-input {
+        width: 3.25rem;
+        min-width: 3.25rem;
+        max-width: 3.25rem;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 0.35rem 0.25rem;
+    }
+
+    .tcn-station .tcn-dtc-other-situation-text {
+        min-height: 6rem;
+        resize: vertical;
+    }
+
+    .tcn-station .tcn-teeth-digits-input {
+        width: 4.5rem;
+        max-width: 4.5rem;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 0.35rem 0.25rem;
     }
 
     .tcn-station .tcn-consent-letter-list {
@@ -665,7 +695,7 @@
     .tcn-station.tcn-fields-locked .tab-content input,
     .tcn-station.tcn-fields-locked .tab-content select,
     .tcn-station.tcn-fields-locked .tab-content textarea,
-    .tcn-station.tcn-fields-locked .tab-content button[data-pen-clear] {
+    .tcn-station.tcn-fields-locked .tab-content .tcn-pen-pad:not(.tcn-pen-pad-signature) button[data-pen-clear] {
         pointer-events: none;
         cursor: not-allowed;
     }
@@ -677,19 +707,19 @@
         opacity: 0.92;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-pad,
+    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature),
     .tcn-station .tcn-pen-pad.is-disabled {
         opacity: 0.72;
         background: #f7f8fb;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-pad canvas,
+    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature) canvas,
     .tcn-station .tcn-pen-pad.is-disabled canvas {
         cursor: not-allowed !important;
         pointer-events: none !important;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-clear,
+    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature) .tcn-pen-clear,
     .tcn-station .tcn-pen-pad.is-disabled .tcn-pen-clear {
         display: none;
     }
@@ -705,7 +735,7 @@
     }
 </style>
 
-<section class="tcn-station @(isSmMode ? "" : "tcn-fields-locked")" data-sm-mode="@(isSmMode ? "true" : "false")" data-sm-id="@sm.Id">
+<section class="tcn-station @(isSmMode ? "tcn-sm-mode-active" : "tcn-staff-mode")" data-sm-mode="@(isSmMode ? "true" : "false")" data-sm-id="@sm.Id">
     @Html.AntiForgeryToken()
 
     <div class="tcn-toolbar">
@@ -966,8 +996,15 @@
 
         <div class="tab-pane fade" id="oralSurgeryPane" role="tabpanel" aria-labelledby="oralSurgery-tab">
             @{
+                var firstOralDentistId = formSelection.OralSurgeryDentistEventStaffIds.FirstOrDefault();
+                var firstOralDentistName = firstOralDentistId > 0
+                    ? oralSurgeryDentists.FirstOrDefault(d => d.EventStaffId == firstOralDentistId)?.DisplayName ?? string.Empty
+                    : string.Empty;
                 var oralSurgeryViewData = new ViewDataDictionary(ViewData);
                 oralSurgeryViewData["ConsentDate"] = consentDateDisplay;
+                oralSurgeryViewData["PatientFullName"] = sm?.FullName ?? string.Empty;
+                oralSurgeryViewData["OralSurgeryDentistName"] = firstOralDentistName;
+                oralSurgeryViewData["OralSurgeryProcedureText"] = formSelection.OralSurgeryProcedureText ?? string.Empty;
             }
             @await Html.PartialAsync(
                 "~/Views/TreatmentConsent/_OralSurgeryConsentForm.cshtml",
@@ -977,10 +1014,15 @@
 
         <div class="tab-pane fade" id="dentalTreatmentConsentPane" role="tabpanel" aria-labelledby="dentalTreatmentConsent-tab">
             @{
+                var firstTreatmentDentistId = formSelection.DentalTreatmentDentistEventStaffIds.FirstOrDefault();
+                var firstTreatmentDentistName = firstTreatmentDentistId > 0
+                    ? dentalTreatmentDentists.FirstOrDefault(d => d.EventStaffId == firstTreatmentDentistId)?.DisplayName ?? string.Empty
+                    : string.Empty;
                 var treatmentConsentViewData = new ViewDataDictionary(ViewData);
                 treatmentConsentViewData["PatientFullName"] = sm?.FullName ?? string.Empty;
                 treatmentConsentViewData["PatientDob"] = sm?.Dob ?? string.Empty;
                 treatmentConsentViewData["ConsentDate"] = consentDateDisplay;
+                treatmentConsentViewData["DentalTreatmentDentistName"] = firstTreatmentDentistName;
             }
             @await Html.PartialAsync(
                 "~/Views/TreatmentConsent/_DentalTreatmentConsentForm.cshtml",
@@ -1108,24 +1150,40 @@
         const $unlockBtn = $("#tcnStaffUnlockBtn");
         const $station = $(".tcn-station");
 
-        function applyFormFieldsLock(isWritable) {
-            $station.toggleClass("tcn-fields-locked", !isWritable);
+        function isSignaturePenPad(pad) {
+            if (!pad || !pad.wrap) {
+                return false;
+            }
+            return pad.wrap.getAttribute("data-pen-size") === "signature"
+                || pad.wrap.classList.contains("tcn-pen-pad-signature");
+        }
+
+        function applyFormFieldsLock(isSmMode) {
+            // Staff mode: all fields writable except signatures.
+            // SM mode: only signature pens writable.
+            $station.toggleClass("tcn-sm-mode-active", !!isSmMode);
+            $station.toggleClass("tcn-staff-mode", !isSmMode);
+            $station.toggleClass("tcn-fields-locked", !!isSmMode);
 
             $station.find(".tab-content").find("input, select, textarea").each(function () {
                 const $el = $(this);
-                if ($el.hasClass("tcn-readonly-input") || $el.attr("readonly") === "readonly" && $el.hasClass("tcn-readonly-input")) {
+                if ($el.hasClass("tcn-readonly-input")) {
                     return;
                 }
-                // Keep anti-forgery and other non-form controls alone; only lock editable fields.
                 if ($el.attr("name") === "__RequestVerificationToken") {
                     return;
                 }
-                $el.prop("disabled", !isWritable);
+                $el.prop("disabled", !!isSmMode);
             });
 
-            if (window.TreatmentConsentPenPads && typeof window.TreatmentConsentPenPads.setAllEnabled === "function") {
-                window.TreatmentConsentPenPads.setAllEnabled(penPads, isWritable);
-            }
+            Object.keys(penPads || {}).forEach(function (key) {
+                const pad = penPads[key];
+                if (!pad || typeof pad.setEnabled !== "function") {
+                    return;
+                }
+                const isSignature = isSignaturePenPad(pad);
+                pad.setEnabled(isSignature ? !!isSmMode : !isSmMode);
+            });
         }
 
         function setSmModeUi(active) {
@@ -1138,10 +1196,38 @@
         }
 
         const penPads = window.TreatmentConsentPenPads
-            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"), { enabled: isSmModeActive })
+            ? window.TreatmentConsentPenPads.initAll(document.querySelector(".tcn-station"), { enabled: false })
             : {};
 
         applyFormFieldsLock(isSmModeActive);
+
+        function getFirstCheckedOralSurgeryDentistName() {
+            const $checked = $('input[name="tcnOralSurgeryDentist"]:checked').first();
+            if (!$checked.length) {
+                return "";
+            }
+            return ($checked.closest("label").find("span").first().text() || "").trim();
+        }
+
+        function syncOralSurgeryDentistDisplay() {
+            const name = getFirstCheckedOralSurgeryDentistName();
+            const display = name || "____________________";
+            $("#osDoctorNameText, #osDiscussedDoctorText").text(display);
+        }
+
+        function getFirstCheckedDentalTreatmentDentistName() {
+            const $checked = $('input[name="tcnDentalTreatmentDentist"]:checked').first();
+            if (!$checked.length) {
+                return "";
+            }
+            return ($checked.closest("label").find("span").first().text() || "").trim();
+        }
+
+        function syncDentalTreatmentDentistDisplay() {
+            const name = getFirstCheckedDentalTreatmentDentistName();
+            const display = name || "____________________";
+            $("#dtcRemovalDoctorText").text(display);
+        }
 
         function collectCheckedIds(selector) {
             const ids = [];
@@ -1166,7 +1252,10 @@
                     : [],
                 dentalTreatmentDentistEventStaffIds: includeTreatment
                     ? collectCheckedIds('input[name="tcnDentalTreatmentDentist"]:checked')
-                    : []
+                    : [],
+                oralSurgeryProcedureText: includeOral
+                    ? (($("#osProcedureText").val() || "").toString().trim())
+                    : ""
             };
         }
 
@@ -1185,6 +1274,9 @@
             if (!includeTreatment) {
                 $('input[name="tcnDentalTreatmentDentist"]').prop("checked", false);
             }
+
+            syncOralSurgeryDentistDisplay();
+            syncDentalTreatmentDentistDisplay();
 
             const oralActive = $("#oralSurgery-tab").hasClass("active");
             const treatmentActive = $("#dentalTreatmentConsent-tab").hasClass("active");
@@ -1229,6 +1321,8 @@
         }
 
         $("#tcnIncludeOralSurgery, #tcnIncludeDentalTreatment").on("change", syncFormSelectionUi);
+        $(document).on("change", 'input[name="tcnOralSurgeryDentist"]', syncOralSurgeryDentistDisplay);
+        $(document).on("change", 'input[name="tcnDentalTreatmentDentist"]', syncDentalTreatmentDentistDisplay);
 
         $("#tcnSaveFormSelectionBtn").on("click", async function () {
             try {
@@ -1248,6 +1342,20 @@
         });
 
         syncFormSelectionUi();
+
+        (function wireDentalTreatmentInitialsInputs() {
+            $(document).on("input", ".tcn-initials-input", function () {
+                const raw = (this.value || "").toString().toUpperCase().replace(/[^A-Z]/g, "");
+                this.value = raw.slice(0, 2);
+            });
+        })();
+
+        (function wireDentalTreatmentTeethDigitsInput() {
+            $(document).on("input", ".tcn-teeth-digits-input", function () {
+                const raw = (this.value || "").toString().replace(/\D/g, "");
+                this.value = raw.slice(0, 2);
+            });
+        })();
 
         (function wireDentalTreatmentOtherToggle() {
             const otherCheck = document.getElementById("dtcOtherTreatmentCheck");

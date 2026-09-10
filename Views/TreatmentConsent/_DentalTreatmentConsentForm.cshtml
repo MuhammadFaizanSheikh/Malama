@@ -1,7 +1,9 @@
-@* Dental Treatment Consent form (UI only — checkboxes + pen pads for initials/signatures). *@
+@* Dental Treatment Consent form — staff text fields + SM signature pens. *@
 @{
     var patientName = ViewData["PatientFullName"] as string ?? "";
     var patientDob = ViewData["PatientDob"] as string ?? "";
+    var dentistName = ViewData["DentalTreatmentDentistName"] as string ?? "";
+    var dentistDisplay = string.IsNullOrWhiteSpace(dentistName) ? "____________________" : dentistName;
 }
 
 <div class="tcn-consent-form" id="dentalTreatmentConsentForm">
@@ -66,10 +68,13 @@
         </div>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item1_initials" data-pen-size="initials">
-                <canvas aria-label="Item 1 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem1Initials"
+                   name="dtc_item1_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 1 initials" />
             <span>)</span>
         </div>
     </div>
@@ -87,10 +92,13 @@
         </p>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item2_initials" data-pen-size="initials">
-                <canvas aria-label="Item 2 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem2Initials"
+                   name="dtc_item2_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 2 initials" />
             <span>)</span>
         </div>
     </div>
@@ -104,16 +112,19 @@
         </div>
         <p>
             Alternatives to removal have been explained to me (root canal therapy, crowns, periodontal surgery, etc.) and I authorize
-            Dr.
+            Dr. <strong id="dtcRemovalDoctorText" class="tcn-consent-autofill-value">@dentistDisplay</strong>
         </p>
-        <div class="tcn-pen-pad tcn-pen-pad-doctor-names" data-pen-pad="dtc_removal_doctor" data-pen-size="line">
-            <canvas aria-label="Doctor name for tooth removal"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-        </div>
         <p class="mt-2 mb-1">to remove the following teeth:</p>
-        <div class="tcn-pen-pad tcn-pen-pad-teeth-numbers" data-pen-pad="dtc_removal_teeth" data-pen-size="line">
-            <canvas aria-label="Teeth to remove"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        <div class="mb-2">
+            <input type="text"
+                   id="dtcRemovalTeethText"
+                   name="dtc_removal_teeth"
+                   class="form-control tcn-teeth-digits-input"
+                   inputmode="numeric"
+                   maxlength="2"
+                   autocomplete="off"
+                   placeholder="00"
+                   aria-label="Teeth to remove" />
         </div>
         <p class="mt-2">
             I understand removing teeth does not always remove all the infection, if present, and it may be necessary to have further treatment.
@@ -125,10 +136,13 @@
         </p>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item3_initials" data-pen-size="initials">
-                <canvas aria-label="Item 3 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem3Initials"
+                   name="dtc_item3_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 3 initials" />
             <span>)</span>
         </div>
     </div>
@@ -148,10 +162,13 @@
         </p>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item4_initials" data-pen-size="initials">
-                <canvas aria-label="Item 4 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem4Initials"
+                   name="dtc_item4_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 4 initials" />
             <span>)</span>
         </div>
     </div>
@@ -169,10 +186,13 @@
         </p>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item5_initials" data-pen-size="initials">
-                <canvas aria-label="Item 5 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem5Initials"
+                   name="dtc_item5_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 5 initials" />
             <span>)</span>
         </div>
     </div>
@@ -184,17 +204,23 @@
             </label>
             <h4>6. OTHER</h4>
         </div>
-        <p>Please handwrite any situation not listed above that requires consent.</p>
-        <div class="tcn-pen-pad tcn-pen-pad-block" data-pen-pad="dtc_other_situation" data-pen-size="block">
-            <canvas aria-label="Other consent situation"></canvas>
-            <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
+        <p>Please describe any situation not listed above that requires consent.</p>
+        <div class="mb-2">
+            <textarea id="dtcOtherSituationText"
+                      name="dtc_other_situation"
+                      class="form-control tcn-dtc-other-situation-text"
+                      rows="4"
+                      placeholder="Describe other situation requiring consent"></textarea>
         </div>
         <div class="tcn-initials-row">
             <span>(Initials</span>
-            <div class="tcn-pen-pad tcn-pen-pad-initials" data-pen-pad="dtc_item6_initials" data-pen-size="initials">
-                <canvas aria-label="Item 6 initials"></canvas>
-                <button type="button" class="tcn-pen-clear" data-pen-clear>Clear</button>
-            </div>
+            <input type="text"
+                   id="dtcItem6Initials"
+                   name="dtc_item6_initials"
+                   class="form-control tcn-initials-input"
+                   maxlength="2"
+                   autocomplete="off"
+                   aria-label="Item 6 initials" />
             <span>)</span>
         </div>
     </div>
