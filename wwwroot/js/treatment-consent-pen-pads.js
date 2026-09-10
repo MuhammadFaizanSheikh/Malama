@@ -125,6 +125,21 @@
             drawing = false;
             if (dirty) {
                 persistInk();
+                notifyInkChange();
+            }
+        }
+
+        function notifyInkChange() {
+            const hasInk = !!dirty;
+            canvas.dataset.hasInk = hasInk ? "true" : "false";
+            if (typeof opts.onInkChange === "function") {
+                opts.onInkChange(hasInk);
+            }
+            if (wrap) {
+                wrap.dispatchEvent(new CustomEvent("tcn-pen-ink-change", {
+                    bubbles: true,
+                    detail: { hasInk: hasInk, padId: wrap.getAttribute("data-pen-pad") || "" }
+                }));
             }
         }
 
@@ -137,6 +152,7 @@
             dirty = false;
             inkSnapshot = null;
             canvas.dataset.hasInk = "false";
+            notifyInkChange();
         }
 
         function setEnabled(isEnabled) {
@@ -185,6 +201,9 @@
         const enabled = opts.enabled !== false;
 
         scope.querySelectorAll("[data-pen-pad]").forEach(function (wrap) {
+            if (wrap.getAttribute("data-pen-ready") === "true") {
+                return;
+            }
             const canvas = wrap.querySelector("canvas");
             const clearBtn = wrap.querySelector("[data-pen-clear]");
             if (!canvas) return;
@@ -193,6 +212,7 @@
             const lineWidth = size === "initials" ? 1.8 : (size === "signature" ? 2.4 : 2.1);
             const pad = createPad(canvas, { lineWidth: lineWidth, enabled: enabled });
             const id = wrap.getAttribute("data-pen-pad") || ("pad_" + Math.random().toString(36).slice(2));
+            wrap.setAttribute("data-pen-ready", "true");
             pads[id] = pad;
 
             if (clearBtn) {
@@ -203,6 +223,30 @@
         });
 
         return pads;
+    }
+
+    function mergeInit(targetPads, root, options) {
+        const created = initAll(root, options);
+        Object.keys(created).forEach(function (key) {
+            targetPads[key] = created[key];
+        });
+        return created;
+    }
+
+    function destroyPadsIn(pads, container) {
+        if (!pads || !container) {
+            return;
+        }
+        Object.keys(pads).forEach(function (key) {
+            const pad = pads[key];
+            if (!pad || !pad.wrap || !container.contains(pad.wrap)) {
+                return;
+            }
+            if (pad.wrap) {
+                pad.wrap.removeAttribute("data-pen-ready");
+            }
+            delete pads[key];
+        });
     }
 
     function setAllEnabled(pads, isEnabled) {
@@ -228,6 +272,8 @@
 
     window.TreatmentConsentPenPads = {
         initAll: initAll,
+        mergeInit: mergeInit,
+        destroyPadsIn: destroyPadsIn,
         setAllEnabled: setAllEnabled,
         resizePadsIn: resizePadsIn
     };
