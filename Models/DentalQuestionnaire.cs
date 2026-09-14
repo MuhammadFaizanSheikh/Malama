@@ -43,6 +43,7 @@ namespace Malama.Models
         public const string DentalXRay = "DentalXRay";
         public const string DentalExam = "DentalExam";
         public const string DentalCoordinator = "DentalCoordinator";
+        public const string TreatmentConsent = "TreatmentConsent";
     }
 
     public class DentalXRayStationPageViewModel

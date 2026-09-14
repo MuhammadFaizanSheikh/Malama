@@ -13,8 +13,8 @@ namespace Malama.Models
         public string? Sex { get; set; }
         public string? Dob { get; set; }
         public string? Barcode { get; set; }
-        public string? CheckInBy { get; set; }
-        public DateTime? CheckInTime { get; set; }
+        public string? CompletedBy { get; set; }
+        public DateTime? CompletedOn { get; set; }
         public string Status { get; set; } = AppConstants.Status.Pending;
     }
 
@@ -22,6 +22,8 @@ namespace Malama.Models
     {
         public string? EventId { get; set; }
         public int TotalCount { get; set; }
+        public int PendingCount { get; set; }
+        public int CompletedCount { get; set; }
         public List<TreatmentConsentListItemDto> ServiceMembers { get; set; } = new();
     }
 

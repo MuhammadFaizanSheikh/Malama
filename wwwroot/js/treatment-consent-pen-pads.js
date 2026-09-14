@@ -190,6 +190,29 @@
                     return inkSnapshot;
                 }
                 return dirty ? canvas.toDataURL("image/png") : "";
+            },
+            loadFromDataUrl: function (dataUrl) {
+                if (!dataUrl) {
+                    return;
+                }
+                const img = new Image();
+                img.onload = function () {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    const rect = canvas.getBoundingClientRect();
+                    const width = Math.max(1, Math.floor(rect.width));
+                    const height = Math.max(1, Math.floor(rect.height));
+                    if (width >= 2 && height >= 2) {
+                        canvas.width = Math.floor(width * ratio);
+                        canvas.height = Math.floor(height * ratio);
+                        applyStrokeStyle(ratio);
+                        ctx.drawImage(img, 0, 0, width, height);
+                    }
+                    dirty = true;
+                    inkSnapshot = dataUrl;
+                    canvas.dataset.hasInk = "true";
+                    notifyInkChange();
+                };
+                img.src = dataUrl;
             }
         };
     }

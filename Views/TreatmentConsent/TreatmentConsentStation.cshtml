@@ -17,6 +17,8 @@
     var dentalTreatmentDentists = Model.DentalTreatmentDentists ?? new List<TreatmentCoordinatorAssignableDentistDto>();
     var showOralSurgeryTab = formSelection.IncludeOralSurgeryForm;
     var showDentalTreatmentTab = formSelection.IncludeDentalTreatmentConsent;
+    var pageStatus = TreatmentConsentHelper.ComputeStationStatus(formSelection);
+    var pageStatusIsCompleted = TreatmentConsentHelper.IsCompleted(pageStatus);
 }
 
 <style>
@@ -728,8 +730,8 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        margin: 0 0 0.65rem;
-        font-size: 0.92rem;
+        margin: 0;
+        font-size: 0.95rem;
         font-weight: 700;
         color: var(--tcn-text);
     }
@@ -739,6 +741,41 @@
         height: 1.15rem;
         accent-color: var(--tcn-indigo);
         margin: 0;
+    }
+
+    .tcn-station .tcn-selection-form-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.15rem 0 0.75rem;
+    }
+
+    .tcn-station .tcn-selection-divider {
+        height: 1px;
+        margin: 0 0 0.7rem;
+        border: 0;
+        background: linear-gradient(
+            90deg,
+            rgba(80, 90, 201, 0.35),
+            rgba(80, 90, 201, 0.12) 60%,
+            transparent
+        );
+    }
+
+    .tcn-station .tcn-selection-dentists-block {
+        padding: 0.55rem 0.65rem 0.45rem;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid rgba(80, 90, 201, 0.14);
+    }
+
+    .tcn-station .tcn-selection-dentists-label {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--tcn-muted);
     }
 
     .tcn-station .tcn-dentist-list {
@@ -779,6 +816,97 @@
         margin-top: 0.9rem;
         display: flex;
         justify-content: flex-end;
+    }
+
+    .tcn-station .tcn-page-save-bar {
+        margin-top: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.85rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--tcn-border);
+    }
+
+    .tcn-station .tcn-page-status-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-width: 0;
+    }
+
+    .tcn-station .tcn-page-status-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--tcn-muted);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .tcn-station .tcn-page-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 104px;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .tcn-station .tcn-page-status-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .tcn-station .tcn-page-status-completed {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+    }
+
+    .tcn-station .btn-tcn-save-page {
+        background: var(--tcn-indigo);
+        border: 1px solid var(--tcn-indigo);
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 0.6rem 1.35rem;
+        flex: 0 0 auto;
+    }
+
+    .tcn-station .btn-tcn-save-page:hover {
+        background: rgb(60, 70, 180);
+        color: #fff;
+    }
+
+    .tcn-station .tcn-page-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.65rem;
+        margin-left: auto;
+    }
+
+    .tcn-station .btn-tcn-cancel-page {
+        background: #fff;
+        border: 1px solid rgba(31, 36, 48, 0.18);
+        color: #4b5160;
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 0.6rem 1.35rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .tcn-station .btn-tcn-cancel-page:hover {
+        background: #f3f4f8;
+        color: #1f2430;
+        border-color: rgba(31, 36, 48, 0.28);
     }
 
     .tcn-station .btn-tcn-save-selection {
@@ -870,6 +998,10 @@
         .tcn-station .tcn-selection-grid {
             grid-template-columns: 1fr;
         }
+
+        .tcn-station .tcn-page-save-bar {
+            flex-wrap: wrap;
+        }
     }
 </style>
 
@@ -929,71 +1061,78 @@
         <h2 class="tcn-panel-title"><i class="fas fa-list-check" aria-hidden="true"></i> Forms &amp; Dentists</h2>
         <div class="tcn-selection-grid">
             <div class="tcn-selection-card">
-                <label class="tcn-selection-card-title">
-                    <input type="checkbox"
-                           id="tcnIncludeOralSurgery"
-                           @(formSelection.IncludeOralSurgeryForm ? "checked" : null) />
-                    <span>Oral Surgery Form</span>
-                </label>
+                <div class="tcn-selection-form-row">
+                    <label class="tcn-selection-card-title">
+                        <input type="checkbox"
+                               id="tcnIncludeOralSurgery"
+                               @(formSelection.IncludeOralSurgeryForm ? "checked" : null) />
+                        <span>Oral Surgery Form</span>
+                    </label>
+                </div>
                 <div id="tcnOralSurgeryDentistsWrap" style="@(formSelection.IncludeOralSurgeryForm ? null : "display:none")">
-                    @if (oralSurgeryDentists.Count == 0)
-                    {
-                        <p class="tcn-selection-hint">No DT-Dentist with Oral Surgery attribute on this event.</p>
-                    }
-                    else
-                    {
-                        <div class="tcn-dentist-list" id="tcnOralSurgeryDentists">
-                            @foreach (var dentist in oralSurgeryDentists)
-                            {
-                                var isChecked = formSelection.OralSurgeryDentistEventStaffIds.Contains(dentist.EventStaffId);
-                                <label class="tcn-dentist-option">
-                                    <input type="checkbox"
-                                           name="tcnOralSurgeryDentist"
-                                           value="@dentist.EventStaffId"
-                                           @(isChecked ? "checked" : null) />
-                                    <span>@dentist.DisplayName</span>
-                                </label>
-                            }
-                        </div>
-                    }
+                    <hr class="tcn-selection-divider" />
+                    <div class="tcn-selection-dentists-block">
+                        <p class="tcn-selection-dentists-label">Dentists</p>
+                        @if (oralSurgeryDentists.Count == 0)
+                        {
+                            <p class="tcn-selection-hint">No DT-Dentist with Oral Surgery attribute on this event.</p>
+                        }
+                        else
+                        {
+                            <div class="tcn-dentist-list" id="tcnOralSurgeryDentists">
+                                @foreach (var dentist in oralSurgeryDentists)
+                                {
+                                    var isChecked = formSelection.OralSurgeryDentistEventStaffIds.Contains(dentist.EventStaffId);
+                                    <label class="tcn-dentist-option">
+                                        <input type="checkbox"
+                                               name="tcnOralSurgeryDentist"
+                                               value="@dentist.EventStaffId"
+                                               @(isChecked ? "checked" : null) />
+                                        <span>@dentist.DisplayName</span>
+                                    </label>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
             <div class="tcn-selection-card">
-                <label class="tcn-selection-card-title">
-                    <input type="checkbox"
-                           id="tcnIncludeDentalTreatment"
-                           @(formSelection.IncludeDentalTreatmentConsent ? "checked" : null) />
-                    <span>Dental Treatment Consent</span>
-                </label>
+                <div class="tcn-selection-form-row">
+                    <label class="tcn-selection-card-title">
+                        <input type="checkbox"
+                               id="tcnIncludeDentalTreatment"
+                               @(formSelection.IncludeDentalTreatmentConsent ? "checked" : null) />
+                        <span>Dental Treatment Consent</span>
+                    </label>
+                </div>
                 <div id="tcnDentalTreatmentDentistsWrap" style="@(formSelection.IncludeDentalTreatmentConsent ? null : "display:none")">
-                    @if (dentalTreatmentDentists.Count == 0)
-                    {
-                        <p class="tcn-selection-hint">No DT-Dentist with Treatment attribute on this event.</p>
-                    }
-                    else
-                    {
-                        <div class="tcn-dentist-list" id="tcnDentalTreatmentDentists">
-                            @foreach (var dentist in dentalTreatmentDentists)
-                            {
-                                var isChecked = formSelection.DentalTreatmentDentistEventStaffIds.Contains(dentist.EventStaffId);
-                                <label class="tcn-dentist-option">
-                                    <input type="checkbox"
-                                           name="tcnDentalTreatmentDentist"
-                                           value="@dentist.EventStaffId"
-                                           @(isChecked ? "checked" : null) />
-                                    <span>@dentist.DisplayName</span>
-                                </label>
-                            }
-                        </div>
-                    }
+                    <hr class="tcn-selection-divider" />
+                    <div class="tcn-selection-dentists-block">
+                        <p class="tcn-selection-dentists-label">Dentists</p>
+                        @if (dentalTreatmentDentists.Count == 0)
+                        {
+                            <p class="tcn-selection-hint">No DT-Dentist with Treatment attribute on this event.</p>
+                        }
+                        else
+                        {
+                            <div class="tcn-dentist-list" id="tcnDentalTreatmentDentists">
+                                @foreach (var dentist in dentalTreatmentDentists)
+                                {
+                                    var isChecked = formSelection.DentalTreatmentDentistEventStaffIds.Contains(dentist.EventStaffId);
+                                    <label class="tcn-dentist-option">
+                                        <input type="checkbox"
+                                               name="tcnDentalTreatmentDentist"
+                                               value="@dentist.EventStaffId"
+                                               @(isChecked ? "checked" : null) />
+                                        <span>@dentist.DisplayName</span>
+                                    </label>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="tcn-selection-actions">
-            <button type="button" class="btn btn-tcn-save-selection" id="tcnSaveFormSelectionBtn">
-                <i class="fas fa-save" aria-hidden="true"></i> Save Selection
-            </button>
         </div>
     </div>
 
@@ -1169,6 +1308,24 @@
             </template>
         </div>
     </div>
+
+    <div class="tcn-page-save-bar">
+        <div class="tcn-page-status-wrap">
+            <span class="tcn-page-status-label">Status</span>
+            <span id="tcnPageStatusBadge"
+                  class="tcn-page-status @(pageStatusIsCompleted ? "tcn-page-status-completed" : "tcn-page-status-pending")"
+                  role="status"
+                  aria-live="polite">@(pageStatusIsCompleted ? "Completed" : "Pending")</span>
+        </div>
+        <div class="tcn-page-actions" id="tcnPageActions" style="@(isSmMode ? "display:none" : null)">
+            <button type="button" class="btn btn-tcn-save-page" id="tcnSaveStationBtn">
+                <i class="fas fa-check-circle" aria-hidden="true"></i> Save
+            </button>
+            <a asp-action="Index" class="btn btn-tcn-cancel-page btn-back-confirm" id="tcnCancelStationBtn">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancel
+            </a>
+        </div>
+    </div>
 </section>
 
 <script src="~/js/treatment-consent-pen-pads.js" asp-append-version="true"></script>
@@ -1334,6 +1491,7 @@
             $station.attr("data-sm-mode", isSmModeActive ? "true" : "false");
             $unlockBtn.toggle(isSmModeActive);
             $startBtn.toggle(!isSmModeActive);
+            $("#tcnPageActions").toggle(!isSmModeActive);
             applyFormFieldsLock(isSmModeActive);
         }
 
@@ -1356,6 +1514,94 @@
             return dentists;
         }
 
+        const SAVED_ORAL_FORMS = @Html.Raw(Json.Serialize(formSelection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>()));
+        const SAVED_TREATMENT_FORMS = @Html.Raw(Json.Serialize(formSelection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>()));
+        const SIG_ORAL_PREFIX = @Json.Serialize(TreatmentConsentFileSaveCoordinator.OralSurgeryPrefix);
+        const SIG_DTC_PREFIX = @Json.Serialize(TreatmentConsentFileSaveCoordinator.DentalTreatmentPrefix);
+        const SIG_DOWNLOAD_BASE = @Json.Serialize(Url.Action("DownloadSignature", "TreatmentConsent"));
+
+        function getSavedOralForm(dentistId) {
+            return (SAVED_ORAL_FORMS || []).find(function (f) { return String(f.eventStaffId) === String(dentistId); }) || null;
+        }
+
+        function getSavedTreatmentForm(dentistId) {
+            return (SAVED_TREATMENT_FORMS || []).find(function (f) { return String(f.eventStaffId) === String(dentistId); }) || null;
+        }
+
+        function signatureDownloadUrl(prefix, fileName) {
+            if (!fileName) {
+                return "";
+            }
+            return SIG_DOWNLOAD_BASE + "?prefix=" + encodeURIComponent(prefix) + "&fileName=" + encodeURIComponent(fileName);
+        }
+
+        function restoreSignaturePad($card, prefix, fileName, isSigned) {
+            if (!fileName || !isSigned) {
+                return;
+            }
+            setFormSignedStatus($card, true);
+            const sigKey = $card.attr("data-signature-pad-id");
+            const pad = sigKey ? penPads[sigKey] : null;
+            if (!pad || typeof pad.loadFromDataUrl !== "function") {
+                return;
+            }
+            const url = signatureDownloadUrl(prefix, fileName);
+            fetch(url)
+                .then(function (r) { return r.ok ? r.blob() : null; })
+                .then(function (blob) {
+                    if (!blob) {
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        pad.loadFromDataUrl(reader.result);
+                        setFormSignedStatus($card, true);
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(function () { /* keep signed from saved file */ });
+        }
+
+        function applySavedOralForm($card, dentistId) {
+            const saved = getSavedOralForm(dentistId);
+            if (!saved) {
+                return;
+            }
+            $card.find(".tcn-os-procedure-text").val(saved.procedureText || "");
+            restoreSignaturePad($card, SIG_ORAL_PREFIX, saved.signatureFileName, saved.isSigned);
+        }
+
+        function applySavedTreatmentForm($card, dentistId) {
+            const saved = getSavedTreatmentForm(dentistId);
+            if (!saved) {
+                return;
+            }
+            const $body = $card.find(".tcn-dtc-form-body");
+            $body.find('input[name="dtc_item1_mark"]').prop("checked", !!saved.item1Mark);
+            $body.find('input[name="dtc_fillings"]').prop("checked", !!saved.fillings);
+            $body.find('input[name="dtc_crowns"]').prop("checked", !!saved.crowns);
+            $body.find('input[name="dtc_extractions"]').prop("checked", !!saved.extractions);
+            $body.find('input[name="dtc_impacted"]').prop("checked", !!saved.impacted);
+            $body.find('input[name="dtc_root_canal"]').prop("checked", !!saved.rootCanal);
+            $body.find('input[name="dtc_fmd"]').prop("checked", !!saved.fmd);
+            $body.find('input[name="dtc_other_treatment"]').prop("checked", !!saved.otherTreatment).trigger("change");
+            $body.find('textarea[name="dtc_other_treatment_text"]').val(saved.otherTreatmentText || "");
+            $body.find('input[name="dtc_item1_initials"]').val(saved.item1Initials || "");
+            $body.find('input[name="dtc_item2_mark"]').prop("checked", !!saved.item2Mark);
+            $body.find('input[name="dtc_item2_initials"]').val(saved.item2Initials || "");
+            $body.find('input[name="dtc_item3_mark"]').prop("checked", !!saved.item3Mark);
+            $body.find('input[name="dtc_removal_teeth"]').val(saved.removalTeeth || "");
+            $body.find('input[name="dtc_item3_initials"]').val(saved.item3Initials || "");
+            $body.find('input[name="dtc_item4_mark"]').prop("checked", !!saved.item4Mark);
+            $body.find('input[name="dtc_item4_initials"]').val(saved.item4Initials || "");
+            $body.find('input[name="dtc_item5_mark"]').prop("checked", !!saved.item5Mark);
+            $body.find('input[name="dtc_item5_initials"]').val(saved.item5Initials || "");
+            $body.find('input[name="dtc_item6_mark"]').prop("checked", !!saved.item6Mark);
+            $body.find('textarea[name="dtc_other_situation"]').val(saved.otherSituation || "");
+            $body.find('input[name="dtc_item6_initials"]').val(saved.item6Initials || "");
+            restoreSignaturePad($card, SIG_DTC_PREFIX, saved.signatureFileName, saved.isSigned);
+        }
+
         function collectCheckedIds(selector) {
             const ids = [];
             $(selector).each(function () {
@@ -1369,14 +1615,74 @@
 
         function setFormSignedStatus($card, isSigned) {
             const $status = $card.find(".tcn-form-status").first();
-            if (!$status.length) {
+            if ($status.length) {
+                $status
+                    .toggleClass("tcn-form-status-signed", !!isSigned)
+                    .toggleClass("tcn-form-status-pending", !isSigned)
+                    .text(isSigned ? "Signed" : "Pending");
+            }
+            $card.attr("data-signed", isSigned ? "true" : "false");
+            updatePageStatusBadge();
+        }
+
+        function isDentistFormCardSigned($card) {
+            if (!$card || !$card.length) {
+                return false;
+            }
+            if ($card.attr("data-signed") === "true") {
+                return true;
+            }
+            const sigKey = $card.attr("data-signature-pad-id");
+            const pad = sigKey ? penPads[sigKey] : null;
+            return !!(pad && typeof pad.isEmpty === "function" && !pad.isEmpty());
+        }
+
+        function areIncludedFormsAllSigned() {
+            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
+            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+            const $oralCards = $("#tcnOralSurgeryFormsHost .tcn-dentist-form-card");
+            const $treatmentCards = $("#tcnDentalTreatmentFormsHost .tcn-dentist-form-card");
+            let hasIncludedForm = false;
+
+            if (includeOral) {
+                if ($oralCards.length === 0) {
+                    return false;
+                }
+                hasIncludedForm = true;
+                const allOralSigned = $oralCards.toArray().every(function (el) {
+                    return isDentistFormCardSigned($(el));
+                });
+                if (!allOralSigned) {
+                    return false;
+                }
+            }
+
+            if (includeTreatment) {
+                if ($treatmentCards.length === 0) {
+                    return false;
+                }
+                hasIncludedForm = true;
+                const allTreatmentSigned = $treatmentCards.toArray().every(function (el) {
+                    return isDentistFormCardSigned($(el));
+                });
+                if (!allTreatmentSigned) {
+                    return false;
+                }
+            }
+
+            return hasIncludedForm;
+        }
+
+        function updatePageStatusBadge() {
+            const $badge = $("#tcnPageStatusBadge");
+            if (!$badge.length) {
                 return;
             }
-            $status
-                .toggleClass("tcn-form-status-signed", !!isSigned)
-                .toggleClass("tcn-form-status-pending", !isSigned)
-                .text(isSigned ? "Signed" : "Pending");
-            $card.attr("data-signed", isSigned ? "true" : "false");
+            const completed = areIncludedFormsAllSigned();
+            $badge
+                .toggleClass("tcn-page-status-completed", completed)
+                .toggleClass("tcn-page-status-pending", !completed)
+                .text(completed ? "Completed" : "Pending");
         }
 
         function updateCardStatusFromSignature($card) {
@@ -1510,11 +1816,18 @@
                 applyFormFieldsLock(isSmModeActive);
                 updateCardStatusFromSignature($card);
                 setDentistFormVisibility($card, false);
+
+                if (config.signaturePadBase === "os_patient_signature") {
+                    applySavedOralForm($card, dentist.id);
+                } else {
+                    applySavedTreatmentForm($card, dentist.id);
+                }
             });
 
             const hasForms = dentists.length > 0;
             $empty.toggle(!hasForms);
             $list.toggle(hasForms);
+            updatePageStatusBadge();
         }
 
         function syncAllDentistForms() {
@@ -1530,13 +1843,176 @@
             });
         }
 
-        function buildFormSelectionPayload() {
+        function readNamedValue(name) {
+            const $el = $('[name="' + name + '"]').filter(":input").first();
+            if (!$el.length) {
+                return null;
+            }
+            if ($el.is(":checkbox")) {
+                return $el.is(":checked") ? ($el.val() || true) : null;
+            }
+            return $el.val();
+        }
+
+        function collectQuestionnairePayload() {
+            const tobaccoUseDetails = [];
+            $('[name^="TobaccoUseDetails["][name$="].Type"]').each(function () {
+                const name = $(this).attr("name") || "";
+                const match = name.match(/TobaccoUseDetails\[(\d+)\]\.Type/);
+                if (!match) {
+                    return;
+                }
+                const i = match[1];
+                tobaccoUseDetails.push({
+                    type: $(this).val() || "",
+                    used: $('select[name="TobaccoUseDetails[' + i + '].Used"]').val() || "No",
+                    timesPerDay: $('input[name="TobaccoUseDetails[' + i + '].TimesPerDay"]').val() || null,
+                    timesPerWeek: $('input[name="TobaccoUseDetails[' + i + '].TimesPerWeek"]').val() || null
+                });
+            });
+
+            const applicableHealthConditions = [];
+            $('input[name="ApplicableHealthConditions"]:checked').each(function () {
+                applicableHealthConditions.push($(this).val());
+            });
+
+            const healthConditionDetails = [];
+            $('[name^="HealthConditionDetails["][name$="].Condition"]').each(function () {
+                const name = $(this).attr("name") || "";
+                const match = name.match(/HealthConditionDetails\[(\d+)\]\.Condition/);
+                if (!match) {
+                    return;
+                }
+                const i = match[1];
+                const condition = ($(this).val() || "").toString();
+                const detail = $('textarea[name="HealthConditionDetails[' + i + '].Detail"]').val() || null;
+                const isSelected = applicableHealthConditions.indexOf(condition) >= 0;
+                healthConditionDetails.push({
+                    condition: condition,
+                    isSelected: isSelected,
+                    detail: detail
+                });
+            });
+
+            return {
+                healthcareProviderCareLast2Years: readNamedValue("HealthcareProviderCareLast2Years"),
+                seriousIllnessOperationHospitalization: readNamedValue("SeriousIllnessOperationHospitalization"),
+                seriousIllnessOperationHospitalizationDetail: readNamedValue("SeriousIllnessOperationHospitalizationDetail"),
+                medicationFoodAllergy: readNamedValue("MedicationFoodAllergy"),
+                medicationFoodAllergyDetail: readNamedValue("MedicationFoodAllergyDetail"),
+                takingMedications: readNamedValue("TakingMedications"),
+                takingMedicationsDetail: readNamedValue("TakingMedicationsDetail"),
+                hepatitisOrJaundice: readNamedValue("HepatitisOrJaundice"),
+                healthChangeLastTwoYears: readNamedValue("HealthChangeLastTwoYears"),
+                useTobaccoOrVape: readNamedValue("UseTobaccoOrVape"),
+                tobaccoUseDetails: tobaccoUseDetails,
+                drinkAlcoholicBeverages: readNamedValue("DrinkAlcoholicBeverages"),
+                alcoholicBeveragesFrequencyQuantity: readNamedValue("AlcoholicBeveragesFrequencyQuantity"),
+                sickFromDentalTreatment: readNamedValue("SickFromDentalTreatment"),
+                bleederOrExcessiveBleeding: readNamedValue("BleederOrExcessiveBleeding"),
+                shortOfBreathOneFlightStairs: readNamedValue("ShortOfBreathOneFlightStairs"),
+                areYouPregnant: readNamedValue("AreYouPregnant"),
+                pregnancyApproval: readNamedValue("PregnancyApproval"),
+                applicableHealthConditions: applicableHealthConditions,
+                healthConditionDetails: healthConditionDetails
+            };
+        }
+
+        function collectOralSurgeryFormsClean() {
+            const forms = [];
+            $("#tcnOralSurgeryFormsHost .tcn-dentist-form-card").each(function () {
+                const $card = $(this);
+                const dentistId = parseInt($card.attr("data-dentist-id"), 10);
+                if (isNaN(dentistId) || dentistId <= 0) {
+                    return;
+                }
+                const sigKey = $card.attr("data-signature-pad-id");
+                const pad = sigKey ? penPads[sigKey] : null;
+                const hasInk = pad && typeof pad.isEmpty === "function" ? !pad.isEmpty() : false;
+                const saved = getSavedOralForm(dentistId);
+                const title = ($card.find(".tcn-dentist-form-toggle-title").text() || "").trim();
+                let isSigned = false;
+                if (hasInk) {
+                    isSigned = true;
+                } else if (pad && typeof pad.isEmpty === "function" && pad.isEmpty()) {
+                    isSigned = false;
+                } else {
+                    isSigned = !!(saved && saved.isSigned && saved.signatureFileName);
+                }
+
+                forms.push({
+                    eventStaffId: dentistId,
+                    dentistName: title.replace(/^Oral Surgery Form for\s+/i, "").trim(),
+                    procedureText: ($card.find(".tcn-os-procedure-text").val() || "").toString().trim(),
+                    signatureDataUrl: hasInk && pad && typeof pad.toDataURL === "function" ? pad.toDataURL() : "",
+                    signatureFileName: saved ? (saved.signatureFileName || null) : null,
+                    isSigned: isSigned
+                });
+            });
+            return forms;
+        }
+
+        function collectDentalTreatmentFormsClean() {
+            const forms = [];
+            $("#tcnDentalTreatmentFormsHost .tcn-dentist-form-card").each(function () {
+                const $card = $(this);
+                const dentistId = parseInt($card.attr("data-dentist-id"), 10);
+                if (isNaN(dentistId) || dentistId <= 0) {
+                    return;
+                }
+                const $body = $card.find(".tcn-dtc-form-body");
+                const sigKey = $card.attr("data-signature-pad-id");
+                const pad = sigKey ? penPads[sigKey] : null;
+                const hasInk = pad && typeof pad.isEmpty === "function" ? !pad.isEmpty() : false;
+                const saved = getSavedTreatmentForm(dentistId);
+                const title = ($card.find(".tcn-dentist-form-toggle-title").text() || "").trim();
+                let isSigned = false;
+                if (hasInk) {
+                    isSigned = true;
+                } else if (pad && typeof pad.isEmpty === "function" && pad.isEmpty()) {
+                    isSigned = false;
+                } else {
+                    isSigned = !!(saved && saved.isSigned && saved.signatureFileName);
+                }
+
+                forms.push({
+                    eventStaffId: dentistId,
+                    dentistName: title.replace(/^Dental Treatment Consent for\s+/i, "").trim(),
+                    item1Mark: $body.find('input[name="dtc_item1_mark"]').is(":checked"),
+                    fillings: $body.find('input[name="dtc_fillings"]').is(":checked"),
+                    crowns: $body.find('input[name="dtc_crowns"]').is(":checked"),
+                    extractions: $body.find('input[name="dtc_extractions"]').is(":checked"),
+                    impacted: $body.find('input[name="dtc_impacted"]').is(":checked"),
+                    rootCanal: $body.find('input[name="dtc_root_canal"]').is(":checked"),
+                    fmd: $body.find('input[name="dtc_fmd"]').is(":checked"),
+                    otherTreatment: $body.find('input[name="dtc_other_treatment"]').is(":checked"),
+                    otherTreatmentText: ($body.find('textarea[name="dtc_other_treatment_text"]').val() || "").toString().trim(),
+                    item1Initials: ($body.find('input[name="dtc_item1_initials"]').val() || "").toString().trim(),
+                    item2Mark: $body.find('input[name="dtc_item2_mark"]').is(":checked"),
+                    item2Initials: ($body.find('input[name="dtc_item2_initials"]').val() || "").toString().trim(),
+                    item3Mark: $body.find('input[name="dtc_item3_mark"]').is(":checked"),
+                    removalTeeth: ($body.find('input[name="dtc_removal_teeth"]').val() || "").toString().trim(),
+                    item3Initials: ($body.find('input[name="dtc_item3_initials"]').val() || "").toString().trim(),
+                    item4Mark: $body.find('input[name="dtc_item4_mark"]').is(":checked"),
+                    item4Initials: ($body.find('input[name="dtc_item4_initials"]').val() || "").toString().trim(),
+                    item5Mark: $body.find('input[name="dtc_item5_mark"]').is(":checked"),
+                    item5Initials: ($body.find('input[name="dtc_item5_initials"]').val() || "").toString().trim(),
+                    item6Mark: $body.find('input[name="dtc_item6_mark"]').is(":checked"),
+                    otherSituation: ($body.find('textarea[name="dtc_other_situation"]').val() || "").toString().trim(),
+                    item6Initials: ($body.find('input[name="dtc_item6_initials"]').val() || "").toString().trim(),
+                    signatureDataUrl: hasInk && pad && typeof pad.toDataURL === "function" ? pad.toDataURL() : "",
+                    signatureFileName: saved ? (saved.signatureFileName || null) : null,
+                    isSigned: isSigned
+                });
+            });
+            return forms;
+        }
+
+        function buildStationSavePayload() {
             const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
             const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
-            const firstProcedure = includeOral
-                ? (($("#tcnOralSurgeryFormsHost .tcn-os-procedure-text").first().val() || "").toString().trim())
-                : "";
-            return {
+            const questionnaire = collectQuestionnairePayload();
+            return Object.assign({
                 serviceMembersChildId: SM_CHILD_ID,
                 includeOralSurgeryForm: includeOral,
                 includeDentalTreatmentConsent: includeTreatment,
@@ -1546,8 +2022,9 @@
                 dentalTreatmentDentistEventStaffIds: includeTreatment
                     ? collectCheckedIds('input[name="tcnDentalTreatmentDentist"]:checked')
                     : [],
-                oralSurgeryProcedureText: firstProcedure
-            };
+                oralSurgeryForms: includeOral ? collectOralSurgeryFormsClean() : [],
+                dentalTreatmentForms: includeTreatment ? collectDentalTreatmentFormsClean() : []
+            }, questionnaire);
         }
 
         function syncFormSelectionUi() {
@@ -1567,6 +2044,7 @@
             }
 
             syncAllDentistForms();
+            updatePageStatusBadge();
 
             const oralActive = $("#oralSurgery-tab").hasClass("active");
             const treatmentActive = $("#dentalTreatmentConsent-tab").hasClass("active");
@@ -1580,34 +2058,92 @@
             }
         }
 
-        async function saveFormSelection(options) {
-            const opts = options || {};
-            const payload = buildFormSelectionPayload();
+        async function saveStation() {
+            if (!validateQuestionnaireBeforeSave()) {
+                return { success: false };
+            }
+
+            const payload = buildStationSavePayload();
 
             if (payload.includeOralSurgeryForm && payload.oralSurgeryDentistEventStaffIds.length === 0) {
-                if (!opts.silent) {
-                    Swal.fire("Selection required", "Select at least one Oral Surgery dentist.", "warning");
-                }
-                return { success: false, message: "Select at least one Oral Surgery dentist." };
+                Swal.fire("Selection required", "Select at least one Oral Surgery dentist.", "warning");
+                return { success: false };
             }
 
             if (payload.includeDentalTreatmentConsent && payload.dentalTreatmentDentistEventStaffIds.length === 0) {
-                if (!opts.silent) {
-                    Swal.fire("Selection required", "Select at least one Treatment dentist.", "warning");
-                }
-                return { success: false, message: "Select at least one Treatment dentist." };
+                Swal.fire("Selection required", "Select at least one Treatment dentist.", "warning");
+                return { success: false };
             }
 
-            const response = await fetch("@Url.Action("SaveFormSelection", "TreatmentConsent")", {
+            const response = await fetch("@Url.Action("SaveStation", "TreatmentConsent")", {
                 method: "POST",
                 headers: getAntiforgeryHeaders(),
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
-            if (!data.success && !opts.silent) {
-                Swal.fire("Unable to save", data.message || "Please try again.", "error");
+            if (!data.success) {
+                Swal.fire(data.title || "Unable to save", data.message || "Please try again.", "error");
             }
             return data;
+        }
+
+        function showQuestionnaireTab() {
+            const questionnaireTab = document.getElementById("da5570-tab");
+            if (!questionnaireTab) {
+                return;
+            }
+            if (window.bootstrap && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(questionnaireTab).show();
+            } else {
+                $(questionnaireTab).tab("show");
+            }
+        }
+
+        function getFirstInvalidQuestionnaireField() {
+            const $scope = $("#da5570Pane");
+            if (!$scope.length) {
+                return null;
+            }
+
+            const candidates = $scope.find("input, select, textarea").filter(function () {
+                const el = this;
+                if (!el || el.disabled || el.type === "hidden" || el.type === "checkbox" || el.type === "radio") {
+                    return false;
+                }
+                if (!el.required) {
+                    return false;
+                }
+                if ($(el).closest(".questionnaire-detail, .tobacco-type-detail, #pregnancyApprovalSection, #tobaccoDetailsSection").is(":hidden")) {
+                    return false;
+                }
+                return !el.checkValidity();
+            });
+
+            return candidates.length ? candidates.get(0) : null;
+        }
+
+        function validateQuestionnaireBeforeSave() {
+            initQuestionnaireToggles();
+            if (typeof togglePregnancyFlow === "function") {
+                togglePregnancyFlow();
+            }
+
+            const invalid = getFirstInvalidQuestionnaireField();
+            if (!invalid) {
+                return true;
+            }
+
+            showQuestionnaireTab();
+            window.setTimeout(function () {
+                try {
+                    invalid.focus({ preventScroll: false });
+                } catch (e) { /* ignore */ }
+                if (typeof invalid.reportValidity === "function") {
+                    invalid.reportValidity();
+                }
+            }, 60);
+
+            return false;
         }
 
         $("#tcnIncludeOralSurgery, #tcnIncludeDentalTreatment").on("change", syncFormSelectionUi);
@@ -1629,24 +2165,29 @@
             updateCardStatusFromSignature($(card));
         });
 
-        $("#tcnSaveFormSelectionBtn").on("click", async function () {
+        $("#tcnSaveStationBtn").on("click", async function () {
             try {
-                const data = await saveFormSelection();
+                const data = await saveStation();
                 if (data && data.success) {
-                    syncFormSelectionUi();
-                    Swal.fire({
-                        icon: "success",
-                        title: "Saved",
-                        text: data.message || "Form selection saved.",
-                        confirmButtonColor: "rgba(80, 90, 201, 1)"
-                    });
+                    window.location.href = data.redirectUrl
+                        || "@Url.Action("Index", "TreatmentConsent")";
                 }
             } catch (e) {
-                Swal.fire("Error", "Unable to save form selection.", "error");
+                Swal.fire("Error", "Unable to save Treatment Consent.", "error");
+            }
+        });
+
+        $("a.btn-back-confirm").on("click", async function (e) {
+            e.preventDefault();
+            const url = $(this).attr("href");
+            const confirmed = await showYesNoModal("Are you sure you want to go back to main screen without saving changes?");
+            if (confirmed) {
+                window.location.href = url;
             }
         });
 
         syncFormSelectionUi();
+        updatePageStatusBadge();
 
         (function wireDentalTreatmentInitialsInputs() {
             $(document).on("input", ".tcn-initials-input", function () {
@@ -1774,12 +2315,6 @@
             }
 
             try {
-                const saveResult = await saveFormSelection();
-                if (!saveResult || !saveResult.success) {
-                    return;
-                }
-                syncFormSelectionUi();
-
                 const response = await fetch("@Url.Action("StartSmMode", "TreatmentConsent")", {
                     method: "POST",
                     headers: getAntiforgeryHeaders(),

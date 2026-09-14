@@ -131,9 +131,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
-                if (extension != ".jpg" && extension != ".jpeg")
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
                 {
-                    return new FileUploadResult { Success = false, Message = "Only JPEG/JPG images are allowed" };
+                    return new FileUploadResult { Success = false, Message = "Only JPEG/JPG/PNG images are allowed" };
                 }
 
                 var prefixFolder = Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results");
@@ -141,7 +141,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 Directory.CreateDirectory(stagingFolder);
 
-                var stagingFileName = $"{barcode}_{fileKey}_{Guid.NewGuid():N}.jpg";
+                var stagingExtension = extension == ".png" ? ".png" : ".jpg";
+                var stagingFileName = $"{barcode}_{fileKey}_{Guid.NewGuid():N}{stagingExtension}";
                 var fullPath = Path.Combine(stagingFolder, stagingFileName);
 
                 await using (var stream = new FileStream(fullPath, FileMode.CreateNew))
@@ -297,7 +298,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var bytes = System.IO.File.ReadAllBytes(fullPath);
 
                 var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
-                var contentType = extension is ".jpg" or ".jpeg" ? "image/jpeg" : "application/pdf";
+                var contentType = extension is ".jpg" or ".jpeg"
+                    ? "image/jpeg"
+                    : extension is ".png"
+                        ? "image/png"
+                        : "application/pdf";
 
                 _logger.LogInformation("{Class}.{Method} - File retrieved successfully | FileName: {FileName}",
                     CLASSNAME, METHOD, fileName);

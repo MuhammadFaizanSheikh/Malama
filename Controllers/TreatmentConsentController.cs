@@ -1,3 +1,4 @@
+using ExcelFilesCompiler.Controllers.Services;
 using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
@@ -10,6 +11,7 @@ namespace ExcelFilesCompiler.Controllers
     public class TreatmentConsentController : Controller
     {
         private readonly ITreatmentConsentService _treatmentConsentService;
+        private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<TreatmentConsentController> _logger;
         private const string CLASSNAME = nameof(TreatmentConsentController);
@@ -17,10 +19,12 @@ namespace ExcelFilesCompiler.Controllers
         public TreatmentConsentController(
             ILogger<TreatmentConsentController> logger,
             ITreatmentConsentService treatmentConsentService,
+            IFileUploadDownloadService fileService,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _treatmentConsentService = treatmentConsentService;
+            _fileService = fileService;
             _userManager = userManager;
         }
 
@@ -134,35 +138,83 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RoleAttributeAuthorizeFromConfig("TreatmentConsent_View")]
-        public async Task<IActionResult> SaveFormSelection([FromBody] TreatmentConsentSaveFormSelectionRequest request)
+        public async Task<IActionResult> SaveStation([FromBody] TreatmentConsentStationSaveDto dto)
         {
-            const string methodName = nameof(SaveFormSelection);
+            const string methodName = nameof(SaveStation);
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
             try
             {
                 if (TreatmentConsentSmModeHelper.IsActive(HttpContext.Session))
                 {
-                    return Json(TreatmentConsentSaveFormSelectionResponse.Fail(
-                        "Unlock service member mode before changing form selection."));
+                    return Json(TreatmentConsentStationSaveResult.Fail(
+                        "Locked",
+                        "Unlock service member mode before saving."));
                 }
 
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    return Json(TreatmentConsentSaveFormSelectionResponse.Fail("Please login and try again."));
+                    return Json(TreatmentConsentStationSaveResult.Fail("Unauthorized", "Please login and try again."));
                 }
 
-                var result = await _treatmentConsentService.SaveFormSelectionAsync(
-                    request,
+                var result = await _treatmentConsentService.SaveStationAsync(
+                    dto,
                     user.UserName ?? user.Email ?? user.Id);
+
+                if (result.Success)
+                {
+                    result.RedirectUrl = Url.Action(nameof(Index), "TreatmentConsent");
+                    TempData["ResponseStatus"] = "success";
+                    TempData["ResponseTitle"] = result.Title;
+                    TempData["ResponseMessage"] = result.Message;
+                }
 
                 return Json(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception while saving form selection", CLASSNAME, methodName);
-                return Json(TreatmentConsentSaveFormSelectionResponse.Fail("Unable to save form selection."));
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Exception while saving station", CLASSNAME, methodName);
+                return Json(TreatmentConsentStationSaveResult.Fail("Error", "Unable to save Treatment Consent."));
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentConsent_View")]
+        public IActionResult DownloadSignature(string prefix, string fileName)
+        {
+            const string methodName = nameof(DownloadSignature);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(fileName))
+                {
+                    return NotFound();
+                }
+
+                var allowed = prefix is TreatmentConsentFileSaveCoordinator.OralSurgeryPrefix
+                    or TreatmentConsentFileSaveCoordinator.DentalTreatmentPrefix;
+                if (!allowed)
+                {
+                    return BadRequest("Invalid signature prefix.");
+                }
+
+                var file = _fileService.GetFile(
+                    TreatmentConsentFileSaveCoordinator.StationName,
+                    prefix,
+                    fileName);
+                if (file == null || file.Bytes == null)
+                {
+                    return NotFound();
+                }
+
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{file.FileName}\"";
+                return File(file.Bytes, file.ContentType ?? "image/png");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ClassName}, {MethodName}, Failed for Prefix={Prefix}, File={File}",
+                    CLASSNAME, methodName, prefix, fileName);
+                return NotFound();
             }
         }
 
