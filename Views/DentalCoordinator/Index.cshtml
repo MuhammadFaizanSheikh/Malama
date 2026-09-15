@@ -282,6 +282,11 @@
         color: #b45309;
     }
 
+    .dco-status.is-completed {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+    }
+
     .dco-page .dataTables_wrapper .dataTables_filter input,
     .dco-page .dataTables_wrapper .dataTables_length select {
         border-radius: 8px;
@@ -404,13 +409,20 @@
                             <th>Sex</th>
                             <th>DOB</th>
                             <th>Barcode</th>
-                            <th>Checked In By</th>
-                            <th>Checked In At</th>
+                            <th>Completed By</th>
+                            <th>Completed On</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var c in Model)
                         {
+                            var treatment = c.DentalTreatmentRecord;
+                            var rowStatus = string.IsNullOrWhiteSpace(treatment?.Status)
+                                ? "Pending"
+                                : treatment!.Status;
+                            var statusCompleted = string.Equals(rowStatus, "Completed", StringComparison.OrdinalIgnoreCase);
+                            var completedBy = treatment?.UpdatedBy ?? treatment?.AddedBy;
+                            var completedOn = treatment?.UpdatedOn ?? (treatment != null ? treatment.AddedOn : (DateTime?)null);
                             <tr>
                                 <td>
                                     <a asp-action="DentalCoordinatorStation"
@@ -422,7 +434,7 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="dco-status is-pending">Pending</span>
+                                    <span class="dco-status @(statusCompleted ? "is-completed" : "is-pending")">@rowStatus</span>
                                 </td>
                                 <td>@c.SmId</td>
                                 <td>@c.Drc</td>
@@ -432,8 +444,8 @@
                                 <td>@c.Sex</td>
                                 <td>@c.Dob</td>
                                 <td>@c.Barcode</td>
-                                <td>@c.CheckInBy</td>
-                                <td>@c.CheckInTime</td>
+                                <td>@completedBy</td>
+                                <td>@(completedOn?.ToString("MM/dd/yyyy hh:mm tt"))</td>
                             </tr>
                         }
                     </tbody>
@@ -474,7 +486,7 @@
             var contractsTable = $('#contractsTable').DataTable();
             contractsTable.columns().search('');
 
-            // Columns: 0 Action, 1 Status, 2 SM ID, 3 DRC, 4 FULL NAME, 5 Last 4, 6 DOD, 7 Sex, 8 DOB, 9 Barcode, 10 CheckInBy, 11 CheckInTime
+            // Columns: 0 Action, 1 Status, 2 SM ID, 3 DRC, 4 FULL NAME, 5 Last 4, 6 DOD, 7 Sex, 8 DOB, 9 Barcode, 10 CompletedBy, 11 CompletedOn
             if (barcode) {
                 contractsTable.column(9).search(barcode, true, false, true);
             }

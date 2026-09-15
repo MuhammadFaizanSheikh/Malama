@@ -88,8 +88,7 @@ namespace Malama.Utilities
             ["DentalExams_Save"] = new List<(string Role, string Attribute)>
         {
             ("DE- Dentist", "Exam"),
-            ("DE-Dental Assistant", "Exam Assist"),
-            ("Event Manager", null)
+            ("DE-Dental Assistant", "Exam Assist")
         },
 
             // Dental Treatment

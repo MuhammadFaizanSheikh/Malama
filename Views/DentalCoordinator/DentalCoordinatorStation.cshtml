@@ -514,12 +514,59 @@
         font-weight: 600;
     }
 
+    .dco-page-save-bar {
+        margin-top: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.85rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--dco-border);
+        margin-bottom: 1.5rem;
+    }
+
+    .dco-page-status-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-width: 0;
+    }
+
+    .dco-page-status-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--dco-muted);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .dco-page-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 104px;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .dco-page-status-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dco-page-status-completed {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+    }
+
     .dco-footer-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
-        margin-top: 0.5rem;
-        margin-bottom: 1.5rem;
     }
 
     @@media (max-width: 768px) {
@@ -1151,37 +1198,29 @@
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <label class="form-label" for="TreatmentCoordinatorOverallStatus">Overall Status</label>
-                <select id="TreatmentCoordinatorOverallStatus" class="form-select read-only-style" disabled>
-                    @if (treatmentCoordinatorOverallStatus == AppConstants.Status.Completed)
-                    {
-                        <option value="@AppConstants.Status.Pending">Pending</option>
-                        <option value="@AppConstants.Status.Completed" selected="selected">Completed</option>
-                    }
-                    else
-                    {
-                        <option value="@AppConstants.Status.Pending" selected="selected">Pending</option>
-                        <option value="@AppConstants.Status.Completed">Completed</option>
-                    }
-                </select>
-                <input type="hidden"
-                       name="DentalTreatmentStatus"
-                       id="TreatmentCoordinatorOverallStatusHidden"
-                       value="@treatmentCoordinatorOverallStatus" />
-            </div>
-        </div>
+        <input type="hidden"
+               name="DentalTreatmentStatus"
+               id="TreatmentCoordinatorOverallStatusHidden"
+               value="@treatmentCoordinatorOverallStatus" />
         </div>
 
-        @* Temporarily hidden for client demo until save/update handling is completed. *@
-        <div class="dco-footer-actions" style="display:none;">
-            <button type="submit" class="btn btn-general btn-lg" @(coordinatorPageReadOnly ? "disabled" : null)>
-                <i class="fas fa-check-circle" aria-hidden="true"></i> Save
-            </button>
-            <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
-            </a>
+        <div class="dco-page-save-bar">
+            <div class="dco-page-status-wrap">
+                <span class="dco-page-status-label">Status</span>
+                <span id="TreatmentCoordinatorOverallStatusBadge"
+                      class="dco-page-status @(string.Equals(treatmentCoordinatorOverallStatus, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase) ? "dco-page-status-completed" : "dco-page-status-pending")"
+                      role="status"
+                      aria-live="polite">@treatmentCoordinatorOverallStatus</span>
+            </div>
+            @* Temporarily hidden for client demo until save/update handling is completed. *@
+            <div class="dco-footer-actions" style="display:none;">
+                <button type="submit" class="btn btn-general btn-lg" @(coordinatorPageReadOnly ? "disabled" : null)>
+                    <i class="fas fa-check-circle" aria-hidden="true"></i> Save
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+                </a>
+            </div>
         </div>
     </form>
 </section>
@@ -1624,9 +1663,13 @@
         const status = isDenClassCompleteForCoordinator() && areAllCoordinatorFindingsAppointed()
             ? "Completed"
             : "Pending";
+        const completed = status === "Completed";
 
-        $("#TreatmentCoordinatorOverallStatus").val(status);
         $("#TreatmentCoordinatorOverallStatusHidden").val(status);
+        $("#TreatmentCoordinatorOverallStatusBadge")
+            .text(status)
+            .toggleClass("dco-page-status-completed", completed)
+            .toggleClass("dco-page-status-pending", !completed);
     }
 
     window.updateTreatmentCoordinatorOverallStatus = updateTreatmentCoordinatorOverallStatus;
