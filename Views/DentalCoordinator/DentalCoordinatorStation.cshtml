@@ -857,7 +857,8 @@
                 @{
                     var xrayFormViewData = new ViewDataDictionary<DentalXRayStation>(ViewData, xRayStation)
                     {
-                        ["ShowPanoRequirementNotice"] = false
+                        ["ShowPanoRequirementNotice"] = false,
+                        ["ShowXRayStatus"] = false
                     };
                 }
                 @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayStationForm.cshtml", xRayStation, xrayFormViewData)

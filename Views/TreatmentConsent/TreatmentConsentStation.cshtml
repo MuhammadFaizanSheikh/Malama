@@ -449,13 +449,14 @@
         resize: vertical;
     }
 
-    .tcn-station .tcn-teeth-digits-input {
+    .tcn-station .tcn-teeth-input {
         width: 4.5rem;
         max-width: 4.5rem;
         text-align: center;
         font-weight: 700;
         letter-spacing: 0.08em;
         padding: 0.35rem 0.25rem;
+        text-transform: uppercase;
     }
 
     .tcn-station .tcn-consent-letter-list {
@@ -1600,6 +1601,7 @@
             $body.find('textarea[name="dtc_other_situation"]').val(saved.otherSituation || "");
             $body.find('input[name="dtc_item6_initials"]').val(saved.item6Initials || "");
             restoreSignaturePad($card, SIG_DTC_PREFIX, saved.signatureFileName, saved.isSigned);
+            syncDentalTreatmentItemRequiredFields($card);
         }
 
         function collectCheckedIds(selector) {
@@ -1819,8 +1821,10 @@
 
                 if (config.signaturePadBase === "os_patient_signature") {
                     applySavedOralForm($card, dentist.id);
+                    syncOralSurgeryRequiredFields($card);
                 } else {
                     applySavedTreatmentForm($card, dentist.id);
+                    syncDentalTreatmentItemRequiredFields($card);
                 }
             });
 
@@ -2044,6 +2048,7 @@
             }
 
             syncAllDentistForms();
+            syncOralSurgeryRequiredFields();
             updatePageStatusBadge();
 
             const oralActive = $("#oralSurgery-tab").hasClass("active");
@@ -2060,6 +2065,14 @@
 
         async function saveStation() {
             if (!validateQuestionnaireBeforeSave()) {
+                return { success: false };
+            }
+
+            if (!validateDentalTreatmentConsentBeforeSave()) {
+                return { success: false };
+            }
+
+            if (!validateOralSurgeryConsentBeforeSave()) {
                 return { success: false };
             }
 
@@ -2097,6 +2110,204 @@
             } else {
                 $(questionnaireTab).tab("show");
             }
+        }
+
+        function showDentalTreatmentConsentTab() {
+            const treatmentTab = document.getElementById("dentalTreatmentConsent-tab");
+            if (!treatmentTab) {
+                return;
+            }
+            if (window.bootstrap && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(treatmentTab).show();
+            } else {
+                $(treatmentTab).tab("show");
+            }
+        }
+
+        function showOralSurgeryTab() {
+            const oralTab = document.getElementById("oralSurgery-tab");
+            if (!oralTab) {
+                return;
+            }
+            if (window.bootstrap && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(oralTab).show();
+            } else {
+                $(oralTab).tab("show");
+            }
+        }
+
+        function syncOralSurgeryRequiredFields($scope) {
+            const $root = $scope && $scope.length ? $scope : $("#tcnOralSurgeryFormsHost");
+            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
+            $root.find(".tcn-os-procedure-text").each(function () {
+                this.required = includeOral;
+                if (!includeOral) {
+                    $(this).removeAttr("aria-invalid");
+                }
+            });
+        }
+
+        function getFirstInvalidOralSurgeryConsentField() {
+            if (!$("#tcnIncludeOralSurgery").is(":checked")) {
+                return null;
+            }
+
+            syncOralSurgeryRequiredFields();
+
+            const $cards = $("#tcnOralSurgeryFormsHost .tcn-dentist-form-card");
+            if (!$cards.length) {
+                return null;
+            }
+
+            let invalid = null;
+            $cards.each(function () {
+                if (invalid) {
+                    return false;
+                }
+                const $card = $(this);
+                const fields = $card.find(".tcn-os-procedure-text").filter(function () {
+                    return this.required && !this.disabled && !this.checkValidity();
+                });
+                if (fields.length) {
+                    invalid = {
+                        card: $card,
+                        field: fields.get(0)
+                    };
+                    return false;
+                }
+            });
+
+            return invalid;
+        }
+
+        function validateOralSurgeryConsentBeforeSave() {
+            const invalid = getFirstInvalidOralSurgeryConsentField();
+            if (!invalid) {
+                return true;
+            }
+
+            showOralSurgeryTab();
+            setDentistFormVisibility(invalid.card, true);
+            window.setTimeout(function () {
+                try {
+                    invalid.field.focus({ preventScroll: false });
+                } catch (e) { /* ignore */ }
+                if (typeof invalid.field.reportValidity === "function") {
+                    invalid.field.reportValidity();
+                }
+            }, 80);
+
+            return false;
+        }
+
+        function syncDentalTreatmentItemRequiredFields($scope) {
+            const $root = $scope && $scope.length ? $scope : $("#tcnDentalTreatmentFormsHost");
+            $root.find(".tcn-consent-item").each(function () {
+                const $item = $(this);
+                const $mark = $item.find('input[name^="dtc_item"][name$="_mark"]').first();
+                const isChecked = $mark.is(":checked");
+                const markName = ($mark.attr("name") || "").toString();
+                const $initials = $item.find(".tcn-initials-input").first();
+                const $teeth = $item.find(".tcn-teeth-input").first();
+                const $otherSituation = $item.find('textarea[name="dtc_other_situation"]').first();
+                const $treatmentChecks = $item.find(".tcn-treatment-checks input[type='checkbox']");
+
+                if ($initials.length) {
+                    $initials.prop("required", isChecked);
+                    if (!isChecked) {
+                        $initials.removeAttr("aria-invalid");
+                    }
+                }
+
+                if ($teeth.length) {
+                    $teeth.prop("required", isChecked);
+                    if (!isChecked) {
+                        $teeth.removeAttr("aria-invalid");
+                    }
+                }
+
+                if ($otherSituation.length) {
+                    $otherSituation.prop("required", isChecked);
+                    if (!isChecked) {
+                        $otherSituation.removeAttr("aria-invalid");
+                    }
+                }
+
+                if ($treatmentChecks.length) {
+                    const firstCheck = $treatmentChecks.get(0);
+                    if (firstCheck) {
+                        if (isChecked && markName === "dtc_item1_mark") {
+                            const anyTreatmentSelected = $treatmentChecks.is(":checked");
+                            firstCheck.setCustomValidity(
+                                anyTreatmentSelected ? "" : "Select at least one treatment."
+                            );
+                        } else {
+                            firstCheck.setCustomValidity("");
+                        }
+                    }
+                }
+            });
+        }
+
+        function getFirstInvalidDentalTreatmentConsentField() {
+            if (!$("#tcnIncludeDentalTreatment").is(":checked")) {
+                return null;
+            }
+
+            syncDentalTreatmentItemRequiredFields();
+
+            const $cards = $("#tcnDentalTreatmentFormsHost .tcn-dentist-form-card");
+            if (!$cards.length) {
+                return null;
+            }
+
+            let invalid = null;
+            $cards.each(function () {
+                if (invalid) {
+                    return false;
+                }
+                const $card = $(this);
+                const fields = $card.find(
+                    ".tcn-initials-input, .tcn-teeth-input, textarea[name='dtc_other_situation'], .tcn-treatment-checks input[type='checkbox']"
+                ).filter(function () {
+                    if (this.disabled) {
+                        return false;
+                    }
+                    if (this.type === "checkbox") {
+                        return this.validationMessage !== "";
+                    }
+                    return this.required && !this.checkValidity();
+                });
+                if (fields.length) {
+                    invalid = {
+                        card: $card,
+                        field: fields.get(0)
+                    };
+                    return false;
+                }
+            });
+
+            return invalid;
+        }
+
+        function validateDentalTreatmentConsentBeforeSave() {
+            const invalid = getFirstInvalidDentalTreatmentConsentField();
+            if (!invalid) {
+                return true;
+            }
+
+            showDentalTreatmentConsentTab();
+            setDentistFormVisibility(invalid.card, true);
+            window.setTimeout(function () {
+                try {
+                    invalid.field.focus({ preventScroll: false });
+                } catch (e) { /* ignore */ }
+                if (typeof invalid.field.reportValidity === "function") {
+                    invalid.field.reportValidity();
+                }
+            }, 80);
+
+            return false;
         }
 
         function getFirstInvalidQuestionnaireField() {
@@ -2196,10 +2407,38 @@
             });
         })();
 
-        (function wireDentalTreatmentTeethDigitsInput() {
-            $(document).on("input", ".tcn-teeth-digits-input", function () {
-                const raw = (this.value || "").toString().replace(/\D/g, "");
-                this.value = raw.slice(0, 2);
+        $(document).on("change", '#tcnDentalTreatmentFormsHost input[name^="dtc_item"][name$="_mark"]', function () {
+            syncDentalTreatmentItemRequiredFields($(this).closest(".tcn-dentist-form-card"));
+        });
+
+        $(document).on("change", "#tcnDentalTreatmentFormsHost .tcn-treatment-checks input[type='checkbox']", function () {
+            syncDentalTreatmentItemRequiredFields($(this).closest(".tcn-dentist-form-card"));
+        });
+
+        (function wireDentalTreatmentTeethInput() {
+            function normalizeTeethValue(raw) {
+                const value = (raw || "").toString().toUpperCase();
+                if (!value) {
+                    return "";
+                }
+
+                const first = value.charAt(0);
+                if (/[A-T]/.test(first)) {
+                    return first;
+                }
+
+                let digits = value.replace(/\D/g, "").slice(0, 2);
+                if (digits.length === 2) {
+                    const number = parseInt(digits, 10);
+                    if (number < 1 || number > 32) {
+                        digits = digits.slice(0, 1);
+                    }
+                }
+                return digits;
+            }
+
+            $(document).on("input", ".tcn-teeth-input", function () {
+                this.value = normalizeTeethValue(this.value);
             });
         })();
 
@@ -2300,6 +2539,18 @@
         }
 
         $("#tcnStartSmModeBtn").on("click", async function () {
+            if (!validateQuestionnaireBeforeSave()) {
+                return;
+            }
+
+            if (!validateDentalTreatmentConsentBeforeSave()) {
+                return;
+            }
+
+            if (!validateOralSurgeryConsentBeforeSave()) {
+                return;
+            }
+
             const confirm = await Swal.fire({
                 title: "Start service member mode?",
                 text: "Menu and other pages will lock. Hand the tablet to the service member after starting.",

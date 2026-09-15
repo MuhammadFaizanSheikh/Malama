@@ -9,6 +9,7 @@
     var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
     var panoNeeded = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
     var showPanoRequirementNotice = ViewData["ShowPanoRequirementNotice"] as bool? ?? true;
+    var showStatus = ViewData["ShowXRayStatus"] as bool? ?? true;
     var paImages = station.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
     if (!paImages.Any())
     {
@@ -263,16 +264,19 @@
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <select name="Status" id="Status" class="form-select read-only-style" disabled>
-                        <option value="Pending" selected="@(station.Status != "Completed")">Pending</option>
-                        <option value="Completed" selected="@(station.Status == "Completed")">Completed</option>
-                    </select>
-                    <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(station.Status) ? "Pending" : station.Status)" />
+            @if (showStatus)
+            {
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <select name="Status" id="Status" class="form-select read-only-style" disabled>
+                            <option value="Pending" selected="@(station.Status != "Completed")">Pending</option>
+                            <option value="Completed" selected="@(station.Status == "Completed")">Completed</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+            }
+            <input type="hidden" name="Status" id="StatusHidden" value="@(string.IsNullOrWhiteSpace(station.Status) ? "Pending" : station.Status)" />
 
             @if (showPanoRequirementNotice)
             {
