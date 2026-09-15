@@ -405,7 +405,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 Item2Mark = form.Item2Mark,
                 Item2Initials = NormalizeInitials(form.Item2Initials),
                 Item3Mark = form.Item3Mark,
-                RemovalTeeth = NormalizeTeethDigits(form.RemovalTeeth),
+                RemovalTeeth = NormalizeTeethValue(form.RemovalTeeth),
                 Item3Initials = NormalizeInitials(form.Item3Initials),
                 Item4Mark = form.Item4Mark,
                 Item4Initials = NormalizeInitials(form.Item4Initials),
@@ -430,15 +430,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             return string.IsNullOrEmpty(cleaned) ? null : cleaned;
         }
 
-        private static string? NormalizeTeethDigits(string? value)
+        private static string? NormalizeTeethValue(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }
 
-            var cleaned = new string(value.Where(char.IsDigit).Take(2).ToArray());
-            return string.IsNullOrEmpty(cleaned) ? null : cleaned;
+            var trimmed = value.Trim().ToUpperInvariant();
+            var first = trimmed[0];
+            if (first is >= 'A' and <= 'T')
+            {
+                return first.ToString();
+            }
+
+            var digits = new string(trimmed.Where(char.IsDigit).Take(2).ToArray());
+            if (string.IsNullOrEmpty(digits))
+            {
+                return null;
+            }
+
+            if (digits.Length == 2
+                && (!int.TryParse(digits, out var number) || number < 1 || number > 32))
+            {
+                digits = digits[..1];
+            }
+
+            return string.IsNullOrEmpty(digits) ? null : digits;
         }
 
         private static TreatmentConsentFormSelectionDto MapToSelectionDto(TreatmentConsent entity)
