@@ -493,17 +493,33 @@ namespace ExcelFilesCompiler.Controllers.Services
             try
             {
                 _logger.LogInformation(
-                    "{ClassName}.{MethodName} - Fetching ServiceMembers where CheckIn=Yes for EventId={EventId}",
+                    "{ClassName}.{MethodName} - Fetching Treatment Coordinator candidates for EventId={EventId}",
                     CLASSNAME, methodName, eventId);
+
+                var class3 = DentalExamDenClass.Class3;
+                var completed = AppConstants.Status.Completed;
+                var needed = AppConstants.NeededOrNA.Needed;
+                var drc3 = DentalStationEligibilityHelper.SmDrcClass3;
 
                 var result = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
-                             c.CheckIn == AppConstants.YesNo.Yes)
+                             c.CheckIn == AppConstants.YesNo.Yes &&
+                             (
+                                 c.Drc == drc3
+                                 || (
+                                     c.DentalNeeded == needed
+                                     && c.DentalExamRecord != null
+                                     && c.DentalExamRecord.Status == completed
+                                     && c.DentalExamRecord.DenClass == class3
+                                 )
+                             ),
+                        c => c.DentalExamRecord,
+                        c => c.DentalTreatmentRecord)
                     .ToListAsync();
 
                 _logger.LogInformation(
-                    "{ClassName}.{MethodName} - Retrieved {Count} checked-in ServiceMembers for EventId={EventId}",
+                    "{ClassName}.{MethodName} - Retrieved {Count} Treatment Coordinator records for EventId={EventId}",
                     CLASSNAME, methodName, result.Count, eventId);
 
                 return result;

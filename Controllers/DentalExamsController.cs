@@ -131,6 +131,14 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                if (!DentalStationEligibilityHelper.IsEligibleForDentalExam(result.ServiceMembersChild))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Exam.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 ViewBag.EventId = result.EventId;
 
                 try
@@ -261,6 +269,14 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = "Service member not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (!DentalStationEligibilityHelper.IsEligibleForDentalExam(serviceMember))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Exam.";
                     return RedirectToAction(nameof(Index));
                 }
 

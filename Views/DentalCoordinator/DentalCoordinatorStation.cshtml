@@ -32,6 +32,8 @@
         dentalExam.Source,
         DentalExamSources.DentalExam,
         StringComparison.OrdinalIgnoreCase);
+    var coordinatorPageReadOnly = ViewBag.CoordinatorPageReadOnly as bool? == true;
+    var requiresDentalExamFirst = ViewBag.RequiresDentalExamFirst as bool? == true;
     var dentalTreatment = Model.DentalTreatment;
     var treatmentCoordinatorDisplayName = ViewBag.TreatmentCoordinatorDisplayName as string ?? string.Empty;
     var treatmentCoordinatorDateTimeDisplay = (dentalTreatment?.TreatmentCoordinatorDateTime ?? DateTime.Now)
@@ -657,14 +659,56 @@
         pointer-events: none;
         border-color: rgba(31, 36, 48, 0.1) !important;
     }
+
+    .dco-station.dco-page-readonly {
+        position: relative;
+    }
+
+    .dco-exam-required-banner {
+        margin: 0 0 1rem;
+        padding: 0.9rem 1.1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(180, 83, 9, 0.35);
+        background: rgba(217, 119, 6, 0.12);
+        color: #92400e;
+        font-weight: 600;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .dco-exam-required-banner i {
+        margin-top: 0.15rem;
+        flex: 0 0 auto;
+    }
+
+    .dco-station.dco-page-readonly .dco-page-lock-target {
+        opacity: 0.72;
+        pointer-events: none;
+    }
+
+    .dco-station.dco-page-readonly .dco-footer-actions .btn-general {
+        pointer-events: none;
+        opacity: 0.55;
+    }
 </style>
 
 <link rel="stylesheet" href="~/css/dental-psr-tooth-chart.css" asp-append-version="true" />
 
-<section class="dco-station">
+<section class="dco-station @(coordinatorPageReadOnly ? "dco-page-readonly" : null)">
     <div class="dco-hero">
         <h1 class="dco-title" id="page-heading">Treatment Coordinator Station</h1>
     </div>
+
+    @if (requiresDentalExamFirst)
+    {
+        <div class="dco-exam-required-banner" role="status" aria-live="polite">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+            <div>
+                Complete Dental Exam first. This Treatment Coordinator record is read-only until Dental Exam status is Completed.
+            </div>
+        </div>
+    }
 
     <form id="SaveDentalCoordinatorStation" asp-action="SaveDentalCoordinatorStation" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
@@ -672,6 +716,7 @@
         <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
         <input type="hidden" name="SubmissionToken" id="SubmissionToken" value="@Guid.NewGuid()" />
 
+        <div class="dco-page-lock-target">
         <div class="dco-panel">
             <h2 class="dco-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
             <div class="dco-info-grid">
@@ -1127,10 +1172,11 @@
                        value="@treatmentCoordinatorOverallStatus" />
             </div>
         </div>
+        </div>
 
         @* Temporarily hidden for client demo until save/update handling is completed. *@
         <div class="dco-footer-actions" style="display:none;">
-            <button type="submit" class="btn btn-general btn-lg">
+            <button type="submit" class="btn btn-general btn-lg" @(coordinatorPageReadOnly ? "disabled" : null)>
                 <i class="fas fa-check-circle" aria-hidden="true"></i> Save
             </button>
             <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
@@ -1460,7 +1506,15 @@
             this.value = "";
             updateTreatmentCoordinatorUploadAvailability();
         });
-        $("#SaveDentalCoordinatorStation").on("submit", function () {
+        $("#SaveDentalCoordinatorStation").on("submit", function (e) {
+            if (COORDINATOR_PAGE_READONLY) {
+                e.preventDefault();
+                Swal.fire(
+                    "Dental Exam Required",
+                    "Complete Dental Exam first before saving Treatment Coordinator.",
+                    "warning");
+                return false;
+            }
             syncTreatmentCoordinatorDocumentsToForm();
         });
         renderTreatmentCoordinatorDocs();
@@ -1487,9 +1541,32 @@
     }
 
     const CLINICAL_SECTIONS_FROM_DENTAL_EXAM = @Json.Serialize(clinicalSectionsFromDentalExam);
+    const COORDINATOR_PAGE_READONLY = @Json.Serialize(coordinatorPageReadOnly);
     const EXAM_DEN_CLASS_COMPLETE = @Json.Serialize(
         !string.IsNullOrWhiteSpace(dentalExam.DenClass)
         && !string.IsNullOrWhiteSpace(dentalExam.DenClassReasonComments));
+
+    function applyCoordinatorPageReadOnlyMode() {
+        if (!COORDINATOR_PAGE_READONLY) {
+            return;
+        }
+
+        const $lock = $(".dco-page-lock-target");
+        $lock.find("input, select, textarea, button").each(function () {
+            const $el = $(this);
+            if ($el.closest(".xray-preview-widget").length) {
+                return;
+            }
+            if ($el.is("input:checkbox, input:radio, select, button")) {
+                $el.prop("disabled", true);
+            } else {
+                $el.prop("readonly", true).addClass("read-only-style");
+            }
+        });
+
+        $("#psrInteractiveToothChart").attr("data-readonly", "true");
+        $("#SaveDentalCoordinatorStation button[type='submit']").prop("disabled", true);
+    }
 
     function toggleDenClassCommentsRequired() {
         if (CLINICAL_SECTIONS_FROM_DENTAL_EXAM) {
@@ -1654,11 +1731,12 @@
         toggleDenClassCommentsRequired();
         updateTreatmentCoordinatorOverallStatus();
         updatePsrTobaccoDisplay();
+        applyCoordinatorPageReadOnlyMode();
 
         if (window.DentalPsrToothChart) {
             DentalPsrToothChart.init({
                 chartSelector: "#psrInteractiveToothChart",
-                editable: true,
+                editable: !COORDINATOR_PAGE_READONLY && !CLINICAL_SECTIONS_FROM_DENTAL_EXAM,
                 isToothBlocked: function (toothNumber) {
                     const tooth = parseInt(toothNumber, 10);
                     if (isNaN(tooth) || typeof window.getDentalFindingUsedPermanentTeeth !== "function") {

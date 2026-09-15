@@ -135,6 +135,23 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                var dentalExamForEligibility = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
+                        result.ServiceMembersChild,
+                        dentalExamForEligibility))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Treatment Coordinator.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var requiresDentalExamFirst = DentalStationEligibilityHelper.RequiresDentalExamBeforeCoordinator(
+                    result.ServiceMembersChild,
+                    dentalExamForEligibility);
+                ViewBag.RequiresDentalExamFirst = requiresDentalExamFirst;
+                ViewBag.CoordinatorPageReadOnly = requiresDentalExamFirst;
+
                 ViewBag.EventId = result.EventId;
                 ViewBag.EventAppointmentMinDate = string.Empty;
                 ViewBag.EventAppointmentMaxDate = string.Empty;
@@ -214,7 +231,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 xRayStation.ServiceMembersChild ??= result.ServiceMembersChild;
 
-                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                var dentalExam = dentalExamForEligibility
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
                 var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
@@ -289,6 +306,23 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = "Service member not found.";
                     return RedirectToAction(nameof(Index));
+                }
+
+                var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(serviceMember, existingExam))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Treatment Coordinator.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (DentalStationEligibilityHelper.RequiresDentalExamBeforeCoordinator(serviceMember, existingExam))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Dental Exam Required";
+                    TempData["ResponseMessage"] = "Complete Dental Exam first before saving Treatment Coordinator.";
+                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
                 if (DentalXRayStationService.IsNeeded(serviceMember.PanoNeeded))
