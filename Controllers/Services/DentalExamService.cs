@@ -177,11 +177,25 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (existing != null)
                 {
-                    ApplyCoordinatorClinicalFields(existing, dto);
-                    ReplaceSelectedTeeth(existing, selectedTeeth);
-                    existing.UpdatedBy = userName;
-                    existing.UpdatedOn = DateTime.Now;
-                    existing.Source = DentalExamSources.DentalCoordinator;
+                    var clinicalOwnedByDentalExam = string.Equals(
+                        existing.Source,
+                        DentalExamSources.DentalExam,
+                        StringComparison.OrdinalIgnoreCase);
+
+                    if (clinicalOwnedByDentalExam)
+                    {
+                        _logger.LogInformation(
+                            "{ClassName}, {MethodName}, Skipping PSR/DRC overwrite for ServiceMembersChildId={ServiceMembersChildId} because Source={Source}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId, existing.Source);
+                    }
+                    else
+                    {
+                        ApplyCoordinatorClinicalFields(existing, dto);
+                        ReplaceSelectedTeeth(existing, selectedTeeth);
+                        existing.UpdatedBy = userName;
+                        existing.UpdatedOn = DateTime.Now;
+                        existing.Source = DentalExamSources.DentalCoordinator;
+                    }
                 }
                 else
                 {

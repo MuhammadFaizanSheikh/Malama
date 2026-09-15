@@ -64,12 +64,24 @@ namespace ExcelFilesCompiler.Utilities
             return AppConstants.Status.Pending;
         }
 
-        public static bool IsDenClassCompleteForCoordinator(DentalCoordinatorStationSaveDto dto)
+        public static bool IsDenClassCompleteForCoordinator(
+            DentalCoordinatorStationSaveDto dto,
+            DentalExam? existingExam = null)
         {
-            var hasDenClass = !string.IsNullOrWhiteSpace(dto.DenClass)
-                && DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase);
+            var denClass = dto.DenClass;
+            var comments = dto.DenClassReasonComments;
 
-            return hasDenClass && !string.IsNullOrWhiteSpace(dto.DenClassReasonComments);
+            if (existingExam != null
+                && string.Equals(existingExam.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase))
+            {
+                denClass = existingExam.DenClass;
+                comments = existingExam.DenClassReasonComments;
+            }
+
+            var hasDenClass = !string.IsNullOrWhiteSpace(denClass)
+                && DentalExamDenClass.Options.Contains(denClass.Trim(), StringComparer.OrdinalIgnoreCase);
+
+            return hasDenClass && !string.IsNullOrWhiteSpace(comments);
         }
 
         public static bool AreAllFindingsAppointed(string? findingsJson, string? appointmentsJson)
@@ -97,9 +109,11 @@ namespace ExcelFilesCompiler.Utilities
                 && assignedKeys.Contains(finding.ClientKey.Trim()));
         }
 
-        public static string ComputeCoordinatorOverallStatus(DentalCoordinatorStationSaveDto dto)
+        public static string ComputeCoordinatorOverallStatus(
+            DentalCoordinatorStationSaveDto dto,
+            DentalExam? existingExam = null)
         {
-            if (IsDenClassCompleteForCoordinator(dto)
+            if (IsDenClassCompleteForCoordinator(dto, existingExam)
                 && AreAllFindingsAppointed(dto.FindingsJson, dto.AppointmentsJson))
             {
                 return AppConstants.Status.Completed;

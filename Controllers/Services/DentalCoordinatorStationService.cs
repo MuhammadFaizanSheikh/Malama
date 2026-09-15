@@ -121,8 +121,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     saveChanges: false);
 
                 // Section: Treatment Coordinator (DentalTreatment)
+                var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
                 var coordinatorOverallStatus = DentalCoordinatorTreatmentStatusHelper
-                    .ComputeCoordinatorOverallStatus(dto);
+                    .ComputeCoordinatorOverallStatus(dto, existingExam);
                 await _dentalTreatmentService.ApplyCoordinatorSectionAsync(
                     dto.ServiceMembersChildId,
                     dto.TreatmentCoordinatorComments,

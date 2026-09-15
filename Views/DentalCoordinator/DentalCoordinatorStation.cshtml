@@ -28,6 +28,10 @@
     };
     var treatmentXRayStatus = DentalCoordinatorTreatmentStatusHelper.ResolveXRayStatus(sm, Model.XRayStation);
     var treatmentDentalExamStatus = DentalCoordinatorTreatmentStatusHelper.ResolveDentalExamStatus(sm, Model.DentalExam);
+    var clinicalSectionsFromDentalExam = string.Equals(
+        dentalExam.Source,
+        DentalExamSources.DentalExam,
+        StringComparison.OrdinalIgnoreCase);
     var dentalTreatment = Model.DentalTreatment;
     var treatmentCoordinatorDisplayName = ViewBag.TreatmentCoordinatorDisplayName as string ?? string.Empty;
     var treatmentCoordinatorDateTimeDisplay = (dentalTreatment?.TreatmentCoordinatorDateTime ?? DateTime.Now)
@@ -893,14 +897,14 @@
                     psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
                     psrViewData["RequirePsrFields"] = false;
                     psrViewData["XRayStation"] = xRayStation;
-                    psrViewData["SubsequentReadOnly"] = false;
+                    psrViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
                 }
                 @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", dentalExam, psrViewData)
 
                 @{
                     var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
                     denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
-                    denClassViewData["SubsequentReadOnly"] = false;
+                    denClassViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
                 }
                 @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", dentalExam, denClassViewData)
 
@@ -1482,13 +1486,28 @@
         }
     }
 
+    const CLINICAL_SECTIONS_FROM_DENTAL_EXAM = @Json.Serialize(clinicalSectionsFromDentalExam);
+    const EXAM_DEN_CLASS_COMPLETE = @Json.Serialize(
+        !string.IsNullOrWhiteSpace(dentalExam.DenClass)
+        && !string.IsNullOrWhiteSpace(dentalExam.DenClassReasonComments));
+
     function toggleDenClassCommentsRequired() {
+        if (CLINICAL_SECTIONS_FROM_DENTAL_EXAM) {
+            $("#DenClassReasonComments").prop("required", false);
+            updateTreatmentCoordinatorOverallStatus();
+            return;
+        }
+
         const hasSelection = !!$("input[name='DenClass']:checked").val();
         $("#DenClassReasonComments").prop("required", hasSelection);
         updateTreatmentCoordinatorOverallStatus();
     }
 
     function isDenClassCompleteForCoordinator() {
+        if (CLINICAL_SECTIONS_FROM_DENTAL_EXAM) {
+            return EXAM_DEN_CLASS_COMPLETE;
+        }
+
         return !!$("input[name='DenClass']:checked").val()
             && !!$("#DenClassReasonComments").val()?.trim();
     }

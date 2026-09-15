@@ -182,7 +182,13 @@
 
                 <div class="mt-3" id="psrToothChartImageColumn">
                     <div class="border rounded p-3 bg-white psr-tooth-chart-image-wrap">
-                        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamToothChart.cshtml", exam)
+                        @{
+                            var toothChartViewData = new ViewDataDictionary(ViewData)
+                            {
+                                ["ToothChartReadonly"] = subsequentReadOnly
+                            };
+                        }
+                        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamToothChart.cshtml", exam, toothChartViewData)
                     </div>
                 </div>
             </div>
