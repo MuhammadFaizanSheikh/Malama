@@ -959,34 +959,34 @@
         color: #b45309;
     }
 
-    .tcn-station.tcn-fields-locked .tab-content input:not(.tcn-form-visibility-input),
-    .tcn-station.tcn-fields-locked .tab-content select,
-    .tcn-station.tcn-fields-locked .tab-content textarea,
-    .tcn-station.tcn-fields-locked .tab-content .tcn-pen-pad:not(.tcn-pen-pad-signature) button[data-pen-clear] {
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input),
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) select,
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) textarea,
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature) button[data-pen-clear] {
         pointer-events: none;
         cursor: not-allowed;
     }
 
-    .tcn-station.tcn-fields-locked .tab-content input:not(.tcn-form-visibility-input),
-    .tcn-station.tcn-fields-locked .tab-content select,
-    .tcn-station.tcn-fields-locked .tab-content textarea {
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input),
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) select,
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) textarea {
         background-color: #f3f4f8 !important;
         opacity: 0.92;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature),
+    .tcn-station.tcn-fields-locked .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature),
     .tcn-station .tcn-pen-pad.is-disabled {
         opacity: 0.72;
         background: #f7f8fb;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature) canvas,
+    .tcn-station.tcn-fields-locked .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature) canvas,
     .tcn-station .tcn-pen-pad.is-disabled canvas {
         cursor: not-allowed !important;
         pointer-events: none !important;
     }
 
-    .tcn-station.tcn-fields-locked .tcn-pen-pad:not(.tcn-pen-pad-signature) .tcn-pen-clear,
+    .tcn-station.tcn-fields-locked .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature) .tcn-pen-clear,
     .tcn-station .tcn-pen-pad.is-disabled .tcn-pen-clear {
         display: none;
     }
@@ -1457,13 +1457,16 @@
 
         function applyFormFieldsLock(isSmMode) {
             // Staff mode: all fields writable except signatures.
-            // SM mode: only signature pens writable.
+            // SM mode: questionnaire stays editable; consent forms lock except signature pens.
             $station.toggleClass("tcn-sm-mode-active", !!isSmMode);
             $station.toggleClass("tcn-staff-mode", !isSmMode);
             $station.toggleClass("tcn-fields-locked", !!isSmMode);
 
             $station.find(".tab-content").find("input, select, textarea").each(function () {
                 const $el = $(this);
+                if ($el.closest("#da5570Pane").length) {
+                    return;
+                }
                 if ($el.hasClass("tcn-readonly-input")) {
                     return;
                 }

@@ -56,7 +56,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
-        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_Save")]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_View")]
         public async Task<IActionResult> Index()
         {
             const string methodName = "Index";
@@ -111,6 +111,7 @@ namespace ExcelFilesCompiler.Controllers
         }
 
         [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_View")]
         public async Task<IActionResult> DentalCoordinatorStation(long serviceMembersChildId)
         {
             const string methodName = nameof(DentalCoordinatorStation);
@@ -271,6 +272,7 @@ namespace ExcelFilesCompiler.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(104857600)]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_Save")]
         public async Task<IActionResult> SaveDentalCoordinatorStation(DentalCoordinatorStationSaveDto dto)
         {
             const string methodName = nameof(SaveDentalCoordinatorStation);

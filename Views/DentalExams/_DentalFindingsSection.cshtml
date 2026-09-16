@@ -109,6 +109,106 @@
         padding: 1.5rem 0.75rem !important;
     }
 
+    /* Treatment Coordinator finding status row highlights (soft tints for readability) */
+    #dentalFindingsTable tr.finding-main-row.finding-status-not-possible,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-not-possible {
+        --bs-table-bg: #e6f9e6;
+        --bs-table-striped-bg: #e6f9e6;
+        --bs-table-hover-bg: #d9f5d9;
+        background-color: #e6f9e6 !important;
+        box-shadow: inset 4px 0 0 #33cc33;
+    }
+
+    #dentalFindingsTable tr.finding-main-row.finding-status-not-possible > td,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-not-possible > td {
+        background-color: #e6f9e6 !important;
+        color: var(--findings-text);
+    }
+
+    #dentalFindingsTable tr.finding-main-row.finding-status-not-scheduled,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-not-scheduled {
+        --bs-table-bg: #fff1e6;
+        --bs-table-striped-bg: #fff1e6;
+        --bs-table-hover-bg: #ffe6d1;
+        background-color: #fff1e6 !important;
+        box-shadow: inset 4px 0 0 #fd7e14;
+    }
+
+    #dentalFindingsTable tr.finding-main-row.finding-status-not-scheduled > td,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-not-scheduled > td {
+        background-color: #fff1e6 !important;
+        color: var(--findings-text);
+    }
+
+    #dentalFindingsTable tr.finding-main-row.finding-status-scheduled,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-scheduled {
+        --bs-table-bg: #d1e7dd;
+        --bs-table-striped-bg: #d1e7dd;
+        --bs-table-hover-bg: #c2dfd3;
+        background-color: #d1e7dd !important;
+        box-shadow: inset 4px 0 0 #198754;
+    }
+
+    #dentalFindingsTable tr.finding-main-row.finding-status-scheduled > td,
+    #dentalFindingsTable tr.finding-detail-row.finding-status-scheduled > td {
+        background-color: #d1e7dd !important;
+        color: var(--findings-text);
+    }
+
+    .finding-status-legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem 1.1rem;
+        margin: 0 0 0.85rem;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid var(--findings-border);
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .finding-status-legend-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--findings-muted);
+        margin-right: 0.15rem;
+    }
+
+    .finding-status-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--findings-text);
+    }
+
+    .finding-status-swatch {
+        width: 1.15rem;
+        height: 1.15rem;
+        border-radius: 4px;
+        flex: 0 0 auto;
+        box-shadow: inset 3px 0 0 transparent;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+    }
+
+    .finding-status-swatch.is-not-scheduled {
+        background: #fff1e6;
+        box-shadow: inset 3px 0 0 #fd7e14;
+    }
+
+    .finding-status-swatch.is-not-possible {
+        background: #e6f9e6;
+        box-shadow: inset 3px 0 0 #33cc33;
+    }
+
+    .finding-status-swatch.is-scheduled {
+        background: #d1e7dd;
+        box-shadow: inset 3px 0 0 #198754;
+    }
+
     #addNewFindingBtn {
         border-radius: 10px;
         font-weight: 600;
@@ -340,7 +440,7 @@
         word-break: break-word;
     }
 
-    #dentalFindingsTable tr.finding-main-row.is-expanded {
+    #dentalFindingsTable tr.finding-main-row.is-expanded:not([class*="finding-status-"]) {
         --bs-table-bg: rgba(80, 90, 201, 0.06);
         --bs-table-striped-bg: rgba(80, 90, 201, 0.06);
         --bs-table-hover-bg: rgba(80, 90, 201, 0.08);
@@ -645,6 +745,25 @@
         else
         {
             <input type="hidden" id="FindingsJson" value="@findingsJson" />
+        }
+
+        @if (showFindingAppointmentDetails)
+        {
+            <div class="finding-status-legend" role="note" aria-label="Finding status color legend">
+                <span class="finding-status-legend-title">Color legend</span>
+                <span class="finding-status-legend-item">
+                    <span class="finding-status-swatch is-not-scheduled" aria-hidden="true"></span>
+                    Treatment possible — appointment not scheduled
+                </span>
+                <span class="finding-status-legend-item">
+                    <span class="finding-status-swatch is-not-possible" aria-hidden="true"></span>
+                    Treatment not possible
+                </span>
+                <span class="finding-status-legend-item">
+                    <span class="finding-status-swatch is-scheduled" aria-hidden="true"></span>
+                    Treatment possible — appointment scheduled
+                </span>
+            </div>
         }
 
         <div class="table-responsive findings-table-wrap mb-3">
@@ -2034,6 +2153,23 @@
             return window.getFindingAppointmentAssignment(clientKey);
         }
 
+        function getFindingTreatmentStatusClass(finding) {
+            if (!SHOW_FINDING_APPOINTMENT_DETAILS || !finding) {
+                return "";
+            }
+
+            if (finding.isTreatmentPossible === false) {
+                return "finding-status-not-possible";
+            }
+
+            const assignment = getFindingAppointmentAssignmentSafe(finding.clientKey);
+            if (assignment) {
+                return "finding-status-scheduled";
+            }
+
+            return "finding-status-not-scheduled";
+        }
+
         function buildCoordinatorExternalExamDetailSection(finding) {
             if (!isCoordinatorSourceFinding(finding)) {
                 return "";
@@ -2184,6 +2320,7 @@
 
                 if (SHOW_FINDING_APPOINTMENT_DETAILS) {
                     const detailId = "findingDetail_" + index;
+                    const statusClass = getFindingTreatmentStatusClass(finding);
                     const expandBtn =
                         "<button type='button' class='btn btn-sm finding-expand-btn' data-index='" + index + "' " +
                         "aria-expanded='false' aria-controls='" + detailId + "' title='Show details'>" +
@@ -2195,7 +2332,7 @@
                         "</div>";
 
                     $tbody.append(
-                        "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
+                        "<tr class='finding-main-row " + statusClass + "' data-finding-index='" + index + "'>" +
                         "<td class='text-center'>" + expandBtn + "</td>" +
                         "<td>" + (index + 1) + "</td>" +
                         "<td>" + escapeHtml(toothLabel) + "</td>" +
@@ -2208,7 +2345,7 @@
                         "<td>" + sourceBadge + "</td>" +
                         "<td class='text-nowrap'>" + actionButtons + "</td>" +
                         "</tr>" +
-                        "<tr class='finding-detail-row' data-finding-index='" + index + "' style='display:none;'>" +
+                        "<tr class='finding-detail-row " + statusClass + "' data-finding-index='" + index + "' style='display:none;'>" +
                         "<td colspan='" + FINDINGS_TABLE_COLSPAN + "'>" + detailPanel + "</td>" +
                         "</tr>"
                     );
