@@ -87,7 +87,11 @@ namespace ExcelFilesCompiler.Utilities
         public static bool AreAllFindingsAppointed(string? findingsJson, string? appointmentsJson)
         {
             var findings = DentalFindingBinder.ParseFromJson(findingsJson);
-            if (findings.Count == 0)
+            var findingsNeedingAppointment = findings
+                .Where(RequiresAppointment)
+                .ToList();
+
+            if (findingsNeedingAppointment.Count == 0)
             {
                 return true;
             }
@@ -104,9 +108,23 @@ namespace ExcelFilesCompiler.Utilities
                 }
             }
 
-            return findings.All(finding =>
+            return findingsNeedingAppointment.All(finding =>
                 !string.IsNullOrWhiteSpace(finding.ClientKey)
                 && assignedKeys.Contains(finding.ClientKey.Trim()));
+        }
+
+        /// <summary>
+        /// Class 3 findings that can be treated at the event must be appointed.
+        /// Class 2 findings never require an appointment.
+        /// </summary>
+        public static bool RequiresAppointment(DentalFindingDto finding)
+        {
+            if (finding == null || !DentalFindingConstants.IsClass3(finding.Classification))
+            {
+                return false;
+            }
+
+            return finding.IsTreatmentPossible != false;
         }
 
         public static string ComputeCoordinatorOverallStatus(

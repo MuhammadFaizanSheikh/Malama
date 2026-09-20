@@ -1642,6 +1642,21 @@
             return true;
         }
 
+        function isClass3(classification) {
+            return ((classification || "").toString().trim()).indexOf("Class 3") === 0;
+        }
+
+        const findingsNeedingAppointment = findings.filter(function (finding) {
+            if (!isClass3(finding.classification)) {
+                return false;
+            }
+            return finding.isTreatmentPossible !== false;
+        });
+
+        if (findingsNeedingAppointment.length === 0) {
+            return true;
+        }
+
         const assignedKeys = new Set();
         if (Array.isArray(appointments)) {
             appointments.forEach(function (appt) {
@@ -1653,7 +1668,7 @@
             });
         }
 
-        return findings.every(function (finding) {
+        return findingsNeedingAppointment.every(function (finding) {
             const key = (finding.clientKey || "").toString().trim();
             return key && assignedKeys.has(key);
         });

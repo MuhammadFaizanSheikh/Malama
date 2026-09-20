@@ -351,11 +351,14 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.ExternalExaminerName = dto.ExternalExaminerName?.Trim();
             entity.ExternalExamDateTime = dto.ExternalExamDateTime;
             entity.ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim();
-            var isTreatmentPossible = dto.IsTreatmentPossible ?? true;
+            var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
+            bool? isTreatmentPossible = isClass3
+                ? dto.IsTreatmentPossible ?? true
+                : null;
             entity.IsTreatmentPossible = isTreatmentPossible;
-            entity.TreatmentNotPossibleReason = isTreatmentPossible
-                ? null
-                : dto.TreatmentNotPossibleReason?.Trim();
+            entity.TreatmentNotPossibleReason = isTreatmentPossible == false
+                ? dto.TreatmentNotPossibleReason?.Trim()
+                : null;
         }
 
         private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)
@@ -364,9 +367,16 @@ namespace ExcelFilesCompiler.Controllers.Services
             var existingCdt = DentalFindingMapper.DeserializeList(existing.CdtCodesJson);
             var dtoSurfaces = dto.AffectedSurfaces ?? new List<string>();
             var dtoCdt = dto.CdtCodes ?? new List<string>();
-            var dtoIsTreatmentPossible = dto.IsTreatmentPossible ?? true;
-            var existingReason = existing.IsTreatmentPossible ? null : existing.TreatmentNotPossibleReason?.Trim();
-            var dtoReason = dtoIsTreatmentPossible ? null : dto.TreatmentNotPossibleReason?.Trim();
+            var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
+            bool? dtoIsTreatmentPossible = isClass3
+                ? dto.IsTreatmentPossible ?? true
+                : null;
+            var existingReason = existing.IsTreatmentPossible == false
+                ? existing.TreatmentNotPossibleReason?.Trim()
+                : null;
+            var dtoReason = dtoIsTreatmentPossible == false
+                ? dto.TreatmentNotPossibleReason?.Trim()
+                : null;
 
             return existing.IsPrimaryTooth == dto.IsPrimaryTooth
                 && string.Equals(existing.AffectedTooth?.Trim(), dto.AffectedTooth?.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -377,7 +387,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && string.Equals(existing.ExternalExaminerName?.Trim(), dto.ExternalExaminerName?.Trim(), StringComparison.Ordinal)
                 && Nullable.Equals(existing.ExternalExamDateTime, dto.ExternalExamDateTime)
                 && string.Equals(existing.ExternalDentistRemarks?.Trim(), dto.ExternalDentistRemarks?.Trim(), StringComparison.Ordinal)
-                && existing.IsTreatmentPossible == dtoIsTreatmentPossible
+                && Nullable.Equals(existing.IsTreatmentPossible, dtoIsTreatmentPossible)
                 && string.Equals(existingReason, dtoReason, StringComparison.Ordinal)
                 && existingSurfaces.Count == dtoSurfaces.Count
                 && existingSurfaces.All(s => dtoSurfaces.Contains(s, StringComparer.OrdinalIgnoreCase))

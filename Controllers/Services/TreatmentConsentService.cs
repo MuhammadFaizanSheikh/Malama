@@ -213,6 +213,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "Service member barcode is required for signature upload.");
                 }
 
+                var questionnaireError = DentalQuestionnaireValidator.Validate(dto, serviceMember);
+                if (!string.IsNullOrWhiteSpace(questionnaireError))
+                {
+                    return TreatmentConsentStationSaveResult.Fail("Invalid Data", questionnaireError);
+                }
+
                 var validationError = ValidateStationSave(dto);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
@@ -369,6 +375,25 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && (dto.DentalTreatmentDentistEventStaffIds == null || !dto.DentalTreatmentDentistEventStaffIds.Any(id => id > 0)))
             {
                 return "Select at least one Treatment dentist when Dental Treatment Consent is included.";
+            }
+
+            if (dto.IncludeDentalTreatmentConsent && dto.DentalTreatmentForms != null)
+            {
+                foreach (var form in dto.DentalTreatmentForms)
+                {
+                    if (form == null)
+                    {
+                        continue;
+                    }
+
+                    if (form.OtherTreatment && string.IsNullOrWhiteSpace(form.OtherTreatmentText))
+                    {
+                        var dentistLabel = string.IsNullOrWhiteSpace(form.DentistName)
+                            ? "selected dentist"
+                            : form.DentistName.Trim();
+                        return $"Other treatment description is required when Other is checked ({dentistLabel}).";
+                    }
+                }
             }
 
             return null;

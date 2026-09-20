@@ -1513,9 +1513,9 @@
             clearFindingAssignmentFields();
             clearCoordinatorExternalFields();
             clearTreatmentPossibleFields();
+            toggleTreatmentPossibleFieldsVisibility("");
             toggleExternalExaminerNameVisibility(null);
             toggleCoordinatorExternalFieldsVisibility(null);
-            toggleTreatmentPossibleReasonVisibility();
         }
 
         function resetFindingFormControlState() {
@@ -1559,8 +1559,51 @@
                 return;
             }
             $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
-            $("#findingIsTreatmentPossibleYes").prop("checked", true);
             $("#findingTreatmentNotPossibleReason").val("");
+            $("#findingTreatmentNotPossibleReasonSection").hide();
+        }
+
+        function isClass3Classification(classification) {
+            const value = (classification || "").toString().trim();
+            return value.indexOf("Class 3") === 0;
+        }
+
+        function isClass2Classification(classification) {
+            const value = (classification || "").toString().trim();
+            return value.indexOf("Class 2") === 0;
+        }
+
+        function findingRequiresAppointment(finding) {
+            if (!finding || !isClass3Classification(finding.classification)) {
+                return false;
+            }
+            return finding.isTreatmentPossible !== false;
+        }
+
+        function shouldShowTreatmentPossibleFields(classification) {
+            return SHOW_TREATMENT_POSSIBLE_FIELDS && isClass3Classification(classification);
+        }
+
+        function toggleTreatmentPossibleFieldsVisibility(classification) {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                return;
+            }
+
+            const $section = $("#findingTreatmentPossibleFields");
+            if (!$section.length) {
+                return;
+            }
+
+            const show = shouldShowTreatmentPossibleFields(classification);
+            $section.toggle(show);
+            if (!show) {
+                clearTreatmentPossibleFields();
+            } else if (!$("input[name='FindingIsTreatmentPossible']:checked").length) {
+                $("#findingIsTreatmentPossibleYes").prop("checked", true);
+                toggleTreatmentPossibleReasonVisibility();
+            } else {
+                toggleTreatmentPossibleReasonVisibility();
+            }
         }
 
         function toggleTreatmentPossibleReasonVisibility() {
@@ -1912,14 +1955,22 @@
                 procedureStatus: existing ? (existing.procedureStatus || "") : "",
                 procedureDateTime: existing ? (existing.procedureDateTime || "") : "",
                 source: existing ? (existing.source || FINDING_SOURCE_EXAM) : FINDING_SOURCE_DEFAULT,
-                isTreatmentPossible: SHOW_TREATMENT_POSSIBLE_FIELDS
-                    ? (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") !== "No")
-                    : (existing ? (existing.isTreatmentPossible !== false) : true),
-                treatmentNotPossibleReason: SHOW_TREATMENT_POSSIBLE_FIELDS
-                    ? (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") === "No"
+                isTreatmentPossible: (function () {
+                    const classification = $("input[name='FindingClassification']:checked").val() || "";
+                    if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(classification)) {
+                        return null;
+                    }
+                    return ($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") !== "No";
+                })(),
+                treatmentNotPossibleReason: (function () {
+                    const classification = $("input[name='FindingClassification']:checked").val() || "";
+                    if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(classification)) {
+                        return "";
+                    }
+                    return ($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") === "No"
                         ? ($("#findingTreatmentNotPossibleReason").val() || "")
-                        : "")
-                    : (existing ? (existing.treatmentNotPossibleReason || "") : "")
+                        : "";
+                })()
             };
         }
 
@@ -1980,11 +2031,14 @@
             }
 
             if (SHOW_TREATMENT_POSSIBLE_FIELDS) {
-                const isPossible = finding.isTreatmentPossible !== false;
-                $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
-                $("input[name='FindingIsTreatmentPossible'][value='" + (isPossible ? "Yes" : "No") + "']").prop("checked", true);
-                $("#findingTreatmentNotPossibleReason").val(isPossible ? "" : (finding.treatmentNotPossibleReason || ""));
-                toggleTreatmentPossibleReasonVisibility();
+                toggleTreatmentPossibleFieldsVisibility(finding.classification);
+                if (isClass3Classification(finding.classification)) {
+                    const isPossible = finding.isTreatmentPossible !== false;
+                    $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
+                    $("input[name='FindingIsTreatmentPossible'][value='" + (isPossible ? "Yes" : "No") + "']").prop("checked", true);
+                    $("#findingTreatmentNotPossibleReason").val(isPossible ? "" : (finding.treatmentNotPossibleReason || ""));
+                    toggleTreatmentPossibleReasonVisibility();
+                }
             }
         }
 
@@ -2049,8 +2103,11 @@
                     procedureStatus: item.procedureStatus || "",
                     procedureDateTime: item.procedureDateTime || "",
                     source: item.source || FINDING_SOURCE_EXAM,
-                    isTreatmentPossible: item.isTreatmentPossible !== false,
-                    treatmentNotPossibleReason: item.isTreatmentPossible === false
+                    isTreatmentPossible: isClass3Classification(item.classification)
+                        ? (item.isTreatmentPossible !== false)
+                        : null,
+                    treatmentNotPossibleReason: isClass3Classification(item.classification)
+                        && item.isTreatmentPossible === false
                         ? (item.treatmentNotPossibleReason || "")
                         : "",
                     clientKey: item.clientKey || ""
@@ -2158,6 +2215,11 @@
                 return "";
             }
 
+            // Class 2 (non-Class 3) findings are not treatment-track colored.
+            if (!isClass3Classification(finding.classification)) {
+                return "";
+            }
+
             if (finding.isTreatmentPossible === false) {
                 return "finding-status-not-possible";
             }
@@ -2188,7 +2250,7 @@
         }
 
         function buildTreatmentPossibleDetailSection(finding) {
-            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(finding.classification)) {
                 return "";
             }
 
@@ -2940,7 +3002,7 @@
         window.getDentalFindingsForAppointments = function () {
             return dentalFindings
                 .filter(function (finding) {
-                    return finding.isTreatmentPossible !== false;
+                    return findingRequiresAppointment(finding);
                 })
                 .map(function (finding, index) {
                     // Keep original list index for labels where needed.
@@ -2959,6 +3021,12 @@
 
         window.initDentalFindingsSection = function () {
             ensureFindingClientKeys();
+            dentalFindings.forEach(function (finding) {
+                if (!isClass3Classification(finding.classification)) {
+                    finding.isTreatmentPossible = null;
+                    finding.treatmentNotPossibleReason = "";
+                }
+            });
             populateToothOptions();
             initAppointmentPickers();
             initAppointmentCalendar();
@@ -2985,6 +3053,10 @@
                     return;
                 }
                 addOrUpdateFinding();
+            });
+
+            $(document).on("change", "input[name='FindingClassification']", function () {
+                toggleTreatmentPossibleFieldsVisibility($(this).val());
             });
 
             $(document).on("change", "input[name='FindingIsTreatmentPossible']", function () {

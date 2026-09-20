@@ -53,6 +53,22 @@ namespace Malama.Models
 
         public static readonly string[] Classifications = { ClassificationClass2, ClassificationClass3 };
 
+        public static bool IsClass3(string? classification)
+        {
+            return string.Equals(
+                classification?.Trim(),
+                ClassificationClass3,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsClass2(string? classification)
+        {
+            return string.Equals(
+                classification?.Trim(),
+                ClassificationClass2,
+                StringComparison.OrdinalIgnoreCase);
+        }
+
         public const string Periodontal = "Periodontal";
         public const string Restorative = "Restorative";
 
@@ -113,8 +129,11 @@ namespace Malama.Models
         /// <summary>Where the finding was captured (Dental Exam station vs Treatment Coordinator).</summary>
         public string? Source { get; set; }
 
-        /// <summary>Treatment Coordinator: whether treatment is possible for this finding. Default Yes.</summary>
-        public bool IsTreatmentPossible { get; set; } = true;
+        /// <summary>
+        /// Treatment Coordinator: whether treatment is possible for a Class 3 finding.
+        /// Null for Class 2 (treatment-possible question does not apply).
+        /// </summary>
+        public bool? IsTreatmentPossible { get; set; }
 
         /// <summary>Required when <see cref="IsTreatmentPossible"/> is false.</summary>
         public string? TreatmentNotPossibleReason { get; set; }
@@ -209,7 +228,11 @@ namespace Malama.Models
 
         public static DentalFinding ToEntity(DentalFindingDto dto, long dentalExamId, int sortOrder)
         {
-            var isTreatmentPossible = dto.IsTreatmentPossible ?? true;
+            var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
+            bool? isTreatmentPossible = isClass3
+                ? dto.IsTreatmentPossible ?? true
+                : null;
+
             return new DentalFinding
             {
                 DentalExamId = dentalExamId,
@@ -231,9 +254,9 @@ namespace Malama.Models
                 ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim(),
                 Source = dto.Source?.Trim(),
                 IsTreatmentPossible = isTreatmentPossible,
-                TreatmentNotPossibleReason = isTreatmentPossible
-                    ? null
-                    : dto.TreatmentNotPossibleReason?.Trim()
+                TreatmentNotPossibleReason = isTreatmentPossible == false
+                    ? dto.TreatmentNotPossibleReason?.Trim()
+                    : null
             };
         }
 
