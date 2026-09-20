@@ -19,6 +19,8 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalCoordinatorStationService _dentalCoordinatorStationService;
         private readonly IDentalExamService _dentalExamService;
         private readonly IDentalTreatmentService _dentalTreatmentService;
+        private readonly ITreatmentConsentService _treatmentConsentService;
+        private readonly ITreatmentConsentPdfGenerator _treatmentConsentPdfGenerator;
         private readonly IEventStaffService _eventStaffService;
         private readonly IEventManagementService _eventManagementService;
         private readonly IFileUploadDownloadService _fileService;
@@ -36,6 +38,8 @@ namespace ExcelFilesCompiler.Controllers
             IDentalCoordinatorStationService dentalCoordinatorStationService,
             IDentalExamService dentalExamService,
             IDentalTreatmentService dentalTreatmentService,
+            ITreatmentConsentService treatmentConsentService,
+            ITreatmentConsentPdfGenerator treatmentConsentPdfGenerator,
             IEventStaffService eventStaffService,
             IEventManagementService eventManagementService,
             IFileUploadDownloadService fileService,
@@ -49,6 +53,8 @@ namespace ExcelFilesCompiler.Controllers
             _dentalCoordinatorStationService = dentalCoordinatorStationService;
             _dentalExamService = dentalExamService;
             _dentalTreatmentService = dentalTreatmentService;
+            _treatmentConsentService = treatmentConsentService;
+            _treatmentConsentPdfGenerator = treatmentConsentPdfGenerator;
             _eventStaffService = eventStaffService;
             _eventManagementService = eventManagementService;
             _fileService = fileService;
@@ -237,6 +243,9 @@ namespace ExcelFilesCompiler.Controllers
 
                 var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
 
+                var formSelection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
+                var consentFormStatuses = TreatmentConsentHelper.BuildCoordinatorConsentFormStatusItems(formSelection);
+
                 var currentUser = await _userManager.GetUserAsync(User);
                 ViewBag.TreatmentCoordinatorDisplayName = currentUser != null
                     ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
@@ -255,7 +264,9 @@ namespace ExcelFilesCompiler.Controllers
                     Questionnaire = questionnaire,
                     XRayStation = xRayStation,
                     DentalExam = dentalExam,
-                    DentalTreatment = dentalTreatment
+                    DentalTreatment = dentalTreatment,
+                    HasQuestionnaire = questionnaire.Id > 0,
+                    ConsentFormStatuses = consentFormStatuses
                 };
 
                 return View(pageModel);
@@ -379,6 +390,158 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseTitle"] = "Error";
                 TempData["ResponseMessage"] = ex.Message;
                 return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_View")]
+        public async Task<IActionResult> PreviewQuestionnairePdf(long serviceMembersChildId)
+        {
+            const string methodName = nameof(PreviewQuestionnairePdf);
+            try
+            {
+                if (serviceMembersChildId <= 0)
+                {
+                    return BadRequest("Service member is required.");
+                }
+
+                var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+                if (result.ServiceMembersChild == null)
+                {
+                    return NotFound("Service member not found.");
+                }
+
+                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                if (questionnaire == null || questionnaire.Id <= 0)
+                {
+                    return NotFound("Questionnaire is not available for this service member.");
+                }
+
+                var pdfBytes = _treatmentConsentPdfGenerator.GenerateQuestionnairePdf(
+                    result.ServiceMembersChild,
+                    questionnaire);
+
+                Response.Headers["Content-Disposition"] = "inline; filename=\"DA5570-Questionnaire.pdf\"";
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                return StatusCode(500, "Error while generating questionnaire PDF.");
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_View")]
+        public async Task<IActionResult> PreviewConsentFormPdf(
+            long serviceMembersChildId,
+            string formKind,
+            long eventStaffId)
+        {
+            const string methodName = nameof(PreviewConsentFormPdf);
+            try
+            {
+                if (serviceMembersChildId <= 0 || eventStaffId <= 0 || string.IsNullOrWhiteSpace(formKind))
+                {
+                    return BadRequest("Service member, form kind, and dentist are required.");
+                }
+
+                var kind = formKind.Trim().ToLowerInvariant();
+                if (kind is not ("dental-treatment" or "oral-surgery"))
+                {
+                    return BadRequest("Invalid form kind.");
+                }
+
+                var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+                if (result.ServiceMembersChild == null)
+                {
+                    return NotFound("Service member not found.");
+                }
+
+                var selection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
+                byte[] pdfBytes;
+                string fileName;
+
+                if (kind == "dental-treatment")
+                {
+                    if (!selection.IncludeDentalTreatmentConsent
+                        || !(selection.DentalTreatmentDentistEventStaffIds ?? new List<long>()).Contains(eventStaffId))
+                    {
+                        return NotFound("Dental treatment consent form not found for this dentist.");
+                    }
+
+                    var form = (selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                        .Where(f => f != null && f.EventStaffId == eventStaffId)
+                        .LastOrDefault()
+                        ?? new TreatmentConsentDentalTreatmentFormDto { EventStaffId = eventStaffId };
+
+                    var signatureBytes = TryLoadConsentSignature(
+                        TreatmentConsentFileSaveCoordinator.DentalTreatmentPrefix,
+                        form.SignatureFileName);
+                    pdfBytes = _treatmentConsentPdfGenerator.GenerateDentalTreatmentConsentPdf(
+                        result.ServiceMembersChild,
+                        form,
+                        signatureBytes);
+                    fileName = $"Dental-Treatment-Consent-{eventStaffId}.pdf";
+                }
+                else
+                {
+                    if (!selection.IncludeOralSurgeryForm
+                        || !(selection.OralSurgeryDentistEventStaffIds ?? new List<long>()).Contains(eventStaffId))
+                    {
+                        return NotFound("Oral surgery consent form not found for this dentist.");
+                    }
+
+                    var form = (selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+                        .Where(f => f != null && f.EventStaffId == eventStaffId)
+                        .LastOrDefault()
+                        ?? new TreatmentConsentOralSurgeryFormDto { EventStaffId = eventStaffId };
+
+                    var signatureBytes = TryLoadConsentSignature(
+                        TreatmentConsentFileSaveCoordinator.OralSurgeryPrefix,
+                        form.SignatureFileName);
+                    pdfBytes = _treatmentConsentPdfGenerator.GenerateOralSurgeryConsentPdf(
+                        result.ServiceMembersChild,
+                        form,
+                        signatureBytes);
+                    fileName = $"Oral-Surgery-Consent-{eventStaffId}.pdf";
+                }
+
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for ServiceMembersChildId={ServiceMembersChildId}, FormKind={FormKind}, EventStaffId={EventStaffId}",
+                    CLASSNAME, methodName, serviceMembersChildId, formKind, eventStaffId);
+                return StatusCode(500, "Error while generating consent form PDF.");
+            }
+        }
+
+        private byte[]? TryLoadConsentSignature(string prefix, string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return null;
+            }
+
+            try
+            {
+                var file = _fileService.GetFile(
+                    TreatmentConsentFileSaveCoordinator.StationName,
+                    prefix,
+                    fileName);
+                return file?.Bytes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "{ClassName}, Failed to load consent signature Prefix={Prefix}, File={File}",
+                    CLASSNAME, prefix, fileName);
+                return null;
             }
         }
 

@@ -176,6 +176,74 @@ namespace ExcelFilesCompiler.Utilities
             return isSigned && !string.IsNullOrWhiteSpace(signatureFileName);
         }
 
+        /// <summary>
+        /// Builds consent-form status rows for the Treatment Coordinator card.
+        /// When no per-dentist forms exist, returns an empty list (UI shows an empty-state message).
+        /// </summary>
+        public static List<TreatmentCoordinatorConsentFormStatusItem> BuildCoordinatorConsentFormStatusItems(
+            TreatmentConsentFormSelectionDto? selection)
+        {
+            var items = new List<TreatmentCoordinatorConsentFormStatusItem>();
+            if (selection == null)
+            {
+                return items;
+            }
+
+            if (selection.IncludeDentalTreatmentConsent)
+            {
+                var formsById = (selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                    .Where(form => form != null && form.EventStaffId > 0)
+                    .GroupBy(form => form.EventStaffId)
+                    .ToDictionary(group => group.Key, group => group.Last());
+
+                foreach (var dentistId in NormalizeIds(selection.DentalTreatmentDentistEventStaffIds))
+                {
+                    formsById.TryGetValue(dentistId, out var form);
+                    var dentistName = form?.DentistName?.Trim();
+                    if (string.IsNullOrWhiteSpace(dentistName))
+                    {
+                        dentistName = "Dentist #" + dentistId;
+                    }
+
+                    items.Add(new TreatmentCoordinatorConsentFormStatusItem
+                    {
+                        Title = "Dental Treatment Consent Form for " + dentistName,
+                        IsSigned = form != null && IsFormSigned(form.IsSigned, form.SignatureFileName),
+                        FormKind = "dental-treatment",
+                        EventStaffId = dentistId
+                    });
+                }
+            }
+
+            if (selection.IncludeOralSurgeryForm)
+            {
+                var formsById = (selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+                    .Where(form => form != null && form.EventStaffId > 0)
+                    .GroupBy(form => form.EventStaffId)
+                    .ToDictionary(group => group.Key, group => group.Last());
+
+                foreach (var dentistId in NormalizeIds(selection.OralSurgeryDentistEventStaffIds))
+                {
+                    formsById.TryGetValue(dentistId, out var form);
+                    var dentistName = form?.DentistName?.Trim();
+                    if (string.IsNullOrWhiteSpace(dentistName))
+                    {
+                        dentistName = "Dentist #" + dentistId;
+                    }
+
+                    items.Add(new TreatmentCoordinatorConsentFormStatusItem
+                    {
+                        Title = "Oral Surgery Form for " + dentistName,
+                        IsSigned = form != null && IsFormSigned(form.IsSigned, form.SignatureFileName),
+                        FormKind = "oral-surgery",
+                        EventStaffId = dentistId
+                    });
+                }
+            }
+
+            return items;
+        }
+
         public static bool IsCompleted(string? status)
         {
             return string.Equals(status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);

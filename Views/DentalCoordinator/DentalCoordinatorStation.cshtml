@@ -431,6 +431,22 @@
         font-size: 0.95rem;
     }
 
+    .dco-form-signed-icon.is-unsigned {
+        background: rgba(220, 53, 69, 0.12);
+        color: #dc3545;
+    }
+
+    .dco-forms-empty-message {
+        margin: 0;
+        padding: 0.65rem 0.75rem;
+        border-radius: 8px;
+        background: rgba(220, 53, 69, 0.06);
+        border: 1px solid rgba(220, 53, 69, 0.16);
+        color: #b42318;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
     .dco-form-preview-btn {
         display: inline-flex;
         align-items: center;
@@ -441,8 +457,13 @@
         border: 1px solid rgba(80, 90, 201, 0.28);
         background: rgba(80, 90, 201, 0.08);
         color: var(--dco-indigo);
-        cursor: default;
-        pointer-events: none;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .dco-form-preview-btn:hover {
+        background: rgba(80, 90, 201, 0.16);
+        transform: translateY(-1px);
     }
 
     .dco-docs-preview-btn {
@@ -1078,36 +1099,42 @@
                     <div class="dco-forms-card" aria-label="Consent forms and questionnaire">
                         <div class="dco-forms-card-group">
                             <h4 class="dco-forms-card-group-title">Consent forms</h4>
-                            <div class="dco-forms-row">
-                                <span class="dco-forms-row-title">Dental Treatment Consent Form</span>
-                                <span class="dco-forms-row-actions">
-                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
-                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
-                                    </span>
-                                    <button type="button"
-                                            class="dco-form-preview-btn"
-                                            title="Preview"
-                                            aria-label="Preview Dental Treatment Consent Form"
-                                            tabindex="-1">
-                                        <i class="fas fa-eye" aria-hidden="true"></i>
-                                    </button>
-                                </span>
-                            </div>
-                            <div class="dco-forms-row">
-                                <span class="dco-forms-row-title">Oral Surgery Form</span>
-                                <span class="dco-forms-row-actions">
-                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
-                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
-                                    </span>
-                                    <button type="button"
-                                            class="dco-form-preview-btn"
-                                            title="Preview"
-                                            aria-label="Preview Oral Surgery Form"
-                                            tabindex="-1">
-                                        <i class="fas fa-eye" aria-hidden="true"></i>
-                                    </button>
-                                </span>
-                            </div>
+                            @if (Model.ConsentFormStatuses == null || Model.ConsentFormStatuses.Count == 0)
+                            {
+                                <p class="dco-forms-empty-message" role="status">
+                                    No consent forms have been completed yet.
+                                </p>
+                            }
+                            else
+                            {
+                                @foreach (var consentForm in Model.ConsentFormStatuses)
+                                {
+                                    var signed = consentForm.IsSigned;
+                                    <div class="dco-forms-row"
+                                         data-form-kind="@consentForm.FormKind"
+                                         data-event-staff-id="@(consentForm.EventStaffId?.ToString() ?? "")">
+                                        <span class="dco-forms-row-title">@consentForm.Title</span>
+                                        <span class="dco-forms-row-actions">
+                                            <span class="dco-form-signed-icon @(signed ? null : "is-unsigned")"
+                                                  title="@(signed ? "Signed" : "Not signed")"
+                                                  aria-label="@(signed ? "Signed" : "Not signed")">
+                                                <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                            </span>
+                                            @if (signed)
+                                            {
+                                                <button type="button"
+                                                        class="dco-form-preview-btn"
+                                                        title="Preview"
+                                                        aria-label="Preview @consentForm.Title"
+                                                        data-preview-kind="@consentForm.FormKind"
+                                                        data-event-staff-id="@(consentForm.EventStaffId?.ToString() ?? "")">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                </button>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+                            }
                         </div>
 
                         <div class="dco-forms-card-group">
@@ -1115,16 +1142,22 @@
                             <div class="dco-forms-row">
                                 <span class="dco-forms-row-title">DA5570 (Completed by Service Member)</span>
                                 <span class="dco-forms-row-actions">
-                                    <span class="dco-form-signed-icon" title="Signed" aria-label="Signed">
+                                    <span class="dco-form-signed-icon @(Model.HasQuestionnaire ? null : "is-unsigned")"
+                                          title="@(Model.HasQuestionnaire ? "Questionnaire present" : "Questionnaire not present")"
+                                          aria-label="@(Model.HasQuestionnaire ? "Questionnaire present" : "Questionnaire not present")">
                                         <i class="fas fa-file-signature" aria-hidden="true"></i>
                                     </span>
-                                    <button type="button"
-                                            class="dco-form-preview-btn"
-                                            title="Preview"
-                                            aria-label="Preview DA5570 questionnaire"
-                                            tabindex="-1">
-                                        <i class="fas fa-eye" aria-hidden="true"></i>
-                                    </button>
+                                    @if (Model.HasQuestionnaire)
+                                    {
+                                        <button type="button"
+                                                class="dco-form-preview-btn"
+                                                title="Preview"
+                                                aria-label="Preview DA5570 questionnaire"
+                                                data-preview-kind="questionnaire"
+                                                data-has-questionnaire="true">
+                                            <i class="fas fa-eye" aria-hidden="true"></i>
+                                        </button>
+                                    }
                                 </span>
                             </div>
                         </div>
@@ -1909,6 +1942,47 @@
             enableGoToVitalStation: false
         };
         DentalXRayStationUploads.init(window.DentalXRayStationConfig);
+
+        $(document).on("click", ".dco-form-preview-btn", function () {
+            const $btn = $(this);
+            const kind = String($btn.data("preview-kind") || "").trim().toLowerCase();
+            const childId = @sm.Id;
+            const features = "popup=yes,width=980,height=900,menubar=no,toolbar=no,location=yes,status=yes,resizable=yes,scrollbars=yes";
+
+            if (kind === "questionnaire") {
+                if (String($btn.data("has-questionnaire")) !== "true") {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Questionnaire not available",
+                        text: "No questionnaire has been saved for this service member yet."
+                    });
+                    return;
+                }
+
+                const url = "/DentalCoordinator/PreviewQuestionnairePdf?serviceMembersChildId=" + encodeURIComponent(childId);
+                window.open(url, "DcoQuestionnairePdf", features);
+                return;
+            }
+
+            if (kind === "dental-treatment" || kind === "oral-surgery") {
+                const eventStaffId = String($btn.data("event-staff-id") || "").trim();
+                if (!eventStaffId) {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Consent form not available",
+                        text: "This consent form does not have dentist details yet."
+                    });
+                    return;
+                }
+
+                const url = "/DentalCoordinator/PreviewConsentFormPdf"
+                    + "?serviceMembersChildId=" + encodeURIComponent(childId)
+                    + "&formKind=" + encodeURIComponent(kind)
+                    + "&eventStaffId=" + encodeURIComponent(eventStaffId);
+                window.open(url, "DcoConsentPdf_" + kind + "_" + eventStaffId, features);
+                return;
+            }
+        });
 
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();

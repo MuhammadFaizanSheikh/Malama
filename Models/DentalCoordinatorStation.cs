@@ -7,6 +7,24 @@ namespace Malama.Models
         public DentalXRayStation XRayStation { get; set; } = new();
         public DentalExam DentalExam { get; set; } = new();
         public DentalTreatment? DentalTreatment { get; set; }
+
+        /// <summary>True when a DentalQuestionnaire row exists for this service member.</summary>
+        public bool HasQuestionnaire { get; set; }
+
+        /// <summary>Consent form rows for the Treatment Coordinator status card.</summary>
+        public List<TreatmentCoordinatorConsentFormStatusItem> ConsentFormStatuses { get; set; } = new();
+    }
+
+    public class TreatmentCoordinatorConsentFormStatusItem
+    {
+        public string Title { get; set; } = string.Empty;
+
+        public bool IsSigned { get; set; }
+
+        /// <summary>dental-treatment | oral-surgery (reserved for future PDF preview).</summary>
+        public string FormKind { get; set; } = string.Empty;
+
+        public long? EventStaffId { get; set; }
     }
 
     /// <summary>
