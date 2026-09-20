@@ -142,16 +142,16 @@
 
     #dentalFindingsTable tr.finding-main-row.finding-status-scheduled,
     #dentalFindingsTable tr.finding-detail-row.finding-status-scheduled {
-        --bs-table-bg: #d1e7dd;
-        --bs-table-striped-bg: #d1e7dd;
+        --bs-table-bg: #a3cfbb;
+        --bs-table-striped-bg: #a3cfbb;
         --bs-table-hover-bg: #c2dfd3;
-        background-color: #d1e7dd !important;
+        background-color: #a3cfbb !important;
         box-shadow: inset 4px 0 0 #198754;
     }
 
     #dentalFindingsTable tr.finding-main-row.finding-status-scheduled > td,
     #dentalFindingsTable tr.finding-detail-row.finding-status-scheduled > td {
-        background-color: #d1e7dd !important;
+            background-color: #a3cfbb !important;
         color: var(--findings-text);
     }
 
@@ -190,23 +190,23 @@
         height: 1.15rem;
         border-radius: 4px;
         flex: 0 0 auto;
-        box-shadow: inset 3px 0 0 transparent;
+        @* box-shadow: inset 3px 0 0 transparent; *@
         border: 1px solid rgba(31, 36, 48, 0.12);
     }
 
     .finding-status-swatch.is-not-scheduled {
         background: #fff1e6;
-        box-shadow: inset 3px 0 0 #fd7e14;
+        @* box-shadow: inset 3px 0 0 #fd7e14; *@
     }
 
     .finding-status-swatch.is-not-possible {
         background: #e6f9e6;
-        box-shadow: inset 3px 0 0 #33cc33;
+        @* box-shadow: inset 3px 0 0 #33cc33; *@
     }
 
     .finding-status-swatch.is-scheduled {
-        background: #d1e7dd;
-        box-shadow: inset 3px 0 0 #198754;
+        background: #a3cfbb;
+        @* box-shadow: inset 3px 0 0 #198754; *@
     }
 
     #addNewFindingBtn {
