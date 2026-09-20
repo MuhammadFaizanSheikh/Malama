@@ -959,7 +959,7 @@
         color: #b45309;
     }
 
-    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input),
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input):not(.tcn-initials-input),
     .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) select,
     .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) textarea,
     .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature) button[data-pen-clear] {
@@ -967,9 +967,16 @@
         cursor: not-allowed;
     }
 
-    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input),
+    .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) input:not(.tcn-form-visibility-input):not(.tcn-initials-input),
     .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) select,
     .tcn-station.tcn-fields-locked .tab-content .tab-pane:not(#da5570Pane) textarea {
+        background-color: #f3f4f8 !important;
+        opacity: 0.92;
+    }
+
+    .tcn-station.tcn-staff-mode .tcn-initials-input {
+        pointer-events: none;
+        cursor: not-allowed;
         background-color: #f3f4f8 !important;
         opacity: 0.92;
     }
@@ -1456,8 +1463,8 @@
         }
 
         function applyFormFieldsLock(isSmMode) {
-            // Staff mode: all fields writable except signatures.
-            // SM mode: questionnaire stays editable; consent forms lock except signature pens.
+            // Staff mode: form fields writable except signatures and DTC initials.
+            // SM mode: questionnaire + signatures + DTC initials editable; other consent fields locked.
             $station.toggleClass("tcn-sm-mode-active", !!isSmMode);
             $station.toggleClass("tcn-staff-mode", !isSmMode);
             $station.toggleClass("tcn-fields-locked", !!isSmMode);
@@ -1474,6 +1481,12 @@
                     return;
                 }
                 if ($el.attr("name") === "__RequestVerificationToken") {
+                    return;
+                }
+                if ($el.hasClass("tcn-initials-input")) {
+                    $el.prop("disabled", false)
+                        .prop("readonly", !isSmMode)
+                        .toggleClass("read-only-style", !isSmMode);
                     return;
                 }
                 $el.prop("disabled", !!isSmMode);
@@ -2236,6 +2249,16 @@
                     }
                 }
 
+                const $otherTreatmentCheck = $item.find('input[name="dtc_other_treatment"]').first();
+                const $otherTreatmentText = $item.find('textarea[name="dtc_other_treatment_text"]').first();
+                if ($otherTreatmentText.length) {
+                    const otherTreatmentRequired = $otherTreatmentCheck.is(":checked");
+                    $otherTreatmentText.prop("required", otherTreatmentRequired);
+                    if (!otherTreatmentRequired) {
+                        $otherTreatmentText.removeAttr("aria-invalid");
+                    }
+                }
+
                 if ($treatmentChecks.length) {
                     const firstCheck = $treatmentChecks.get(0);
                     if (firstCheck) {
@@ -2252,7 +2275,11 @@
             });
         }
 
-        function getFirstInvalidDentalTreatmentConsentField() {
+        function getFirstInvalidDentalTreatmentConsentField(options) {
+            options = options || {};
+            const includeInitials = options.includeInitials !== false;
+            const initialsOnly = !!options.initialsOnly;
+
             if (!$("#tcnIncludeDentalTreatment").is(":checked")) {
                 return null;
             }
@@ -2264,15 +2291,19 @@
                 return null;
             }
 
+            const fieldSelector = initialsOnly
+                ? ".tcn-initials-input"
+                : (includeInitials
+                    ? ".tcn-initials-input, .tcn-teeth-input, textarea[name='dtc_other_situation'], textarea[name='dtc_other_treatment_text'], .tcn-treatment-checks input[type='checkbox']"
+                    : ".tcn-teeth-input, textarea[name='dtc_other_situation'], textarea[name='dtc_other_treatment_text'], .tcn-treatment-checks input[type='checkbox']");
+
             let invalid = null;
             $cards.each(function () {
                 if (invalid) {
                     return false;
                 }
                 const $card = $(this);
-                const fields = $card.find(
-                    ".tcn-initials-input, .tcn-teeth-input, textarea[name='dtc_other_situation'], .tcn-treatment-checks input[type='checkbox']"
-                ).filter(function () {
+                const fields = $card.find(fieldSelector).filter(function () {
                     if (this.disabled) {
                         return false;
                     }
@@ -2293,8 +2324,8 @@
             return invalid;
         }
 
-        function validateDentalTreatmentConsentBeforeSave() {
-            const invalid = getFirstInvalidDentalTreatmentConsentField();
+        function validateDentalTreatmentConsentBeforeSave(options) {
+            const invalid = getFirstInvalidDentalTreatmentConsentField(options);
             if (!invalid) {
                 return true;
             }
@@ -2311,6 +2342,10 @@
             }, 80);
 
             return false;
+        }
+
+        function validateDentalTreatmentInitialsBeforeUnlock() {
+            return validateDentalTreatmentConsentBeforeSave({ initialsOnly: true, includeInitials: true });
         }
 
         function getFirstInvalidQuestionnaireField() {
@@ -2453,8 +2488,9 @@
                 const show = $(this).is(":checked");
                 $detail.prop("hidden", !show);
                 if (!show && $text.length) {
-                    $text.val("");
+                    $text.val("").prop("required", false).removeAttr("aria-invalid");
                 }
+                syncDentalTreatmentItemRequiredFields($(this).closest(".tcn-dentist-form-card"));
             });
         })();
 
@@ -2546,7 +2582,8 @@
                 return;
             }
 
-            if (!validateDentalTreatmentConsentBeforeSave()) {
+            // Skip initials here — SM fills them in SM mode; Unlock enforces them.
+            if (!validateDentalTreatmentConsentBeforeSave({ includeInitials: false })) {
                 return;
             }
 
@@ -2590,6 +2627,10 @@
         });
 
         $("#tcnStaffUnlockBtn").on("click", async function () {
+            if (isSmModeActive && !validateDentalTreatmentInitialsBeforeUnlock()) {
+                return;
+            }
+
             const result = await Swal.fire({
                 title: "Staff Unlock",
                 html: '<p class="mb-2">Enter your account password to unlock.</p>'
