@@ -908,6 +908,22 @@
                                             <option value="@reason">@reason</option>
                                         }
                                     </select>
+                                    <div class="mt-3" id="findingTreatmentNotPossibleCommandNameSection" style="display:none;">
+                                        <label class="form-label" for="findingTreatmentNotPossibleCommandName">Command Name <span class="text-danger">*</span></label>
+                                        <input type="text"
+                                               id="findingTreatmentNotPossibleCommandName"
+                                               class="form-control"
+                                               maxlength="200"
+                                               autocomplete="off" />
+                                    </div>
+                                    <div class="mt-3" id="findingTreatmentPlanNextAppointmentDateSection" style="display:none;">
+                                        <label class="form-label" for="findingTreatmentPlanNextAppointmentDate">Enter Next Appointment Date <span class="text-danger">*</span></label>
+                                        <input type="text"
+                                               id="findingTreatmentPlanNextAppointmentDate"
+                                               class="form-control"
+                                               placeholder="MM/DD/YYYY"
+                                               autocomplete="off" />
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -1154,6 +1170,8 @@
         const SHOW_FINDING_APPOINTMENT_DETAILS = @Json.Serialize(showFindingAppointmentDetails);
         const SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS = @Json.Serialize(showCoordinatorExternalExamFields);
         const SHOW_TREATMENT_POSSIBLE_FIELDS = @Json.Serialize(showTreatmentPossibleFields);
+        const REASON_COMMAND_EXCUSED = @Json.Serialize(DentalFindingConstants.ReasonCommandExcused);
+        const REASON_TREATMENT_PLAN_IN_PROGRESS = @Json.Serialize(DentalFindingConstants.ReasonTreatmentPlanInProgress);
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
         const FINDINGS_TABLE_COLSPAN = @Json.Serialize(findingsTableColspan);
@@ -1544,7 +1562,16 @@
             if ($el.attr("name") === "FindingIsTreatmentPossible") {
                 return true;
             }
-            if ($el.attr("id") === "findingTreatmentNotPossibleReason") {
+            if ($el.attr("id") === "findingTreatmentNotPossibleReason"
+                || $el.attr("id") === "findingTreatmentNotPossibleCommandName"
+                || $el.attr("id") === "findingTreatmentPlanNextAppointmentDate") {
+                return true;
+            }
+            // Flatpickr alt input for next-appointment date.
+            if ($el.hasClass("flatpickr-input")
+                && ($el.prev("#findingTreatmentPlanNextAppointmentDate").length
+                    || $el.next("#findingTreatmentPlanNextAppointmentDate").length
+                    || $el.siblings("#findingTreatmentPlanNextAppointmentDate").length)) {
                 return true;
             }
             if ($el.attr("id") === "addFindingToListBtn" || $el.attr("id") === "cancelFindingFormBtn") {
@@ -1559,7 +1586,15 @@
             }
             $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
             $("#findingTreatmentNotPossibleReason").val("");
+            $("#findingTreatmentNotPossibleCommandName").val("");
+            if (treatmentPlanNextAppointmentDatePicker) {
+                treatmentPlanNextAppointmentDatePicker.clear();
+            } else {
+                $("#findingTreatmentPlanNextAppointmentDate").val("");
+            }
             $("#findingTreatmentNotPossibleReasonSection").hide();
+            $("#findingTreatmentNotPossibleCommandNameSection").hide();
+            $("#findingTreatmentPlanNextAppointmentDateSection").hide();
         }
 
         function isClass3Classification(classification) {
@@ -1613,6 +1648,46 @@
             $("#findingTreatmentNotPossibleReasonSection").toggle(isNo);
             if (!isNo) {
                 $("#findingTreatmentNotPossibleReason").val("");
+                clearTreatmentNotPossibleReasonDetails();
+            } else {
+                toggleTreatmentNotPossibleReasonDetails();
+            }
+        }
+
+        function clearTreatmentNotPossibleReasonDetails() {
+            $("#findingTreatmentNotPossibleCommandName").val("");
+            if (treatmentPlanNextAppointmentDatePicker) {
+                treatmentPlanNextAppointmentDatePicker.clear();
+            } else {
+                $("#findingTreatmentPlanNextAppointmentDate").val("");
+            }
+            $("#findingTreatmentNotPossibleCommandNameSection").hide();
+            $("#findingTreatmentPlanNextAppointmentDateSection").hide();
+        }
+
+        function toggleTreatmentNotPossibleReasonDetails() {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS) {
+                return;
+            }
+
+            const reason = ($("#findingTreatmentNotPossibleReason").val() || "").toString().trim();
+            const showCommandName = reason === REASON_COMMAND_EXCUSED;
+            const showNextApptDate = reason === REASON_TREATMENT_PLAN_IN_PROGRESS;
+
+            $("#findingTreatmentNotPossibleCommandNameSection").toggle(showCommandName);
+            $("#findingTreatmentPlanNextAppointmentDateSection").toggle(showNextApptDate);
+
+            if (!showCommandName) {
+                $("#findingTreatmentNotPossibleCommandName").val("");
+            }
+            if (!showNextApptDate) {
+                if (treatmentPlanNextAppointmentDatePicker) {
+                    treatmentPlanNextAppointmentDatePicker.clear();
+                } else {
+                    $("#findingTreatmentPlanNextAppointmentDate").val("");
+                }
+            } else {
+                initTreatmentPlanNextAppointmentDatePicker();
             }
         }
 
@@ -1650,6 +1725,66 @@
 
         let appointmentDatePicker = null;
         let appointmentStartTimePicker = null;
+        let treatmentPlanNextAppointmentDatePicker = null;
+
+        function initTreatmentPlanNextAppointmentDatePicker() {
+            if (!SHOW_TREATMENT_POSSIBLE_FIELDS || typeof flatpickr === "undefined") {
+                return;
+            }
+            if (treatmentPlanNextAppointmentDatePicker || !$("#findingTreatmentPlanNextAppointmentDate").length) {
+                return;
+            }
+
+            treatmentPlanNextAppointmentDatePicker = flatpickr("#findingTreatmentPlanNextAppointmentDate", {
+                altInput: true,
+                altFormat: "m/d/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true
+            });
+        }
+
+        function formatTreatmentPlanNextAppointmentDateForDisplay(value) {
+            if (!value) {
+                return "-";
+            }
+            const raw = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+                const parts = raw.substring(0, 10).split("-");
+                return parts[1] + "/" + parts[2] + "/" + parts[0];
+            }
+            const date = new Date(raw);
+            if (Number.isNaN(date.getTime())) {
+                return raw;
+            }
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return month + "/" + day + "/" + date.getFullYear();
+        }
+
+        function toTreatmentPlanNextAppointmentDateValue(value) {
+            if (!value) {
+                return "";
+            }
+            const raw = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+                return raw.substring(0, 10);
+            }
+            const date = new Date(raw);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return date.getFullYear() + "-" + month + "-" + day;
+        }
+
+        function parseTreatmentPlanNextAppointmentDate(value) {
+            const raw = toTreatmentPlanNextAppointmentDateValue(value);
+            if (!raw) {
+                return null;
+            }
+            return raw + "T00:00:00";
+        }
 
         function initAppointmentPickers() {
             if (!SHOW_FINDING_ASSIGNMENT_FIELDS || typeof flatpickr === "undefined") {
@@ -1879,6 +2014,20 @@
             }
 
             if (SHOW_TREATMENT_POSSIBLE_FIELDS && finding.isTreatmentPossible === false) {
+                const reason = (finding.treatmentNotPossibleReason || "").toString().trim();
+                if (reason === REASON_COMMAND_EXCUSED
+                    && !(finding.treatmentNotPossibleCommandName || "").toString().trim()) {
+                    Swal.fire("Invalid Data", "Command Name is required when Reason is Command Excused.", "warning");
+                    return null;
+                }
+                if (reason === REASON_TREATMENT_PLAN_IN_PROGRESS
+                    && !finding.treatmentPlanNextAppointmentDate) {
+                    Swal.fire("Invalid Data", "Next Appointment Date is required when Reason is Treatment Plan In Progress.", "warning");
+                    return null;
+                }
+            }
+
+            if (SHOW_TREATMENT_POSSIBLE_FIELDS && finding.isTreatmentPossible === false) {
                 const assignment = getEditingFindingAppointmentAssignment();
                 if (assignment) {
                     Swal.fire({
@@ -1969,6 +2118,33 @@
                     return ($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") === "No"
                         ? ($("#findingTreatmentNotPossibleReason").val() || "")
                         : "";
+                })(),
+                treatmentNotPossibleCommandName: (function () {
+                    const classification = $("input[name='FindingClassification']:checked").val() || "";
+                    if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(classification)) {
+                        return "";
+                    }
+                    if (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") !== "No") {
+                        return "";
+                    }
+                    const reason = ($("#findingTreatmentNotPossibleReason").val() || "").toString().trim();
+                    return reason === REASON_COMMAND_EXCUSED
+                        ? ($("#findingTreatmentNotPossibleCommandName").val()?.trim() || "")
+                        : "";
+                })(),
+                treatmentPlanNextAppointmentDate: (function () {
+                    const classification = $("input[name='FindingClassification']:checked").val() || "";
+                    if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(classification)) {
+                        return null;
+                    }
+                    if (($("input[name='FindingIsTreatmentPossible']:checked").val() || "Yes") !== "No") {
+                        return null;
+                    }
+                    const reason = ($("#findingTreatmentNotPossibleReason").val() || "").toString().trim();
+                    if (reason !== REASON_TREATMENT_PLAN_IN_PROGRESS) {
+                        return null;
+                    }
+                    return parseTreatmentPlanNextAppointmentDate($("#findingTreatmentPlanNextAppointmentDate").val());
                 })()
             };
         }
@@ -2036,7 +2212,25 @@
                     $("input[name='FindingIsTreatmentPossible']").prop("checked", false);
                     $("input[name='FindingIsTreatmentPossible'][value='" + (isPossible ? "Yes" : "No") + "']").prop("checked", true);
                     $("#findingTreatmentNotPossibleReason").val(isPossible ? "" : (finding.treatmentNotPossibleReason || ""));
+                    $("#findingTreatmentNotPossibleCommandName").val(
+                        !isPossible && (finding.treatmentNotPossibleReason || "") === REASON_COMMAND_EXCUSED
+                            ? (finding.treatmentNotPossibleCommandName || "")
+                            : ""
+                    );
                     toggleTreatmentPossibleReasonVisibility();
+                    if (!isPossible && (finding.treatmentNotPossibleReason || "") === REASON_TREATMENT_PLAN_IN_PROGRESS) {
+                        initTreatmentPlanNextAppointmentDatePicker();
+                        const nextDate = toTreatmentPlanNextAppointmentDateValue(finding.treatmentPlanNextAppointmentDate);
+                        if (treatmentPlanNextAppointmentDatePicker) {
+                            if (nextDate) {
+                                treatmentPlanNextAppointmentDatePicker.setDate(nextDate, true);
+                            } else {
+                                treatmentPlanNextAppointmentDatePicker.clear();
+                            }
+                        } else {
+                            $("#findingTreatmentPlanNextAppointmentDate").val(nextDate);
+                        }
+                    }
                 }
             }
         }
@@ -2109,6 +2303,16 @@
                         && item.isTreatmentPossible === false
                         ? (item.treatmentNotPossibleReason || "")
                         : "",
+                    treatmentNotPossibleCommandName: isClass3Classification(item.classification)
+                        && item.isTreatmentPossible === false
+                        && (item.treatmentNotPossibleReason || "") === REASON_COMMAND_EXCUSED
+                        ? (item.treatmentNotPossibleCommandName || "")
+                        : "",
+                    treatmentPlanNextAppointmentDate: isClass3Classification(item.classification)
+                        && item.isTreatmentPossible === false
+                        && (item.treatmentNotPossibleReason || "") === REASON_TREATMENT_PLAN_IN_PROGRESS
+                        ? (item.treatmentPlanNextAppointmentDate || null)
+                        : null,
                     clientKey: item.clientKey || ""
                 };
             });
@@ -2266,11 +2470,23 @@
 
             const isPossible = finding.isTreatmentPossible !== false;
             const reason = (finding.treatmentNotPossibleReason || "").toString().trim();
+            let reasonDetails = "";
+            if (!isPossible && reason === REASON_COMMAND_EXCUSED) {
+                reasonDetails = buildFindingDetailItem(
+                    "Command Name",
+                    escapeHtml((finding.treatmentNotPossibleCommandName || "").toString().trim() || "-"));
+            } else if (!isPossible && reason === REASON_TREATMENT_PLAN_IN_PROGRESS) {
+                reasonDetails = buildFindingDetailItem(
+                    "Enter Next Appointment Date",
+                    escapeHtml(formatTreatmentPlanNextAppointmentDateForDisplay(finding.treatmentPlanNextAppointmentDate)));
+            }
+
             return "<div class='finding-detail-subsection'>" +
                 "<div class='finding-detail-subsection-title'>Treatment Possibility</div>" +
                 "<div class='finding-detail-grid'>" +
                 buildFindingDetailItem("Can treatment procedure be completed at event?", escapeHtml(isPossible ? "Yes" : "No")) +
                 (isPossible ? "" : buildFindingDetailItem("Reason", escapeHtml(reason || "-"))) +
+                reasonDetails +
                 "</div></div>";
         }
 
@@ -3032,6 +3248,8 @@
                 if (!isClass3Classification(finding.classification)) {
                     finding.isTreatmentPossible = null;
                     finding.treatmentNotPossibleReason = "";
+                    finding.treatmentNotPossibleCommandName = "";
+                    finding.treatmentPlanNextAppointmentDate = null;
                 }
             });
             populateToothOptions();
@@ -3082,6 +3300,11 @@
                 }
                 toggleTreatmentPossibleReasonVisibility();
             });
+
+            $(document).on("change", "#findingTreatmentNotPossibleReason", function () {
+                toggleTreatmentNotPossibleReasonDetails();
+            });
+
             $("#findingPrimaryTooth").on("change", function () {
                 populateToothOptions();
                 if ($("#findingDiseaseType").val() === "Restorative") {

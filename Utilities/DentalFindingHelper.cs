@@ -157,11 +157,24 @@ namespace ExcelFilesCompiler.Utilities
                     return prefix + "Reason is required when Is Treatment Possible is No.";
                 }
 
+                var reason = finding.TreatmentNotPossibleReason.Trim();
                 if (!DentalFindingConstants.TreatmentNotPossibleReasons.Contains(
-                        finding.TreatmentNotPossibleReason.Trim(),
+                        reason,
                         StringComparer.Ordinal))
                 {
                     return prefix + "Reason selection is invalid.";
+                }
+
+                if (string.Equals(reason, DentalFindingConstants.ReasonCommandExcused, StringComparison.Ordinal)
+                    && string.IsNullOrWhiteSpace(finding.TreatmentNotPossibleCommandName))
+                {
+                    return prefix + "Command Name is required when Reason is Command Excused.";
+                }
+
+                if (string.Equals(reason, DentalFindingConstants.ReasonTreatmentPlanInProgress, StringComparison.Ordinal)
+                    && !finding.TreatmentPlanNextAppointmentDate.HasValue)
+                {
+                    return prefix + "Next Appointment Date is required when Reason is Treatment Plan In Progress.";
                 }
             }
 

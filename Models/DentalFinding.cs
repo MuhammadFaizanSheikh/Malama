@@ -72,15 +72,19 @@ namespace Malama.Models
         public const string Periodontal = "Periodontal";
         public const string Restorative = "Restorative";
 
+        public const string ReasonCommandExcused = "Command Excused";
+        public const string ReasonTreatmentPlanInProgress = "Treatment Plan In Progress";
+
         public static readonly string[] TreatmentNotPossibleReasons =
         {
+            ReasonCommandExcused,
             "Service Not Offered at Event",
-            "Dentist Referred after review",
-            "Reclassified and service not perfomed",
+            ReasonTreatmentPlanInProgress,
+            "Extraneous Factor",
             "Missing Equipment",
-            "Not enouth time",
-            "Other",
-            "Sm Refused"
+            "Service Member Refused",
+            "Dentist Referred After Review",
+            "Not Enough Time"
         };
     }
 
@@ -137,6 +141,12 @@ namespace Malama.Models
 
         /// <summary>Required when <see cref="IsTreatmentPossible"/> is false.</summary>
         public string? TreatmentNotPossibleReason { get; set; }
+
+        /// <summary>Required when reason is Command Excused.</summary>
+        public string? TreatmentNotPossibleCommandName { get; set; }
+
+        /// <summary>Required when reason is Treatment Plan In Progress (date only).</summary>
+        public DateTime? TreatmentPlanNextAppointmentDate { get; set; }
     }
 
     public static class DentalFindingSources
@@ -188,6 +198,12 @@ namespace Malama.Models
 
         public string? TreatmentNotPossibleReason { get; set; }
 
+        /// <summary>Required when reason is Command Excused.</summary>
+        public string? TreatmentNotPossibleCommandName { get; set; }
+
+        /// <summary>Required when reason is Treatment Plan In Progress (date only).</summary>
+        public DateTime? TreatmentPlanNextAppointmentDate { get; set; }
+
         /// <summary>Client-side stable key for appointment assignment (Treatment Coordinator).</summary>
         public string? ClientKey { get; set; }
     }
@@ -222,7 +238,9 @@ namespace Malama.Models
                 ExternalDentistRemarks = entity.ExternalDentistRemarks,
                 Source = entity.Source,
                 IsTreatmentPossible = entity.IsTreatmentPossible,
-                TreatmentNotPossibleReason = entity.TreatmentNotPossibleReason
+                TreatmentNotPossibleReason = entity.TreatmentNotPossibleReason,
+                TreatmentNotPossibleCommandName = entity.TreatmentNotPossibleCommandName,
+                TreatmentPlanNextAppointmentDate = entity.TreatmentPlanNextAppointmentDate
             };
         }
 
@@ -231,6 +249,9 @@ namespace Malama.Models
             var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
             bool? isTreatmentPossible = isClass3
                 ? dto.IsTreatmentPossible ?? true
+                : null;
+            var reason = isTreatmentPossible == false
+                ? dto.TreatmentNotPossibleReason?.Trim()
                 : null;
 
             return new DentalFinding
@@ -254,10 +275,30 @@ namespace Malama.Models
                 ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim(),
                 Source = dto.Source?.Trim(),
                 IsTreatmentPossible = isTreatmentPossible,
-                TreatmentNotPossibleReason = isTreatmentPossible == false
-                    ? dto.TreatmentNotPossibleReason?.Trim()
-                    : null
+                TreatmentNotPossibleReason = reason,
+                TreatmentNotPossibleCommandName = ResolveCommandName(reason, dto.TreatmentNotPossibleCommandName),
+                TreatmentPlanNextAppointmentDate = ResolveNextAppointmentDate(reason, dto.TreatmentPlanNextAppointmentDate)
             };
+        }
+
+        public static string? ResolveCommandName(string? reason, string? commandName)
+        {
+            if (!string.Equals(reason, DentalFindingConstants.ReasonCommandExcused, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return string.IsNullOrWhiteSpace(commandName) ? null : commandName.Trim();
+        }
+
+        public static DateTime? ResolveNextAppointmentDate(string? reason, DateTime? nextAppointmentDate)
+        {
+            if (!string.Equals(reason, DentalFindingConstants.ReasonTreatmentPlanInProgress, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return nextAppointmentDate?.Date;
         }
 
         public static string SerializeList(IEnumerable<string>? values)

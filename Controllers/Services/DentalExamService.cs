@@ -359,6 +359,13 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.TreatmentNotPossibleReason = isTreatmentPossible == false
                 ? dto.TreatmentNotPossibleReason?.Trim()
                 : null;
+            var reason = entity.TreatmentNotPossibleReason;
+            entity.TreatmentNotPossibleCommandName = DentalFindingMapper.ResolveCommandName(
+                reason,
+                dto.TreatmentNotPossibleCommandName);
+            entity.TreatmentPlanNextAppointmentDate = DentalFindingMapper.ResolveNextAppointmentDate(
+                reason,
+                dto.TreatmentPlanNextAppointmentDate);
         }
 
         private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)
@@ -377,6 +384,18 @@ namespace ExcelFilesCompiler.Controllers.Services
             var dtoReason = dtoIsTreatmentPossible == false
                 ? dto.TreatmentNotPossibleReason?.Trim()
                 : null;
+            var existingCommandName = DentalFindingMapper.ResolveCommandName(
+                existingReason,
+                existing.TreatmentNotPossibleCommandName);
+            var dtoCommandName = DentalFindingMapper.ResolveCommandName(
+                dtoReason,
+                dto.TreatmentNotPossibleCommandName);
+            var existingNextAppt = DentalFindingMapper.ResolveNextAppointmentDate(
+                existingReason,
+                existing.TreatmentPlanNextAppointmentDate);
+            var dtoNextAppt = DentalFindingMapper.ResolveNextAppointmentDate(
+                dtoReason,
+                dto.TreatmentPlanNextAppointmentDate);
 
             return existing.IsPrimaryTooth == dto.IsPrimaryTooth
                 && string.Equals(existing.AffectedTooth?.Trim(), dto.AffectedTooth?.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -389,6 +408,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && string.Equals(existing.ExternalDentistRemarks?.Trim(), dto.ExternalDentistRemarks?.Trim(), StringComparison.Ordinal)
                 && Nullable.Equals(existing.IsTreatmentPossible, dtoIsTreatmentPossible)
                 && string.Equals(existingReason, dtoReason, StringComparison.Ordinal)
+                && string.Equals(existingCommandName, dtoCommandName, StringComparison.Ordinal)
+                && Nullable.Equals(existingNextAppt, dtoNextAppt)
                 && existingSurfaces.Count == dtoSurfaces.Count
                 && existingSurfaces.All(s => dtoSurfaces.Contains(s, StringComparer.OrdinalIgnoreCase))
                 && existingCdt.Count == dtoCdt.Count
