@@ -93,9 +93,18 @@ namespace ExcelFilesCompiler.Controllers
                     "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}",
                     CLASSNAME, methodName, data.Count, eventId);
 
+                var completedCount = data.Count(sm =>
+                    string.Equals(
+                        sm.DentalTreatmentRecord?.Status?.Trim(),
+                        AppConstants.Status.Completed,
+                        StringComparison.OrdinalIgnoreCase));
+                var pendingCount = data.Count - completedCount;
+
                 ViewBag.Summary = new Dictionary<string, int>
                 {
-                    ["Total"] = data.Count
+                    ["Total"] = data.Count,
+                    ["Pending"] = pendingCount,
+                    ["Completed"] = completedCount
                 };
                 ViewBag.EventId = eventId;
 

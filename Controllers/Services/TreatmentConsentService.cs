@@ -56,10 +56,25 @@ namespace ExcelFilesCompiler.Controllers.Services
                     throw new ArgumentOutOfRangeException(nameof(eventId), "EventId must be greater than zero.");
                 }
 
+                var class3 = DentalExamDenClass.Class3;
+                var completed = AppConstants.Status.Completed;
+                var needed = AppConstants.NeededOrNA.Needed;
+                var drc3 = DentalStationEligibilityHelper.SmDrcClass3;
+
                 var serviceMembers = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
-                             c.CheckIn == AppConstants.YesNo.Yes)
+                             c.CheckIn == AppConstants.YesNo.Yes &&
+                             (
+                                 c.Drc == drc3
+                                 || (
+                                     c.DentalNeeded == needed
+                                     && c.DentalExamRecord != null
+                                     && c.DentalExamRecord.Status == completed
+                                     && c.DentalExamRecord.DenClass == class3
+                                 )
+                             ),
+                        c => c.DentalExamRecord)
                     .ToListAsync();
 
                 var smIds = serviceMembers.Select(x => x.Id).ToList();
@@ -81,7 +96,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     consentsBySmId);
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Retrieved {Count} checked-in service members for EventId={EventId}",
+                    "{ClassName}, {MethodName}, Retrieved {Count} Treatment Consent candidates for EventId={EventId}",
                     CLASSNAME, methodName, viewModel.TotalCount, eventId);
 
                 return viewModel;
@@ -114,11 +129,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var serviceMember = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.Id == serviceMembersChildId,
-                        c => c.ServiceMembersParent)
+                        c => c.ServiceMembersParent,
+                        c => c.DentalExamRecord)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
                 {
+                    return null;
+                }
+
+                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
+                        serviceMember,
+                        serviceMember.DentalExamRecord))
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, ServiceMembersChildId={ServiceMembersChildId} is not eligible for Treatment Consent (same rules as Treatment Coordinator)",
+                        CLASSNAME, methodName, serviceMembersChildId);
                     return null;
                 }
 
@@ -197,12 +223,22 @@ namespace ExcelFilesCompiler.Controllers.Services
                 var serviceMember = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.Id == dto.ServiceMembersChildId,
-                        c => c.ServiceMembersParent)
+                        c => c.ServiceMembersParent,
+                        c => c.DentalExamRecord)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
                 {
                     return TreatmentConsentStationSaveResult.Fail("Not Found", "Service member not found.");
+                }
+
+                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
+                        serviceMember,
+                        serviceMember.DentalExamRecord))
+                {
+                    return TreatmentConsentStationSaveResult.Fail(
+                        "Not Eligible",
+                        "This service member is not eligible for Treatment Consent.");
                 }
 
                 var barcode = serviceMember.Barcode;

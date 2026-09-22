@@ -4,7 +4,9 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Treatment Coordinator";
     var selectedEventId = ViewBag.EventId;
-    var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
+    var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : 0;
+    var pendingCount = ViewBag.Summary != null && ViewBag.Summary.ContainsKey("Pending") ? ViewBag.Summary["Pending"] : 0;
+    var completedCount = ViewBag.Summary != null && ViewBag.Summary.ContainsKey("Completed") ? ViewBag.Summary["Completed"] : 0;
 }
 
 <style>
@@ -111,6 +113,14 @@
         width: 4px;
         background: var(--dco-indigo);
         opacity: 0.85;
+    }
+
+    .dco-stat.is-pending::before {
+        background: #d97706;
+    }
+
+    .dco-stat.is-completed::before {
+        background: #16a34a;
     }
 
     .dco-stat-label {
@@ -350,6 +360,14 @@
                 <div class="dco-stat">
                     <p class="dco-stat-label">Total SM (Checked In)</p>
                     <p class="dco-stat-value">@totalCount</p>
+                </div>
+                <div class="dco-stat is-pending">
+                    <p class="dco-stat-label">Pending</p>
+                    <p class="dco-stat-value">@pendingCount</p>
+                </div>
+                <div class="dco-stat is-completed">
+                    <p class="dco-stat-label">Completed</p>
+                    <p class="dco-stat-value">@completedCount</p>
                 </div>
             </div>
         }

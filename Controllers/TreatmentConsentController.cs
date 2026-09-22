@@ -106,8 +106,8 @@ namespace ExcelFilesCompiler.Controllers
                 if (pageModel == null)
                 {
                     TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Not Found";
-                    TempData["ResponseMessage"] = "Service member not found.";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "Service member not found or not eligible for Treatment Consent.";
                     return RedirectToAction(nameof(Index));
                 }
 
