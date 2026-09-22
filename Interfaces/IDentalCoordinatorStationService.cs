@@ -13,7 +13,8 @@ namespace ExcelFilesCompiler.Interfaces
             DentalCoordinatorStationSaveDto dto,
             ServiceMembersChild serviceMember,
             string userName,
-            string userId);
+            string userId,
+            long eventStaffId);
     }
 
     public class DentalCoordinatorStationSaveResult

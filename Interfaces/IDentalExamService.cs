@@ -14,5 +14,14 @@ namespace ExcelFilesCompiler.Interfaces
             DentalCoordinatorStationSaveDto dto,
             string userName,
             bool saveChanges = true);
+
+        /// <summary>
+        /// Applies Dental Findings from Treatment Coordinator with ownership rules (exam vs coordinator sourced).
+        /// </summary>
+        Task ApplyCoordinatorFindingsAsync(
+            DentalCoordinatorStationSaveDto dto,
+            string userName,
+            string userId,
+            bool saveChanges = true);
     }
 }

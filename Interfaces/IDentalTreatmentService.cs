@@ -8,7 +8,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task SaveOrUpdateFromFormDataAsync(DentalTreatmentStationSaveDto dto, string userName, string userId);
 
         /// <summary>
-        /// Upserts Treatment Coordinator name/datetime/comments on DentalTreatment without touching treatment children.
+        /// Upserts Treatment Coordinator details, documents metadata, and appointments on DentalTreatment.
         /// Requires an existing DentalExam for the service member.
         /// </summary>
         Task ApplyCoordinatorSectionAsync(
@@ -17,6 +17,10 @@ namespace ExcelFilesCompiler.Interfaces
             string status,
             string userName,
             string userId,
+            long eventStaffId,
+            IReadOnlyList<TreatmentCoordinatorDocumentMetaDto> documents,
+            IReadOnlyList<TreatmentCoordinatorAppointmentJsonDto> appointments,
+            IReadOnlyDictionary<string, long> findingIdByClientKey,
             bool saveChanges = true);
     }
 }

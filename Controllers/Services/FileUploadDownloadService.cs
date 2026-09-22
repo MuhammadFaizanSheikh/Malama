@@ -175,6 +175,66 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
+        public async Task<FileUploadResult> UploadPdfFileToStaging(
+            IFormFile file,
+            string station,
+            string prefix,
+            string barcode,
+            string fileKey)
+        {
+            const string METHOD = nameof(UploadPdfFileToStaging);
+
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return new FileUploadResult { Success = false, Message = "No file selected" };
+                }
+
+                var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+                if (extension != ".pdf")
+                {
+                    return new FileUploadResult { Success = false, Message = "Only PDF files are allowed" };
+                }
+
+                var prefixFolder = Path.Combine(_baseFolder, $"{station}_Results", $"{prefix}_Results");
+                var stagingFolder = Path.Combine(prefixFolder, ".staging");
+                Directory.CreateDirectory(stagingFolder);
+
+                var stagingFileName = $"{barcode}_{fileKey}_{Guid.NewGuid():N}.pdf";
+                var fullPath = Path.Combine(stagingFolder, stagingFileName);
+
+                await using (var stream = new FileStream(fullPath, FileMode.CreateNew))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                _logger.LogInformation(
+                    "{Class}.{Method} - PDF staged | Path={Path}",
+                    CLASSNAME, METHOD, fullPath);
+
+                return new FileUploadResult
+                {
+                    Success = true,
+                    FileName = stagingFileName,
+                    FullPath = fullPath,
+                    RelativePath = Path.Combine("Results", $"{station}_Results", $"{prefix}_Results", ".staging", stagingFileName)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{Class}.{Method} - Error staging PDF | Station={Station}, Prefix={Prefix}, Barcode={Barcode}",
+                    CLASSNAME, METHOD, station, prefix, barcode);
+
+                return new FileUploadResult
+                {
+                    Success = false,
+                    Message = "Error occurred while staging PDF"
+                };
+            }
+        }
+
         public bool CommitStagedImageFile(string stagingFullPath, string station, string prefix, string finalFileName)
         {
             const string METHOD = nameof(CommitStagedImageFile);

@@ -50,6 +50,11 @@ namespace ExcelFilesCompiler.Repositories.Services
             _dbSet.RemoveRange(entities);
         }
 
+        public T? FindLocal(Func<T, bool> predicate)
+        {
+            return _dbSet.Local.FirstOrDefault(predicate);
+        }
+
         public IQueryable<T> GetWithIncludeTracking(
     Expression<Func<T, bool>> predicate = null,
     params Expression<Func<T, object>>[] includes)

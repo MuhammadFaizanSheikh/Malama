@@ -52,6 +52,8 @@ namespace ExcelFilesCompiler
         public DbSet<DentalTreatmentPrescription> DentalTreatmentPrescription { get; set; }
         public DbSet<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; set; }
         public DbSet<TreatmentConsent> TreatmentConsent { get; set; }
+        public DbSet<TreatmentCoordinatorAppointment> TreatmentCoordinatorAppointment { get; set; }
+        public DbSet<TreatmentCoordinatorAppointmentFinding> TreatmentCoordinatorAppointmentFinding { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -193,6 +195,8 @@ namespace ExcelFilesCompiler
                     .WithMany(d => d.Findings)
                     .HasForeignKey(e => e.DentalExamId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ClientKey);
             });
 
             modelBuilder.Entity<DentalExamSelectedTooth>(entity =>
@@ -219,6 +223,32 @@ namespace ExcelFilesCompiler
 
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
                 entity.HasIndex(e => e.DentalExamId);
+            });
+
+            modelBuilder.Entity<TreatmentCoordinatorAppointment>(entity =>
+            {
+                entity.HasOne(e => e.DentalTreatment)
+                    .WithMany(d => d.CoordinatorAppointments)
+                    .HasForeignKey(e => e.DentalTreatmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.DentalTreatmentId);
+            });
+
+            modelBuilder.Entity<TreatmentCoordinatorAppointmentFinding>(entity =>
+            {
+                entity.HasOne(e => e.Appointment)
+                    .WithMany(a => a.Findings)
+                    .HasForeignKey(e => e.AppointmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.DentalFinding)
+                    .WithMany()
+                    .HasForeignKey(e => e.DentalFindingId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => new { e.AppointmentId, e.DentalFindingId }).IsUnique();
+                entity.HasIndex(e => e.DentalFindingId);
             });
 
             modelBuilder.Entity<DentalTreatmentFinding>(entity =>

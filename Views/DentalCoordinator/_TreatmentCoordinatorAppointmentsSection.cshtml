@@ -3,6 +3,7 @@
     var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
     var eventAppointmentDayWindowsJson = ViewData["EventAppointmentDayWindowsJson"] as string ?? "[]";
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
+    var initialAppointmentsJson = ViewData["AppointmentsJson"] as string ?? "[]";
     var assignableDentists = ViewData["AssignableDentists"] as List<TreatmentCoordinatorAssignableDentistDto>
         ?? new List<TreatmentCoordinatorAssignableDentistDto>();
     var dentistCount = Math.Max(assignableDentists.Count, 1);
@@ -394,7 +395,7 @@
 <div id="tcAppointmentsSection" aria-label="Treatment coordinator appointments">
     <h4 class="tc-appt-title">Appointments</h4>
 
-    <input type="hidden" name="AppointmentsJson" id="AppointmentsJson" value="[]" />
+    <input type="hidden" name="AppointmentsJson" id="AppointmentsJson" value='@initialAppointmentsJson' />
 
     <div class="tc-appt-summary" id="tcAppointmentsSummary" aria-live="polite"></div>
 
@@ -592,6 +593,14 @@
         window.resolveTreatmentCoordinatorDentistDisplayName = resolveDentistDisplayName;
 
         let tcAppointments = [];
+        try {
+            tcAppointments = JSON.parse(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(initialAppointmentsJson))) || [];
+            if (!Array.isArray(tcAppointments)) {
+                tcAppointments = [];
+            }
+        } catch (e) {
+            tcAppointments = [];
+        }
         let editingAppointmentIndex = null;
         let tcAppointmentDatePicker = null;
         let tcAppointmentStartTimePicker = null;
@@ -906,6 +915,7 @@
             });
             $("#AppointmentsJson").val(JSON.stringify(normalized));
         }
+        window.syncAppointmentsJson = syncAppointmentsJson;
 
         function renderAppointmentsSummary() {
             const findings = getFindingsSnapshot();

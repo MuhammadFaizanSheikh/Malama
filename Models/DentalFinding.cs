@@ -147,6 +147,9 @@ namespace Malama.Models
 
         /// <summary>Required when reason is Treatment Plan In Progress (date only).</summary>
         public DateTime? TreatmentPlanNextAppointmentDate { get; set; }
+
+        /// <summary>Client-side stable key for appointment assignment (Treatment Coordinator).</summary>
+        public string? ClientKey { get; set; }
     }
 
     public static class DentalFindingSources
@@ -240,7 +243,8 @@ namespace Malama.Models
                 IsTreatmentPossible = entity.IsTreatmentPossible,
                 TreatmentNotPossibleReason = entity.TreatmentNotPossibleReason,
                 TreatmentNotPossibleCommandName = entity.TreatmentNotPossibleCommandName,
-                TreatmentPlanNextAppointmentDate = entity.TreatmentPlanNextAppointmentDate
+                TreatmentPlanNextAppointmentDate = entity.TreatmentPlanNextAppointmentDate,
+                ClientKey = entity.ClientKey
             };
         }
 
@@ -267,17 +271,18 @@ namespace Malama.Models
                 Classification = dto.Classification?.Trim(),
                 SortOrder = sortOrder,
                 ExaminationAddedBy = dto.ExaminationAddedBy,
-                ExaminationAddedOn = dto.ExaminationAddedOn,
+                ExaminationAddedOn = NormalizeDateTime(dto.ExaminationAddedOn),
                 ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
-                ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
+                ExaminationUpdatedOn = NormalizeDateTime(dto.ExaminationUpdatedOn),
                 ExternalExaminerName = dto.ExternalExaminerName?.Trim(),
-                ExternalExamDateTime = dto.ExternalExamDateTime,
+                ExternalExamDateTime = NormalizeDateTime(dto.ExternalExamDateTime),
                 ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim(),
                 Source = dto.Source?.Trim(),
                 IsTreatmentPossible = isTreatmentPossible,
                 TreatmentNotPossibleReason = reason,
                 TreatmentNotPossibleCommandName = ResolveCommandName(reason, dto.TreatmentNotPossibleCommandName),
-                TreatmentPlanNextAppointmentDate = ResolveNextAppointmentDate(reason, dto.TreatmentPlanNextAppointmentDate)
+                TreatmentPlanNextAppointmentDate = ResolveNextAppointmentDate(reason, dto.TreatmentPlanNextAppointmentDate),
+                ClientKey = string.IsNullOrWhiteSpace(dto.ClientKey) ? null : dto.ClientKey.Trim()
             };
         }
 
@@ -298,7 +303,25 @@ namespace Malama.Models
                 return null;
             }
 
-            return nextAppointmentDate?.Date;
+            return NormalizeDateTime(nextAppointmentDate?.Date);
+        }
+
+        /// <summary>
+        /// Npgsql rejects DateTimeKind.Utc for "timestamp without time zone" columns used across Malama.
+        /// </summary>
+        public static DateTime? NormalizeDateTime(DateTime? value)
+        {
+            if (!value.HasValue)
+            {
+                return null;
+            }
+
+            return DateTime.SpecifyKind(value.Value, DateTimeKind.Unspecified);
+        }
+
+        public static DateTime NormalizeDateTime(DateTime value)
+        {
+            return DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
         }
 
         public static string SerializeList(IEnumerable<string>? values)

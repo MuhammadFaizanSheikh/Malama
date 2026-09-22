@@ -1171,6 +1171,7 @@
                                accept=".pdf,application/pdf"
                                multiple
                                hidden />
+                        <div id="treatmentCoordinatorRetainedDocuments"></div>
                         <button type="button"
                                 id="treatmentCoordinatorUploadBtn"
                                 class="btn btn-outline-primary btn-sm dco-docs-upload-btn">
@@ -1218,6 +1219,7 @@
                     appointmentsViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
                     appointmentsViewData["AssignableDentists"] = ViewBag.AssignableDentists as List<TreatmentCoordinatorAssignableDentistDto>
                         ?? new List<TreatmentCoordinatorAssignableDentistDto>();
+                    appointmentsViewData["AppointmentsJson"] = ViewBag.AppointmentsJson as string ?? "[]";
                 }
                 @await Html.PartialAsync("~/Views/DentalCoordinator/_TreatmentCoordinatorAppointmentsSection.cshtml", appointmentsViewData)
 
@@ -1245,8 +1247,7 @@
                       role="status"
                       aria-live="polite">@treatmentCoordinatorOverallStatus</span>
             </div>
-            @* Temporarily hidden for client demo until save/update handling is completed. *@
-            <div class="dco-footer-actions" style="display:none;">
+            <div class="dco-footer-actions">
                 <button type="submit" class="btn btn-general btn-lg" @(coordinatorPageReadOnly ? "disabled" : null)>
                     <i class="fas fa-check-circle" aria-hidden="true"></i> Save
                 </button>
@@ -1257,6 +1258,25 @@
         </div>
     </form>
 </section>
+
+@if (TempData["ResponseMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+            Swal.fire({
+                icon: '@TempData["ResponseStatus"]',
+                title: '@TempData["ResponseTitle"]',
+                text: '@TempData["ResponseMessage"]',
+                confirmButtonText: 'OK',
+                confirmButtonColor: buttonColor,
+                iconColor: iconColor
+            });
+        });
+    </script>
+}
 
 <script src="~/js/dental-xray-station-uploads.js" asp-append-version="true"></script>
 <script src="~/js/dental-psr-tooth-chart.js" asp-append-version="true"></script>
@@ -1402,6 +1422,8 @@
     const treatmentCoordinatorDocs = [];
     const TC_DOCS_MAX_COUNT = 3;
     const TC_DOCS_MAX_BYTES = 3 * 1024 * 1024;
+    const TC_DOCS_DOWNLOAD_URL = "/DentalCoordinator/DownloadCoordinatorDocument";
+    const INITIAL_COORDINATOR_DOCUMENTS = @Html.Raw(ViewBag.CoordinatorDocumentsJson as string ?? "[]");
 
     function formatDocumentSize(bytes) {
         if (!bytes && bytes !== 0) return "";
@@ -1416,10 +1438,40 @@
         return file.type === "application/pdf" || name.endsWith(".pdf");
     }
 
+    function hydrateExistingTreatmentCoordinatorDocuments() {
+        const existing = Array.isArray(INITIAL_COORDINATOR_DOCUMENTS) ? INITIAL_COORDINATOR_DOCUMENTS : [];
+        existing.forEach(function (doc) {
+            if (!doc || !doc.fileName) {
+                return;
+            }
+            treatmentCoordinatorDocs.push({
+                id: doc.fileName,
+                fileName: doc.fileName,
+                originalFileName: doc.originalFileName || doc.fileName,
+                uploadedOn: doc.uploadedOn || null,
+                file: null,
+                url: TC_DOCS_DOWNLOAD_URL + "?fileName=" + encodeURIComponent(doc.fileName),
+                isExisting: true
+            });
+        });
+    }
+
     function updateTreatmentCoordinatorUploadAvailability() {
         const atLimit = treatmentCoordinatorDocs.length >= TC_DOCS_MAX_COUNT;
         $("#treatmentCoordinatorUploadBtn").prop("disabled", atLimit);
         $("#treatmentCoordinatorDocumentsInput").prop("disabled", atLimit);
+    }
+
+    function syncRetainedDocumentFields() {
+        const $container = $("#treatmentCoordinatorRetainedDocuments");
+        $container.empty();
+        treatmentCoordinatorDocs.forEach(function (doc) {
+            if (doc && doc.isExisting && doc.fileName) {
+                $container.append(
+                    $('<input type="hidden" name="RetainedDocumentFileNames" />').val(doc.fileName)
+                );
+            }
+        });
     }
 
     function renderTreatmentCoordinatorDocs() {
@@ -1431,6 +1483,7 @@
             $list.hide();
             $empty.text("No documents uploaded yet. PDF only. Max 3 files, 3 MB each.").show();
             updateTreatmentCoordinatorUploadAvailability();
+            syncRetainedDocumentFields();
             return;
         }
 
@@ -1440,8 +1493,13 @@
         treatmentCoordinatorDocs.forEach(function (doc, index) {
             const $item = $('<li class="dco-docs-item"></li>');
             const $meta = $('<div class="dco-docs-item-meta"></div>');
-            $meta.append($('<span class="dco-docs-item-name"></span>').text(doc.file.name));
-            $meta.append($('<span class="dco-docs-item-size"></span>').text(formatDocumentSize(doc.file.size)));
+            const displayName = doc.originalFileName || (doc.file && doc.file.name) || doc.fileName || "Document";
+            $meta.append($('<span class="dco-docs-item-name"></span>').text(displayName));
+            if (doc.file && doc.file.size) {
+                $meta.append($('<span class="dco-docs-item-size"></span>').text(formatDocumentSize(doc.file.size)));
+            } else if (doc.isExisting) {
+                $meta.append($('<span class="dco-docs-item-size"></span>').text("Saved"));
+            }
 
             const $actions = $('<div class="dco-docs-item-actions"></div>');
             const $preview = $('<button type="button" class="dco-docs-preview-btn" title="Preview" aria-label="Preview document"><i class="fas fa-eye" aria-hidden="true"></i></button>');
@@ -1459,6 +1517,7 @@
         });
 
         updateTreatmentCoordinatorUploadAvailability();
+        syncRetainedDocumentFields();
     }
 
     function addTreatmentCoordinatorDocuments(fileList) {
@@ -1492,14 +1551,18 @@
             }
 
             const duplicate = treatmentCoordinatorDocs.some(function (doc) {
-                return doc.file.name === file.name && doc.file.size === file.size;
+                if (doc.file) {
+                    return doc.file.name === file.name && doc.file.size === file.size;
+                }
+                return (doc.originalFileName || doc.fileName) === file.name;
             });
             if (duplicate) return;
 
             treatmentCoordinatorDocs.push({
                 id: "doc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
                 file: file,
-                url: URL.createObjectURL(file)
+                url: URL.createObjectURL(file),
+                isExisting: false
             });
             remainingSlots -= 1;
         });
@@ -1524,7 +1587,7 @@
     function removeTreatmentCoordinatorDocument(index) {
         const doc = treatmentCoordinatorDocs[index];
         if (!doc) return;
-        if (doc.url) {
+        if (doc.url && doc.file) {
             URL.revokeObjectURL(doc.url);
         }
         treatmentCoordinatorDocs.splice(index, 1);
@@ -1535,8 +1598,9 @@
         const doc = treatmentCoordinatorDocs[index];
         if (!doc || !doc.url) return;
 
+        const title = doc.originalFileName || (doc.file && doc.file.name) || doc.fileName || "Document";
         Swal.fire({
-            title: doc.file.name,
+            title: title,
             width: "80%",
             confirmButtonText: "Close",
             confirmButtonColor: "rgba(80, 90, 201, 1)",
@@ -1562,9 +1626,11 @@
         // Disabled inputs are omitted from form posts; re-enable so validated files are submitted.
         input.disabled = false;
         input.files = dataTransfer.files;
+        syncRetainedDocumentFields();
     }
 
     function initTreatmentCoordinatorDocuments() {
+        hydrateExistingTreatmentCoordinatorDocuments();
         const $input = $("#treatmentCoordinatorDocumentsInput");
         $("#treatmentCoordinatorUploadBtn").on("click", function () {
             if (treatmentCoordinatorDocs.length >= TC_DOCS_MAX_COUNT) {

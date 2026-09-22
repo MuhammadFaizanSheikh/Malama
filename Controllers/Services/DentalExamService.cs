@@ -169,48 +169,30 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 var selectedTeeth = NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
 
-                var existing = await _unitOfWork.DentalExam
-                    .GetWithIncludeTracking(
-                        e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
-                        e => e.SelectedTeeth)
-                    .FirstOrDefaultAsync();
+                var existing = await GetOrCreateTrackedExamForCoordinatorAsync(
+                    dto.ServiceMembersChildId,
+                    userName,
+                    e => e.SelectedTeeth);
 
-                if (existing != null)
-                {
-                    var clinicalOwnedByDentalExam = string.Equals(
+                var clinicalOwnedByDentalExam = existing.Id > 0
+                    && string.Equals(
                         existing.Source,
                         DentalExamSources.DentalExam,
                         StringComparison.OrdinalIgnoreCase);
 
-                    if (clinicalOwnedByDentalExam)
-                    {
-                        _logger.LogInformation(
-                            "{ClassName}, {MethodName}, Skipping PSR/DRC overwrite for ServiceMembersChildId={ServiceMembersChildId} because Source={Source}",
-                            CLASSNAME, methodName, dto.ServiceMembersChildId, existing.Source);
-                    }
-                    else
-                    {
-                        ApplyCoordinatorClinicalFields(existing, dto);
-                        ReplaceSelectedTeeth(existing, selectedTeeth);
-                        existing.UpdatedBy = userName;
-                        existing.UpdatedOn = DateTime.Now;
-                        existing.Source = DentalExamSources.DentalCoordinator;
-                    }
+                if (clinicalOwnedByDentalExam)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Skipping PSR/DRC overwrite for ServiceMembersChildId={ServiceMembersChildId} because Source={Source}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId, existing.Source);
                 }
                 else
                 {
-                    var entity = new DentalExam
-                    {
-                        ServiceMembersChildId = dto.ServiceMembersChildId,
-                        AddedBy = userName,
-                        AddedOn = DateTime.Now,
-                        Status = AppConstants.Status.Pending,
-                        Source = DentalExamSources.DentalCoordinator
-                    };
-                    ApplyCoordinatorClinicalFields(entity, dto);
-                    await _unitOfWork.DentalExam.AddAsync(entity);
-                    await _unitOfWork.SaveAsync();
-                    ReplaceSelectedTeeth(entity, selectedTeeth);
+                    ApplyCoordinatorClinicalFields(existing, dto);
+                    ReplaceSelectedTeeth(existing, selectedTeeth);
+                    existing.UpdatedBy = userName;
+                    existing.UpdatedOn = DateTime.Now;
+                    existing.Source = DentalExamSources.DentalCoordinator;
                 }
 
                 if (saveChanges)
@@ -228,6 +210,167 @@ namespace ExcelFilesCompiler.Controllers.Services
                     "{ClassName}, {MethodName}, Failed to apply coordinator clinical sections for ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId);
                 throw;
+            }
+        }
+
+        public async Task ApplyCoordinatorFindingsAsync(
+            DentalCoordinatorStationSaveDto dto,
+            string userName,
+            string userId,
+            bool saveChanges = true)
+        {
+            const string methodName = nameof(ApplyCoordinatorFindingsAsync);
+
+            try
+            {
+                var findings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
+                var validationError = DentalFindingValidator.ValidateFindings(findings);
+                if (!string.IsNullOrWhiteSpace(validationError))
+                {
+                    throw new InvalidOperationException(validationError);
+                }
+
+                var existing = await GetOrCreateTrackedExamForCoordinatorAsync(
+                    dto.ServiceMembersChildId,
+                    userName,
+                    e => e.Findings);
+
+                existing.Findings ??= new List<DentalFinding>();
+                ApplyCoordinatorFindings(existing, findings, userId);
+
+                if (saveChanges)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
+
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Coordinator findings applied for ServiceMembersChildId={ServiceMembersChildId}. FindingCount={FindingCount}, SaveChanges={SaveChanges}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, findings.Count, saveChanges);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to apply coordinator findings for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId);
+                throw;
+            }
+        }
+
+        private void ApplyCoordinatorFindings(DentalExam target, List<DentalFindingDto> findings, string userId)
+        {
+            target.Findings ??= new List<DentalFinding>();
+            var existingById = target.Findings
+                .Where(f => f.Id > 0)
+                .ToDictionary(f => f.Id);
+            var incomingIds = new HashSet<long>(
+                findings.Where(f => f.Id > 0).Select(f => f.Id));
+
+            var missingExamSourced = target.Findings
+                .Where(f => f.Id > 0
+                    && !incomingIds.Contains(f.Id)
+                    && string.Equals(f.Source, DentalFindingSources.DentalExam, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (missingExamSourced.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "Exam-sourced findings cannot be deleted from Treatment Coordinator.");
+            }
+
+            var toRemove = target.Findings
+                .Where(f => f.Id > 0
+                    && !incomingIds.Contains(f.Id)
+                    && string.Equals(f.Source, DentalFindingSources.DentalCoordinator, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (toRemove.Count > 0)
+            {
+                var removeIds = toRemove.Select(f => f.Id).ToList();
+                var hasTreatmentLinks = _unitOfWork.DentalTreatmentFinding
+                    .GetAllWithConditionNoTracking(tf =>
+                        tf.DentalFindingId.HasValue
+                        && removeIds.Contains(tf.DentalFindingId.Value))
+                    .Any();
+                if (hasTreatmentLinks)
+                {
+                    throw new InvalidOperationException(
+                        "One or more findings cannot be removed because treatment has already been recorded against them.");
+                }
+
+                // Clear appointment links for findings being removed (appointments replaced later in same save).
+                var appointmentLinks = _unitOfWork.TreatmentCoordinatorAppointmentFinding
+                    .GetAllWithConditionNoTracking(af => removeIds.Contains(af.DentalFindingId))
+                    .ToList();
+                if (appointmentLinks.Count > 0)
+                {
+                    _unitOfWork.TreatmentCoordinatorAppointmentFinding.RemoveRange(appointmentLinks);
+                }
+
+                _unitOfWork.DentalFinding.RemoveRange(toRemove);
+                foreach (var finding in toRemove)
+                {
+                    target.Findings.Remove(finding);
+                }
+            }
+
+            var now = DentalFindingMapper.NormalizeDateTime(DateTime.Now);
+            foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
+            {
+                if (finding.Id > 0 && existingById.TryGetValue(finding.Id, out var existing))
+                {
+                    var isExamSourced = string.Equals(
+                        existing.Source,
+                        DentalFindingSources.DentalExam,
+                        StringComparison.OrdinalIgnoreCase);
+
+                    if (isExamSourced)
+                    {
+                        var beforePossible = existing.IsTreatmentPossible;
+                        var beforeReason = existing.TreatmentNotPossibleReason;
+                        var beforeCommand = existing.TreatmentNotPossibleCommandName;
+                        var beforeNext = existing.TreatmentPlanNextAppointmentDate;
+                        ApplyFindingTreatmentPossibleFieldsOnly(existing, finding);
+                        var changed = !Nullable.Equals(beforePossible, existing.IsTreatmentPossible)
+                            || !string.Equals(beforeReason, existing.TreatmentNotPossibleReason, StringComparison.Ordinal)
+                            || !string.Equals(beforeCommand, existing.TreatmentNotPossibleCommandName, StringComparison.Ordinal)
+                            || !Nullable.Equals(beforeNext, existing.TreatmentPlanNextAppointmentDate);
+                        if (changed)
+                        {
+                            existing.ExaminationUpdatedBy = userId;
+                            existing.ExaminationUpdatedOn = now;
+                        }
+                    }
+                    else
+                    {
+                        var clinicalChanged = !FindingClinicalContentEquals(existing, finding);
+                        ApplyFindingClinicalFields(existing, finding, index);
+                        if (string.IsNullOrWhiteSpace(existing.Source))
+                        {
+                            existing.Source = DentalFindingSources.DentalCoordinator;
+                        }
+                        if (clinicalChanged)
+                        {
+                            existing.ExaminationUpdatedBy = userId;
+                            existing.ExaminationUpdatedOn = now;
+                        }
+                    }
+
+                    continue;
+                }
+
+                var entity = DentalFindingMapper.ToEntity(finding, target.Id, index);
+                entity.Id = 0;
+                entity.Source = DentalFindingSources.DentalCoordinator;
+                entity.ExaminationAddedBy = userId;
+                entity.ExaminationAddedOn = now;
+                entity.ExaminationUpdatedBy = null;
+                entity.ExaminationUpdatedOn = null;
+                if (string.IsNullOrWhiteSpace(entity.ClientKey))
+                {
+                    entity.ClientKey = string.IsNullOrWhiteSpace(finding.ClientKey)
+                        ? Guid.NewGuid().ToString("N")
+                        : finding.ClientKey.Trim();
+                }
+                target.Findings.Add(entity);
             }
         }
 
@@ -299,7 +442,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
             }
 
-            var now = DateTime.Now;
+            var now = DentalFindingMapper.NormalizeDateTime(DateTime.Now);
             foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
             {
                 if (finding.Id > 0 && existingById.TryGetValue(finding.Id, out var existing))
@@ -349,7 +492,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.Classification = dto.Classification?.Trim();
             entity.SortOrder = sortOrder;
             entity.ExternalExaminerName = dto.ExternalExaminerName?.Trim();
-            entity.ExternalExamDateTime = dto.ExternalExamDateTime;
+            entity.ExternalExamDateTime = DentalFindingMapper.NormalizeDateTime(dto.ExternalExamDateTime);
             entity.ExternalDentistRemarks = dto.ExternalDentistRemarks?.Trim();
             var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
             bool? isTreatmentPossible = isClass3
@@ -366,6 +509,40 @@ namespace ExcelFilesCompiler.Controllers.Services
             entity.TreatmentPlanNextAppointmentDate = DentalFindingMapper.ResolveNextAppointmentDate(
                 reason,
                 dto.TreatmentPlanNextAppointmentDate);
+            if (!string.IsNullOrWhiteSpace(dto.ClientKey))
+            {
+                entity.ClientKey = dto.ClientKey.Trim();
+            }
+        }
+
+        private static void ApplyFindingTreatmentPossibleFieldsOnly(DentalFinding entity, DentalFindingDto dto)
+        {
+            var isClass3 = DentalFindingConstants.IsClass3(entity.Classification);
+            if (!isClass3)
+            {
+                entity.IsTreatmentPossible = null;
+                entity.TreatmentNotPossibleReason = null;
+                entity.TreatmentNotPossibleCommandName = null;
+                entity.TreatmentPlanNextAppointmentDate = null;
+                return;
+            }
+
+            bool? isTreatmentPossible = dto.IsTreatmentPossible ?? true;
+            entity.IsTreatmentPossible = isTreatmentPossible;
+            entity.TreatmentNotPossibleReason = isTreatmentPossible == false
+                ? dto.TreatmentNotPossibleReason?.Trim()
+                : null;
+            var reason = entity.TreatmentNotPossibleReason;
+            entity.TreatmentNotPossibleCommandName = DentalFindingMapper.ResolveCommandName(
+                reason,
+                dto.TreatmentNotPossibleCommandName);
+            entity.TreatmentPlanNextAppointmentDate = DentalFindingMapper.ResolveNextAppointmentDate(
+                reason,
+                dto.TreatmentPlanNextAppointmentDate);
+            if (!string.IsNullOrWhiteSpace(dto.ClientKey))
+            {
+                entity.ClientKey = dto.ClientKey.Trim();
+            }
         }
 
         private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)
@@ -414,6 +591,37 @@ namespace ExcelFilesCompiler.Controllers.Services
                 && existingSurfaces.All(s => dtoSurfaces.Contains(s, StringComparer.OrdinalIgnoreCase))
                 && existingCdt.Count == dtoCdt.Count
                 && existingCdt.All(c => dtoCdt.Contains(c, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private async Task<DentalExam> GetOrCreateTrackedExamForCoordinatorAsync(
+            long serviceMembersChildId,
+            string userName,
+            params System.Linq.Expressions.Expression<Func<DentalExam, object>>[] includes)
+        {
+            var query = _unitOfWork.DentalExam.GetWithIncludeTracking(
+                e => e.ServiceMembersChildId == serviceMembersChildId,
+                includes);
+
+            var existing = await query.FirstOrDefaultAsync()
+                ?? _unitOfWork.DentalExam.FindLocal(e => e.ServiceMembersChildId == serviceMembersChildId);
+
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            existing = new DentalExam
+            {
+                ServiceMembersChildId = serviceMembersChildId,
+                AddedBy = userName,
+                AddedOn = DateTime.Now,
+                Status = AppConstants.Status.Pending,
+                Source = DentalExamSources.DentalCoordinator,
+                Findings = new List<DentalFinding>(),
+                SelectedTeeth = new List<DentalExamSelectedTooth>()
+            };
+            await _unitOfWork.DentalExam.AddAsync(existing);
+            return existing;
         }
 
         private void ReplaceSelectedTeeth(DentalExam target, List<int> selectedTeeth)

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Malama.Models
 {
     public class DentalCoordinatorStationPageViewModel
@@ -60,10 +62,18 @@ namespace Malama.Models
         /// Optional Treatment Coordinator document uploads (PDF only).
         /// </summary>
         public List<IFormFile>? TreatmentCoordinatorDocuments { get; set; }
+
+        /// <summary>Server-stored document file names to keep on save.</summary>
+        public List<string> RetainedDocumentFileNames { get; set; } = new();
     }
 
     public class TreatmentCoordinatorAppointmentJsonDto
     {
+        public string? Id { get; set; }
+        public string? AssignedDentist { get; set; }
+        public string? AppointmentDate { get; set; }
+        public string? AppointmentStartTime { get; set; }
+        public string? AppointmentDuration { get; set; }
         public List<string> FindingClientKeys { get; set; } = new();
     }
 }

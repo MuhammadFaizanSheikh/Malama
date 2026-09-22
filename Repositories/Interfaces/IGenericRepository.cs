@@ -15,5 +15,9 @@ namespace ExcelFilesCompiler.Repositories.Interfaces
         IQueryable<T> GetWithIncludeNoTracking(Expression<Func<T, bool>> predicate = null,params Expression<Func<T, object>>[] includes);
         void RemoveRange(IEnumerable<T> entities);
 
+        /// <summary>
+        /// Finds an entity already tracked by this DbContext (including Added but not yet saved).
+        /// </summary>
+        T? FindLocal(Func<T, bool> predicate);
     }
 }

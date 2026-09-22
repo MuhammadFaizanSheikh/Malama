@@ -2312,12 +2312,12 @@
                         && item.isTreatmentPossible === false
                         && (item.treatmentNotPossibleReason || "") === REASON_TREATMENT_PLAN_IN_PROGRESS
                         ? (item.treatmentPlanNextAppointmentDate || null)
-                        : null,
-                    clientKey: item.clientKey || ""
+                        : null
                 };
             });
             $("#FindingsJson").val(JSON.stringify(normalized));
         }
+        window.syncDentalFindingsJson = syncFindingsJson;
 
         function formatExaminerDateTime(value) {
             if (!value) {

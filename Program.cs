@@ -70,6 +70,7 @@ builder.Services.AddScoped<ITreatmentConsentService, TreatmentConsentService>();
 builder.Services.AddScoped<ITreatmentConsentPdfGenerator, TreatmentConsentPdfGenerator>();
 builder.Services.AddScoped<DentalXRayFileSaveCoordinator>();
 builder.Services.AddScoped<TreatmentConsentFileSaveCoordinator>();
+builder.Services.AddScoped<TreatmentCoordinatorDocumentFileSaveCoordinator>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHostedService<TemperatureMonitorService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));

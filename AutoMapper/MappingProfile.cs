@@ -197,11 +197,33 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.AnesthesiaRecords, opt => opt.Ignore())
                 .ForMember(dest => dest.Prescriptions, opt => opt.Ignore())
                 .ForMember(dest => dest.OverallNotes, opt => opt.Ignore())
+                .ForMember(dest => dest.CoordinatorAppointments, opt => opt.Ignore())
+                .ForMember(dest => dest.TreatmentCoordinatorEventStaffId, opt => opt.Ignore())
+                .ForMember(dest => dest.DocumentsJson, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.AddedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.AddedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedOn, opt => opt.Ignore());
+
+            CreateMap<TreatmentCoordinatorAppointmentJsonDto, TreatmentCoordinatorAppointment>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatmentId, opt => opt.Ignore())
+                .ForMember(dest => dest.DentalTreatment, opt => opt.Ignore())
+                .ForMember(dest => dest.Findings, opt => opt.Ignore())
+                .ForMember(dest => dest.EventStaffId, opt => opt.Ignore())
+                .ForMember(dest => dest.AppointmentDate, opt => opt.Ignore())
+                .ForMember(dest => dest.SortOrder, opt => opt.Ignore());
+
+            CreateMap<TreatmentCoordinatorAppointment, TreatmentCoordinatorAppointmentJsonDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.AssignedDentist, opt => opt.MapFrom(src => src.EventStaffId.ToString()))
+                .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.AppointmentDate.ToString("yyyy-MM-dd")))
+                .ForMember(dest => dest.FindingClientKeys, opt => opt.MapFrom(src =>
+                    (src.Findings ?? new List<TreatmentCoordinatorAppointmentFinding>())
+                        .Where(f => !string.IsNullOrWhiteSpace(f.FindingClientKey))
+                        .Select(f => f.FindingClientKey!)
+                        .ToList()));
 
             CreateMap<DentalTreatmentFindingFormDto, DentalTreatmentFinding>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

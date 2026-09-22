@@ -17,12 +17,18 @@ namespace Malama.Models
 
         public string Status { get; set; } = "Pending";
 
-        /// <summary>Logged-in Treatment Coordinator user id (display name is resolved for UI).</summary>
+        /// <summary>Logged-in Treatment Coordinator user id (audit / legacy).</summary>
         public string? TreatmentCoordinatorUserId { get; set; }
+
+        /// <summary>EventStaff Id of the Treatment Coordinator (source of truth for display).</summary>
+        public long? TreatmentCoordinatorEventStaffId { get; set; }
 
         public DateTime? TreatmentCoordinatorDateTime { get; set; }
 
         public string? TreatmentCoordinatorComments { get; set; }
+
+        /// <summary>JSON array of uploaded coordinator document metadata.</summary>
+        public string? DocumentsJson { get; set; }
 
         [JsonIgnore]
         [ValidateNever]
@@ -51,6 +57,10 @@ namespace Malama.Models
         [JsonIgnore]
         [ValidateNever]
         public virtual ICollection<DentalTreatmentOverallNote> OverallNotes { get; set; } = new List<DentalTreatmentOverallNote>();
+
+        [JsonIgnore]
+        [ValidateNever]
+        public virtual ICollection<TreatmentCoordinatorAppointment> CoordinatorAppointments { get; set; } = new List<TreatmentCoordinatorAppointment>();
     }
 
     public static class DentalTreatmentFindingOrigin

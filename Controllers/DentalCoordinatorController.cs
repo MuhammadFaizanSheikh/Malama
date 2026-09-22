@@ -125,151 +125,13 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                if (serviceMembersChildId <= 0)
+                var built = await BuildDentalCoordinatorStationPageAsync(serviceMembersChildId);
+                if (built.Redirect != null)
                 {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Invalid Request";
-                    TempData["ResponseMessage"] = "Service member is required.";
-                    return RedirectToAction(nameof(Index));
+                    return built.Redirect;
                 }
 
-                var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
-                if (result.ServiceMembersChild == null)
-                {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Not Found";
-                    TempData["ResponseMessage"] = "Service member not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var dentalExamForEligibility = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
-                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
-                        result.ServiceMembersChild,
-                        dentalExamForEligibility))
-                {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Not Eligible";
-                    TempData["ResponseMessage"] = "This service member is not eligible for Treatment Coordinator.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var requiresDentalExamFirst = DentalStationEligibilityHelper.RequiresDentalExamBeforeCoordinator(
-                    result.ServiceMembersChild,
-                    dentalExamForEligibility);
-                ViewBag.RequiresDentalExamFirst = requiresDentalExamFirst;
-                ViewBag.CoordinatorPageReadOnly = requiresDentalExamFirst;
-
-                ViewBag.EventId = result.EventId;
-                ViewBag.EventAppointmentMinDate = string.Empty;
-                ViewBag.EventAppointmentMaxDate = string.Empty;
-                ViewBag.EventAppointmentDayWindowsJson = "[]";
-                ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
-
-                try
-                {
-                    if (result.EventId > 0)
-                    {
-                        var appointmentWindow = await _eventManagementService.GetEventAppointmentWindowAsync(result.EventId);
-                        ViewBag.EventAppointmentMinDate = appointmentWindow.MinDate;
-                        ViewBag.EventAppointmentMaxDate = appointmentWindow.MaxDate;
-                        ViewBag.EventAppointmentDayWindowsJson = System.Text.Json.JsonSerializer.Serialize(
-                            appointmentWindow.Days,
-                            new System.Text.Json.JsonSerializerOptions
-                            {
-                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-                            });
-
-                        ViewBag.AssignableDentists = await _eventStaffService
-                            .GetTreatmentCoordinatorDentistsByEventIdAsync(result.EventId);
-                    }
-                    else
-                    {
-                        ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
-                    }
-                }
-                catch (Exception eventEx)
-                {
-                    _logger.LogWarning(eventEx,
-                        "{ClassName}, {MethodName}, Failed to load event date range/dentists for EventId={EventId}",
-                        CLASSNAME, methodName, result.EventId);
-                    ViewBag.AssignableDentists ??= new List<TreatmentCoordinatorAssignableDentistDto>();
-                }
-
-                try
-                {
-                    var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(serviceMembersChildId);
-                    var vitalDto = vitalVm?.VitalStationDto ?? new VitalStationDto
-                    {
-                        ServiceMembersChildId = serviceMembersChildId,
-                        Status = AppConstants.Status.Pending
-                    };
-
-                    ViewBag.VitalStation = vitalDto;
-                    ViewBag.VitalsCompleted = string.Equals(vitalDto.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
-
-                    _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Vital station loaded for ServiceMembersChildId={ServiceMembersChildId}. VitalStationId={VitalStationId}, Status={Status}",
-                        CLASSNAME, methodName, serviceMembersChildId, vitalDto.Id, vitalDto.Status);
-                }
-                catch (Exception vitalEx)
-                {
-                    _logger.LogError(vitalEx,
-                        "{ClassName}, {MethodName}, Failed to load vital station for ServiceMembersChildId={ServiceMembersChildId}",
-                        CLASSNAME, methodName, serviceMembersChildId);
-
-                    ViewBag.VitalStation = new VitalStationDto
-                    {
-                        ServiceMembersChildId = serviceMembersChildId,
-                        Status = AppConstants.Status.Pending
-                    };
-                    ViewBag.VitalsCompleted = false;
-                }
-
-                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
-                    ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
-
-                var xRayStation = await _dentalXRayStationService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
-                    ?? new DentalXRayStation
-                    {
-                        ServiceMembersChildId = serviceMembersChildId,
-                        Status = AppConstants.Status.Pending,
-                        PaImages = new List<DentalXRayPaImage>()
-                    };
-
-                xRayStation.ServiceMembersChild ??= result.ServiceMembersChild;
-
-                var dentalExam = dentalExamForEligibility
-                    ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
-
-                var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
-
-                var formSelection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
-                var consentFormStatuses = TreatmentConsentHelper.BuildCoordinatorConsentFormStatusItems(formSelection);
-
-                var currentUser = await _userManager.GetUserAsync(User);
-                ViewBag.TreatmentCoordinatorDisplayName = currentUser != null
-                    ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
-                    : string.Empty;
-                ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
-                ViewBag.CurrentUserDisplayName = ViewBag.TreatmentCoordinatorDisplayName;
-                ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
-                    dentalExam.Findings,
-                    _userManager,
-                    _eventStaffService,
-                    _logger);
-
-                var pageModel = new DentalCoordinatorStationPageViewModel
-                {
-                    ServiceMember = result.ServiceMembersChild,
-                    Questionnaire = questionnaire,
-                    XRayStation = xRayStation,
-                    DentalExam = dentalExam,
-                    DentalTreatment = dentalTreatment,
-                    HasQuestionnaire = questionnaire.Id > 0,
-                    ConsentFormStatuses = consentFormStatuses
-                };
-
-                return View(pageModel);
+                return View(built.PageModel);
             }
             catch (Exception ex)
             {
@@ -335,7 +197,7 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Dental Exam Required";
                     TempData["ResponseMessage"] = "Complete Dental Exam first before saving Treatment Coordinator.";
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
                 if (DentalXRayStationService.IsNeeded(serviceMember.PanoNeeded))
@@ -349,36 +211,86 @@ namespace ExcelFilesCompiler.Controllers
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = validationError;
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
-                var documentsError = TreatmentCoordinatorDocumentsValidator.Validate(dto.TreatmentCoordinatorDocuments);
+                var retainedNames = Request.Form["RetainedDocumentFileNames"]
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Select(v => v!.Trim())
+                    .ToList();
+                dto.RetainedDocumentFileNames = retainedNames;
+
+                var documentsError = TreatmentCoordinatorDocumentsValidator.Validate(
+                    dto.TreatmentCoordinatorDocuments,
+                    dto.RetainedDocumentFileNames);
                 if (!string.IsNullOrWhiteSpace(documentsError))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Invalid Data";
                     TempData["ResponseMessage"] = documentsError;
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
+                }
+
+                var findings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
+                var findingsError = DentalFindingValidator.ValidateFindings(findings);
+                if (!string.IsNullOrWhiteSpace(findingsError))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = findingsError;
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
+                }
+
+                var appointments = TreatmentCoordinatorAppointmentHelper.ParseAppointmentsJson(dto.AppointmentsJson);
+                var appointmentsError = TreatmentCoordinatorAppointmentHelper.Validate(appointments, findings);
+                if (!string.IsNullOrWhiteSpace(appointmentsError))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = appointmentsError;
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
+                }
+
+                long eventStaffId = 0;
+                try
+                {
+                    var eventStaff = await _eventStaffService.GetEventStaffWithAttributesByUserId(user.Id);
+                    eventStaffId = eventStaff?.Id ?? 0;
+                }
+                catch (Exception staffEx)
+                {
+                    _logger.LogWarning(staffEx,
+                        "{ClassName}, {MethodName}, Failed to resolve EventStaff for UserId={UserId}",
+                        CLASSNAME, methodName, user.Id);
+                }
+
+                if (eventStaffId <= 0)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid Data";
+                    TempData["ResponseMessage"] = "Treatment Coordinator staff profile was not found for the current user.";
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
                 var saveResult = await _dentalCoordinatorStationService.SaveStationAsync(
                     dto,
                     serviceMember,
                     user.UserName ?? user.Id,
-                    user.Id);
+                    user.Id,
+                    eventStaffId);
 
                 if (!saveResult.Success)
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = saveResult.ErrorTitle ?? "Error";
                     TempData["ResponseMessage"] = saveResult.ErrorMessage ?? "Save failed.";
-                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Treatment Coordinator record saved successfully.";
-                return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -388,9 +300,299 @@ namespace ExcelFilesCompiler.Controllers
 
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Error";
-                TempData["ResponseMessage"] = ex.Message;
-                return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                TempData["ResponseMessage"] = ex.GetBaseException().Message;
+
+                if (dto?.ServiceMembersChildId > 0)
+                {
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
+                }
+
+                return RedirectToAction(nameof(Index));
             }
+        }
+
+        private async Task<IActionResult> RedisplayDentalCoordinatorStationAsync(DentalCoordinatorStationSaveDto dto)
+        {
+            var built = await BuildDentalCoordinatorStationPageAsync(dto.ServiceMembersChildId);
+            if (built.Redirect != null)
+            {
+                return built.Redirect;
+            }
+
+            await ApplyPostedSaveDtoToStationPageAsync(built.PageModel!, dto);
+            return View(nameof(DentalCoordinatorStation), built.PageModel);
+        }
+
+        private async Task<(IActionResult? Redirect, DentalCoordinatorStationPageViewModel? PageModel)> BuildDentalCoordinatorStationPageAsync(
+            long serviceMembersChildId)
+        {
+            if (serviceMembersChildId <= 0)
+            {
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Invalid Request";
+                TempData["ResponseMessage"] = "Service member is required.";
+                return (RedirectToAction(nameof(Index)), null);
+            }
+
+            var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+            if (result.ServiceMembersChild == null)
+            {
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Not Found";
+                TempData["ResponseMessage"] = "Service member not found.";
+                return (RedirectToAction(nameof(Index)), null);
+            }
+
+            var dentalExamForEligibility = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+            if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
+                    result.ServiceMembersChild,
+                    dentalExamForEligibility))
+            {
+                TempData["ResponseStatus"] = "error";
+                TempData["ResponseTitle"] = "Not Eligible";
+                TempData["ResponseMessage"] = "This service member is not eligible for Treatment Coordinator.";
+                return (RedirectToAction(nameof(Index)), null);
+            }
+
+            var requiresDentalExamFirst = DentalStationEligibilityHelper.RequiresDentalExamBeforeCoordinator(
+                result.ServiceMembersChild,
+                dentalExamForEligibility);
+            ViewBag.RequiresDentalExamFirst = requiresDentalExamFirst;
+            ViewBag.CoordinatorPageReadOnly = requiresDentalExamFirst;
+
+            ViewBag.EventId = result.EventId;
+            ViewBag.EventAppointmentMinDate = string.Empty;
+            ViewBag.EventAppointmentMaxDate = string.Empty;
+            ViewBag.EventAppointmentDayWindowsJson = "[]";
+            ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
+
+            try
+            {
+                if (result.EventId > 0)
+                {
+                    var appointmentWindow = await _eventManagementService.GetEventAppointmentWindowAsync(result.EventId);
+                    ViewBag.EventAppointmentMinDate = appointmentWindow.MinDate;
+                    ViewBag.EventAppointmentMaxDate = appointmentWindow.MaxDate;
+                    ViewBag.EventAppointmentDayWindowsJson = System.Text.Json.JsonSerializer.Serialize(
+                        appointmentWindow.Days,
+                        new System.Text.Json.JsonSerializerOptions
+                        {
+                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                        });
+
+                    ViewBag.AssignableDentists = await _eventStaffService
+                        .GetTreatmentCoordinatorDentistsByEventIdAsync(result.EventId);
+                }
+                else
+                {
+                    ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
+                }
+            }
+            catch (Exception eventEx)
+            {
+                _logger.LogWarning(eventEx,
+                    "{ClassName}, BuildDentalCoordinatorStationPageAsync, Failed to load event date range/dentists for EventId={EventId}",
+                    CLASSNAME, result.EventId);
+                ViewBag.AssignableDentists ??= new List<TreatmentCoordinatorAssignableDentistDto>();
+            }
+
+            try
+            {
+                var vitalVm = await _vitalStationService.GetVitalStationByServiceMemberChildIdAsync(serviceMembersChildId);
+                var vitalDto = vitalVm?.VitalStationDto ?? new VitalStationDto
+                {
+                    ServiceMembersChildId = serviceMembersChildId,
+                    Status = AppConstants.Status.Pending
+                };
+
+                ViewBag.VitalStation = vitalDto;
+                ViewBag.VitalsCompleted = string.Equals(vitalDto.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception vitalEx)
+            {
+                _logger.LogError(vitalEx,
+                    "{ClassName}, BuildDentalCoordinatorStationPageAsync, Failed to load vital station for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, serviceMembersChildId);
+
+                ViewBag.VitalStation = new VitalStationDto
+                {
+                    ServiceMembersChildId = serviceMembersChildId,
+                    Status = AppConstants.Status.Pending
+                };
+                ViewBag.VitalsCompleted = false;
+            }
+
+            var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
+
+            var xRayStation = await _dentalXRayStationService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                ?? new DentalXRayStation
+                {
+                    ServiceMembersChildId = serviceMembersChildId,
+                    Status = AppConstants.Status.Pending,
+                    PaImages = new List<DentalXRayPaImage>()
+                };
+
+            xRayStation.ServiceMembersChild ??= result.ServiceMembersChild;
+
+            var dentalExam = dentalExamForEligibility
+                ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+
+            var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+
+            var formSelection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
+            var consentFormStatuses = TreatmentConsentHelper.BuildCoordinatorConsentFormStatusItems(formSelection);
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            ViewBag.TreatmentCoordinatorDisplayName = currentUser != null
+                ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
+                : string.Empty;
+            ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
+            ViewBag.CurrentUserDisplayName = ViewBag.TreatmentCoordinatorDisplayName;
+            ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
+                dentalExam.Findings,
+                _userManager,
+                _eventStaffService,
+                _logger);
+
+            var appointmentsJson = TreatmentCoordinatorAppointmentHelper.SerializeAppointments(
+                TreatmentCoordinatorAppointmentHelper.ToJsonDtos(dentalTreatment?.CoordinatorAppointments));
+            ViewBag.AppointmentsJson = appointmentsJson;
+
+            var documents = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
+                dentalTreatment?.DocumentsJson);
+            ViewBag.CoordinatorDocumentsJson = TreatmentCoordinatorDocumentFileSaveCoordinator.SerializeDocuments(documents);
+
+            if (dentalTreatment?.TreatmentCoordinatorEventStaffId > 0)
+            {
+                try
+                {
+                    var coordinatorStaff = await _eventStaffService.GetEventStaffWithoutIncludeById(
+                        dentalTreatment.TreatmentCoordinatorEventStaffId.Value);
+                    if (coordinatorStaff != null)
+                    {
+                        var name = $"{coordinatorStaff.StaffFirstName} {coordinatorStaff.StaffLastName}".Trim();
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            ViewBag.TreatmentCoordinatorDisplayName = name;
+                        }
+                    }
+                }
+                catch (Exception staffEx)
+                {
+                    _logger.LogWarning(staffEx,
+                        "{ClassName}, BuildDentalCoordinatorStationPageAsync, Failed to resolve saved TreatmentCoordinatorEventStaffId={EventStaffId}",
+                        CLASSNAME, dentalTreatment.TreatmentCoordinatorEventStaffId);
+                }
+            }
+
+            var pageModel = new DentalCoordinatorStationPageViewModel
+            {
+                ServiceMember = result.ServiceMembersChild,
+                Questionnaire = questionnaire,
+                XRayStation = xRayStation,
+                DentalExam = dentalExam,
+                DentalTreatment = dentalTreatment,
+                HasQuestionnaire = questionnaire.Id > 0,
+                ConsentFormStatuses = consentFormStatuses
+            };
+
+            return (null, pageModel);
+        }
+
+        private async Task ApplyPostedSaveDtoToStationPageAsync(
+            DentalCoordinatorStationPageViewModel pageModel,
+            DentalCoordinatorStationSaveDto dto)
+        {
+            pageModel.Questionnaire = _dentalQuestionnaireService.MapFormDataToEntity(dto, pageModel.Questionnaire);
+            pageModel.HasQuestionnaire = pageModel.HasQuestionnaire || pageModel.Questionnaire.Id > 0;
+
+            pageModel.XRayStation = _dentalXRayStationService.MapSaveDtoToEntity(dto, pageModel.XRayStation);
+            pageModel.XRayStation.ServiceMembersChild ??= pageModel.ServiceMember;
+
+            var exam = pageModel.DentalExam ?? new DentalExam { ServiceMembersChildId = dto.ServiceMembersChildId };
+            exam.ServiceMembersChildId = dto.ServiceMembersChildId;
+            if (dto.DentalExamId > 0)
+            {
+                exam.Id = dto.DentalExamId;
+            }
+
+            var clinicalOwnedByDentalExam = exam.Id > 0
+                && string.Equals(exam.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase);
+            if (!clinicalOwnedByDentalExam)
+            {
+                exam.PsrUpperRight = dto.PsrUpperRight?.Trim();
+                exam.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
+                exam.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
+                exam.PsrLowerRight = dto.PsrLowerRight?.Trim();
+                exam.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
+                exam.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
+                exam.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
+                exam.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
+                exam.SoftTissuesConditionDetail = exam.SoftTissuesWnl != null
+                    && exam.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
+                    ? dto.SoftTissuesConditionDetail?.Trim()
+                    : null;
+                exam.DenClass = dto.DenClass?.Trim();
+                exam.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
+                exam.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
+
+                var selectedTeeth = (dto.PsrSelectedTeeth ?? new List<int>())
+                    .Where(t => t >= 1 && t <= 32)
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToList();
+                exam.SelectedTeeth = selectedTeeth
+                    .Select(toothNumber => new DentalExamSelectedTooth
+                    {
+                        DentalExamId = exam.Id,
+                        ToothNumber = toothNumber
+                    })
+                    .ToList();
+            }
+
+            var postedFindings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
+            exam.Findings = postedFindings
+                .Select((finding, index) =>
+                {
+                    var entity = DentalFindingMapper.ToEntity(finding, exam.Id, index);
+                    entity.Id = finding.Id;
+                    if (string.IsNullOrWhiteSpace(entity.Source))
+                    {
+                        entity.Source = finding.Source?.Trim();
+                    }
+                    return entity;
+                })
+                .ToList();
+
+            pageModel.DentalExam = exam;
+
+            pageModel.DentalTreatment ??= new DentalTreatment
+            {
+                ServiceMembersChildId = dto.ServiceMembersChildId,
+                Status = AppConstants.Status.Pending
+            };
+            pageModel.DentalTreatment.TreatmentCoordinatorComments = dto.TreatmentCoordinatorComments;
+
+            ViewBag.AppointmentsJson = string.IsNullOrWhiteSpace(dto.AppointmentsJson)
+                ? "[]"
+                : dto.AppointmentsJson;
+
+            var existingDocuments = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
+                pageModel.DentalTreatment.DocumentsJson);
+            var retained = new HashSet<string>(
+                dto.RetainedDocumentFileNames ?? new List<string>(),
+                StringComparer.OrdinalIgnoreCase);
+            var keptDocuments = existingDocuments
+                .Where(d => !string.IsNullOrWhiteSpace(d.FileName) && retained.Contains(d.FileName))
+                .ToList();
+            ViewBag.CoordinatorDocumentsJson = TreatmentCoordinatorDocumentFileSaveCoordinator.SerializeDocuments(keptDocuments);
+
+            ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
+                exam.Findings,
+                _userManager,
+                _eventStaffService,
+                _logger);
         }
 
         [HttpGet]
@@ -571,6 +773,47 @@ namespace ExcelFilesCompiler.Controllers
             {
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
                 return StatusCode(500, "Error while downloading file");
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("TreatmentCoordinator_View")]
+        public IActionResult DownloadCoordinatorDocument(string fileName)
+        {
+            const string methodName = nameof(DownloadCoordinatorDocument);
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    return BadRequest("Invalid file download request.");
+                }
+
+                var safeName = Path.GetFileName(fileName);
+                if (string.IsNullOrWhiteSpace(safeName)
+                    || !string.Equals(safeName, fileName, StringComparison.Ordinal))
+                {
+                    return BadRequest("Invalid file name.");
+                }
+
+                var file = _fileService.GetFile(
+                    TreatmentCoordinatorDocumentFileSaveCoordinator.StationName,
+                    TreatmentCoordinatorDocumentFileSaveCoordinator.DocumentPrefix,
+                    safeName);
+                if (file == null || file.Bytes == null)
+                {
+                    return NotFound();
+                }
+
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{file.FileName}\"";
+                return File(file.Bytes, file.ContentType ?? "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for File={File}",
+                    CLASSNAME, methodName, fileName);
+                return StatusCode(500, "Error while downloading document");
             }
         }
     }

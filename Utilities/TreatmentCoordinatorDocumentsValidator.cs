@@ -11,18 +11,23 @@ namespace Malama.Utilities
         /// Validates optional Treatment Coordinator document uploads.
         /// Returns an error message, or null when valid.
         /// </summary>
-        public static string? Validate(IEnumerable<IFormFile>? documents)
+        public static string? Validate(
+            IEnumerable<IFormFile>? documents,
+            IEnumerable<string>? retainedFileNames = null)
         {
             var files = (documents ?? Enumerable.Empty<IFormFile>())
                 .Where(f => f != null && f.Length > 0)
                 .ToList();
 
-            if (files.Count == 0)
+            var retainedCount = (retainedFileNames ?? Enumerable.Empty<string>())
+                .Count(n => !string.IsNullOrWhiteSpace(n));
+
+            if (files.Count == 0 && retainedCount == 0)
             {
                 return null;
             }
 
-            if (files.Count > MaxDocumentCount)
+            if (retainedCount + files.Count > MaxDocumentCount)
             {
                 return $"A maximum of {MaxDocumentCount} documents can be uploaded.";
             }
