@@ -1223,6 +1223,7 @@
                     appointmentsViewData["AssignableDentists"] = ViewBag.AssignableDentists as List<TreatmentCoordinatorAssignableDentistDto>
                         ?? new List<TreatmentCoordinatorAssignableDentistDto>();
                     appointmentsViewData["AppointmentsJson"] = ViewBag.AppointmentsJson as string ?? "[]";
+                    appointmentsViewData["EventOtherAppointmentsJson"] = ViewBag.EventOtherAppointmentsJson as string ?? "[]";
                 }
                 @await Html.PartialAsync("~/Views/DentalCoordinator/_TreatmentCoordinatorAppointmentsSection.cshtml", appointmentsViewData)
 

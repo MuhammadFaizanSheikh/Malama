@@ -275,6 +275,20 @@ namespace ExcelFilesCompiler.Controllers
                     return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
+                var otherEventAppointments = await _dentalTreatmentService.GetEventAppointmentsExcludingAsync(
+                    serviceMemberResult.EventId,
+                    dto.ServiceMembersChildId);
+                var scheduleConflict = TreatmentCoordinatorAppointmentHelper.ValidateScheduleConflicts(
+                    appointments,
+                    otherEventAppointments);
+                if (!string.IsNullOrWhiteSpace(scheduleConflict))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Appointment Conflict";
+                    TempData["ResponseMessage"] = scheduleConflict;
+                    return await RedisplayDentalCoordinatorStationAsync(dto);
+                }
+
                 long eventStaffId = 0;
                 try
                 {
@@ -488,6 +502,12 @@ namespace ExcelFilesCompiler.Controllers
             var appointmentsJson = TreatmentCoordinatorAppointmentHelper.SerializeAppointments(
                 TreatmentCoordinatorAppointmentHelper.ToJsonDtos(dentalTreatmentCoordinator?.Appointments));
             ViewBag.AppointmentsJson = appointmentsJson;
+
+            var otherEventAppointments = result.EventId > 0
+                ? await _dentalTreatmentService.GetEventAppointmentsExcludingAsync(result.EventId, serviceMembersChildId)
+                : new List<TreatmentCoordinatorEventAppointmentDto>();
+            ViewBag.EventOtherAppointmentsJson = TreatmentCoordinatorAppointmentHelper.SerializeEventAppointments(
+                otherEventAppointments);
 
             var documents = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
                 dentalTreatmentCoordinator?.DocumentsJson);

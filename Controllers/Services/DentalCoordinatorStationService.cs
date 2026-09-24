@@ -136,6 +136,33 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return DentalCoordinatorStationSaveResult.Fail("Invalid Data", appointmentError);
                 }
 
+                var eventId = serviceMember.ServiceMembersParent?.EventManagementId ?? 0;
+                if (eventId <= 0)
+                {
+                    var smWithEvent = await _unitOfWork.ServiceMembersChild
+                        .GetWithIncludeNoTracking(
+                            c => c.Id == dto.ServiceMembersChildId,
+                            c => c.ServiceMembersParent)
+                        .FirstOrDefaultAsync();
+                    eventId = smWithEvent?.ServiceMembersParent?.EventManagementId ?? 0;
+                }
+
+                if (eventId > 0)
+                {
+                    var otherEventAppointments = await _dentalTreatmentService.GetEventAppointmentsExcludingAsync(
+                        eventId,
+                        dto.ServiceMembersChildId);
+                    var scheduleConflict = TreatmentCoordinatorAppointmentHelper.ValidateScheduleConflicts(
+                        appointments,
+                        otherEventAppointments);
+                    if (!string.IsNullOrWhiteSpace(scheduleConflict))
+                    {
+                        await _fileSaveCoordinator.RollbackStagingAsync(fileSession);
+                        await _documentFileSaveCoordinator.RollbackStagingAsync(documentSession);
+                        return DentalCoordinatorStationSaveResult.Fail("Appointment Conflict", scheduleConflict);
+                    }
+                }
+
                 transaction = await _unitOfWork.BeginTransactionAsync();
 
                 _logger.LogInformation(

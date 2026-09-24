@@ -4,6 +4,7 @@
     var eventAppointmentDayWindowsJson = ViewData["EventAppointmentDayWindowsJson"] as string ?? "[]";
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
     var initialAppointmentsJson = ViewData["AppointmentsJson"] as string ?? "[]";
+    var eventOtherAppointmentsJson = ViewData["EventOtherAppointmentsJson"] as string ?? "[]";
     var assignableDentists = ViewData["AssignableDentists"] as List<TreatmentCoordinatorAssignableDentistDto>
         ?? new List<TreatmentCoordinatorAssignableDentistDto>();
     var dentistCount = Math.Max(assignableDentists.Count, 1);
@@ -366,6 +367,17 @@
         background: rgba(60, 70, 180, 0.95);
     }
 
+    #tcAppointmentsSection .tc-appt-booking.is-other-sm {
+        background: rgba(71, 85, 105, 0.88);
+        box-shadow: 0 4px 10px rgba(71, 85, 105, 0.22);
+        cursor: default;
+        pointer-events: none;
+    }
+
+    #tcAppointmentsSection .tc-appt-booking.is-other-sm:hover {
+        background: rgba(71, 85, 105, 0.88);
+    }
+
     #tcAppointmentsSection .tc-appt-booking-label {
         overflow: hidden;
         display: -webkit-box;
@@ -601,6 +613,16 @@
         } catch (e) {
             tcAppointments = [];
         }
+
+        let eventOtherAppointments = [];
+        try {
+            eventOtherAppointments = JSON.parse(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(eventOtherAppointmentsJson))) || [];
+            if (!Array.isArray(eventOtherAppointments)) {
+                eventOtherAppointments = [];
+            }
+        } catch (e) {
+            eventOtherAppointments = [];
+        }
         let editingAppointmentIndex = null;
         let tcAppointmentDatePicker = null;
         let tcAppointmentStartTimePicker = null;
@@ -814,6 +836,52 @@
                 && a.date === b.date
                 && a.startMinutes < b.endMinutes
                 && b.startMinutes < a.endMinutes;
+        }
+
+        function sameDentist(a, b) {
+            return !!a && !!b
+                && String(a.dentist || "") === String(b.dentist || "");
+        }
+
+        function buildBookingLabel(name, appointmentWindow, dentistName) {
+            const parts = [];
+            if (name) {
+                parts.push(name);
+            }
+            if (appointmentWindow) {
+                parts.push(
+                    formatMinutesAsTimeLabel(appointmentWindow.startMinutes)
+                    + " – "
+                    + formatMinutesAsTimeLabel(appointmentWindow.endMinutes)
+                );
+            }
+            if (dentistName) {
+                parts.push(dentistName);
+            }
+            return parts.join(" · ");
+        }
+
+        function appendCalendarBooking($col, appointmentWindow, options) {
+            const top = ((appointmentWindow.startMinutes - calendarDayStartMinutes) / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
+            const height = Math.max(
+                APPT_SLOT_HEIGHT,
+                (appointmentWindow.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
+            );
+            const label = options.label || "";
+            const title = options.title || label;
+            const extraClass = options.isOther ? " is-other-sm" : "";
+            const indexAttr = options.appointmentIndex != null
+                ? (" data-appointment-index='" + options.appointmentIndex + "'")
+                : "";
+            const tag = options.isOther ? "div" : "button";
+            const typeAttr = options.isOther ? "" : " type='button'";
+
+            $col.find(".tc-appt-bookings").append(
+                "<" + tag + typeAttr + " class='tc-appt-booking" + extraClass + "'" + indexAttr + " " +
+                "style='top:" + top + "px;height:" + height + "px;' title='" + escapeHtml(title) + "'>" +
+                "<span class='tc-appt-booking-label'>" + escapeHtml(label) + "</span>" +
+                "</" + tag + ">"
+            );
         }
 
         function getFindingsSnapshot() {
@@ -1258,7 +1326,7 @@
                 if (appointmentsOverlap(appointmentWindow, existingWindow)) {
                     Swal.fire(
                         "Appointment Conflict",
-                        "This time slot is already booked on "
+                        "This service member already has an overlapping appointment on "
                         + formatAppointmentDateForDisplay(appointmentWindow.date)
                         + " from " + formatMinutesAsTimeLabel(existingWindow.startMinutes)
                         + " to " + formatMinutesAsTimeLabel(existingWindow.endMinutes)
@@ -1269,6 +1337,32 @@
                     );
                     return false;
                 }
+            }
+
+            for (let i = 0; i < eventOtherAppointments.length; i++) {
+                const other = eventOtherAppointments[i];
+                const otherWindow = getAppointmentWindow({
+                    assignedDentist: other.assignedDentist,
+                    appointmentDate: other.appointmentDate,
+                    appointmentStartTime: other.appointmentStartTime,
+                    appointmentDuration: other.appointmentDuration
+                });
+                if (!sameDentist(appointmentWindow, otherWindow)
+                    || !appointmentsOverlap(appointmentWindow, otherWindow)) {
+                    continue;
+                }
+
+                const otherName = (other.serviceMemberName || "another service member").toString();
+                const dentistName = (other.dentistDisplayName || resolveDentistDisplayName(appointmentWindow.dentist) || "selected dentist").toString();
+                Swal.fire(
+                    "Appointment Conflict",
+                    dentistName + " is already booked for " + otherName
+                    + " on " + formatAppointmentDateForDisplay(appointmentWindow.date)
+                    + " from " + formatMinutesAsTimeLabel(otherWindow.startMinutes)
+                    + " to " + formatMinutesAsTimeLabel(otherWindow.endMinutes) + ".",
+                    "error"
+                );
+                return false;
             }
 
             return true;
@@ -1418,24 +1512,52 @@
                     return;
                 }
 
-                const top = ((appointmentWindow.startMinutes - calendarDayStartMinutes) / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT;
-                const height = Math.max(
-                    APPT_SLOT_HEIGHT,
-                    (appointmentWindow.durationMinutes / APPT_SLOT_MINUTES) * APPT_SLOT_HEIGHT
+                const dentistName = resolveDentistDisplayName(appointmentWindow.dentist);
+                const label = buildBookingLabel(
+                    SERVICE_MEMBER_DISPLAY_NAME || "Service Member",
+                    appointmentWindow,
+                    dentistName
                 );
-                const findingCount = (appt.findingClientKeys || []).length;
-                const label = SERVICE_MEMBER_DISPLAY_NAME || "Service Member";
-                const title = label
-                    + " · " + formatMinutesAsTimeLabel(appointmentWindow.startMinutes)
-                    + " – " + formatMinutesAsTimeLabel(appointmentWindow.endMinutes)
-                    + " · " + findingCount + " finding" + (findingCount === 1 ? "" : "s");
+                appendCalendarBooking($col, appointmentWindow, {
+                    label: label,
+                    title: label,
+                    appointmentIndex: index,
+                    isOther: false
+                });
+                bookingCount += 1;
+            });
 
-                $col.find(".tc-appt-bookings").append(
-                    "<button type='button' class='tc-appt-booking' data-appointment-index='" + index + "' " +
-                    "style='top:" + top + "px;height:" + height + "px;' title='" + escapeHtml(title) + "'>" +
-                    "<span class='tc-appt-booking-label'>" + escapeHtml(label) + "</span>" +
-                    "</button>"
-                );
+            eventOtherAppointments.forEach(function (other) {
+                const appointmentWindow = getAppointmentWindow({
+                    assignedDentist: other.assignedDentist,
+                    appointmentDate: other.appointmentDate,
+                    appointmentStartTime: other.appointmentStartTime,
+                    appointmentDuration: other.appointmentDuration
+                });
+                if (!appointmentWindow || appointmentWindow.date !== selectedDay) {
+                    return;
+                }
+
+                if (appointmentWindow.endMinutes <= dayWindow.startMinutes
+                    || appointmentWindow.startMinutes >= dayWindow.endMinutes) {
+                    return;
+                }
+
+                const $col = $("#tcApptCalendarBody .tc-appt-dentist-col").filter(function () {
+                    return ($(this).attr("data-dentist") || "") === appointmentWindow.dentist;
+                }).first();
+                if (!$col.length) {
+                    return;
+                }
+
+                const dentistName = (other.dentistDisplayName || resolveDentistDisplayName(appointmentWindow.dentist) || "").toString();
+                const memberName = (other.serviceMemberName || "Service Member").toString();
+                const label = buildBookingLabel(memberName, appointmentWindow, dentistName);
+                appendCalendarBooking($col, appointmentWindow, {
+                    label: label,
+                    title: label,
+                    isOther: true
+                });
                 bookingCount += 1;
             });
 
@@ -1635,7 +1757,7 @@
                 deleteAppointment(parseInt($(this).data("index"), 10));
             });
 
-            $(document).on("click", ".tc-appt-booking", function () {
+            $(document).on("click", ".tc-appt-booking:not(.is-other-sm)", function () {
                 editAppointment(parseInt($(this).data("appointment-index"), 10));
             });
 

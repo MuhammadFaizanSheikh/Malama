@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelFilesCompiler.Utilities;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -116,6 +117,63 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Failed to load treatment coordinator for ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
+        }
+
+        public async Task<List<TreatmentCoordinatorEventAppointmentDto>> GetEventAppointmentsExcludingAsync(
+            long eventId,
+            long excludeServiceMembersChildId)
+        {
+            const string methodName = nameof(GetEventAppointmentsExcludingAsync);
+
+            try
+            {
+                if (eventId <= 0)
+                {
+                    return new List<TreatmentCoordinatorEventAppointmentDto>();
+                }
+
+                var appointments = await _unitOfWork.DentalAppointment
+                    .GetWithIncludeNoTracking(
+                        a => a.DentalTreatmentCoordinator.ServiceMembersChild.ServiceMembersParent.EventManagement.Id == eventId
+                             && a.DentalTreatmentCoordinator.ServiceMembersChildId != excludeServiceMembersChildId,
+                        a => a.DentalTreatmentCoordinator,
+                        a => a.DentalTreatmentCoordinator.ServiceMembersChild)
+                    .ToListAsync();
+
+                if (appointments.Count == 0)
+                {
+                    return new List<TreatmentCoordinatorEventAppointmentDto>();
+                }
+
+                var staffIds = appointments.Select(a => a.EventStaffId).Distinct().ToList();
+                var staffRows = await _unitOfWork.EventStaff
+                    .GetAllWithConditionNoTracking(s => staffIds.Contains(s.Id))
+                    .ToListAsync();
+                var dentistNameById = staffRows.ToDictionary(
+                    s => s.Id,
+                    s => DentalExamSignatureHelper.FormatEventStaffDisplayName(s));
+
+                return appointments
+                    .OrderBy(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentStartTime)
+                    .ThenBy(a => a.Id)
+                    .Select(a =>
+                    {
+                        dentistNameById.TryGetValue(a.EventStaffId, out var dentistName);
+                        return TreatmentCoordinatorAppointmentHelper.ToEventDto(
+                            a,
+                            a.DentalTreatmentCoordinator?.ServiceMembersChild?.FullName ?? string.Empty,
+                            dentistName);
+                    })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to load event appointments for EventId={EventId}",
+                    CLASSNAME, methodName, eventId);
                 throw;
             }
         }

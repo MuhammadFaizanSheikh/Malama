@@ -79,4 +79,17 @@ namespace Malama.Models
         public string? AppointmentDuration { get; set; }
         public List<string> FindingClientKeys { get; set; } = new();
     }
+
+    /// <summary>Event-wide appointment block for the TC calendar (other service members).</summary>
+    public class TreatmentCoordinatorEventAppointmentDto
+    {
+        public long Id { get; set; }
+        public long ServiceMembersChildId { get; set; }
+        public string ServiceMemberName { get; set; } = string.Empty;
+        public string AssignedDentist { get; set; } = string.Empty;
+        public string DentistDisplayName { get; set; } = string.Empty;
+        public string AppointmentDate { get; set; } = string.Empty;
+        public string AppointmentStartTime { get; set; } = string.Empty;
+        public string AppointmentDuration { get; set; } = string.Empty;
+    }
 }

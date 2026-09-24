@@ -26,5 +26,9 @@ namespace ExcelFilesCompiler.Interfaces
             IReadOnlyList<TreatmentCoordinatorAppointmentJsonDto> appointments,
             IReadOnlyDictionary<string, long> findingIdByClientKey,
             bool saveChanges = true);
+
+        Task<List<TreatmentCoordinatorEventAppointmentDto>> GetEventAppointmentsExcludingAsync(
+            long eventId,
+            long excludeServiceMembersChildId);
     }
 }
