@@ -44,16 +44,20 @@ namespace ExcelFilesCompiler
         public DbSet<DentalQuestionnaire> DentalQuestionnaire { get; set; }
         public DbSet<DentalExam> DentalExam { get; set; }
         public DbSet<DentalFinding> DentalFinding { get; set; }
-        public DbSet<DentalExamSelectedTooth> DentalExamSelectedTooth { get; set; }
+        public DbSet<DentalPsr> DentalPsr { get; set; }
+        public DbSet<DentalPsrSelectedTooth> DentalPsrSelectedTooth { get; set; }
+        public DbSet<DentalDenClassRecord> DentalDenClass { get; set; }
+        public DbSet<DentalPanoAcknowledgement> DentalPanoAcknowledgement { get; set; }
         public DbSet<DentalTreatment> DentalTreatment { get; set; }
         public DbSet<DentalTreatmentFinding> DentalTreatmentFinding { get; set; }
         public DbSet<DentalTreatmentSelectedTooth> DentalTreatmentSelectedTooth { get; set; }
         public DbSet<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; set; }
         public DbSet<DentalTreatmentPrescription> DentalTreatmentPrescription { get; set; }
         public DbSet<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; set; }
+        public DbSet<DentalTreatmentCoordinator> DentalTreatmentCoordinator { get; set; }
+        public DbSet<DentalAppointment> DentalAppointment { get; set; }
+        public DbSet<DentalAppointmentFinding> DentalAppointmentFinding { get; set; }
         public DbSet<TreatmentConsent> TreatmentConsent { get; set; }
-        public DbSet<TreatmentCoordinatorAppointment> TreatmentCoordinatorAppointment { get; set; }
-        public DbSet<TreatmentCoordinatorAppointmentFinding> TreatmentCoordinatorAppointmentFinding { get; set; }
 
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -189,24 +193,56 @@ namespace ExcelFilesCompiler
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
             });
 
-            modelBuilder.Entity<DentalFinding>(entity =>
+            modelBuilder.Entity<DentalPsr>(entity =>
             {
-                entity.HasOne(e => e.DentalExam)
-                    .WithMany(d => d.Findings)
-                    .HasForeignKey(e => e.DentalExamId)
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalPsrRecord)
+                    .HasForeignKey<DentalPsr>(e => e.ServiceMembersChildId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasIndex(e => e.ClientKey);
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
             });
 
-            modelBuilder.Entity<DentalExamSelectedTooth>(entity =>
+            modelBuilder.Entity<DentalPsrSelectedTooth>(entity =>
             {
-                entity.HasOne(e => e.DentalExam)
+                entity.HasOne(e => e.DentalPsr)
                     .WithMany(d => d.SelectedTeeth)
-                    .HasForeignKey(e => e.DentalExamId)
+                    .HasForeignKey(e => e.DentalPsrId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasIndex(e => new { e.DentalExamId, e.ToothNumber }).IsUnique();
+                entity.HasIndex(e => new { e.DentalPsrId, e.ToothNumber }).IsUnique();
+            });
+
+            modelBuilder.Entity<DentalDenClassRecord>(entity =>
+            {
+                entity.ToTable("DentalDenClass");
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalDenClassRecord)
+                    .HasForeignKey<DentalDenClassRecord>(e => e.ServiceMembersChildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
+            });
+
+            modelBuilder.Entity<DentalPanoAcknowledgement>(entity =>
+            {
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalPanoAcknowledgementRecord)
+                    .HasForeignKey<DentalPanoAcknowledgement>(e => e.ServiceMembersChildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
+            });
+
+            modelBuilder.Entity<DentalFinding>(entity =>
+            {
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithMany(s => s.DentalFindings)
+                    .HasForeignKey(e => e.ServiceMembersChildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.ServiceMembersChildId);
+                entity.HasIndex(e => e.ClientKey);
             });
 
             modelBuilder.Entity<DentalTreatment>(entity =>
@@ -219,23 +255,34 @@ namespace ExcelFilesCompiler
                 entity.HasOne(e => e.DentalExam)
                     .WithMany()
                     .HasForeignKey(e => e.DentalExamId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
                 entity.HasIndex(e => e.DentalExamId);
             });
 
-            modelBuilder.Entity<TreatmentCoordinatorAppointment>(entity =>
+            modelBuilder.Entity<DentalTreatmentCoordinator>(entity =>
             {
-                entity.HasOne(e => e.DentalTreatment)
-                    .WithMany(d => d.CoordinatorAppointments)
-                    .HasForeignKey(e => e.DentalTreatmentId)
+                entity.HasOne(e => e.ServiceMembersChild)
+                    .WithOne(s => s.DentalTreatmentCoordinatorRecord)
+                    .HasForeignKey<DentalTreatmentCoordinator>(e => e.ServiceMembersChildId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasIndex(e => e.DentalTreatmentId);
+                entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
             });
 
-            modelBuilder.Entity<TreatmentCoordinatorAppointmentFinding>(entity =>
+            modelBuilder.Entity<DentalAppointment>(entity =>
+            {
+                entity.HasOne(e => e.DentalTreatmentCoordinator)
+                    .WithMany(d => d.Appointments)
+                    .HasForeignKey(e => e.DentalTreatmentCoordinatorId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.DentalTreatmentCoordinatorId);
+            });
+
+            modelBuilder.Entity<DentalAppointmentFinding>(entity =>
             {
                 entity.HasOne(e => e.Appointment)
                     .WithMany(a => a.Findings)

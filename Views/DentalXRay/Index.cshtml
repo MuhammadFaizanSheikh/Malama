@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Malama.Models.ServiceMembersChild>
+﻿@using Malama.Utilities
+@model IEnumerable<Malama.Models.ServiceMembersChild>
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
@@ -7,6 +8,7 @@
     var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
     var pendingCount = ViewBag.Summary != null ? ViewBag.Summary["Pending"] : null;
     var completedCount = ViewBag.Summary != null ? ViewBag.Summary["Completed"] : null;
+    var auditNames = ViewBag.AuditDisplayNamesByUserId as IReadOnlyDictionary<string, string>;
 }
 
 <style>
@@ -468,7 +470,9 @@
                                 <td>@c.Sex</td>
                                 <td>@c.Dob</td>
                                 <td>@c.Barcode</td>
-                                <td>@c.DentalXRayStationRecord?.AddedBy</td>
+                                <td>@(DentalExamSignatureHelper.FormatAuditDisplayName(
+                                    c.DentalXRayStationRecord?.UpdatedBy ?? c.DentalXRayStationRecord?.AddedBy,
+                                    auditNames))</td>
                                 <td>@c.DentalXRayStationRecord?.AddedOn</td>
                             </tr>
                         }

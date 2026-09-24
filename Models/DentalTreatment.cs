@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
+    /// <summary>Dental Treatment station clinical work (created only when that station is saved).</summary>
     [Table("DentalTreatment")]
     public class DentalTreatment : GenericProperties
     {
@@ -11,24 +12,11 @@ namespace Malama.Models
 
         public long ServiceMembersChildId { get; set; }
 
-        public long DentalExamId { get; set; }
+        public long? DentalExamId { get; set; }
 
         public string? SmFinalClassification { get; set; }
 
         public string Status { get; set; } = "Pending";
-
-        /// <summary>Logged-in Treatment Coordinator user id (audit / legacy).</summary>
-        public string? TreatmentCoordinatorUserId { get; set; }
-
-        /// <summary>EventStaff Id of the Treatment Coordinator (source of truth for display).</summary>
-        public long? TreatmentCoordinatorEventStaffId { get; set; }
-
-        public DateTime? TreatmentCoordinatorDateTime { get; set; }
-
-        public string? TreatmentCoordinatorComments { get; set; }
-
-        /// <summary>JSON array of uploaded coordinator document metadata.</summary>
-        public string? DocumentsJson { get; set; }
 
         [JsonIgnore]
         [ValidateNever]
@@ -36,7 +24,7 @@ namespace Malama.Models
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual DentalExam DentalExam { get; set; } = null!;
+        public virtual DentalExam? DentalExam { get; set; }
 
         [JsonIgnore]
         [ValidateNever]
@@ -57,10 +45,6 @@ namespace Malama.Models
         [JsonIgnore]
         [ValidateNever]
         public virtual ICollection<DentalTreatmentOverallNote> OverallNotes { get; set; } = new List<DentalTreatmentOverallNote>();
-
-        [JsonIgnore]
-        [ValidateNever]
-        public virtual ICollection<TreatmentCoordinatorAppointment> CoordinatorAppointments { get; set; } = new List<TreatmentCoordinatorAppointment>();
     }
 
     public static class DentalTreatmentFindingOrigin
@@ -87,10 +71,6 @@ namespace Malama.Models
 
         public long? DentalFindingId { get; set; }
 
-        /// <summary>
-        /// Identifies how the finding entered treatment:
-        /// <see cref="DentalTreatmentFindingOrigin.Exam"/> or <see cref="DentalTreatmentFindingOrigin.Treatment"/>.
-        /// </summary>
         public string Origin { get; set; } = DentalTreatmentFindingOrigin.Exam;
 
         public bool IsPrimaryTooth { get; set; }

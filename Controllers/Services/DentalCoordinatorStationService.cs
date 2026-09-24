@@ -100,9 +100,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                         fileSession.ErrorMessage ?? "Failed to upload X-Ray image.");
                 }
 
-                var existingTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                var existingCoordinator = await _dentalTreatmentService.GetCoordinatorByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
                 var existingDocuments = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
-                    existingTreatment?.DocumentsJson);
+                    existingCoordinator?.DocumentsJson);
 
                 documentPlan = _documentFileSaveCoordinator.BuildPlan(
                     dto,
@@ -144,7 +144,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
                     dto,
-                    userName,
+                    userId,
                     DentalQuestionnaireSources.DentalCoordinator,
                     saveChanges: false);
 
@@ -152,20 +152,30 @@ namespace ExcelFilesCompiler.Controllers.Services
                     "{ClassName}, {MethodName}, Saving X-Ray station. ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, dto.ServiceMembersChildId);
 
-                var questionnaireForStatus = _dentalQuestionnaireService.MapFormDataToEntity(dto);
-                var entity = _dentalXRayStationService.MapSaveDtoToEntity(dto);
-                entity.Status = _dentalXRayStationService.ComputeOverallStatus(
-                    entity,
-                    serviceMember,
-                    questionnaireForStatus);
-
-                if (dto.Id == 0)
+                var hasXRayImages = DentalXRayStationSaveValidator.HasAnyXRayImageUpload(dto);
+                if (dto.Id > 0 || hasXRayImages)
                 {
-                    await _dentalXRayStationService.AddAsync(entity, userName, DentalXRaySources.DentalCoordinator, saveChanges: false);
+                    var questionnaireForStatus = _dentalQuestionnaireService.MapFormDataToEntity(dto);
+                    var entity = _dentalXRayStationService.MapSaveDtoToEntity(dto);
+                    entity.Status = _dentalXRayStationService.ComputeOverallStatus(
+                        entity,
+                        serviceMember,
+                        questionnaireForStatus);
+
+                    if (dto.Id == 0)
+                    {
+                        await _dentalXRayStationService.AddAsync(entity, userId, DentalXRaySources.DentalCoordinator, saveChanges: false);
+                    }
+                    else
+                    {
+                        await _dentalXRayStationService.UpdateAsync(entity, userId, DentalXRaySources.DentalCoordinator, saveChanges: false);
+                    }
                 }
                 else
                 {
-                    await _dentalXRayStationService.UpdateAsync(entity, userName, DentalXRaySources.DentalCoordinator, saveChanges: false);
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, Skipping DentalXRay create because no X-Ray images were uploaded. ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId);
                 }
 
                 _logger.LogInformation(
@@ -174,7 +184,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 await _dentalExamService.ApplyCoordinatorClinicalSectionsAsync(
                     dto,
-                    userName,
+                    userId,
                     saveChanges: false);
 
                 _logger.LogInformation(
@@ -190,13 +200,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 // Persist exam/findings so new finding Ids exist for appointment links.
                 await _unitOfWork.SaveAsync();
 
-                var examAfterSave = await _unitOfWork.DentalExam
-                    .GetWithIncludeNoTracking(
-                        e => e.ServiceMembersChildId == dto.ServiceMembersChildId,
-                        e => e.Findings)
-                    .FirstOrDefaultAsync();
+                var findingsAfterSave = await _unitOfWork.DentalFinding
+                    .GetAllWithConditionNoTracking(f => f.ServiceMembersChildId == dto.ServiceMembersChildId)
+                    .ToListAsync();
 
-                var findingIdByClientKey = (examAfterSave?.Findings ?? Enumerable.Empty<DentalFinding>())
+                var findingIdByClientKey = findingsAfterSave
                     .Where(f => !string.IsNullOrWhiteSpace(f.ClientKey) && f.Id > 0)
                     .GroupBy(f => f.ClientKey!.Trim(), StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(g => g.Key, g => g.Last().Id, StringComparer.OrdinalIgnoreCase);
@@ -216,10 +224,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
                 }
 
-                var existingExam = examAfterSave
-                    ?? await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                var existingDenClass = await _unitOfWork.DentalDenClass
+                    .GetWithIncludeNoTracking(e => e.ServiceMembersChildId == dto.ServiceMembersChildId)
+                    .FirstOrDefaultAsync();
                 var coordinatorOverallStatus = DentalCoordinatorTreatmentStatusHelper
-                    .ComputeCoordinatorOverallStatus(dto, existingExam);
+                    .ComputeCoordinatorOverallStatus(dto, existingExam, existingDenClass);
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Saving treatment section/appointments/documents. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}, AppointmentCount={AppointmentCount}, DocumentCount={DocumentCount}",
@@ -228,6 +238,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 await _dentalTreatmentService.ApplyCoordinatorSectionAsync(
                     dto.ServiceMembersChildId,
+                    dto.IsTreatmentRequired,
                     dto.TreatmentCoordinatorComments,
                     coordinatorOverallStatus,
                     userName,

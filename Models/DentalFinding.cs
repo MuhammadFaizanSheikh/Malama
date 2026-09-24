@@ -93,10 +93,10 @@ namespace Malama.Models
     {
         public long Id { get; set; }
 
-        public long DentalExamId { get; set; }
+        public long ServiceMembersChildId { get; set; }
 
         [JsonIgnore]
-        public virtual DentalExam DentalExam { get; set; } = null!;
+        public virtual ServiceMembersChild ServiceMembersChild { get; set; } = null!;
 
         public bool IsPrimaryTooth { get; set; }
 
@@ -248,7 +248,7 @@ namespace Malama.Models
             };
         }
 
-        public static DentalFinding ToEntity(DentalFindingDto dto, long dentalExamId, int sortOrder)
+        public static DentalFinding ToEntity(DentalFindingDto dto, long serviceMembersChildId, int sortOrder)
         {
             var isClass3 = DentalFindingConstants.IsClass3(dto.Classification);
             bool? isTreatmentPossible = isClass3
@@ -260,7 +260,7 @@ namespace Malama.Models
 
             return new DentalFinding
             {
-                DentalExamId = dentalExamId,
+                ServiceMembersChildId = serviceMembersChildId,
                 IsPrimaryTooth = dto.IsPrimaryTooth,
                 AffectedTooth = dto.AffectedTooth?.Trim() ?? string.Empty,
                 DiseaseConditionType = dto.DiseaseConditionType?.Trim() ?? string.Empty,

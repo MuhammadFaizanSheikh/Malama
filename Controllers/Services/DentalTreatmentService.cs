@@ -38,8 +38,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                         e => e.SelectedTeeth,
                         e => e.AnesthesiaRecords,
                         e => e.Prescriptions,
-                        e => e.OverallNotes,
-                        e => e.CoordinatorAppointments)
+                        e => e.OverallNotes)
                     .FirstOrDefaultAsync();
 
                 if (treatment == null)
@@ -48,20 +47,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "{ClassName}, {MethodName}, No dental treatment found for ServiceMembersChildId={ServiceMembersChildId}",
                         CLASSNAME, methodName, serviceMembersChildId);
                     return null;
-                }
-
-                if (treatment.CoordinatorAppointments != null && treatment.CoordinatorAppointments.Count > 0)
-                {
-                    var appointmentIds = treatment.CoordinatorAppointments.Select(a => a.Id).ToList();
-                    var links = await _unitOfWork.TreatmentCoordinatorAppointmentFinding
-                        .GetWithIncludeNoTracking(
-                            f => appointmentIds.Contains(f.AppointmentId))
-                        .ToListAsync();
-
-                    foreach (var appt in treatment.CoordinatorAppointments)
-                    {
-                        appt.Findings = links.Where(l => l.AppointmentId == appt.Id).ToList();
-                    }
                 }
 
                 treatment.Findings = treatment.Findings?.OrderBy(f => f.SortOrder).ToList() ?? new List<DentalTreatmentFinding>();
@@ -81,6 +66,55 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Failed to load dental treatment for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
+        }
+
+        public async Task<DentalTreatmentCoordinator?> GetCoordinatorByServiceMembersChildIdAsync(long serviceMembersChildId)
+        {
+            const string methodName = nameof(GetCoordinatorByServiceMembersChildIdAsync);
+
+            try
+            {
+                var coordinator = await _unitOfWork.DentalTreatmentCoordinator
+                    .GetWithIncludeNoTracking(
+                        e => e.ServiceMembersChildId == serviceMembersChildId,
+                        e => e.Appointments)
+                    .FirstOrDefaultAsync();
+
+                if (coordinator == null)
+                {
+                    _logger.LogInformation(
+                        "{ClassName}, {MethodName}, No treatment coordinator record for ServiceMembersChildId={ServiceMembersChildId}",
+                        CLASSNAME, methodName, serviceMembersChildId);
+                    return null;
+                }
+
+                if (coordinator.Appointments != null && coordinator.Appointments.Count > 0)
+                {
+                    var appointmentIds = coordinator.Appointments.Select(a => a.Id).ToList();
+                    var links = await _unitOfWork.DentalAppointmentFinding
+                        .GetWithIncludeNoTracking(f => appointmentIds.Contains(f.AppointmentId))
+                        .ToListAsync();
+
+                    foreach (var appt in coordinator.Appointments)
+                    {
+                        appt.Findings = links.Where(l => l.AppointmentId == appt.Id).ToList();
+                    }
+
+                    coordinator.Appointments = coordinator.Appointments
+                        .OrderBy(a => a.SortOrder)
+                        .ThenBy(a => a.Id)
+                        .ToList();
+                }
+
+                return coordinator;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to load treatment coordinator for ServiceMembersChildId={ServiceMembersChildId}",
                     CLASSNAME, methodName, serviceMembersChildId);
                 throw;
             }
@@ -115,7 +149,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 {
                     _mapper.Map(dto, existing);
                     existing.Status = DentalTreatmentValidator.ComputeStatus(dto.SmFinalClassification, dto.Findings);
-                    existing.UpdatedBy = userName;
+                    existing.UpdatedBy = userId;
                     existing.UpdatedOn = DateTime.Now;
 
                     ReplaceChildren(existing, dto, userId);
@@ -131,7 +165,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 var entity = _mapper.Map<DentalTreatment>(dto);
                 entity.Status = DentalTreatmentValidator.ComputeStatus(dto.SmFinalClassification, dto.Findings);
-                entity.AddedBy = userName;
+                entity.AddedBy = userId;
                 entity.AddedOn = DateTime.Now;
 
                 await _unitOfWork.DentalTreatment.AddAsync(entity);
@@ -178,6 +212,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task ApplyCoordinatorSectionAsync(
             long serviceMembersChildId,
+            bool isTreatmentRequired,
             string? comments,
             string status,
             string userName,
@@ -198,17 +233,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                         "Treatment Coordinator EventStaff Id is required.");
                 }
 
-                var exam = await _unitOfWork.DentalExam
-                    .GetWithIncludeNoTracking(e => e.ServiceMembersChildId == serviceMembersChildId)
-                    .Select(e => new { e.Id })
-                    .FirstOrDefaultAsync();
-
-                if (exam == null || exam.Id <= 0)
-                {
-                    throw new InvalidOperationException(
-                        "Dental Exam record is required before saving Treatment Coordinator details.");
-                }
-
                 var now = DentalFindingMapper.NormalizeDateTime(DateTime.Now);
                 var trimmedComments = string.IsNullOrWhiteSpace(comments) ? null : comments.Trim();
                 var resolvedStatus = string.Equals(status?.Trim(), AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
@@ -216,45 +240,46 @@ namespace ExcelFilesCompiler.Controllers.Services
                     : AppConstants.Status.Pending;
                 var documentsJson = TreatmentCoordinatorDocumentFileSaveCoordinator.SerializeDocuments(documents);
 
-                var existing = await _unitOfWork.DentalTreatment
+                var existing = await _unitOfWork.DentalTreatmentCoordinator
                     .GetWithIncludeTracking(
                         e => e.ServiceMembersChildId == serviceMembersChildId,
-                        e => e.CoordinatorAppointments)
+                        e => e.Appointments)
                     .FirstOrDefaultAsync();
 
-                DentalTreatment treatment;
+                DentalTreatmentCoordinator coordinator;
                 if (existing != null)
                 {
+                    existing.IsTreatmentRequired = isTreatmentRequired;
                     existing.TreatmentCoordinatorUserId = userId;
                     existing.TreatmentCoordinatorEventStaffId = eventStaffId;
                     existing.TreatmentCoordinatorDateTime = now;
                     existing.TreatmentCoordinatorComments = trimmedComments;
                     existing.DocumentsJson = documentsJson;
                     existing.Status = resolvedStatus;
-                    existing.UpdatedBy = userName;
+                    existing.UpdatedBy = userId;
                     existing.UpdatedOn = now;
-                    treatment = existing;
+                    coordinator = existing;
                 }
                 else
                 {
-                    treatment = new DentalTreatment
+                    coordinator = new DentalTreatmentCoordinator
                     {
                         ServiceMembersChildId = serviceMembersChildId,
-                        DentalExamId = exam.Id,
+                        IsTreatmentRequired = isTreatmentRequired,
                         Status = resolvedStatus,
                         TreatmentCoordinatorUserId = userId,
                         TreatmentCoordinatorEventStaffId = eventStaffId,
                         TreatmentCoordinatorDateTime = now,
                         TreatmentCoordinatorComments = trimmedComments,
                         DocumentsJson = documentsJson,
-                        AddedBy = userName,
+                        AddedBy = userId,
                         AddedOn = now,
-                        CoordinatorAppointments = new List<TreatmentCoordinatorAppointment>()
+                        Appointments = new List<DentalAppointment>()
                     };
-                    await _unitOfWork.DentalTreatment.AddAsync(treatment);
+                    await _unitOfWork.DentalTreatmentCoordinator.AddAsync(coordinator);
                 }
 
-                ReplaceCoordinatorAppointments(treatment, appointments, findingIdByClientKey);
+                ReplaceCoordinatorAppointments(coordinator, appointments, findingIdByClientKey);
 
                 if (saveChanges)
                 {
@@ -276,29 +301,29 @@ namespace ExcelFilesCompiler.Controllers.Services
         }
 
         private void ReplaceCoordinatorAppointments(
-            DentalTreatment treatment,
+            DentalTreatmentCoordinator coordinator,
             IReadOnlyList<TreatmentCoordinatorAppointmentJsonDto> appointments,
             IReadOnlyDictionary<string, long> findingIdByClientKey)
         {
-            treatment.CoordinatorAppointments ??= new List<TreatmentCoordinatorAppointment>();
+            coordinator.Appointments ??= new List<DentalAppointment>();
 
-            var existingAppointments = treatment.CoordinatorAppointments.ToList();
+            var existingAppointments = coordinator.Appointments.ToList();
             if (existingAppointments.Count > 0)
             {
                 var existingIds = existingAppointments.Select(a => a.Id).Where(id => id > 0).ToList();
                 if (existingIds.Count > 0)
                 {
-                    var existingLinks = _unitOfWork.TreatmentCoordinatorAppointmentFinding
+                    var existingLinks = _unitOfWork.DentalAppointmentFinding
                         .GetAllWithConditionNoTracking(f => existingIds.Contains(f.AppointmentId))
                         .ToList();
                     if (existingLinks.Count > 0)
                     {
-                        _unitOfWork.TreatmentCoordinatorAppointmentFinding.RemoveRange(existingLinks);
+                        _unitOfWork.DentalAppointmentFinding.RemoveRange(existingLinks);
                     }
                 }
 
-                _unitOfWork.TreatmentCoordinatorAppointment.RemoveRange(existingAppointments);
-                treatment.CoordinatorAppointments.Clear();
+                _unitOfWork.DentalAppointment.RemoveRange(existingAppointments);
+                coordinator.Appointments.Clear();
             }
 
             var sortOrder = 0;
@@ -314,14 +339,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                     continue;
                 }
 
-                var entity = new TreatmentCoordinatorAppointment
+                var entity = new DentalAppointment
                 {
                     EventStaffId = staffId,
                     AppointmentDate = date,
                     AppointmentStartTime = (appt.AppointmentStartTime ?? string.Empty).Trim(),
                     AppointmentDuration = (appt.AppointmentDuration ?? string.Empty).Trim(),
                     SortOrder = sortOrder++,
-                    Findings = new List<TreatmentCoordinatorAppointmentFinding>()
+                    Findings = new List<DentalAppointmentFinding>()
                 };
 
                 var keys = (appt.FindingClientKeys ?? new List<string>())
@@ -337,14 +362,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                             $"Appointment finding key '{key}' could not be resolved.");
                     }
 
-                    entity.Findings.Add(new TreatmentCoordinatorAppointmentFinding
+                    entity.Findings.Add(new DentalAppointmentFinding
                     {
                         DentalFindingId = findingId,
                         FindingClientKey = key
                     });
                 }
 
-                treatment.CoordinatorAppointments.Add(entity);
+                coordinator.Appointments.Add(entity);
             }
         }
 

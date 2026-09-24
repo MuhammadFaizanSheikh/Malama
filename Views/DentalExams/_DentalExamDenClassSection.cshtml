@@ -1,9 +1,9 @@
 @using ExcelFilesCompiler.Controllers.Services
 @using Malama.Models
-@model DentalExam
+@model DentalSharedClinicalViewModel
 
 @{
-    var exam = Model ?? new DentalExam();
+    var exam = Model ?? new DentalSharedClinicalViewModel();
     var serviceMemberPanoRequired = ViewData["ServiceMemberPanoRequired"] as bool? ?? false;
     var subsequentReadOnly = ViewData["SubsequentReadOnly"] as bool? ?? false;
     var hasDenClassSelected = !string.IsNullOrWhiteSpace(exam.DenClass);

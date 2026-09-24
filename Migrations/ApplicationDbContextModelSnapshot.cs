@@ -505,7 +505,69 @@ namespace Malama.Migrations
                     b.ToTable("ContractDetails");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExam", b =>
+            modelBuilder.Entity("Malama.Models.DentalAppointment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("AppointmentDuration")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AppointmentStartTime")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("DentalTreatmentCoordinatorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("EventStaffId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalTreatmentCoordinatorId");
+
+                    b.ToTable("DentalAppointment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalAppointmentFinding", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AppointmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("DentalFindingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FindingClientKey")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalFindingId");
+
+                    b.HasIndex("AppointmentId", "DentalFindingId")
+                        .IsUnique();
+
+                    b.ToTable("DentalAppointmentFinding");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalDenClassRecord", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -525,6 +587,40 @@ namespace Malama.Migrations
                     b.Property<string>("DenClassReasonComments")
                         .HasColumnType("text");
 
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
+
+                    b.ToTable("DentalDenClass", (string)null);
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalExam", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime?>("DentistSignatureDateTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -537,41 +633,11 @@ namespace Malama.Migrations
                     b.Property<string>("FinalComments")
                         .HasColumnType("text");
 
-                    b.Property<bool>("PanoXRayAcknowledged")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("PsrCarrierRisk")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrLowerAnterior")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrLowerLeft")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrLowerRight")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrUpperAnterior")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrUpperLeft")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PsrUpperRight")
-                        .HasColumnType("text");
-
                     b.Property<bool>("QuestionnaireReviewed")
                         .HasColumnType("boolean");
 
                     b.Property<long>("ServiceMembersChildId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("SoftTissuesConditionDetail")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoftTissuesWnl")
-                        .HasColumnType("text");
 
                     b.Property<string>("Source")
                         .HasColumnType("text");
@@ -618,8 +684,8 @@ namespace Malama.Migrations
                     b.Property<string>("Classification")
                         .HasColumnType("text");
 
-                    b.Property<long>("DentalExamId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("ClientKey")
+                        .HasColumnType("text");
 
                     b.Property<string>("DescriptionDetails")
                         .HasColumnType("text");
@@ -640,8 +706,23 @@ namespace Malama.Migrations
                     b.Property<DateTime?>("ExaminationUpdatedOn")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("ExternalDentistRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ExternalExamDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ExternalExaminerName")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsPrimaryTooth")
                         .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsTreatmentPossible")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
@@ -649,14 +730,25 @@ namespace Malama.Migrations
                     b.Property<string>("Source")
                         .HasColumnType("text");
 
+                    b.Property<string>("TreatmentNotPossibleCommandName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TreatmentNotPossibleReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("TreatmentPlanNextAppointmentDate")
+                        .HasColumnType("timestamp without time zone");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DentalExamId");
+                    b.HasIndex("ClientKey");
+
+                    b.HasIndex("ServiceMembersChildId");
 
                     b.ToTable("DentalFinding");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExamSelectedTooth", b =>
+            modelBuilder.Entity("Malama.Models.DentalPanoAcknowledgement", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -664,7 +756,105 @@ namespace Malama.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("DentalExamId")
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("PanoXRayAcknowledged")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
+
+                    b.ToTable("DentalPanoAcknowledgement");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalPsr", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("PsrCarrierRisk")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrLowerAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrLowerLeft")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrLowerRight")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrUpperAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrUpperLeft")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PsrUpperRight")
+                        .HasColumnType("text");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SoftTissuesConditionDetail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SoftTissuesWnl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
+
+                    b.ToTable("DentalPsr");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalPsrSelectedTooth", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DentalPsrId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("ToothNumber")
@@ -672,10 +862,10 @@ namespace Malama.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DentalExamId", "ToothNumber")
+                    b.HasIndex("DentalPsrId", "ToothNumber")
                         .IsUnique();
 
-                    b.ToTable("DentalExamSelectedTooth");
+                    b.ToTable("DentalPsrSelectedTooth");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalQuestionnaire", b =>
@@ -767,6 +957,306 @@ namespace Malama.Migrations
                         .IsUnique();
 
                     b.ToTable("DentalQuestionaire");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long?>("DentalExamId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SmFinalClassification")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalExamId");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
+
+                    b.ToTable("DentalTreatment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentAnesthesia", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CarpulesByTypeJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Date")
+                        .HasColumnType("text");
+
+                    b.Property<long>("DentalTreatmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalTreatmentId");
+
+                    b.ToTable("DentalTreatmentAnesthesia");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentCoordinator", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("DocumentsJson")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsTreatmentRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TreatmentCoordinatorComments")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("TreatmentCoordinatorDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long?>("TreatmentCoordinatorEventStaffId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TreatmentCoordinatorUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersChildId")
+                        .IsUnique();
+
+                    b.ToTable("DentalTreatmentCoordinator");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentFinding", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AffectedTooth")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("DentalFindingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("DentalTreatmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DentistProfessional")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DiseaseConditionType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FindingDateTime")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsPrimaryTooth")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostServiceTreatmentJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProceduredDrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TreatmentCdtCodesJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TreatmentCompleted")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TreatmentDateTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TreatmentStatus")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalFindingId");
+
+                    b.HasIndex("DentalTreatmentId", "DentalFindingId")
+                        .IsUnique();
+
+                    b.ToTable("DentalTreatmentFinding");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentOverallNote", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DentalTreatmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Dentist")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NoteDateTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalTreatmentId");
+
+                    b.ToTable("DentalTreatmentOverallNote");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentPrescription", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DentalTreatmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Dosage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Duration")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EndDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Frequency")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrescribedAmount")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrescribedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrescribedOn")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Product")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StartDate")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalTreatmentId");
+
+                    b.ToTable("DentalTreatmentPrescription");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentSelectedTooth", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("DentalTreatmentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ToothNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DentalTreatmentId", "ToothNumber")
+                        .IsUnique();
+
+                    b.ToTable("DentalTreatmentSelectedTooth");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalXRayPaImage", b =>
@@ -3472,6 +3962,64 @@ namespace Malama.Migrations
                     b.ToTable("TravelHonor");
                 });
 
+            modelBuilder.Entity("Malama.Models.TreatmentConsent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("DentalTreatmentDentistEventStaffIdsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DentalTreatmentFormsJson")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IncludeDentalTreatmentConsent")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IncludeOralSurgeryForm")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IncludeQuestionnaire")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OralSurgeryDentistEventStaffIdsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OralSurgeryFormsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OralSurgeryProcedureText")
+                        .HasColumnType("text");
+
+                    b.Property<long>("ServiceMembersChildId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceMembersChildId");
+
+                    b.ToTable("TreatmentConsent");
+                });
+
             modelBuilder.Entity("Malama.Models.UserEventMapping", b =>
                 {
                     b.Property<long>("Id")
@@ -3728,6 +4276,47 @@ namespace Malama.Migrations
                     b.Navigation("Container");
                 });
 
+            modelBuilder.Entity("Malama.Models.DentalAppointment", b =>
+                {
+                    b.HasOne("Malama.Models.DentalTreatmentCoordinator", "DentalTreatmentCoordinator")
+                        .WithMany("Appointments")
+                        .HasForeignKey("DentalTreatmentCoordinatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatmentCoordinator");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalAppointmentFinding", b =>
+                {
+                    b.HasOne("Malama.Models.DentalAppointment", "Appointment")
+                        .WithMany("Findings")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Malama.Models.DentalFinding", "DentalFinding")
+                        .WithMany()
+                        .HasForeignKey("DentalFindingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("DentalFinding");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalDenClassRecord", b =>
+                {
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("DentalDenClassRecord")
+                        .HasForeignKey("Malama.Models.DentalDenClassRecord", "ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceMembersChild");
+                });
+
             modelBuilder.Entity("Malama.Models.DentalExam", b =>
                 {
                     b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
@@ -3741,24 +4330,46 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.DentalFinding", b =>
                 {
-                    b.HasOne("Malama.Models.DentalExam", "DentalExam")
-                        .WithMany("Findings")
-                        .HasForeignKey("DentalExamId")
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithMany("DentalFindings")
+                        .HasForeignKey("ServiceMembersChildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DentalExam");
+                    b.Navigation("ServiceMembersChild");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExamSelectedTooth", b =>
+            modelBuilder.Entity("Malama.Models.DentalPanoAcknowledgement", b =>
                 {
-                    b.HasOne("Malama.Models.DentalExam", "DentalExam")
-                        .WithMany("SelectedTeeth")
-                        .HasForeignKey("DentalExamId")
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("DentalPanoAcknowledgementRecord")
+                        .HasForeignKey("Malama.Models.DentalPanoAcknowledgement", "ServiceMembersChildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DentalExam");
+                    b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalPsr", b =>
+                {
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("DentalPsrRecord")
+                        .HasForeignKey("Malama.Models.DentalPsr", "ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalPsrSelectedTooth", b =>
+                {
+                    b.HasOne("Malama.Models.DentalPsr", "DentalPsr")
+                        .WithMany("SelectedTeeth")
+                        .HasForeignKey("DentalPsrId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalPsr");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalQuestionnaire", b =>
@@ -3770,6 +4381,97 @@ namespace Malama.Migrations
                         .IsRequired();
 
                     b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatment", b =>
+                {
+                    b.HasOne("Malama.Models.DentalExam", "DentalExam")
+                        .WithMany()
+                        .HasForeignKey("DentalExamId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("DentalTreatmentRecord")
+                        .HasForeignKey("Malama.Models.DentalTreatment", "ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalExam");
+
+                    b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentAnesthesia", b =>
+                {
+                    b.HasOne("Malama.Models.DentalTreatment", "DentalTreatment")
+                        .WithMany("AnesthesiaRecords")
+                        .HasForeignKey("DentalTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentCoordinator", b =>
+                {
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithOne("DentalTreatmentCoordinatorRecord")
+                        .HasForeignKey("Malama.Models.DentalTreatmentCoordinator", "ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceMembersChild");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentFinding", b =>
+                {
+                    b.HasOne("Malama.Models.DentalFinding", "DentalFinding")
+                        .WithMany()
+                        .HasForeignKey("DentalFindingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Malama.Models.DentalTreatment", "DentalTreatment")
+                        .WithMany("Findings")
+                        .HasForeignKey("DentalTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalFinding");
+
+                    b.Navigation("DentalTreatment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentOverallNote", b =>
+                {
+                    b.HasOne("Malama.Models.DentalTreatment", "DentalTreatment")
+                        .WithMany("OverallNotes")
+                        .HasForeignKey("DentalTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentPrescription", b =>
+                {
+                    b.HasOne("Malama.Models.DentalTreatment", "DentalTreatment")
+                        .WithMany("Prescriptions")
+                        .HasForeignKey("DentalTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatment");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentSelectedTooth", b =>
+                {
+                    b.HasOne("Malama.Models.DentalTreatment", "DentalTreatment")
+                        .WithMany("SelectedTeeth")
+                        .HasForeignKey("DentalTreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatment");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalXRayPaImage", b =>
@@ -4167,6 +4869,17 @@ namespace Malama.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Malama.Models.TreatmentConsent", b =>
+                {
+                    b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
+                        .WithMany()
+                        .HasForeignKey("ServiceMembersChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServiceMembersChild");
+                });
+
             modelBuilder.Entity("Malama.Models.UserEventMapping", b =>
                 {
                     b.HasOne("Malama.Models.EventManagement", "EventManagement")
@@ -4256,11 +4969,32 @@ namespace Malama.Migrations
                     b.Navigation("EventManagement");
                 });
 
-            modelBuilder.Entity("Malama.Models.DentalExam", b =>
+            modelBuilder.Entity("Malama.Models.DentalAppointment", b =>
                 {
                     b.Navigation("Findings");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalPsr", b =>
+                {
+                    b.Navigation("SelectedTeeth");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatment", b =>
+                {
+                    b.Navigation("AnesthesiaRecords");
+
+                    b.Navigation("Findings");
+
+                    b.Navigation("OverallNotes");
+
+                    b.Navigation("Prescriptions");
 
                     b.Navigation("SelectedTeeth");
+                });
+
+            modelBuilder.Entity("Malama.Models.DentalTreatmentCoordinator", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("Malama.Models.DentalXRayStation", b =>
@@ -4326,10 +5060,27 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.ServiceMembersChild", b =>
                 {
+                    b.Navigation("DentalDenClassRecord")
+                        .IsRequired();
+
                     b.Navigation("DentalExamRecord")
                         .IsRequired();
 
+                    b.Navigation("DentalFindings");
+
+                    b.Navigation("DentalPanoAcknowledgementRecord")
+                        .IsRequired();
+
+                    b.Navigation("DentalPsrRecord")
+                        .IsRequired();
+
                     b.Navigation("DentalQuestionnaireRecord")
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatmentCoordinatorRecord")
+                        .IsRequired();
+
+                    b.Navigation("DentalTreatmentRecord")
                         .IsRequired();
 
                     b.Navigation("DentalXRayStationRecord")

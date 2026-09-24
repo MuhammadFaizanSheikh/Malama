@@ -29,6 +29,7 @@ namespace Malama.Models
         };
     }
 
+    /// <summary>Thin Dental Exam station header (audit + status + dentist review/signature).</summary>
     [Table("DentalExam")]
     public class DentalExam : GenericProperties
     {
@@ -40,37 +41,15 @@ namespace Malama.Models
         [ValidateNever]
         public virtual ServiceMembersChild ServiceMembersChild { get; set; }
 
-        public string? PsrUpperRight { get; set; }
-        public string? PsrUpperAnterior { get; set; }
-        public string? PsrUpperLeft { get; set; }
-        public string? PsrLowerRight { get; set; }
-        public string? PsrLowerAnterior { get; set; }
-        public string? PsrLowerLeft { get; set; }
-        public string? PsrCarrierRisk { get; set; }
-        public string? SoftTissuesWnl { get; set; }
-        public string? SoftTissuesConditionDetail { get; set; }
-
         public bool QuestionnaireReviewed { get; set; }
         public string? FinalComments { get; set; }
         public bool DentistSignatureEntered { get; set; }
         public string? DentistSignatureUserId { get; set; }
         public DateTime? DentistSignatureDateTime { get; set; }
 
-        public string? DenClass { get; set; }
-        public string? DenClassReasonComments { get; set; }
-        public bool PanoXRayAcknowledged { get; set; }
-
         public string Status { get; set; } = "Pending";
 
         public string? Source { get; set; }
-
-        [JsonIgnore]
-        [ValidateNever]
-        public virtual ICollection<DentalFinding> Findings { get; set; } = new List<DentalFinding>();
-
-        [JsonIgnore]
-        [ValidateNever]
-        public virtual ICollection<DentalExamSelectedTooth> SelectedTeeth { get; set; } = new List<DentalExamSelectedTooth>();
     }
 
     public static class DentalExamSources

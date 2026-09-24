@@ -5,14 +5,14 @@ using System.Text.Json.Serialization;
 
 namespace Malama.Models
 {
-    [Table("TreatmentCoordinatorAppointment")]
-    public class TreatmentCoordinatorAppointment
+    [Table("DentalAppointment")]
+    public class DentalAppointment
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        public long DentalTreatmentId { get; set; }
+        public long DentalTreatmentCoordinatorId { get; set; }
 
         public long EventStaffId { get; set; }
 
@@ -26,16 +26,16 @@ namespace Malama.Models
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual DentalTreatment DentalTreatment { get; set; } = null!;
+        public virtual DentalTreatmentCoordinator DentalTreatmentCoordinator { get; set; } = null!;
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual ICollection<TreatmentCoordinatorAppointmentFinding> Findings { get; set; }
-            = new List<TreatmentCoordinatorAppointmentFinding>();
+        public virtual ICollection<DentalAppointmentFinding> Findings { get; set; }
+            = new List<DentalAppointmentFinding>();
     }
 
-    [Table("TreatmentCoordinatorAppointmentFinding")]
-    public class TreatmentCoordinatorAppointmentFinding
+    [Table("DentalAppointmentFinding")]
+    public class DentalAppointmentFinding
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -49,7 +49,7 @@ namespace Malama.Models
 
         [JsonIgnore]
         [ValidateNever]
-        public virtual TreatmentCoordinatorAppointment Appointment { get; set; } = null!;
+        public virtual DentalAppointment Appointment { get; set; } = null!;
 
         [JsonIgnore]
         [ValidateNever]

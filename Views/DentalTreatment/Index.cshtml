@@ -1,9 +1,11 @@
-﻿@model IEnumerable<Malama.Models.ServiceMembersChild>
+﻿@using Malama.Utilities
+@model IEnumerable<Malama.Models.ServiceMembersChild>
 
 @{
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Dental Treatment";
     var selectedEventId = ViewBag.EventId;
+    var auditNames = ViewBag.AuditDisplayNamesByUserId as IReadOnlyDictionary<string, string>;
 }
 
 <style>
@@ -195,7 +197,7 @@
                                class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
                         </td>
                         <td>@(c.DentalTreatmentRecord?.Status ?? "Pending")</td>
-                        <td>@(c.DentalExamRecord?.DenClass ?? "-")</td>
+                        <td>@(c.DentalDenClassRecord?.DenClass ?? "-")</td>
                         <td>@c.SmId</td>
                         <td>@c.Drc</td>
                         <td>@c.FullName</td>
@@ -204,7 +206,9 @@
                         <td>@c.Sex</td>
                         <td>@c.Dob</td>
                         <td>@c.Barcode</td>
-                        <td>@c.DentalExamRecord?.AddedBy</td>
+                        <td>@(DentalExamSignatureHelper.FormatAuditDisplayName(
+                            c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy,
+                            auditNames))</td>
                         <td>@c.DentalExamRecord?.AddedOn</td>
                     </tr>
                 }

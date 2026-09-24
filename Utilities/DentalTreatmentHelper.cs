@@ -86,7 +86,10 @@ namespace ExcelFilesCompiler.Utilities
         public static bool IsUrgentTreatmentDrc(string? drc) =>
             string.Equals((drc ?? string.Empty).Trim(), "3", StringComparison.OrdinalIgnoreCase);
 
-        public static string? ValidateSaveDto(DentalTreatmentStationSaveDto dto, DentalExam exam)
+        public static string? ValidateSaveDto(
+            DentalTreatmentStationSaveDto dto,
+            DentalExam exam,
+            IEnumerable<DentalFinding>? sharedFindings = null)
         {
             if (dto.ServiceMembersChildId <= 0)
             {
@@ -105,7 +108,7 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             var class3FindingIds = new HashSet<long>(
-                (exam.Findings ?? Array.Empty<DentalFinding>())
+                (sharedFindings ?? Array.Empty<DentalFinding>())
                     .Where(f => string.Equals(f.Classification, DentalFindingConstants.ClassificationClass3, StringComparison.OrdinalIgnoreCase))
                     .Select(f => f.Id));
 

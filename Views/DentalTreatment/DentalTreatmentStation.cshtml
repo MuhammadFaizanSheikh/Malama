@@ -12,6 +12,7 @@
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
     var dentalExam = Model.DentalExam;
+    var sharedClinical = Model.SharedClinical ?? new DentalSharedClinicalViewModel { ServiceMembersChildId = sm.Id };
     var dentalTreatment = Model.DentalTreatment;
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var isDentalExamDentist = User.IsInRole("DE- Dentist") || User.IsInRole("DT-Dentist");
@@ -183,7 +184,7 @@
                     <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
                 </div>
                 <div class="col-md-4">
-                    <p><span class="fw-bold">DEN Class:</span> @dentalExam.DenClass</p>
+                    <p><span class="fw-bold">DEN Class:</span> @sharedClinical.DenClass</p>
                 </div>
                 <div class="col-md-4">
                     <p><span class="fw-bold">Dental Exam Status:</span> @dentalExam.Status</p>
@@ -495,24 +496,24 @@
 
     <div id="subsequentSection" style="display:none;">
         @{
-            var examSubsequentViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            var examSubsequentViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
             examSubsequentViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
             examSubsequentViewData["RequirePsrFields"] = false;
             examSubsequentViewData["XRayStation"] = Model.XRayStation;
             examSubsequentViewData["SubsequentReadOnly"] = true;
             examSubsequentViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
         }
-        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", dentalExam, examSubsequentViewData)
+        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", sharedClinical, examSubsequentViewData)
 
         @{
-            var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            var denClassViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
             denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
             denClassViewData["SubsequentReadOnly"] = true;
         }
-        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", dentalExam, denClassViewData)
+        @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", sharedClinical, denClassViewData)
 
         @{
-            var treatmentFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            var treatmentFindingsViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
             treatmentFindingsViewData["XRayStation"] = Model.XRayStation;
             treatmentFindingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                 ?? new Dictionary<string, string>();
@@ -521,7 +522,7 @@
             treatmentFindingsViewData["CanEditTreatment"] = isDtDentist;
             treatmentFindingsViewData["DentalTreatment"] = dentalTreatment;
         }
-        @await Html.PartialAsync("_DentalTreatmentFindingsSection", dentalExam, treatmentFindingsViewData)
+        @await Html.PartialAsync("_DentalTreatmentFindingsSection", sharedClinical, treatmentFindingsViewData)
 
         @await Html.PartialAsync("_DentalTreatmentAnesthesiaSection")
 

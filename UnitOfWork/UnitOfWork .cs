@@ -42,16 +42,20 @@ namespace ExcelFilesCompiler.UnitOfWork
         public IGenericRepository<DentalQuestionnaire> DentalQuestionnaire { get; private set; }
         public IGenericRepository<DentalExam> DentalExam { get; private set; }
         public IGenericRepository<DentalFinding> DentalFinding { get; private set; }
-        public IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; private set; }
+        public IGenericRepository<DentalPsr> DentalPsr { get; private set; }
+        public IGenericRepository<DentalPsrSelectedTooth> DentalPsrSelectedTooth { get; private set; }
+        public IGenericRepository<DentalDenClassRecord> DentalDenClass { get; private set; }
+        public IGenericRepository<DentalPanoAcknowledgement> DentalPanoAcknowledgement { get; private set; }
         public IGenericRepository<DentalTreatment> DentalTreatment { get; private set; }
         public IGenericRepository<DentalTreatmentFinding> DentalTreatmentFinding { get; private set; }
         public IGenericRepository<DentalTreatmentSelectedTooth> DentalTreatmentSelectedTooth { get; private set; }
         public IGenericRepository<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; private set; }
         public IGenericRepository<DentalTreatmentPrescription> DentalTreatmentPrescription { get; private set; }
         public IGenericRepository<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; private set; }
+        public IGenericRepository<DentalTreatmentCoordinator> DentalTreatmentCoordinator { get; private set; }
+        public IGenericRepository<DentalAppointment> DentalAppointment { get; private set; }
+        public IGenericRepository<DentalAppointmentFinding> DentalAppointmentFinding { get; private set; }
         public IGenericRepository<TreatmentConsent> TreatmentConsent { get; private set; }
-        public IGenericRepository<TreatmentCoordinatorAppointment> TreatmentCoordinatorAppointment { get; private set; }
-        public IGenericRepository<TreatmentCoordinatorAppointmentFinding> TreatmentCoordinatorAppointmentFinding { get; private set; }
 
 
         public UnitOfWork(ApplicationDbContext context)
@@ -91,16 +95,20 @@ namespace ExcelFilesCompiler.UnitOfWork
             DentalQuestionnaire = new GenericRepository<DentalQuestionnaire>(_context);
             DentalExam = new GenericRepository<DentalExam>(_context);
             DentalFinding = new GenericRepository<DentalFinding>(_context);
-            DentalExamSelectedTooth = new GenericRepository<DentalExamSelectedTooth>(_context);
+            DentalPsr = new GenericRepository<DentalPsr>(_context);
+            DentalPsrSelectedTooth = new GenericRepository<DentalPsrSelectedTooth>(_context);
+            DentalDenClass = new GenericRepository<DentalDenClassRecord>(_context);
+            DentalPanoAcknowledgement = new GenericRepository<DentalPanoAcknowledgement>(_context);
             DentalTreatment = new GenericRepository<DentalTreatment>(_context);
             DentalTreatmentFinding = new GenericRepository<DentalTreatmentFinding>(_context);
             DentalTreatmentSelectedTooth = new GenericRepository<DentalTreatmentSelectedTooth>(_context);
             DentalTreatmentAnesthesia = new GenericRepository<DentalTreatmentAnesthesia>(_context);
             DentalTreatmentPrescription = new GenericRepository<DentalTreatmentPrescription>(_context);
             DentalTreatmentOverallNote = new GenericRepository<DentalTreatmentOverallNote>(_context);
+            DentalTreatmentCoordinator = new GenericRepository<DentalTreatmentCoordinator>(_context);
+            DentalAppointment = new GenericRepository<DentalAppointment>(_context);
+            DentalAppointmentFinding = new GenericRepository<DentalAppointmentFinding>(_context);
             TreatmentConsent = new GenericRepository<TreatmentConsent>(_context);
-            TreatmentCoordinatorAppointment = new GenericRepository<TreatmentCoordinatorAppointment>(_context);
-            TreatmentCoordinatorAppointmentFinding = new GenericRepository<TreatmentCoordinatorAppointmentFinding>(_context);
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

@@ -88,6 +88,11 @@ namespace ExcelFilesCompiler.Controllers
 
                 ViewBag.Summary = summary;
                 ViewBag.EventId = eventId;
+                ViewBag.AuditDisplayNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    data.Select(c => c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy),
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
                 return View("Index", data);
             }
@@ -133,9 +138,10 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
                 if (dentalExam == null
                     || !string.Equals(dentalExam.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
-                    || !string.Equals(dentalExam.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
+                    || !string.Equals(sharedClinical.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Not Eligible";
@@ -144,7 +150,7 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
-                ApplyTreatmentSelectedTeethToExamChart(dentalExam, dentalTreatment);
+                ApplyTreatmentSelectedTeethToSharedClinical(sharedClinical, dentalTreatment);
 
                 ViewBag.EventId = result.EventId;
 
@@ -207,7 +213,7 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
 
                 var treatmentStaffUserIds = CollectTreatmentStaffUserIds(dentalTreatment);
-                var examinerUserIds = (dentalExam.Findings ?? Enumerable.Empty<DentalFinding>())
+                var examinerUserIds = sharedClinical.Findings
                     .SelectMany(f => new[] { f.ExaminationAddedBy, f.ExaminationUpdatedBy });
                 ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
                     examinerUserIds.Concat(treatmentStaffUserIds),
@@ -221,6 +227,7 @@ namespace ExcelFilesCompiler.Controllers
                     Questionnaire = questionnaire,
                     XRayStation = xRayStation,
                     DentalExam = dentalExam,
+                    SharedClinical = sharedClinical,
                     DentalTreatment = dentalTreatment
                 };
 
@@ -274,9 +281,10 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
                 if (dentalExam == null
                     || !string.Equals(dentalExam.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
-                    || !string.Equals(dentalExam.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
+                    || !string.Equals(sharedClinical.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Not Eligible";
@@ -291,7 +299,7 @@ namespace ExcelFilesCompiler.Controllers
                 dto.OverallNotes = DentalTreatmentJson.ParseList<DentalTreatmentOverallNoteDto>(dto.OverallNotesJson);
                 dto.PsrSelectedTeeth = DentalTreatmentValidator.NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
 
-                var validationError = DentalTreatmentValidator.ValidateSaveDto(dto, dentalExam);
+                var validationError = DentalTreatmentValidator.ValidateSaveDto(dto, dentalExam, sharedClinical.Findings);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     TempData["ResponseStatus"] = "error";
@@ -350,17 +358,18 @@ namespace ExcelFilesCompiler.Controllers
             }
         }
 
-        private static void ApplyTreatmentSelectedTeethToExamChart(DentalExam dentalExam, DentalTreatment? dentalTreatment)
+        private static void ApplyTreatmentSelectedTeethToSharedClinical(
+            DentalSharedClinicalViewModel sharedClinical,
+            DentalTreatment? dentalTreatment)
         {
             if (dentalTreatment == null)
             {
                 return;
             }
 
-            dentalExam.SelectedTeeth = dentalTreatment.SelectedTeeth
-                .Select(t => new DentalExamSelectedTooth
+            sharedClinical.SelectedTeeth = dentalTreatment.SelectedTeeth
+                .Select(t => new DentalPsrSelectedTooth
                 {
-                    DentalExamId = dentalExam.Id,
                     ToothNumber = t.ToothNumber
                 })
                 .OrderBy(t => t.ToothNumber)

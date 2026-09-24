@@ -66,16 +66,17 @@ namespace ExcelFilesCompiler.Utilities
 
         public static bool IsDenClassCompleteForCoordinator(
             DentalCoordinatorStationSaveDto dto,
-            DentalExam? existingExam = null)
+            DentalExam? existingExam = null,
+            DentalDenClassRecord? existingDenClass = null)
         {
             var denClass = dto.DenClass;
             var comments = dto.DenClassReasonComments;
 
-            if (existingExam != null
-                && string.Equals(existingExam.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase))
+            if (existingDenClass != null
+                && string.Equals(existingDenClass.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase))
             {
-                denClass = existingExam.DenClass;
-                comments = existingExam.DenClassReasonComments;
+                denClass = existingDenClass.DenClass;
+                comments = existingDenClass.DenClassReasonComments;
             }
 
             var hasDenClass = !string.IsNullOrWhiteSpace(denClass)
@@ -129,9 +130,10 @@ namespace ExcelFilesCompiler.Utilities
 
         public static string ComputeCoordinatorOverallStatus(
             DentalCoordinatorStationSaveDto dto,
-            DentalExam? existingExam = null)
+            DentalExam? existingExam = null,
+            DentalDenClassRecord? existingDenClass = null)
         {
-            if (IsDenClassCompleteForCoordinator(dto, existingExam)
+            if (IsDenClassCompleteForCoordinator(dto, existingExam, existingDenClass)
                 && AreAllFindingsAppointed(dto.FindingsJson, dto.AppointmentsJson))
             {
                 return AppConstants.Status.Completed;

@@ -87,6 +87,11 @@ namespace ExcelFilesCompiler.Controllers
 
                 ViewBag.Summary = summary;
                 ViewBag.EventId = eventId;
+                ViewBag.AuditDisplayNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    data.Select(c => c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy),
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
                 return View("Index", data);
             }
@@ -185,6 +190,8 @@ namespace ExcelFilesCompiler.Controllers
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
+
                 var currentUser = await _userManager.GetUserAsync(User);
                 var eventManagementId = DentalExamSignatureHelper.TryResolveEventManagementId(
                     User,
@@ -205,14 +212,15 @@ namespace ExcelFilesCompiler.Controllers
                 ViewBag.CurrentUserDisplayName = currentUser != null
                     ? await DentalExamSignatureHelper.ResolveDisplayNameAsync(currentUser, _eventStaffService, _logger)
                     : string.Empty;
-                ViewBag.ExaminerNamesByUserId = await ResolveFindingExaminerNamesAsync(dentalExam);
+                ViewBag.ExaminerNamesByUserId = await ResolveFindingExaminerNamesAsync(sharedClinical.Findings);
 
                 var pageModel = new DentalExamStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
                     Questionnaire = questionnaire,
                     XRayStation = xRayStation,
-                    DentalExam = dentalExam
+                    DentalExam = dentalExam,
+                    SharedClinical = sharedClinical
                 };
 
                 return View(pageModel);
@@ -397,23 +405,24 @@ namespace ExcelFilesCompiler.Controllers
                 dto.DentistSignatureUserId = existing.DentistSignatureUserId;
                 dto.FinalComments = existing.FinalComments;
 
-                dto.PsrUpperRight = existing.PsrUpperRight;
-                dto.PsrUpperAnterior = existing.PsrUpperAnterior;
-                dto.PsrUpperLeft = existing.PsrUpperLeft;
-                dto.PsrLowerRight = existing.PsrLowerRight;
-                dto.PsrLowerAnterior = existing.PsrLowerAnterior;
-                dto.PsrLowerLeft = existing.PsrLowerLeft;
-                dto.PsrCarrierRisk = existing.PsrCarrierRisk;
-                dto.SoftTissuesWnl = existing.SoftTissuesWnl;
-                dto.SoftTissuesConditionDetail = existing.SoftTissuesConditionDetail;
-                dto.DenClass = existing.DenClass;
-                dto.DenClassReasonComments = existing.DenClassReasonComments;
-                dto.PanoXRayAcknowledged = existing.PanoXRayAcknowledged;
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 
-                dto.Findings = existing.Findings?
-                    .OrderBy(f => f.SortOrder)
+                dto.PsrUpperRight = sharedClinical.PsrUpperRight;
+                dto.PsrUpperAnterior = sharedClinical.PsrUpperAnterior;
+                dto.PsrUpperLeft = sharedClinical.PsrUpperLeft;
+                dto.PsrLowerRight = sharedClinical.PsrLowerRight;
+                dto.PsrLowerAnterior = sharedClinical.PsrLowerAnterior;
+                dto.PsrLowerLeft = sharedClinical.PsrLowerLeft;
+                dto.PsrCarrierRisk = sharedClinical.PsrCarrierRisk;
+                dto.SoftTissuesWnl = sharedClinical.SoftTissuesWnl;
+                dto.SoftTissuesConditionDetail = sharedClinical.SoftTissuesConditionDetail;
+                dto.DenClass = sharedClinical.DenClass;
+                dto.DenClassReasonComments = sharedClinical.DenClassReasonComments;
+                dto.PanoXRayAcknowledged = sharedClinical.PanoXRayAcknowledged;
+
+                dto.Findings = sharedClinical.Findings
                     .Select(DentalFindingMapper.ToDto)
-                    .ToList() ?? new List<DentalFindingDto>();
+                    .ToList();
 
                 dto.FindingsJson = System.Text.Json.JsonSerializer.Serialize(
                     dto.Findings,
@@ -422,11 +431,11 @@ namespace ExcelFilesCompiler.Controllers
                         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
                     });
 
-                dto.PsrSelectedTeeth = existing.SelectedTeeth?
+                dto.PsrSelectedTeeth = sharedClinical.SelectedTeeth
                     .Select(t => t.ToothNumber)
                     .Distinct()
                     .OrderBy(t => t)
-                    .ToList() ?? new List<int>();
+                    .ToList();
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Preserved dentist-locked fields for non-dentist save. ServiceMembersChildId={ServiceMembersChildId}, FindingCount={FindingCount}",
@@ -460,10 +469,10 @@ namespace ExcelFilesCompiler.Controllers
             dto.PsrSelectedTeeth = new List<int>();
         }
 
-        private async Task<Dictionary<string, string>> ResolveFindingExaminerNamesAsync(DentalExam dentalExam)
+        private async Task<Dictionary<string, string>> ResolveFindingExaminerNamesAsync(IEnumerable<DentalFinding>? findings)
         {
             return await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
-                dentalExam.Findings,
+                findings,
                 _userManager,
                 _eventStaffService,
                 _logger);

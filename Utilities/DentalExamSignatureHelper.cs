@@ -144,6 +144,25 @@ namespace Malama.Utilities
             return names;
         }
 
+        public static string FormatAuditDisplayName(
+            string? userId,
+            IReadOnlyDictionary<string, string>? namesByUserId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return string.Empty;
+            }
+
+            if (namesByUserId != null
+                && namesByUserId.TryGetValue(userId, out var name)
+                && !string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+
+            return userId;
+        }
+
         public static string FormatEventStaffDisplayName(EventStaff staff)
         {
             return string.Join(" ",

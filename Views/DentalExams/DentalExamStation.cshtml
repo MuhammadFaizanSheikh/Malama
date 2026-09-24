@@ -496,7 +496,7 @@
     <hr class="my-4" />
 
     @{
-        var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+        var psrViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, Model.SharedClinical);
         psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
         psrViewData["RequirePsrFields"] = false;
         psrViewData["XRayStation"] = Model.XRayStation;
@@ -519,9 +519,9 @@
         </div>
 
         <div id="subsequentDiseasesContent" style="display:none;">
-            @await Html.PartialAsync("_DentalExamPsrSection", dentalExam, psrViewData)
+            @await Html.PartialAsync("_DentalExamPsrSection", Model.SharedClinical, psrViewData)
             @{
-                var findingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                var findingsViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, Model.SharedClinical);
                 findingsViewData["XRayStation"] = Model.XRayStation;
                 findingsViewData["SubsequentReadOnly"] = subsequentReadOnly;
                 findingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
@@ -529,13 +529,13 @@
                 findingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                     ?? new Dictionary<string, string>();
             }
-            @await Html.PartialAsync("_DentalFindingsSection", dentalExam, findingsViewData)
+            @await Html.PartialAsync("_DentalFindingsSection", Model.SharedClinical, findingsViewData)
             @{
-                var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                var denClassViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, Model.SharedClinical);
                 denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
                 denClassViewData["SubsequentReadOnly"] = subsequentReadOnly;
             }
-            @await Html.PartialAsync("_DentalExamDenClassSection", dentalExam, denClassViewData)
+            @await Html.PartialAsync("_DentalExamDenClassSection", Model.SharedClinical, denClassViewData)
 
             <div class="d-flex justify-content-center mt-3">
                 <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"

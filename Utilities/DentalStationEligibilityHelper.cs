@@ -20,10 +20,15 @@ namespace ExcelFilesCompiler.Utilities
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool IsDenClass3(DentalExam? exam)
+        public static bool IsDenClass3(DentalDenClassRecord? denClass)
+        {
+            return IsDenClass3(denClass?.DenClass);
+        }
+
+        public static bool IsDenClass3(string? denClass)
         {
             return string.Equals(
-                exam?.DenClass?.Trim(),
+                denClass?.Trim(),
                 DentalExamDenClass.Class3,
                 StringComparison.OrdinalIgnoreCase);
         }
@@ -50,7 +55,8 @@ namespace ExcelFilesCompiler.Utilities
         /// </summary>
         public static bool IsEligibleForTreatmentCoordinator(
             ServiceMembersChild? serviceMember,
-            DentalExam? exam = null)
+            DentalExam? exam = null,
+            DentalDenClassRecord? denClass = null)
         {
             if (serviceMember == null)
             {
@@ -58,6 +64,7 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             exam ??= serviceMember.DentalExamRecord;
+            denClass ??= serviceMember.DentalDenClassRecord;
 
             if (IsSmDrc3(serviceMember))
             {
@@ -65,7 +72,7 @@ namespace ExcelFilesCompiler.Utilities
             }
 
             return IsDentalNeeded(serviceMember)
-                && IsDenClass3(exam)
+                && IsDenClass3(denClass)
                 && IsDentalExamCompleted(exam);
         }
 

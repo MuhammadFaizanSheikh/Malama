@@ -1,9 +1,9 @@
 @using ExcelFilesCompiler.Utilities
 @using Malama.Models
-@model DentalExam
+@model DentalSharedClinicalViewModel
 
 @{
-    var exam = Model ?? new DentalExam();
+    var exam = Model ?? new DentalSharedClinicalViewModel();
     var tobaccoDisplay = ViewData["TobaccoDisplay"] as string ?? "No";
     var requirePsrFields = ViewData["RequirePsrFields"] as bool? ?? false;
     var subsequentReadOnly = ViewData["SubsequentReadOnly"] as bool? ?? false;

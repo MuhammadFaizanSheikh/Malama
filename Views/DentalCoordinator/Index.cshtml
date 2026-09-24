@@ -1,3 +1,4 @@
+@using Malama.Utilities
 @model IEnumerable<Malama.Models.ServiceMembersChild>
 
 @{
@@ -7,6 +8,7 @@
     var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : 0;
     var pendingCount = ViewBag.Summary != null && ViewBag.Summary.ContainsKey("Pending") ? ViewBag.Summary["Pending"] : 0;
     var completedCount = ViewBag.Summary != null && ViewBag.Summary.ContainsKey("Completed") ? ViewBag.Summary["Completed"] : 0;
+    var auditNames = ViewBag.AuditDisplayNamesByUserId as IReadOnlyDictionary<string, string>;
 }
 
 <style>
@@ -434,13 +436,15 @@
                     <tbody>
                         @foreach (var c in Model)
                         {
-                            var treatment = c.DentalTreatmentRecord;
-                            var rowStatus = string.IsNullOrWhiteSpace(treatment?.Status)
+                            var treatmentCoordinator = c.DentalTreatmentCoordinatorRecord;
+                            var rowStatus = string.IsNullOrWhiteSpace(treatmentCoordinator?.Status)
                                 ? "Pending"
-                                : treatment!.Status;
+                                : treatmentCoordinator!.Status;
                             var statusCompleted = string.Equals(rowStatus, "Completed", StringComparison.OrdinalIgnoreCase);
-                            var completedBy = treatment?.UpdatedBy ?? treatment?.AddedBy;
-                            var completedOn = treatment?.UpdatedOn ?? (treatment != null ? treatment.AddedOn : (DateTime?)null);
+                            var completedBy = DentalExamSignatureHelper.FormatAuditDisplayName(
+                                treatmentCoordinator?.UpdatedBy ?? treatmentCoordinator?.AddedBy,
+                                auditNames);
+                            var completedOn = treatmentCoordinator?.UpdatedOn ?? (treatmentCoordinator != null ? treatmentCoordinator.AddedOn : (DateTime?)null);
                             <tr>
                                 <td>
                                     <a asp-action="DentalCoordinatorStation"

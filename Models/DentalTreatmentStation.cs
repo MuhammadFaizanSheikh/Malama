@@ -10,6 +10,8 @@ namespace Malama.Models
 
         public DentalExam DentalExam { get; set; } = new();
 
+        public DentalSharedClinicalViewModel SharedClinical { get; set; } = new();
+
         public DentalTreatment? DentalTreatment { get; set; }
     }
 

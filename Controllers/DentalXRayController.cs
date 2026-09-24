@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -19,6 +20,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IVitalStationService _vitalStationService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
+        private readonly IEventStaffService _eventStaffService;
         private readonly ILogger<DentalXRayController> _logger;
         private const string CLASSNAME = "DentalXRayController";
         private const string StationName = "DentalXRay";
@@ -32,7 +34,8 @@ namespace ExcelFilesCompiler.Controllers
             IDentalQuestionnaireService dentalQuestionnaireService,
             IVitalStationService vitalStationService,
             IFileUploadDownloadService fileService,
-            DentalXRayFileSaveCoordinator fileSaveCoordinator)
+            DentalXRayFileSaveCoordinator fileSaveCoordinator,
+            IEventStaffService eventStaffService)
         {
             _logger = logger;
             _fileUploader = fileUploader;
@@ -43,6 +46,7 @@ namespace ExcelFilesCompiler.Controllers
             _vitalStationService = vitalStationService;
             _fileService = fileService;
             _fileSaveCoordinator = fileSaveCoordinator;
+            _eventStaffService = eventStaffService;
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalXRay_View")]
@@ -86,6 +90,11 @@ namespace ExcelFilesCompiler.Controllers
 
                 ViewBag.Summary = summary;
                 ViewBag.EventId = eventId;
+                ViewBag.AuditDisplayNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    data.Select(c => c.DentalXRayStationRecord?.UpdatedBy ?? c.DentalXRayStationRecord?.AddedBy),
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
                 return View("Index", data);
             }
@@ -360,7 +369,7 @@ namespace ExcelFilesCompiler.Controllers
                 DentalXRayStationSaveValidator.SetSectionUploadedDateTimes(dto);
 
                 await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
-                    dto, user.UserName, DentalQuestionnaireSources.DentalXRay);
+                    dto, user.Id, DentalQuestionnaireSources.DentalXRay);
 
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 
@@ -371,13 +380,13 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Add operation started by User={UserName}",
                         CLASSNAME, methodName, user.UserName);
-                    await _dentalXRayStationService.AddAsync(entity, user.UserName, DentalXRaySources.DentalXRay);
+                    await _dentalXRayStationService.AddAsync(entity, user.Id, DentalXRaySources.DentalXRay);
                 }
                 else
                 {
                     _logger.LogInformation("{ClassName}, {MethodName}, Update operation started for Id={Id} by User={UserName}",
                         CLASSNAME, methodName, dto.Id, user.UserName);
-                    await _dentalXRayStationService.UpdateAsync(entity, user.UserName, DentalXRaySources.DentalXRay);
+                    await _dentalXRayStationService.UpdateAsync(entity, user.Id, DentalXRaySources.DentalXRay);
                 }
 
                 dbSaveCompleted = true;

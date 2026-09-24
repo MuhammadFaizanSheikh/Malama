@@ -98,10 +98,10 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task AddAsync(DentalXRayStation model, string userName, string source, bool saveChanges = true)
+        public async Task AddAsync(DentalXRayStation model, string userId, string source, bool saveChanges = true)
         {
             model.AddedOn = DateTime.Now;
-            model.AddedBy = userName;
+            model.AddedBy = userId;
             model.Source = source;
             NormalizePaImages(model);
 
@@ -112,7 +112,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task UpdateAsync(DentalXRayStation model, string userName, string source, bool saveChanges = true)
+        public async Task UpdateAsync(DentalXRayStation model, string userId, string source, bool saveChanges = true)
         {
             const string methodName = nameof(UpdateAsync);
 
@@ -125,11 +125,11 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (existing == null)
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} not found by user {User}",
-                        CLASSNAME, methodName, model.Id, userName);
+                        CLASSNAME, methodName, model.Id, userId);
                     throw new KeyNotFoundException($"Dental X-Ray record with Id={model.Id} not found.");
                 }
 
-                MapToEntity(model, existing, userName);
+                MapToEntity(model, existing, userId);
                 existing.Source = source;
                 if (saveChanges)
                 {
@@ -137,7 +137,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 }
 
                 _logger.LogInformation("{ClassName}, {MethodName}, Dental X-Ray record with Id={Id} successfully updated by user {User}. Source={Source}. SaveChanges={SaveChanges}",
-                    CLASSNAME, methodName, model.Id, userName, source, saveChanges);
+                    CLASSNAME, methodName, model.Id, userId, source, saveChanges);
             }
             catch (KeyNotFoundException)
             {
@@ -147,7 +147,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 _logger.LogError(ex,
                     "{ClassName}, {MethodName}, Exception occurred while updating Dental X-Ray record Id={Id} by user {User}",
-                    CLASSNAME, methodName, model.Id, userName);
+                    CLASSNAME, methodName, model.Id, userId);
                 throw;
             }
         }
@@ -327,7 +327,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             return string.Equals(value?.Trim(), "Yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        private void MapToEntity(DentalXRayStation source, DentalXRayStation target, string userName)
+        private void MapToEntity(DentalXRayStation source, DentalXRayStation target, string userId)
         {
             MapBwxSection(source, target);
             MapPaSection(source, target);
@@ -335,7 +335,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             target.Comment = source.Comment;
             target.Status = source.Status;
             target.UpdatedOn = DateTime.Now;
-            target.UpdatedBy = userName;
+            target.UpdatedBy = userId;
         }
 
         private static void MapBwxSection(DentalXRayStation source, DentalXRayStation target)

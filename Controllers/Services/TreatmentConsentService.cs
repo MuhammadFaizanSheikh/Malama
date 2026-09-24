@@ -71,10 +71,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                                      c.DentalNeeded == needed
                                      && c.DentalExamRecord != null
                                      && c.DentalExamRecord.Status == completed
-                                     && c.DentalExamRecord.DenClass == class3
+                                     && c.DentalDenClassRecord != null
+                                     && c.DentalDenClassRecord.DenClass == class3
                                  )
                              ),
-                        c => c.DentalExamRecord)
+                        c => c.DentalExamRecord,
+                        c => c.DentalDenClassRecord)
                     .ToListAsync();
 
                 var smIds = serviceMembers.Select(x => x.Id).ToList();
@@ -130,7 +132,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.Id == serviceMembersChildId,
                         c => c.ServiceMembersParent,
-                        c => c.DentalExamRecord)
+                        c => c.DentalExamRecord,
+                        c => c.DentalDenClassRecord)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
@@ -140,7 +143,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
                         serviceMember,
-                        serviceMember.DentalExamRecord))
+                        serviceMember.DentalExamRecord,
+                        serviceMember.DentalDenClassRecord))
                 {
                     _logger.LogWarning(
                         "{ClassName}, {MethodName}, ServiceMembersChildId={ServiceMembersChildId} is not eligible for Treatment Consent (same rules as Treatment Coordinator)",
@@ -204,7 +208,7 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<TreatmentConsentStationSaveResult> SaveStationAsync(
             TreatmentConsentStationSaveDto dto,
-            string userName)
+            string userId)
         {
             const string methodName = nameof(SaveStationAsync);
 
@@ -224,7 +228,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                     .GetWithIncludeNoTracking(
                         c => c.Id == dto.ServiceMembersChildId,
                         c => c.ServiceMembersParent,
-                        c => c.DentalExamRecord)
+                        c => c.DentalExamRecord,
+                        c => c.DentalDenClassRecord)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
@@ -234,7 +239,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
                         serviceMember,
-                        serviceMember.DentalExamRecord))
+                        serviceMember.DentalExamRecord,
+                        serviceMember.DentalDenClassRecord))
                 {
                     return TreatmentConsentStationSaveResult.Fail(
                         "Not Eligible",
@@ -283,11 +289,11 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 await _dentalQuestionnaireService.SaveOrUpdateFromFormDataAsync(
                     dto,
-                    userName,
+                    userId,
                     DentalQuestionnaireSources.TreatmentConsent,
                     saveChanges: false);
 
-                await ApplyConsentEntityAsync(dto, existing, userName);
+                await ApplyConsentEntityAsync(dto, existing, userId);
 
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
@@ -296,8 +302,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Station saved. ServiceMembersChildId={ServiceMembersChildId}, User={User}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName);
+                    "{ClassName}, {MethodName}, Station saved. ServiceMembersChildId={ServiceMembersChildId}, UserId={UserId}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userId);
 
                 return TreatmentConsentStationSaveResult.Ok("Treatment Consent saved.");
             }
@@ -340,7 +346,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         private async Task ApplyConsentEntityAsync(
             TreatmentConsentStationSaveDto dto,
             TreatmentConsent? existing,
-            string userName)
+            string userId)
         {
             var includeOral = dto.IncludeOralSurgeryForm;
             var includeTreatment = dto.IncludeDentalTreatmentConsent;
@@ -371,14 +377,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 existing = new TreatmentConsent
                 {
                     ServiceMembersChildId = dto.ServiceMembersChildId,
-                    AddedBy = userName,
+                    AddedBy = userId,
                     AddedOn = now
                 };
                 await _unitOfWork.TreatmentConsent.AddAsync(existing);
             }
             else
             {
-                existing.UpdatedBy = userName;
+                existing.UpdatedBy = userId;
                 existing.UpdatedOn = now;
             }
 

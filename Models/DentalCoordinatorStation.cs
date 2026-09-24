@@ -8,7 +8,8 @@ namespace Malama.Models
         public DentalQuestionnaire Questionnaire { get; set; } = new();
         public DentalXRayStation XRayStation { get; set; } = new();
         public DentalExam DentalExam { get; set; } = new();
-        public DentalTreatment? DentalTreatment { get; set; }
+        public DentalSharedClinicalViewModel SharedClinical { get; set; } = new();
+        public DentalTreatmentCoordinator? TreatmentCoordinator { get; set; }
 
         /// <summary>True when a DentalQuestionnaire row exists for this service member.</summary>
         public bool HasQuestionnaire { get; set; }
@@ -51,6 +52,8 @@ namespace Malama.Models
         public string? DenClass { get; set; }
         public string? DenClassReasonComments { get; set; }
         public bool PanoXRayAcknowledged { get; set; }
+
+        public bool IsTreatmentRequired { get; set; } = true;
 
         public string? TreatmentCoordinatorComments { get; set; }
 

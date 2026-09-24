@@ -95,7 +95,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 var completedCount = data.Count(sm =>
                     string.Equals(
-                        sm.DentalTreatmentRecord?.Status?.Trim(),
+                        sm.DentalTreatmentCoordinatorRecord?.Status?.Trim(),
                         AppConstants.Status.Completed,
                         StringComparison.OrdinalIgnoreCase));
                 var pendingCount = data.Count - completedCount;
@@ -107,6 +107,13 @@ namespace ExcelFilesCompiler.Controllers
                     ["Completed"] = completedCount
                 };
                 ViewBag.EventId = eventId;
+                ViewBag.AuditDisplayNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    data.Select(sm =>
+                        sm.DentalTreatmentCoordinatorRecord?.UpdatedBy
+                        ?? sm.DentalTreatmentCoordinatorRecord?.AddedBy),
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
 
                 return View("Index", data);
             }
@@ -193,7 +200,15 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var existingExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(serviceMember, existingExam))
+                var existingShared = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
+                        serviceMember,
+                        existingExam,
+                        new DentalDenClassRecord
+                        {
+                            DenClass = existingShared.DenClass,
+                            Source = existingShared.ClinicalSource
+                        }))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Not Eligible";
@@ -353,9 +368,15 @@ namespace ExcelFilesCompiler.Controllers
             }
 
             var dentalExamForEligibility = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+            var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
             if (!DentalStationEligibilityHelper.IsEligibleForTreatmentCoordinator(
                     result.ServiceMembersChild,
-                    dentalExamForEligibility))
+                    dentalExamForEligibility,
+                    new DentalDenClassRecord
+                    {
+                        DenClass = sharedClinical.DenClass,
+                        Source = sharedClinical.ClinicalSource
+                    }))
             {
                 TempData["ResponseStatus"] = "error";
                 TempData["ResponseTitle"] = "Not Eligible";
@@ -447,7 +468,7 @@ namespace ExcelFilesCompiler.Controllers
             var dentalExam = dentalExamForEligibility
                 ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
-            var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+            var dentalTreatmentCoordinator = await _dentalTreatmentService.GetCoordinatorByServiceMembersChildIdAsync(serviceMembersChildId);
 
             var formSelection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
             var consentFormStatuses = TreatmentConsentHelper.BuildCoordinatorConsentFormStatusItems(formSelection);
@@ -459,25 +480,25 @@ namespace ExcelFilesCompiler.Controllers
             ViewBag.CurrentUserId = currentUser?.Id ?? string.Empty;
             ViewBag.CurrentUserDisplayName = ViewBag.TreatmentCoordinatorDisplayName;
             ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
-                dentalExam.Findings,
+                sharedClinical.Findings,
                 _userManager,
                 _eventStaffService,
                 _logger);
 
             var appointmentsJson = TreatmentCoordinatorAppointmentHelper.SerializeAppointments(
-                TreatmentCoordinatorAppointmentHelper.ToJsonDtos(dentalTreatment?.CoordinatorAppointments));
+                TreatmentCoordinatorAppointmentHelper.ToJsonDtos(dentalTreatmentCoordinator?.Appointments));
             ViewBag.AppointmentsJson = appointmentsJson;
 
             var documents = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
-                dentalTreatment?.DocumentsJson);
+                dentalTreatmentCoordinator?.DocumentsJson);
             ViewBag.CoordinatorDocumentsJson = TreatmentCoordinatorDocumentFileSaveCoordinator.SerializeDocuments(documents);
 
-            if (dentalTreatment?.TreatmentCoordinatorEventStaffId > 0)
+            if (dentalTreatmentCoordinator?.TreatmentCoordinatorEventStaffId > 0)
             {
                 try
                 {
                     var coordinatorStaff = await _eventStaffService.GetEventStaffWithoutIncludeById(
-                        dentalTreatment.TreatmentCoordinatorEventStaffId.Value);
+                        dentalTreatmentCoordinator.TreatmentCoordinatorEventStaffId.Value);
                     if (coordinatorStaff != null)
                     {
                         var name = $"{coordinatorStaff.StaffFirstName} {coordinatorStaff.StaffLastName}".Trim();
@@ -491,7 +512,7 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     _logger.LogWarning(staffEx,
                         "{ClassName}, BuildDentalCoordinatorStationPageAsync, Failed to resolve saved TreatmentCoordinatorEventStaffId={EventStaffId}",
-                        CLASSNAME, dentalTreatment.TreatmentCoordinatorEventStaffId);
+                        CLASSNAME, dentalTreatmentCoordinator.TreatmentCoordinatorEventStaffId);
                 }
             }
 
@@ -501,7 +522,8 @@ namespace ExcelFilesCompiler.Controllers
                 Questionnaire = questionnaire,
                 XRayStation = xRayStation,
                 DentalExam = dentalExam,
-                DentalTreatment = dentalTreatment,
+                SharedClinical = sharedClinical,
+                TreatmentCoordinator = dentalTreatmentCoordinator,
                 HasQuestionnaire = questionnaire.Id > 0,
                 ConsentFormStatuses = consentFormStatuses
             };
@@ -525,46 +547,52 @@ namespace ExcelFilesCompiler.Controllers
             {
                 exam.Id = dto.DentalExamId;
             }
+            pageModel.DentalExam = exam;
 
-            var clinicalOwnedByDentalExam = exam.Id > 0
-                && string.Equals(exam.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase);
+            var clinical = pageModel.SharedClinical ?? new DentalSharedClinicalViewModel
+            {
+                ServiceMembersChildId = dto.ServiceMembersChildId
+            };
+            clinical.ServiceMembersChildId = dto.ServiceMembersChildId;
+
+            var clinicalOwnedByDentalExam = string.Equals(
+                clinical.ClinicalSource,
+                DentalExamSources.DentalExam,
+                StringComparison.OrdinalIgnoreCase);
+
             if (!clinicalOwnedByDentalExam)
             {
-                exam.PsrUpperRight = dto.PsrUpperRight?.Trim();
-                exam.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
-                exam.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
-                exam.PsrLowerRight = dto.PsrLowerRight?.Trim();
-                exam.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
-                exam.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
-                exam.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
-                exam.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
-                exam.SoftTissuesConditionDetail = exam.SoftTissuesWnl != null
-                    && exam.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
+                clinical.PsrUpperRight = dto.PsrUpperRight?.Trim();
+                clinical.PsrUpperAnterior = dto.PsrUpperAnterior?.Trim();
+                clinical.PsrUpperLeft = dto.PsrUpperLeft?.Trim();
+                clinical.PsrLowerRight = dto.PsrLowerRight?.Trim();
+                clinical.PsrLowerAnterior = dto.PsrLowerAnterior?.Trim();
+                clinical.PsrLowerLeft = dto.PsrLowerLeft?.Trim();
+                clinical.PsrCarrierRisk = dto.PsrCarrierRisk?.Trim();
+                clinical.SoftTissuesWnl = dto.SoftTissuesWnl?.Trim();
+                clinical.SoftTissuesConditionDetail = clinical.SoftTissuesWnl != null
+                    && clinical.SoftTissuesWnl.Equals(DentalExamPsr.SoftTissuesWnlNo, StringComparison.OrdinalIgnoreCase)
                     ? dto.SoftTissuesConditionDetail?.Trim()
                     : null;
-                exam.DenClass = dto.DenClass?.Trim();
-                exam.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
-                exam.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
+                clinical.DenClass = dto.DenClass?.Trim();
+                clinical.DenClassReasonComments = dto.DenClassReasonComments?.Trim();
+                clinical.PanoXRayAcknowledged = dto.PanoXRayAcknowledged;
 
                 var selectedTeeth = (dto.PsrSelectedTeeth ?? new List<int>())
                     .Where(t => t >= 1 && t <= 32)
                     .Distinct()
                     .OrderBy(t => t)
                     .ToList();
-                exam.SelectedTeeth = selectedTeeth
-                    .Select(toothNumber => new DentalExamSelectedTooth
-                    {
-                        DentalExamId = exam.Id,
-                        ToothNumber = toothNumber
-                    })
+                clinical.SelectedTeeth = selectedTeeth
+                    .Select(toothNumber => new DentalPsrSelectedTooth { ToothNumber = toothNumber })
                     .ToList();
             }
 
             var postedFindings = DentalFindingBinder.ParseFromJson(dto.FindingsJson);
-            exam.Findings = postedFindings
+            clinical.Findings = postedFindings
                 .Select((finding, index) =>
                 {
-                    var entity = DentalFindingMapper.ToEntity(finding, exam.Id, index);
+                    var entity = DentalFindingMapper.ToEntity(finding, dto.ServiceMembersChildId, index);
                     entity.Id = finding.Id;
                     if (string.IsNullOrWhiteSpace(entity.Source))
                     {
@@ -574,21 +602,23 @@ namespace ExcelFilesCompiler.Controllers
                 })
                 .ToList();
 
-            pageModel.DentalExam = exam;
+            pageModel.SharedClinical = clinical;
 
-            pageModel.DentalTreatment ??= new DentalTreatment
+            pageModel.TreatmentCoordinator ??= new DentalTreatmentCoordinator
             {
                 ServiceMembersChildId = dto.ServiceMembersChildId,
-                Status = AppConstants.Status.Pending
+                Status = AppConstants.Status.Pending,
+                IsTreatmentRequired = true
             };
-            pageModel.DentalTreatment.TreatmentCoordinatorComments = dto.TreatmentCoordinatorComments;
+            pageModel.TreatmentCoordinator.IsTreatmentRequired = dto.IsTreatmentRequired;
+            pageModel.TreatmentCoordinator.TreatmentCoordinatorComments = dto.TreatmentCoordinatorComments;
 
             ViewBag.AppointmentsJson = string.IsNullOrWhiteSpace(dto.AppointmentsJson)
                 ? "[]"
                 : dto.AppointmentsJson;
 
             var existingDocuments = TreatmentCoordinatorDocumentFileSaveCoordinator.ParseDocumentsJson(
-                pageModel.DentalTreatment.DocumentsJson);
+                pageModel.TreatmentCoordinator.DocumentsJson);
             var retained = new HashSet<string>(
                 dto.RetainedDocumentFileNames ?? new List<string>(),
                 StringComparer.OrdinalIgnoreCase);
@@ -598,7 +628,7 @@ namespace ExcelFilesCompiler.Controllers
             ViewBag.CoordinatorDocumentsJson = TreatmentCoordinatorDocumentFileSaveCoordinator.SerializeDocuments(keptDocuments);
 
             ViewBag.ExaminerNamesByUserId = await DentalExamSignatureHelper.ResolveExaminerNamesByUserIdAsync(
-                exam.Findings,
+                clinical.Findings,
                 _userManager,
                 _eventStaffService,
                 _logger);

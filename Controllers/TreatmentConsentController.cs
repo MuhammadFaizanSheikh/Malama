@@ -3,6 +3,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.Utilities;
 using Malama.Attributes;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly ITreatmentConsentService _treatmentConsentService;
         private readonly IFileUploadDownloadService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEventStaffService _eventStaffService;
         private readonly ILogger<TreatmentConsentController> _logger;
         private const string CLASSNAME = nameof(TreatmentConsentController);
 
@@ -20,12 +22,14 @@ namespace ExcelFilesCompiler.Controllers
             ILogger<TreatmentConsentController> logger,
             ITreatmentConsentService treatmentConsentService,
             IFileUploadDownloadService fileService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IEventStaffService eventStaffService)
         {
             _logger = logger;
             _treatmentConsentService = treatmentConsentService;
             _fileService = fileService;
             _userManager = userManager;
+            _eventStaffService = eventStaffService;
         }
 
         [HttpGet]
@@ -58,6 +62,19 @@ namespace ExcelFilesCompiler.Controllers
 
                 var viewModel = await _treatmentConsentService
                     .GetCheckedInServiceMembersByEventIdAsync(parsedEventId, eventId);
+
+                var namesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
+                    viewModel.ServiceMembers.Select(s => s.CompletedBy),
+                    _userManager,
+                    _eventStaffService,
+                    _logger);
+
+                foreach (var item in viewModel.ServiceMembers)
+                {
+                    item.CompletedBy = DentalExamSignatureHelper.FormatAuditDisplayName(
+                        item.CompletedBy,
+                        namesByUserId);
+                }
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Loaded {Count} records for EventId={EventId}",
@@ -160,7 +177,7 @@ namespace ExcelFilesCompiler.Controllers
 
                 var result = await _treatmentConsentService.SaveStationAsync(
                     dto,
-                    user.UserName ?? user.Email ?? user.Id);
+                    user.Id);
 
                 if (result.Success)
                 {

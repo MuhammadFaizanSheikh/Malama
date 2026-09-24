@@ -5,6 +5,9 @@ namespace ExcelFilesCompiler.Interfaces
     public interface IDentalExamService
     {
         Task<DentalExam?> GetByServiceMembersChildIdAsync(long serviceMembersChildId);
+
+        Task<DentalSharedClinicalViewModel> GetSharedClinicalByServiceMembersChildIdAsync(long serviceMembersChildId);
+
         Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName, string userId);
 
         /// <summary>
@@ -12,7 +15,7 @@ namespace ExcelFilesCompiler.Interfaces
         /// </summary>
         Task ApplyCoordinatorClinicalSectionsAsync(
             DentalCoordinatorStationSaveDto dto,
-            string userName,
+            string userId,
             bool saveChanges = true);
 
         /// <summary>

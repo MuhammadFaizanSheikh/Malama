@@ -189,5 +189,36 @@ namespace ExcelFilesCompiler.Utilities
 
             return uploadedFlag || !string.IsNullOrWhiteSpace(fileName) || (file != null && file.Length > 0);
         }
+
+        /// <summary>
+        /// True when the save payload includes at least one BWX or PA image (new upload or retained file).
+        /// </summary>
+        public static bool HasAnyXRayImageUpload(DentalXRayStationSaveDto dto)
+        {
+            if (dto == null)
+            {
+                return false;
+            }
+
+            if (HasConsolidatedBwxUpload(dto))
+            {
+                return true;
+            }
+
+            if (HasUpload(dto.BwLeftMolarUploaded, dto.BwLeftMolarFileName, dto.BwLeftMolarFile, dto.BwLeftMolarRemoved)
+                || HasUpload(dto.BwLeftPremolarUploaded, dto.BwLeftPremolarFileName, dto.BwLeftPremolarFile, dto.BwLeftPremolarRemoved)
+                || HasUpload(dto.BwRightMolarUploaded, dto.BwRightMolarFileName, dto.BwRightMolarFile, dto.BwRightMolarRemoved)
+                || HasUpload(dto.BwRightPremolarUploaded, dto.BwRightPremolarFileName, dto.BwRightPremolarFile, dto.BwRightPremolarRemoved))
+            {
+                return true;
+            }
+
+            return dto.PaImages != null
+                && dto.PaImages.Any(p =>
+                    !p.Removed
+                    && (p.Uploaded
+                        || !string.IsNullOrWhiteSpace(p.FileName)
+                        || (p.ImageFile != null && p.ImageFile.Length > 0)));
+        }
     }
 }

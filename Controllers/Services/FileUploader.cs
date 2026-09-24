@@ -429,8 +429,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                              c.CheckIn == AppConstants.YesNo.Yes &&
                              c.DentalExamRecord != null &&
                              c.DentalExamRecord.Status == AppConstants.Status.Completed &&
-                             c.DentalExamRecord.DenClass == DentalExamDenClass.Class3,
+                             c.DentalDenClassRecord != null &&
+                             c.DentalDenClassRecord.DenClass == DentalExamDenClass.Class3,
                         c => c.DentalExamRecord,
+                        c => c.DentalDenClassRecord,
                         c => c.DentalTreatmentRecord)
                     .ToListAsync();
 
@@ -511,11 +513,13 @@ namespace ExcelFilesCompiler.Controllers.Services
                                      c.DentalNeeded == needed
                                      && c.DentalExamRecord != null
                                      && c.DentalExamRecord.Status == completed
-                                     && c.DentalExamRecord.DenClass == class3
+                                     && c.DentalDenClassRecord != null
+                                     && c.DentalDenClassRecord.DenClass == class3
                                  )
                              ),
                         c => c.DentalExamRecord,
-                        c => c.DentalTreatmentRecord)
+                        c => c.DentalDenClassRecord,
+                        c => c.DentalTreatmentCoordinatorRecord)
                     .ToListAsync();
 
                 _logger.LogInformation(

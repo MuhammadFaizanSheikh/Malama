@@ -124,7 +124,17 @@ namespace Malama.Models
         [ValidateNever]
         public virtual DentalExam DentalExamRecord { get; set; }
         [ValidateNever]
+        public virtual DentalPsr DentalPsrRecord { get; set; }
+        [ValidateNever]
+        public virtual DentalDenClassRecord DentalDenClassRecord { get; set; }
+        [ValidateNever]
+        public virtual DentalPanoAcknowledgement DentalPanoAcknowledgementRecord { get; set; }
+        [ValidateNever]
+        public virtual ICollection<DentalFinding> DentalFindings { get; set; } = new List<DentalFinding>();
+        [ValidateNever]
         public virtual DentalTreatment DentalTreatmentRecord { get; set; }
+        [ValidateNever]
+        public virtual DentalTreatmentCoordinator DentalTreatmentCoordinatorRecord { get; set; }
         [ValidateNever]
         public virtual PostEventLabStation PostEventLabStation { get; set; }
         [ValidateNever]

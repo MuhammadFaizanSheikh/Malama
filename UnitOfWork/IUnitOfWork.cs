@@ -40,16 +40,20 @@ namespace ExcelFilesCompiler.UnitOfWork
         IGenericRepository<DentalQuestionnaire> DentalQuestionnaire { get; }
         IGenericRepository<DentalExam> DentalExam { get; }
         IGenericRepository<DentalFinding> DentalFinding { get; }
-        IGenericRepository<DentalExamSelectedTooth> DentalExamSelectedTooth { get; }
+        IGenericRepository<DentalPsr> DentalPsr { get; }
+        IGenericRepository<DentalPsrSelectedTooth> DentalPsrSelectedTooth { get; }
+        IGenericRepository<DentalDenClassRecord> DentalDenClass { get; }
+        IGenericRepository<DentalPanoAcknowledgement> DentalPanoAcknowledgement { get; }
         IGenericRepository<DentalTreatment> DentalTreatment { get; }
         IGenericRepository<DentalTreatmentFinding> DentalTreatmentFinding { get; }
         IGenericRepository<DentalTreatmentSelectedTooth> DentalTreatmentSelectedTooth { get; }
         IGenericRepository<DentalTreatmentAnesthesia> DentalTreatmentAnesthesia { get; }
         IGenericRepository<DentalTreatmentPrescription> DentalTreatmentPrescription { get; }
         IGenericRepository<DentalTreatmentOverallNote> DentalTreatmentOverallNote { get; }
+        IGenericRepository<DentalTreatmentCoordinator> DentalTreatmentCoordinator { get; }
+        IGenericRepository<DentalAppointment> DentalAppointment { get; }
+        IGenericRepository<DentalAppointmentFinding> DentalAppointmentFinding { get; }
         IGenericRepository<TreatmentConsent> TreatmentConsent { get; }
-        IGenericRepository<TreatmentCoordinatorAppointment> TreatmentCoordinatorAppointment { get; }
-        IGenericRepository<TreatmentCoordinatorAppointmentFinding> TreatmentCoordinatorAppointmentFinding { get; }
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
         void SetValues<TEntity>(TEntity existing, TEntity updated) where TEntity : class;

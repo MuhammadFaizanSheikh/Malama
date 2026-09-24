@@ -11,6 +11,7 @@
     var sm = Model.ServiceMember;
     var questionnaire = Model.Questionnaire;
     var dentalExam = Model.DentalExam ?? new DentalExam { ServiceMembersChildId = sm.Id };
+    var sharedClinical = Model.SharedClinical ?? new DentalSharedClinicalViewModel { ServiceMembersChildId = sm.Id };
     var xRayStation = Model.XRayStation ?? new DentalXRayStation
     {
         ServiceMembersChildId = sm.Id,
@@ -29,19 +30,20 @@
     var treatmentXRayStatus = DentalCoordinatorTreatmentStatusHelper.ResolveXRayStatus(sm, Model.XRayStation);
     var treatmentDentalExamStatus = DentalCoordinatorTreatmentStatusHelper.ResolveDentalExamStatus(sm, Model.DentalExam);
     var clinicalSectionsFromDentalExam = string.Equals(
-        dentalExam.Source,
+        sharedClinical.ClinicalSource,
         DentalExamSources.DentalExam,
         StringComparison.OrdinalIgnoreCase);
     var coordinatorPageReadOnly = ViewBag.CoordinatorPageReadOnly as bool? == true;
     var requiresDentalExamFirst = ViewBag.RequiresDentalExamFirst as bool? == true;
-    var dentalTreatment = Model.DentalTreatment;
+    var treatmentCoordinator = Model.TreatmentCoordinator;
     var treatmentCoordinatorDisplayName = ViewBag.TreatmentCoordinatorDisplayName as string ?? string.Empty;
-    var treatmentCoordinatorDateTimeDisplay = (dentalTreatment?.TreatmentCoordinatorDateTime ?? DateTime.Now)
+    var treatmentCoordinatorDateTimeDisplay = (treatmentCoordinator?.TreatmentCoordinatorDateTime ?? DateTime.Now)
         .ToString("MM/dd/yyyy hh:mm tt");
-    var treatmentCoordinatorComments = dentalTreatment?.TreatmentCoordinatorComments ?? string.Empty;
-    var treatmentCoordinatorOverallStatus = string.IsNullOrWhiteSpace(dentalTreatment?.Status)
+    var treatmentCoordinatorComments = treatmentCoordinator?.TreatmentCoordinatorComments ?? string.Empty;
+    var treatmentCoordinatorOverallStatus = string.IsNullOrWhiteSpace(treatmentCoordinator?.Status)
         ? AppConstants.Status.Pending
-        : dentalTreatment!.Status;
+        : treatmentCoordinator!.Status;
+    var isTreatmentRequired = treatmentCoordinator?.IsTreatmentRequired ?? true;
 
     string TreatmentStatusBadgeClass(string status) => status switch
     {
@@ -1006,20 +1008,20 @@
 
             <div id="subsequentDiseasesContent" style="display:none;">
                 @{
-                    var psrViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                    var psrViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
                     psrViewData["TobaccoDisplay"] = DentalExamTobaccoDisplayHelper.FormatFromQuestionnaire(questionnaire);
                     psrViewData["RequirePsrFields"] = false;
                     psrViewData["XRayStation"] = xRayStation;
                     psrViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
                 }
-                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", dentalExam, psrViewData)
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamPsrSection.cshtml", sharedClinical, psrViewData)
 
                 @{
-                    var denClassViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+                    var denClassViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
                     denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
                     denClassViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
                 }
-                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", dentalExam, denClassViewData)
+                @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", sharedClinical, denClassViewData)
 
                 <div class="d-flex justify-content-center mt-3">
                     <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
@@ -1032,7 +1034,7 @@
         </div>
 
         @{
-            var dentalFindingsViewData = new ViewDataDictionary<DentalExam>(ViewData, dentalExam);
+            var dentalFindingsViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
             dentalFindingsViewData["XRayStation"] = xRayStation;
             dentalFindingsViewData["SubsequentReadOnly"] = false;
             dentalFindingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
@@ -1044,7 +1046,7 @@
             dentalFindingsViewData["ShowFindingAppointmentDetails"] = true;
         }
         <div class="dco-panel" id="dentalFindingsPanel">
-            @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", dentalExam, dentalFindingsViewData)
+            @await Html.PartialAsync("~/Views/DentalExams/_DentalFindingsSection.cshtml", sharedClinical, dentalFindingsViewData)
         </div>
 
         <div class="dco-panel" id="treatmentCoordinatorSection">
@@ -1081,8 +1083,8 @@
                                type="radio"
                                name="IsTreatmentRequired"
                                id="isTreatmentRequiredYes"
-                               value="Yes"
-                               checked />
+                               value="true"
+                               @(isTreatmentRequired ? "checked" : null) />
                         <label class="form-check-label" for="isTreatmentRequiredYes">Yes</label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -1090,7 +1092,8 @@
                                type="radio"
                                name="IsTreatmentRequired"
                                id="isTreatmentRequiredNo"
-                               value="No" />
+                               value="false"
+                               @(!isTreatmentRequired ? "checked" : null) />
                         <label class="form-check-label" for="isTreatmentRequiredNo">No</label>
                     </div>
                 </div>
@@ -1681,8 +1684,8 @@
     const CLINICAL_SECTIONS_FROM_DENTAL_EXAM = @Json.Serialize(clinicalSectionsFromDentalExam);
     const COORDINATOR_PAGE_READONLY = @Json.Serialize(coordinatorPageReadOnly);
     const EXAM_DEN_CLASS_COMPLETE = @Json.Serialize(
-        !string.IsNullOrWhiteSpace(dentalExam.DenClass)
-        && !string.IsNullOrWhiteSpace(dentalExam.DenClassReasonComments));
+        !string.IsNullOrWhiteSpace(sharedClinical.DenClass)
+        && !string.IsNullOrWhiteSpace(sharedClinical.DenClassReasonComments));
 
     function applyCoordinatorPageReadOnlyMode() {
         if (!COORDINATOR_PAGE_READONLY) {

@@ -139,9 +139,9 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         public static List<TreatmentCoordinatorAppointmentJsonDto> ToJsonDtos(
-            IEnumerable<TreatmentCoordinatorAppointment>? appointments)
+            IEnumerable<DentalAppointment>? appointments)
         {
-            return (appointments ?? Enumerable.Empty<TreatmentCoordinatorAppointment>())
+            return (appointments ?? Enumerable.Empty<DentalAppointment>())
                 .OrderBy(a => a.SortOrder)
                 .ThenBy(a => a.Id)
                 .Select(a => new TreatmentCoordinatorAppointmentJsonDto
@@ -151,7 +151,7 @@ namespace ExcelFilesCompiler.Utilities
                     AppointmentDate = a.AppointmentDate.ToString("yyyy-MM-dd"),
                     AppointmentStartTime = a.AppointmentStartTime,
                     AppointmentDuration = a.AppointmentDuration,
-                    FindingClientKeys = (a.Findings ?? new List<TreatmentCoordinatorAppointmentFinding>())
+                    FindingClientKeys = (a.Findings ?? new List<DentalAppointmentFinding>())
                         .Select(f => f.FindingClientKey)
                         .Where(k => !string.IsNullOrWhiteSpace(k))
                         .Select(k => k!.Trim())
