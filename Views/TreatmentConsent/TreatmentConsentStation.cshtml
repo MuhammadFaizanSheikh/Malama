@@ -52,21 +52,35 @@
 
     .tcn-station .tcn-panel-title {
         margin: 0 0 0.95rem;
-        font-size: 1rem;
+        font-size: 1.05rem;
         font-weight: 700;
         color: var(--tcn-text);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .tcn-station .tcn-panel-title i {
+        color: var(--tcn-indigo);
     }
 
     .tcn-station .tcn-info-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.85rem 1.25rem;
+        gap: 0.85rem 1rem;
+    }
+
+    .tcn-station .tcn-info-item {
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #f8f9fc 0%, #f3f5fa 100%);
+        border: 1px solid var(--tcn-border);
     }
 
     .tcn-station .tcn-info-label {
         display: block;
         margin-bottom: 0.2rem;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -75,7 +89,7 @@
 
     .tcn-station .tcn-info-value {
         margin: 0;
-        font-size: 1rem;
+        font-size: 0.98rem;
         font-weight: 600;
         color: var(--tcn-text);
         word-break: break-word;
@@ -1050,17 +1064,33 @@
     <div class="tcn-panel">
         <h2 class="tcn-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
         <div class="tcn-info-grid">
-            <div>
+            <div class="tcn-info-item">
                 <span class="tcn-info-label">Full Name</span>
                 <p class="tcn-info-value">@sm?.FullName</p>
             </div>
-            <div>
+            <div class="tcn-info-item">
+                <span class="tcn-info-label">DOD ID</span>
+                <p class="tcn-info-value">@sm?.DodId</p>
+            </div>
+            <div class="tcn-info-item">
+                <span class="tcn-info-label">Routing Sheet Barcode</span>
+                <p class="tcn-info-value">@sm?.Barcode</p>
+            </div>
+            <div class="tcn-info-item">
                 <span class="tcn-info-label">DOB</span>
                 <p class="tcn-info-value">@sm?.Dob</p>
             </div>
-            <div>
-                <span class="tcn-info-label">Barcode</span>
-                <p class="tcn-info-value">@sm?.Barcode</p>
+            <div class="tcn-info-item">
+                <span class="tcn-info-label">Age</span>
+                <p class="tcn-info-value">@sm?.Age</p>
+            </div>
+            <div class="tcn-info-item">
+                <span class="tcn-info-label">Sex</span>
+                <p class="tcn-info-value">@sm?.Sex</p>
+            </div>
+            <div class="tcn-info-item">
+                <span class="tcn-info-label">DRC</span>
+                <p class="tcn-info-value">@sm?.Drc</p>
             </div>
         </div>
     </div>

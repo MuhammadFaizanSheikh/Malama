@@ -5,171 +5,384 @@
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     ViewData["Title"] = "Dental Exams";
     var selectedEventId = ViewBag.EventId;
+    var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
+    var pendingCount = ViewBag.Summary != null ? ViewBag.Summary["Pending"] : null;
+    var completedCount = ViewBag.Summary != null ? ViewBag.Summary["Completed"] : null;
     var auditNames = ViewBag.AuditDisplayNamesByUserId as IReadOnlyDictionary<string, string>;
 }
 
 <style>
-    #page-heading {
-        text-align: center;
-        margin: 20px auto;
+    .dex-page {
+        --dex-indigo: rgba(80, 90, 201, 1);
+        --dex-indigo-soft: rgba(80, 90, 201, 0.12);
+        --dex-indigo-mid: rgba(80, 90, 201, 0.22);
+        --dex-text: #1f2430;
+        --dex-muted: #6b7285;
+        --dex-surface: #ffffff;
+        --dex-border: rgba(31, 36, 48, 0.08);
+        --dex-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --dex-radius: 16px;
     }
 
-    .btn-general {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-        color: white;
+    .dex-page .btn-general {
+        background: var(--dex-indigo);
+        border: 1px solid var(--dex-indigo);
+        color: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 1.15rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
-        .btn-general:hover {
-            background-color: rgba(60, 70, 180, 1);
-            border-color: rgba(60, 70, 180, 1);
-            color: white;
-        }
-
-        .btn-general:focus,
-        .btn-general:active {
-            box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.5);
-            outline: none;
-        }
-
-    .button-container {
-        gap: 15px;
+    .dex-page .btn-general:hover {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
     }
 
-    h2, h3 {
-        color: rgba(80, 90, 201, 1);
+    .dex-page .btn-general:focus,
+    .dex-page .btn-general:active {
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.35);
+        outline: none;
+        color: #fff;
     }
 
-    body {
-        background-color: #f8f9fa;
+    .dex-page .btn-general.btn-secondary-action {
+        background: #fff;
+        color: var(--dex-indigo);
+        border-color: var(--dex-indigo-mid);
     }
 
-    table {
-        border: 1px solid #ddd;
-        border-collapse: collapse;
+    .dex-page .btn-general.btn-secondary-action:hover {
+        background: var(--dex-indigo-soft);
+        color: var(--dex-indigo);
+        border-color: var(--dex-indigo);
+    }
+
+    .dex-hero {
+        margin-bottom: 1.25rem;
+        padding: 0.15rem 0.2rem 0.35rem;
+    }
+
+    .dex-title {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dex-text);
+    }
+
+    .dex-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dex-stat {
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 248, 252, 0.96) 100%);
+        border: 1px solid var(--dex-border);
+        border-radius: var(--dex-radius);
+        box-shadow: var(--dex-shadow);
+        padding: 1rem 1.1rem 1.05rem;
+        min-height: 96px;
+    }
+
+    .dex-stat::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--dex-indigo);
+        opacity: 0.85;
+    }
+
+    .dex-stat.is-pending::before {
+        background: #d97706;
+    }
+
+    .dex-stat.is-completed::before {
+        background: #16a34a;
+    }
+
+    .dex-stat-label {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--dex-muted);
+    }
+
+    .dex-stat-value {
+        margin: 0.35rem 0 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--dex-text);
+        line-height: 1.1;
+    }
+
+    .dex-panel {
+        background: var(--dex-surface);
+        border: 1px solid var(--dex-border);
+        border-radius: var(--dex-radius);
+        box-shadow: var(--dex-shadow);
+        padding: 1.15rem 1.2rem 1.25rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dex-panel-title {
+        margin: 0 0 0.95rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dex-text);
+    }
+
+    .dex-page .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #4b5160;
+        margin-bottom: 0.35rem;
+    }
+
+    .dex-page .form-control {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dex-page .form-control:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .dex-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-top: 0.35rem;
+    }
+
+    .dex-table-panel {
+        background: var(--dex-surface);
+        border: 1px solid var(--dex-border);
+        border-radius: var(--dex-radius);
+        box-shadow: var(--dex-shadow);
+        padding: 1rem 1rem 0.85rem;
+        overflow: hidden;
+    }
+
+    .dex-page #datatableWrapper {
         width: 100%;
+        overflow-x: auto;
     }
 
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+    .dex-page #contractsTable {
+        width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        border: none;
+    }
+
+    .dex-page #contractsTable thead th {
+        background: linear-gradient(180deg, #5a64d0 0%, rgba(80, 90, 201, 1) 100%) !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 0.85rem 0.75rem !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .dex-page #contractsTable thead th:first-child {
+        border-top-left-radius: 12px;
+    }
+
+    .dex-page #contractsTable thead th:last-child {
+        border-top-right-radius: 12px;
+    }
+
+    .dex-page #contractsTable tbody td {
+        border: none !important;
+        border-bottom: 1px solid rgba(31, 36, 48, 0.06) !important;
+        padding: 0.8rem 0.75rem !important;
+        text-align: center;
+        vertical-align: middle;
+        color: var(--dex-text);
+        background: transparent !important;
+        font-size: 0.9rem;
+    }
+
+    .dex-page #contractsTable tbody tr {
+        background: #fff !important;
+        transition: background 0.18s ease;
+    }
+
+    .dex-page #contractsTable tbody tr:nth-child(even) {
+        background: rgba(247, 248, 252, 0.9) !important;
+    }
+
+    .dex-page #contractsTable tbody tr:hover {
+        background: rgba(80, 90, 201, 0.07) !important;
+    }
+
+    .dex-page .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 10px;
+        border: none;
+        background: var(--dex-indigo) !important;
+        color: #fff !important;
+        font-size: 0.9rem;
+        line-height: 1;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .dex-page .edit-btn:hover {
+        background: rgb(60, 70, 180) !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(80, 90, 201, 0.28);
+    }
+
+    .dex-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .dex-status.is-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dex-status.is-completed {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+    }
+
+    .dex-page .dataTables_wrapper .dataTables_filter input,
+    .dex-page .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        padding: 0.35rem 0.55rem;
+    }
+
+    .dex-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--dex-indigo) !important;
+        border-color: var(--dex-indigo) !important;
+        color: #fff !important;
+        border-radius: 8px;
+    }
+
+    .dex-page .dataTables_wrapper .dataTables_info,
+    .dex-page .dataTables_wrapper .dataTables_length,
+    .dex-page .dataTables_wrapper .dataTables_filter {
+        color: var(--dex-muted);
+        font-size: 0.88rem;
+        margin-bottom: 0.65rem;
+    }
+
+    @@media (max-width: 900px) {
+        .dex-stats {
+            grid-template-columns: 1fr;
         }
-
-        table th {
-            background-color: #f4f4f4;
-        }
-
-        table tbody tr {
-            background-color: rgba(240, 245, 255, 1);
-        }
-
-            table tbody tr:hover {
-                background-color: rgba(245, 250, 255, 1);
-            }
-
-        table td button,
-        table td a {
-            display: inline-block;
-            margin-right: 5px;
-        }
-
-        table td .button-container {
-            display: flex;
-            justify-content: center;
-        }
-
-            table td .button-container a {
-                margin-right: 5px;
-            }
-
-        table thead th {
-            background-color: rgba(120, 130, 221, 1);
-            color: white;
-            text-align: center;
-        }
-
-    .read-only-style {
-        background-color: #f8f9fa;
-        pointer-events: none;
-        border-color: #ced4da;
     }
 </style>
 
-<h2 id="page-heading">Dental Exams</h2>
+<section class="dex-page">
+    <div class="dex-hero">
+        <div>
+            <h1 class="dex-title" id="page-heading">Dental Exams</h1>
+        </div>
+    </div>
 
-@if (TempData["ResponseMessage"] != null)
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-            var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
-
-            Swal.fire({
-                icon: '@TempData["ResponseStatus"]',
-                title: '@TempData["ResponseTitle"]',
-                text: '@TempData["ResponseMessage"]',
-                confirmButtonText: 'OK',
-                confirmButtonColor: buttonColor,
-                iconColor: iconColor
-            });
-        });
-    </script>
-}
-
-@if (Model != null)
-{
-    @if (ViewBag.Summary != null)
+    @if (TempData["ResponseMessage"] != null)
     {
-        <table id="dentalExamsSummaryTable" class="display nowrap table table-bordered mb-4">
-            <thead>
-                <tr style="background-color: #7b83eb;">
-                    <th>Event Summary</th>
-                    <th>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr bgcolor="ffffff">
-                    <td>Total number of SM</td>
-                    <td>@ViewBag.Summary["Total"]</td>
-                </tr>
-                <tr>
-                    <td>Number of SM (Pending)</td>
-                    <td>@ViewBag.Summary["Pending"]</td>
-                </tr>
-                <tr bgcolor="ffffff">
-                    <td>Number of SM (Completed)</td>
-                    <td>@ViewBag.Summary["Completed"]</td>
-                </tr>
-            </tbody>
-        </table>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var iconColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+                var buttonColor = '@TempData["ResponseStatus"]' === 'error' ? '#FF0000' : '#4CAF50';
+
+                Swal.fire({
+                    icon: '@TempData["ResponseStatus"]',
+                    title: '@TempData["ResponseTitle"]',
+                    text: '@TempData["ResponseMessage"]',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: buttonColor,
+                    iconColor: iconColor
+                });
+            });
+        </script>
     }
 
-    <div class="card p-3 mb-4">
-        <div class="container">
-            <div class="row g-2">
-                <div class="col-md-3">
+    @if (Model != null)
+    {
+        @if (ViewBag.Summary != null)
+        {
+            <div class="dex-stats" aria-label="Event summary">
+                <div class="dex-stat">
+                    <p class="dex-stat-label">Total SM</p>
+                    <p class="dex-stat-value">@totalCount</p>
+                </div>
+                <div class="dex-stat is-pending">
+                    <p class="dex-stat-label">Pending</p>
+                    <p class="dex-stat-value">@pendingCount</p>
+                </div>
+                <div class="dex-stat is-completed">
+                    <p class="dex-stat-label">Completed</p>
+                    <p class="dex-stat-value">@completedCount</p>
+                </div>
+            </div>
+        }
+
+        <div class="dex-panel">
+            <h2 class="dex-panel-title">Filters</h2>
+            <div class="row g-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterBarcode" class="form-label">Routing Sheet Barcode</label>
                     <input type="text" id="filterBarcode" class="form-control" placeholder="Routing Sheet Barcode">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterFullName" class="form-label">Full Name</label>
                     <input type="text" id="filterFullName" class="form-control" placeholder="Full Name">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterDodId" class="form-label">DoD ID</label>
                     <input type="text" id="filterDodId" class="form-control" placeholder="DoD ID" maxlength="10" oninput="allowOnlyDigits(this)">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterDob" class="form-label">DOB</label>
                     <input type="text" id="filterDob" class="form-control" placeholder="MM/DD/YYYY">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterLast4Ssn" class="form-label">Last 4 SSN</label>
                     <input type="text" id="filterLast4Ssn" class="form-control" placeholder="Last 4 SSN" maxlength="4" oninput="allowOnlyDigits(this)">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3">
                     <label for="filterStatus" class="form-label">Dental Exams Station SMs status</label>
                     <select id="filterStatus" class="form-control">
                         <option value="">All</option>
@@ -177,59 +390,74 @@
                         <option value="Completed">Completed</option>
                     </select>
                 </div>
-                <div class="col-12 text-center mt-3">
-                    <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
-                    <button id="resetFiltersBtn" type="button" class="btn btn-general">Reset Filters</button>
+                <div class="col-12">
+                    <div class="dex-actions">
+                        <button id="searchStaffBtn" type="button" class="btn btn-general">Search</button>
+                        <button id="resetFiltersBtn" type="button" class="btn btn-general btn-secondary-action">Reset Filters</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="datatableWrapper" class="datatable-wrapper">
-        <table id="contractsTable" class="display">
-            <thead>
-                <tr>
-                    <th>Action</th>
-                    <th>Status</th>
-                    <th>SM ID</th>
-                    <th>DRC</th>
-                    <th>FULL NAME</th>
-                    <th>Last 4 SSN</th>
-                    <th>DOD Id</th>
-                    <th>Sex</th>
-                    <th>DOB</th>
-                    <th>Barcode</th>
-                    <th>Completed By (Staff Name)</th>
-                    <th>Completed At (Date/time)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in Model)
-                {
-                    <tr>
-                        <td>
-                            <a asp-action="DentalExamStation" asp-route-serviceMembersChildId="@c.Id"
-                               class="btn btn-primary edit-btn" style="background-color: rgba(80, 90, 201, 1);">Edit</a>
-                        </td>
-                        <td>@(c.DentalExamRecord == null ? "Pending" : c.DentalExamRecord.Status)</td>
-                        <td>@c.SmId</td>
-                        <td>@c.Drc</td>
-                        <td>@c.FullName</td>
-                        <td>@c.Last4</td>
-                        <td>@c.DodId</td>
-                        <td>@c.Sex</td>
-                        <td>@c.Dob</td>
-                        <td>@c.Barcode</td>
-                        <td>@(DentalExamSignatureHelper.FormatAuditDisplayName(
-                            c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy,
-                            auditNames))</td>
-                        <td>@c.DentalExamRecord?.AddedOn</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+        <div class="dex-table-panel">
+            <div id="datatableWrapper" class="datatable-wrapper">
+                <table id="contractsTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>SM ID</th>
+                            <th>DRC</th>
+                            <th>FULL NAME</th>
+                            <th>Last 4 SSN</th>
+                            <th>DOD Id</th>
+                            <th>Sex</th>
+                            <th>DOB</th>
+                            <th>Barcode</th>
+                            <th>Completed By (Staff Name)</th>
+                            <th>Completed At (Date/time)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            var statusText = c.DentalExamRecord == null ? "Pending" : c.DentalExamRecord.Status;
+                            var statusClass = string.Equals(statusText, "Completed", StringComparison.OrdinalIgnoreCase)
+                                ? "is-completed"
+                                : "is-pending";
+                            <tr>
+                                <td>
+                                    <a asp-action="DentalExamStation"
+                                       asp-route-serviceMembersChildId="@c.Id"
+                                       class="btn btn-primary edit-btn"
+                                       title="Edit"
+                                       aria-label="Edit">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="dex-status @statusClass">@statusText</span>
+                                </td>
+                                <td>@c.SmId</td>
+                                <td>@c.Drc</td>
+                                <td>@c.FullName</td>
+                                <td>@c.Last4</td>
+                                <td>@c.DodId</td>
+                                <td>@c.Sex</td>
+                                <td>@c.Dob</td>
+                                <td>@c.Barcode</td>
+                                <td>@(DentalExamSignatureHelper.FormatAuditDisplayName(
+                                    c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy,
+                                    auditNames))</td>
+                                <td>@c.DentalExamRecord?.AddedOn</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</section>
 
 <script>
     function allowOnlyDigits(input) {
