@@ -78,13 +78,13 @@ namespace Malama.Models
         public static readonly string[] TreatmentNotPossibleReasons =
         {
             ReasonCommandExcused,
-            "Service Not Offered at Event",
-            ReasonTreatmentPlanInProgress,
-            "Extraneous Factor",
-            "Missing Equipment",
             "Service Member Refused",
+            "Missing Equipment",
+            "Service Not Offered at Event",
+            "Not Enough Time",
             "Dentist Referred After Review",
-            "Not Enough Time"
+            ReasonTreatmentPlanInProgress,
+            "Extraneous Factor"
         };
     }
 

@@ -84,6 +84,12 @@ namespace ExcelFilesCompiler.Utilities
                 return "Classification Reason / Comments is required when Dental Readiness Classification is selected.";
             }
 
+            var findingsRuleError = DentalExamDenClass.ValidateAgainstFindings(dto.DenClass, dto.Findings);
+            if (!string.IsNullOrWhiteSpace(findingsRuleError))
+            {
+                return findingsRuleError;
+            }
+
             return null;
         }
 

@@ -3219,6 +3219,9 @@
                     syncAppointmentsAfterRender: true,
                     deletedFindingKey: deletedKey
                 });
+                if (typeof window.syncDenClassFromFindings === "function") {
+                    window.syncDenClassFromFindings();
+                }
             });
         }
 
@@ -3240,6 +3243,12 @@
                         isTreatmentPossible: finding.isTreatmentPossible !== false
                     };
                 });
+        };
+
+        window.getDentalFindingsClassifications = function () {
+            return (dentalFindings || []).map(function (finding) {
+                return (finding && finding.classification) ? finding.classification : "";
+            });
         };
 
         window.initDentalFindingsSection = function () {

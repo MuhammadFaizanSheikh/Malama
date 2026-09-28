@@ -6,13 +6,23 @@
     var exam = Model ?? new DentalSharedClinicalViewModel();
     var serviceMemberPanoRequired = ViewData["ServiceMemberPanoRequired"] as bool? ?? false;
     var subsequentReadOnly = ViewData["SubsequentReadOnly"] as bool? ?? false;
-    var hasDenClassSelected = !string.IsNullOrWhiteSpace(exam.DenClass);
+    var savedDenClass = exam.DenClass?.Trim() ?? string.Empty;
+    if (string.Equals(savedDenClass, DentalExamDenClass.Class4, StringComparison.OrdinalIgnoreCase))
+    {
+        savedDenClass = string.Empty;
+    }
+    var hasDenClassSelected = !string.IsNullOrWhiteSpace(savedDenClass)
+        && DentalExamDenClass.Options.Contains(savedDenClass, StringComparer.OrdinalIgnoreCase);
     var denClassCommentsRequiredAttr = hasDenClassSelected && !subsequentReadOnly ? "required" : "";
     var denDisabledAttr = subsequentReadOnly ? "disabled" : null;
     var panoMarkedRequiredByDentist = exam.PanoXRayAcknowledged;
 }
 
-<div class="mb-4" id="denClassSection">
+<div class="mb-4" id="denClassSection"
+     data-den-class-readonly="@(subsequentReadOnly ? "true" : "false")"
+     data-den-class-1="@DentalExamDenClass.Class1"
+     data-den-class-2="@DentalExamDenClass.Class2"
+     data-den-class-3="@DentalExamDenClass.Class3">
     <div class="questionnaire-heading" id="denClassSectionHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
             <input class="form-check-input"
@@ -28,11 +38,11 @@
     <div id="denClassContentSection" style="display:none;">
         <div class="card mb-0">
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" id="denClassOptionsWrap">
                     @for (var i = 0; i < DentalExamDenClass.Options.Length; i++)
                     {
                         var option = DentalExamDenClass.Options[i];
-                        var isSelected = string.Equals(exam.DenClass, option, StringComparison.OrdinalIgnoreCase);
+                        var isSelected = string.Equals(savedDenClass, option, StringComparison.OrdinalIgnoreCase);
                         <div class="form-check">
                             <input class="form-check-input den-class-radio"
                                    type="radio"
@@ -45,6 +55,7 @@
                         </div>
                     }
                 </div>
+                <input type="hidden" name="DenClass" id="DenClassHidden" value="@(hasDenClassSelected ? savedDenClass : string.Empty)" disabled="disabled" />
 
                 <div class="mb-0">
                     <label class="form-label" for="DenClassReasonComments">Classification Reason / Comments</label>
@@ -78,36 +89,30 @@
                    aria-controls="panoXrayContentSection"
                    aria-expanded="false" />
         </div>
-        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Panorex (Pano) X-Ray</h4>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Panographic X-ray Required</h4>
     </div>
 
     <div id="panoXrayContentSection" style="display:none;">
         <div class="card mb-0">
-            <div class="card-body py-3">
+            <div class="card-body">
                 @if (serviceMemberPanoRequired)
                 {
+                    <p class="mb-2 fw-semibold text-danger">Panographic X-ray is required for this Service Member.</p>
                     <input type="hidden" name="PanoXRayAcknowledged" value="true" />
-                    <p class="fw-semibold mb-2 mb-md-3">
-                        Panorex (Pano) X-ray is Required for this Service member.
-                    </p>
-                    <div class="form-check mb-0">
+                    <div class="form-check">
                         <input class="form-check-input"
                                type="checkbox"
                                id="PanoXRayAcknowledgedDisplay"
                                checked
                                disabled />
                         <label class="form-check-label" for="PanoXRayAcknowledgedDisplay">
-                            Pano X-ray requirement confirmed for this service member
+                            Acknowledge: Panographic X-ray is required
                         </label>
                     </div>
                 }
                 else
                 {
-                    <p class="fw-semibold mb-2 mb-md-3">
-                        Panorex (Pano) X-ray is NOT Required for this Service member.
-                    </p>
-                    <div class="form-check mb-0">
-                        <input type="hidden" name="PanoXRayAcknowledged" value="false" />
+                    <div class="form-check">
                         <input class="form-check-input"
                                type="checkbox"
                                name="PanoXRayAcknowledged"
@@ -116,7 +121,7 @@
                                @(panoMarkedRequiredByDentist ? "checked" : null)
                                @denDisabledAttr />
                         <label class="form-check-label" for="PanoXRayAcknowledged">
-                            Mark Panorex (Pano) X-ray as required for this service member
+                            Mark Panographic X-ray as required
                         </label>
                     </div>
                 }
@@ -127,8 +132,147 @@
             <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
                     data-target-switch="togglePanoXraySectionSwitch"
                     data-target-heading="panoXraySectionHeading">
-                <i class="fas fa-chevron-up"></i> Collapse Panorex (Pano) X-Ray
+                <i class="fas fa-chevron-up"></i> Collapse Panographic X-ray Required
             </button>
         </div>
     </div>
 </div>
+
+@if (!subsequentReadOnly)
+{
+<script>
+    (function () {
+        const $section = $("#denClassSection");
+        if (!$section.length || $section.data("den-class-readonly") === true || $section.attr("data-den-class-readonly") === "true") {
+            return;
+        }
+
+        const CLASS1 = ($section.attr("data-den-class-1") || "").toString();
+        const CLASS2 = ($section.attr("data-den-class-2") || "").toString();
+        const CLASS3 = ($section.attr("data-den-class-3") || "").toString();
+
+        function getFindingClassifications() {
+            if (typeof window.getDentalFindingsClassifications === "function") {
+                return window.getDentalFindingsClassifications() || [];
+            }
+            return [];
+        }
+
+        function resolveForcedDenClass(classifications) {
+            const list = (classifications || [])
+                .map(function (c) { return (c || "").toString().trim(); })
+                .filter(function (c) { return !!c; });
+
+            if (!list.length) {
+                return null;
+            }
+
+            if (list.some(function (c) { return c === CLASS3; })) {
+                return CLASS3;
+            }
+
+            if (list.some(function (c) { return c === CLASS2; })) {
+                return CLASS2;
+            }
+
+            return null;
+        }
+
+        function ensureDenClassHidden(enabled, value) {
+            const $hidden = $("#DenClassHidden");
+            if (!$hidden.length) {
+                return;
+            }
+
+            if (enabled) {
+                $hidden.prop("disabled", false).val(value || "");
+            } else {
+                $hidden.prop("disabled", true).val("");
+            }
+        }
+
+        function setDenClassRadioState(options) {
+            const forced = options.forced || null;
+            const lockAll = !!options.lockAll;
+            const disableClass3Only = !!options.disableClass3Only;
+
+            $("input.den-class-radio").each(function () {
+                const $radio = $(this);
+                const value = ($radio.val() || "").toString();
+                let disable = false;
+
+                if (lockAll) {
+                    disable = true;
+                } else if (disableClass3Only && value === CLASS3) {
+                    disable = true;
+                }
+
+                $radio.prop("disabled", disable);
+            });
+
+            if (forced) {
+                $("input.den-class-radio").prop("checked", false);
+                $("input.den-class-radio").filter(function () {
+                    return ($(this).val() || "") === forced;
+                }).prop("checked", true);
+                ensureDenClassHidden(true, forced);
+            } else {
+                const $checked = $("input.den-class-radio:checked:not(:disabled)");
+                if (!$checked.length) {
+                    $("input.den-class-radio").prop("checked", false);
+                    ensureDenClassHidden(false, "");
+                } else {
+                    ensureDenClassHidden(false, "");
+                }
+            }
+
+            $("input.den-class-radio").trigger("change");
+        }
+
+        let lastForcedDenClass = null;
+
+        function syncDenClassFromFindings() {
+            const forced = resolveForcedDenClass(getFindingClassifications());
+
+            if (forced) {
+                setDenClassRadioState({ forced: forced, lockAll: true });
+                lastForcedDenClass = forced;
+                return;
+            }
+
+            // Leaving a findings-forced class: clear the auto-selected value.
+            if (lastForcedDenClass) {
+                $("input.den-class-radio").prop("checked", false);
+                ensureDenClassHidden(false, "");
+                lastForcedDenClass = null;
+            }
+
+            // Class 3 is never manually selectable without Class 3 findings.
+            const current = ($("input.den-class-radio:checked").val() || "").toString();
+            if (current === CLASS3) {
+                $("input.den-class-radio").prop("checked", false);
+                ensureDenClassHidden(false, "");
+            }
+
+            setDenClassRadioState({ forced: null, lockAll: false, disableClass3Only: true });
+        }
+
+        window.syncDenClassFromFindings = syncDenClassFromFindings;
+
+        $(document).on("dentalFindingsChanged", function () {
+            syncDenClassFromFindings();
+        });
+
+        $(document).on("change", "input.den-class-radio", function () {
+            if ($(this).prop("disabled")) {
+                return;
+            }
+            ensureDenClassHidden(false, "");
+        });
+
+        $(document).ready(function () {
+            syncDenClassFromFindings();
+        });
+    })();
+</script>
+}

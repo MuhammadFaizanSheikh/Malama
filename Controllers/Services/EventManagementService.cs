@@ -18,7 +18,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly ISubmissionTokenService _submissionTokenService;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly ILogger<EventManagementService> _logger;
-        private const string CLASSNAME = "ContractService";
+        private const string CLASSNAME = "EventManagementService";
 
         public EventManagementService(ILogger<EventManagementService> logger, IMapper mapper, IUnitOfWork unitOfWork, RoleManager<ApplicationRole> roleManager, ISubmissionTokenService submissionTokenService)
         {

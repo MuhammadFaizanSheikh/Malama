@@ -265,6 +265,24 @@ namespace ExcelFilesCompiler.Controllers
                     return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
+                var sharedClinicalForDen = await _dentalExamService
+                    .GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                var denClassOwnedByExam = string.Equals(
+                    sharedClinicalForDen.ClinicalSource,
+                    DentalExamSources.DentalExam,
+                    StringComparison.OrdinalIgnoreCase);
+                if (!denClassOwnedByExam)
+                {
+                    var denClassFindingsError = DentalExamDenClass.ValidateAgainstFindings(dto.DenClass, findings);
+                    if (!string.IsNullOrWhiteSpace(denClassFindingsError))
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Invalid Data";
+                        TempData["ResponseMessage"] = denClassFindingsError;
+                        return await RedisplayDentalCoordinatorStationAsync(dto);
+                    }
+                }
+
                 var appointments = TreatmentCoordinatorAppointmentHelper.ParseAppointmentsJson(dto.AppointmentsJson);
                 var appointmentsError = TreatmentCoordinatorAppointmentHelper.Validate(appointments, findings);
                 if (!string.IsNullOrWhiteSpace(appointmentsError))
