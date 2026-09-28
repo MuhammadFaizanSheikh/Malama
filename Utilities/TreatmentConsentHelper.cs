@@ -249,6 +249,156 @@ namespace ExcelFilesCompiler.Utilities
             return string.Equals(status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
         }
 
+        public const string OralSurgeryDiseaseType = "Oral Surgery";
+
+        /// <summary>
+        /// Distinct appointment dentists bucketed by linked finding disease type.
+        /// Oral Surgery → oral list; any other non-empty disease type → dental treatment list.
+        /// </summary>
+        public static TreatmentConsentDerivedDentists DeriveDentistsFromAppointments(
+            IEnumerable<DentalAppointment>? appointments,
+            IEnumerable<DentalFinding>? findings)
+        {
+            var findingByKey = (findings ?? Enumerable.Empty<DentalFinding>())
+                .Where(f => !string.IsNullOrWhiteSpace(f.ClientKey))
+                .GroupBy(f => f.ClientKey!.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Last(), StringComparer.OrdinalIgnoreCase);
+
+            var oralIds = new HashSet<long>();
+            var treatmentIds = new HashSet<long>();
+
+            foreach (var appointment in appointments ?? Enumerable.Empty<DentalAppointment>())
+            {
+                if (appointment == null || appointment.EventStaffId <= 0)
+                {
+                    continue;
+                }
+
+                foreach (var link in appointment.Findings ?? Enumerable.Empty<DentalAppointmentFinding>())
+                {
+                    var key = link?.FindingClientKey?.Trim();
+                    if (string.IsNullOrWhiteSpace(key)
+                        || !findingByKey.TryGetValue(key, out var finding))
+                    {
+                        continue;
+                    }
+
+                    var diseaseType = finding.DiseaseConditionType?.Trim() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(diseaseType))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(diseaseType, OralSurgeryDiseaseType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        oralIds.Add(appointment.EventStaffId);
+                    }
+                    else
+                    {
+                        treatmentIds.Add(appointment.EventStaffId);
+                    }
+                }
+            }
+
+            return new TreatmentConsentDerivedDentists
+            {
+                OralSurgeryDentistEventStaffIds = oralIds.OrderBy(id => id).ToList(),
+                DentalTreatmentDentistEventStaffIds = treatmentIds.OrderBy(id => id).ToList()
+            };
+        }
+
+        public static void ApplyDerivedDentistsToSelection(
+            TreatmentConsentFormSelectionDto selection,
+            TreatmentConsentDerivedDentists derived,
+            IReadOnlyDictionary<long, string>? dentistNamesById = null)
+        {
+            if (selection == null)
+            {
+                throw new ArgumentNullException(nameof(selection));
+            }
+
+            derived ??= new TreatmentConsentDerivedDentists();
+            var names = dentistNamesById ?? new Dictionary<long, string>();
+
+            selection.OralSurgeryDentistEventStaffIds = NormalizeIds(derived.OralSurgeryDentistEventStaffIds);
+            selection.DentalTreatmentDentistEventStaffIds = NormalizeIds(derived.DentalTreatmentDentistEventStaffIds);
+            selection.IncludeOralSurgeryForm = selection.OralSurgeryDentistEventStaffIds.Count > 0;
+            selection.IncludeDentalTreatmentConsent = selection.DentalTreatmentDentistEventStaffIds.Count > 0;
+
+            selection.OralSurgeryForms = MergeOralForms(
+                selection.OralSurgeryForms,
+                selection.OralSurgeryDentistEventStaffIds,
+                names);
+            selection.DentalTreatmentForms = MergeTreatmentForms(
+                selection.DentalTreatmentForms,
+                selection.DentalTreatmentDentistEventStaffIds,
+                names);
+
+            selection.Status = ComputeStationStatus(selection);
+        }
+
+        private static List<TreatmentConsentOralSurgeryFormDto> MergeOralForms(
+            IEnumerable<TreatmentConsentOralSurgeryFormDto>? existingForms,
+            IEnumerable<long> dentistIds,
+            IReadOnlyDictionary<long, string> dentistNamesById)
+        {
+            var byId = (existingForms ?? Enumerable.Empty<TreatmentConsentOralSurgeryFormDto>())
+                .Where(f => f != null && f.EventStaffId > 0)
+                .GroupBy(f => f.EventStaffId)
+                .ToDictionary(g => g.Key, g => g.Last());
+
+            var result = new List<TreatmentConsentOralSurgeryFormDto>();
+            foreach (var id in NormalizeIds(dentistIds))
+            {
+                if (!byId.TryGetValue(id, out var form) || form == null)
+                {
+                    form = new TreatmentConsentOralSurgeryFormDto { EventStaffId = id };
+                }
+
+                if (string.IsNullOrWhiteSpace(form.DentistName)
+                    && dentistNamesById.TryGetValue(id, out var name)
+                    && !string.IsNullOrWhiteSpace(name))
+                {
+                    form.DentistName = name.Trim();
+                }
+
+                result.Add(form);
+            }
+
+            return result;
+        }
+
+        private static List<TreatmentConsentDentalTreatmentFormDto> MergeTreatmentForms(
+            IEnumerable<TreatmentConsentDentalTreatmentFormDto>? existingForms,
+            IEnumerable<long> dentistIds,
+            IReadOnlyDictionary<long, string> dentistNamesById)
+        {
+            var byId = (existingForms ?? Enumerable.Empty<TreatmentConsentDentalTreatmentFormDto>())
+                .Where(f => f != null && f.EventStaffId > 0)
+                .GroupBy(f => f.EventStaffId)
+                .ToDictionary(g => g.Key, g => g.Last());
+
+            var result = new List<TreatmentConsentDentalTreatmentFormDto>();
+            foreach (var id in NormalizeIds(dentistIds))
+            {
+                if (!byId.TryGetValue(id, out var form) || form == null)
+                {
+                    form = new TreatmentConsentDentalTreatmentFormDto { EventStaffId = id };
+                }
+
+                if (string.IsNullOrWhiteSpace(form.DentistName)
+                    && dentistNamesById.TryGetValue(id, out var name)
+                    && !string.IsNullOrWhiteSpace(name))
+                {
+                    form.DentistName = name.Trim();
+                }
+
+                result.Add(form);
+            }
+
+            return result;
+        }
+
         private static List<long> NormalizeIds(IEnumerable<long>? ids)
         {
             return (ids ?? Enumerable.Empty<long>())
@@ -313,5 +463,11 @@ namespace ExcelFilesCompiler.Utilities
                 return new List<long>();
             }
         }
+    }
+
+    public class TreatmentConsentDerivedDentists
+    {
+        public List<long> OralSurgeryDentistEventStaffIds { get; set; } = new();
+        public List<long> DentalTreatmentDentistEventStaffIds { get; set; } = new();
     }
 }

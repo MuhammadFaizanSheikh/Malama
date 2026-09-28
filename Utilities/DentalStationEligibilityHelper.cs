@@ -76,6 +76,33 @@ namespace ExcelFilesCompiler.Utilities
                 && IsDentalExamCompleted(exam);
         }
 
+        public static bool IsTreatmentCoordinatorCompleted(DentalTreatmentCoordinator? coordinator)
+        {
+            return coordinator != null
+                && string.Equals(
+                    coordinator.Status?.Trim(),
+                    AppConstants.Status.Completed,
+                    StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Class 3 eligibility (same as Treatment Coordinator) and Treatment Coordinator status Completed.
+        /// </summary>
+        public static bool IsEligibleForTreatmentConsent(
+            ServiceMembersChild? serviceMember,
+            DentalExam? exam = null,
+            DentalDenClassRecord? denClass = null,
+            DentalTreatmentCoordinator? coordinator = null)
+        {
+            if (!IsEligibleForTreatmentCoordinator(serviceMember, exam, denClass))
+            {
+                return false;
+            }
+
+            coordinator ??= serviceMember?.DentalTreatmentCoordinatorRecord;
+            return IsTreatmentCoordinatorCompleted(coordinator);
+        }
+
         /// <summary>
         /// Case 2: DentalNeeded and SM DRC 3, but Dental Exam not Completed yet → TC page readonly.
         /// </summary>

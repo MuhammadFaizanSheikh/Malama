@@ -1095,85 +1095,6 @@
         </div>
     </div>
 
-    <div class="tcn-panel tcn-selection-panel" id="tcnFormSelectionPanel">
-        <h2 class="tcn-panel-title"><i class="fas fa-list-check" aria-hidden="true"></i> Forms &amp; Dentists</h2>
-        <div class="tcn-selection-grid">
-            <div class="tcn-selection-card">
-                <div class="tcn-selection-form-row">
-                    <label class="tcn-selection-card-title">
-                        <input type="checkbox"
-                               id="tcnIncludeOralSurgery"
-                               @(formSelection.IncludeOralSurgeryForm ? "checked" : null) />
-                        <span>Oral Surgery Form</span>
-                    </label>
-                </div>
-                <div id="tcnOralSurgeryDentistsWrap" style="@(formSelection.IncludeOralSurgeryForm ? null : "display:none")">
-                    <hr class="tcn-selection-divider" />
-                    <div class="tcn-selection-dentists-block">
-                        <p class="tcn-selection-dentists-label">Dentists</p>
-                        @if (oralSurgeryDentists.Count == 0)
-                        {
-                            <p class="tcn-selection-hint">No DT-Dentist with Oral Surgery attribute on this event.</p>
-                        }
-                        else
-                        {
-                            <div class="tcn-dentist-list" id="tcnOralSurgeryDentists">
-                                @foreach (var dentist in oralSurgeryDentists)
-                                {
-                                    var isChecked = formSelection.OralSurgeryDentistEventStaffIds.Contains(dentist.EventStaffId);
-                                    <label class="tcn-dentist-option">
-                                        <input type="checkbox"
-                                               name="tcnOralSurgeryDentist"
-                                               value="@dentist.EventStaffId"
-                                               @(isChecked ? "checked" : null) />
-                                        <span>@dentist.DisplayName</span>
-                                    </label>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="tcn-selection-card">
-                <div class="tcn-selection-form-row">
-                    <label class="tcn-selection-card-title">
-                        <input type="checkbox"
-                               id="tcnIncludeDentalTreatment"
-                               @(formSelection.IncludeDentalTreatmentConsent ? "checked" : null) />
-                        <span>Dental Treatment Consent</span>
-                    </label>
-                </div>
-                <div id="tcnDentalTreatmentDentistsWrap" style="@(formSelection.IncludeDentalTreatmentConsent ? null : "display:none")">
-                    <hr class="tcn-selection-divider" />
-                    <div class="tcn-selection-dentists-block">
-                        <p class="tcn-selection-dentists-label">Dentists</p>
-                        @if (dentalTreatmentDentists.Count == 0)
-                        {
-                            <p class="tcn-selection-hint">No DT-Dentist with Treatment attribute on this event.</p>
-                        }
-                        else
-                        {
-                            <div class="tcn-dentist-list" id="tcnDentalTreatmentDentists">
-                                @foreach (var dentist in dentalTreatmentDentists)
-                                {
-                                    var isChecked = formSelection.DentalTreatmentDentistEventStaffIds.Contains(dentist.EventStaffId);
-                                    <label class="tcn-dentist-option">
-                                        <input type="checkbox"
-                                               name="tcnDentalTreatmentDentist"
-                                               value="@dentist.EventStaffId"
-                                               @(isChecked ? "checked" : null) />
-                                        <span>@dentist.DisplayName</span>
-                                    </label>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <ul class="nav nav-tabs" id="treatmentConsentTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active"
@@ -1316,7 +1237,7 @@
                 oralSurgeryViewData["PatientFullName"] = sm?.FullName ?? string.Empty;
             }
             <div class="tcn-dentist-forms" id="tcnOralSurgeryFormsHost" data-form-kind="oral-surgery">
-                <p class="tcn-dentist-forms-empty" data-empty-message>Select one or more Oral Surgery dentists to open forms.</p>
+                <p class="tcn-dentist-forms-empty" data-empty-message>No Oral Surgery appointments were scheduled for this service member.</p>
                 <div class="tcn-dentist-forms-list" data-forms-list></div>
             </div>
             <template id="tcnOralSurgeryFormTemplate">
@@ -1335,7 +1256,7 @@
                 treatmentConsentViewData["ConsentDate"] = consentDateDisplay;
             }
             <div class="tcn-dentist-forms" id="tcnDentalTreatmentFormsHost" data-form-kind="dental-treatment">
-                <p class="tcn-dentist-forms-empty" data-empty-message>Select one or more Treatment dentists to open forms.</p>
+                <p class="tcn-dentist-forms-empty" data-empty-message>No Dental Treatment appointments were scheduled for this service member.</p>
                 <div class="tcn-dentist-forms-list" data-forms-list></div>
             </div>
             <template id="tcnDentalTreatmentFormTemplate">
@@ -1561,6 +1482,12 @@
             return dentists;
         }
 
+        const INCLUDE_ORAL_SURGERY = @Json.Serialize(formSelection.IncludeOralSurgeryForm);
+        const INCLUDE_DENTAL_TREATMENT = @Json.Serialize(formSelection.IncludeDentalTreatmentConsent);
+        const DERIVED_ORAL_DENTISTS = @Html.Raw(Json.Serialize(
+            oralSurgeryDentists.Select(d => new { id = d.EventStaffId, name = d.DisplayName }).ToList()));
+        const DERIVED_TREATMENT_DENTISTS = @Html.Raw(Json.Serialize(
+            dentalTreatmentDentists.Select(d => new { id = d.EventStaffId, name = d.DisplayName }).ToList()));
         const SAVED_ORAL_FORMS = @Html.Raw(Json.Serialize(formSelection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>()));
         const SAVED_TREATMENT_FORMS = @Html.Raw(Json.Serialize(formSelection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>()));
         const SIG_ORAL_PREFIX = @Json.Serialize(TreatmentConsentFileSaveCoordinator.OralSurgeryPrefix);
@@ -1686,8 +1613,8 @@
         }
 
         function areIncludedFormsAllSigned() {
-            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
-            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+            const includeOral = !!INCLUDE_ORAL_SURGERY;
+            const includeTreatment = !!INCLUDE_DENTAL_TREATMENT;
             const $oralCards = $("#tcnOralSurgeryFormsHost .tcn-dentist-form-card");
             const $treatmentCards = $("#tcnDentalTreatmentFormsHost .tcn-dentist-form-card");
             let hasIncludedForm = false;
@@ -1815,11 +1742,11 @@
             return $card;
         }
 
-        function syncDentistForms(hostSelector, checkboxName, config) {
+        function syncDentistForms(hostSelector, dentists, config) {
             const $host = $(hostSelector);
             const $list = $host.find("[data-forms-list]");
             const $empty = $host.find("[data-empty-message]");
-            const dentists = getCheckedDentists(checkboxName);
+            dentists = dentists || [];
             const selectedIds = dentists.map(function (d) { return String(d.id); });
 
             $list.find(".tcn-dentist-form-card").each(function () {
@@ -1881,12 +1808,12 @@
         }
 
         function syncAllDentistForms() {
-            syncDentistForms("#tcnOralSurgeryFormsHost", "tcnOralSurgeryDentist", {
+            syncDentistForms("#tcnOralSurgeryFormsHost", DERIVED_ORAL_DENTISTS, {
                 templateId: "tcnOralSurgeryFormTemplate",
                 titlePrefix: "Oral Surgery Form",
                 signaturePadBase: "os_patient_signature"
             });
-            syncDentistForms("#tcnDentalTreatmentFormsHost", "tcnDentalTreatmentDentist", {
+            syncDentistForms("#tcnDentalTreatmentFormsHost", DERIVED_TREATMENT_DENTISTS, {
                 templateId: "tcnDentalTreatmentFormTemplate",
                 titlePrefix: "Dental Treatment Consent",
                 signaturePadBase: "dtc_patient_signature"
@@ -2059,18 +1986,18 @@
         }
 
         function buildStationSavePayload() {
-            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
-            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+            const includeOral = !!INCLUDE_ORAL_SURGERY;
+            const includeTreatment = !!INCLUDE_DENTAL_TREATMENT;
             const questionnaire = collectQuestionnairePayload();
             return Object.assign({
                 serviceMembersChildId: SM_CHILD_ID,
                 includeOralSurgeryForm: includeOral,
                 includeDentalTreatmentConsent: includeTreatment,
                 oralSurgeryDentistEventStaffIds: includeOral
-                    ? collectCheckedIds('input[name="tcnOralSurgeryDentist"]:checked')
+                    ? (DERIVED_ORAL_DENTISTS || []).map(function (d) { return d.id; }).filter(function (id) { return id > 0; })
                     : [],
                 dentalTreatmentDentistEventStaffIds: includeTreatment
-                    ? collectCheckedIds('input[name="tcnDentalTreatmentDentist"]:checked')
+                    ? (DERIVED_TREATMENT_DENTISTS || []).map(function (d) { return d.id; }).filter(function (id) { return id > 0; })
                     : [],
                 oralSurgeryForms: includeOral ? collectOralSurgeryFormsClean() : [],
                 dentalTreatmentForms: includeTreatment ? collectDentalTreatmentFormsClean() : []
@@ -2078,20 +2005,11 @@
         }
 
         function syncFormSelectionUi() {
-            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
-            const includeTreatment = $("#tcnIncludeDentalTreatment").is(":checked");
+            const includeOral = !!INCLUDE_ORAL_SURGERY;
+            const includeTreatment = !!INCLUDE_DENTAL_TREATMENT;
 
-            $("#tcnOralSurgeryDentistsWrap").toggle(includeOral);
-            $("#tcnDentalTreatmentDentistsWrap").toggle(includeTreatment);
             $("#oralSurgeryTabItem").toggle(includeOral);
             $("#dentalTreatmentConsentTabItem").toggle(includeTreatment);
-
-            if (!includeOral) {
-                $('input[name="tcnOralSurgeryDentist"]').prop("checked", false);
-            }
-            if (!includeTreatment) {
-                $('input[name="tcnDentalTreatmentDentist"]').prop("checked", false);
-            }
 
             syncAllDentistForms();
             syncOralSurgeryRequiredFields();
@@ -2123,16 +2041,6 @@
             }
 
             const payload = buildStationSavePayload();
-
-            if (payload.includeOralSurgeryForm && payload.oralSurgeryDentistEventStaffIds.length === 0) {
-                Swal.fire("Selection required", "Select at least one Oral Surgery dentist.", "warning");
-                return { success: false };
-            }
-
-            if (payload.includeDentalTreatmentConsent && payload.dentalTreatmentDentistEventStaffIds.length === 0) {
-                Swal.fire("Selection required", "Select at least one Treatment dentist.", "warning");
-                return { success: false };
-            }
 
             const response = await fetch("@Url.Action("SaveStation", "TreatmentConsent")", {
                 method: "POST",
@@ -2184,7 +2092,7 @@
 
         function syncOralSurgeryRequiredFields($scope) {
             const $root = $scope && $scope.length ? $scope : $("#tcnOralSurgeryFormsHost");
-            const includeOral = $("#tcnIncludeOralSurgery").is(":checked");
+            const includeOral = !!INCLUDE_ORAL_SURGERY;
             $root.find(".tcn-os-procedure-text").each(function () {
                 this.required = includeOral;
                 if (!includeOral) {
@@ -2194,7 +2102,7 @@
         }
 
         function getFirstInvalidOralSurgeryConsentField() {
-            if (!$("#tcnIncludeOralSurgery").is(":checked")) {
+            if (!INCLUDE_ORAL_SURGERY) {
                 return null;
             }
 
@@ -2310,7 +2218,7 @@
             const includeInitials = options.includeInitials !== false;
             const initialsOnly = !!options.initialsOnly;
 
-            if (!$("#tcnIncludeDentalTreatment").is(":checked")) {
+            if (!INCLUDE_DENTAL_TREATMENT) {
                 return null;
             }
 
@@ -2424,9 +2332,6 @@
 
             return false;
         }
-
-        $("#tcnIncludeOralSurgery, #tcnIncludeDentalTreatment").on("change", syncFormSelectionUi);
-        $(document).on("change", 'input[name="tcnOralSurgeryDentist"], input[name="tcnDentalTreatmentDentist"]', syncAllDentistForms);
 
         document.addEventListener("tcn-pen-ink-change", function (event) {
             const target = event.target;
