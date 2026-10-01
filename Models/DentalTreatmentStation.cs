@@ -13,6 +13,48 @@ namespace Malama.Models
         public DentalSharedClinicalViewModel SharedClinical { get; set; } = new();
 
         public DentalTreatment? DentalTreatment { get; set; }
+
+        /// <summary>Exam finding Ids scheduled to the logged-in dentist for this service member.</summary>
+        public HashSet<long> AssignedExamFindingIds { get; set; } = new();
+
+        /// <summary>Appointments for the logged-in dentist with their scheduled exam finding Ids.</summary>
+        public List<DentalTreatmentDentistAppointmentGroupDto> DentistAppointmentGroups { get; set; } = new();
+    }
+
+    public class DentalTreatmentDentistAppointmentGroupDto
+    {
+        public long AppointmentId { get; set; }
+
+        public DateTime AppointmentDate { get; set; }
+
+        public string AppointmentStartTime { get; set; } = string.Empty;
+
+        public string AppointmentDuration { get; set; } = string.Empty;
+
+        public int SortOrder { get; set; }
+
+        public List<long> ExamFindingIds { get; set; } = new();
+
+        public string DisplayLabel
+        {
+            get
+            {
+                var datePart = AppointmentDate.ToString("MM/dd/yyyy");
+                var timePart = string.IsNullOrWhiteSpace(AppointmentStartTime)
+                    ? string.Empty
+                    : AppointmentStartTime.Trim();
+                var durationPart = string.IsNullOrWhiteSpace(AppointmentDuration)
+                    ? string.Empty
+                    : $" ({AppointmentDuration.Trim()})";
+
+                if (string.IsNullOrWhiteSpace(timePart))
+                {
+                    return $"Appointment — {datePart}{durationPart}";
+                }
+
+                return $"Appointment — {datePart} at {timePart}{durationPart}";
+            }
+        }
     }
 
     public class DentalTreatmentStationSaveDto
@@ -102,6 +144,10 @@ namespace Malama.Models
         public string? TreatmentDateTime { get; set; }
 
         public string? FindingDateTime { get; set; }
+
+        public long? AppointmentId { get; set; }
+
+        public string? AppointmentLabel { get; set; }
     }
 
     public class DentalTreatmentAnesthesiaDto

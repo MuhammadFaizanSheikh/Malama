@@ -75,11 +75,18 @@ namespace ExcelFilesCompiler.Controllers
                     return View("Index");
                 }
 
-                var data = await _fileUploader.GetDentalTreatmentsByEventIdAsync(parsedEventId);
+                var user = await _userManager.GetUserAsync(User);
+                var eventStaffId = user != null
+                    ? await _dentalTreatmentService.TryGetEventStaffIdForUserAsync(user.Id)
+                    : null;
+
+                var data = eventStaffId.HasValue
+                    ? await _fileUploader.GetDentalTreatmentsByEventIdAsync(parsedEventId, eventStaffId.Value)
+                    : new List<ServiceMembersChild>();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}",
-                    CLASSNAME, methodName, data.Count, eventId);
+                    "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}, EventStaffId={EventStaffId}",
+                    CLASSNAME, methodName, data.Count, eventId, eventStaffId);
 
                 var summary = new Dictionary<string, int>
                 {
@@ -137,22 +144,44 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
-                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
-                if (dentalExam == null
-                    || !string.Equals(dentalExam.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
-                    || !string.Equals(sharedClinical.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
+                var currentUser = await _userManager.GetUserAsync(User);
+                var eventStaffId = currentUser != null
+                    ? await _dentalTreatmentService.TryGetEventStaffIdForUserAsync(currentUser.Id)
+                    : null;
+                var eventManagementId = result.EventId > 0
+                    ? result.EventId
+                    : DentalExamSignatureHelper.TryResolveEventManagementId(User, HttpContext.Session, result.EventId) ?? 0;
+
+                if (!eventStaffId.HasValue
+                    || !await _dentalTreatmentService.IsEligibleForDentalTreatmentAsync(
+                        serviceMembersChildId,
+                        eventManagementId,
+                        eventStaffId.Value))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Not Eligible";
-                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Treatment. Dental Exam must be Completed with DEN Class 3.";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Treatment for the current dentist.";
                     return RedirectToAction(nameof(Index));
                 }
+
+                var dentistAppointmentGroups = await _dentalTreatmentService.GetDentistAppointmentFindingGroupsAsync(
+                    serviceMembersChildId,
+                    eventStaffId.Value);
+                var assignedExamFindingIds = dentistAppointmentGroups
+                    .SelectMany(g => g.ExamFindingIds ?? new List<long>())
+                    .Where(id => id > 0)
+                    .ToHashSet();
+
+                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
+                    ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
 
                 var dentalTreatment = await _dentalTreatmentService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
                 ApplyTreatmentSelectedTeethToSharedClinical(sharedClinical, dentalTreatment);
 
                 ViewBag.EventId = result.EventId;
+                ViewBag.AssignedExamFindingIds = assignedExamFindingIds;
+                ViewBag.DentistAppointmentGroups = dentistAppointmentGroups;
 
                 try
                 {
@@ -191,11 +220,6 @@ namespace ExcelFilesCompiler.Controllers
                         PaImages = new List<DentalXRayPaImage>()
                     };
 
-                var currentUser = await _userManager.GetUserAsync(User);
-                var eventManagementId = DentalExamSignatureHelper.TryResolveEventManagementId(
-                    User,
-                    HttpContext.Session,
-                    result.EventId);
                 var (signatureDisplayName, signatureRoles) = await DentalExamSignatureHelper.ResolveDisplayAsync(
                     dentalExam.DentistSignatureEntered,
                     dentalExam.DentistSignatureUserId,
@@ -228,7 +252,9 @@ namespace ExcelFilesCompiler.Controllers
                     XRayStation = xRayStation,
                     DentalExam = dentalExam,
                     SharedClinical = sharedClinical,
-                    DentalTreatment = dentalTreatment
+                    DentalTreatment = dentalTreatment,
+                    AssignedExamFindingIds = assignedExamFindingIds,
+                    DentistAppointmentGroups = dentistAppointmentGroups
                 };
 
                 return View(pageModel);
@@ -280,17 +306,40 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-                if (dentalExam == null
-                    || !string.Equals(dentalExam.Status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)
-                    || !string.Equals(sharedClinical.DenClass, DentalExamDenClass.Class3, StringComparison.OrdinalIgnoreCase))
+                var eventStaffId = await _dentalTreatmentService.TryGetEventStaffIdForUserAsync(user.Id);
+                var eventManagementId = serviceMemberResult.EventId > 0
+                    ? serviceMemberResult.EventId
+                    : DentalExamSignatureHelper.TryResolveEventManagementId(
+                        User,
+                        HttpContext.Session,
+                        serviceMemberResult.EventId) ?? 0;
+
+                if (!eventStaffId.HasValue
+                    || !await _dentalTreatmentService.IsEligibleForDentalTreatmentAsync(
+                        dto.ServiceMembersChildId,
+                        eventManagementId,
+                        eventStaffId.Value))
                 {
                     TempData["ResponseStatus"] = "error";
                     TempData["ResponseTitle"] = "Not Eligible";
-                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Treatment.";
+                    TempData["ResponseMessage"] = "This service member is not eligible for Dental Treatment for the current dentist.";
                     return RedirectToAction(nameof(Index));
                 }
+
+                var assignedExamFindingIds = await _dentalTreatmentService.GetAssignedExamFindingIdsAsync(
+                    dto.ServiceMembersChildId,
+                    eventStaffId.Value);
+
+                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                if (dentalExam == null || dentalExam.Id <= 0)
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Not Eligible";
+                    TempData["ResponseMessage"] = "Dental Exam is required before saving Dental Treatment.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 
                 dto.DentalExamId = dentalExam.Id;
                 dto.Findings = DentalTreatmentJson.ParseList<DentalTreatmentFindingFormDto>(dto.FindingsJson);
@@ -299,7 +348,11 @@ namespace ExcelFilesCompiler.Controllers
                 dto.OverallNotes = DentalTreatmentJson.ParseList<DentalTreatmentOverallNoteDto>(dto.OverallNotesJson);
                 dto.PsrSelectedTeeth = DentalTreatmentValidator.NormalizeSelectedTeeth(dto.PsrSelectedTeeth);
 
-                var validationError = DentalTreatmentValidator.ValidateSaveDto(dto, dentalExam, sharedClinical.Findings);
+                var validationError = DentalTreatmentValidator.ValidateSaveDto(
+                    dto,
+                    dentalExam,
+                    sharedClinical.Findings,
+                    assignedExamFindingIds);
                 if (!string.IsNullOrWhiteSpace(validationError))
                 {
                     TempData["ResponseStatus"] = "error";
@@ -308,7 +361,11 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
-                await _dentalTreatmentService.SaveOrUpdateFromFormDataAsync(dto, user.UserName ?? user.Id, user.Id);
+                await _dentalTreatmentService.SaveOrUpdateFromFormDataAsync(
+                    dto,
+                    user.UserName ?? user.Id,
+                    user.Id,
+                    assignedExamFindingIds);
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";

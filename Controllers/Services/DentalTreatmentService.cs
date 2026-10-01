@@ -178,10 +178,143 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task SaveOrUpdateFromFormDataAsync(DentalTreatmentStationSaveDto dto, string userName, string userId)
+        public async Task<long?> TryGetEventStaffIdForUserAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return null;
+            }
+
+            var staff = await _unitOfWork.EventStaff
+                .GetWithIncludeNoTracking(es => es.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            return staff?.Id > 0 ? staff.Id : null;
+        }
+
+        public async Task<bool> IsEligibleForDentalTreatmentAsync(
+            long serviceMembersChildId,
+            long eventId,
+            long eventStaffId)
+        {
+            if (serviceMembersChildId <= 0 || eventId <= 0 || eventStaffId <= 0)
+            {
+                return false;
+            }
+
+            return await _unitOfWork.ServiceMembersChild
+                .GetWithIncludeNoTracking(
+                    c => c.Id == serviceMembersChildId &&
+                         c.ServiceMembersParent.EventManagement.Id == eventId &&
+                         c.CheckIn == AppConstants.YesNo.Yes &&
+                         c.DentalTreatmentCoordinatorRecord != null &&
+                         c.DentalTreatmentCoordinatorRecord.Appointments.Any(a => a.EventStaffId == eventStaffId))
+                .AnyAsync();
+        }
+
+        public async Task<HashSet<long>> GetAssignedExamFindingIdsAsync(
+            long serviceMembersChildId,
+            long eventStaffId)
+        {
+            var groups = await GetDentistAppointmentFindingGroupsAsync(serviceMembersChildId, eventStaffId);
+            return groups
+                .SelectMany(g => g.ExamFindingIds ?? new List<long>())
+                .Where(id => id > 0)
+                .ToHashSet();
+        }
+
+        public async Task<List<DentalTreatmentDentistAppointmentGroupDto>> GetDentistAppointmentFindingGroupsAsync(
+            long serviceMembersChildId,
+            long eventStaffId)
+        {
+            if (serviceMembersChildId <= 0 || eventStaffId <= 0)
+            {
+                return new List<DentalTreatmentDentistAppointmentGroupDto>();
+            }
+
+            var appointments = await _unitOfWork.DentalAppointment
+                .GetWithIncludeNoTracking(
+                    a => a.EventStaffId == eventStaffId
+                         && a.DentalTreatmentCoordinator.ServiceMembersChildId == serviceMembersChildId)
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.SortOrder)
+                .ThenBy(a => a.Id)
+                .ToListAsync();
+
+            if (appointments.Count == 0)
+            {
+                return new List<DentalTreatmentDentistAppointmentGroupDto>();
+            }
+
+            // Stable time ordering for same-day appointments (stored as display strings).
+            appointments = appointments
+                .OrderBy(a => a.AppointmentDate.Date)
+                .ThenBy(a => TryParseAppointmentStartTime(a.AppointmentStartTime) ?? TimeSpan.MaxValue)
+                .ThenBy(a => a.SortOrder)
+                .ThenBy(a => a.Id)
+                .ToList();
+
+            var appointmentIds = appointments.Select(a => a.Id).ToList();
+            var links = await _unitOfWork.DentalAppointmentFinding
+                .GetWithIncludeNoTracking(f => appointmentIds.Contains(f.AppointmentId))
+                .ToListAsync();
+
+            var groups = appointments.Select(a => new DentalTreatmentDentistAppointmentGroupDto
+            {
+                AppointmentId = a.Id,
+                AppointmentDate = a.AppointmentDate,
+                AppointmentStartTime = a.AppointmentStartTime ?? string.Empty,
+                AppointmentDuration = a.AppointmentDuration ?? string.Empty,
+                SortOrder = a.SortOrder,
+                ExamFindingIds = links
+                    .Where(l => l.AppointmentId == a.Id && l.DentalFindingId > 0)
+                    .Select(l => l.DentalFindingId)
+                    .Distinct()
+                    .ToList()
+            }).ToList();
+
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}, AppointmentCount={AppointmentCount}, FindingCount={FindingCount}",
+                CLASSNAME,
+                nameof(GetDentistAppointmentFindingGroupsAsync),
+                serviceMembersChildId,
+                eventStaffId,
+                groups.Count,
+                groups.Sum(g => g.ExamFindingIds.Count));
+
+            return groups;
+        }
+
+        private static TimeSpan? TryParseAppointmentStartTime(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            if (DateTime.TryParse(
+                    value.Trim(),
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None,
+                    out var parsed))
+            {
+                return parsed.TimeOfDay;
+            }
+
+            return null;
+        }
+
+        public async Task SaveOrUpdateFromFormDataAsync(
+            DentalTreatmentStationSaveDto dto,
+            string userName,
+            string userId,
+            IReadOnlySet<long> assignedExamFindingIds)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
             IDbContextTransaction? transaction = null;
+            var assignedIds = assignedExamFindingIds != null
+                ? new HashSet<long>(assignedExamFindingIds)
+                : new HashSet<long>();
 
             try
             {
@@ -206,37 +339,41 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (existing != null)
                 {
                     _mapper.Map(dto, existing);
-                    existing.Status = DentalTreatmentValidator.ComputeStatus(dto.SmFinalClassification, dto.Findings);
                     existing.UpdatedBy = userId;
                     existing.UpdatedOn = DateTime.Now;
 
-                    ReplaceChildren(existing, dto, userId);
+                    ReplaceChildren(existing, dto, userId, assignedIds);
+                    existing.Status = DentalTreatmentValidator.ComputeStatusFromPersisted(
+                        existing.SmFinalClassification,
+                        existing.Findings);
                     await _unitOfWork.SaveAsync();
                     await transaction.CommitAsync();
 
                     _logger.LogInformation(
                         "{ClassName}, {MethodName}, Dental treatment updated. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}",
                         CLASSNAME, methodName, existing.Id, dto.ServiceMembersChildId, userName, existing.Status,
-                        dto.Findings.Count, dto.PsrSelectedTeeth.Count);
+                        existing.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count);
                     return;
                 }
 
                 var entity = _mapper.Map<DentalTreatment>(dto);
-                entity.Status = DentalTreatmentValidator.ComputeStatus(dto.SmFinalClassification, dto.Findings);
                 entity.AddedBy = userId;
                 entity.AddedOn = DateTime.Now;
 
                 await _unitOfWork.DentalTreatment.AddAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                ReplaceChildren(entity, dto, userId);
+                ReplaceChildren(entity, dto, userId, assignedIds);
+                entity.Status = DentalTreatmentValidator.ComputeStatusFromPersisted(
+                    entity.SmFinalClassification,
+                    entity.Findings);
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Dental treatment created. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}",
                     CLASSNAME, methodName, entity.Id, dto.ServiceMembersChildId, userName, entity.Status,
-                    dto.Findings.Count, dto.PsrSelectedTeeth.Count);
+                    entity.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count);
             }
             catch (Exception ex)
             {
@@ -431,22 +568,42 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        private void ReplaceChildren(DentalTreatment target, DentalTreatmentStationSaveDto dto, string userId)
+        private void ReplaceChildren(
+            DentalTreatment target,
+            DentalTreatmentStationSaveDto dto,
+            string userId,
+            ISet<long> assignedExamFindingIds)
         {
-            ReplaceFindings(target, dto.Findings, userId);
+            ReplaceFindings(target, dto.Findings, userId, assignedExamFindingIds);
             ReplaceSelectedTeeth(target, dto.PsrSelectedTeeth);
             ReplaceAnesthesia(target, dto.AnesthesiaRecords);
             ReplacePrescriptions(target, dto.Prescriptions, userId);
             ReplaceOverallNotes(target, dto.OverallNotes, userId);
         }
 
-        private void ReplaceFindings(DentalTreatment target, List<DentalTreatmentFindingFormDto> findings, string userId)
+        private void ReplaceFindings(
+            DentalTreatment target,
+            List<DentalTreatmentFindingFormDto> findings,
+            string userId,
+            ISet<long> assignedExamFindingIds)
         {
             target.Findings ??= new List<DentalTreatmentFinding>();
-            if (target.Findings.Count > 0)
+            var assignedIds = assignedExamFindingIds ?? new HashSet<long>();
+
+            var toRemove = target.Findings
+                .Where(f => DentalTreatmentEligibilityHelper.IsInCurrentDentistFindingScope(
+                    f,
+                    assignedIds,
+                    userId))
+                .ToList();
+
+            if (toRemove.Count > 0)
             {
-                _unitOfWork.DentalTreatmentFinding.RemoveRange(target.Findings.ToList());
-                target.Findings.Clear();
+                _unitOfWork.DentalTreatmentFinding.RemoveRange(toRemove);
+                foreach (var finding in toRemove)
+                {
+                    target.Findings.Remove(finding);
+                }
             }
 
             foreach (var (finding, index) in findings.Select((item, index) => (item, index)))
@@ -459,7 +616,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (!isTreatmentOrigin)
                 {
-                    if (examFindingId.GetValueOrDefault() <= 0)
+                    if (examFindingId.GetValueOrDefault() <= 0
+                        || !assignedIds.Contains(examFindingId.GetValueOrDefault()))
                     {
                         continue;
                     }
@@ -493,6 +651,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     entity.IsPrimaryTooth = finding.IsPrimaryTooth;
                     entity.AffectedTooth = finding.AffectedTooth?.Trim();
                     entity.DiseaseConditionType = finding.DiseaseConditionType?.Trim();
+                    entity.DentistProfessional = !string.IsNullOrWhiteSpace(finding.DentistProfessional)
+                        ? finding.DentistProfessional
+                        : userId;
                 }
                 else
                 {

@@ -15,7 +15,7 @@ namespace ExcelFilesCompiler.Interfaces
         Task<List<ServiceMembersChild>> GetDentalCoordinatorByEventIdAsync(long eventId);
         Task<List<ServiceMembersChild>> GetDentalXRayStationByEventIdAsync(long eventId, string? status = null);
         Task<List<ServiceMembersChild>> GetDentalExamsByEventIdAsync(long eventId, string? status = null);
-        Task<List<ServiceMembersChild>> GetDentalTreatmentsByEventIdAsync(long eventId);
+        Task<List<ServiceMembersChild>> GetDentalTreatmentsByEventIdAsync(long eventId, long eventStaffId);
         Task<PostEventLabStationAnalysisDto?> GetPostEventLabStationAnalysisDtoAsync(long serviceMembersChildId);
         Task<List<ServiceMembersChild>> GetPreAndPostLabStationByEventIdAsync(long eventId);
         Task<List<ServiceMembersChild>> GetPreAndPostImmunizationStationByEventIdAsync(long eventId);

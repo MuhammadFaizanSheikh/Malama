@@ -8,7 +8,26 @@ namespace ExcelFilesCompiler.Interfaces
 
         Task<DentalTreatmentCoordinator?> GetCoordinatorByServiceMembersChildIdAsync(long serviceMembersChildId);
 
-        Task SaveOrUpdateFromFormDataAsync(DentalTreatmentStationSaveDto dto, string userName, string userId);
+        Task<long?> TryGetEventStaffIdForUserAsync(string userId);
+
+        Task<bool> IsEligibleForDentalTreatmentAsync(
+            long serviceMembersChildId,
+            long eventId,
+            long eventStaffId);
+
+        Task<HashSet<long>> GetAssignedExamFindingIdsAsync(
+            long serviceMembersChildId,
+            long eventStaffId);
+
+        Task<List<DentalTreatmentDentistAppointmentGroupDto>> GetDentistAppointmentFindingGroupsAsync(
+            long serviceMembersChildId,
+            long eventStaffId);
+
+        Task SaveOrUpdateFromFormDataAsync(
+            DentalTreatmentStationSaveDto dto,
+            string userName,
+            string userId,
+            IReadOnlySet<long> assignedExamFindingIds);
 
         /// <summary>
         /// Upserts Treatment Coordinator details, documents metadata, and appointments on DentalTreatmentCoordinator.

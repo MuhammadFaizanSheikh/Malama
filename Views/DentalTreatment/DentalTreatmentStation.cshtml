@@ -520,6 +520,9 @@
             treatmentFindingsViewData["CurrentUserId"] = ViewBag.CurrentUserId as string ?? string.Empty;
             treatmentFindingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
             treatmentFindingsViewData["CanEditTreatment"] = isDtDentist;
+            treatmentFindingsViewData["AssignedExamFindingIds"] = Model.AssignedExamFindingIds ?? new HashSet<long>();
+            treatmentFindingsViewData["DentistAppointmentGroups"] = Model.DentistAppointmentGroups
+                ?? new List<DentalTreatmentDentistAppointmentGroupDto>();
             treatmentFindingsViewData["DentalTreatment"] = dentalTreatment;
         }
         @await Html.PartialAsync("_DentalTreatmentFindingsSection", sharedClinical, treatmentFindingsViewData)

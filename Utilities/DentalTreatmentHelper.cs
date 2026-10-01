@@ -89,7 +89,8 @@ namespace ExcelFilesCompiler.Utilities
         public static string? ValidateSaveDto(
             DentalTreatmentStationSaveDto dto,
             DentalExam exam,
-            IEnumerable<DentalFinding>? sharedFindings = null)
+            IEnumerable<DentalFinding>? sharedFindings = null,
+            ISet<long>? allowedExamFindingIds = null)
         {
             if (dto.ServiceMembersChildId <= 0)
             {
@@ -107,10 +108,14 @@ namespace ExcelFilesCompiler.Utilities
                 return "SM Final Classification is invalid.";
             }
 
-            var class3FindingIds = new HashSet<long>(
-                (sharedFindings ?? Array.Empty<DentalFinding>())
-                    .Where(f => string.Equals(f.Classification, DentalFindingConstants.ClassificationClass3, StringComparison.OrdinalIgnoreCase))
-                    .Select(f => f.Id));
+            var allowedIds = allowedExamFindingIds
+                ?? new HashSet<long>(
+                    (sharedFindings ?? Array.Empty<DentalFinding>())
+                        .Where(f => string.Equals(
+                            f.Classification,
+                            DentalFindingConstants.ClassificationClass3,
+                            StringComparison.OrdinalIgnoreCase))
+                        .Select(f => f.Id));
 
             for (var i = 0; i < dto.Findings.Count; i++)
             {
@@ -122,9 +127,9 @@ namespace ExcelFilesCompiler.Utilities
 
                 if (!isTreatmentOrigin)
                 {
-                    if (examFindingId <= 0 || !class3FindingIds.Contains(examFindingId))
+                    if (examFindingId <= 0 || !allowedIds.Contains(examFindingId))
                     {
-                        return "One or more treatment findings do not match a Class 3 Dental Exam finding.";
+                        return "One or more treatment findings are not assigned to the current dentist.";
                     }
 
                     continue;
@@ -291,6 +296,28 @@ namespace ExcelFilesCompiler.Utilities
             foreach (var finding in list)
             {
                 var status = ResolveFindingTreatmentStatus(finding);
+                if (!string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(status, "Complete with Reason", StringComparison.OrdinalIgnoreCase))
+                {
+                    return AppConstants.Status.Pending;
+                }
+            }
+
+            return AppConstants.Status.Completed;
+        }
+
+        public static string ComputeStatusFromPersisted(
+            string? smFinalClassification,
+            IEnumerable<DentalTreatmentFinding>? findings)
+        {
+            if (string.IsNullOrWhiteSpace(smFinalClassification))
+            {
+                return AppConstants.Status.Pending;
+            }
+
+            foreach (var finding in findings ?? Enumerable.Empty<DentalTreatmentFinding>())
+            {
+                var status = finding.TreatmentStatus?.Trim();
                 if (!string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase)
                     && !string.Equals(status, "Complete with Reason", StringComparison.OrdinalIgnoreCase))
                 {

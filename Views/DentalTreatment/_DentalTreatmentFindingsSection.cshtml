@@ -12,6 +12,17 @@
     var currentUserDisplayName = ViewData["CurrentUserDisplayName"] as string ?? string.Empty;
     var canEditTreatment = ViewData["CanEditTreatment"] as bool?
         ?? (ViewBag.IsDtDentist == true);
+    var dentistAppointmentGroups = ViewData["DentistAppointmentGroups"] as List<DentalTreatmentDentistAppointmentGroupDto>
+        ?? new List<DentalTreatmentDentistAppointmentGroupDto>();
+    var assignedExamFindingIds = dentistAppointmentGroups
+        .SelectMany(g => g.ExamFindingIds ?? new List<long>())
+        .Where(id => id > 0)
+        .ToHashSet();
+    if (assignedExamFindingIds.Count == 0
+        && ViewData["AssignedExamFindingIds"] is IEnumerable<long> assignedIds)
+    {
+        assignedExamFindingIds = assignedIds.ToHashSet();
+    }
     var dentalTreatment = ViewData["DentalTreatment"] as DentalTreatment
         ?? ViewBag.DentalTreatment as DentalTreatment;
     var treatmentFindingsByExamFindingId = (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
@@ -20,57 +31,71 @@
             && f.DentalFindingId.Value > 0)
         .GroupBy(f => f.DentalFindingId!.Value)
         .ToDictionary(g => g.Key, g => g.First());
+    var examFindingsById = (exam.Findings ?? Enumerable.Empty<DentalFinding>())
+        .Where(f => f.Id > 0)
+        .GroupBy(f => f.Id)
+        .ToDictionary(g => g.Key, g => g.First());
     var findings = new List<DentalTreatmentFindingFormDto>();
 
-    foreach (var f in (exam.Findings ?? Enumerable.Empty<DentalFinding>())
-        .Where(f => string.Equals(
-            f.Classification,
-            DentalFindingConstants.ClassificationClass3,
-            StringComparison.OrdinalIgnoreCase))
-        .OrderBy(f => f.SortOrder))
+    foreach (var group in dentistAppointmentGroups)
     {
-        var dto = DentalFindingMapper.ToDto(f);
-        treatmentFindingsByExamFindingId.TryGetValue(f.Id, out var treatmentFinding);
-        findings.Add(new DentalTreatmentFindingFormDto
+        foreach (var findingId in (group.ExamFindingIds ?? new List<long>()).Where(id => id > 0))
         {
-            Id = treatmentFinding?.Id ?? 0,
-            DentalFindingId = f.Id,
-            Origin = DentalTreatmentFindingOrigin.Exam,
-            IsTreatmentOnly = false,
-            IsPrimaryTooth = dto.IsPrimaryTooth,
-            AffectedTooth = dto.AffectedTooth,
-            DiseaseConditionType = dto.DiseaseConditionType,
-            AffectedSurfaces = dto.AffectedSurfaces,
-            CdtCodes = dto.CdtCodes,
-            CdtCodesNotes = dto.CdtCodesNotes,
-            DescriptionDetails = dto.DescriptionDetails,
-            Classification = dto.Classification,
-            SortOrder = dto.SortOrder,
-            ExaminationAddedBy = dto.ExaminationAddedBy,
-            ExaminationAddedOn = dto.ExaminationAddedOn,
-            ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
-            ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
-            TreatmentCompleted = treatmentFinding?.TreatmentCompleted,
-            PostServiceTreatment = treatmentFinding != null
-                ? DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson)
-                : new List<string>(),
-            TreatmentCdtCodes = treatmentFinding != null
-                ? DentalTreatmentJson.DeserializeList(treatmentFinding.TreatmentCdtCodesJson)
-                : new List<string>(),
-            Reason = treatmentFinding?.Reason,
-            Notes = treatmentFinding?.Notes,
-            FinalDrc = treatmentFinding?.ProceduredDrc,
-            DentistProfessional = treatmentFinding?.DentistProfessional,
-            TreatmentStatus = treatmentFinding?.TreatmentStatus,
-            TreatmentDateTime = treatmentFinding?.TreatmentDateTime,
-            FindingDateTime = treatmentFinding?.FindingDateTime
-        });
+            if (!examFindingsById.TryGetValue(findingId, out var f))
+            {
+                continue;
+            }
+
+            var dto = DentalFindingMapper.ToDto(f);
+            treatmentFindingsByExamFindingId.TryGetValue(f.Id, out var treatmentFinding);
+            findings.Add(new DentalTreatmentFindingFormDto
+            {
+                Id = treatmentFinding?.Id ?? 0,
+                DentalFindingId = f.Id,
+                Origin = DentalTreatmentFindingOrigin.Exam,
+                IsTreatmentOnly = false,
+                IsPrimaryTooth = dto.IsPrimaryTooth,
+                AffectedTooth = dto.AffectedTooth,
+                DiseaseConditionType = dto.DiseaseConditionType,
+                AffectedSurfaces = dto.AffectedSurfaces,
+                CdtCodes = dto.CdtCodes,
+                CdtCodesNotes = dto.CdtCodesNotes,
+                DescriptionDetails = dto.DescriptionDetails,
+                Classification = dto.Classification,
+                SortOrder = dto.SortOrder,
+                ExaminationAddedBy = dto.ExaminationAddedBy,
+                ExaminationAddedOn = dto.ExaminationAddedOn,
+                ExaminationUpdatedBy = dto.ExaminationUpdatedBy,
+                ExaminationUpdatedOn = dto.ExaminationUpdatedOn,
+                TreatmentCompleted = treatmentFinding?.TreatmentCompleted,
+                PostServiceTreatment = treatmentFinding != null
+                    ? DentalTreatmentJson.DeserializeList(treatmentFinding.PostServiceTreatmentJson)
+                    : new List<string>(),
+                TreatmentCdtCodes = treatmentFinding != null
+                    ? DentalTreatmentJson.DeserializeList(treatmentFinding.TreatmentCdtCodesJson)
+                    : new List<string>(),
+                Reason = treatmentFinding?.Reason,
+                Notes = treatmentFinding?.Notes,
+                FinalDrc = treatmentFinding?.ProceduredDrc,
+                DentistProfessional = treatmentFinding?.DentistProfessional,
+                TreatmentStatus = treatmentFinding?.TreatmentStatus,
+                TreatmentDateTime = treatmentFinding?.TreatmentDateTime,
+                FindingDateTime = treatmentFinding?.FindingDateTime,
+                AppointmentId = group.AppointmentId,
+                AppointmentLabel = group.DisplayLabel
+            });
+        }
     }
 
     foreach (var treatmentFinding in (dentalTreatment?.Findings ?? Enumerable.Empty<DentalTreatmentFinding>())
         .Where(f => DentalTreatmentFindingOrigin.IsTreatmentOrigin(f.Origin)
             || ((!f.DentalFindingId.HasValue || f.DentalFindingId.Value <= 0)
                 && !DentalTreatmentFindingOrigin.IsExamOrigin(f.Origin)))
+        .Where(f => !string.IsNullOrWhiteSpace(currentUserId)
+            && string.Equals(
+                f.DentistProfessional?.Trim(),
+                currentUserId.Trim(),
+                StringComparison.Ordinal))
         .OrderBy(f => f.SortOrder))
     {
         findings.Add(new DentalTreatmentFindingFormDto
@@ -95,7 +120,9 @@
             DentistProfessional = treatmentFinding.DentistProfessional,
             TreatmentStatus = treatmentFinding.TreatmentStatus,
             TreatmentDateTime = treatmentFinding.TreatmentDateTime,
-            FindingDateTime = treatmentFinding.FindingDateTime
+            FindingDateTime = treatmentFinding.FindingDateTime,
+            AppointmentId = null,
+            AppointmentLabel = "Additional findings (not from appointment)"
         });
     }
 
@@ -160,6 +187,15 @@
 
     #treatmentFindingsTable tr.finding-main-row.finding-row-expanded {
         background-color: rgba(120, 130, 221, 0.06);
+    }
+
+    #treatmentFindingsTable tr.finding-appointment-group-row > td {
+        background-color: rgba(80, 90, 201, 0.12);
+        color: rgba(40, 50, 120, 1);
+        font-weight: 600;
+        font-size: 0.92rem;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
     }
 
     #treatmentFindingsTable tr.finding-detail-row > td {
@@ -635,7 +671,9 @@
                     reason: item.reason || ""
                 }),
                 treatmentDateTime: item.treatmentDateTime || "",
-                findingDateTime: item.findingDateTime || ""
+                findingDateTime: item.findingDateTime || "",
+                appointmentId: item.appointmentId && item.appointmentId > 0 ? item.appointmentId : null,
+                appointmentLabel: item.appointmentLabel || ""
             };
         }
 
@@ -1236,8 +1274,30 @@
                 return;
             }
 
+            let lastGroupKey = null;
+            let groupFindingNumber = 0;
+
             treatmentFindings.forEach(function (finding, index) {
                 const isTreatmentOrigin = finding.origin === FINDING_ORIGIN_TREATMENT || !!finding.isTreatmentOnly;
+                const groupKey = finding.appointmentId
+                    ? ("appt-" + finding.appointmentId)
+                    : ("extra-" + (finding.appointmentLabel || "additional"));
+                const groupLabel = finding.appointmentLabel
+                    || (finding.appointmentId
+                        ? ("Appointment #" + finding.appointmentId)
+                        : "Additional findings (not from appointment)");
+
+                if (groupKey !== lastGroupKey) {
+                    lastGroupKey = groupKey;
+                    groupFindingNumber = 0;
+                    $tbody.append(
+                        "<tr class='finding-appointment-group-row'>" +
+                        "<td colspan='11'>" + escapeHtml(groupLabel) + "</td>" +
+                        "</tr>"
+                    );
+                }
+
+                groupFindingNumber += 1;
                 const surfaces = isTreatmentOrigin
                     ? "-"
                     : ((finding.affectedSurfaces || []).join(", ") || "-");
@@ -1286,7 +1346,7 @@
                 $tbody.append(
                     "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
                     "<td class='text-center'>" + toggleButton + "</td>" +
-                    "<td>" + (index + 1) + "</td>" +
+                    "<td>" + groupFindingNumber + "</td>" +
                     "<td>" + formatOriginBadge(finding) + "</td>" +
                     "<td>" + escapeHtml(toothLabel) + "</td>" +
                     "<td>" + escapeHtml(surfaces) + "</td>" +
@@ -1337,7 +1397,9 @@
                     dentistProfessional: item.dentistProfessional || "",
                     treatmentStatus: item.treatmentStatus || "",
                     treatmentDateTime: item.treatmentDateTime || "",
-                    findingDateTime: item.findingDateTime || ""
+                    findingDateTime: item.findingDateTime || "",
+                    appointmentId: item.appointmentId || null,
+                    appointmentLabel: item.appointmentLabel || ""
                 };
             });
             $("#TreatmentFindingsJson").val(JSON.stringify(payload));
@@ -1877,7 +1939,9 @@
                     dentistProfessional: validated.dentistProfessional,
                     treatmentStatus: validated.treatmentStatus,
                     treatmentDateTime: validated.treatmentDateTime,
-                    findingDateTime: validated.findingDateTime
+                    findingDateTime: validated.findingDateTime,
+                    appointmentId: null,
+                    appointmentLabel: "Additional findings (not from appointment)"
                 });
             } else {
                 if (isTreatmentOnly && validated.clinical) {
