@@ -14,7 +14,7 @@ namespace ExcelFilesCompiler.Interfaces
 
 
 
-        Task<TreatmentConsentStationViewModel?> GetStationPageAsync(long serviceMembersChildId);
+        Task<TreatmentConsentStationViewModel?> GetStationPageAsync(long serviceMembersChildId, long eventId);
 
 
 
@@ -24,7 +24,8 @@ namespace ExcelFilesCompiler.Interfaces
 
         Task<TreatmentConsentStationSaveResult> SaveStationAsync(
             TreatmentConsentStationSaveDto dto,
-            string userId);
+            string userId,
+            long eventId);
 
     }
 

@@ -86,21 +86,28 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         /// <summary>
-        /// Class 3 eligibility (same as Treatment Coordinator) and Treatment Coordinator status Completed.
+        /// Checked in, with a Treatment Coordinator record that has at least one scheduled appointment.
+        /// Appointments must already be loaded on the coordinator. Event membership is enforced by the caller.
         /// </summary>
         public static bool IsEligibleForTreatmentConsent(
             ServiceMembersChild? serviceMember,
-            DentalExam? exam = null,
-            DentalDenClassRecord? denClass = null,
             DentalTreatmentCoordinator? coordinator = null)
         {
-            if (!IsEligibleForTreatmentCoordinator(serviceMember, exam, denClass))
+            if (serviceMember == null)
             {
                 return false;
             }
 
-            coordinator ??= serviceMember?.DentalTreatmentCoordinatorRecord;
-            return IsTreatmentCoordinatorCompleted(coordinator);
+            if (!string.Equals(
+                    serviceMember.CheckIn?.Trim(),
+                    AppConstants.YesNo.Yes,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            coordinator ??= serviceMember.DentalTreatmentCoordinatorRecord;
+            return coordinator?.Appointments != null && coordinator.Appointments.Count > 0;
         }
 
         /// <summary>

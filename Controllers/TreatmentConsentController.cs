@@ -119,7 +119,15 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var pageModel = await _treatmentConsentService.GetStationPageAsync(serviceMembersChildId);
+                if (!TryGetSessionEventId(out var eventId))
+                {
+                    TempData["ResponseStatus"] = "error";
+                    TempData["ResponseTitle"] = "Invalid EventId";
+                    TempData["ResponseMessage"] = "Invalid EventId";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var pageModel = await _treatmentConsentService.GetStationPageAsync(serviceMembersChildId, eventId);
                 if (pageModel == null)
                 {
                     TempData["ResponseStatus"] = "error";
@@ -175,9 +183,15 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(TreatmentConsentStationSaveResult.Fail("Unauthorized", "Please login and try again."));
                 }
 
+                if (!TryGetSessionEventId(out var eventId))
+                {
+                    return Json(TreatmentConsentStationSaveResult.Fail("Invalid EventId", "Invalid EventId"));
+                }
+
                 var result = await _treatmentConsentService.SaveStationAsync(
                     dto,
-                    user.Id);
+                    user.Id,
+                    eventId);
 
                 if (result.Success)
                 {
@@ -256,7 +270,12 @@ namespace ExcelFilesCompiler.Controllers
                     return Json(TreatmentConsentSmModeResponse.Fail("Please login and try again."));
                 }
 
-                var pageModel = await _treatmentConsentService.GetStationPageAsync(request.ServiceMembersChildId);
+                if (!TryGetSessionEventId(out var eventId))
+                {
+                    return Json(TreatmentConsentSmModeResponse.Fail("Invalid EventId"));
+                }
+
+                var pageModel = await _treatmentConsentService.GetStationPageAsync(request.ServiceMembersChildId, eventId);
                 if (pageModel == null)
                 {
                     return Json(TreatmentConsentSmModeResponse.Fail("Service member not found."));
@@ -355,6 +374,13 @@ namespace ExcelFilesCompiler.Controllers
             return Json(TreatmentConsentSmModeResponse.Ok(
                 isActive: active,
                 serviceMembersChildId: smId));
+        }
+
+        private bool TryGetSessionEventId(out long eventId)
+        {
+            eventId = 0;
+            var raw = HttpContext.Session.GetString("GlobalEventIdLong");
+            return !string.IsNullOrWhiteSpace(raw) && long.TryParse(raw, out eventId) && eventId > 0;
         }
     }
 }

@@ -56,29 +56,12 @@ namespace ExcelFilesCompiler.Controllers.Services
                     throw new ArgumentOutOfRangeException(nameof(eventId), "EventId must be greater than zero.");
                 }
 
-                var class3 = DentalExamDenClass.Class3;
-                var completed = AppConstants.Status.Completed;
-                var needed = AppConstants.NeededOrNA.Needed;
-                var drc3 = DentalStationEligibilityHelper.SmDrcClass3;
-
                 var serviceMembers = await _unitOfWork.ServiceMembersChild
                     .GetWithIncludeNoTracking(
                         c => c.ServiceMembersParent.EventManagement.Id == eventId &&
                              c.CheckIn == AppConstants.YesNo.Yes &&
                              c.DentalTreatmentCoordinatorRecord != null &&
-                             c.DentalTreatmentCoordinatorRecord.Status == completed &&
-                             (
-                                 c.Drc == drc3
-                                 || (
-                                     c.DentalNeeded == needed
-                                     && c.DentalExamRecord != null
-                                     && c.DentalExamRecord.Status == completed
-                                     && c.DentalDenClassRecord != null
-                                     && c.DentalDenClassRecord.DenClass == class3
-                                 )
-                             ),
-                        c => c.DentalExamRecord,
-                        c => c.DentalDenClassRecord,
+                             c.DentalTreatmentCoordinatorRecord.Appointments.Any(),
                         c => c.DentalTreatmentCoordinatorRecord)
                     .ToListAsync();
 
@@ -117,7 +100,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             }
         }
 
-        public async Task<TreatmentConsentStationViewModel?> GetStationPageAsync(long serviceMembersChildId)
+        public async Task<TreatmentConsentStationViewModel?> GetStationPageAsync(
+            long serviceMembersChildId,
+            long eventId)
         {
             const string methodName = nameof(GetStationPageAsync);
             _logger.LogInformation(
@@ -137,7 +122,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         c => c.ServiceMembersParent,
                         c => c.DentalExamRecord,
                         c => c.DentalDenClassRecord,
-                        c => c.DentalTreatmentCoordinatorRecord)
+                        c => c.DentalTreatmentCoordinatorRecord,
+                        c => c.DentalTreatmentCoordinatorRecord.Appointments)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
@@ -145,10 +131,16 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return null;
                 }
 
+                if (serviceMember.ServiceMembersParent?.EventManagementId != eventId)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, ServiceMembersChildId={ServiceMembersChildId} is not in EventId={EventId}",
+                        CLASSNAME, methodName, serviceMembersChildId, eventId);
+                    return null;
+                }
+
                 if (!DentalStationEligibilityHelper.IsEligibleForTreatmentConsent(
                         serviceMember,
-                        serviceMember.DentalExamRecord,
-                        serviceMember.DentalDenClassRecord,
                         serviceMember.DentalTreatmentCoordinatorRecord))
                 {
                     _logger.LogWarning(
@@ -156,8 +148,6 @@ namespace ExcelFilesCompiler.Controllers.Services
                         CLASSNAME, methodName, serviceMembersChildId);
                     return null;
                 }
-
-                var eventId = serviceMember.ServiceMembersParent?.EventManagementId ?? 0;
 
                 var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalQuestionnaire { ServiceMembersChildId = serviceMembersChildId };
@@ -228,7 +218,8 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<TreatmentConsentStationSaveResult> SaveStationAsync(
             TreatmentConsentStationSaveDto dto,
-            string userId)
+            string userId,
+            long eventId)
         {
             const string methodName = nameof(SaveStationAsync);
 
@@ -250,7 +241,8 @@ namespace ExcelFilesCompiler.Controllers.Services
                         c => c.ServiceMembersParent,
                         c => c.DentalExamRecord,
                         c => c.DentalDenClassRecord,
-                        c => c.DentalTreatmentCoordinatorRecord)
+                        c => c.DentalTreatmentCoordinatorRecord,
+                        c => c.DentalTreatmentCoordinatorRecord.Appointments)
                     .FirstOrDefaultAsync();
 
                 if (serviceMember == null)
@@ -258,10 +250,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     return TreatmentConsentStationSaveResult.Fail("Not Found", "Service member not found.");
                 }
 
-                if (!DentalStationEligibilityHelper.IsEligibleForTreatmentConsent(
+                if (serviceMember.ServiceMembersParent?.EventManagementId != eventId
+                    || !DentalStationEligibilityHelper.IsEligibleForTreatmentConsent(
                         serviceMember,
-                        serviceMember.DentalExamRecord,
-                        serviceMember.DentalDenClassRecord,
                         serviceMember.DentalTreatmentCoordinatorRecord))
                 {
                     return TreatmentConsentStationSaveResult.Fail(
