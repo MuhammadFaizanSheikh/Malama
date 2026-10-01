@@ -96,7 +96,9 @@ namespace ExcelFilesCompiler.Controllers.Services
         public byte[] GenerateDentalTreatmentConsentPdf(
             ServiceMembersChild serviceMember,
             TreatmentConsentDentalTreatmentFormDto form,
-            byte[]? signatureBytes)
+            byte[]? signatureBytes,
+            string? ddsDisplayName = null,
+            string? ddsRoles = null)
         {
             using var ms = new MemoryStream();
             var document = new Document(PageSize.LETTER, 42f, 42f, 42f, 42f);
@@ -155,12 +157,37 @@ namespace ExcelFilesCompiler.Controllers.Services
                 _boldSmallFont)
             { SpacingAfter = 10f });
 
-            document.Add(new Paragraph("Signature of Patient, Parent, Guardian, or Personal Representative", _sectionFont)
+            var ddsName = string.IsNullOrWhiteSpace(ddsDisplayName) ? "____________________" : ddsDisplayName.Trim();
+            var ddsRoleText = string.IsNullOrWhiteSpace(ddsRoles) ? "____________________" : ddsRoles.Trim();
+            var ddsDate = form.DdsAcknowledged && form.DdsAcknowledgedOn.HasValue
+                ? form.DdsAcknowledgedOn.Value.ToString("MM/dd/yyyy")
+                : "____________________";
+
+            var signatureTable = new PdfPTable(2)
             {
-                SpacingAfter = 4f
-            });
-            AddSignatureImage(document, signatureBytes);
-            document.Add(new Paragraph($"Date: {consentDate}", _bodyFont) { SpacingBefore = 6f });
+                WidthPercentage = 100f,
+                SpacingBefore = 4f,
+                SpacingAfter = 6f
+            };
+            signatureTable.SetWidths(new float[] { 1f, 1f });
+
+            var patientCell = new PdfPCell { Border = Rectangle.NO_BORDER, PaddingRight = 10f };
+            patientCell.AddElement(new Paragraph(
+                "Signature of Patient, Parent, Guardian, or Personal Representative",
+                _sectionFont)
+            { SpacingAfter = 4f });
+            AddSignatureImageToElement(patientCell, signatureBytes);
+            patientCell.AddElement(new Paragraph($"Date: {consentDate}", _bodyFont) { SpacingBefore = 6f });
+            signatureTable.AddCell(patientCell);
+
+            var ddsCell = new PdfPCell { Border = Rectangle.NO_BORDER, PaddingLeft = 10f };
+            ddsCell.AddElement(new Paragraph("DDS Signature", _sectionFont) { SpacingAfter = 6f });
+            ddsCell.AddElement(new Paragraph(ddsName, _bodyFont) { SpacingAfter = 3f });
+            ddsCell.AddElement(new Paragraph(ddsRoleText, _bodyFont) { SpacingAfter = 3f });
+            ddsCell.AddElement(new Paragraph(ddsDate, _bodyFont) { SpacingAfter = 3f });
+            signatureTable.AddCell(ddsCell);
+
+            document.Add(signatureTable);
 
             document.Close();
             return ms.ToArray();
@@ -340,6 +367,26 @@ namespace ExcelFilesCompiler.Controllers.Services
             catch
             {
                 document.Add(new Paragraph("[Signature could not be rendered]", _smallFont) { SpacingAfter = 4f });
+            }
+        }
+
+        private void AddSignatureImageToElement(PdfPCell cell, byte[]? signatureBytes)
+        {
+            if (signatureBytes == null || signatureBytes.Length == 0)
+            {
+                cell.AddElement(new Paragraph("[Signature not on file]", _smallFont) { SpacingAfter = 4f });
+                return;
+            }
+
+            try
+            {
+                var image = Image.GetInstance(signatureBytes);
+                image.ScaleToFit(220f, 80f);
+                cell.AddElement(image);
+            }
+            catch
+            {
+                cell.AddElement(new Paragraph("[Signature could not be rendered]", _smallFont) { SpacingAfter = 4f });
             }
         }
 

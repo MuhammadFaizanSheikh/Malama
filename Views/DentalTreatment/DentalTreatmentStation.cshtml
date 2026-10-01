@@ -57,6 +57,92 @@
     }
     .condition-detail { display: none; }
     .condition-item { margin-bottom: 0.75rem; }
+    .dt-forms-card {
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        border-radius: 12px;
+        background: #fbfbfd;
+        padding: 1rem 1.15rem;
+        max-width: 42rem;
+    }
+    .dt-forms-card-group {
+        margin-bottom: 1rem;
+    }
+    .dt-forms-card-group:last-child {
+        margin-bottom: 0;
+    }
+    .dt-forms-card-group-title {
+        margin: 0 0 0.55rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: rgba(80, 90, 201, 1);
+    }
+    .dt-forms-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid rgba(31, 36, 48, 0.08);
+        margin-bottom: 0.45rem;
+    }
+    .dt-forms-row:last-child {
+        margin-bottom: 0;
+    }
+    .dt-forms-row-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #1f2430;
+    }
+    .dt-forms-row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-shrink: 0;
+    }
+    .dt-form-signed-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
+        font-size: 0.95rem;
+    }
+    .dt-form-signed-icon.is-unsigned {
+        background: rgba(220, 53, 69, 0.12);
+        color: #dc3545;
+    }
+    .dt-forms-empty-message {
+        margin: 0;
+        padding: 0.65rem 0.75rem;
+        border-radius: 8px;
+        background: rgba(220, 53, 69, 0.06);
+        border: 1px solid rgba(220, 53, 69, 0.16);
+        color: #b42318;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .dt-form-preview-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 8px;
+        border: 1px solid rgba(80, 90, 201, 0.28);
+        background: rgba(80, 90, 201, 0.08);
+        color: rgba(80, 90, 201, 1);
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+    }
+    .dt-form-preview-btn:hover {
+        background: rgba(80, 90, 201, 0.16);
+        transform: translateY(-1px);
+    }
     .questionnaire-heading {
         display: flex;
         align-items: center;
@@ -419,6 +505,141 @@
 
     <hr class="my-4" />
 
+    <div class="questionnaire-heading" id="consentFormsHeading">
+        <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   id="toggleConsentFormsSectionSwitch"
+                   aria-controls="consentFormsSection"
+                   aria-expanded="false" />
+        </div>
+        <h3 class="mb-0">Consent Forms &amp; Questionnaire</h3>
+    </div>
+
+    <div id="consentFormsSection" style="display:none;">
+        <div class="dt-forms-card" aria-label="Consent forms and questionnaire">
+            <div class="dt-forms-card-group">
+                <h4 class="dt-forms-card-group-title">Consent forms</h4>
+                @if (Model.ConsentFormStatuses == null || Model.ConsentFormStatuses.Count == 0)
+                {
+                    <p class="dt-forms-empty-message" role="status">
+                        No consent forms have been completed yet.
+                    </p>
+                }
+                else
+                {
+                    @foreach (var consentForm in Model.ConsentFormStatuses)
+                    {
+                        var signed = consentForm.IsSigned;
+                        <div class="dt-forms-row"
+                             data-form-kind="@consentForm.FormKind"
+                             data-event-staff-id="@(consentForm.EventStaffId?.ToString() ?? "")">
+                            <span class="dt-forms-row-title">@consentForm.Title</span>
+                            <span class="dt-forms-row-actions">
+                                <span class="dt-form-signed-icon @(signed ? null : "is-unsigned")"
+                                      title="@(signed ? "Signed" : "Not signed")"
+                                      aria-label="@(signed ? "Signed" : "Not signed")">
+                                    <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                </span>
+                                @if (signed)
+                                {
+                                    <button type="button"
+                                            class="dt-form-preview-btn"
+                                            title="Preview"
+                                            aria-label="Preview @consentForm.Title"
+                                            data-preview-kind="@consentForm.FormKind"
+                                            data-event-staff-id="@(consentForm.EventStaffId?.ToString() ?? "")">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                }
+                            </span>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="dt-forms-card-group">
+                <h4 class="dt-forms-card-group-title">Questionnaire</h4>
+                <div class="dt-forms-row">
+                    <span class="dt-forms-row-title">DA5570 (Completed by Service Member)</span>
+                    <span class="dt-forms-row-actions">
+                        <span class="dt-form-signed-icon @(Model.HasQuestionnaire ? null : "is-unsigned")"
+                              title="@(Model.HasQuestionnaire ? "Questionnaire present" : "Questionnaire not present")"
+                              aria-label="@(Model.HasQuestionnaire ? "Questionnaire present" : "Questionnaire not present")">
+                            <i class="fas fa-file-signature" aria-hidden="true"></i>
+                        </span>
+                        @if (Model.HasQuestionnaire)
+                        {
+                            <button type="button"
+                                    class="dt-form-preview-btn"
+                                    title="Preview"
+                                    aria-label="Preview Questionnaire"
+                                    data-preview-kind="questionnaire"
+                                    data-has-questionnaire="true">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
+                        }
+                    </span>
+                </div>
+            </div>
+
+            @if (Model.ShowDdsAcknowledgement)
+            {
+                var canCheckDds = isDtDentist && Model.CanAcknowledgeDds;
+                <div class="dt-forms-card-group" id="ddsAcknowledgementGroup">
+                    <h4 class="dt-forms-card-group-title">DDS Signature on Dental Treatment Consent Form</h4>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="DdsAcknowledged"
+                               name="DdsAcknowledged"
+                               value="true"
+                               data-can-acknowledge="@Model.CanAcknowledgeDds.ToString().ToLowerInvariant()"
+                               @(Model.DdsAcknowledged && Model.CanAcknowledgeDds ? "checked" : null)
+                               @(canCheckDds ? null : "disabled") />
+                        <label class="form-check-label" for="DdsAcknowledged">
+                            By selecting this checkbox, you acknowledge and confirm that you (DDS) have reviewed the consent documentation for Oral Surgery and Treatment procedures.
+                        </label>
+                    </div>
+                    @if (!Model.CanAcknowledgeDds)
+                    {
+                        <p class="text-muted small mb-3" id="ddsAckBlockedHint">
+                            Disabled until the service member signs this dentist's Dental Treatment Consent Form.
+                        </p>
+                    }
+                    <input type="hidden" name="RequiresDdsAcknowledgement" value="true" />
+                    <p class="mb-1">
+                        <strong>Status :</strong>
+                        <span id="ddsAckStatusText">@(Model.DdsAcknowledged && Model.CanAcknowledgeDds ? "Signed" : "Not signed")</span>
+                    </p>
+                    <p class="mb-1">
+                        <strong>Name :</strong>
+                        <span id="ddsAckNameText">@(Model.DdsAcknowledged && Model.CanAcknowledgeDds ? (Model.DdsAcknowledgedDisplayName ?? "") : "")</span>
+                    </p>
+                    <p class="mb-1">
+                        <strong>Roles :</strong>
+                        <span id="ddsAckRolesText">@(Model.DdsAcknowledged && Model.CanAcknowledgeDds ? (Model.DdsAcknowledgedRoles ?? "") : "")</span>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Date of sign :</strong>
+                        <span id="ddsAckDateText">@(Model.DdsAcknowledged && Model.CanAcknowledgeDds && Model.DdsAcknowledgedOn.HasValue ? Model.DdsAcknowledgedOn.Value.ToString("MM/dd/yyyy") : "")</span>
+                    </p>
+                </div>
+            }
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                    data-target-switch="toggleConsentFormsSectionSwitch"
+                    data-target-heading="consentFormsHeading">
+                <i class="fas fa-chevron-up"></i> Collapse Consent Forms &amp; Questionnaire
+            </button>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
     <div class="questionnaire-heading" id="vitalsHeading">
         <div class="form-check form-switch questionnaire-toggle-switch mb-0">
             <input class="form-check-input"
@@ -524,6 +745,8 @@
             treatmentFindingsViewData["DentistAppointmentGroups"] = Model.DentistAppointmentGroups
                 ?? new List<DentalTreatmentDentistAppointmentGroupDto>();
             treatmentFindingsViewData["DentalTreatment"] = dentalTreatment;
+            treatmentFindingsViewData["RequiresDdsAcknowledgement"] = Model.ShowDdsAcknowledgement;
+            treatmentFindingsViewData["DdsAcknowledged"] = Model.DdsAcknowledged && Model.CanAcknowledgeDds;
         }
         @await Html.PartialAsync("_DentalTreatmentFindingsSection", sharedClinical, treatmentFindingsViewData)
 
@@ -745,6 +968,17 @@
             $section.slideUp(200);
         }
         $("#toggleVitalsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
+    }
+
+    function toggleConsentFormsSectionFromSwitch() {
+        const isOn = $("#toggleConsentFormsSectionSwitch").is(":checked");
+        const $section = $("#consentFormsSection");
+        if (isOn) {
+            $section.slideDown(200);
+        } else {
+            $section.slideUp(200);
+        }
+        $("#toggleConsentFormsSectionSwitch").attr("aria-expanded", isOn ? "true" : "false");
     }
 
     function toggleXRaySectionFromSwitch() {
@@ -969,6 +1203,7 @@
         initTreatmentPsrToothChart();
 
         $("#toggleQuestionnaireSectionSwitch").on("change", toggleQuestionnaireSectionFromSwitch);
+        $("#toggleConsentFormsSectionSwitch").on("change", toggleConsentFormsSectionFromSwitch);
         $("#toggleVitalsSectionSwitch").on("change", toggleVitalsSectionFromSwitch);
         $("#toggleXRaySectionSwitch").on("change", toggleXRaySectionFromSwitch);
         $("#toggleSubsequentSectionSwitch").on("change", toggleSubsequentSectionFromSwitch);
@@ -1030,7 +1265,28 @@
 
         initXrayPreviewWidgets();
 
-        $("#SaveDentalTreatmentStation").on("submit", function () {
+        $("#SaveDentalTreatmentStation").on("submit", function (e) {
+            const $ddsCheckbox = $("#DdsAcknowledged");
+            if ($ddsCheckbox.length && !$ddsCheckbox.is(":checked")) {
+                e.preventDefault();
+                const canAcknowledge = $ddsCheckbox.data("can-acknowledge") === true
+                    || String($ddsCheckbox.attr("data-can-acknowledge") || "").toLowerCase() === "true";
+                Swal.fire({
+                    icon: "warning",
+                    title: canAcknowledge ? "DDS Acknowledgment Required" : "Service Member Signature Required",
+                    text: canAcknowledge
+                        ? "Please acknowledge the DDS signature on the Dental Treatment Consent Form before saving."
+                        : "The Dental Treatment Consent Form must be signed by the service member before DDS acknowledgment."
+                });
+                if (!$("#toggleConsentFormsSectionSwitch").is(":checked")) {
+                    $("#toggleConsentFormsSectionSwitch").prop("checked", true).trigger("change");
+                }
+                $("html, body").animate({
+                    scrollTop: $("#ddsAcknowledgementGroup").offset().top - 80
+                }, 250);
+                return false;
+            }
+
             if (typeof window.syncDentalTreatmentFindingsJson === "function") {
                 window.syncDentalTreatmentFindingsJson();
             }
@@ -1066,6 +1322,83 @@
         });
 
         updateDentalTreatmentOverallStatus();
+
+        const DDS_PREVIEW_NAME = @Json.Serialize(Model.DdsAcknowledgedDisplayName ?? "");
+        const DDS_PREVIEW_ROLES = @Json.Serialize(Model.DdsAcknowledgedRoles ?? "");
+        const DDS_SAVED_DATE = @Json.Serialize(Model.DdsAcknowledged && Model.DdsAcknowledgedOn.HasValue
+            ? Model.DdsAcknowledgedOn.Value.ToString("MM/dd/yyyy")
+            : "");
+
+        function formatDdsNow() {
+            const now = new Date();
+            const pad = (n) => (n < 10 ? "0" + n : "" + n);
+            return pad(now.getMonth() + 1) + "/" + pad(now.getDate()) + "/" + now.getFullYear();
+        }
+
+        function syncDdsAcknowledgementUi() {
+            const $checkbox = $("#DdsAcknowledged");
+            if (!$checkbox.length) {
+                return;
+            }
+
+            const isChecked = $checkbox.is(":checked");
+            $("#ddsAckStatusText").text(isChecked ? "Signed" : "Not signed");
+            $("#ddsAckNameText").text(isChecked ? (DDS_PREVIEW_NAME || "") : "");
+            $("#ddsAckRolesText").text(isChecked ? (DDS_PREVIEW_ROLES || "") : "");
+            if (isChecked) {
+                $("#ddsAckDateText").text(DDS_SAVED_DATE || formatDdsNow());
+            } else {
+                $("#ddsAckDateText").text("");
+            }
+
+            if (typeof window.setDentalTreatmentDdsAcknowledged === "function") {
+                window.setDentalTreatmentDdsAcknowledged(isChecked);
+            }
+        }
+
+        $("#DdsAcknowledged").on("change", syncDdsAcknowledgementUi);
+        syncDdsAcknowledgementUi();
+
+        $(document).on("click", ".dt-form-preview-btn", function () {
+            const $btn = $(this);
+            const kind = String($btn.data("preview-kind") || "").trim().toLowerCase();
+            const childId = @sm.Id;
+            const features = "popup=yes,width=980,height=900,menubar=no,toolbar=no,location=yes,status=yes,resizable=yes,scrollbars=yes";
+
+            if (kind === "questionnaire") {
+                if (String($btn.data("has-questionnaire")) !== "true") {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Questionnaire not available",
+                        text: "No questionnaire has been saved for this service member yet."
+                    });
+                    return;
+                }
+
+                const url = "/DentalTreatment/PreviewQuestionnairePdf?serviceMembersChildId=" + encodeURIComponent(childId);
+                window.open(url, "DtQuestionnairePdf", features);
+                return;
+            }
+
+            if (kind === "dental-treatment" || kind === "oral-surgery") {
+                const eventStaffId = String($btn.data("event-staff-id") || "").trim();
+                if (!eventStaffId) {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Consent form not available",
+                        text: "This consent form does not have dentist details yet."
+                    });
+                    return;
+                }
+
+                const url = "/DentalTreatment/PreviewConsentFormPdf"
+                    + "?serviceMembersChildId=" + encodeURIComponent(childId)
+                    + "&formKind=" + encodeURIComponent(kind)
+                    + "&eventStaffId=" + encodeURIComponent(eventStaffId);
+                window.open(url, "DtConsentPdf_" + kind + "_" + eventStaffId, features);
+            }
+        });
+
         $('a.btn-back-confirm').on('click', async function (e) {
             e.preventDefault();
             const url = $(this).attr('href');

@@ -19,6 +19,29 @@ namespace Malama.Models
 
         /// <summary>Appointments for the logged-in dentist with their scheduled exam finding Ids.</summary>
         public List<DentalTreatmentDentistAppointmentGroupDto> DentistAppointmentGroups { get; set; } = new();
+
+        /// <summary>True when a DentalQuestionnaire row exists for this service member.</summary>
+        public bool HasQuestionnaire { get; set; }
+
+        /// <summary>Consent form rows for the logged-in dentist only.</summary>
+        public List<TreatmentCoordinatorConsentFormStatusItem> ConsentFormStatuses { get; set; } = new();
+
+        /// <summary>True when this dentist has a Dental Treatment Consent Form (DDS ack UI applies).</summary>
+        public bool ShowDdsAcknowledgement { get; set; }
+
+        /// <summary>
+        /// True when this dentist's Dental Treatment Consent Form is signed by the service member
+        /// (DDS checkbox may be checked only when this is true).
+        /// </summary>
+        public bool CanAcknowledgeDds { get; set; }
+
+        public bool DdsAcknowledged { get; set; }
+
+        public string? DdsAcknowledgedDisplayName { get; set; }
+
+        public string? DdsAcknowledgedRoles { get; set; }
+
+        public DateTime? DdsAcknowledgedOn { get; set; }
     }
 
     public class DentalTreatmentDentistAppointmentGroupDto
@@ -84,6 +107,11 @@ namespace Malama.Models
         public List<DentalTreatmentPrescriptionDto> Prescriptions { get; set; } = new();
 
         public List<DentalTreatmentOverallNoteDto> OverallNotes { get; set; } = new();
+
+        /// <summary>True when the logged-in dentist has a Dental Treatment Consent Form.</summary>
+        public bool RequiresDdsAcknowledgement { get; set; }
+
+        public bool DdsAcknowledged { get; set; }
     }
 
     public class DentalTreatmentFindingFormDto

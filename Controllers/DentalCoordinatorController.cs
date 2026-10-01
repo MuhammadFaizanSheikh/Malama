@@ -759,10 +759,32 @@ namespace ExcelFilesCompiler.Controllers
                     var signatureBytes = TryLoadConsentSignature(
                         TreatmentConsentFileSaveCoordinator.DentalTreatmentPrefix,
                         form.SignatureFileName);
+
+                    string ddsName = string.Empty;
+                    string ddsRoles = string.Empty;
+                    if (form.DdsAcknowledged && !string.IsNullOrWhiteSpace(form.DdsAcknowledgedByUserId))
+                    {
+                        var ddsUser = await _userManager.FindByIdAsync(form.DdsAcknowledgedByUserId);
+                        if (ddsUser != null)
+                        {
+                            ddsName = await DentalExamSignatureHelper.ResolveDisplayNameAsync(
+                                ddsUser,
+                                _eventStaffService,
+                                _logger);
+                            ddsRoles = await DentalExamSignatureHelper.ResolveEventWiseRolesAsync(
+                                ddsUser.Id,
+                                result.EventId > 0 ? result.EventId : null,
+                                _eventStaffService,
+                                _logger);
+                        }
+                    }
+
                     pdfBytes = _treatmentConsentPdfGenerator.GenerateDentalTreatmentConsentPdf(
                         result.ServiceMembersChild,
                         form,
-                        signatureBytes);
+                        signatureBytes,
+                        ddsName,
+                        ddsRoles);
                     fileName = $"Dental-Treatment-Consent-{eventStaffId}.pdf";
                 }
                 else

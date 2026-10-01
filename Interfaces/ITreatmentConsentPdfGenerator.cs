@@ -9,7 +9,9 @@ namespace ExcelFilesCompiler.Interfaces
         byte[] GenerateDentalTreatmentConsentPdf(
             ServiceMembersChild serviceMember,
             TreatmentConsentDentalTreatmentFormDto form,
-            byte[]? signatureBytes);
+            byte[]? signatureBytes,
+            string? ddsDisplayName = null,
+            string? ddsRoles = null);
 
         byte[] GenerateOralSurgeryConsentPdf(
             ServiceMembersChild serviceMember,

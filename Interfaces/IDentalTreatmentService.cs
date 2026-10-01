@@ -27,7 +27,8 @@ namespace ExcelFilesCompiler.Interfaces
             DentalTreatmentStationSaveDto dto,
             string userName,
             string userId,
-            IReadOnlySet<long> assignedExamFindingIds);
+            IReadOnlySet<long> assignedExamFindingIds,
+            long eventStaffId);
 
         /// <summary>
         /// Upserts Treatment Coordinator details, documents metadata, and appointments on DentalTreatmentCoordinator.

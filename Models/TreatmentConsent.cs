@@ -107,6 +107,15 @@ namespace Malama.Models
         public string? SignatureFileName { get; set; }
         public bool IsSigned { get; set; }
 
+        /// <summary>DDS acknowledgment on Dental Treatment station (name/roles resolved from IDs at display/PDF time).</summary>
+        public bool DdsAcknowledged { get; set; }
+
+        public string? DdsAcknowledgedByUserId { get; set; }
+
+        public long? DdsAcknowledgedByEventStaffId { get; set; }
+
+        public DateTime? DdsAcknowledgedOn { get; set; }
+
         /// <summary>Client-only: data URL for new/updated signature ink. Not persisted in JSON.</summary>
         public string? SignatureDataUrl { get; set; }
     }

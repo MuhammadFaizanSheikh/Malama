@@ -244,6 +244,23 @@ namespace ExcelFilesCompiler.Utilities
             return items;
         }
 
+        /// <summary>
+        /// Consent-form status rows limited to a single dentist (Dental Treatment station).
+        /// </summary>
+        public static List<TreatmentCoordinatorConsentFormStatusItem> BuildDentistConsentFormStatusItems(
+            TreatmentConsentFormSelectionDto? selection,
+            long eventStaffId)
+        {
+            if (eventStaffId <= 0)
+            {
+                return new List<TreatmentCoordinatorConsentFormStatusItem>();
+            }
+
+            return BuildCoordinatorConsentFormStatusItems(selection)
+                .Where(item => item.EventStaffId == eventStaffId)
+                .ToList();
+        }
+
         public static bool IsCompleted(string? status)
         {
             return string.Equals(status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);

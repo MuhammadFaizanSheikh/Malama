@@ -308,7 +308,8 @@ namespace ExcelFilesCompiler.Controllers.Services
             DentalTreatmentStationSaveDto dto,
             string userName,
             string userId,
-            IReadOnlySet<long> assignedExamFindingIds)
+            IReadOnlySet<long> assignedExamFindingIds,
+            long eventStaffId)
         {
             const string methodName = nameof(SaveOrUpdateFromFormDataAsync);
             IDbContextTransaction? transaction = null;
@@ -318,6 +319,25 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             try
             {
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Begin save. ServiceMembersChildId={ServiceMembersChildId}, User={User}, EventStaffId={EventStaffId}, RequiresDds={RequiresDds}, DdsAcknowledged={DdsAcknowledged}",
+                    CLASSNAME,
+                    methodName,
+                    dto.ServiceMembersChildId,
+                    userName,
+                    eventStaffId,
+                    dto.RequiresDdsAcknowledgement,
+                    dto.DdsAcknowledged);
+
+                if (dto.RequiresDdsAcknowledgement && !dto.DdsAcknowledged)
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, DDS acknowledgment required but not checked. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}",
+                        CLASSNAME, methodName, dto.ServiceMembersChildId, eventStaffId);
+                    throw new InvalidOperationException(
+                        "DDS acknowledgment is required before saving Dental Treatment for this dentist.");
+                }
+
                 dto.Findings = DentalTreatmentJson.ParseList<DentalTreatmentFindingFormDto>(dto.FindingsJson);
                 dto.AnesthesiaRecords = DentalTreatmentJson.ParseList<DentalTreatmentAnesthesiaDto>(dto.AnesthesiaJson);
                 dto.Prescriptions = DentalTreatmentJson.ParseList<DentalTreatmentPrescriptionDto>(dto.PrescriptionsJson);
@@ -346,13 +366,21 @@ namespace ExcelFilesCompiler.Controllers.Services
                     existing.Status = DentalTreatmentValidator.ComputeStatusFromPersisted(
                         existing.SmFinalClassification,
                         existing.Findings);
+
+                    await ApplyDdsAcknowledgementToConsentAsync(
+                        dto.ServiceMembersChildId,
+                        eventStaffId,
+                        dto.RequiresDdsAcknowledgement,
+                        dto.DdsAcknowledged,
+                        userId);
+
                     await _unitOfWork.SaveAsync();
                     await transaction.CommitAsync();
 
                     _logger.LogInformation(
-                        "{ClassName}, {MethodName}, Dental treatment updated. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}",
+                        "{ClassName}, {MethodName}, Dental treatment updated. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}, DdsAcknowledged={DdsAcknowledged}",
                         CLASSNAME, methodName, existing.Id, dto.ServiceMembersChildId, userName, existing.Status,
-                        existing.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count);
+                        existing.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count, dto.DdsAcknowledged);
                     return;
                 }
 
@@ -367,13 +395,21 @@ namespace ExcelFilesCompiler.Controllers.Services
                 entity.Status = DentalTreatmentValidator.ComputeStatusFromPersisted(
                     entity.SmFinalClassification,
                     entity.Findings);
+
+                await ApplyDdsAcknowledgementToConsentAsync(
+                    dto.ServiceMembersChildId,
+                    eventStaffId,
+                    dto.RequiresDdsAcknowledgement,
+                    dto.DdsAcknowledged,
+                    userId);
+
                 await _unitOfWork.SaveAsync();
                 await transaction.CommitAsync();
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Dental treatment created. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}",
+                    "{ClassName}, {MethodName}, Dental treatment created. Id={TreatmentId}, ServiceMembersChildId={ServiceMembersChildId}, User={User}, Status={Status}, FindingCount={FindingCount}, ToothCount={ToothCount}, DdsAcknowledged={DdsAcknowledged}",
                     CLASSNAME, methodName, entity.Id, dto.ServiceMembersChildId, userName, entity.Status,
-                    entity.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count);
+                    entity.Findings?.Count ?? 0, dto.PsrSelectedTeeth.Count, dto.DdsAcknowledged);
             }
             catch (Exception ex)
             {
@@ -382,6 +418,9 @@ namespace ExcelFilesCompiler.Controllers.Services
                     try
                     {
                         await transaction.RollbackAsync();
+                        _logger.LogWarning(
+                            "{ClassName}, {MethodName}, Transaction rolled back for ServiceMembersChildId={ServiceMembersChildId}",
+                            CLASSNAME, methodName, dto.ServiceMembersChildId);
                     }
                     catch (Exception rollbackEx)
                     {
@@ -403,6 +442,134 @@ namespace ExcelFilesCompiler.Controllers.Services
                     await transaction.DisposeAsync();
                 }
             }
+        }
+
+        private async Task ApplyDdsAcknowledgementToConsentAsync(
+            long serviceMembersChildId,
+            long eventStaffId,
+            bool requiresDdsAcknowledgement,
+            bool ddsAcknowledged,
+            string userId)
+        {
+            const string methodName = nameof(ApplyDdsAcknowledgementToConsentAsync);
+
+            if (!requiresDdsAcknowledgement || eventStaffId <= 0)
+            {
+                _logger.LogInformation(
+                    "{ClassName}, {MethodName}, Skipped. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}, RequiresDds={RequiresDds}",
+                    CLASSNAME, methodName, serviceMembersChildId, eventStaffId, requiresDdsAcknowledgement);
+                return;
+            }
+
+            var consent = await _unitOfWork.TreatmentConsent
+                .GetWithIncludeTracking(x => x.ServiceMembersChildId == serviceMembersChildId)
+                .FirstOrDefaultAsync();
+
+            if (consent == null)
+            {
+                _logger.LogWarning(
+                    "{ClassName}, {MethodName}, TreatmentConsent row not found. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}",
+                    CLASSNAME, methodName, serviceMembersChildId, eventStaffId);
+                throw new InvalidOperationException(
+                    "Treatment Consent record was not found for DDS acknowledgment.");
+            }
+
+            var forms = TreatmentConsentFileSaveCoordinator.ParseTreatmentForms(consent.DentalTreatmentFormsJson);
+            var form = forms.FirstOrDefault(f => f.EventStaffId == eventStaffId);
+            if (form == null)
+            {
+                _logger.LogWarning(
+                    "{ClassName}, {MethodName}, Dental Treatment Consent form not found for EventStaffId={EventStaffId}, ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, eventStaffId, serviceMembersChildId);
+                throw new InvalidOperationException(
+                    "Dental Treatment Consent Form was not found for the current dentist.");
+            }
+
+            if (ddsAcknowledged)
+            {
+                if (!TreatmentConsentHelper.IsFormSigned(form.IsSigned, form.SignatureFileName))
+                {
+                    _logger.LogWarning(
+                        "{ClassName}, {MethodName}, DDS acknowledgment blocked — SM signature missing. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}",
+                        CLASSNAME, methodName, serviceMembersChildId, eventStaffId);
+                    throw new InvalidOperationException(
+                        "The Dental Treatment Consent Form must be signed by the service member before DDS acknowledgment.");
+                }
+
+                form.DdsAcknowledged = true;
+                form.DdsAcknowledgedByUserId = userId;
+                form.DdsAcknowledgedByEventStaffId = eventStaffId;
+                form.DdsAcknowledgedOn ??= DateTime.Now;
+            }
+            else
+            {
+                form.DdsAcknowledged = false;
+                form.DdsAcknowledgedByUserId = null;
+                form.DdsAcknowledgedByEventStaffId = null;
+                form.DdsAcknowledgedOn = null;
+            }
+
+            // Replace this dentist form in the list while preserving others.
+            for (var i = 0; i < forms.Count; i++)
+            {
+                if (forms[i].EventStaffId == eventStaffId)
+                {
+                    forms[i] = form;
+                    break;
+                }
+            }
+
+            consent.DentalTreatmentFormsJson = System.Text.Json.JsonSerializer.Serialize(
+                forms.Select(StripTreatmentFormForConsentJson).ToList());
+            consent.UpdatedBy = userId;
+            consent.UpdatedOn = DateTime.Now;
+
+            _logger.LogInformation(
+                "{ClassName}, {MethodName}, DDS acknowledgment applied. ServiceMembersChildId={ServiceMembersChildId}, EventStaffId={EventStaffId}, DdsAcknowledged={DdsAcknowledged}, DdsAcknowledgedOn={DdsAcknowledgedOn}",
+                CLASSNAME,
+                methodName,
+                serviceMembersChildId,
+                eventStaffId,
+                form.DdsAcknowledged,
+                form.DdsAcknowledgedOn);
+        }
+
+        private static TreatmentConsentDentalTreatmentFormDto StripTreatmentFormForConsentJson(
+            TreatmentConsentDentalTreatmentFormDto form)
+        {
+            return new TreatmentConsentDentalTreatmentFormDto
+            {
+                EventStaffId = form.EventStaffId,
+                DentistName = form.DentistName,
+                Item1Mark = form.Item1Mark,
+                Fillings = form.Fillings,
+                Crowns = form.Crowns,
+                Extractions = form.Extractions,
+                Impacted = form.Impacted,
+                RootCanal = form.RootCanal,
+                Fmd = form.Fmd,
+                OtherTreatment = form.OtherTreatment,
+                OtherTreatmentText = form.OtherTreatmentText,
+                Item1Initials = form.Item1Initials,
+                Item2Mark = form.Item2Mark,
+                Item2Initials = form.Item2Initials,
+                Item3Mark = form.Item3Mark,
+                RemovalTeeth = form.RemovalTeeth,
+                Item3Initials = form.Item3Initials,
+                Item4Mark = form.Item4Mark,
+                Item4Initials = form.Item4Initials,
+                Item5Mark = form.Item5Mark,
+                Item5Initials = form.Item5Initials,
+                Item6Mark = form.Item6Mark,
+                OtherSituation = form.OtherSituation,
+                Item6Initials = form.Item6Initials,
+                SignatureFileName = form.SignatureFileName,
+                IsSigned = form.IsSigned,
+                DdsAcknowledged = form.DdsAcknowledged,
+                DdsAcknowledgedByUserId = form.DdsAcknowledgedByUserId,
+                DdsAcknowledgedByEventStaffId = form.DdsAcknowledgedByEventStaffId,
+                DdsAcknowledgedOn = form.DdsAcknowledged ? form.DdsAcknowledgedOn : null
+            };
         }
 
         public async Task ApplyCoordinatorSectionAsync(

@@ -631,7 +631,15 @@ namespace ExcelFilesCompiler.Controllers.Services
                 OtherSituation = form.OtherSituation?.Trim(),
                 Item6Initials = NormalizeInitials(form.Item6Initials),
                 SignatureFileName = form.SignatureFileName,
-                IsSigned = form.IsSigned && !string.IsNullOrWhiteSpace(form.SignatureFileName)
+                IsSigned = form.IsSigned && !string.IsNullOrWhiteSpace(form.SignatureFileName),
+                DdsAcknowledged = form.DdsAcknowledged,
+                DdsAcknowledgedByUserId = string.IsNullOrWhiteSpace(form.DdsAcknowledgedByUserId)
+                    ? null
+                    : form.DdsAcknowledgedByUserId.Trim(),
+                DdsAcknowledgedByEventStaffId = form.DdsAcknowledgedByEventStaffId > 0
+                    ? form.DdsAcknowledgedByEventStaffId
+                    : null,
+                DdsAcknowledgedOn = form.DdsAcknowledged ? form.DdsAcknowledgedOn : null
             };
         }
 

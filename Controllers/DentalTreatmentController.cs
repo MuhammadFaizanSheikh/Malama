@@ -20,6 +20,8 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IVitalStationService _vitalStationService;
         private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
+        private readonly ITreatmentConsentService _treatmentConsentService;
+        private readonly ITreatmentConsentPdfGenerator _treatmentConsentPdfGenerator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<DentalTreatmentController> _logger;
         private const string CLASSNAME = "DentalTreatmentController";
@@ -35,6 +37,8 @@ namespace ExcelFilesCompiler.Controllers
             IVitalStationService vitalStationService,
             IEventStaffService eventStaffService,
             IFileUploadDownloadService fileService,
+            ITreatmentConsentService treatmentConsentService,
+            ITreatmentConsentPdfGenerator treatmentConsentPdfGenerator,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
@@ -46,6 +50,8 @@ namespace ExcelFilesCompiler.Controllers
             _vitalStationService = vitalStationService;
             _eventStaffService = eventStaffService;
             _fileService = fileService;
+            _treatmentConsentService = treatmentConsentService;
+            _treatmentConsentPdfGenerator = treatmentConsentPdfGenerator;
             _userManager = userManager;
         }
 
@@ -245,6 +251,38 @@ namespace ExcelFilesCompiler.Controllers
                     _eventStaffService,
                     _logger);
 
+                var formSelection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
+                var consentFormStatuses = TreatmentConsentHelper.BuildDentistConsentFormStatusItems(
+                    formSelection,
+                    eventStaffId.Value);
+
+                var showDdsAcknowledgement = consentFormStatuses.Any(c =>
+                    string.Equals(c.FormKind, "dental-treatment", StringComparison.OrdinalIgnoreCase));
+                var dentistTreatmentForm = (formSelection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                    .Where(f => f != null && f.EventStaffId == eventStaffId.Value)
+                    .LastOrDefault();
+                var canAcknowledgeDds = showDdsAcknowledgement
+                    && dentistTreatmentForm != null
+                    && TreatmentConsentHelper.IsFormSigned(
+                        dentistTreatmentForm.IsSigned,
+                        dentistTreatmentForm.SignatureFileName);
+                var ddsAcknowledged = showDdsAcknowledgement && dentistTreatmentForm?.DdsAcknowledged == true;
+                string? ddsDisplayName = null;
+                string? ddsRoles = null;
+                if (ddsAcknowledged && !string.IsNullOrWhiteSpace(dentistTreatmentForm?.DdsAcknowledgedByUserId))
+                {
+                    (ddsDisplayName, ddsRoles) = await ResolveDdsAcknowledgementDisplayAsync(
+                        dentistTreatmentForm!.DdsAcknowledgedByUserId,
+                        eventManagementId);
+                }
+                else if (showDdsAcknowledgement && currentUser != null)
+                {
+                    // Preview name/roles for unchecked state (not persisted until save).
+                    (ddsDisplayName, ddsRoles) = await ResolveDdsAcknowledgementDisplayAsync(
+                        currentUser.Id,
+                        eventManagementId);
+                }
+
                 var pageModel = new DentalTreatmentStationPageViewModel
                 {
                     ServiceMember = result.ServiceMembersChild,
@@ -254,7 +292,15 @@ namespace ExcelFilesCompiler.Controllers
                     SharedClinical = sharedClinical,
                     DentalTreatment = dentalTreatment,
                     AssignedExamFindingIds = assignedExamFindingIds,
-                    DentistAppointmentGroups = dentistAppointmentGroups
+                    DentistAppointmentGroups = dentistAppointmentGroups,
+                    HasQuestionnaire = questionnaire.Id > 0,
+                    ConsentFormStatuses = consentFormStatuses,
+                    ShowDdsAcknowledgement = showDdsAcknowledgement,
+                    CanAcknowledgeDds = canAcknowledgeDds,
+                    DdsAcknowledged = ddsAcknowledged,
+                    DdsAcknowledgedDisplayName = ddsDisplayName,
+                    DdsAcknowledgedRoles = ddsRoles,
+                    DdsAcknowledgedOn = ddsAcknowledged ? dentistTreatmentForm?.DdsAcknowledgedOn : null
                 };
 
                 return View(pageModel);
@@ -361,11 +407,46 @@ namespace ExcelFilesCompiler.Controllers
                     return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
                 }
 
+                var formSelectionForSave = await _treatmentConsentService.GetFormSelectionAsync(dto.ServiceMembersChildId);
+                dto.RequiresDdsAcknowledgement = (formSelectionForSave.DentalTreatmentDentistEventStaffIds ?? new List<long>())
+                    .Contains(eventStaffId.Value);
+
+                if (dto.RequiresDdsAcknowledgement)
+                {
+                    var dentistTreatmentFormForSave = (formSelectionForSave.DentalTreatmentForms
+                            ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                        .Where(f => f != null && f.EventStaffId == eventStaffId.Value)
+                        .LastOrDefault();
+                    var smSignedTreatmentConsent = dentistTreatmentFormForSave != null
+                        && TreatmentConsentHelper.IsFormSigned(
+                            dentistTreatmentFormForSave.IsSigned,
+                            dentistTreatmentFormForSave.SignatureFileName);
+
+                    if (!smSignedTreatmentConsent)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Service Member Signature Required";
+                        TempData["ResponseMessage"] =
+                            "The Dental Treatment Consent Form must be signed by the service member before DDS acknowledgment.";
+                        return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    }
+
+                    if (!dto.DdsAcknowledged)
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "DDS Acknowledgment Required";
+                        TempData["ResponseMessage"] =
+                            "Please acknowledge the DDS signature on the Dental Treatment Consent Form before saving.";
+                        return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                    }
+                }
+
                 await _dentalTreatmentService.SaveOrUpdateFromFormDataAsync(
                     dto,
                     user.UserName ?? user.Id,
                     user.Id,
-                    assignedExamFindingIds);
+                    assignedExamFindingIds,
+                    eventStaffId.Value);
 
                 TempData["ResponseStatus"] = "success";
                 TempData["ResponseTitle"] = "Success";
@@ -383,6 +464,185 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ResponseMessage"] = ex.Message;
                 return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
             }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("DentalTreatment_View")]
+        public async Task<IActionResult> PreviewQuestionnairePdf(long serviceMembersChildId)
+        {
+            const string methodName = nameof(PreviewQuestionnairePdf);
+            try
+            {
+                if (serviceMembersChildId <= 0)
+                {
+                    return BadRequest("Service member is required.");
+                }
+
+                if (!await EnsureCurrentDentistCanAccessServiceMemberAsync(serviceMembersChildId))
+                {
+                    return Forbid();
+                }
+
+                var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+                if (result.ServiceMembersChild == null)
+                {
+                    return NotFound("Service member not found.");
+                }
+
+                var questionnaire = await _dentalQuestionnaireService.GetByServiceMembersChildIdAsync(serviceMembersChildId);
+                if (questionnaire == null || questionnaire.Id <= 0)
+                {
+                    return NotFound("Questionnaire is not available for this service member.");
+                }
+
+                var pdfBytes = _treatmentConsentPdfGenerator.GenerateQuestionnairePdf(
+                    result.ServiceMembersChild,
+                    questionnaire);
+
+                Response.Headers["Content-Disposition"] = "inline; filename=\"DA5570-Questionnaire.pdf\"";
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                return StatusCode(500, "Error while generating questionnaire PDF.");
+            }
+        }
+
+        [HttpGet]
+        [RoleAttributeAuthorizeFromConfig("DentalTreatment_View")]
+        public async Task<IActionResult> PreviewConsentFormPdf(
+            long serviceMembersChildId,
+            string formKind,
+            long eventStaffId)
+        {
+            const string methodName = nameof(PreviewConsentFormPdf);
+            try
+            {
+                if (serviceMembersChildId <= 0 || eventStaffId <= 0 || string.IsNullOrWhiteSpace(formKind))
+                {
+                    return BadRequest("Service member, form kind, and dentist are required.");
+                }
+
+                var kind = formKind.Trim().ToLowerInvariant();
+                if (kind is not ("dental-treatment" or "oral-surgery"))
+                {
+                    return BadRequest("Invalid form kind.");
+                }
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                var currentEventStaffId = currentUser != null
+                    ? await _dentalTreatmentService.TryGetEventStaffIdForUserAsync(currentUser.Id)
+                    : null;
+                if (!currentEventStaffId.HasValue || currentEventStaffId.Value != eventStaffId)
+                {
+                    return Forbid();
+                }
+
+                if (!await EnsureCurrentDentistCanAccessServiceMemberAsync(serviceMembersChildId, currentEventStaffId))
+                {
+                    return Forbid();
+                }
+
+                var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+                if (result.ServiceMembersChild == null)
+                {
+                    return NotFound("Service member not found.");
+                }
+
+                var selection = await _treatmentConsentService.GetFormSelectionAsync(serviceMembersChildId);
+                byte[] pdfBytes;
+                string fileName;
+
+                if (kind == "dental-treatment")
+                {
+                    if (!selection.IncludeDentalTreatmentConsent
+                        || !(selection.DentalTreatmentDentistEventStaffIds ?? new List<long>()).Contains(eventStaffId))
+                    {
+                        return NotFound("Dental treatment consent form not found for this dentist.");
+                    }
+
+                    var form = (selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                        .Where(f => f != null && f.EventStaffId == eventStaffId)
+                        .LastOrDefault()
+                        ?? new TreatmentConsentDentalTreatmentFormDto { EventStaffId = eventStaffId };
+
+                    var signatureBytes = TryLoadConsentSignature(
+                        TreatmentConsentFileSaveCoordinator.DentalTreatmentPrefix,
+                        form.SignatureFileName);
+                    var (ddsName, ddsRoles) = await ResolveDdsAcknowledgementDisplayAsync(
+                        form.DdsAcknowledgedByUserId,
+                        result.EventId > 0 ? result.EventId : null);
+                    pdfBytes = _treatmentConsentPdfGenerator.GenerateDentalTreatmentConsentPdf(
+                        result.ServiceMembersChild,
+                        form,
+                        signatureBytes,
+                        ddsName,
+                        ddsRoles);
+                    fileName = $"Dental-Treatment-Consent-{eventStaffId}.pdf";
+                }
+                else
+                {
+                    if (!selection.IncludeOralSurgeryForm
+                        || !(selection.OralSurgeryDentistEventStaffIds ?? new List<long>()).Contains(eventStaffId))
+                    {
+                        return NotFound("Oral surgery consent form not found for this dentist.");
+                    }
+
+                    var form = (selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+                        .Where(f => f != null && f.EventStaffId == eventStaffId)
+                        .LastOrDefault()
+                        ?? new TreatmentConsentOralSurgeryFormDto { EventStaffId = eventStaffId };
+
+                    var signatureBytes = TryLoadConsentSignature(
+                        TreatmentConsentFileSaveCoordinator.OralSurgeryPrefix,
+                        form.SignatureFileName);
+                    pdfBytes = _treatmentConsentPdfGenerator.GenerateOralSurgeryConsentPdf(
+                        result.ServiceMembersChild,
+                        form,
+                        signatureBytes);
+                    fileName = $"Oral-Surgery-Consent-{eventStaffId}.pdf";
+                }
+
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
+                return File(pdfBytes, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed for ServiceMembersChildId={ServiceMembersChildId}, FormKind={FormKind}, EventStaffId={EventStaffId}",
+                    CLASSNAME, methodName, serviceMembersChildId, formKind, eventStaffId);
+                return StatusCode(500, "Error while generating consent form PDF.");
+            }
+        }
+
+        private async Task<(string DisplayName, string Roles)> ResolveDdsAcknowledgementDisplayAsync(
+            string? userId,
+            long? eventManagementId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return (string.Empty, string.Empty);
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return (string.Empty, string.Empty);
+            }
+
+            var displayName = await DentalExamSignatureHelper.ResolveDisplayNameAsync(
+                user,
+                _eventStaffService,
+                _logger);
+            var roles = await DentalExamSignatureHelper.ResolveEventWiseRolesAsync(
+                user.Id,
+                eventManagementId,
+                _eventStaffService,
+                _logger);
+            return (displayName, roles);
         }
 
         [RoleAttributeAuthorizeFromConfig("DentalTreatment_View")]
@@ -412,6 +672,63 @@ namespace ExcelFilesCompiler.Controllers
             {
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Exception occurred while downloading file", CLASSNAME, methodName);
                 return StatusCode(500, "Error while downloading file");
+            }
+        }
+
+        private async Task<bool> EnsureCurrentDentistCanAccessServiceMemberAsync(
+            long serviceMembersChildId,
+            long? knownEventStaffId = null)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || serviceMembersChildId <= 0)
+            {
+                return false;
+            }
+
+            var eventStaffId = knownEventStaffId
+                ?? await _dentalTreatmentService.TryGetEventStaffIdForUserAsync(user.Id);
+            if (!eventStaffId.HasValue)
+            {
+                return false;
+            }
+
+            var result = await _fileUploader.GetServiceMemberChildWithEventIdAsync(serviceMembersChildId);
+            if (result.ServiceMembersChild == null)
+            {
+                return false;
+            }
+
+            var eventManagementId = result.EventId > 0
+                ? result.EventId
+                : DentalExamSignatureHelper.TryResolveEventManagementId(User, HttpContext.Session, result.EventId) ?? 0;
+
+            return await _dentalTreatmentService.IsEligibleForDentalTreatmentAsync(
+                serviceMembersChildId,
+                eventManagementId,
+                eventStaffId.Value);
+        }
+
+        private byte[]? TryLoadConsentSignature(string prefix, string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return null;
+            }
+
+            try
+            {
+                var file = _fileService.GetFile(
+                    TreatmentConsentFileSaveCoordinator.StationName,
+                    prefix,
+                    fileName);
+                return file?.Bytes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "{ClassName}, Failed to load consent signature Prefix={Prefix}, File={File}",
+                    CLASSNAME, prefix, fileName);
+                return null;
             }
         }
 
