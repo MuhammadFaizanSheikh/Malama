@@ -89,7 +89,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                     consentsBySmId = new Dictionary<long, TreatmentConsent>();
                 }
                 else
-                {
+                 {
                     consentsBySmId = await _unitOfWork.TreatmentConsent
                         .GetWithIncludeNoTracking(x => smIds.Contains(x.ServiceMembersChildId))
                         .ToDictionaryAsync(x => x.ServiceMembersChildId);
