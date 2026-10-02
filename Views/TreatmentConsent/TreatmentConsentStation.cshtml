@@ -988,7 +988,8 @@
         opacity: 0.92;
     }
 
-    .tcn-station.tcn-staff-mode .tcn-initials-input {
+    .tcn-station.tcn-staff-mode .tcn-initials-input,
+    .tcn-station.tcn-sm-mode-active .tcn-initials-input.read-only-style {
         pointer-events: none;
         cursor: not-allowed;
         background-color: #f3f4f8 !important;
@@ -1413,9 +1414,23 @@
                 || pad.wrap.classList.contains("tcn-pen-pad-signature");
         }
 
+        function syncDentalTreatmentInitialsEditability(isSmMode) {
+            const smMode = typeof isSmMode === "boolean" ? isSmMode : !!isSmModeActive;
+            $station.find(".tcn-initials-input").each(function () {
+                const $el = $(this);
+                const $mark = $el.closest(".tcn-consent-item")
+                    .find('input[name^="dtc_item"][name$="_mark"]').first();
+                const itemSelected = $mark.length > 0 && $mark.is(":checked");
+                const editable = smMode && itemSelected;
+                $el.prop("disabled", false)
+                    .prop("readonly", !editable)
+                    .toggleClass("read-only-style", !editable);
+            });
+        }
+
         function applyFormFieldsLock(isSmMode) {
             // Staff mode: form fields writable except signatures and DTC initials.
-            // SM mode: questionnaire + signatures + DTC initials editable; other consent fields locked.
+            // SM mode: questionnaire + signatures + selected-point DTC initials editable; other consent fields locked.
             $station.toggleClass("tcn-sm-mode-active", !!isSmMode);
             $station.toggleClass("tcn-staff-mode", !isSmMode);
             $station.toggleClass("tcn-fields-locked", !!isSmMode);
@@ -1435,13 +1450,12 @@
                     return;
                 }
                 if ($el.hasClass("tcn-initials-input")) {
-                    $el.prop("disabled", false)
-                        .prop("readonly", !isSmMode)
-                        .toggleClass("read-only-style", !isSmMode);
                     return;
                 }
                 $el.prop("disabled", !!isSmMode);
             });
+
+            syncDentalTreatmentInitialsEditability(!!isSmMode);
 
             Object.keys(penPads || {}).forEach(function (key) {
                 const pad = penPads[key];
@@ -2211,6 +2225,8 @@
                     }
                 }
             });
+
+            syncDentalTreatmentInitialsEditability();
         }
 
         function getFirstInvalidDentalTreatmentConsentField(options) {
