@@ -12,6 +12,7 @@
     var isFemale = DentalXRayStationService.IsFemale(sm);
     var consentDateDisplay = DateTime.Now.ToString("MM/dd/yyyy");
     var isSmMode = ViewBag.IsTreatmentConsentSmMode as bool? == true;
+    var isSmSubmitted = ViewBag.IsTreatmentConsentSmSubmitted as bool? == true;
     var formSelection = Model.FormSelection ?? new TreatmentConsentFormSelectionDto { ServiceMembersChildId = sm.Id };
     var oralSurgeryDentists = Model.OralSurgeryDentists ?? new List<TreatmentCoordinatorAssignableDentistDto>();
     var dentalTreatmentDentists = Model.DentalTreatmentDentists ?? new List<TreatmentCoordinatorAssignableDentistDto>();
@@ -996,6 +997,39 @@
         opacity: 0.92;
     }
 
+    .tcn-station .tcn-sm-thank-you {
+        display: none;
+    }
+
+    .tcn-station.tcn-sm-submitted .tcn-sm-thank-you {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 140px);
+        margin: 0;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        border: none;
+        background: transparent;
+        color: #1f2430;
+        font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+        font-weight: 600;
+        line-height: 1.45;
+    }
+
+    .tcn-station.tcn-sm-submitted .tcn-title,
+    .tcn-station.tcn-sm-submitted > .tcn-panel,
+    .tcn-station.tcn-sm-submitted > .nav-tabs,
+    .tcn-station.tcn-sm-submitted > .tab-content,
+    .tcn-station.tcn-sm-submitted > .tcn-page-save-bar {
+        display: none !important;
+    }
+
+    .tcn-station.tcn-sm-submitted .tcn-toolbar {
+        justify-content: flex-end;
+        margin-bottom: 0;
+    }
+
     .tcn-station.tcn-fields-locked .tab-pane:not(#da5570Pane) .tcn-pen-pad:not(.tcn-pen-pad-signature),
     .tcn-station .tcn-pen-pad.is-disabled {
         opacity: 0.72;
@@ -1028,7 +1062,7 @@
     }
 </style>
 
-<section class="tcn-station @(isSmMode ? "tcn-sm-mode-active" : "tcn-staff-mode")" data-sm-mode="@(isSmMode ? "true" : "false")" data-sm-id="@sm.Id">
+<section class="tcn-station @(isSmMode ? "tcn-sm-mode-active" : "tcn-staff-mode")@(isSmSubmitted ? " tcn-sm-submitted" : "")" data-sm-mode="@(isSmMode ? "true" : "false")" data-sm-id="@sm.Id">
     @Html.AntiForgeryToken()
 
     <div class="tcn-toolbar">
@@ -1041,6 +1075,10 @@
                 <i class="fas fa-play" aria-hidden="true"></i> Start
             </button>
         </div>
+    </div>
+
+    <div id="tcnSmThankYouBanner" class="tcn-sm-thank-you" role="status" aria-live="polite">
+        Thank you for signing consent forms. Contact Treatment Coordinator
     </div>
 
     @if (TempData["ResponseMessage"] != null)
@@ -1285,6 +1323,11 @@
                 <i class="fas fa-arrow-left" aria-hidden="true"></i> Cancel
             </a>
         </div>
+        <div class="tcn-page-actions" id="tcnSmCompleteActions" style="display:none">
+            <button type="button" class="btn btn-tcn-save-page" id="tcnSmCompleteBtn">
+                <i class="fas fa-check-circle" aria-hidden="true"></i> Complete
+            </button>
+        </div>
     </div>
 </section>
 
@@ -1400,11 +1443,26 @@
         $("#AreYouPregnant, #PregnancyApproval").on("change", togglePregnancyFlow);
 
         let isSmModeActive = @Json.Serialize(isSmMode);
+        let smSubmittedByServiceMember = @Json.Serialize(isSmSubmitted);
         const SM_CHILD_ID = @Json.Serialize(sm.Id);
         const antiforgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
         const $startBtn = $("#tcnStartSmModeBtn");
         const $unlockBtn = $("#tcnStaffUnlockBtn");
         const $station = $(".tcn-station");
+
+        function setSmSubmittedUi(submitted) {
+            smSubmittedByServiceMember = !!submitted;
+            $station.toggleClass("tcn-sm-submitted", smSubmittedByServiceMember);
+            updateSmCompleteButtonVisibility();
+            if (smSubmittedByServiceMember) {
+                Object.keys(penPads || {}).forEach(function (key) {
+                    const pad = penPads[key];
+                    if (pad && typeof pad.setEnabled === "function") {
+                        pad.setEnabled(false);
+                    }
+                });
+            }
+        }
 
         function isSignaturePenPad(pad) {
             if (!pad || !pad.wrap) {
@@ -1474,7 +1532,11 @@
             $unlockBtn.toggle(isSmModeActive);
             $startBtn.toggle(!isSmModeActive);
             $("#tcnPageActions").toggle(!isSmModeActive);
+            if (!isSmModeActive) {
+                setSmSubmittedUi(false);
+            }
             applyFormFieldsLock(isSmModeActive);
+            updateSmCompleteButtonVisibility();
         }
 
         const penPads = window.TreatmentConsentPenPads
@@ -1662,6 +1724,13 @@
             return hasIncludedForm;
         }
 
+        function updateSmCompleteButtonVisibility() {
+            const show = isSmModeActive
+                && !smSubmittedByServiceMember
+                && areIncludedFormsAllSigned();
+            $("#tcnSmCompleteActions").toggle(show);
+        }
+
         function updatePageStatusBadge() {
             const $badge = $("#tcnPageStatusBadge");
             if (!$badge.length) {
@@ -1672,6 +1741,31 @@
                 .toggleClass("tcn-page-status-completed", completed)
                 .toggleClass("tcn-page-status-pending", !completed)
                 .text(completed ? "Completed" : "Pending");
+
+            updateSmCompleteButtonVisibility();
+        }
+
+        async function submitServiceMemberComplete() {
+            if (!areIncludedFormsAllSigned()) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Signatures required",
+                    text: "Please sign all included consent forms before completing.",
+                    confirmButtonColor: "rgba(80, 90, 201, 1)"
+                });
+                return;
+            }
+
+            try {
+                const data = await saveStation({ submittedByServiceMember: true });
+                if (!data || !data.success) {
+                    return;
+                }
+
+                setSmSubmittedUi(true);
+            } catch (e) {
+                Swal.fire("Error", "Unable to submit Treatment Consent.", "error");
+            }
         }
 
         function updateCardStatusFromSignature($card) {
@@ -2041,7 +2135,9 @@
             }
         }
 
-        async function saveStation() {
+        async function saveStation(options) {
+            options = options || {};
+
             if (!validateQuestionnaireBeforeSave()) {
                 return { success: false };
             }
@@ -2055,6 +2151,9 @@
             }
 
             const payload = buildStationSavePayload();
+            if (options.submittedByServiceMember) {
+                payload.submittedByServiceMember = true;
+            }
 
             const response = await fetch("@Url.Action("SaveStation", "TreatmentConsent")", {
                 method: "POST",
@@ -2528,6 +2627,10 @@
             }
         }
 
+        $("#tcnSmCompleteBtn").on("click", async function () {
+            await submitServiceMemberComplete();
+        });
+
         $("#tcnStartSmModeBtn").on("click", async function () {
             if (!validateQuestionnaireBeforeSave()) {
                 return;
@@ -2578,7 +2681,7 @@
         });
 
         $("#tcnStaffUnlockBtn").on("click", async function () {
-            if (isSmModeActive && !validateDentalTreatmentInitialsBeforeUnlock()) {
+            if (isSmModeActive && !smSubmittedByServiceMember && !validateDentalTreatmentInitialsBeforeUnlock()) {
                 return;
             }
 
@@ -2618,12 +2721,22 @@
                 }
 
                 await exitFullscreenIfPossible();
-                // Soft-unlock: keep pen ink / form answers; do not reload the page.
+
+                // After SM Complete save, go to Index. Otherwise stay so staff can Save.
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                    return;
+                }
+
                 setSmModeUi(false);
             } catch (e) {
                 Swal.fire("Error", "Unable to unlock service member mode.", "error");
             }
         });
+
+        if (isSmModeActive) {
+            setSmSubmittedUi(smSubmittedByServiceMember);
+        }
 
         trapHistoryWhileSmMode();
     });

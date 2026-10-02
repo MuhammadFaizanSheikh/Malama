@@ -140,6 +140,8 @@ namespace ExcelFilesCompiler.Controllers
                     && TreatmentConsentSmModeHelper.GetLockedServiceMembersChildId(HttpContext.Session) == serviceMembersChildId;
 
                 ViewBag.IsTreatmentConsentSmMode = smModeActive;
+                ViewBag.IsTreatmentConsentSmSubmitted = smModeActive
+                    && TreatmentConsentSmModeHelper.IsSubmittedByServiceMember(HttpContext.Session);
 
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Station page ready for ServiceMembersChildId={ServiceMembersChildId}, SmMode={SmMode}",
@@ -170,11 +172,23 @@ namespace ExcelFilesCompiler.Controllers
 
             try
             {
-                if (TreatmentConsentSmModeHelper.IsActive(HttpContext.Session))
+                var smModeActive = TreatmentConsentSmModeHelper.IsActive(HttpContext.Session);
+                if (smModeActive)
                 {
-                    return Json(TreatmentConsentStationSaveResult.Fail(
-                        "Locked",
-                        "Unlock service member mode before saving."));
+                    if (dto == null || !dto.SubmittedByServiceMember)
+                    {
+                        return Json(TreatmentConsentStationSaveResult.Fail(
+                            "Locked",
+                            "Unlock service member mode before saving."));
+                    }
+
+                    var lockedSmId = TreatmentConsentSmModeHelper.GetLockedServiceMembersChildId(HttpContext.Session);
+                    if (lockedSmId == null || lockedSmId.Value != dto.ServiceMembersChildId)
+                    {
+                        return Json(TreatmentConsentStationSaveResult.Fail(
+                            "Locked",
+                            "Service member mode is active for a different record."));
+                    }
                 }
 
                 var user = await _userManager.GetUserAsync(User);
@@ -195,10 +209,20 @@ namespace ExcelFilesCompiler.Controllers
 
                 if (result.Success)
                 {
-                    result.RedirectUrl = Url.Action(nameof(Index), "TreatmentConsent");
-                    TempData["ResponseStatus"] = "success";
-                    TempData["ResponseTitle"] = result.Title;
-                    TempData["ResponseMessage"] = result.Message;
+                    if (smModeActive && dto.SubmittedByServiceMember)
+                    {
+                        TreatmentConsentSmModeHelper.MarkSubmittedByServiceMember(HttpContext.Session);
+                        result.RedirectUrl = null;
+                        result.Title = "Submitted";
+                        result.Message = "Thank you for signing consent forms. Contact Treatment Coordinator";
+                    }
+                    else
+                    {
+                        result.RedirectUrl = Url.Action(nameof(Index), "TreatmentConsent");
+                        TempData["ResponseStatus"] = "success";
+                        TempData["ResponseTitle"] = result.Title;
+                        TempData["ResponseMessage"] = result.Message;
+                    }
                 }
 
                 return Json(result);
@@ -341,22 +365,20 @@ namespace ExcelFilesCompiler.Controllers
                 }
 
                 var lockedSmId = TreatmentConsentSmModeHelper.GetLockedServiceMembersChildId(HttpContext.Session);
+                var submittedByServiceMember = TreatmentConsentSmModeHelper.IsSubmittedByServiceMember(HttpContext.Session);
                 TreatmentConsentSmModeHelper.Clear(HttpContext.Session);
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, SM mode unlocked by UserId={UserId}, LockedSmId={LockedSmId}",
-                    CLASSNAME, methodName, user.Id, lockedSmId);
+                    "{ClassName}, {MethodName}, SM mode unlocked by UserId={UserId}, LockedSmId={LockedSmId}, SubmittedBySm={SubmittedBySm}",
+                    CLASSNAME, methodName, user.Id, lockedSmId, submittedByServiceMember);
 
                 return Json(TreatmentConsentSmModeResponse.Ok(
                     "Staff unlock successful.",
                     isActive: false,
                     serviceMembersChildId: lockedSmId,
-                    redirectUrl: lockedSmId.HasValue
-                        ? Url.Action(
-                            nameof(TreatmentConsentStation),
-                            "TreatmentConsent",
-                            new { serviceMembersChildId = lockedSmId.Value })
-                        : Url.Action(nameof(Index), "TreatmentConsent")));
+                    redirectUrl: submittedByServiceMember
+                        ? Url.Action(nameof(Index), "TreatmentConsent")
+                        : null));
             }
             catch (Exception ex)
             {

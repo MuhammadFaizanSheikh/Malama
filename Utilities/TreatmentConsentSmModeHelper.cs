@@ -8,10 +8,16 @@ namespace ExcelFilesCompiler.Utilities
         public const string SessionServiceMemberIdKey = "TreatmentConsent.SmMode.ServiceMembersChildId";
         public const string SessionStartedByUserIdKey = "TreatmentConsent.SmMode.StartedByUserId";
         public const string SessionStartedAtKey = "TreatmentConsent.SmMode.StartedAtUtc";
+        public const string SessionSubmittedKey = "TreatmentConsent.SmMode.SubmittedByServiceMember";
 
         public static bool IsActive(ISession session)
         {
             return string.Equals(session.GetString(SessionActiveKey), "1", StringComparison.Ordinal);
+        }
+
+        public static bool IsSubmittedByServiceMember(ISession session)
+        {
+            return string.Equals(session.GetString(SessionSubmittedKey), "1", StringComparison.Ordinal);
         }
 
         public static long? GetLockedServiceMembersChildId(ISession session)
@@ -31,6 +37,12 @@ namespace ExcelFilesCompiler.Utilities
             session.SetString(SessionServiceMemberIdKey, serviceMembersChildId.ToString());
             session.SetString(SessionStartedByUserIdKey, userId ?? string.Empty);
             session.SetString(SessionStartedAtKey, DateTime.UtcNow.ToString("O"));
+            session.Remove(SessionSubmittedKey);
+        }
+
+        public static void MarkSubmittedByServiceMember(ISession session)
+        {
+            session.SetString(SessionSubmittedKey, "1");
         }
 
         public static void Clear(ISession session)
@@ -39,6 +51,7 @@ namespace ExcelFilesCompiler.Utilities
             session.Remove(SessionServiceMemberIdKey);
             session.Remove(SessionStartedByUserIdKey);
             session.Remove(SessionStartedAtKey);
+            session.Remove(SessionSubmittedKey);
         }
 
         public static bool IsAllowedPath(PathString path, long lockedServiceMembersChildId, QueryString query)
@@ -49,10 +62,11 @@ namespace ExcelFilesCompiler.Utilities
                 value = "/";
             }
 
-            // Unlock / status endpoints must remain reachable while locked.
+            // Unlock / status / SM-complete save endpoints must remain reachable while locked.
             if (IsExactPath(value, "/TreatmentConsent/UnlockSmMode")
                 || IsExactPath(value, "/TreatmentConsent/StartSmMode")
-                || IsExactPath(value, "/TreatmentConsent/SmModeStatus"))
+                || IsExactPath(value, "/TreatmentConsent/SmModeStatus")
+                || IsExactPath(value, "/TreatmentConsent/SaveStation"))
             {
                 return true;
             }

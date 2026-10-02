@@ -151,6 +151,11 @@ namespace Malama.Models
         public List<long> DentalTreatmentDentistEventStaffIds { get; set; } = new();
         public List<TreatmentConsentOralSurgeryFormDto> OralSurgeryForms { get; set; } = new();
         public List<TreatmentConsentDentalTreatmentFormDto> DentalTreatmentForms { get; set; } = new();
+
+        /// <summary>
+        /// True when save is triggered by the service member Complete action while SM mode is active.
+        /// </summary>
+        public bool SubmittedByServiceMember { get; set; }
     }
 
     public class TreatmentConsentStationSaveResult
