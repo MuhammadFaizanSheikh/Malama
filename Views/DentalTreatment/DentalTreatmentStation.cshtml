@@ -30,33 +30,286 @@
     // All other Treatment viewers see them read-only when already completed on the Dental Exam.
     var showFinalCommentsReadOnly = !isDentalExamDentist && dentalExam.QuestionnaireReviewed;
     var showSignatureReadOnly = !isDentalExamDentist && dentalExam.DentistSignatureEntered;
+    var dentalTreatmentOverallStatus = string.IsNullOrWhiteSpace(dentalTreatment?.Status) ? "Pending" : dentalTreatment!.Status;
 }
 
 <style>
-    #page-heading { text-align: center; margin: 20px auto; }
-    .btn-general {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-        color: white;
+    .dt-station {
+        --dt-indigo: rgba(80, 90, 201, 1);
+        --dt-indigo-soft: rgba(80, 90, 201, 0.12);
+        --dt-indigo-mid: rgba(80, 90, 201, 0.22);
+        --dt-text: #1f2430;
+        --dt-muted: #6b7285;
+        --dt-surface: #ffffff;
+        --dt-border: rgba(31, 36, 48, 0.08);
+        --dt-shadow: 0 10px 28px rgba(21, 24, 33, 0.06);
+        --dt-radius: 16px;
     }
-    .btn-general:hover {
-        background-color: rgba(60, 70, 180, 1);
-        border-color: rgba(60, 70, 180, 1);
-        color: white;
+
+    .dt-station .btn-general {
+        background: var(--dt-indigo);
+        border: 1px solid var(--dt-indigo);
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-    h2, h3 { color: rgba(80, 90, 201, 1); }
+
+    .dt-station .btn-general:hover:not(:disabled) {
+        background: rgb(60, 70, 180);
+        border-color: rgb(60, 70, 180);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(80, 90, 201, 0.25);
+    }
+
+    .dt-station .btn-general:disabled {
+        opacity: 0.55;
+    }
+
+    .dt-station .btn-back-confirm {
+        border-radius: 10px;
+        font-weight: 600;
+        background: #fff;
+        color: #4b5160;
+        border: 1px solid rgba(31, 36, 48, 0.14);
+    }
+
+    .dt-station .btn-back-confirm:hover {
+        background: #f3f4f8;
+        color: #1f2430;
+        border-color: rgba(31, 36, 48, 0.22);
+    }
+
+    .dt-hero {
+        margin-bottom: 1.25rem;
+        padding: 0.1rem 0.15rem 0.25rem;
+    }
+
+    .dt-title {
+        margin: 0;
+        font-size: clamp(1.45rem, 2.1vw, 1.9rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--dt-text);
+    }
+
+    .dt-panel {
+        background: var(--dt-surface);
+        border: 1px solid var(--dt-border);
+        border-radius: var(--dt-radius);
+        box-shadow: var(--dt-shadow);
+        padding: 1.15rem 1.25rem 1.2rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .dt-panel-title {
+        margin: 0 0 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dt-text);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .dt-panel-title i {
+        color: var(--dt-indigo);
+    }
+
+    .dt-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.85rem 1rem;
+    }
+
+    .dt-info-item {
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #f8f9fc 0%, #f3f5fa 100%);
+        border: 1px solid var(--dt-border);
+    }
+
+    .dt-info-label {
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--dt-muted);
+    }
+
+    .dt-info-value {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 600;
+        color: var(--dt-text);
+        word-break: break-word;
+    }
+
+    .dt-station .form-label {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #4b5160;
+    }
+
+    .dt-station .form-control,
+    .dt-station .form-select {
+        border-radius: 10px;
+        border-color: rgba(31, 36, 48, 0.12);
+        min-height: 42px;
+        box-shadow: none;
+    }
+
+    .dt-station .form-control:focus,
+    .dt-station .form-select:focus {
+        border-color: rgba(80, 90, 201, 0.55);
+        box-shadow: 0 0 0 0.2rem rgba(80, 90, 201, 0.18);
+    }
+
+    .dt-station .card,
+    .dt-station .xray-upload-card,
+    .dt-station .xray-preview-card {
+        border: 1px solid var(--dt-border);
+        border-radius: 14px;
+        box-shadow: var(--dt-shadow);
+        background: var(--dt-surface);
+    }
+
+    .dt-station .card-header {
+        background: linear-gradient(180deg, #f8f9fc 0%, #f3f5fa 100%);
+        border-bottom: 1px solid var(--dt-border);
+        border-top-left-radius: 14px;
+        border-top-right-radius: 14px;
+        font-weight: 700;
+        color: var(--dt-text);
+    }
+
+    .dt-station hr {
+        border: 0;
+        border-top: 1px solid var(--dt-border);
+        opacity: 1;
+        margin: 1.35rem 0;
+    }
+
+    .questionnaire-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .questionnaire-heading h3,
+    .questionnaire-heading h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--dt-indigo);
+    }
+
+    .questionnaire-toggle-switch .form-check-input {
+        width: 2.75rem;
+        height: 1.4rem;
+        margin-top: 0;
+        cursor: pointer;
+    }
+
+    .questionnaire-toggle-switch .form-check-input:checked {
+        background-color: var(--dt-indigo);
+        border-color: var(--dt-indigo);
+    }
+
+    .questionnaire-toggle-switch .form-check-input:focus {
+        border-color: rgba(80, 90, 201, 0.5);
+        box-shadow: 0 0 0 0.25rem rgba(80, 90, 201, 0.25);
+    }
+
+    .dt-notice {
+        margin: 0 0 0.75rem;
+        padding: 0.75rem 0.9rem;
+        border-radius: 10px;
+        background: rgba(217, 119, 6, 0.1);
+        border: 1px solid rgba(217, 119, 6, 0.28);
+        color: #b45309;
+        font-weight: 600;
+    }
+
+    .dt-page-save-bar {
+        margin-top: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--dt-border);
+        margin-bottom: 1.5rem;
+    }
+
+    .dt-page-status-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-width: 0;
+        flex: 1 1 220px;
+        max-width: 360px;
+    }
+
+    .dt-page-status-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--dt-muted);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .dt-page-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 104px;
+        padding: 0.38rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .dt-page-status-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dt-page-status-completed {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+    }
+
+    .dt-footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
     .read-only-style {
-        background-color: #f8f9fa;
+        background-color: #f3f5fa !important;
         pointer-events: none;
-        border-color: #ced4da;
+        border-color: rgba(31, 36, 48, 0.1) !important;
     }
+
     #DentistSignatureRoles.read-only-style {
         pointer-events: auto;
         overflow-y: auto;
         resize: none;
     }
+
     .condition-detail { display: none; }
     .condition-item { margin-bottom: 0.75rem; }
+
     .dt-forms-card {
         border: 1px solid rgba(31, 36, 48, 0.12);
         border-radius: 12px;
@@ -74,7 +327,7 @@
         margin: 0 0 0.55rem;
         font-size: 0.95rem;
         font-weight: 700;
-        color: rgba(80, 90, 201, 1);
+        color: var(--dt-indigo);
     }
     .dt-forms-row {
         display: flex;
@@ -135,7 +388,7 @@
         border-radius: 8px;
         border: 1px solid rgba(80, 90, 201, 0.28);
         background: rgba(80, 90, 201, 0.08);
-        color: rgba(80, 90, 201, 1);
+        color: var(--dt-indigo);
         cursor: pointer;
         transition: background 0.18s ease, transform 0.18s ease;
     }
@@ -143,26 +396,7 @@
         background: rgba(80, 90, 201, 0.16);
         transform: translateY(-1px);
     }
-    .questionnaire-heading {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-    }
-    .questionnaire-toggle-switch .form-check-input {
-        width: 2.75rem;
-        height: 1.4rem;
-        margin-top: 0;
-        cursor: pointer;
-    }
-    .questionnaire-toggle-switch .form-check-input:checked {
-        background-color: rgba(80, 90, 201, 1);
-        border-color: rgba(80, 90, 201, 1);
-    }
-    .questionnaire-toggle-switch .form-check-input:focus {
-        border-color: rgba(80, 90, 201, 0.5);
-        box-shadow: 0 0 0 0.25rem rgba(80, 90, 201, 0.25);
-    }
+
     .xray-cards-row {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -170,8 +404,9 @@
     }
     @@media (max-width: 992px) {
         .xray-cards-row { grid-template-columns: 1fr; }
+        .dt-info-grid { grid-template-columns: 1fr; }
     }
-    .xray-upload-card { border: 1px solid #dee2e6; }
+    .xray-upload-card { border: 1px solid var(--dt-border); }
     .xray-upload-full-width { width: 100%; }
     .xray-preview-viewport-full { height: 360px; }
     .bwx-upload-mode-option { margin-bottom: 0.5rem; }
@@ -179,8 +414,15 @@
         width: 100%;
         height: 280px;
         overflow: auto;
-        border: 1px solid #ced4da;
-        background: #f8f9fa;
+        border: 1px solid rgba(31, 36, 48, 0.12);
+        border-radius: 10px;
+        background:
+            linear-gradient(45deg, #f3f4f8 25%, transparent 25%),
+            linear-gradient(-45deg, #f3f4f8 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #f3f4f8 75%),
+            linear-gradient(-45deg, transparent 75%, #f3f4f8 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
     }
     .xray-preview-viewport.can-pan { cursor: grab; }
     .xray-preview-viewport.can-pan.is-panning {
@@ -197,8 +439,8 @@
         user-select: none;
     }
     .xray-preview-card {
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
+        border: 1px solid var(--dt-border);
+        border-radius: 14px;
         padding: 1rem;
         background: #fdfdff;
     }
@@ -206,11 +448,13 @@
         height: 320px;
         border-radius: 0.375rem;
     }
-
 </style>
 <link rel="stylesheet" href="~/css/dental-psr-tooth-chart.css" asp-append-version="true" />
 
-<h2 id="page-heading">Edit Service Member at Dental Treatment</h2>
+<section class="dt-station" id="DentalTreatmentStation">
+<div class="dt-hero">
+    <h1 class="dt-title" id="page-heading">Edit Service Member at Dental Treatment</h1>
+</div>
 
 @if (TempData["ResponseMessage"] != null)
 {
@@ -230,7 +474,6 @@
     </script>
 }
 
-<div id="DentalTreatmentStation">
 <form id="SaveDentalTreatmentStation" asp-action="SaveDentalTreatmentStation" method="post">
     <input type="hidden" name="ServiceMembersChildId" value="@sm.Id" />
     <input type="hidden" name="DentalExamId" value="@dentalExam.Id" />
@@ -240,41 +483,44 @@
     <input type="hidden" name="OverallNotesJson" id="TreatmentOverallNotesJson" value="[]" />
     <div id="psrSelectedTeethHiddenFields"></div>
 
-    <h3 class="mb-4">Personal Information</h3>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Full Name:</span> @sm?.FullName</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DOD ID:</span> @sm?.DodId</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Routing Sheet Barcode:</span> @sm?.Barcode</p>
-                </div>
+    <div class="dt-panel">
+        <h2 class="dt-panel-title"><i class="fas fa-user" aria-hidden="true"></i> Personal Information</h2>
+        <div class="dt-info-grid">
+            <div class="dt-info-item">
+                <span class="dt-info-label">Full Name</span>
+                <p class="dt-info-value">@sm?.FullName</p>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DOB:</span> @sm?.Dob</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Age:</span> @sm?.Age</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Sex:</span> @sm?.Sex</p>
-                </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">DOD ID</span>
+                <p class="dt-info-value">@sm?.DodId</p>
             </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DRC:</span> @sm?.Drc</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">DEN Class:</span> @sharedClinical.DenClass</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="fw-bold">Dental Exam Status:</span> @dentalExam.Status</p>
-                </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">Routing Sheet Barcode</span>
+                <p class="dt-info-value">@sm?.Barcode</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">DOB</span>
+                <p class="dt-info-value">@sm?.Dob</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">Age</span>
+                <p class="dt-info-value">@sm?.Age</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">Sex</span>
+                <p class="dt-info-value">@sm?.Sex</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">DRC</span>
+                <p class="dt-info-value">@sm?.Drc</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">DEN Class</span>
+                <p class="dt-info-value">@sharedClinical.DenClass</p>
+            </div>
+            <div class="dt-info-item">
+                <span class="dt-info-label">Dental Exam Status</span>
+                <p class="dt-info-value">@dentalExam.Status</p>
             </div>
         </div>
     </div>
@@ -310,7 +556,7 @@
 
             <div class="row mb-4" id="pregnancyApprovalSection" style="display:none;">
                 <div class="col-md-12">
-                    <p class="text-warning fw-bold">Approval is needed from Service Member before going to X-Ray</p>
+                    <p class="dt-notice">Approval is needed from Service Member before going to X-Ray</p>
                     <select name="PregnancyApproval" id="PregnancyApproval" class="form-select">
                         <option value=""></option>
                         <option value="Approved" selected="@(questionnaire.PregnancyApproval == "Approved")">Approved</option>
@@ -767,35 +1013,26 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <label class="form-label" for="DentalTreatmentStatus">Overall Status</label>
-            <select id="DentalTreatmentStatus" class="form-select read-only-style" disabled>
-                @if (string.Equals(dentalTreatment?.Status, "Completed", StringComparison.OrdinalIgnoreCase))
-                {
-                    <option value="Pending">Pending</option>
-                    <option value="Completed" selected="selected">Completed</option>
-                }
-                else
-                {
-                    <option value="Pending" selected="selected">Pending</option>
-                    <option value="Completed">Completed</option>
-                }
-            </select>
-            <input type="hidden" name="Status" id="DentalTreatmentStatusHidden" value="@(string.IsNullOrWhiteSpace(dentalTreatment?.Status) ? "Pending" : dentalTreatment!.Status)" />
+    <div class="dt-page-save-bar">
+        <div class="dt-page-status-wrap">
+            <span class="dt-page-status-label">Status</span>
+            <span id="DentalTreatmentStatusBadge"
+                  class="dt-page-status @(string.Equals(dentalTreatmentOverallStatus, "Completed", StringComparison.OrdinalIgnoreCase) ? "dt-page-status-completed" : "dt-page-status-pending")"
+                  role="status"
+                  aria-live="polite">@dentalTreatmentOverallStatus</span>
+            <input type="hidden" name="Status" id="DentalTreatmentStatusHidden" value="@dentalTreatmentOverallStatus" />
+        </div>
+        <div class="dt-footer-actions">
+            <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalTreatment ? null : "disabled")>
+                <i class="fas fa-check-circle" aria-hidden="true"></i> Save
+            </button>
+            <a asp-action="Index" class="btn btn-lg btn-back-confirm">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+            </a>
         </div>
     </div>
-
-    <div class="d-flex justify-content-end mt-4 gap-3">
-        <button type="submit" class="btn btn-general btn-lg" @(canSaveDentalTreatment ? null : "disabled")>
-            <i class="bi bi-check-circle"></i> Save
-        </button>
-        <a asp-action="Index" class="btn btn-secondary btn-lg btn-back-confirm">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
-    </div>
 </form>
-</div>
+</section>
 
 <script src="~/js/dental-psr-tooth-chart.js" asp-append-version="true"></script>
 <script>
@@ -845,9 +1082,13 @@
         const status = smFinal && areAllDentalTreatmentFindingsComplete()
             ? "Completed"
             : "Pending";
+        const completed = status === "Completed";
 
-        $("#DentalTreatmentStatus").val(status);
         $("#DentalTreatmentStatusHidden").val(status);
+        $("#DentalTreatmentStatusBadge")
+            .text(status)
+            .toggleClass("dt-page-status-completed", completed)
+            .toggleClass("dt-page-status-pending", !completed);
     }
 
     window.updateDentalTreatmentOverallStatus = updateDentalTreatmentOverallStatus;
