@@ -285,6 +285,21 @@
         color: #6c757d;
         font-size: 0.9rem;
     }
+
+    #treatmentFindingsTable thead tr.finding-group-header-row th {
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    #treatmentFindingsTable thead th.finding-pre-treatment-header {
+        background-color: #fff3cd !important;
+    }
+
+    #treatmentFindingsTable thead th.finding-post-treatment-header {
+        background-color: #d1e7dd !important;
+    }
 </style>
 
 <div class="mb-4" id="treatmentFindingsSection">
@@ -306,23 +321,30 @@
                 <div class="table-responsive mb-3">
                     <table class="table table-bordered table-striped align-middle mb-0" id="treatmentFindingsTable">
                         <thead class="table-light">
+                            <tr class="finding-group-header-row">
+                                <th colspan="9" class="finding-pre-treatment-header">Pre-Treatment</th>
+                                <th colspan="5" class="finding-post-treatment-header">Post-Treatment</th>
+                            </tr>
                             <tr>
-                                <th style="width: 44px;"></th>
-                                <th style="width: 55px;">Finding #</th>
-                                <th style="width: 100px;">Source</th>
-                                <th style="width: 110px;">Affected Tooth</th>
-                                <th style="width: 140px;">Affected Surface(s)</th>
-                                <th style="width: 160px;">Disease / Condition Type</th>
-                                <th style="width: 120px;">Classification</th>
-                                <th>Description / Details</th>
-                                <th style="width: 160px;">Examiner</th>
+                                <th class="finding-pre-treatment-col" style="width: 44px;"></th>
+                                <th class="finding-pre-treatment-col" style="width: 55px;">Finding #</th>
+                                <th class="finding-pre-treatment-col" style="width: 100px;">Source</th>
+                                <th class="finding-pre-treatment-col" style="width: 110px;">Affected Tooth</th>
+                                <th class="finding-pre-treatment-col" style="width: 140px;">Affected Surface(s)</th>
+                                <th class="finding-pre-treatment-col" style="width: 160px;">Disease / Condition Type</th>
+                                <th class="finding-pre-treatment-col" style="width: 120px;">Classification</th>
+                                <th class="finding-pre-treatment-col">Description / Details</th>
+                                <th class="finding-pre-treatment-col" style="width: 160px;">Examiner</th>
+                                <th class="finding-post-treatment-col" style="width: 140px;">Affected Surface(s)</th>
+                                <th class="finding-post-treatment-col" style="width: 110px;">Classification</th>
+                                <th class="finding-post-treatment-col" style="width: 150px;">Treatment Codes</th>
                                 <th style="width: 120px;">Status</th>
                                 <th style="width: 90px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="treatmentFindingsTableBody">
                             <tr id="treatmentFindingsEmptyRow">
-                                <td colspan="11" class="text-center text-muted py-4">No findings added yet.</td>
+                                <td colspan="14" class="text-center text-muted py-4">No findings added yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1304,7 +1326,7 @@
 
             if (!treatmentFindings.length) {
                 $tbody.append(
-                    '<tr id="treatmentFindingsEmptyRow"><td colspan="11" class="text-center text-muted py-4">No findings added yet.</td></tr>'
+                    '<tr id="treatmentFindingsEmptyRow"><td colspan="14" class="text-center text-muted py-4">No findings added yet.</td></tr>'
                 );
                 syncDentalTreatmentFindingsJson();
                 return;
@@ -1328,7 +1350,7 @@
                     groupFindingNumber = 0;
                     $tbody.append(
                         "<tr class='finding-appointment-group-row'>" +
-                        "<td colspan='11'>" + escapeHtml(groupLabel) + "</td>" +
+                        "<td colspan='14'>" + escapeHtml(groupLabel) + "</td>" +
                         "</tr>"
                     );
                 }
@@ -1350,6 +1372,9 @@
                     ? "-"
                     : (finding.descriptionDetails ? escapeHtml(finding.descriptionDetails) : "-");
                 const examinerDetail = isTreatmentOrigin ? "-" : formatExaminerDetail(finding);
+                const postSurfaces = (finding.postServiceTreatment || []).join(", ");
+                const postClassification = (finding.finalDrc || "").toString().trim();
+                const postTreatmentCodes = (finding.treatmentCdtCodes || []).join(", ");
                 const detailId = "findingTreatmentDetail_" + index;
                 const canEditThisFinding = canEditFindingRow(finding);
                 let actionButtons = "-";
@@ -1387,20 +1412,23 @@
 
                 $tbody.append(
                     "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
-                    "<td class='text-center'>" + toggleButton + "</td>" +
-                    "<td>" + groupFindingNumber + "</td>" +
-                    "<td>" + formatOriginBadge(finding) + "</td>" +
-                    "<td>" + escapeHtml(toothLabel) + "</td>" +
-                    "<td>" + escapeHtml(surfaces) + "</td>" +
-                    "<td>" + escapeHtml(diseaseType) + "</td>" +
-                    "<td>" + classificationBadge + "</td>" +
-                    "<td>" + description + "</td>" +
-                    "<td>" + examinerDetail + "</td>" +
+                    "<td class='text-center finding-pre-treatment-col'>" + toggleButton + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + groupFindingNumber + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + formatOriginBadge(finding) + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + escapeHtml(toothLabel) + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + escapeHtml(surfaces) + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + escapeHtml(diseaseType) + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + classificationBadge + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + description + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + examinerDetail + "</td>" +
+                    "<td class='finding-post-treatment-col'>" + escapeHtml(postSurfaces) + "</td>" +
+                    "<td class='finding-post-treatment-col'>" + escapeHtml(postClassification) + "</td>" +
+                    "<td class='finding-post-treatment-col'>" + escapeHtml(postTreatmentCodes) + "</td>" +
                     "<td>" + formatTreatmentStatusBadge(resolveTreatmentStatus(finding)) + "</td>" +
                     "<td class='text-nowrap'>" + actionButtons + "</td>" +
                     "</tr>" +
                     "<tr class='finding-detail-row' id='" + detailId + "' style='display:none;' data-finding-index='" + index + "'>" +
-                    "<td colspan='11'>" + buildTreatmentDetailPanel(finding) + "</td>" +
+                    "<td colspan='14'>" + buildTreatmentDetailPanel(finding) + "</td>" +
                     "</tr>"
                 );
             });
