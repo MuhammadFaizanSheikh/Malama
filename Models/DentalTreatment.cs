@@ -12,8 +12,6 @@ namespace Malama.Models
 
         public long ServiceMembersChildId { get; set; }
 
-        public long? DentalExamId { get; set; }
-
         public string? SmFinalClassification { get; set; }
 
         public string Status { get; set; } = "Pending";
@@ -21,10 +19,6 @@ namespace Malama.Models
         [JsonIgnore]
         [ValidateNever]
         public virtual ServiceMembersChild ServiceMembersChild { get; set; } = null!;
-
-        [JsonIgnore]
-        [ValidateNever]
-        public virtual DentalExam? DentalExam { get; set; }
 
         [JsonIgnore]
         [ValidateNever]

@@ -191,7 +191,6 @@ namespace Malama.AutoMapper
             CreateMap<DentalTreatmentStationSaveDto, DentalTreatment>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.ServiceMembersChild, opt => opt.Ignore())
-                .ForMember(dest => dest.DentalExam, opt => opt.Ignore())
                 .ForMember(dest => dest.Findings, opt => opt.Ignore())
                 .ForMember(dest => dest.SelectedTeeth, opt => opt.Ignore())
                 .ForMember(dest => dest.AnesthesiaRecords, opt => opt.Ignore())

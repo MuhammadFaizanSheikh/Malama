@@ -381,18 +381,8 @@ namespace ExcelFilesCompiler.Controllers
                     dto.ServiceMembersChildId,
                     eventStaffId.Value);
 
-                var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
-                if (dentalExam == null || dentalExam.Id <= 0)
-                {
-                    TempData["ResponseStatus"] = "error";
-                    TempData["ResponseTitle"] = "Not Eligible";
-                    TempData["ResponseMessage"] = "Dental Exam is required before saving Dental Treatment.";
-                    return RedirectToAction(nameof(Index));
-                }
-
                 var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
 
-                dto.DentalExamId = dentalExam.Id;
                 dto.Findings = DentalTreatmentJson.ParseList<DentalTreatmentFindingFormDto>(dto.FindingsJson);
                 dto.AnesthesiaRecords = DentalTreatmentJson.ParseList<DentalTreatmentAnesthesiaDto>(dto.AnesthesiaJson);
                 dto.Prescriptions = DentalTreatmentJson.ParseList<DentalTreatmentPrescriptionDto>(dto.PrescriptionsJson);
@@ -401,7 +391,6 @@ namespace ExcelFilesCompiler.Controllers
 
                 var validationError = DentalTreatmentValidator.ValidateSaveDto(
                     dto,
-                    dentalExam,
                     sharedClinical.Findings,
                     assignedExamFindingIds);
                 if (!string.IsNullOrWhiteSpace(validationError))

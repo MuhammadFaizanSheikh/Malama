@@ -54,6 +54,7 @@
                 DentalFindingId = f.Id,
                 Origin = DentalTreatmentFindingOrigin.Exam,
                 IsTreatmentOnly = false,
+                Source = dto.Source,
                 IsPrimaryTooth = dto.IsPrimaryTooth,
                 AffectedTooth = dto.AffectedTooth,
                 DiseaseConditionType = dto.DiseaseConditionType,
@@ -104,6 +105,7 @@
             DentalFindingId = null,
             Origin = DentalTreatmentFindingOrigin.Treatment,
             IsTreatmentOnly = true,
+            Source = null,
             IsPrimaryTooth = treatmentFinding.IsPrimaryTooth,
             AffectedTooth = treatmentFinding.AffectedTooth,
             DiseaseConditionType = treatmentFinding.DiseaseConditionType,
@@ -670,6 +672,7 @@
                 dentalFindingId: examFindingId,
                 origin: origin,
                 isTreatmentOnly: isTreatmentOnly,
+                source: item.source || "",
                 isPrimaryTooth: !!item.isPrimaryTooth,
                 affectedTooth: item.affectedTooth || "",
                 diseaseConditionType: item.diseaseConditionType || "",
@@ -1241,12 +1244,17 @@
             return nameHtml + whenHtml;
         }
 
-        function formatOriginBadge(finding) {
-            const isTreatment = finding.origin === FINDING_ORIGIN_TREATMENT || !!finding.isTreatmentOnly;
-            if (isTreatment) {
-                return "<span class='badge finding-origin-badge finding-origin-treatment'>Treatment</span>";
+        function formatFindingSource(finding) {
+            const source = (finding && finding.source ? String(finding.source) : "").trim();
+            if (!source) {
+                return "";
             }
-            return "<span class='badge finding-origin-badge finding-origin-exam'>Exam</span>";
+
+            const isCoordinator = source.toLowerCase() === "dentalcoordinator";
+            const badgeClass = isCoordinator
+                ? "finding-origin-badge finding-origin-treatment"
+                : "finding-origin-badge finding-origin-exam";
+            return "<span class='badge " + badgeClass + "'>" + escapeHtml(source) + "</span>";
         }
 
         function formatDetailValue(value) {
@@ -1414,7 +1422,7 @@
                     "<tr class='finding-main-row' data-finding-index='" + index + "'>" +
                     "<td class='text-center finding-pre-treatment-col'>" + toggleButton + "</td>" +
                     "<td class='finding-pre-treatment-col'>" + groupFindingNumber + "</td>" +
-                    "<td class='finding-pre-treatment-col'>" + formatOriginBadge(finding) + "</td>" +
+                    "<td class='finding-pre-treatment-col'>" + formatFindingSource(finding) + "</td>" +
                     "<td class='finding-pre-treatment-col'>" + escapeHtml(toothLabel) + "</td>" +
                     "<td class='finding-pre-treatment-col'>" + escapeHtml(surfaces) + "</td>" +
                     "<td class='finding-pre-treatment-col'>" + escapeHtml(diseaseType) + "</td>" +
@@ -1445,6 +1453,7 @@
                     dentalFindingId: item.dentalFindingId || null,
                     origin: item.origin || (item.isTreatmentOnly ? FINDING_ORIGIN_TREATMENT : FINDING_ORIGIN_EXAM),
                     isTreatmentOnly: !!item.isTreatmentOnly || item.origin === FINDING_ORIGIN_TREATMENT,
+                    source: item.source || "",
                     isPrimaryTooth: !!item.isPrimaryTooth,
                     affectedTooth: item.affectedTooth || "",
                     diseaseConditionType: item.diseaseConditionType || "",
@@ -1987,6 +1996,7 @@
                     dentalFindingId: null,
                     origin: FINDING_ORIGIN_TREATMENT,
                     isTreatmentOnly: true,
+                    source: "",
                     isPrimaryTooth: !!clinical.isPrimaryTooth,
                     affectedTooth: clinical.affectedTooth || "",
                     diseaseConditionType: clinical.diseaseConditionType || "",

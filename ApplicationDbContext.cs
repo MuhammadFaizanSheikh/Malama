@@ -252,14 +252,7 @@ namespace ExcelFilesCompiler
                     .HasForeignKey<DentalTreatment>(e => e.ServiceMembersChildId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.DentalExam)
-                    .WithMany()
-                    .HasForeignKey(e => e.DentalExamId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 entity.HasIndex(e => e.ServiceMembersChildId).IsUnique();
-                entity.HasIndex(e => e.DentalExamId);
             });
 
             modelBuilder.Entity<DentalTreatmentCoordinator>(entity =>

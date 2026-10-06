@@ -88,18 +88,12 @@ namespace ExcelFilesCompiler.Utilities
 
         public static string? ValidateSaveDto(
             DentalTreatmentStationSaveDto dto,
-            DentalExam exam,
             IEnumerable<DentalFinding>? sharedFindings = null,
             ISet<long>? allowedExamFindingIds = null)
         {
             if (dto.ServiceMembersChildId <= 0)
             {
                 return "Service member is required.";
-            }
-
-            if (dto.DentalExamId <= 0 || dto.DentalExamId != exam.Id)
-            {
-                return "Dental Exam reference is invalid.";
             }
 
             if (!string.IsNullOrWhiteSpace(dto.SmFinalClassification)

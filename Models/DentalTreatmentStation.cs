@@ -84,8 +84,6 @@ namespace Malama.Models
     {
         public long ServiceMembersChildId { get; set; }
 
-        public long DentalExamId { get; set; }
-
         public string? SmFinalClassification { get; set; }
 
         public string? Status { get; set; }
@@ -124,6 +122,9 @@ namespace Malama.Models
         /// <see cref="DentalTreatmentFindingOrigin.Exam"/> or <see cref="DentalTreatmentFindingOrigin.Treatment"/>.
         /// </summary>
         public string Origin { get; set; } = DentalTreatmentFindingOrigin.Exam;
+
+        /// <summary>Copied from <see cref="DentalFinding.Source"/> for exam-linked rows.</summary>
+        public string? Source { get; set; }
 
         public bool IsTreatmentOnly { get; set; }
 

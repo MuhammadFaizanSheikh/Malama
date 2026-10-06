@@ -973,9 +973,6 @@ namespace Malama.Migrations
                     b.Property<DateTime>("AddedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long?>("DentalExamId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("ServiceMembersChildId")
                         .HasColumnType("bigint");
 
@@ -993,8 +990,6 @@ namespace Malama.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DentalExamId");
 
                     b.HasIndex("ServiceMembersChildId")
                         .IsUnique();
@@ -4385,18 +4380,11 @@ namespace Malama.Migrations
 
             modelBuilder.Entity("Malama.Models.DentalTreatment", b =>
                 {
-                    b.HasOne("Malama.Models.DentalExam", "DentalExam")
-                        .WithMany()
-                        .HasForeignKey("DentalExamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Malama.Models.ServiceMembersChild", "ServiceMembersChild")
                         .WithOne("DentalTreatmentRecord")
                         .HasForeignKey("Malama.Models.DentalTreatment", "ServiceMembersChildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("DentalExam");
 
                     b.Navigation("ServiceMembersChild");
                 });
