@@ -196,7 +196,6 @@ namespace Malama.AutoMapper
                 .ForMember(dest => dest.AnesthesiaRecords, opt => opt.Ignore())
                 .ForMember(dest => dest.Prescriptions, opt => opt.Ignore())
                 .ForMember(dest => dest.OverallNotes, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.AddedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.AddedOn, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())

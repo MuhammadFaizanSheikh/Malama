@@ -240,6 +240,11 @@ namespace ExcelFilesCompiler.Utilities
             var anesthesiaDates = new HashSet<DateTime>();
             foreach (var record in dto.AnesthesiaRecords)
             {
+                if (SumCarpules(record.CarpulesByType) > MaxCarpulesPerRecord)
+                {
+                    return "The total number of carpules for all types cannot be more than 10.";
+                }
+
                 var date = TryParseAnesthesiaDate(record.Date);
                 if (!date.HasValue)
                 {
@@ -279,41 +284,71 @@ namespace ExcelFilesCompiler.Utilities
                 : null;
         }
 
-        public static string ComputeStatus(string? smFinalClassification, IEnumerable<DentalTreatmentFindingFormDto>? findings)
+        public const int MaxCarpulesPerRecord = 10;
+
+        public static int SumCarpules(IDictionary<string, string>? carpulesByType)
+        {
+            if (carpulesByType == null || carpulesByType.Count == 0)
+            {
+                return 0;
+            }
+
+            var total = 0;
+            foreach (var value in carpulesByType.Values)
+            {
+                if (int.TryParse(value?.Trim(), out var carpules) && carpules > 0)
+                {
+                    total += carpules;
+                }
+            }
+
+            return total;
+        }
+
+        public static bool IsCompleteTreatmentStatus(string? status)
+        {
+            var trimmed = status?.Trim();
+            return string.Equals(trimmed, "Complete", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(trimmed, "Complete with Reason", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Pending or Completed for one dentist: their scheduled exam findings and the treatment findings they added.
+        /// </summary>
+        public static string ComputeDentistStatus(
+            string? smFinalClassification,
+            ISet<long>? assignedExamFindingIds,
+            IEnumerable<DentalTreatmentFinding>? findings,
+            string? userId)
         {
             if (string.IsNullOrWhiteSpace(smFinalClassification))
             {
                 return AppConstants.Status.Pending;
             }
 
-            var list = findings?.ToList() ?? new List<DentalTreatmentFindingFormDto>();
-            foreach (var finding in list)
+            var list = findings?.ToList() ?? new List<DentalTreatmentFinding>();
+            var assignedIds = assignedExamFindingIds ?? new HashSet<long>();
+
+            foreach (var examFindingId in assignedIds)
             {
-                var status = ResolveFindingTreatmentStatus(finding);
-                if (!string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(status, "Complete with Reason", StringComparison.OrdinalIgnoreCase))
+                var saved = list.FirstOrDefault(f =>
+                    f.DentalFindingId == examFindingId
+                    && DentalTreatmentEligibilityHelper.IsInCurrentDentistFindingScope(f, assignedIds, userId));
+
+                if (saved == null || !IsCompleteTreatmentStatus(saved.TreatmentStatus))
                 {
                     return AppConstants.Status.Pending;
                 }
             }
 
-            return AppConstants.Status.Completed;
-        }
-
-        public static string ComputeStatusFromPersisted(
-            string? smFinalClassification,
-            IEnumerable<DentalTreatmentFinding>? findings)
-        {
-            if (string.IsNullOrWhiteSpace(smFinalClassification))
+            foreach (var finding in list)
             {
-                return AppConstants.Status.Pending;
-            }
+                if (!DentalTreatmentEligibilityHelper.IsOwnedTreatmentOnlyFinding(finding, userId))
+                {
+                    continue;
+                }
 
-            foreach (var finding in findings ?? Enumerable.Empty<DentalTreatmentFinding>())
-            {
-                var status = finding.TreatmentStatus?.Trim();
-                if (!string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(status, "Complete with Reason", StringComparison.OrdinalIgnoreCase))
+                if (!IsCompleteTreatmentStatus(finding.TreatmentStatus))
                 {
                     return AppConstants.Status.Pending;
                 }

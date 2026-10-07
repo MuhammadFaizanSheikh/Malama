@@ -14,6 +14,9 @@ namespace Malama.Models
 
         public DentalTreatment? DentalTreatment { get; set; }
 
+        /// <summary>Pending or Completed for the logged-in dentist.</summary>
+        public string DentistStatus { get; set; } = "Pending";
+
         /// <summary>Exam finding Ids scheduled to the logged-in dentist for this service member.</summary>
         public HashSet<long> AssignedExamFindingIds { get; set; } = new();
 

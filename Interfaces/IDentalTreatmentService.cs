@@ -19,6 +19,11 @@ namespace ExcelFilesCompiler.Interfaces
             long serviceMembersChildId,
             long eventStaffId);
 
+        Task<Dictionary<long, string>> GetDentistTreatmentStatusesAsync(
+            IReadOnlyCollection<long> serviceMemberChildIds,
+            long eventStaffId,
+            string? userId);
+
         Task<List<DentalTreatmentDentistAppointmentGroupDto>> GetDentistAppointmentFindingGroupsAsync(
             long serviceMembersChildId,
             long eventStaffId);

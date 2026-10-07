@@ -6,6 +6,7 @@
     ViewData["Title"] = "Dental Treatment";
     var selectedEventId = ViewBag.EventId;
     var auditNames = ViewBag.AuditDisplayNamesByUserId as IReadOnlyDictionary<string, string>;
+    var dentistStatuses = ViewBag.DentistStatusByChildId as IReadOnlyDictionary<long, string>;
     var totalCount = ViewBag.Summary != null ? ViewBag.Summary["Total"] : null;
     var pendingCount = ViewBag.Summary != null ? ViewBag.Summary["Pending"] : null;
     var completedCount = ViewBag.Summary != null ? ViewBag.Summary["Completed"] : null;
@@ -414,7 +415,12 @@
                     <tbody>
                         @foreach (var c in Model)
                         {
-                            var statusText = c.DentalTreatmentRecord?.Status ?? "Pending";
+                            string? dentistStatus = null;
+                            var statusText = dentistStatuses != null
+                                && dentistStatuses.TryGetValue(c.Id, out dentistStatus)
+                                && !string.IsNullOrWhiteSpace(dentistStatus)
+                                ? dentistStatus
+                                : "Pending";
                             var statusClass = string.Equals(statusText, "Completed", StringComparison.OrdinalIgnoreCase)
                                 ? "is-completed"
                                 : "is-pending";

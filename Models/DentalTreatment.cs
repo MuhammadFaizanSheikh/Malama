@@ -14,8 +14,6 @@ namespace Malama.Models
 
         public string? SmFinalClassification { get; set; }
 
-        public string Status { get; set; } = "Pending";
-
         [JsonIgnore]
         [ValidateNever]
         public virtual ServiceMembersChild ServiceMembersChild { get; set; } = null!;

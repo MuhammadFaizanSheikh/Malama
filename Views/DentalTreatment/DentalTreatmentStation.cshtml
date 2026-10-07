@@ -30,7 +30,7 @@
     // All other Treatment viewers see them read-only when already completed on the Dental Exam.
     var showFinalCommentsReadOnly = !isDentalExamDentist && dentalExam.QuestionnaireReviewed;
     var showSignatureReadOnly = !isDentalExamDentist && dentalExam.DentistSignatureEntered;
-    var dentalTreatmentOverallStatus = string.IsNullOrWhiteSpace(dentalTreatment?.Status) ? "Pending" : dentalTreatment!.Status;
+    var dentalTreatmentOverallStatus = string.IsNullOrWhiteSpace(Model.DentistStatus) ? "Pending" : Model.DentistStatus;
 }
 
 <style>

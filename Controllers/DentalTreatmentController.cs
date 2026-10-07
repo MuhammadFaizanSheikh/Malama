@@ -90,6 +90,13 @@ namespace ExcelFilesCompiler.Controllers
                     ? await _fileUploader.GetDentalTreatmentsByEventIdAsync(parsedEventId, eventStaffId.Value)
                     : new List<ServiceMembersChild>();
 
+                var dentistStatuses = eventStaffId.HasValue && user != null && data.Count > 0
+                    ? await _dentalTreatmentService.GetDentistTreatmentStatusesAsync(
+                        data.Select(c => c.Id).ToList(),
+                        eventStaffId.Value,
+                        user.Id)
+                    : new Dictionary<long, string>();
+
                 _logger.LogInformation(
                     "{ClassName}, {MethodName}, Retrieved {Count} records for EventId={EventId}, EventStaffId={EventStaffId}",
                     CLASSNAME, methodName, data.Count, eventId, eventStaffId);
@@ -98,13 +105,15 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     ["Total"] = data.Count,
                     ["Pending"] = data.Count(x =>
-                        x.DentalTreatmentRecord == null
-                        || string.Equals(x.DentalTreatmentRecord.Status, "Pending", StringComparison.OrdinalIgnoreCase)),
+                        !dentistStatuses.TryGetValue(x.Id, out var dentistStatus)
+                        || !string.Equals(dentistStatus, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase)),
                     ["Completed"] = data.Count(x =>
-                        string.Equals(x.DentalTreatmentRecord?.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+                        dentistStatuses.TryGetValue(x.Id, out var dentistStatus)
+                        && string.Equals(dentistStatus, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase))
                 };
 
                 ViewBag.Summary = summary;
+                ViewBag.DentistStatusByChildId = dentistStatuses;
                 ViewBag.EventId = eventId;
                 ViewBag.AuditDisplayNamesByUserId = await DentalExamSignatureHelper.ResolveDisplayNamesByUserIdAsync(
                     data.Select(c => c.DentalExamRecord?.UpdatedBy ?? c.DentalExamRecord?.AddedBy),
@@ -296,6 +305,11 @@ namespace ExcelFilesCompiler.Controllers
                     DentalExam = dentalExam,
                     SharedClinical = sharedClinical,
                     DentalTreatment = dentalTreatment,
+                    DentistStatus = DentalTreatmentValidator.ComputeDentistStatus(
+                        dentalTreatment?.SmFinalClassification,
+                        assignedExamFindingIds,
+                        dentalTreatment?.Findings,
+                        currentUser?.Id),
                     AssignedExamFindingIds = assignedExamFindingIds,
                     DentistAppointmentGroups = dentistAppointmentGroups,
                     HasQuestionnaire = questionnaire.Id > 0,

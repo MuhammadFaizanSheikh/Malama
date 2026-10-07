@@ -337,6 +337,24 @@
             };
         }
 
+        function sumCarpules(carpulesByType) {
+            return Object.keys(carpulesByType || {}).reduce(function (total, type) {
+                const count = parseInt(carpulesByType[type], 10);
+                return total + (isNaN(count) || count < 0 ? 0 : count);
+            }, 0);
+        }
+
+        function selectedCarpuleTotal() {
+            let total = 0;
+            $(".anesthesia-carpules-select").each(function () {
+                const count = parseInt($(this).val(), 10);
+                if (!isNaN(count) && count > 0) {
+                    total += count;
+                }
+            });
+            return total;
+        }
+
         function addOrUpdateAnesthesia() {
             if (!CAN_EDIT_TREATMENT) {
                 return;
@@ -350,6 +368,11 @@
             const record = readAnesthesiaRecord();
             if (!record) {
                 Swal.fire("Invalid Data", "Please select # of Carpules for at least one Type.", "warning");
+                return;
+            }
+
+            if (sumCarpules(record.carpulesByType) > 10) {
+                Swal.fire("Invalid Data", "The total number of carpules for all types cannot be more than 10.", "warning");
                 return;
             }
 
@@ -456,6 +479,14 @@
 
             $("#cancelAnesthesiaFormBtn").on("click", hideAnesthesiaForm);
             $("#saveAnesthesiaBtn").on("click", addOrUpdateAnesthesia);
+            $(".anesthesia-carpules-select").on("change", function () {
+                if (selectedCarpuleTotal() <= 10) {
+                    return;
+                }
+
+                $(this).val("");
+                Swal.fire("Invalid Data", "The total number of carpules for all types cannot be more than 10.", "warning");
+            });
             $("#unlockAnesthesiaBtn").on("click", function () {
                 if (!CAN_EDIT_TREATMENT) {
                     return;

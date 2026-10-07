@@ -979,10 +979,6 @@ namespace Malama.Migrations
                     b.Property<string>("SmFinalClassification")
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
 

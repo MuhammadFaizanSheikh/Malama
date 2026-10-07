@@ -33,6 +33,11 @@
         pointer-events: none;
     }
 
+    #overallNotesTable .overall-note-action-btn:disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+
     #overallNotesTable .overall-note-text {
         white-space: pre-wrap;
         max-width: 28rem;
@@ -137,6 +142,11 @@
             staffNamesByUserId[CURRENT_USER_ID] = CURRENT_USER_DISPLAY_NAME || staffNamesByUserId[CURRENT_USER_ID] || "";
         }
 
+        function isOwnOverallNote(note) {
+            const owner = (note?.dentist || "").trim();
+            return !!owner && owner === (CURRENT_USER_ID || "").trim();
+        }
+
         function resolveStaffDisplayName(userId) {
             if (!userId) {
                 return "";
@@ -181,10 +191,11 @@
             }
 
             overallNotes.forEach(function (note, index) {
+                const ownsNote = CAN_EDIT_TREATMENT && isOwnOverallNote(note);
                 const actionButtons = CAN_EDIT_TREATMENT
-                    ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 overall-note-action-btn edit-overall-note-btn' data-index='" + index + "' title='Edit'>" +
+                    ? ("<button type='button' class='btn btn-sm btn-outline-primary me-1 overall-note-action-btn edit-overall-note-btn' data-index='" + index + "' title='" + (ownsNote ? "Edit" : "Only the dentist who added this note can edit it") + "'" + (ownsNote ? "" : " disabled") + ">" +
                         "<i class='fas fa-edit' aria-hidden='true'></i><span class='visually-hidden'>Edit</span></button>" +
-                        "<button type='button' class='btn btn-sm btn-outline-danger overall-note-action-btn delete-overall-note-btn' data-index='" + index + "' title='Delete'>" +
+                        "<button type='button' class='btn btn-sm btn-outline-danger overall-note-action-btn delete-overall-note-btn' data-index='" + index + "' title='" + (ownsNote ? "Delete" : "Only the dentist who added this note can delete it") + "'" + (ownsNote ? "" : " disabled") + ">" +
                         "<i class='fas fa-trash-alt' aria-hidden='true'></i><span class='visually-hidden'>Delete</span></button>")
                     : "-";
 
@@ -255,6 +266,10 @@
 
             if (editingOverallNoteIndex != null) {
                 const existing = overallNotes[editingOverallNoteIndex] || {};
+                if (!isOwnOverallNote(existing)) {
+                    return;
+                }
+
                 overallNotes[editingOverallNoteIndex] = {
                     notes: note.notes,
                     dentist: existing.dentist || note.dentist,
@@ -274,7 +289,7 @@
             }
 
             const note = overallNotes[index];
-            if (!note) {
+            if (!note || !isOwnOverallNote(note)) {
                 return;
             }
 
@@ -291,6 +306,11 @@
 
         function deleteOverallNote(index) {
             if (!CAN_EDIT_TREATMENT) {
+                return;
+            }
+
+            const note = overallNotes[index];
+            if (!note || !isOwnOverallNote(note)) {
                 return;
             }
 
