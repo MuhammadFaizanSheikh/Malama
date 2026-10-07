@@ -2,6 +2,7 @@ using ExcelFilesCompiler.Interfaces;
 using ExcelFilesCompiler.UnitOfWork;
 using ExcelFilesCompiler.Utilities;
 using Malama.Models;
+using Malama.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -71,6 +72,56 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .ToListAsync();
 
             return DentalSharedClinicalViewModel.FromParts(serviceMembersChildId, psr, denClass, pano, findings);
+        }
+
+        public async Task<List<ScheduledFindingAppointmentDto>> GetScheduledFindingAppointmentsAsync(long serviceMembersChildId)
+        {
+            if (serviceMembersChildId <= 0)
+            {
+                return new List<ScheduledFindingAppointmentDto>();
+            }
+
+            var links = await _unitOfWork.DentalAppointmentFinding
+                .GetWithIncludeNoTracking(
+                    f => f.Appointment.DentalTreatmentCoordinator.ServiceMembersChildId == serviceMembersChildId,
+                    f => f.Appointment)
+                .ToListAsync();
+
+            if (links.Count == 0)
+            {
+                return new List<ScheduledFindingAppointmentDto>();
+            }
+
+            var staffIds = links
+                .Select(l => l.Appointment.EventStaffId)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+            var staffRows = staffIds.Count == 0
+                ? new List<EventStaff>()
+                : await _unitOfWork.EventStaff
+                    .GetAllWithConditionNoTracking(s => staffIds.Contains(s.Id))
+                    .ToListAsync();
+            var dentistNameById = staffRows.ToDictionary(
+                s => s.Id,
+                s => DentalExamSignatureHelper.FormatEventStaffDisplayName(s));
+
+            return links
+                .OrderBy(l => l.Appointment.AppointmentDate)
+                .ThenBy(l => l.Appointment.SortOrder)
+                .ThenBy(l => l.Appointment.Id)
+                .Select(l => new ScheduledFindingAppointmentDto
+                {
+                    DentalFindingId = l.DentalFindingId,
+                    FindingClientKey = l.FindingClientKey,
+                    DentistName = dentistNameById.TryGetValue(l.Appointment.EventStaffId, out var dentistName)
+                        ? dentistName
+                        : string.Empty,
+                    AppointmentDate = l.Appointment.AppointmentDate.ToString("MM/dd/yyyy"),
+                    AppointmentStartTime = l.Appointment.AppointmentStartTime ?? string.Empty,
+                    AppointmentDuration = l.Appointment.AppointmentDuration ?? string.Empty
+                })
+                .ToList();
         }
 
         public async Task SaveOrUpdateFromFormDataAsync(DentalExamStationSaveDto dto, string userName, string userId)
@@ -515,10 +566,23 @@ namespace ExcelFilesCompiler.Controllers.Services
             var findings = await _unitOfWork.DentalFinding
                 .GetWithIncludeTracking(f => f.ServiceMembersChildId == serviceMembersChildId)
                 .ToListAsync();
-            if (findings.Count > 0)
+            if (findings.Count == 0)
             {
-                _unitOfWork.DentalFinding.RemoveRange(findings);
+                return;
             }
+
+            var scheduled = await GetScheduledFindingAppointmentsAsync(serviceMembersChildId);
+            var scheduledFinding = findings.FirstOrDefault(f =>
+                scheduled.Any(s => s.DentalFindingId == f.Id));
+            if (scheduledFinding != null)
+            {
+                throw new InvalidOperationException(FormatScheduledFindingBlockedMessage(
+                    scheduledFinding,
+                    scheduled.Where(s => s.DentalFindingId == scheduledFinding.Id),
+                    "deleted"));
+            }
+
+            _unitOfWork.DentalFinding.RemoveRange(findings);
         }
 
         private void ReplacePsrSelectedTeeth(DentalPsr target, List<int> selectedTeeth)
@@ -554,6 +618,7 @@ namespace ExcelFilesCompiler.Controllers.Services
                 .Where(f => f.Id > 0)
                 .ToDictionary(f => f.Id);
             var incomingIds = new HashSet<long>(findings.Where(f => f.Id > 0).Select(f => f.Id));
+            var scheduledAppointments = await GetScheduledFindingAppointmentsAsync(serviceMembersChildId);
 
             var toRemove = existingFindings
                 .Where(f => f.Id > 0 && !incomingIds.Contains(f.Id))
@@ -561,6 +626,16 @@ namespace ExcelFilesCompiler.Controllers.Services
 
             if (toRemove.Count > 0)
             {
+                var scheduledRemoval = toRemove.FirstOrDefault(f =>
+                    scheduledAppointments.Any(s => s.DentalFindingId == f.Id));
+                if (scheduledRemoval != null)
+                {
+                    throw new InvalidOperationException(FormatScheduledFindingBlockedMessage(
+                        scheduledRemoval,
+                        scheduledAppointments.Where(s => s.DentalFindingId == scheduledRemoval.Id),
+                        "deleted"));
+                }
+
                 var removeIds = toRemove.Select(f => f.Id).ToList();
                 var hasTreatmentLinks = _unitOfWork.DentalTreatmentFinding
                     .GetAllWithConditionNoTracking(tf =>
@@ -583,6 +658,14 @@ namespace ExcelFilesCompiler.Controllers.Services
                 if (finding.Id > 0 && existingById.TryGetValue(finding.Id, out var existing))
                 {
                     var clinicalChanged = !FindingClinicalContentEquals(existing, finding);
+                    if (clinicalChanged && scheduledAppointments.Any(s => s.DentalFindingId == existing.Id))
+                    {
+                        throw new InvalidOperationException(FormatScheduledFindingBlockedMessage(
+                            existing,
+                            scheduledAppointments.Where(s => s.DentalFindingId == existing.Id),
+                            "edited"));
+                    }
+
                     ApplyFindingClinicalFields(existing, finding, index);
                     if (string.IsNullOrWhiteSpace(existing.Source))
                     {
@@ -791,6 +874,47 @@ namespace ExcelFilesCompiler.Controllers.Services
             {
                 entity.ClientKey = dto.ClientKey.Trim();
             }
+        }
+
+        private static string FormatScheduledFindingBlockedMessage(
+            DentalFinding finding,
+            IEnumerable<ScheduledFindingAppointmentDto> appointments,
+            string action)
+        {
+            var tooth = finding.AffectedTooth?.Trim();
+            var subject = string.IsNullOrWhiteSpace(tooth)
+                ? "This finding"
+                : "The finding for tooth " + tooth + (finding.IsPrimaryTooth ? " (primary)" : "");
+            var scheduleText = string.Join("; ", appointments.Select(FormatScheduledAppointmentClause));
+            if (string.IsNullOrWhiteSpace(scheduleText))
+            {
+                scheduleText = "a dentist";
+            }
+
+            return subject + " is scheduled with " + scheduleText
+                + ". It cannot be " + action + " while an appointment is scheduled."
+                + Environment.NewLine + "Please contact Coordinator";
+        }
+
+        private static string FormatScheduledAppointmentClause(ScheduledFindingAppointmentDto appointment)
+        {
+            var dentist = string.IsNullOrWhiteSpace(appointment.DentistName)
+                ? "a dentist"
+                : appointment.DentistName.Trim();
+            var schedule = appointment.AppointmentDate?.Trim() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentStartTime))
+            {
+                schedule += " at " + appointment.AppointmentStartTime.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentDuration))
+            {
+                schedule += " (" + appointment.AppointmentDuration.Trim() + ")";
+            }
+
+            return string.IsNullOrWhiteSpace(schedule)
+                ? dentist
+                : dentist + " on " + schedule;
         }
 
         private static bool FindingClinicalContentEquals(DentalFinding existing, DentalFindingDto dto)

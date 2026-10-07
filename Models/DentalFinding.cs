@@ -211,6 +211,21 @@ namespace Malama.Models
         public string? ClientKey { get; set; }
     }
 
+    public class ScheduledFindingAppointmentDto
+    {
+        public long DentalFindingId { get; set; }
+
+        public string? FindingClientKey { get; set; }
+
+        public string DentistName { get; set; } = string.Empty;
+
+        public string AppointmentDate { get; set; } = string.Empty;
+
+        public string AppointmentStartTime { get; set; } = string.Empty;
+
+        public string AppointmentDuration { get; set; } = string.Empty;
+    }
+
     public static class DentalFindingMapper
     {
         private static readonly JsonSerializerOptions JsonOptions = new()

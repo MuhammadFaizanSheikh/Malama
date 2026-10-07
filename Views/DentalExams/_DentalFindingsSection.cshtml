@@ -27,6 +27,12 @@
         findingSourceDefault,
         DentalFindingSources.DentalCoordinator,
         StringComparison.Ordinal);
+    var lockFindingsWithAppointments = ViewData["LockFindingsWithAppointments"] as bool? ?? false;
+    var scheduledFindingAppointments = ViewData["ScheduledFindingAppointments"] as IEnumerable<ScheduledFindingAppointmentDto>
+        ?? Enumerable.Empty<ScheduledFindingAppointmentDto>();
+    var scheduledFindingAppointmentsJson = JsonSerializer.Serialize(
+        scheduledFindingAppointments,
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var findingsTableColspan = showFindingAssignmentFields
         ? 11
         : (showFindingAppointmentDetails ? 11 : 10);
@@ -1170,6 +1176,8 @@
         const SHOW_FINDING_APPOINTMENT_DETAILS = @Json.Serialize(showFindingAppointmentDetails);
         const SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS = @Json.Serialize(showCoordinatorExternalExamFields);
         const SHOW_TREATMENT_POSSIBLE_FIELDS = @Json.Serialize(showTreatmentPossibleFields);
+        const LOCK_FINDINGS_WITH_APPOINTMENTS = @Json.Serialize(lockFindingsWithAppointments);
+        const SCHEDULED_FINDING_APPOINTMENTS = @Html.Raw(scheduledFindingAppointmentsJson);
         const REASON_COMMAND_EXCUSED = @Json.Serialize(DentalFindingConstants.ReasonCommandExcused);
         const REASON_TREATMENT_PLAN_IN_PROGRESS = @Json.Serialize(DentalFindingConstants.ReasonTreatmentPlanInProgress);
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
@@ -3067,6 +3075,17 @@
                 return;
             }
 
+            const scheduledAppointments = getScheduledAppointmentsForFinding(finding);
+            if (LOCK_FINDINGS_WITH_APPOINTMENTS && scheduledAppointments.length) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Finding is scheduled",
+                    html: formatScheduledFindingBlockedMessage(finding, scheduledAppointments, "edited"),
+                    confirmButtonColor: "rgba(80, 90, 201, 1)"
+                });
+                return;
+            }
+
             editingFindingIndex = index;
             $("#dentalFindingFormTitle").text(FINDINGS_READ_ONLY ? "View Finding" : "Edit Finding");
             if (!FINDINGS_READ_ONLY) {
@@ -3171,6 +3190,46 @@
             toggleTreatmentPossibleReasonVisibility();
         }
 
+        function getScheduledAppointmentsForFinding(finding) {
+            if (!finding || !Array.isArray(SCHEDULED_FINDING_APPOINTMENTS)) {
+                return [];
+            }
+
+            const findingId = parseInt(finding.id, 10) || 0;
+            const clientKey = (finding.clientKey || "").toString().trim();
+            return SCHEDULED_FINDING_APPOINTMENTS.filter(function (appointment) {
+                const appointmentFindingId = parseInt(appointment.dentalFindingId, 10) || 0;
+                const appointmentKey = (appointment.findingClientKey || "").toString().trim();
+                return (findingId > 0 && appointmentFindingId === findingId)
+                    || (clientKey && appointmentKey && appointmentKey === clientKey);
+            });
+        }
+
+        function formatScheduledAppointmentClause(appointment) {
+            const dentist = (appointment.dentistName || "").toString().trim() || "a dentist";
+            let schedule = (appointment.appointmentDate || "").toString().trim();
+            const startTime = (appointment.appointmentStartTime || "").toString().trim();
+            const duration = (appointment.appointmentDuration || "").toString().trim();
+            if (startTime) {
+                schedule += (schedule ? " at " : "") + startTime;
+            }
+            if (duration) {
+                schedule += " (" + duration + ")";
+            }
+            return schedule ? dentist + " on " + schedule : dentist;
+        }
+
+        function formatScheduledFindingBlockedMessage(finding, appointments, action) {
+            const tooth = (finding?.affectedTooth || "").toString().trim();
+            const subject = tooth
+                ? "The finding for tooth " + tooth + (finding.isPrimaryTooth ? " (primary)" : "")
+                : "This finding";
+            const scheduleText = (appointments || []).map(formatScheduledAppointmentClause).filter(Boolean).join("; ");
+            const message = subject + " is scheduled with " + (scheduleText || "a dentist")
+                + ". It cannot be " + action + " while an appointment is scheduled.";
+            return escapeHtml(message) + "<br>Please contact Coordinator";
+        }
+
         function getEditingFindingAppointmentAssignment() {
             const finding = editingFindingIndex != null ? dentalFindings[editingFindingIndex] : null;
             const clientKey = finding && finding.clientKey ? finding.clientKey : null;
@@ -3184,6 +3243,17 @@
             const finding = dentalFindings[index];
             if (!canDeleteFindingRow(finding)) {
                 Swal.fire("Not allowed", "Exam findings cannot be deleted from Treatment Coordinator.", "warning");
+                return;
+            }
+
+            const scheduledAppointments = getScheduledAppointmentsForFinding(finding);
+            if (LOCK_FINDINGS_WITH_APPOINTMENTS && scheduledAppointments.length) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Finding is scheduled",
+                    html: formatScheduledFindingBlockedMessage(finding, scheduledAppointments, "deleted"),
+                    confirmButtonColor: "rgba(80, 90, 201, 1)"
+                });
                 return;
             }
             const clientKey = finding?.clientKey || null;

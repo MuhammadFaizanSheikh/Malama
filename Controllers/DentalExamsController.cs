@@ -191,6 +191,7 @@ namespace ExcelFilesCompiler.Controllers
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
 
                 var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
+                ViewBag.ScheduledFindingAppointments = await _dentalExamService.GetScheduledFindingAppointmentsAsync(serviceMembersChildId);
 
                 var currentUser = await _userManager.GetUserAsync(User);
                 var eventManagementId = DentalExamSignatureHelper.TryResolveEventManagementId(

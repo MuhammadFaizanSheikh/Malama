@@ -1328,6 +1328,23 @@
                 "</div>";
         }
 
+        function formatTreatmentCodeForDisplay(code) {
+            const value = (code || "").toString().trim();
+            if (!value) {
+                return "";
+            }
+
+            const separatorIndex = value.indexOf(" - ");
+            return separatorIndex >= 0 ? value.substring(0, separatorIndex).trim() : value;
+        }
+
+        function formatTreatmentCodesForDisplay(codes) {
+            return (codes || [])
+                .map(formatTreatmentCodeForDisplay)
+                .filter(Boolean)
+                .join(";");
+        }
+
         function renderFindingsTable() {
             const $tbody = $("#treatmentFindingsTableBody");
             $tbody.empty();
@@ -1382,7 +1399,7 @@
                 const examinerDetail = isTreatmentOrigin ? "-" : formatExaminerDetail(finding);
                 const postSurfaces = (finding.postServiceTreatment || []).join(", ");
                 const postClassification = (finding.finalDrc || "").toString().trim();
-                const postTreatmentCodes = (finding.treatmentCdtCodes || []).join(", ");
+                const postTreatmentCodes = formatTreatmentCodesForDisplay(finding.treatmentCdtCodes);
                 const detailId = "findingTreatmentDetail_" + index;
                 const canEditThisFinding = canEditFindingRow(finding);
                 let actionButtons = "-";

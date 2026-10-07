@@ -26,5 +26,7 @@ namespace ExcelFilesCompiler.Interfaces
             string userName,
             string userId,
             bool saveChanges = true);
+
+        Task<List<ScheduledFindingAppointmentDto>> GetScheduledFindingAppointmentsAsync(long serviceMembersChildId);
     }
 }

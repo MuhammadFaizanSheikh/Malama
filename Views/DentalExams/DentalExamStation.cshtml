@@ -800,6 +800,9 @@
                 findingsViewData["CurrentUserDisplayName"] = ViewBag.CurrentUserDisplayName as string ?? string.Empty;
                 findingsViewData["ExaminerNamesByUserId"] = ViewBag.ExaminerNamesByUserId as Dictionary<string, string>
                     ?? new Dictionary<string, string>();
+                findingsViewData["LockFindingsWithAppointments"] = true;
+                findingsViewData["ScheduledFindingAppointments"] = ViewBag.ScheduledFindingAppointments as IEnumerable<ScheduledFindingAppointmentDto>
+                    ?? Enumerable.Empty<ScheduledFindingAppointmentDto>();
             }
             @await Html.PartialAsync("_DentalFindingsSection", Model.SharedClinical, findingsViewData)
             @{
