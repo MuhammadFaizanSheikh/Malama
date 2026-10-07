@@ -28,14 +28,15 @@
         DentalFindingSources.DentalCoordinator,
         StringComparison.Ordinal);
     var lockFindingsWithAppointments = ViewData["LockFindingsWithAppointments"] as bool? ?? false;
+    var showFindingStatusRows = showFindingAppointmentDetails || lockFindingsWithAppointments;
     var scheduledFindingAppointments = ViewData["ScheduledFindingAppointments"] as IEnumerable<ScheduledFindingAppointmentDto>
         ?? Enumerable.Empty<ScheduledFindingAppointmentDto>();
     var scheduledFindingAppointmentsJson = JsonSerializer.Serialize(
         scheduledFindingAppointments,
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-    var findingsTableColspan = showFindingAssignmentFields
+    var findingsTableColspan = showFindingAssignmentFields || showFindingStatusRows
         ? 11
-        : (showFindingAppointmentDetails ? 11 : 10);
+        : 10;
     var findings = exam.Findings?
         .OrderBy(f => f.SortOrder)
         .Select(DentalFindingMapper.ToDto)
@@ -753,7 +754,7 @@
             <input type="hidden" id="FindingsJson" value="@findingsJson" />
         }
 
-        @if (showFindingAppointmentDetails)
+        @if (showFindingStatusRows)
         {
             <div class="finding-status-legend" role="note" aria-label="Finding status color legend">
                 <span class="finding-status-legend-item">
@@ -791,7 +792,7 @@
                         }
                         else
                         {
-                            @if (showFindingAppointmentDetails)
+                            @if (showFindingStatusRows)
                             {
                                 <th style="width: 44px;" aria-label="Expand"></th>
                             }
@@ -1174,6 +1175,7 @@
         const FINDING_SOURCE_COORDINATOR = @Json.Serialize(DentalFindingSources.DentalCoordinator);
         const FINDING_SOURCE_DEFAULT = @Json.Serialize(findingSourceDefault);
         const SHOW_FINDING_APPOINTMENT_DETAILS = @Json.Serialize(showFindingAppointmentDetails);
+        const SHOW_FINDING_STATUS_ROWS = @Json.Serialize(showFindingStatusRows);
         const SHOW_COORDINATOR_EXTERNAL_EXAM_FIELDS = @Json.Serialize(showCoordinatorExternalExamFields);
         const SHOW_TREATMENT_POSSIBLE_FIELDS = @Json.Serialize(showTreatmentPossibleFields);
         const LOCK_FINDINGS_WITH_APPOINTMENTS = @Json.Serialize(lockFindingsWithAppointments);
@@ -2432,8 +2434,24 @@
             return raw;
         }
 
+        function getFindingAppointmentForDisplay(finding) {
+            const live = getFindingAppointmentAssignmentSafe(finding && finding.clientKey);
+            if (live) {
+                return [live];
+            }
+
+            return getScheduledAppointmentsForFinding(finding).map(function (appointment) {
+                return {
+                    assignedDentist: appointment.dentistName || "",
+                    appointmentDate: appointment.appointmentDate || "",
+                    appointmentStartTime: appointment.appointmentStartTime || "",
+                    appointmentDuration: appointment.appointmentDuration || ""
+                };
+            });
+        }
+
         function getFindingTreatmentStatusClass(finding) {
-            if (!SHOW_FINDING_APPOINTMENT_DETAILS || !finding) {
+            if (!SHOW_FINDING_STATUS_ROWS || !finding) {
                 return "";
             }
 
@@ -2446,8 +2464,7 @@
                 return "finding-status-not-possible";
             }
 
-            const assignment = getFindingAppointmentAssignmentSafe(finding.clientKey);
-            if (assignment) {
+            if (getFindingAppointmentForDisplay(finding).length) {
                 return "finding-status-scheduled";
             }
 
@@ -2472,7 +2489,7 @@
         }
 
         function buildTreatmentPossibleDetailSection(finding) {
-            if (!SHOW_TREATMENT_POSSIBLE_FIELDS || !isClass3Classification(finding.classification)) {
+            if (!SHOW_FINDING_STATUS_ROWS || !isClass3Classification(finding.classification)) {
                 return "";
             }
 
@@ -2499,14 +2516,14 @@
         }
 
         function buildFindingAppointmentDetailSection(finding) {
-            if (!SHOW_FINDING_APPOINTMENT_DETAILS) {
+            if (!SHOW_FINDING_STATUS_ROWS) {
                 return "";
             }
 
             const treatmentPossibleSection = buildTreatmentPossibleDetailSection(finding);
             const externalSection = buildCoordinatorExternalExamDetailSection(finding);
-            const assignment = getFindingAppointmentAssignmentSafe(finding.clientKey);
-            if (!assignment) {
+            const appointments = getFindingAppointmentForDisplay(finding);
+            if (!appointments.length) {
                 return treatmentPossibleSection + externalSection +
                     "<div class='finding-detail-subsection'>" +
                     "<div class='finding-detail-subsection-title'>Appointment</div>" +
@@ -2515,15 +2532,21 @@
                     "</div></div>";
             }
 
-            return treatmentPossibleSection + externalSection +
-                "<div class='finding-detail-subsection'>" +
-                "<div class='finding-detail-subsection-title'>Appointment</div>" +
-                "<div class='finding-detail-grid'>" +
-                buildFindingDetailItem("Assigned Dentist", escapeHtml(resolveAssignedDentistDisplayName(assignment.assignedDentist) || "-")) +
-                buildFindingDetailItem("Appointment Date", escapeHtml(formatAppointmentDateForDisplay(assignment.appointmentDate))) +
-                buildFindingDetailItem("Start Time", escapeHtml(assignment.appointmentStartTime || "-")) +
-                buildFindingDetailItem("Duration", escapeHtml(assignment.appointmentDuration || "-")) +
-                "</div></div>";
+            const appointmentSections = appointments.map(function (assignment, appointmentIndex) {
+                const title = appointments.length > 1
+                    ? "Appointment " + (appointmentIndex + 1)
+                    : "Appointment";
+                return "<div class='finding-detail-subsection'>" +
+                    "<div class='finding-detail-subsection-title'>" + title + "</div>" +
+                    "<div class='finding-detail-grid'>" +
+                    buildFindingDetailItem("Assigned Dentist", escapeHtml(resolveAssignedDentistDisplayName(assignment.assignedDentist) || "-")) +
+                    buildFindingDetailItem("Appointment Date", escapeHtml(formatAppointmentDateForDisplay(assignment.appointmentDate))) +
+                    buildFindingDetailItem("Start Time", escapeHtml(assignment.appointmentStartTime || "-")) +
+                    buildFindingDetailItem("Duration", escapeHtml(assignment.appointmentDuration || "-")) +
+                    "</div></div>";
+            }).join("");
+
+            return treatmentPossibleSection + externalSection + appointmentSections;
         }
 
         function renderFindingsTable(options) {
@@ -2614,7 +2637,7 @@
                     return;
                 }
 
-                if (SHOW_FINDING_APPOINTMENT_DETAILS) {
+                if (SHOW_FINDING_STATUS_ROWS) {
                     const detailId = "findingDetail_" + index;
                     const statusClass = getFindingTreatmentStatusClass(finding);
                     const expandBtn =
