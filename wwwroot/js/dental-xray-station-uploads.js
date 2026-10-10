@@ -328,6 +328,14 @@
         return goToVitalStationClicked || (submitter && submitter.name === "GoToVitalStation");
     }
 
+    function paCardsInOpenUpload() {
+        const container = document.getElementById("paUploadContainer");
+        if (!container || container.style.display === "none") {
+            return $();
+        }
+        return $("#paUploadContainer .pa-card");
+    }
+
     function isUploadComplete(prefix) {
         const hiddenFileName = document.getElementById(prefix + "_fileName");
         const removedInput = document.getElementById(prefix + "_removed");
@@ -370,7 +378,7 @@
 
         const paStatus = $("#PaStatus").val();
         if (paStatus === "Completed") {
-            const paCards = $(".pa-card:visible");
+            const paCards = paCardsInOpenUpload();
             if (paCards.length === 0) {
                 errors.push("Periapical (PA) X-Rays Status requires at least one PA X-Ray image.");
             } else {
@@ -413,8 +421,9 @@
             if (bwxStatus && paStatus) {
                 const bwxDone = isSectionDone(bwxStatus, $("#BwxReason").val(), isBwxUploadCompleteForStatus);
                 const paDone = isSectionDone(paStatus, $("#PaReason").val(), function () {
-                    return $(".pa-card:visible").length > 0 &&
-                        $(".pa-card:visible").toArray().every(function (card) {
+                    const paCards = paCardsInOpenUpload();
+                    return paCards.length > 0 &&
+                        paCards.toArray().every(function (card) {
                             const prefix = $(card).find(".xray-file").data("prefix");
                             return isUploadComplete(prefix);
                         });

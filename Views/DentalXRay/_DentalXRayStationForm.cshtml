@@ -36,12 +36,31 @@
     ViewBag.DentalXRayFormBwxReason = station.BwxReason ?? "";
     ViewBag.DentalXRayFormPaReason = station.PaReason ?? "";
     ViewBag.DentalXRayFormBwxNeeded = bwxNeeded;
+    var collapseXRaySection = ViewData["CollapseXRaySection"] as bool? ?? false;
 }
 
 <div id="clinicalStationSection" style="@(isFemale ? "display:none;" : "")">
     <div id="xrayStationSection">
         <div class="dxr-panel xray-clinical-panel">
-            <h2 class="dxr-panel-title xray-section-title"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray Station</h2>
+            @if (collapseXRaySection)
+            {
+                <div class="questionnaire-heading" id="xrayStationHeading">
+                    <div class="form-check form-switch questionnaire-toggle-switch mb-0">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               role="switch"
+                               id="toggleXrayStationSectionSwitch"
+                               aria-controls="xrayStationBody"
+                               aria-expanded="false" />
+                    </div>
+                    <h2 class="dxr-panel-title xray-section-title"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray Station</h2>
+                </div>
+            }
+            else
+            {
+                <h2 class="dxr-panel-title xray-section-title"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray Station</h2>
+            }
+            <div id="xrayStationBody" style="@(collapseXRaySection ? "display:none;" : null)">
 
             @if (bwxNeeded)
             {
@@ -289,6 +308,17 @@
                     <p class="dxr-notice" style="background:#f3f4f8;border-color:rgba(31,36,48,0.1);color:#4b5160;">Panorex (Pano) X-ray is NOT Required for this Service member</p>
                 }
             }
+            @if (collapseXRaySection)
+            {
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm section-collapse-btn"
+                            data-target-switch="toggleXrayStationSectionSwitch"
+                            data-target-heading="xrayStationHeading">
+                        <i class="fas fa-chevron-up"></i> Collapse X-Ray Station
+                    </button>
+                </div>
+            }
+            </div>
         </div>
     </div>
 </div>

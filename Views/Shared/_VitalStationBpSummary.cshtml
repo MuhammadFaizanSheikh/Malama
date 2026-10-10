@@ -37,15 +37,15 @@
 {
     <div class="card mb-4">
         <div class="card-header fw-bold" style="background-color: rgba(120, 130, 221, 0.15); color: rgba(80, 90, 201, 1);">
-            Height &amp; weight
+            Height &amp; Weight
         </div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <p class="mb-0"><span class="fw-bold">Height:</span> @(d.Height?.ToString() ?? "—")</p>
+                    <p class="mb-0"><span class="fw-bold">Height (inches):</span> @(d.Height?.ToString() ?? "—")</p>
                 </div>
                 <div class="col-md-4">
-                    <p class="mb-0"><span class="fw-bold">Weight:</span> @(d.Weight?.ToString() ?? "—")</p>
+                    <p class="mb-0"><span class="fw-bold">Weight (lbs):</span> @(d.Weight?.ToString() ?? "—")</p>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
             <div class="card-body">
                 @if (r1 != null)
                 {
-                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r1.Systolic / @r1.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @(r1.Systolic) / @(r1.Diastolic)</p>
                     <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r1.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r1.ReadingStatus</span></p>
                     @if (!string.IsNullOrEmpty(r1.Remarks))
                     {
@@ -90,7 +90,7 @@
             <div class="card-body">
                 @if (r2 != null)
                 {
-                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r2.Systolic / @r2.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @(r2.Systolic) / @(r2.Diastolic)</p>
                     <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r2.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r2.ReadingStatus</span></p>
                     @if (!string.IsNullOrEmpty(r2.Remarks))
                     {
@@ -128,7 +128,7 @@
             <div class="card-body">
                 @if (r3 != null)
                 {
-                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @r3.Systolic / @r3.Diastolic</p>
+                    <p class="mb-1"><span class="fw-bold">Systolic / Diastolic:</span> @(r3.Systolic) / @(r3.Diastolic)</p>
                     <p class="mb-1"><span class="fw-bold">Result:</span> <span class="badge @(r3.ReadingStatus == "Normal" ? "bg-success" : "bg-warning text-dark")">@r3.ReadingStatus</span></p>
                     @if (!string.IsNullOrEmpty(r3.Remarks))
                     {

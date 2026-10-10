@@ -30,7 +30,12 @@ builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-XSRF-TOKEN";  // Customize the header name (optional)
 });
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+var mvcBuilder = builder.Services.AddControllersWithViews();
+// IIS publish does not include the Razor compiler references. Compile views only while debugging.
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 //builder.Services.AddScoped<IGenericRepository<SubmissionTokenRecord>, GenericRepository<SubmissionTokenRecord>>();
