@@ -13,7 +13,11 @@
     }
     var hasDenClassSelected = !string.IsNullOrWhiteSpace(savedDenClass)
         && DentalExamDenClass.Options.Contains(savedDenClass, StringComparer.OrdinalIgnoreCase);
-    var denClassCommentsRequiredAttr = hasDenClassSelected && !subsequentReadOnly ? "required" : "";
+    // Dental Exam does not require comments. Treatment Coordinator sets required in page script when needed.
+    var requireDenClassComments = ViewData["RequireDenClassComments"] as bool? ?? false;
+    var denClassCommentsRequiredAttr = requireDenClassComments && hasDenClassSelected && !subsequentReadOnly
+        ? "required"
+        : "";
     var denDisabledAttr = subsequentReadOnly ? "disabled" : null;
     var panoMarkedRequiredByDentist = exam.PanoXRayAcknowledged;
 }
@@ -32,7 +36,7 @@
                    aria-controls="denClassContentSection"
                    aria-expanded="false" />
         </div>
-        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Dental Readiness Classification (DRC Class)</h4>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);"><i class="fas fa-id-card" aria-hidden="true"></i> Dental Readiness Classification (DRC Class)</h4>
     </div>
 
     <div id="denClassContentSection" style="display:none;">
@@ -89,7 +93,7 @@
                    aria-controls="panoXrayContentSection"
                    aria-expanded="false" />
         </div>
-        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);">Panographic X-ray Required</h4>
+        <h4 class="mb-0" style="color: rgba(80, 90, 201, 1);"><i class="fas fa-file-medical" aria-hidden="true"></i> Panographic X-ray Required</h4>
     </div>
 
     <div id="panoXrayContentSection" style="display:none;">

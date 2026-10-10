@@ -76,14 +76,6 @@ namespace ExcelFilesCompiler.Utilities
                 return null;
             }
 
-            var hasDenClass = !string.IsNullOrWhiteSpace(dto.DenClass)
-                && DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase);
-
-            if (hasDenClass && string.IsNullOrWhiteSpace(dto.DenClassReasonComments))
-            {
-                return "Classification Reason / Comments is required when Dental Readiness Classification is selected.";
-            }
-
             var findingsRuleError = DentalExamDenClass.ValidateAgainstFindings(dto.DenClass, dto.Findings);
             if (!string.IsNullOrWhiteSpace(findingsRuleError))
             {
@@ -134,7 +126,7 @@ namespace ExcelFilesCompiler.Utilities
             var hasDenClass = !string.IsNullOrWhiteSpace(dto.DenClass)
                 && DentalExamDenClass.Options.Contains(dto.DenClass.Trim(), StringComparer.OrdinalIgnoreCase);
 
-            return hasDenClass && !string.IsNullOrWhiteSpace(dto.DenClassReasonComments);
+            return hasDenClass;
         }
 
         public static string ComputeOverallStatus(DentalExamStationSaveDto dto)

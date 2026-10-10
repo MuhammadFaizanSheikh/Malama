@@ -61,9 +61,18 @@
         --findings-panel: #fbfbfd;
     }
 
+    #dentalFindingsSection > .questionnaire-heading h3,
     #dentalFindingsSection > .questionnaire-heading h4 {
         color: var(--findings-indigo);
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    #dentalFindingsSection > .questionnaire-heading h3 i,
+    #dentalFindingsSection > .questionnaire-heading h4 i {
+        color: var(--findings-indigo);
     }
 
     #dentalFindingsSection .findings-panel {
@@ -735,11 +744,11 @@
         </div>
         @if (usePrimarySectionHeading)
         {
-            <h3 class="mb-0">@sectionTitle</h3>
+            <h3 class="mb-0"><i class="fas fa-tooth" aria-hidden="true"></i> @sectionTitle</h3>
         }
         else
         {
-            <h4 class="mb-0">@sectionTitle</h4>
+            <h4 class="mb-0"><i class="fas fa-tooth" aria-hidden="true"></i> @sectionTitle</h4>
         }
     </div>
 

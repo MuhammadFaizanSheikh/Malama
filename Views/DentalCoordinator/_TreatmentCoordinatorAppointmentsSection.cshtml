@@ -34,9 +34,16 @@
     }
 
     #tcAppointmentsSection .tc-appt-title {
-        margin: 0 0 1rem;
+        margin: 0 0 1rem 1.5rem;
         font-size: 1.15rem;
         font-weight: 700;
+        color: var(--tc-appt-indigo);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-title i {
         color: var(--tc-appt-indigo);
     }
 
@@ -405,7 +412,7 @@
 </style>
 
 <div id="tcAppointmentsSection" aria-label="Treatment coordinator appointments">
-    <h4 class="tc-appt-title">Appointments</h4>
+    <h4 class="tc-appt-title"><i class="fas fa-calendar-check" aria-hidden="true"></i> Appointments</h4>
 
     <input type="hidden" name="AppointmentsJson" id="AppointmentsJson" value='@initialAppointmentsJson' />
 

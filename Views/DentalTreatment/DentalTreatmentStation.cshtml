@@ -205,6 +205,13 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--dt-indigo);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .questionnaire-heading h3 i {
+        color: var(--dt-indigo);
     }
 
     .questionnaire-heading h4 {
@@ -212,6 +219,23 @@
         font-size: 1.15rem;
         font-weight: 700;
         color: var(--dt-indigo);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .questionnaire-heading h4 i {
+        color: var(--dt-indigo);
+    }
+
+    /* Nested section titles sit slightly right of the parent section heading. */
+    #subsequentSection .questionnaire-heading,
+    #consentFormsSection .questionnaire-heading {
+        padding-left: 1.5rem;
+    }
+
+    #consentFormsSection .dt-forms-card-group-title {
+        padding-left: 1.5rem;
     }
 
     .questionnaire-toggle-switch .form-check-input {
@@ -516,10 +540,6 @@
                 <p class="dt-info-value">@sm?.Sex</p>
             </div>
             <div class="dt-info-item">
-                <span class="dt-info-label">DRC</span>
-                <p class="dt-info-value">@sm?.Drc</p>
-            </div>
-            <div class="dt-info-item">
                 <span class="dt-info-label">DEN Class</span>
                 <p class="dt-info-value">@sharedClinical.DenClass</p>
             </div>
@@ -541,7 +561,7 @@
                    aria-controls="questionnaireSection"
                    aria-expanded="false" />
         </div>
-        <h3 class="mb-0">Questionnaire</h3>
+        <h3 class="mb-0"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Questionnaire</h3>
     </div>
 
     <div id="questionnaireSection" style="display:none;">
@@ -765,7 +785,7 @@
                    aria-controls="consentFormsSection"
                    aria-expanded="false" />
         </div>
-        <h3 class="mb-0">Consent Forms &amp; Questionnaire</h3>
+        <h3 class="mb-0"><i class="fas fa-file-signature" aria-hidden="true"></i> Consent Forms &amp; Questionnaire</h3>
     </div>
 
     <div id="consentFormsSection" style="display:none;">
@@ -900,7 +920,7 @@
                    aria-controls="vitalsSection"
                    aria-expanded="false" />
         </div>
-        <h3 class="mb-0">Blood Pressure (Vitals)</h3>
+        <h3 class="mb-0"><i class="fas fa-heartbeat" aria-hidden="true"></i> Blood Pressure (Vitals)</h3>
     </div>
 
     <div id="vitalsSection" style="display:none;">
@@ -933,7 +953,7 @@
                    aria-controls="xraySection"
                    aria-expanded="false" />
         </div>
-        <h3 class="mb-0">X-Ray</h3>
+        <h3 class="mb-0"><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray</h3>
     </div>
 
     <div id="xraySection" style="display:none;">
@@ -963,7 +983,7 @@
                    aria-controls="subsequentSection"
                    aria-expanded="false" />
         </div>
-        <h3 class="mb-0">Subsequent diseases and abnormalities</h3>
+        <h3 class="mb-0"><i class="fas fa-notes-medical" aria-hidden="true"></i> Subsequent diseases and abnormalities</h3>
     </div>
 
     <div id="subsequentSection" style="display:none;">

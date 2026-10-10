@@ -150,12 +150,26 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--tcn-indigo);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .tcn-station .questionnaire-heading h3 i {
+        color: var(--tcn-indigo);
     }
 
     .tcn-station .questionnaire-heading h4 {
         margin: 0;
         font-size: 1.15rem;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .tcn-station .questionnaire-heading h4 i {
+        color: var(--tcn-indigo);
     }
 
     .tcn-station .questionnaire-toggle-switch .form-check-input {
@@ -1133,10 +1147,6 @@
                 <span class="tcn-info-label">Sex</span>
                 <p class="tcn-info-value">@sm?.Sex</p>
             </div>
-            <div class="tcn-info-item">
-                <span class="tcn-info-label">DRC</span>
-                <p class="tcn-info-value">@sm?.Drc</p>
-            </div>
         </div>
     </div>
 
@@ -1181,7 +1191,7 @@
 
     <div class="tab-content" id="treatmentConsentTabContent">
         <div class="tab-pane fade show active" id="da5570Pane" role="tabpanel" aria-labelledby="da5570-tab">
-            <h3 class="mb-3">Questionnaire</h3>
+            <h3 class="mb-3"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Questionnaire</h3>
 
             <div id="da5570QuestionnaireSection">
                 @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayQuestionnaire.cshtml", questionnaire)

@@ -191,12 +191,36 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--dco-indigo);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .questionnaire-heading h3 i {
+        color: var(--dco-indigo);
     }
 
     .questionnaire-heading h4 {
         margin: 0;
         font-size: 1.15rem;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .questionnaire-heading h4 i {
+        color: var(--dco-indigo);
+    }
+
+    /* Nested section titles sit slightly right of the parent section heading. */
+    #subsequentDiseasesContent .questionnaire-heading,
+    #treatmentCoordinatorContent .questionnaire-heading {
+        padding-left: 1.5rem;
+    }
+
+    #treatmentCoordinatorContent .dco-forms-card-group-title {
+        padding-left: 1.5rem;
     }
 
     .dco-treatment-status-line {
@@ -826,10 +850,6 @@
                     <span class="dco-info-label">Sex</span>
                     <p class="dco-info-value">@sm?.Sex</p>
                 </div>
-                <div class="dco-info-item">
-                    <span class="dco-info-label">DRC</span>
-                    <p class="dco-info-value">@sm?.Drc</p>
-                </div>
             </div>
         </div>
 
@@ -843,7 +863,7 @@
                            aria-controls="questionnaireSection"
                            aria-expanded="false" />
                 </div>
-                <h3>Questionnaire</h3>
+                <h3><i class="fas fa-clipboard-list" aria-hidden="true"></i> Questionnaire</h3>
             </div>
 
             <div id="questionnaireSection" style="display:none;">
@@ -955,7 +975,7 @@
                            aria-controls="vitalsSection"
                            aria-expanded="false" />
                 </div>
-                <h3>Blood Pressure (Vitals)</h3>
+                <h3><i class="fas fa-heartbeat" aria-hidden="true"></i> Blood Pressure (Vitals)</h3>
             </div>
 
             <div id="vitalsSection" style="display:none;">
@@ -988,7 +1008,7 @@
                            aria-controls="xrayCoordinatorSection"
                            aria-expanded="false" />
                 </div>
-                <h3>X-Ray</h3>
+                <h3><i class="fas fa-file-medical" aria-hidden="true"></i> X-Ray</h3>
             </div>
 
             <div id="xrayCoordinatorSection" style="display:none;">
@@ -1022,7 +1042,7 @@
                            aria-controls="subsequentDiseasesContent"
                            aria-expanded="false" />
                 </div>
-                <h3 class="mb-0">Subsequent diseases and abnormalities</h3>
+                <h3 class="mb-0"><i class="fas fa-notes-medical" aria-hidden="true"></i> Subsequent diseases and abnormalities</h3>
             </div>
 
             <div id="subsequentDiseasesContent" style="display:none;">
@@ -1039,6 +1059,7 @@
                     var denClassViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
                     denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
                     denClassViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
+                    denClassViewData["RequireDenClassComments"] = !clinicalSectionsFromDentalExam;
                 }
                 @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", sharedClinical, denClassViewData)
 
@@ -1078,7 +1099,7 @@
                            aria-controls="treatmentCoordinatorContent"
                            aria-expanded="false" />
                 </div>
-                <h3 class="mb-0">Treatment Coordinator Section</h3>
+                <h3 class="mb-0"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Treatment Coordinator Section</h3>
             </div>
 
             <div id="treatmentCoordinatorContent" style="display:none;">
