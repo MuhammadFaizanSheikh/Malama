@@ -16,6 +16,7 @@ namespace ExcelFilesCompiler.Controllers
         private readonly IDentalQuestionnaireService _dentalQuestionnaireService;
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
+        private readonly IDentalTreatmentService _dentalTreatmentService;
         private readonly IVitalStationService _vitalStationService;
         private readonly IEventStaffService _eventStaffService;
         private readonly IFileUploadDownloadService _fileService;
@@ -30,6 +31,7 @@ namespace ExcelFilesCompiler.Controllers
             IDentalQuestionnaireService dentalQuestionnaireService,
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
+            IDentalTreatmentService dentalTreatmentService,
             IVitalStationService vitalStationService,
             IEventStaffService eventStaffService,
             IFileUploadDownloadService fileService,
@@ -40,6 +42,7 @@ namespace ExcelFilesCompiler.Controllers
             _dentalQuestionnaireService = dentalQuestionnaireService;
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
+            _dentalTreatmentService = dentalTreatmentService;
             _vitalStationService = vitalStationService;
             _eventStaffService = eventStaffService;
             _fileService = fileService;
@@ -189,6 +192,12 @@ namespace ExcelFilesCompiler.Controllers
 
                 var dentalExam = await _dentalExamService.GetByServiceMembersChildIdAsync(serviceMembersChildId)
                     ?? new DentalExam { ServiceMembersChildId = serviceMembersChildId };
+
+                var treatmentCoordinator = await _dentalTreatmentService
+                    .GetCoordinatorByServiceMembersChildIdAsync(serviceMembersChildId);
+                ViewBag.TreatmentCoordinatorStatus = string.IsNullOrWhiteSpace(treatmentCoordinator?.Status)
+                    ? null
+                    : treatmentCoordinator!.Status.Trim();
 
                 var sharedClinical = await _dentalExamService.GetSharedClinicalByServiceMembersChildIdAsync(serviceMembersChildId);
                 ViewBag.ScheduledFindingAppointments = await _dentalExamService.GetScheduledFindingAppointmentsAsync(serviceMembersChildId);

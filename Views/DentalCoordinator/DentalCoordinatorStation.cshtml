@@ -1016,7 +1016,8 @@
                     var xrayFormViewData = new ViewDataDictionary<DentalXRayStation>(ViewData, xRayStation)
                     {
                         ["ShowPanoRequirementNotice"] = false,
-                        ["ShowXRayStatus"] = false
+                        ["ShowXRayStatus"] = false,
+                        ["AlwaysShowBwxAndPa"] = true
                     };
                 }
                 @await Html.PartialAsync("~/Views/DentalXRay/_DentalXRayStationForm.cshtml", xRayStation, xrayFormViewData)
@@ -1059,7 +1060,7 @@
                     var denClassViewData = new ViewDataDictionary<DentalSharedClinicalViewModel>(ViewData, sharedClinical);
                     denClassViewData["ServiceMemberPanoRequired"] = serviceMemberPanoRequired;
                     denClassViewData["SubsequentReadOnly"] = clinicalSectionsFromDentalExam;
-                    denClassViewData["RequireDenClassComments"] = !clinicalSectionsFromDentalExam;
+                    denClassViewData["RequireDenClassComments"] = false;
                 }
                 @await Html.PartialAsync("~/Views/DentalExams/_DentalExamDenClassSection.cshtml", sharedClinical, denClassViewData)
 
@@ -1725,8 +1726,7 @@
     const CLINICAL_SECTIONS_FROM_DENTAL_EXAM = @Json.Serialize(clinicalSectionsFromDentalExam);
     const COORDINATOR_PAGE_READONLY = @Json.Serialize(coordinatorPageReadOnly);
     const EXAM_DEN_CLASS_COMPLETE = @Json.Serialize(
-        !string.IsNullOrWhiteSpace(sharedClinical.DenClass)
-        && !string.IsNullOrWhiteSpace(sharedClinical.DenClassReasonComments));
+        !string.IsNullOrWhiteSpace(sharedClinical.DenClass));
 
     function applyCoordinatorPageReadOnlyMode() {
         if (!COORDINATOR_PAGE_READONLY) {
@@ -1751,14 +1751,7 @@
     }
 
     function toggleDenClassCommentsRequired() {
-        if (CLINICAL_SECTIONS_FROM_DENTAL_EXAM) {
-            $("#DenClassReasonComments").prop("required", false);
-            updateTreatmentCoordinatorOverallStatus();
-            return;
-        }
-
-        const hasSelection = !!$("input[name='DenClass']:checked").val();
-        $("#DenClassReasonComments").prop("required", hasSelection);
+        $("#DenClassReasonComments").prop("required", false);
         updateTreatmentCoordinatorOverallStatus();
     }
 
@@ -1767,8 +1760,7 @@
             return EXAM_DEN_CLASS_COMPLETE;
         }
 
-        return !!$("input[name='DenClass']:checked").val()
-            && !!$("#DenClassReasonComments").val()?.trim();
+        return !!$("input[name='DenClass']:checked").val();
     }
 
     function areAllCoordinatorFindingsAppointed() {

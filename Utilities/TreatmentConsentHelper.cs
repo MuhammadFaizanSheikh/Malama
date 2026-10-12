@@ -207,7 +207,7 @@ namespace ExcelFilesCompiler.Utilities
 
                     items.Add(new TreatmentCoordinatorConsentFormStatusItem
                     {
-                        Title = "Dental Treatment Consent Form for " + dentistName,
+                        Title = FormatConsentFormTitle("Dental Treatment Consent Form", dentistName),
                         IsSigned = form != null && IsFormSigned(form.IsSigned, form.SignatureFileName),
                         FormKind = "dental-treatment",
                         EventStaffId = dentistId
@@ -233,7 +233,7 @@ namespace ExcelFilesCompiler.Utilities
 
                     items.Add(new TreatmentCoordinatorConsentFormStatusItem
                     {
-                        Title = "Oral Surgery Form for " + dentistName,
+                        Title = FormatConsentFormTitle("Oral Surgery Form", dentistName),
                         IsSigned = form != null && IsFormSigned(form.IsSigned, form.SignatureFileName),
                         FormKind = "oral-surgery",
                         EventStaffId = dentistId
@@ -258,12 +258,33 @@ namespace ExcelFilesCompiler.Utilities
 
             return BuildCoordinatorConsentFormStatusItems(selection)
                 .Where(item => item.EventStaffId == eventStaffId)
+                .Select(item =>
+                {
+                    // Dental Treatment station is already scoped to one dentist; omit the name from the title.
+                    item.Title = item.FormKind switch
+                    {
+                        "dental-treatment" => "Dental Treatment Consent Form",
+                        "oral-surgery" => "Oral Surgery Form",
+                        _ => item.Title
+                    };
+                    return item;
+                })
                 .ToList();
         }
 
         public static bool IsCompleted(string? status)
         {
             return string.Equals(status, AppConstants.Status.Completed, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Consent form display title, e.g. "Dental Treatment Consent Form - Morgan Freeman (Dentist)".
+        /// </summary>
+        public static string FormatConsentFormTitle(string formLabel, string dentistName)
+        {
+            var label = string.IsNullOrWhiteSpace(formLabel) ? "Form" : formLabel.Trim();
+            var name = string.IsNullOrWhiteSpace(dentistName) ? "Dentist" : dentistName.Trim();
+            return label + " - " + name + " (Dentist)";
         }
 
         public const string OralSurgeryDiseaseType = "Oral Surgery";

@@ -10,6 +10,9 @@
     var panoNeeded = DentalXRayStationService.IsNeeded(sm?.PanoNeeded);
     var showPanoRequirementNotice = ViewData["ShowPanoRequirementNotice"] as bool? ?? true;
     var showStatus = ViewData["ShowXRayStatus"] as bool? ?? true;
+    // Other dental stations can force BWX/PA visible; Dental X-Ray Station keeps BwxNeeded gating.
+    var alwaysShowBwxAndPa = ViewData["AlwaysShowBwxAndPa"] as bool? ?? false;
+    var showBwxAndPa = alwaysShowBwxAndPa || bwxNeeded;
     var paImages = station.PaImages?.OrderBy(p => p.SortOrder).ToList() ?? new List<DentalXRayPaImage>();
     if (!paImages.Any())
     {
@@ -62,7 +65,7 @@
             }
             <div id="xrayStationBody" style="@(collapseXRaySection ? "display:none;" : null)">
 
-            @if (bwxNeeded)
+            @if (showBwxAndPa)
             {
                 <div class="card mb-4" id="bwxSection">
                     <div class="card-body">

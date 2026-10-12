@@ -70,19 +70,15 @@ namespace ExcelFilesCompiler.Utilities
             DentalDenClassRecord? existingDenClass = null)
         {
             var denClass = dto.DenClass;
-            var comments = dto.DenClassReasonComments;
 
             if (existingDenClass != null
                 && string.Equals(existingDenClass.Source, DentalExamSources.DentalExam, StringComparison.OrdinalIgnoreCase))
             {
                 denClass = existingDenClass.DenClass;
-                comments = existingDenClass.DenClassReasonComments;
             }
 
-            var hasDenClass = !string.IsNullOrWhiteSpace(denClass)
+            return !string.IsNullOrWhiteSpace(denClass)
                 && DentalExamDenClass.Options.Contains(denClass.Trim(), StringComparer.OrdinalIgnoreCase);
-
-            return hasDenClass && !string.IsNullOrWhiteSpace(comments);
         }
 
         public static bool AreAllFindingsAppointed(string? findingsJson, string? appointmentsJson)

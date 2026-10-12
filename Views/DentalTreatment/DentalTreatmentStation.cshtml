@@ -31,6 +31,10 @@
     var showFinalCommentsReadOnly = !isDentalExamDentist && dentalExam.QuestionnaireReviewed;
     var showSignatureReadOnly = !isDentalExamDentist && dentalExam.DentistSignatureEntered;
     var dentalTreatmentOverallStatus = string.IsNullOrWhiteSpace(Model.DentistStatus) ? "Pending" : Model.DentistStatus;
+    var dentalExamStatusDisplay = string.IsNullOrWhiteSpace(dentalExam.Status) ? "Pending" : dentalExam.Status.Trim();
+    var dentalExamStatusBadgeClass =
+        string.Equals(dentalExamStatusDisplay, "Completed", StringComparison.OrdinalIgnoreCase) ? "is-completed"
+        : "is-pending";
 }
 
 <style>
@@ -146,6 +150,29 @@
         font-weight: 600;
         color: var(--dt-text);
         word-break: break-word;
+    }
+
+    .dt-info-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 0.28rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .dt-info-status-badge.is-pending {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+    }
+
+    .dt-info-status-badge.is-completed {
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
     }
 
     .dt-station .form-label {
@@ -545,7 +572,9 @@
             </div>
             <div class="dt-info-item">
                 <span class="dt-info-label">Dental Exam Status</span>
-                <p class="dt-info-value">@dentalExam.Status</p>
+                <p class="dt-info-value">
+                    <span class="dt-info-status-badge @dentalExamStatusBadgeClass">@dentalExamStatusDisplay</span>
+                </p>
             </div>
         </div>
     </div>
@@ -870,7 +899,7 @@
                                @(Model.DdsAcknowledged && Model.CanAcknowledgeDds ? "checked" : null)
                                @(canCheckDds ? null : "disabled") />
                         <label class="form-check-label" for="DdsAcknowledged">
-                            By selecting this checkbox, you acknowledge and confirm that you (DDS) have reviewed the consent documentation for Oral Surgery and Treatment procedures.
+                            By selecting this checkbox, you acknowledge and confirm that you (DDS) have reviewed the consent documentation for Oral Surgery and/or Treatment procedures.
                         </label>
                     </div>
                     @if (!Model.CanAcknowledgeDds)

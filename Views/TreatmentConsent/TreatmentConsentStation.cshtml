@@ -1829,7 +1829,7 @@
             const $headerMain = $('<div class="tcn-dentist-form-header-main"></div>');
             $headerMain.append(
                 $('<span class="tcn-dentist-form-toggle-title"></span>')
-                    .text(titlePrefix + " for " + dentistName)
+                    .text(formatConsentFormTitle(titlePrefix, dentistName))
             );
             $headerMain.append(
                 $('<span class="tcn-form-status tcn-form-status-pending">Pending</span>')
@@ -1889,7 +1889,7 @@
                 let $card = $list.find('.tcn-dentist-form-card[data-dentist-id="' + dentist.id + '"]');
                 if ($card.length) {
                     $card.find(".tcn-dentist-form-toggle-title")
-                        .text(config.titlePrefix + " for " + dentist.name);
+                        .text(formatConsentFormTitle(config.titlePrefix, dentist.name));
                     $card.find(".tcn-os-doctor-name, .tcn-os-discussed-doctor-name, .tcn-dtc-doctor-name")
                         .text(dentist.name);
                     return;
@@ -1939,9 +1939,32 @@
             });
             syncDentistForms("#tcnDentalTreatmentFormsHost", DERIVED_TREATMENT_DENTISTS, {
                 templateId: "tcnDentalTreatmentFormTemplate",
-                titlePrefix: "Dental Treatment Consent",
+                titlePrefix: "Dental Treatment Consent Form",
                 signaturePadBase: "dtc_patient_signature"
             });
+        }
+
+        function formatConsentFormTitle(formLabel, dentistName) {
+            const label = (formLabel || "Form").toString().trim() || "Form";
+            const name = (dentistName || "Dentist").toString().trim() || "Dentist";
+            return label + " - " + name + " (Dentist)";
+        }
+
+        function extractDentistNameFromFormTitle(title) {
+            const text = (title || "").toString().trim();
+            const modern = text.match(/\s-\s(.+?)\s*\(Dentist\)\s*$/i);
+            if (modern) {
+                return modern[1].trim();
+            }
+            const oralLegacy = text.match(/^Oral Surgery Form for\s+(.+)$/i);
+            if (oralLegacy) {
+                return oralLegacy[1].trim();
+            }
+            const treatmentLegacy = text.match(/^Dental Treatment Consent(?: Form)? for\s+(.+)$/i);
+            if (treatmentLegacy) {
+                return treatmentLegacy[1].trim();
+            }
+            return text;
         }
 
         function readNamedValue(name) {
@@ -2043,7 +2066,7 @@
 
                 forms.push({
                     eventStaffId: dentistId,
-                    dentistName: title.replace(/^Oral Surgery Form for\s+/i, "").trim(),
+                    dentistName: extractDentistNameFromFormTitle(title),
                     procedureText: ($card.find(".tcn-os-procedure-text").val() || "").toString().trim(),
                     signatureDataUrl: hasInk && pad && typeof pad.toDataURL === "function" ? pad.toDataURL() : "",
                     signatureFileName: saved ? (saved.signatureFileName || null) : null,
@@ -2078,7 +2101,7 @@
 
                 forms.push({
                     eventStaffId: dentistId,
-                    dentistName: title.replace(/^Dental Treatment Consent for\s+/i, "").trim(),
+                    dentistName: extractDentistNameFromFormTitle(title),
                     item1Mark: $body.find('input[name="dtc_item1_mark"]').is(":checked"),
                     fillings: $body.find('input[name="dtc_fillings"]').is(":checked"),
                     crowns: $body.find('input[name="dtc_crowns"]').is(":checked"),

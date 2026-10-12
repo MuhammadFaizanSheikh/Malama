@@ -5,7 +5,6 @@
 @{
     var sm = ViewData["ServiceMember"] as ServiceMembersChild;
     var questionnaire = ViewData["Questionnaire"] as DentalQuestionnaire;
-    var bwxNeeded = DentalXRayStationService.IsNeeded(sm?.BwxNeeded);
     var showXRaySection = DentalXRayStationService.CanProceedWithXRay(questionnaire, sm!);
     var station = Model ?? new DentalXRayStation();
     var paImages = station.PaImages?
@@ -37,8 +36,6 @@
 
 <div id="xrayStationReadOnlySection" style="@(showXRaySection ? "" : "display:none;")">
 
-    @if (bwxNeeded)
-    {
         <div class="card mb-4" id="bwxSectionReadOnly">
             <div class="card-body">
                 <div class="row mb-3 align-items-end">
@@ -230,7 +227,6 @@
                 }
             </div>
         </div>
-    }
 
     <div class="mb-4" id="panoSectionReadOnly">
         <div class="card">
