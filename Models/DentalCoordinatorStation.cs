@@ -24,6 +24,11 @@ namespace Malama.Models
 
         public bool IsSigned { get; set; }
 
+        /// <summary>
+        /// DDS acknowledgment from DentalTreatmentFormsJson (Dental Treatment Consent Form only).
+        /// </summary>
+        public bool DdsAcknowledged { get; set; }
+
         /// <summary>dental-treatment | oral-surgery (reserved for future PDF preview).</summary>
         public string FormKind { get; set; } = string.Empty;
 

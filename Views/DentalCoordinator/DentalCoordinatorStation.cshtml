@@ -1154,14 +1154,27 @@
                                 @foreach (var consentForm in Model.ConsentFormStatuses)
                                 {
                                     var signed = consentForm.IsSigned;
+                                    var isDentalTreatmentConsent = string.Equals(
+                                        consentForm.FormKind,
+                                        "dental-treatment",
+                                        StringComparison.OrdinalIgnoreCase);
+                                    var ddsAcknowledged = consentForm.DdsAcknowledged;
                                     <div class="dco-forms-row"
                                          data-form-kind="@consentForm.FormKind"
                                          data-event-staff-id="@(consentForm.EventStaffId?.ToString() ?? "")">
                                         <span class="dco-forms-row-title">@consentForm.Title</span>
                                         <span class="dco-forms-row-actions">
+                                            @if (isDentalTreatmentConsent)
+                                            {
+                                                <span class="dco-form-signed-icon @(ddsAcknowledged ? null : "is-unsigned")"
+                                                      title="@(ddsAcknowledged ? "Dentist signed" : "Dentist not signed")"
+                                                      aria-label="@(ddsAcknowledged ? "Dentist signed" : "Dentist not signed")">
+                                                    <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                                </span>
+                                            }
                                             <span class="dco-form-signed-icon @(signed ? null : "is-unsigned")"
-                                                  title="@(signed ? "Signed" : "Not signed")"
-                                                  aria-label="@(signed ? "Signed" : "Not signed")">
+                                                  title="@(signed ? "SM Signed" : "SM Not signed")"
+                                                  aria-label="@(signed ? "SM Signed" : "SM Not signed")">
                                                 <i class="fas fa-file-signature" aria-hidden="true"></i>
                                             </span>
                                             @if (signed)

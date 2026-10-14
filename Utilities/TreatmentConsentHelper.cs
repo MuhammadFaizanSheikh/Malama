@@ -209,6 +209,7 @@ namespace ExcelFilesCompiler.Utilities
                     {
                         Title = FormatConsentFormTitle("Dental Treatment Consent Form", dentistName),
                         IsSigned = form != null && IsFormSigned(form.IsSigned, form.SignatureFileName),
+                        DdsAcknowledged = form?.DdsAcknowledged == true,
                         FormKind = "dental-treatment",
                         EventStaffId = dentistId
                     });
