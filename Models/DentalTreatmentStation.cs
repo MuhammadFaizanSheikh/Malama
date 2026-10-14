@@ -113,6 +113,9 @@ namespace Malama.Models
         public bool RequiresDdsAcknowledgement { get; set; }
 
         public bool DdsAcknowledged { get; set; }
+
+        /// <summary>When true, save then redisplay this station instead of returning to the list.</summary>
+        public bool SaveAndContinue { get; set; }
     }
 
     public class DentalTreatmentFindingFormDto

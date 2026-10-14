@@ -68,6 +68,9 @@ namespace Malama.Models
 
         /// <summary>Server-stored document file names to keep on save.</summary>
         public List<string> RetainedDocumentFileNames { get; set; } = new();
+
+        /// <summary>When true, save then redisplay this station instead of returning to the list.</summary>
+        public bool SaveAndContinue { get; set; }
     }
 
     public class TreatmentCoordinatorAppointmentJsonDto

@@ -456,7 +456,18 @@ namespace ExcelFilesCompiler.Controllers
                     assignedExamFindingIds,
                     eventStaffId.Value);
 
+                var saveAndContinue = dto.SaveAndContinue
+                    || string.Equals(Request.Form["SaveAndContinue"], "true", StringComparison.OrdinalIgnoreCase);
+
                 TempData["ResponseStatus"] = "success";
+                if (saveAndContinue)
+                {
+                    TempData["ResponseTitle"] = "Saved — Continue Editing";
+                    TempData["ResponseMessage"] =
+                        "Dental Treatment changes were saved. You are still on this page and can continue editing.";
+                    return RedirectToAction(nameof(DentalTreatmentStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                }
+
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Dental Treatment record saved successfully.";
                 return RedirectToAction(nameof(Index));

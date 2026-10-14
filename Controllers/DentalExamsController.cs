@@ -367,7 +367,18 @@ namespace ExcelFilesCompiler.Controllers
                     });
                 }
 
+                var saveAndContinue = dto.SaveAndContinue
+                    || string.Equals(Request.Form["SaveAndContinue"], "true", StringComparison.OrdinalIgnoreCase);
+
                 TempData["ResponseStatus"] = "success";
+                if (saveAndContinue)
+                {
+                    TempData["ResponseTitle"] = "Saved — Continue Editing";
+                    TempData["ResponseMessage"] =
+                        "Dental Exam changes were saved. You are still on this page and can continue editing.";
+                    return RedirectToAction(nameof(DentalExamStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                }
+
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Dental Exam record saved successfully.";
                 return RedirectToAction(nameof(Index));

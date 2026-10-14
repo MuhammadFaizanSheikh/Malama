@@ -343,7 +343,18 @@ namespace ExcelFilesCompiler.Controllers
                     return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
+                var saveAndContinue = dto.SaveAndContinue
+                    || string.Equals(Request.Form["SaveAndContinue"], "true", StringComparison.OrdinalIgnoreCase);
+
                 TempData["ResponseStatus"] = "success";
+                if (saveAndContinue)
+                {
+                    TempData["ResponseTitle"] = "Saved — Continue Editing";
+                    TempData["ResponseMessage"] =
+                        "Treatment Coordinator changes were saved. You are still on this page and can continue editing.";
+                    return RedirectToAction(nameof(DentalCoordinatorStation), new { serviceMembersChildId = dto.ServiceMembersChildId });
+                }
+
                 TempData["ResponseTitle"] = "Success";
                 TempData["ResponseMessage"] = "Treatment Coordinator record saved successfully.";
                 return RedirectToAction(nameof(Index));

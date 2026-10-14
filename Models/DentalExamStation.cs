@@ -70,6 +70,9 @@ namespace Malama.Models
 
         public bool GoToVitalStation { get; set; }
 
+        /// <summary>When true, save then redisplay this station instead of returning to the list.</summary>
+        public bool SaveAndContinue { get; set; }
+
         public string? PsrUpperRight { get; set; }
 
         public string? PsrUpperAnterior { get; set; }
