@@ -79,6 +79,10 @@ namespace ExcelFilesCompiler.Controllers
             const string methodName = "Register";
             _logger.LogInformation("{ClassName}, {MethodName}, Called", CLASSNAME, methodName);
 
+            // RegisterViewModel inherits IdentityUser; create posts empty Id (Identity generates it).
+            // Suppress that required-field noise so only real registration errors are shown.
+            ModelState.Remove(nameof(RegisterViewModel.Id));
+
             try
             {
                 var user = await _userManager.GetUserAsync(User);
@@ -125,6 +129,7 @@ namespace ExcelFilesCompiler.Controllers
                 {
                     _logger.LogWarning("{ClassName}, {MethodName}, User registration failed for Email: {Email}, Reason: {Reason}", CLASSNAME, methodName, model.Email, response.Message);
 
+                    ModelState.Remove(nameof(RegisterViewModel.Id));
                     ModelState.AddModelError(string.Empty, response.Message);
                     return View(model);
                 }
@@ -134,6 +139,7 @@ namespace ExcelFilesCompiler.Controllers
                 TempData["ErrorMessage"] = "An unexpected error occurred. Please try again later.";
                 _logger.LogError(ex, "{ClassName}, {MethodName}, Unexpected error during user registration", CLASSNAME, methodName);
 
+                ModelState.Remove(nameof(RegisterViewModel.Id));
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again later.");
                 return View(model);
             }

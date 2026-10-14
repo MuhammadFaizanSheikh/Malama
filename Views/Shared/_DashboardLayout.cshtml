@@ -96,6 +96,15 @@
             transition: opacity 0.2s ease, max-width 0.28s ease, transform 0.28s ease;
         }
 
+        .sidebar-logo-icon {
+            display: none;
+            max-width: 42px;
+        }
+
+        .logo-link {
+            display: block;
+        }
+
         .sidebar-toggle {
             position: absolute;
             top: 8px;
@@ -221,7 +230,12 @@
             padding: 42px 0 16px;
         }
 
-        body.sidebar-collapsed .sidebar-logo {
+        body.sidebar-collapsed .sidebar-logo-full {
+            display: none;
+        }
+
+        body.sidebar-collapsed .sidebar-logo-icon {
+            display: block;
             max-width: 42px;
             transform: scale(1.05);
         }
@@ -362,6 +376,15 @@
             --sidebar-width: var(--sidebar-width-collapsed);
         }
 
+        html.sidebar-collapsed-pending .sidebar-logo-full {
+            display: none;
+        }
+
+        html.sidebar-collapsed-pending .sidebar-logo-icon {
+            display: block;
+            max-width: 42px;
+        }
+
         body.tcn-sm-mode-lock #sidebar,
         body.tcn-sm-mode-lock .dashboard-topbar {
             display: none !important;
@@ -413,7 +436,8 @@
                 <i class="fas fa-angle-double-left" aria-hidden="true"></i>
             </button>
             <a href="/Dashboard/Index" class="logo-link" title="Malama">
-                <img src="~/images/MALAMA-Horizontal-01.png" alt="Logo" class="sidebar-logo" />
+                <img src="~/images/MALAMA-Horizontal-01.png" alt="Malama" class="sidebar-logo sidebar-logo-full" />
+                <img src="~/images/MALAMA-Flower.png" alt="Malama" class="sidebar-logo sidebar-logo-icon" />
             </a>
         </div>
 
