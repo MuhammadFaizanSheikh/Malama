@@ -100,6 +100,61 @@ namespace Malama.Utilities
             return default; // in case of error
         }
 
+        /// <summary>
+        /// Resolves a Windows timezone id; returns false when the id is missing/invalid.
+        /// </summary>
+        public static bool TryResolveTimeZone(string? timeZoneId, out TimeZoneInfo timeZone, out string? errorMessage)
+        {
+            timeZone = TimeZoneInfo.Utc;
+            errorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(timeZoneId))
+            {
+                errorMessage = "Timezone is required.";
+                return false;
+            }
+
+            try
+            {
+                timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId.Trim());
+                return true;
+            }
+            catch (Exception ex) when (ex is TimeZoneNotFoundException || ex is InvalidTimeZoneException)
+            {
+                errorMessage = $"Invalid timezone ID: {timeZoneId}";
+                return false;
+            }
+        }
+
+        /// <summary>Calendar date "today" in the given timezone, based on UTC now.</summary>
+        public static DateTime GetTodayDateInTimeZone(string timeZoneId)
+        {
+            if (!TryResolveTimeZone(timeZoneId, out var tz, out var error))
+            {
+                throw new InvalidOperationException(error ?? "Invalid timezone.");
+            }
+
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
+        }
+
+        public static string GetEventTimezoneDisplayName(string? timeZoneId)
+        {
+            var id = (timeZoneId ?? string.Empty).Trim();
+            return id switch
+            {
+                "Eastern Standard Time" => "Eastern Time",
+                "Central Standard Time" => "Central Time",
+                "Mountain Standard Time" => "Mountain Time",
+                "US Mountain Standard Time" => "Arizona Time",
+                "Pacific Standard Time" => "Pacific Time",
+                "Alaska Standard Time" => "Alaska Time",
+                "Hawaii-Aleutian Standard Time" => "Hawaii Time",
+                _ => TryResolveTimeZone(id, out var tz, out _)
+                    ? (string.IsNullOrWhiteSpace(tz.DisplayName) ? id : tz.DisplayName)
+                    : (string.IsNullOrWhiteSpace(id) ? "Event Timezone" : id)
+            };
+        }
+
         public static void ConvertEventToLocalTime(EventManagement eventManagement, string timezoneId)
         {
             try

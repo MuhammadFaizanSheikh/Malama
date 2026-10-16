@@ -1182,16 +1182,63 @@ namespace ExcelFilesCompiler.Controllers.Services
                     }
                 }
 
+                var timezoneId = eventManagement.Timezone.Trim();
+                var timezoneDisplayName = Helper.GetEventTimezoneDisplayName(timezoneId);
+                var todayInEventTz = Helper.GetTodayDateInTimeZone(timezoneId);
+                var todayStr = todayInEventTz.ToString("yyyy-MM-dd");
+                var eventMinDate = days.FirstOrDefault()?.Date ?? string.Empty;
+                var eventMaxDate = days.LastOrDefault()?.Date ?? string.Empty;
+
+                // New/changed appointments may only use today or future event days (event timezone).
+                var schedulableMinDate = eventMinDate;
+                if (!string.IsNullOrWhiteSpace(eventMinDate)
+                    && string.CompareOrdinal(todayStr, eventMinDate) > 0)
+                {
+                    schedulableMinDate = todayStr;
+                }
+
+                var canSchedule = !string.IsNullOrWhiteSpace(schedulableMinDate)
+                    && !string.IsNullOrWhiteSpace(eventMaxDate)
+                    && string.CompareOrdinal(schedulableMinDate, eventMaxDate) <= 0
+                    && days.Any(d => string.CompareOrdinal(d.Date, schedulableMinDate) >= 0);
+
+                string schedulingHint;
+                if (!canSchedule)
+                {
+                    schedulingHint =
+                        $"All event days are in the past for this event timezone ({timezoneDisplayName}). "
+                        + $"Today there is {todayInEventTz:MM/dd/yyyy}. New appointments cannot be scheduled.";
+                }
+                else if (string.CompareOrdinal(schedulableMinDate, eventMinDate) > 0)
+                {
+                    schedulingHint =
+                        $"Past event days cannot be scheduled. Dates are based on the event timezone ({timezoneDisplayName}). "
+                        + $"Today there is {todayInEventTz:MM/dd/yyyy} — choose that day or a later event day.";
+                }
+                else
+                {
+                    schedulingHint =
+                        $"Appointment dates use the event timezone ({timezoneDisplayName}). "
+                        + $"Today there is {todayInEventTz:MM/dd/yyyy}.";
+                }
+
                 var window = new EventAppointmentWindowDto
                 {
-                    MinDate = days.FirstOrDefault()?.Date ?? string.Empty,
-                    MaxDate = days.LastOrDefault()?.Date ?? string.Empty,
+                    MinDate = eventMinDate,
+                    MaxDate = eventMaxDate,
+                    SchedulableMinDate = canSchedule ? schedulableMinDate : string.Empty,
+                    TodayInEventTimezone = todayStr,
+                    TimezoneId = timezoneId,
+                    TimezoneDisplayName = timezoneDisplayName,
+                    SchedulingHint = schedulingHint,
+                    CanScheduleNewAppointments = canSchedule,
                     Days = days
                 };
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Appointment window built for EventID: {EventID}. DayCount={DayCount}, MinDate={MinDate}, MaxDate={MaxDate}",
-                    CLASSNAME, methodName, eventId, window.Days.Count, window.MinDate, window.MaxDate);
+                    "{ClassName}, {MethodName}, Appointment window built for EventID: {EventID}. DayCount={DayCount}, MinDate={MinDate}, MaxDate={MaxDate}, SchedulableMinDate={SchedulableMinDate}, TodayEventTz={TodayEventTz}",
+                    CLASSNAME, methodName, eventId, window.Days.Count, window.MinDate, window.MaxDate,
+                    window.SchedulableMinDate, window.TodayInEventTimezone);
 
                 return window;
             }

@@ -1272,6 +1272,11 @@
                     var appointmentsViewData = new ViewDataDictionary(ViewData);
                     appointmentsViewData["EventAppointmentMinDate"] = ViewBag.EventAppointmentMinDate as string ?? string.Empty;
                     appointmentsViewData["EventAppointmentMaxDate"] = ViewBag.EventAppointmentMaxDate as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentSchedulableMinDate"] = ViewBag.EventAppointmentSchedulableMinDate as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentToday"] = ViewBag.EventAppointmentToday as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentTimezoneDisplayName"] = ViewBag.EventAppointmentTimezoneDisplayName as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentSchedulingHint"] = ViewBag.EventAppointmentSchedulingHint as string ?? string.Empty;
+                    appointmentsViewData["EventAppointmentCanSchedule"] = ViewBag.EventAppointmentCanSchedule as bool? ?? true;
                     appointmentsViewData["EventAppointmentDayWindowsJson"] = ViewBag.EventAppointmentDayWindowsJson as string ?? "[]";
                     appointmentsViewData["ServiceMemberDisplayName"] = sm?.FullName ?? string.Empty;
                     appointmentsViewData["AssignableDentists"] = ViewBag.AssignableDentists as List<TreatmentCoordinatorAssignableDentistDto>

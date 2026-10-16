@@ -15,6 +15,7 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IDentalExamService _dentalExamService;
         private readonly IDentalTreatmentService _dentalTreatmentService;
         private readonly ITreatmentConsentService _treatmentConsentService;
+        private readonly IEventManagementService _eventManagementService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
         private readonly TreatmentConsentFileSaveCoordinator _treatmentConsentFileSaveCoordinator;
         private readonly TreatmentCoordinatorDocumentFileSaveCoordinator _documentFileSaveCoordinator;
@@ -29,6 +30,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             IDentalExamService dentalExamService,
             IDentalTreatmentService dentalTreatmentService,
             ITreatmentConsentService treatmentConsentService,
+            IEventManagementService eventManagementService,
             DentalXRayFileSaveCoordinator fileSaveCoordinator,
             TreatmentConsentFileSaveCoordinator treatmentConsentFileSaveCoordinator,
             TreatmentCoordinatorDocumentFileSaveCoordinator documentFileSaveCoordinator)
@@ -40,6 +42,7 @@ namespace ExcelFilesCompiler.Controllers.Services
             _dentalExamService = dentalExamService;
             _dentalTreatmentService = dentalTreatmentService;
             _treatmentConsentService = treatmentConsentService;
+            _eventManagementService = eventManagementService;
             _fileSaveCoordinator = fileSaveCoordinator;
             _treatmentConsentFileSaveCoordinator = treatmentConsentFileSaveCoordinator;
             _documentFileSaveCoordinator = documentFileSaveCoordinator;
@@ -155,6 +158,23 @@ namespace ExcelFilesCompiler.Controllers.Services
 
                 if (eventId > 0)
                 {
+                    if (appointments.Count > 0)
+                    {
+                        var appointmentWindow = await _eventManagementService.GetEventAppointmentWindowAsync(eventId);
+                        var existingAppointments = TreatmentCoordinatorAppointmentHelper.ToJsonDtos(
+                            existingCoordinator?.Appointments);
+                        var pastDateError = TreatmentCoordinatorAppointmentHelper.ValidateAgainstEventAppointmentWindow(
+                            appointments,
+                            appointmentWindow,
+                            existingAppointments);
+                        if (!string.IsNullOrWhiteSpace(pastDateError))
+                        {
+                            await _fileSaveCoordinator.RollbackStagingAsync(fileSession);
+                            await _documentFileSaveCoordinator.RollbackStagingAsync(documentSession);
+                            return DentalCoordinatorStationSaveResult.Fail("Invalid Appointment Date", pastDateError);
+                        }
+                    }
+
                     var otherEventAppointments = await _dentalTreatmentService.GetEventAppointmentsExcludingAsync(
                         eventId,
                         dto.ServiceMembersChildId);

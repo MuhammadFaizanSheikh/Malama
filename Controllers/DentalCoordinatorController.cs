@@ -293,6 +293,27 @@ namespace ExcelFilesCompiler.Controllers
                     return await RedisplayDentalCoordinatorStationAsync(dto);
                 }
 
+                if (serviceMemberResult.EventId > 0 && appointments.Count > 0)
+                {
+                    var appointmentWindow = await _eventManagementService
+                        .GetEventAppointmentWindowAsync(serviceMemberResult.EventId);
+                    var existingCoordinator = await _dentalTreatmentService
+                        .GetCoordinatorByServiceMembersChildIdAsync(dto.ServiceMembersChildId);
+                    var existingAppointments = TreatmentCoordinatorAppointmentHelper.ToJsonDtos(
+                        existingCoordinator?.Appointments);
+                    var pastDateError = TreatmentCoordinatorAppointmentHelper.ValidateAgainstEventAppointmentWindow(
+                        appointments,
+                        appointmentWindow,
+                        existingAppointments);
+                    if (!string.IsNullOrWhiteSpace(pastDateError))
+                    {
+                        TempData["ResponseStatus"] = "error";
+                        TempData["ResponseTitle"] = "Invalid Appointment Date";
+                        TempData["ResponseMessage"] = pastDateError;
+                        return await RedisplayDentalCoordinatorStationAsync(dto);
+                    }
+                }
+
                 var otherEventAppointments = await _dentalTreatmentService.GetEventAppointmentsExcludingAsync(
                     serviceMemberResult.EventId,
                     dto.ServiceMembersChildId);
@@ -436,6 +457,11 @@ namespace ExcelFilesCompiler.Controllers
             ViewBag.EventId = result.EventId;
             ViewBag.EventAppointmentMinDate = string.Empty;
             ViewBag.EventAppointmentMaxDate = string.Empty;
+            ViewBag.EventAppointmentSchedulableMinDate = string.Empty;
+            ViewBag.EventAppointmentToday = string.Empty;
+            ViewBag.EventAppointmentTimezoneDisplayName = string.Empty;
+            ViewBag.EventAppointmentSchedulingHint = string.Empty;
+            ViewBag.EventAppointmentCanSchedule = true;
             ViewBag.EventAppointmentDayWindowsJson = "[]";
             ViewBag.AssignableDentists = new List<TreatmentCoordinatorAssignableDentistDto>();
 
@@ -446,6 +472,11 @@ namespace ExcelFilesCompiler.Controllers
                     var appointmentWindow = await _eventManagementService.GetEventAppointmentWindowAsync(result.EventId);
                     ViewBag.EventAppointmentMinDate = appointmentWindow.MinDate;
                     ViewBag.EventAppointmentMaxDate = appointmentWindow.MaxDate;
+                    ViewBag.EventAppointmentSchedulableMinDate = appointmentWindow.SchedulableMinDate;
+                    ViewBag.EventAppointmentToday = appointmentWindow.TodayInEventTimezone;
+                    ViewBag.EventAppointmentTimezoneDisplayName = appointmentWindow.TimezoneDisplayName;
+                    ViewBag.EventAppointmentSchedulingHint = appointmentWindow.SchedulingHint;
+                    ViewBag.EventAppointmentCanSchedule = appointmentWindow.CanScheduleNewAppointments;
                     ViewBag.EventAppointmentDayWindowsJson = System.Text.Json.JsonSerializer.Serialize(
                         appointmentWindow.Days,
                         new System.Text.Json.JsonSerializerOptions

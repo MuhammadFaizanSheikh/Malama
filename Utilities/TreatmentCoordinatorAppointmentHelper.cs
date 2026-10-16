@@ -139,6 +139,90 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         /// <summary>
+        /// Ensures each appointment falls on an event day and is not newly scheduled in the past
+        /// (past = before today in the event timezone). Existing past appointments may remain if
+        /// their id and date are unchanged.
+        /// </summary>
+        public static string? ValidateAgainstEventAppointmentWindow(
+            IReadOnlyList<TreatmentCoordinatorAppointmentJsonDto> appointments,
+            EventAppointmentWindowDto? window,
+            IReadOnlyList<TreatmentCoordinatorAppointmentJsonDto>? existingAppointments = null)
+        {
+            if (appointments == null || appointments.Count == 0)
+            {
+                return null;
+            }
+
+            if (window == null || window.Days == null || window.Days.Count == 0)
+            {
+                return "Event appointment schedule is not available. Please reload and try again.";
+            }
+
+            var eventDates = new HashSet<string>(
+                window.Days
+                    .Select(d => (d.Date ?? string.Empty).Trim())
+                    .Where(d => !string.IsNullOrWhiteSpace(d)),
+                StringComparer.Ordinal);
+
+            var today = (window.TodayInEventTimezone ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(today))
+            {
+                return "Could not determine today's date in the event timezone. Please reload and try again.";
+            }
+
+            var timezoneLabel = string.IsNullOrWhiteSpace(window.TimezoneDisplayName)
+                ? "event timezone"
+                : window.TimezoneDisplayName.Trim();
+
+            var existingById = (existingAppointments ?? Array.Empty<TreatmentCoordinatorAppointmentJsonDto>())
+                .Where(a => a != null && !string.IsNullOrWhiteSpace(a.Id))
+                .GroupBy(a => a.Id!.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Last(), StringComparer.OrdinalIgnoreCase);
+
+            for (var i = 0; i < appointments.Count; i++)
+            {
+                var appt = appointments[i];
+                var prefix = $"Appointment #{i + 1}: ";
+                var date = (appt.AppointmentDate ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(date) || !TryParseAppointmentDate(date, out var parsedDate))
+                {
+                    return prefix + "Appointment date is invalid.";
+                }
+
+                var dateKey = parsedDate.ToString("yyyy-MM-dd");
+                if (!eventDates.Contains(dateKey))
+                {
+                    return prefix + "Appointment date must be within the event schedule.";
+                }
+
+                if (string.CompareOrdinal(dateKey, today) >= 0)
+                {
+                    continue;
+                }
+
+                // Past event day: allow only if this is an unchanged existing appointment.
+                var apptId = (appt.Id ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(apptId)
+                    && existingById.TryGetValue(apptId, out var existing)
+                    && string.Equals(
+                        (existing.AppointmentDate ?? string.Empty).Trim(),
+                        dateKey,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                return prefix
+                    + $"Cannot schedule on a past event day. Today in {timezoneLabel} is "
+                    + $"{DateTime.ParseExact(today, "yyyy-MM-dd", CultureInfo.InvariantCulture):MM/dd/yyyy}. "
+                    + "Choose today or a later event day.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Same SM: any time overlap is a conflict.
         /// Cross SM: conflict only when the same dentist overlaps.
         /// Adjacent windows (e.g. 3:00–3:30 and 3:30–4:00) are allowed.

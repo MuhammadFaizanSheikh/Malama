@@ -73,9 +73,28 @@
 
     public class EventAppointmentWindowDto
     {
+        /// <summary>First event day (yyyy-MM-dd) in event timezone — used for calendar viewing.</summary>
         public string MinDate { get; set; } = string.Empty;
 
+        /// <summary>Last event day (yyyy-MM-dd) in event timezone.</summary>
         public string MaxDate { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Earliest date allowed for new/changed appointments (max of event start and today in event timezone).
+        /// </summary>
+        public string SchedulableMinDate { get; set; } = string.Empty;
+
+        /// <summary>Today's calendar date in the event timezone (yyyy-MM-dd).</summary>
+        public string TodayInEventTimezone { get; set; } = string.Empty;
+
+        public string TimezoneId { get; set; } = string.Empty;
+
+        public string TimezoneDisplayName { get; set; } = string.Empty;
+
+        /// <summary>Short note shown on the Appointments UI.</summary>
+        public string SchedulingHint { get; set; } = string.Empty;
+
+        public bool CanScheduleNewAppointments { get; set; } = true;
 
         public List<EventAppointmentDayWindowDto> Days { get; set; } = new();
     }

@@ -1,6 +1,11 @@
 @{
     var eventAppointmentMinDate = ViewData["EventAppointmentMinDate"] as string ?? string.Empty;
     var eventAppointmentMaxDate = ViewData["EventAppointmentMaxDate"] as string ?? string.Empty;
+    var eventAppointmentSchedulableMinDate = ViewData["EventAppointmentSchedulableMinDate"] as string ?? string.Empty;
+    var eventAppointmentToday = ViewData["EventAppointmentToday"] as string ?? string.Empty;
+    var eventAppointmentTimezoneDisplayName = ViewData["EventAppointmentTimezoneDisplayName"] as string ?? string.Empty;
+    var eventAppointmentSchedulingHint = ViewData["EventAppointmentSchedulingHint"] as string ?? string.Empty;
+    var eventAppointmentCanSchedule = ViewData["EventAppointmentCanSchedule"] as bool? ?? true;
     var eventAppointmentDayWindowsJson = ViewData["EventAppointmentDayWindowsJson"] as string ?? "[]";
     var serviceMemberDisplayName = ViewData["ServiceMemberDisplayName"] as string ?? string.Empty;
     var initialAppointmentsJson = ViewData["AppointmentsJson"] as string ?? "[]";
@@ -45,6 +50,40 @@
 
     #tcAppointmentsSection .tc-appt-title i {
         color: var(--tc-appt-indigo);
+    }
+
+    #tcAppointmentsSection .tc-appt-schedule-hint {
+        margin: 0 0 1rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 10px;
+        border: 1px solid rgba(80, 90, 201, 0.22);
+        background: rgba(80, 90, 201, 0.07);
+        color: #303a75;
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+
+    #tcAppointmentsSection .tc-appt-schedule-hint.is-warning {
+        border-color: rgba(180, 83, 9, 0.28);
+        background: rgba(245, 158, 11, 0.12);
+        color: #9a3412;
+    }
+
+    #tcAppointmentsSection .tc-appt-schedule-hint i {
+        margin-right: 0.35rem;
+    }
+
+    #tcAppointmentsSection .tc-appt-past-badge {
+        display: inline-block;
+        margin-left: 0.35rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        background: rgba(107, 114, 133, 0.14);
+        color: #4b5563;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        vertical-align: middle;
     }
 
     #tcAppointmentsSection .tc-appt-summary {
@@ -424,13 +463,27 @@
 
     <input type="hidden" name="AppointmentsJson" id="AppointmentsJson" value='@initialAppointmentsJson' />
 
+    @if (!string.IsNullOrWhiteSpace(eventAppointmentSchedulingHint))
+    {
+        <p class="tc-appt-schedule-hint @(eventAppointmentCanSchedule ? null : "is-warning")"
+           id="tcAppointmentSchedulingHint"
+           role="status">
+            <i class="fas @(eventAppointmentCanSchedule ? "fa-info-circle" : "fa-exclamation-triangle")" aria-hidden="true"></i>
+            @eventAppointmentSchedulingHint
+        </p>
+    }
+
     <div class="tc-appt-summary" id="tcAppointmentsSummary" aria-live="polite"></div>
 
     <div class="tc-appt-workspace" id="tcAppointmentsWorkspace">
         <div class="tc-appt-list-panel">
             <div class="tc-appt-list-header">
                 <h5>Scheduled Appointments</h5>
-                <button type="button" class="btn btn-general" id="tcAddAppointmentBtn">
+                <button type="button"
+                        class="btn btn-general"
+                        id="tcAddAppointmentBtn"
+                        @(eventAppointmentCanSchedule ? null : "disabled")
+                        title="@(eventAppointmentCanSchedule ? "Add a new appointment" : "All event days are in the past — new appointments cannot be scheduled")">
                     <i class="fas fa-plus" aria-hidden="true"></i> Add new appointment
                 </button>
             </div>
@@ -482,6 +535,16 @@
                                    class="form-control"
                                    placeholder="MM/DD/YYYY"
                                    autocomplete="off" />
+                            <div class="form-text" id="tcAppointmentDateHelp">
+                                @if (!string.IsNullOrWhiteSpace(eventAppointmentTimezoneDisplayName))
+                                {
+                                    <text>Only today or future event days can be selected (@eventAppointmentTimezoneDisplayName).</text>
+                                }
+                                else
+                                {
+                                    <text>Only today or future event days can be selected (event timezone).</text>
+                                }
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="tcAppointmentStartTime">Start Time</label>
@@ -599,6 +662,10 @@
     (function () {
         const EVENT_APPOINTMENT_MIN_DATE = @Json.Serialize(eventAppointmentMinDate);
         const EVENT_APPOINTMENT_MAX_DATE = @Json.Serialize(eventAppointmentMaxDate);
+        const EVENT_APPOINTMENT_SCHEDULABLE_MIN_DATE = @Json.Serialize(eventAppointmentSchedulableMinDate);
+        const EVENT_APPOINTMENT_TODAY = @Json.Serialize(eventAppointmentToday);
+        const EVENT_APPOINTMENT_TIMEZONE_LABEL = @Json.Serialize(eventAppointmentTimezoneDisplayName);
+        const EVENT_APPOINTMENT_CAN_SCHEDULE = @Json.Serialize(eventAppointmentCanSchedule);
         const EVENT_APPOINTMENT_DAY_WINDOWS = @Html.Raw(eventAppointmentDayWindowsJson);
         const SERVICE_MEMBER_DISPLAY_NAME = @Json.Serialize(serviceMemberDisplayName);
         const ASSIGNED_DENTISTS = @Html.Raw(assignableDentistsJson);
@@ -705,6 +772,39 @@
                     Number(match.endMinutes ?? match.EndMinutes ?? (24 * 60))
                 )
             };
+        }
+
+        function isPastEventAppointmentDate(dateStr) {
+            const date = (dateStr || "").toString().trim();
+            if (!date || !EVENT_APPOINTMENT_TODAY) {
+                return false;
+            }
+            return date < EVENT_APPOINTMENT_TODAY;
+        }
+
+        function isSchedulableEventAppointmentDate(dateStr) {
+            const date = (dateStr || "").toString().trim();
+            if (!date || !getEventDayWindow(date)) {
+                return false;
+            }
+            if (!EVENT_APPOINTMENT_CAN_SCHEDULE || !EVENT_APPOINTMENT_SCHEDULABLE_MIN_DATE) {
+                return false;
+            }
+            if (EVENT_APPOINTMENT_MAX_DATE && date > EVENT_APPOINTMENT_MAX_DATE) {
+                return false;
+            }
+            return date >= EVENT_APPOINTMENT_SCHEDULABLE_MIN_DATE;
+        }
+
+        function formatPastDateRestrictionMessage() {
+            const timezoneLabel = EVENT_APPOINTMENT_TIMEZONE_LABEL || "event timezone";
+            let todayLabel = "today";
+            if (EVENT_APPOINTMENT_TODAY && /^\d{4}-\d{2}-\d{2}$/.test(EVENT_APPOINTMENT_TODAY)) {
+                todayLabel = formatAppointmentDateForDisplay(EVENT_APPOINTMENT_TODAY);
+            }
+            return "Cannot schedule on a past event day. Today in "
+                + timezoneLabel + " is " + todayLabel
+                + ". Choose today or a later event day.";
         }
 
         function minutesToFlatpickrTime(totalMinutes) {
@@ -1129,11 +1229,16 @@
                     "<button type='button' class='btn btn-sm btn-outline-danger tc-appt-action-btn tc-appt-delete-btn' data-index='" + index + "' title='Delete'>" +
                     "<i class='fas fa-trash-alt' aria-hidden='true'></i></button>";
 
+                const dateDisplay = escapeHtml(formatAppointmentDateForDisplay(appt.appointmentDate))
+                    + (isPastEventAppointmentDate(appt.appointmentDate)
+                        ? " <span class='tc-appt-past-badge' title='Past event day (event timezone)'>Past</span>"
+                        : "");
+
                 $tbody.append(
                     "<tr data-appointment-index='" + index + "'>" +
                     "<td>" + (index + 1) + "</td>" +
                     "<td>" + escapeHtml(resolveDentistDisplayName(appt.assignedDentist) || "-") + "</td>" +
-                    "<td>" + escapeHtml(formatAppointmentDateForDisplay(appt.appointmentDate)) + "</td>" +
+                    "<td>" + dateDisplay + "</td>" +
                     "<td>" + escapeHtml(appt.appointmentStartTime || "-") + "</td>" +
                     "<td>" + escapeHtml(appt.appointmentDuration || "-") + "</td>" +
                     "<td>" + (findingTags || "-") + "</td>" +
@@ -1165,9 +1270,19 @@
                 allowInput: true,
                 onChange: function () {
                     updateAppointmentStartTimeBounds();
-                }
+                },
+                enable: [
+                    function (date) {
+                        if (typeof flatpickr === "undefined" || !flatpickr.formatDate) {
+                            return true;
+                        }
+                        return isSchedulableEventAppointmentDate(flatpickr.formatDate(date, "Y-m-d"));
+                    }
+                ]
             };
-            if (EVENT_APPOINTMENT_MIN_DATE) {
+            if (EVENT_APPOINTMENT_SCHEDULABLE_MIN_DATE) {
+                dateOptions.minDate = EVENT_APPOINTMENT_SCHEDULABLE_MIN_DATE;
+            } else if (EVENT_APPOINTMENT_MIN_DATE) {
                 dateOptions.minDate = EVENT_APPOINTMENT_MIN_DATE;
             }
             if (EVENT_APPOINTMENT_MAX_DATE) {
@@ -1239,6 +1354,15 @@
         }
 
         function openNewAppointmentForm() {
+            if (!EVENT_APPOINTMENT_CAN_SCHEDULE) {
+                Swal.fire(
+                    "Cannot Schedule",
+                    formatPastDateRestrictionMessage(),
+                    "info"
+                );
+                return;
+            }
+
             clearAppointmentForm();
             showAppointmentForm([]);
         }
@@ -1295,6 +1419,11 @@
             const dayWindow = getEventDayWindow(appointment.appointmentDate);
             if (!dayWindow) {
                 Swal.fire("Invalid Data", "Appointment Date must be within the event schedule.", "warning");
+                return false;
+            }
+
+            if (!isSchedulableEventAppointmentDate(appointment.appointmentDate)) {
+                Swal.fire("Invalid Appointment Date", formatPastDateRestrictionMessage(), "warning");
                 return false;
             }
 
@@ -1418,11 +1547,35 @@
                 return;
             }
 
+            if (!EVENT_APPOINTMENT_CAN_SCHEDULE) {
+                Swal.fire(
+                    "Cannot Update Schedule",
+                    "All event days are in the past for this event timezone. You can delete this appointment if needed, but a new date cannot be scheduled.",
+                    "info"
+                );
+                return;
+            }
+
             editingAppointmentIndex = index;
             $("#tcAppointmentFormTitle").text("Edit Appointment");
             $("#tcSaveAppointmentBtn").html('<i class="fas fa-check-circle" aria-hidden="true"></i> Update Appointment');
             writeAppointmentForm(appointment);
             showAppointmentForm(appointment.findingClientKeys || []);
+
+            if (isPastEventAppointmentDate(appointment.appointmentDate)) {
+                if (tcAppointmentDatePicker) {
+                    tcAppointmentDatePicker.clear();
+                } else {
+                    $("#tcAppointmentDate").val("");
+                }
+                updateAppointmentStartTimeBounds();
+                Swal.fire(
+                    "Past Appointment Date",
+                    "This appointment is on a past event day. Choose today or a later event day to update it ("
+                        + (EVENT_APPOINTMENT_TIMEZONE_LABEL || "event timezone") + ").",
+                    "info"
+                );
+            }
         }
 
         function deleteAppointment(index) {
