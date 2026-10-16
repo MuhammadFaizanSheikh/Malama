@@ -20,7 +20,14 @@ namespace ExcelFilesCompiler.Interfaces
 
         Task<TreatmentConsentFormSelectionDto> GetFormSelectionAsync(long serviceMembersChildId);
 
-
+        /// <summary>
+        /// Re-derives consent forms from current appointments/findings, invalidates signatures on
+        /// material finding-scope changes, persists when changed, and returns files to delete.
+        /// </summary>
+        Task<TreatmentConsentAppointmentSyncResult> SyncFromAppointmentsAsync(
+            long serviceMembersChildId,
+            string? userId = null,
+            bool saveChanges = true);
 
         Task<TreatmentConsentStationSaveResult> SaveStationAsync(
             TreatmentConsentStationSaveDto dto,

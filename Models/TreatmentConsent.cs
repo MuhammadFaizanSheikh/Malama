@@ -67,6 +67,12 @@ namespace Malama.Models
         public string? SignatureFileName { get; set; }
         public bool IsSigned { get; set; }
 
+        /// <summary>
+        /// Sorted finding client keys for this dentist's Oral Surgery appointment scope.
+        /// Used to detect material appointment/finding changes and invalidate signatures.
+        /// </summary>
+        public string? FindingScopeFingerprint { get; set; }
+
         /// <summary>Client-only: data URL for new/updated signature ink. Not persisted in JSON.</summary>
         public string? SignatureDataUrl { get; set; }
     }
@@ -116,8 +122,27 @@ namespace Malama.Models
 
         public DateTime? DdsAcknowledgedOn { get; set; }
 
+        /// <summary>
+        /// Sorted finding client keys for this dentist's Dental Treatment appointment scope.
+        /// Used to detect material appointment/finding changes and invalidate signatures.
+        /// </summary>
+        public string? FindingScopeFingerprint { get; set; }
+
         /// <summary>Client-only: data URL for new/updated signature ink. Not persisted in JSON.</summary>
         public string? SignatureDataUrl { get; set; }
+    }
+
+    public class TreatmentConsentSignatureFileToDelete
+    {
+        public string Prefix { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+    }
+
+    public class TreatmentConsentAppointmentSyncResult
+    {
+        public TreatmentConsentFormSelectionDto Selection { get; set; } = new();
+        public List<TreatmentConsentSignatureFileToDelete> SignatureFilesToDelete { get; set; } = new();
+        public bool SelectionChanged { get; set; }
     }
 
     public class TreatmentConsentStationSaveDto : IDentalQuestionnaireFormData

@@ -289,6 +289,8 @@ namespace ExcelFilesCompiler.Utilities
         }
 
         public const string OralSurgeryDiseaseType = "Oral Surgery";
+        public const string OralSurgerySignaturePrefix = "oral_surgery_sig";
+        public const string DentalTreatmentSignaturePrefix = "dental_treatment_sig";
 
         /// <summary>
         /// Distinct appointment dentists bucketed by linked finding disease type.
@@ -374,6 +376,265 @@ namespace ExcelFilesCompiler.Utilities
                 names);
 
             selection.Status = ComputeStationStatus(selection);
+        }
+
+        /// <summary>
+        /// Re-derives consent dentist lists from appointments, merges forms, and invalidates
+        /// SM signatures (+ DDS on treatment forms) when finding scope for a dentist+type changes.
+        /// Keeps Oral procedure text and Dental Treatment checkboxes/initials.
+        /// </summary>
+        public static TreatmentConsentAppointmentSyncResult SyncSelectionFromAppointments(
+            TreatmentConsentFormSelectionDto selection,
+            IEnumerable<DentalAppointment>? appointments,
+            IEnumerable<DentalFinding>? findings,
+            IReadOnlyDictionary<long, string>? dentistNamesById = null)
+        {
+            if (selection == null)
+            {
+                throw new ArgumentNullException(nameof(selection));
+            }
+
+            var result = new TreatmentConsentAppointmentSyncResult { Selection = selection };
+            var appointmentList = (appointments ?? Enumerable.Empty<DentalAppointment>()).ToList();
+            var findingList = (findings ?? Enumerable.Empty<DentalFinding>()).ToList();
+            var derived = DeriveDentistsFromAppointments(appointmentList, findingList);
+            var fingerprints = BuildFindingScopeFingerprints(appointmentList, findingList);
+
+            var previousOral = (selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+                .Where(f => f != null && f.EventStaffId > 0)
+                .GroupBy(f => f.EventStaffId)
+                .ToDictionary(g => g.Key, g => g.Last());
+            var previousTreatment = (selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                .Where(f => f != null && f.EventStaffId > 0)
+                .GroupBy(f => f.EventStaffId)
+                .ToDictionary(g => g.Key, g => g.Last());
+
+            var previousOralIds = NormalizeIds(selection.OralSurgeryDentistEventStaffIds);
+            var previousTreatmentIds = NormalizeIds(selection.DentalTreatmentDentistEventStaffIds);
+            var previousIncludeOral = selection.IncludeOralSurgeryForm;
+            var previousIncludeTreatment = selection.IncludeDentalTreatmentConsent;
+
+            ApplyDerivedDentistsToSelection(selection, derived, dentistNamesById);
+
+            foreach (var removed in previousOral.Values)
+            {
+                if (selection.OralSurgeryDentistEventStaffIds.Contains(removed.EventStaffId))
+                {
+                    continue;
+                }
+
+                QueueSignatureDelete(
+                    result.SignatureFilesToDelete,
+                    OralSurgerySignaturePrefix,
+                    removed.SignatureFileName);
+                result.SelectionChanged = true;
+            }
+
+            foreach (var removed in previousTreatment.Values)
+            {
+                if (selection.DentalTreatmentDentistEventStaffIds.Contains(removed.EventStaffId))
+                {
+                    continue;
+                }
+
+                QueueSignatureDelete(
+                    result.SignatureFilesToDelete,
+                    DentalTreatmentSignaturePrefix,
+                    removed.SignatureFileName);
+                result.SelectionChanged = true;
+            }
+
+            foreach (var form in selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+            {
+                fingerprints.OralByDentistId.TryGetValue(form.EventStaffId, out var newFingerprint);
+                newFingerprint ??= string.Empty;
+                var previousFingerprint = form.FindingScopeFingerprint;
+                var priorFileName = previousOral.TryGetValue(form.EventStaffId, out var prevOral)
+                    ? prevOral.SignatureFileName
+                    : form.SignatureFileName;
+
+                if (!string.IsNullOrEmpty(previousFingerprint)
+                    && !string.Equals(previousFingerprint, newFingerprint, StringComparison.Ordinal))
+                {
+                    if (InvalidateOralSurgerySignature(form))
+                    {
+                        QueueSignatureDelete(
+                            result.SignatureFilesToDelete,
+                            OralSurgerySignaturePrefix,
+                            priorFileName);
+                    }
+
+                    result.SelectionChanged = true;
+                }
+                else if (!string.Equals(form.FindingScopeFingerprint, newFingerprint, StringComparison.Ordinal))
+                {
+                    result.SelectionChanged = true;
+                }
+
+                form.FindingScopeFingerprint = newFingerprint;
+            }
+
+            foreach (var form in selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+            {
+                fingerprints.TreatmentByDentistId.TryGetValue(form.EventStaffId, out var newFingerprint);
+                newFingerprint ??= string.Empty;
+                var previousFingerprint = form.FindingScopeFingerprint;
+                var priorFileName = previousTreatment.TryGetValue(form.EventStaffId, out var prevTreatment)
+                    ? prevTreatment.SignatureFileName
+                    : form.SignatureFileName;
+
+                if (!string.IsNullOrEmpty(previousFingerprint)
+                    && !string.Equals(previousFingerprint, newFingerprint, StringComparison.Ordinal))
+                {
+                    if (InvalidateDentalTreatmentSignature(form))
+                    {
+                        QueueSignatureDelete(
+                            result.SignatureFilesToDelete,
+                            DentalTreatmentSignaturePrefix,
+                            priorFileName);
+                    }
+
+                    result.SelectionChanged = true;
+                }
+                else if (!string.Equals(form.FindingScopeFingerprint, newFingerprint, StringComparison.Ordinal))
+                {
+                    result.SelectionChanged = true;
+                }
+
+                form.FindingScopeFingerprint = newFingerprint;
+            }
+
+            if (previousIncludeOral != selection.IncludeOralSurgeryForm
+                || previousIncludeTreatment != selection.IncludeDentalTreatmentConsent
+                || !previousOralIds.SequenceEqual(selection.OralSurgeryDentistEventStaffIds)
+                || !previousTreatmentIds.SequenceEqual(selection.DentalTreatmentDentistEventStaffIds))
+            {
+                result.SelectionChanged = true;
+            }
+
+            selection.Status = ComputeStationStatus(selection);
+            return result;
+        }
+
+        public static TreatmentConsentFindingScopeFingerprints BuildFindingScopeFingerprints(
+            IEnumerable<DentalAppointment>? appointments,
+            IEnumerable<DentalFinding>? findings)
+        {
+            var findingByKey = (findings ?? Enumerable.Empty<DentalFinding>())
+                .Where(f => !string.IsNullOrWhiteSpace(f.ClientKey))
+                .GroupBy(f => f.ClientKey!.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Last(), StringComparer.OrdinalIgnoreCase);
+
+            var oralKeys = new Dictionary<long, SortedSet<string>>();
+            var treatmentKeys = new Dictionary<long, SortedSet<string>>();
+
+            foreach (var appointment in appointments ?? Enumerable.Empty<DentalAppointment>())
+            {
+                if (appointment == null || appointment.EventStaffId <= 0)
+                {
+                    continue;
+                }
+
+                foreach (var link in appointment.Findings ?? Enumerable.Empty<DentalAppointmentFinding>())
+                {
+                    var key = link?.FindingClientKey?.Trim();
+                    if (string.IsNullOrWhiteSpace(key)
+                        || !findingByKey.TryGetValue(key, out var finding))
+                    {
+                        continue;
+                    }
+
+                    var diseaseType = finding.DiseaseConditionType?.Trim() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(diseaseType))
+                    {
+                        continue;
+                    }
+
+                    var target = string.Equals(diseaseType, OralSurgeryDiseaseType, StringComparison.OrdinalIgnoreCase)
+                        ? oralKeys
+                        : treatmentKeys;
+
+                    if (!target.TryGetValue(appointment.EventStaffId, out var set))
+                    {
+                        set = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+                        target[appointment.EventStaffId] = set;
+                    }
+
+                    set.Add(key);
+                }
+            }
+
+            return new TreatmentConsentFindingScopeFingerprints
+            {
+                OralByDentistId = oralKeys.ToDictionary(
+                    pair => pair.Key,
+                    pair => string.Join("|", pair.Value)),
+                TreatmentByDentistId = treatmentKeys.ToDictionary(
+                    pair => pair.Key,
+                    pair => string.Join("|", pair.Value))
+            };
+        }
+
+        public static bool InvalidateOralSurgerySignature(TreatmentConsentOralSurgeryFormDto form)
+        {
+            if (form == null)
+            {
+                return false;
+            }
+
+            var hadSignature = form.IsSigned || !string.IsNullOrWhiteSpace(form.SignatureFileName);
+            form.IsSigned = false;
+            form.SignatureFileName = null;
+            form.SignatureDataUrl = null;
+            return hadSignature;
+        }
+
+        public static bool InvalidateDentalTreatmentSignature(TreatmentConsentDentalTreatmentFormDto form)
+        {
+            if (form == null)
+            {
+                return false;
+            }
+
+            var hadSignature = form.IsSigned
+                || !string.IsNullOrWhiteSpace(form.SignatureFileName)
+                || form.DdsAcknowledged
+                || !string.IsNullOrWhiteSpace(form.DdsAcknowledgedByUserId)
+                || form.DdsAcknowledgedByEventStaffId.HasValue
+                || form.DdsAcknowledgedOn.HasValue;
+
+            form.IsSigned = false;
+            form.SignatureFileName = null;
+            form.SignatureDataUrl = null;
+            form.DdsAcknowledged = false;
+            form.DdsAcknowledgedByUserId = null;
+            form.DdsAcknowledgedByEventStaffId = null;
+            form.DdsAcknowledgedOn = null;
+            return hadSignature;
+        }
+
+        private static void QueueSignatureDelete(
+            List<TreatmentConsentSignatureFileToDelete> filesToDelete,
+            string prefix,
+            string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return;
+            }
+
+            if (filesToDelete.Any(f =>
+                    string.Equals(f.Prefix, prefix, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(f.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            filesToDelete.Add(new TreatmentConsentSignatureFileToDelete
+            {
+                Prefix = prefix,
+                FileName = fileName.Trim()
+            });
         }
 
         private static List<TreatmentConsentOralSurgeryFormDto> MergeOralForms(
@@ -508,5 +769,11 @@ namespace ExcelFilesCompiler.Utilities
     {
         public List<long> OralSurgeryDentistEventStaffIds { get; set; } = new();
         public List<long> DentalTreatmentDentistEventStaffIds { get; set; } = new();
+    }
+
+    public class TreatmentConsentFindingScopeFingerprints
+    {
+        public Dictionary<long, string> OralByDentistId { get; set; } = new();
+        public Dictionary<long, string> TreatmentByDentistId { get; set; } = new();
     }
 }

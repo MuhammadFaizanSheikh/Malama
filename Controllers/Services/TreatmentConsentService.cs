@@ -194,26 +194,99 @@ namespace ExcelFilesCompiler.Controllers.Services
 
         public async Task<TreatmentConsentFormSelectionDto> GetFormSelectionAsync(long serviceMembersChildId)
         {
-            var entity = await _unitOfWork.TreatmentConsent
-                .GetWithIncludeNoTracking(x => x.ServiceMembersChildId == serviceMembersChildId)
-                .FirstOrDefaultAsync();
+            var sync = await SyncFromAppointmentsAsync(serviceMembersChildId, userId: null, saveChanges: true);
+            return sync.Selection;
+        }
 
-            TreatmentConsentFormSelectionDto selection;
-            if (entity == null)
+        public async Task<TreatmentConsentAppointmentSyncResult> SyncFromAppointmentsAsync(
+            long serviceMembersChildId,
+            string? userId = null,
+            bool saveChanges = true)
+        {
+            const string methodName = nameof(SyncFromAppointmentsAsync);
+
+            var result = new TreatmentConsentAppointmentSyncResult
             {
-                selection = new TreatmentConsentFormSelectionDto
+                Selection = new TreatmentConsentFormSelectionDto
                 {
                     ServiceMembersChildId = serviceMembersChildId,
                     IncludeQuestionnaire = true
-                };
-            }
-            else
+                }
+            };
+
+            if (serviceMembersChildId <= 0)
             {
-                selection = MapToSelectionDto(entity);
+                return result;
             }
 
-            await ApplyAppointmentDerivationAsync(selection, serviceMembersChildId);
-            return selection;
+            try
+            {
+                var entity = await _unitOfWork.TreatmentConsent
+                    .GetWithIncludeTracking(x => x.ServiceMembersChildId == serviceMembersChildId)
+                    .FirstOrDefaultAsync();
+
+                var selection = entity == null
+                    ? new TreatmentConsentFormSelectionDto
+                    {
+                        ServiceMembersChildId = serviceMembersChildId,
+                        IncludeQuestionnaire = true
+                    }
+                    : MapToSelectionDto(entity);
+
+                var appointments = await _unitOfWork.DentalAppointment
+                    .GetWithIncludeNoTracking(
+                        a => a.DentalTreatmentCoordinator.ServiceMembersChildId == serviceMembersChildId,
+                        a => a.Findings)
+                    .ToListAsync();
+
+                var findings = await _unitOfWork.DentalFinding
+                    .GetAllWithConditionNoTracking(f => f.ServiceMembersChildId == serviceMembersChildId)
+                    .ToListAsync();
+
+                var derived = TreatmentConsentHelper.DeriveDentistsFromAppointments(appointments, findings);
+                var dentistNames = await ResolveDentistDisplayNamesAsync(
+                    derived.OralSurgeryDentistEventStaffIds
+                        .Concat(derived.DentalTreatmentDentistEventStaffIds)
+                        .Distinct()
+                        .ToList());
+
+                result = TreatmentConsentHelper.SyncSelectionFromAppointments(
+                    selection,
+                    appointments,
+                    findings,
+                    dentistNames);
+                result.Selection.ServiceMembersChildId = serviceMembersChildId;
+                result.Selection.IncludeQuestionnaire = true;
+
+                var hasForms = result.Selection.IncludeOralSurgeryForm
+                    || result.Selection.IncludeDentalTreatmentConsent;
+                var shouldPersist = result.SelectionChanged || (entity == null && hasForms);
+
+                if (shouldPersist)
+                {
+                    await PersistSelectionAsync(result.Selection, entity, userId);
+                    result.SelectionChanged = true;
+
+                    if (saveChanges)
+                    {
+                        await _unitOfWork.SaveAsync();
+                        CommitSignatureDeletes(result.SignatureFilesToDelete);
+                    }
+                }
+                else if (saveChanges && result.SignatureFilesToDelete.Count > 0)
+                {
+                    CommitSignatureDeletes(result.SignatureFilesToDelete);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "{ClassName}, {MethodName}, Failed to sync consent from appointments. ServiceMembersChildId={ServiceMembersChildId}",
+                    CLASSNAME, methodName, serviceMembersChildId);
+                throw;
+            }
         }
 
         public async Task<TreatmentConsentStationSaveResult> SaveStationAsync(
@@ -456,95 +529,174 @@ namespace ExcelFilesCompiler.Controllers.Services
             return null;
         }
 
-        private async Task ApplyAppointmentDerivationAsync(
-            TreatmentConsentFormSelectionDto selection,
-            long serviceMembersChildId)
-        {
-            var derived = await DeriveDentistsAsync(serviceMembersChildId);
-            var dentistNames = await ResolveDentistDisplayNamesAsync(
-                derived.OralSurgeryDentistEventStaffIds
-                    .Concat(derived.DentalTreatmentDentistEventStaffIds)
-                    .Distinct()
-                    .ToList());
-
-            TreatmentConsentHelper.ApplyDerivedDentistsToSelection(selection, derived, dentistNames);
-        }
-
         private async Task ApplyAppointmentDerivationToSaveDtoAsync(TreatmentConsentStationSaveDto dto)
         {
-            var derived = await DeriveDentistsAsync(dto.ServiceMembersChildId);
-            var dentistNames = await ResolveDentistDisplayNamesAsync(
-                derived.OralSurgeryDentistEventStaffIds
-                    .Concat(derived.DentalTreatmentDentistEventStaffIds)
-                    .Distinct()
-                    .ToList());
-
-            dto.OralSurgeryDentistEventStaffIds = derived.OralSurgeryDentistEventStaffIds;
-            dto.DentalTreatmentDentistEventStaffIds = derived.DentalTreatmentDentistEventStaffIds;
-            dto.IncludeOralSurgeryForm = derived.OralSurgeryDentistEventStaffIds.Count > 0;
-            dto.IncludeDentalTreatmentConsent = derived.DentalTreatmentDentistEventStaffIds.Count > 0;
-
-            var oralById = (dto.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
-                .Where(f => f != null && f.EventStaffId > 0)
-                .GroupBy(f => f.EventStaffId)
-                .ToDictionary(g => g.Key, g => g.Last());
-
-            dto.OralSurgeryForms = derived.OralSurgeryDentistEventStaffIds.Select(id =>
-            {
-                if (!oralById.TryGetValue(id, out var form) || form == null)
-                {
-                    form = new TreatmentConsentOralSurgeryFormDto { EventStaffId = id };
-                }
-
-                if (string.IsNullOrWhiteSpace(form.DentistName)
-                    && dentistNames.TryGetValue(id, out var name))
-                {
-                    form.DentistName = name;
-                }
-
-                return form;
-            }).ToList();
-
-            var treatmentById = (dto.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
-                .Where(f => f != null && f.EventStaffId > 0)
-                .GroupBy(f => f.EventStaffId)
-                .ToDictionary(g => g.Key, g => g.Last());
-
-            dto.DentalTreatmentForms = derived.DentalTreatmentDentistEventStaffIds.Select(id =>
-            {
-                if (!treatmentById.TryGetValue(id, out var form) || form == null)
-                {
-                    form = new TreatmentConsentDentalTreatmentFormDto { EventStaffId = id };
-                }
-
-                if (string.IsNullOrWhiteSpace(form.DentistName)
-                    && dentistNames.TryGetValue(id, out var name))
-                {
-                    form.DentistName = name;
-                }
-
-                return form;
-            }).ToList();
-        }
-
-        private async Task<TreatmentConsentDerivedDentists> DeriveDentistsAsync(long serviceMembersChildId)
-        {
-            if (serviceMembersChildId <= 0)
-            {
-                return new TreatmentConsentDerivedDentists();
-            }
-
             var appointments = await _unitOfWork.DentalAppointment
                 .GetWithIncludeNoTracking(
-                    a => a.DentalTreatmentCoordinator.ServiceMembersChildId == serviceMembersChildId,
+                    a => a.DentalTreatmentCoordinator.ServiceMembersChildId == dto.ServiceMembersChildId,
                     a => a.Findings)
                 .ToListAsync();
 
             var findings = await _unitOfWork.DentalFinding
-                .GetAllWithConditionNoTracking(f => f.ServiceMembersChildId == serviceMembersChildId)
+                .GetAllWithConditionNoTracking(f => f.ServiceMembersChildId == dto.ServiceMembersChildId)
                 .ToListAsync();
 
-            return TreatmentConsentHelper.DeriveDentistsFromAppointments(appointments, findings);
+            var derived = TreatmentConsentHelper.DeriveDentistsFromAppointments(appointments, findings);
+            var dentistNames = await ResolveDentistDisplayNamesAsync(
+                derived.OralSurgeryDentistEventStaffIds
+                    .Concat(derived.DentalTreatmentDentistEventStaffIds)
+                    .Distinct()
+                    .ToList());
+
+            var selection = new TreatmentConsentFormSelectionDto
+            {
+                ServiceMembersChildId = dto.ServiceMembersChildId,
+                IncludeQuestionnaire = true,
+                IncludeOralSurgeryForm = dto.IncludeOralSurgeryForm,
+                IncludeDentalTreatmentConsent = dto.IncludeDentalTreatmentConsent,
+                OralSurgeryDentistEventStaffIds = dto.OralSurgeryDentistEventStaffIds ?? new List<long>(),
+                DentalTreatmentDentistEventStaffIds = dto.DentalTreatmentDentistEventStaffIds ?? new List<long>(),
+                OralSurgeryForms = dto.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>(),
+                DentalTreatmentForms = dto.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>()
+            };
+
+            // Prefer persisted fingerprints so material-change detection works on Consent save.
+            var existing = await _unitOfWork.TreatmentConsent
+                .GetWithIncludeNoTracking(x => x.ServiceMembersChildId == dto.ServiceMembersChildId)
+                .FirstOrDefaultAsync();
+            if (existing != null)
+            {
+                var persisted = MapToSelectionDto(existing);
+                foreach (var form in selection.OralSurgeryForms)
+                {
+                    var match = persisted.OralSurgeryForms?
+                        .FirstOrDefault(f => f.EventStaffId == form.EventStaffId);
+                    if (match != null && string.IsNullOrWhiteSpace(form.FindingScopeFingerprint))
+                    {
+                        form.FindingScopeFingerprint = match.FindingScopeFingerprint;
+                    }
+                }
+
+                foreach (var form in selection.DentalTreatmentForms)
+                {
+                    var match = persisted.DentalTreatmentForms?
+                        .FirstOrDefault(f => f.EventStaffId == form.EventStaffId);
+                    if (match != null && string.IsNullOrWhiteSpace(form.FindingScopeFingerprint))
+                    {
+                        form.FindingScopeFingerprint = match.FindingScopeFingerprint;
+                    }
+                }
+            }
+
+            var sync = TreatmentConsentHelper.SyncSelectionFromAppointments(
+                selection,
+                appointments,
+                findings,
+                dentistNames);
+
+            dto.OralSurgeryDentistEventStaffIds = sync.Selection.OralSurgeryDentistEventStaffIds;
+            dto.DentalTreatmentDentistEventStaffIds = sync.Selection.DentalTreatmentDentistEventStaffIds;
+            dto.IncludeOralSurgeryForm = sync.Selection.IncludeOralSurgeryForm;
+            dto.IncludeDentalTreatmentConsent = sync.Selection.IncludeDentalTreatmentConsent;
+            dto.OralSurgeryForms = sync.Selection.OralSurgeryForms;
+            dto.DentalTreatmentForms = sync.Selection.DentalTreatmentForms;
+
+            if (sync.SignatureFilesToDelete.Count > 0)
+            {
+                CommitSignatureDeletes(sync.SignatureFilesToDelete);
+            }
+        }
+
+        private async Task PersistSelectionAsync(
+            TreatmentConsentFormSelectionDto selection,
+            TreatmentConsent? existing,
+            string? userId)
+        {
+            var includeOral = selection.IncludeOralSurgeryForm;
+            var includeTreatment = selection.IncludeDentalTreatmentConsent;
+            var oralIds = includeOral
+                ? NormalizeIds(selection.OralSurgeryDentistEventStaffIds)
+                : new List<long>();
+            var treatmentIds = includeTreatment
+                ? NormalizeIds(selection.DentalTreatmentDentistEventStaffIds)
+                : new List<long>();
+
+            var oralForms = includeOral
+                ? (selection.OralSurgeryForms ?? new List<TreatmentConsentOralSurgeryFormDto>())
+                    .Where(f => oralIds.Contains(f.EventStaffId))
+                    .Select(StripOralForPersistence)
+                    .ToList()
+                : new List<TreatmentConsentOralSurgeryFormDto>();
+
+            var treatmentForms = includeTreatment
+                ? (selection.DentalTreatmentForms ?? new List<TreatmentConsentDentalTreatmentFormDto>())
+                    .Where(f => treatmentIds.Contains(f.EventStaffId))
+                    .Select(StripTreatmentForPersistence)
+                    .ToList()
+                : new List<TreatmentConsentDentalTreatmentFormDto>();
+
+            var now = DateTime.Now;
+            if (existing == null)
+            {
+                existing = new TreatmentConsent
+                {
+                    ServiceMembersChildId = selection.ServiceMembersChildId,
+                    AddedBy = string.IsNullOrWhiteSpace(userId) ? "appointment-sync" : userId,
+                    AddedOn = now
+                };
+                await _unitOfWork.TreatmentConsent.AddAsync(existing);
+            }
+            else if (!string.IsNullOrWhiteSpace(userId))
+            {
+                existing.UpdatedBy = userId;
+                existing.UpdatedOn = now;
+            }
+
+            existing.IncludeQuestionnaire = true;
+            existing.IncludeOralSurgeryForm = includeOral;
+            existing.IncludeDentalTreatmentConsent = includeTreatment;
+            existing.OralSurgeryDentistEventStaffIdsJson = SerializeIds(oralIds);
+            existing.DentalTreatmentDentistEventStaffIdsJson = SerializeIds(treatmentIds);
+            existing.OralSurgeryProcedureText = oralForms.FirstOrDefault()?.ProcedureText;
+            existing.OralSurgeryFormsJson = JsonSerializer.Serialize(oralForms, FormJsonOptions);
+            existing.DentalTreatmentFormsJson = JsonSerializer.Serialize(treatmentForms, FormJsonOptions);
+            existing.Status = TreatmentConsentHelper.ComputeStationStatus(
+                includeOral,
+                oralIds,
+                oralForms,
+                includeTreatment,
+                treatmentIds,
+                treatmentForms);
+        }
+
+        private void CommitSignatureDeletes(IEnumerable<TreatmentConsentSignatureFileToDelete> filesToDelete)
+        {
+            var deletes = (filesToDelete ?? Enumerable.Empty<TreatmentConsentSignatureFileToDelete>())
+                .Where(f => f != null && !string.IsNullOrWhiteSpace(f.FileName))
+                .ToList();
+            if (deletes.Count == 0)
+            {
+                return;
+            }
+
+            var plan = new DentalXRayFileUpdatePlan
+            {
+                FilesToDelete = deletes.Select(f => new DentalXRayFileReference
+                {
+                    Prefix = f.Prefix,
+                    FileName = f.FileName
+                }).ToList()
+            };
+            var session = new DentalXRayFileUploadSession();
+            _fileSaveCoordinator.CommitFileChanges(plan, session);
+        }
+
+        private static List<long> NormalizeIds(IEnumerable<long>? ids)
+        {
+            return (ids ?? Enumerable.Empty<long>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
         }
 
         private async Task<Dictionary<long, string>> ResolveDentistDisplayNamesAsync(List<long> staffIds)
@@ -598,7 +750,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 DentistName = form.DentistName,
                 ProcedureText = form.ProcedureText?.Trim(),
                 SignatureFileName = form.SignatureFileName,
-                IsSigned = form.IsSigned && !string.IsNullOrWhiteSpace(form.SignatureFileName)
+                IsSigned = form.IsSigned && !string.IsNullOrWhiteSpace(form.SignatureFileName),
+                FindingScopeFingerprint = string.IsNullOrWhiteSpace(form.FindingScopeFingerprint)
+                    ? null
+                    : form.FindingScopeFingerprint.Trim()
             };
         }
 
@@ -639,7 +794,10 @@ namespace ExcelFilesCompiler.Controllers.Services
                 DdsAcknowledgedByEventStaffId = form.DdsAcknowledgedByEventStaffId > 0
                     ? form.DdsAcknowledgedByEventStaffId
                     : null,
-                DdsAcknowledgedOn = form.DdsAcknowledged ? form.DdsAcknowledgedOn : null
+                DdsAcknowledgedOn = form.DdsAcknowledged ? form.DdsAcknowledgedOn : null,
+                FindingScopeFingerprint = string.IsNullOrWhiteSpace(form.FindingScopeFingerprint)
+                    ? null
+                    : form.FindingScopeFingerprint.Trim()
             };
         }
 

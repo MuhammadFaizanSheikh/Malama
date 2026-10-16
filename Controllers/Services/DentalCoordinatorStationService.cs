@@ -14,7 +14,9 @@ namespace ExcelFilesCompiler.Controllers.Services
         private readonly IDentalXRayStationService _dentalXRayStationService;
         private readonly IDentalExamService _dentalExamService;
         private readonly IDentalTreatmentService _dentalTreatmentService;
+        private readonly ITreatmentConsentService _treatmentConsentService;
         private readonly DentalXRayFileSaveCoordinator _fileSaveCoordinator;
+        private readonly TreatmentConsentFileSaveCoordinator _treatmentConsentFileSaveCoordinator;
         private readonly TreatmentCoordinatorDocumentFileSaveCoordinator _documentFileSaveCoordinator;
         private readonly ILogger<DentalCoordinatorStationService> _logger;
         private const string CLASSNAME = nameof(DentalCoordinatorStationService);
@@ -26,7 +28,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             IDentalXRayStationService dentalXRayStationService,
             IDentalExamService dentalExamService,
             IDentalTreatmentService dentalTreatmentService,
+            ITreatmentConsentService treatmentConsentService,
             DentalXRayFileSaveCoordinator fileSaveCoordinator,
+            TreatmentConsentFileSaveCoordinator treatmentConsentFileSaveCoordinator,
             TreatmentCoordinatorDocumentFileSaveCoordinator documentFileSaveCoordinator)
         {
             _logger = logger;
@@ -35,7 +39,9 @@ namespace ExcelFilesCompiler.Controllers.Services
             _dentalXRayStationService = dentalXRayStationService;
             _dentalExamService = dentalExamService;
             _dentalTreatmentService = dentalTreatmentService;
+            _treatmentConsentService = treatmentConsentService;
             _fileSaveCoordinator = fileSaveCoordinator;
+            _treatmentConsentFileSaveCoordinator = treatmentConsentFileSaveCoordinator;
             _documentFileSaveCoordinator = documentFileSaveCoordinator;
         }
 
@@ -276,16 +282,27 @@ namespace ExcelFilesCompiler.Controllers.Services
                     findingIdByClientKey,
                     saveChanges: false);
 
+                // Appointments are the source of truth for which consent forms exist.
                 await _unitOfWork.SaveAsync();
+                var consentSync = await _treatmentConsentService.SyncFromAppointmentsAsync(
+                    dto.ServiceMembersChildId,
+                    userId,
+                    saveChanges: false);
+                if (consentSync.SelectionChanged)
+                {
+                    await _unitOfWork.SaveAsync();
+                }
+
                 await transaction.CommitAsync();
                 dbSaveCompleted = true;
 
                 _fileSaveCoordinator.CommitFileChanges(filePlan, fileSession);
                 _documentFileSaveCoordinator.CommitFileChanges(documentPlan, documentSession);
+                CommitConsentSignatureDeletes(consentSync.SignatureFilesToDelete);
 
                 _logger.LogInformation(
-                    "{ClassName}, {MethodName}, Treatment Coordinator station saved atomically. ServiceMembersChildId={ServiceMembersChildId}, User={User}, EventStaffId={EventStaffId}",
-                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, eventStaffId);
+                    "{ClassName}, {MethodName}, Treatment Coordinator station saved atomically. ServiceMembersChildId={ServiceMembersChildId}, User={User}, EventStaffId={EventStaffId}, ConsentSyncChanged={ConsentSyncChanged}",
+                    CLASSNAME, methodName, dto.ServiceMembersChildId, userName, eventStaffId, consentSync.SelectionChanged);
 
                 return DentalCoordinatorStationSaveResult.Ok();
             }
@@ -330,6 +347,28 @@ namespace ExcelFilesCompiler.Controllers.Services
                     await transaction.DisposeAsync();
                 }
             }
+        }
+
+        private void CommitConsentSignatureDeletes(
+            IEnumerable<TreatmentConsentSignatureFileToDelete>? filesToDelete)
+        {
+            var deletes = (filesToDelete ?? Enumerable.Empty<TreatmentConsentSignatureFileToDelete>())
+                .Where(f => f != null && !string.IsNullOrWhiteSpace(f.FileName))
+                .ToList();
+            if (deletes.Count == 0)
+            {
+                return;
+            }
+
+            var plan = new DentalXRayFileUpdatePlan
+            {
+                FilesToDelete = deletes.Select(f => new DentalXRayFileReference
+                {
+                    Prefix = f.Prefix,
+                    FileName = f.FileName
+                }).ToList()
+            };
+            _treatmentConsentFileSaveCoordinator.CommitFileChanges(plan, new DentalXRayFileUploadSession());
         }
     }
 }

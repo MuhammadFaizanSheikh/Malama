@@ -127,33 +127,13 @@ namespace Malama.Utilities
             // Dental X-Ray
             ["DentalXRay_View"] = new List<(string Role, string Attribute)>
         {
-            ("DE-Dental X-Ray Tech", "Exam"),
-            ("DE-Dental Assistant", "Exam"),
-            ("DE-Dental Lead", "Exam"),
-            ("DE-Dental Director", "Exam"),
-            ("DT-Treatment Coordinator", "Treatment"),
-            ("DT-Dentist", "General"),
-            ("DT-Dentist", "Oral Surgery"),
-            ("DT-Dentist", "Endo"),
-            ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment"),
+            ("DE-Dental X-Ray Tech", "X-ray"),
             ("Event Manager", null)
         },
             ["DentalXRay_Save"] = new List<(string Role, string Attribute)>
         {
-            ("DE-Dental X-Ray Tech", "Exam"),
-            ("DE-Dental Assistant", "Exam"),
-            ("DE-Dental Lead", "Exam"),
-            ("DE-Dental Director", "Exam"),
-            ("DT-Treatment Coordinator", "Treatment"),
-            ("DT-Dentist", "General"),
-            ("DT-Dentist", "Oral Surgery"),
-            ("DT-Dentist", "Endo"),
-            ("DT-Dental Assistant", "Treatment"),
-            ("DT-Dental Director", "Treatment"),
-            ("Event Manager", null)
+            ("DE-Dental X-Ray Tech", "X-ray"),
         },
-
             // EKG
             ["EKG_View"] = new List<(string Role, string Attribute)>
         {
@@ -312,8 +292,6 @@ namespace Malama.Utilities
         {
             ("Check in/out Staff", "CanAccessProfile")
         },
-
-
             ["CheckInOutStaff_View"] = new List<(string Role, string Attribute)>
         {
             ("Check in/out Staff", null),
